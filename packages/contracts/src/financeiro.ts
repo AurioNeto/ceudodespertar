@@ -52,6 +52,7 @@ export type SituacaoConciliacao = 'CONCILIADA' | 'PENDENTE' | 'NAO_APLICAVEL';
 export interface Conta {
   readonly id: ContaId;
   readonly nome: string;
+  readonly descricao: string;
   readonly tipo: TipoConta;
   readonly titularidade: Titularidade;
   readonly pessoaTitularId: PessoaId | null;
@@ -69,6 +70,8 @@ export interface Fundo {
   readonly id: FundoId;
   readonly codigoSistema: string;
   readonly nome: string;
+  /** O destino combinado da reserva, como aparece na tela. */
+  readonly nota: string;
   readonly contaVinculadaId: ContaId;
   readonly valorReservado: Dinheiro;
   readonly meta: Dinheiro | null;

@@ -10,6 +10,7 @@ export const contas: readonly Conta[] = [
   {
     id: id<ContaId>('cora'),
     nome: 'Cora PJ',
+    descricao: 'conta principal da casa · CNPJ do CDD',
     tipo: 'CONTA_CORRENTE',
     titularidade: 'INSTITUCIONAL',
     pessoaTitularId: null,
@@ -23,6 +24,7 @@ export const contas: readonly Conta[] = [
   {
     id: id<ContaId>('especie'),
     nome: 'Espécie',
+    descricao: 'caixa da chácara · cofre da secretaria',
     tipo: 'DINHEIRO',
     titularidade: 'INSTITUCIONAL',
     pessoaTitularId: null,
@@ -36,6 +38,7 @@ export const contas: readonly Conta[] = [
   {
     id: id<ContaId>('nubank'),
     nome: 'Nubank Paty',
+    descricao: 'conta pessoal usada em nome da casa',
     tipo: 'CONTA_CORRENTE',
     titularidade: 'PESSOAL_DE_TERCEIRO',
     pessoaTitularId: id<PessoaId>('p-paty'),
@@ -49,6 +52,7 @@ export const contas: readonly Conta[] = [
   {
     id: id<ContaId>('itau'),
     nome: 'Itaú Munay',
+    descricao: 'unidade comercial · lojinha',
     tipo: 'CONTA_CORRENTE',
     titularidade: 'INSTITUCIONAL',
     pessoaTitularId: null,
@@ -69,6 +73,7 @@ export const fundos: readonly Fundo[] = [
     id: id<FundoId>('obra'),
     codigoSistema: 'FUNDO_OBRA',
     nome: 'Obra do dormitório',
+    nota: 'meta 24.000,00 · previsão de conclusão em novembro',
     contaVinculadaId: id<ContaId>('cora'),
     valorReservado: reais(18400),
     meta: reais(24000),
@@ -78,6 +83,7 @@ export const fundos: readonly Fundo[] = [
     id: id<FundoId>('feitio'),
     codigoSistema: 'FUNDO_FEITIO',
     nome: 'Feitio de dezembro',
+    nota: 'insumos, garrafas e deslocamento',
     contaVinculadaId: id<ContaId>('cora'),
     valorReservado: reais(9200),
     meta: null,
@@ -87,6 +93,7 @@ export const fundos: readonly Fundo[] = [
     id: id<FundoId>('emergencia'),
     codigoSistema: 'FUNDO_EMERGENCIA',
     nome: 'Emergência e saúde',
+    nota: 'intocável fora de emergência, decisão da direção',
     contaVinculadaId: id<ContaId>('cora'),
     valorReservado: reais(6000),
     meta: null,

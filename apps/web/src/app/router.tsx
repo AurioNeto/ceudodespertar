@@ -5,6 +5,7 @@ import { PainelPage } from '../pages/painel/PainelPage';
 import { RegistrarLancamentoPage } from '../pages/lancamento/RegistrarLancamentoPage';
 import { MeusRegistrosPage } from '../pages/registros/MeusRegistrosPage';
 import { LancamentosPage } from '../pages/registros/LancamentosPage';
+import { ContasEFundoPage } from '../pages/contas/ContasEFundoPage';
 
 export const router = createBrowserRouter([
   {
@@ -15,6 +16,7 @@ export const router = createBrowserRouter([
       { path: ROTAS.registrar, element: <RegistrarLancamentoPage /> },
       { path: ROTAS.meus, element: <MeusRegistrosPage /> },
       { path: ROTAS.lancamentos, element: <LancamentosPage /> },
+      { path: ROTAS.contas, element: <ContasEFundoPage /> },
     ],
   },
 ]);
