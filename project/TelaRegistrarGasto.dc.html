@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><script src="./ds-base.js"></script><script src="./image-slot.js"></script><style>body{margin:0;background:var(--bg-app)}image-slot::part(ring){display:none !important}</style></helmet>
+
+<div style="padding:26px 28px 40px;display:flex;flex-direction:column;gap:20px;background:var(--bg-app);min-height:100%">
+
+  <div style="display:flex;flex-wrap:wrap;align-items:center;gap:14px">
+    <div style="display:flex;flex-direction:column;gap:2px">
+      <div style="font:var(--text-label);text-transform:uppercase;letter-spacing:var(--tracking-label);color:var(--text-field-label)">F-01 · Registrar lançamento · Tesouraria</div>
+      <div style="font:var(--text-title-sm);color:var(--text-title)">Mesa e campo, mesmo lançamento</div>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-left:auto">
+      <sc-for list="{{ estados }}" as="e" hint-placeholder-count="6">
+        <button type="button" onClick="{{ e.onClick }}" style="{{ e.style }}">{{ e.label }}</button>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="display:flex;flex-wrap:wrap;gap:26px;align-items:flex-start">
+
+    <div style="position:relative;flex:0 0 auto;width:1180px;height:900px;display:flex;border:var(--border-hairline);border-radius:var(--radius-lg);overflow:hidden;background:var(--bg-card);box-shadow:var(--shadow-raised)">
+      <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.AppShell" unit="CDD" user="{{ user }}" nav="{{ nav }}" active-id="registrar" density="office" style="height:100%;width:100%" dc-props="{{ propsShell }}" hint-size="100%,100%">
+        <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.ScreenHeader" code="F-01 · Lançamento" title="Registrar lançamento" subtitle="{{ subtitulo }}" hint-size="100%,140px"></x-import>
+
+        <sc-if value="{{ ehPermissao }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:24px;display:flex;flex-direction:column;gap:16px;max-width:760px">
+            <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.PermissionDenied" screen="Registrar lançamento" group="Leitura" missing="financeiro.lancar" who-to-ask="Aurio Neto, administrador da unidade" hint-size="100%,150px"></x-import>
+            <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.TwoAxisGuard" explanation="Quem é do grupo Registro rápido abre esta tela e grava um lançamento — mas grava como A conferir. Lançar já consolidado é operação de tesouraria, e é por isso que o botão não está aqui." requirement="Precisa da permissão financeiro.consolidar no grupo Tesouraria." hint-size="100%,170px"></x-import>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ ehFormulario }}" hint-placeholder-val="{{ true }}">
+          <div style="padding:20px 24px 0;max-width:860px">
+
+            <div style="min-width:0;display:flex;flex-direction:column;gap:16px;padding-bottom:24px">
+
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <span style="font:var(--text-label);text-transform:uppercase;letter-spacing:var(--tracking-label);color:var(--text-field-label)">Tipo de lançamento</span>
+                <div style="display:flex;gap:8px;flex-wrap:wrap">
+                  <sc-for list="{{ tipos }}" as="t" hint-placeholder-count="3">
+                    <button type="button" onClick="{{ t.onClick }}" aria-pressed="{{ t.ativo }}" style="{{ t.style }}">{{ t.label }}</button>
+                  </sc-for>
+                </div>
+                <span style="font:var(--text-small);color:var(--text-secondary)">{{ notaTipo }}</span>
+              </div>
+
+              <sc-if value="{{ ehRecibo }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;flex-direction:column;gap:12px">
+                  <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Receipt" title="Registrado às 14:22" amount="{{ recibo.total }}" lines="{{ recibo.linhas }}" footnote="Gravado consolidado, com seu nome no histórico. Desfazer só nos próximos 2 minutos; depois disso, estorno." hint-size="100%,320px"></x-import>
+                  <div style="display:flex;gap:10px">
+                    <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Button" variant="quiet" icon-name="rotate-ccw" onClick="{{ desfazer }}" hint-size="140px,44px">Desfazer</x-import>
+                    <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Button" variant="ghost" icon-name="receipt-text" hint-size="170px,44px">Ver lançamento</x-import>
+                  </div>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ ehTravado }}" hint-placeholder-val="{{ false }}">
+                <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.PeriodLock" period="07/2026 · CDD" reason="A data do gasto cai em julho, e julho foi fechado em 05/08 por Marcia Zubek. Lançar em período fechado mudaria um relatório que já foi assinado." hint-size="100%,120px"></x-import>
+              </sc-if>
+
+              <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.AmountInput" label="{{ labelValor }}" value="{{ valor }}" onChange="{{ setValor }}" hint="Escreva como você fala. Soma vale: 65+70." hint-size="100%,130px"></x-import>
+
+              <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.TextField" label="{{ labelDesc }}" value="{{ desc }}" onChange="{{ onDesc }}" placeholder="{{ placeholderDesc }}" hint-size="100%,80px"></x-import>
+
+              <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px">
+                <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.TextField" label="{{ labelData }}" value="{{ data }}" onChange="{{ onData }}" error="{{ erroData }}" hint-size="100%,80px"></x-import>
+                <sc-if value="{{ temContraparte }}" hint-placeholder-val="{{ true }}">
+                  <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.TextField" label="{{ labelContraparte }}" value="{{ fornecedor }}" onChange="{{ onFornecedor }}" placeholder="{{ placeholderContraparte }}" hint-size="100%,80px"></x-import>
+                </sc-if>
+              </div>
+
+              <div style="height:1px;background:var(--border-subtle);margin:2px 0"></div>
+
+              <div style="font:var(--text-label);text-transform:uppercase;letter-spacing:var(--tracking-label);color:var(--text-field-label)">Classificação</div>
+
+              <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px">
+                <sc-if value="{{ temGrupo }}" hint-placeholder-val="{{ true }}">
+                  <div style="display:flex;flex-direction:column">
+                    <label for="f-grupo" style="font:var(--text-label);letter-spacing:var(--tracking-label);text-transform:uppercase;color:var(--text-field-label);margin-bottom:7px">Grupo</label>
+                    <select id="f-grupo" value="{{ grupo }}" onChange="{{ onGrupo }}" style="width:100%;min-height:var(--target-office);border:1px solid var(--color-line-strong);background:var(--bg-card);border-radius:var(--radius);padding:10px 13px;font:var(--text-body);color:var(--text-primary);outline:none">
+                      <sc-for list="{{ opcoesGrupo }}" as="o" hint-placeholder-count="6">
+                        <option value="{{ o.value }}">{{ o.label }}</option>
+                      </sc-for>
+                    </select>
+                    <span style="margin-top:7px;font:var(--text-small);color:var(--text-secondary)">{{ notaGrupo }}</span>
+                  </div>
+                </sc-if>
+                <div style="display:flex;flex-direction:column">
+                  <label for="f-conta" style="font:var(--text-label);letter-spacing:var(--tracking-label);text-transform:uppercase;color:var(--text-field-label);margin-bottom:7px">{{ labelConta }}</label>
+                  <select id="f-conta" value="{{ conta }}" onChange="{{ onConta }}" style="width:100%;min-height:var(--target-office);border:1px solid var(--color-line-strong);background:var(--bg-card);border-radius:var(--radius);padding:10px 13px;font:var(--text-body);color:var(--text-primary);outline:none">
+                    <sc-for list="{{ opcoesConta }}" as="o" hint-placeholder-count="4">
+                      <option value="{{ o.value }}">{{ o.label }}</option>
+                    </sc-for>
+                  </select>
+                  <span style="margin-top:7px;font:var(--text-small);color:var(--text-secondary)">{{ notaConta }}</span>
+                </div>
+                <sc-if value="{{ ehTransferencia }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;flex-direction:column">
+                    <label for="f-conta-destino" style="font:var(--text-label);letter-spacing:var(--tracking-label);text-transform:uppercase;color:var(--text-field-label);margin-bottom:7px">Conta de destino</label>
+                    <select id="f-conta-destino" value="{{ contaDestino }}" onChange="{{ onContaDestino }}" style="width:100%;min-height:var(--target-office);border:1px solid var(--color-line-strong);background:var(--bg-card);border-radius:var(--radius);padding:10px 13px;font:var(--text-body);color:var(--text-primary);outline:none">
+                      <sc-for list="{{ opcoesConta }}" as="o" hint-placeholder-count="4">
+                        <option value="{{ o.value }}">{{ o.label }}</option>
+                      </sc-for>
+                    </select>
+                    <span style="margin-top:7px;font:var(--text-small);color:var(--text-secondary)">{{ notaContaDestino }}</span>
+                  </div>
+                </sc-if>
+              </div>
+
+              <sc-if value="{{ ehMesmaConta }}" hint-placeholder-val="{{ false }}">
+                <span style="font:var(--text-small);color:var(--color-attention)">Origem e destino são a mesma conta — a transferência não muda saldo nenhum.</span>
+              </sc-if>
+
+              <sc-if value="{{ temCategoria }}" hint-placeholder-val="{{ true }}">
+              <div style="display:flex;flex-direction:column">
+                <label style="font:var(--text-label);letter-spacing:var(--tracking-label);text-transform:uppercase;color:var(--text-field-label);margin-bottom:7px">Categoria — pode ter mais de uma</label>
+                <div style="min-height:var(--target-office);border:1px solid var(--color-line-strong);background:var(--bg-card);border-radius:var(--radius);padding:8px 10px;display:flex;flex-wrap:wrap;gap:7px;align-items:center">
+                  <sc-for list="{{ catsEscolhidas }}" as="c" hint-placeholder-count="2">
+                    <span style="display:inline-flex;align-items:center;gap:6px;background:var(--color-royal-soft);border:1px solid var(--color-royal-border);color:var(--color-royal-deep);border-radius:var(--radius-pill);padding:4px 6px 4px 12px;font:var(--text-body)">{{ c.label }}<button type="button" aria-label="remover categoria" onClick="{{ c.onRemove }}" style="border:0;background:transparent;color:var(--color-royal-deep);cursor:pointer;font:var(--text-body-strong);line-height:1;padding:2px 5px">×</button></span>
+                  </sc-for>
+                  <sc-if value="{{ faltaCategoria }}" hint-placeholder-val="{{ true }}">
+                    <span style="font:var(--text-body);color:var(--text-meta);padding:4px 3px">nenhuma escolhida</span>
+                  </sc-if>
+                </div>
+                <div style="margin-top:9px;display:flex;flex-wrap:wrap;gap:7px;align-items:center">
+                  <span style="font:var(--text-small);color:var(--text-meta)">Existentes:</span>
+                  <sc-for list="{{ catsDisponiveis }}" as="c" hint-placeholder-count="5">
+                    <button type="button" onClick="{{ c.onAdd }}" style="border:1px dashed var(--color-line-strong);background:var(--bg-card);color:var(--text-secondary);border-radius:var(--radius-pill);padding:5px 12px;font:var(--text-small);cursor:pointer">+ {{ c.label }}</button>
+                  </sc-for>
+                </div>
+              </div>
+              </sc-if>
+
+              <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px">
+                <div style="display:flex;flex-direction:column">
+                  <label for="f-pagamento" style="font:var(--text-label);letter-spacing:var(--tracking-label);text-transform:uppercase;color:var(--text-field-label);margin-bottom:7px">{{ labelPagamento }}</label>
+                  <select id="f-pagamento" value="{{ pagamento }}" onChange="{{ onPagamento }}" style="width:100%;min-height:var(--target-office);border:1px solid var(--color-line-strong);background:var(--bg-card);border-radius:var(--radius);padding:10px 13px;font:var(--text-body);color:var(--text-primary);outline:none">
+                    <sc-for list="{{ opcoesPagamento }}" as="o" hint-placeholder-count="5">
+                      <option value="{{ o.value }}">{{ o.label }}</option>
+                    </sc-for>
+                  </select>
+                </div>
+                <sc-if value="{{ temCerimonia }}" hint-placeholder-val="{{ true }}">
+                  <div style="display:flex;flex-direction:column">
+                    <label for="f-cerimonia" style="font:var(--text-label);letter-spacing:var(--tracking-label);text-transform:uppercase;color:var(--text-field-label);margin-bottom:7px">Cerimônia vinculada</label>
+                    <select id="f-cerimonia" value="{{ cerimonia }}" onChange="{{ onCerimonia }}" style="width:100%;min-height:var(--target-office);border:1px solid var(--color-line-strong);background:var(--bg-card);border-radius:var(--radius);padding:10px 13px;font:var(--text-body);color:var(--text-primary);outline:none">
+                      <sc-for list="{{ opcoesCerimonia }}" as="o" hint-placeholder-count="4">
+                        <option value="{{ o.value }}">{{ o.label }}</option>
+                      </sc-for>
+                    </select>
+                  </div>
+                </sc-if>
+                <div style="display:flex;flex-direction:column">
+                  <label for="f-competencia" style="font:var(--text-label);letter-spacing:var(--tracking-label);text-transform:uppercase;color:var(--text-field-label);margin-bottom:7px">Competência</label>
+                  <select id="f-competencia" value="{{ competencia }}" onChange="{{ onCompetencia }}" style="width:100%;min-height:var(--target-office);border:1px solid var(--color-line-strong);background:var(--bg-card);border-radius:var(--radius);padding:10px 13px;font:var(--text-body);color:var(--text-primary);outline:none">
+                    <sc-for list="{{ opcoesCompetencia }}" as="o" hint-placeholder-count="3">
+                      <option value="{{ o.value }}">{{ o.label }}</option>
+                    </sc-for>
+                  </select>
+                  <span style="margin-top:7px;font:var(--text-small);color:var(--text-secondary)">{{ notaCompetencia }}</span>
+                </div>
+                <div style="display:flex;flex-direction:column">
+                  <label for="f-unidade" style="font:var(--text-label);letter-spacing:var(--tracking-label);text-transform:uppercase;color:var(--text-field-label);margin-bottom:7px">Unidade</label>
+                  <select id="f-unidade" value="{{ unidade }}" onChange="{{ onUnidade }}" style="width:100%;min-height:var(--target-office);border:1px solid var(--color-line-strong);background:var(--bg-card);border-radius:var(--radius);padding:10px 13px;font:var(--text-body);color:var(--text-primary);outline:none">
+                    <sc-for list="{{ opcoesUnidade }}" as="o" hint-placeholder-count="2">
+                      <option value="{{ o.value }}">{{ o.label }}</option>
+                    </sc-for>
+                  </select>
+                </div>
+              </div>
+
+              <sc-if value="{{ faltaCategoria }}" hint-placeholder-val="{{ false }}">
+                <span style="font:var(--text-small);color:var(--color-attention)">Sem categoria o gasto entra em Relatórios como “não classificado”. Dá para gravar assim — vira pendência sua, não da conferência.</span>
+              </sc-if>
+
+              <sc-if value="{{ temReembolso }}" hint-placeholder-val="{{ true }}">
+                <div style="display:flex;align-items:center;gap:14px;background:var(--bg-card);border:var(--border-hairline);border-radius:var(--radius);padding:12px 14px">
+                  <div style="flex:1;min-width:0">
+                    <div style="font:var(--text-body-strong);color:var(--text-primary)">Reembolso a uma pessoa</div>
+                    <div style="font:var(--text-small);color:var(--text-secondary)">{{ reembolsoNota }}</div>
+                  </div>
+                  <button type="button" onClick="{{ alternarReembolso }}" role="switch" aria-checked="{{ reembolso }}" style="{{ estiloTrilho }}"><span style="{{ estiloBotao }}"></span></button>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ reembolso }}" hint-placeholder-val="{{ false }}">
+                <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.DefaultField" label="Quem adiantou o dinheiro" value="{{ pessoa }}" origin="vira conta a pagar" density="office" onEdit="{{ abrirPessoa }}" hint-size="100%,58px"></x-import>
+              </sc-if>
+
+              <sc-if value="{{ ehErro }}" hint-placeholder-val="{{ false }}">
+                <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.DomainError" rule="Um lançamento consolidado tem um valor só" explanation="65+70 é a soma de duas compras no mesmo cupom. Consolidado, o valor precisa ser um — a tesouraria separa antes de gravar, senão o relatório por categoria mistura extintor com suporte." way="Separe em dois lançamentos, ou grave 135,00 com a explicação na descrição e classifique como manutenção." hint-size="100%,130px"></x-import>
+              </sc-if>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:14px;padding-bottom:24px">
+
+              <div style="background:var(--bg-card);border:var(--border-hairline);border-radius:var(--radius-lg);padding:16px;display:flex;flex-direction:column;gap:12px">
+                <div style="font:var(--text-label);text-transform:uppercase;letter-spacing:var(--tracking-label);color:var(--text-field-label)">Comprovante</div>
+                <sc-if value="{{ temAnexo }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;flex-direction:column;gap:10px">
+                    <div style="position:relative;height:210px;border:var(--border-hairline);border-radius:var(--radius-sm);overflow:hidden;background:var(--bg-sunken);display:flex;align-items:center;justify-content:center">
+                      <span style="font:var(--text-label);text-transform:uppercase;letter-spacing:var(--tracking-label);color:var(--text-meta)">foto do cupom</span>
+                      <image-slot id="cupom-f01" shape="rect" fit="cover" style="position:absolute;inset:0;width:100%;height:100%"></image-slot>
+                    </div>
+                    <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.AttachmentCapture" density="office" filename="{{ anexo }}" onRemove="{{ removerAnexo }}" hint-size="100%,52px"></x-import>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ semAnexo }}" hint-placeholder-val="{{ true }}">
+                  <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.AttachmentCapture" label="Anexar comprovante" density="office" onCapture="{{ anexarComprovante }}" hint-size="100%,52px"></x-import>
+                </sc-if>
+              </div>
+
+              <sc-if value="{{ mostrarSugestoes }}" hint-placeholder-val="{{ false }}">
+                <div style="background:var(--color-suggest-soft);border:1px dashed var(--color-suggest-border);border-radius:var(--radius-lg);padding:16px;display:flex;flex-direction:column;gap:12px">
+                  <div style="display:flex;align-items:center;gap:9px">
+                    <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Icon" name="sparkles" size="{{ 17 }}" color="var(--color-suggest)" hint-size="17px,17px"></x-import>
+                    <span style="font:var(--text-body-strong);color:var(--color-suggest)">A IA leu o cupom</span>
+                  </div>
+                  <p style="margin:0;font:var(--text-small);color:var(--text-secondary)">Nada foi preenchido sozinho. Aceite item por item — o que você aceitar fica com a marca de sugestão no histórico.</p>
+                  <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-start">
+                    <sc-for list="{{ sugestoes }}" as="s" hint-placeholder-count="4">
+                      <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.SuggestionChip" density="office" onAccept="{{ s.onAccept }}" onDismiss="{{ s.onDismiss }}" hint-size="240px,40px">{{ s.texto }}</x-import>
+                    </sc-for>
+                  </div>
+                  <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Button" variant="suggest" icon-name="check-check" onClick="{{ aceitarTudo }}" hint-size="100%,44px">Aceitar as quatro</x-import>
+                </div>
+              </sc-if>
+
+            </div>
+          </div>
+
+          <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.ActionBar" note="{{ notaBarra }}" hint-size="100%,90px">
+            <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Button" icon-name="check" disabled="{{ bloqueado }}" blocked-reason="{{ motivoBloqueio }}" onClick="{{ registrar }}" hint-size="230px,44px">Registrar e abrir outro</x-import>
+            <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Button" variant="quiet" onClick="{{ limpar }}" hint-size="140px,44px">Limpar campos</x-import>
+          </x-import>
+        </sc-if>
+      </x-import>
+
+      <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.BottomSheet" open="{{ pickerAberto }}" title="{{ pickerTitulo }}" options="{{ pickerOpcoes }}" value="{{ pickerValor }}" onSelect="{{ escolher }}" onClose="{{ fecharPicker }}" hint-size="100%,100%"></x-import>
+    </div>
+
+    <div style="flex:0 0 auto;display:flex;flex-direction:column;gap:12px;align-items:center">
+      <div style="position:relative;width:392px;height:812px;display:flex;border:10px solid var(--color-ink-brand);border-radius:38px;overflow:hidden;background:var(--bg-app);box-shadow:var(--shadow-raised)">
+        <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.AppShell" unit="CDD" user="{{ user }}" nav="{{ nav }}" active-id="registrar" density="field" style="height:100%;width:100%" dc-props="{{ propsShell }}" hint-size="100%,100%">
+          <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.ScreenHeader" code="F-01" title="Registrar lançamento" density="field" hint-size="100%,80px"></x-import>
+
+          <sc-if value="{{ ehPermissao }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:16px">
+              <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.PermissionDenied" screen="Registrar lançamento" group="Leitura" missing="financeiro.lancar" who-to-ask="o administrador da unidade" hint-size="100%,200px"></x-import>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ ehFormulario }}" hint-placeholder-val="{{ true }}">
+            <div style="padding:14px 16px 18px;display:grid;grid-template-columns:minmax(0,1fr);gap:12px;align-content:start;min-width:0">
+              <sc-if value="{{ ehTravado }}" hint-placeholder-val="{{ false }}">
+                <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.PeriodLock" period="07/2026" reason="O gasto é de 31/07 e julho foi fechado em 05/08. Guarde como rascunho ou lance em 08/2026 explicando na descrição." hint-size="100%,140px"></x-import>
+              </sc-if>
+
+              <sc-if value="{{ ehRecibo }}" hint-placeholder-val="{{ false }}">
+                <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Receipt" title="Registrado às 14:22" amount="{{ recibo.total }}" lines="{{ recibo.linhas }}" footnote="Campos limpos, pronto para o próximo. Desfazer nos próximos 2 minutos." hint-size="100%,300px"></x-import>
+              </sc-if>
+
+              <div style="display:flex;gap:6px">
+                <sc-for list="{{ tipos }}" as="t" hint-placeholder-count="3">
+                  <button type="button" onClick="{{ t.onClick }}" aria-pressed="{{ t.ativo }}" style="{{ t.styleField }}">{{ t.label }}</button>
+                </sc-for>
+              </div>
+
+              <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.AmountInput" label="{{ labelValor }}" value="{{ valor }}" onChange="{{ setValor }}" hint="Escreva como você fala. Soma vale: 65+70." hint-size="100%,130px"></x-import>
+              <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.TextField" label="{{ labelDesc }}" density="field" value="{{ desc }}" onChange="{{ onDesc }}" placeholder="{{ placeholderDesc }}" hint-size="100%,84px"></x-import>
+
+              <sc-if value="{{ mostrarSugestoes }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-start">
+                  <sc-for list="{{ sugestoes }}" as="s" hint-placeholder-count="4">
+                    <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.SuggestionChip" onAccept="{{ s.onAccept }}" onDismiss="{{ s.onDismiss }}" hint-size="100%,48px">{{ s.texto }}</x-import>
+                  </sc-for>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ temAnexo }}" hint-placeholder-val="{{ false }}">
+                <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.AttachmentCapture" filename="{{ anexo }}" onRemove="{{ removerAnexo }}" hint-size="100%,56px"></x-import>
+              </sc-if>
+              <sc-if value="{{ semAnexo }}" hint-placeholder-val="{{ true }}">
+                <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.AttachmentCapture" onCapture="{{ anexarComprovante }}" hint-size="100%,66px"></x-import>
+              </sc-if>
+
+              <div style="height:1px;background:var(--border-subtle);margin:2px 0"></div>
+              <div style="font:var(--text-label);text-transform:uppercase;letter-spacing:var(--tracking-label);color:var(--text-field-label)">Preenchido por padrão — toque para trocar</div>
+
+              <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.DefaultField" label="Competência" value="{{ competencia }}" origin="{{ origemCompetencia }}" onEdit="{{ abrirCompetencia }}" hint-size="100%,64px"></x-import>
+              <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.DefaultField" label="{{ labelConta }}" value="{{ contaLabel }}" origin="{{ origemConta }}" onEdit="{{ abrirConta }}" hint-size="100%,64px"></x-import>
+              <sc-if value="{{ ehTransferencia }}" hint-placeholder-val="{{ false }}">
+                <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.DefaultField" label="Conta de destino" value="{{ contaDestinoLabel }}" origin="para onde vai" onEdit="{{ abrirContaDestino }}" hint-size="100%,64px"></x-import>
+              </sc-if>
+              <sc-if value="{{ temGrupo }}" hint-placeholder-val="{{ true }}">
+                <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.DefaultField" label="Grupo" value="{{ grupo }}" origin="{{ origemGrupo }}" onEdit="{{ abrirGrupo }}" hint-size="100%,64px"></x-import>
+              </sc-if>
+              <sc-if value="{{ temCategoria }}" hint-placeholder-val="{{ true }}">
+                <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.DefaultField" label="Categoria" value="{{ categoriaLabel }}" origin="{{ origemCategoria }}" onEdit="{{ abrirCategoria }}" hint-size="100%,64px"></x-import>
+              </sc-if>
+              <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.DefaultField" label="{{ labelPagamento }}" value="{{ pagamento }}" origin="{{ origemPagamento }}" onEdit="{{ abrirPagamento }}" hint-size="100%,64px"></x-import>
+              <sc-if value="{{ temCerimonia }}" hint-placeholder-val="{{ true }}">
+                <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.DefaultField" label="Cerimônia vinculada" value="{{ cerimonia }}" origin="{{ origemCerimonia }}" onEdit="{{ abrirCerimonia }}" hint-size="100%,64px"></x-import>
+              </sc-if>
+
+              <sc-if value="{{ reembolso }}" hint-placeholder-val="{{ false }}">
+                <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.DefaultField" label="Reembolso a" value="{{ pessoa }}" origin="conta a pagar" onEdit="{{ abrirPessoa }}" hint-size="100%,64px"></x-import>
+              </sc-if>
+
+              <sc-if value="{{ ehErro }}" hint-placeholder-val="{{ false }}">
+                <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.DomainError" rule="Um lançamento consolidado tem um valor só" explanation="65+70 são duas compras no mesmo cupom. Separe em dois lançamentos ou grave 135,00 explicando na descrição." hint-size="100%,120px"></x-import>
+              </sc-if>
+
+              <div style="display:flex;gap:7px;flex-wrap:wrap">
+                <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.StatusBadge" tone="confirmed" hint-size="150px,26px">Grava consolidado</x-import>
+              </div>
+            </div>
+
+            <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.ActionBar" note="{{ notaBarra }}" hint-size="100%,100px">
+              <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Button" density="field" full-width="{{ true }}" icon-name="check" disabled="{{ bloqueado }}" blocked-reason="{{ motivoBloqueio }}" onClick="{{ registrar }}" hint-size="100%,52px">Registrar e abrir outro</x-import>
+            </x-import>
+          </sc-if>
+        </x-import>
+
+        <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.BottomSheet" open="{{ pickerAberto }}" title="{{ pickerTitulo }}" options="{{ pickerOpcoes }}" value="{{ pickerValor }}" onSelect="{{ escolher }}" onClose="{{ fecharPicker }}" hint-size="100%,100%"></x-import>
+      </div>
+      <div style="font:var(--text-small);color:var(--text-secondary);max-width:392px;text-align:center">Campo: a mesma gravação, com o teclado numérico primeiro e a câmera a um toque.</div>
+    </div>
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1680,&quot;height&quot;:1010}}">
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = Object.assign({ estado: 'preenchendo', tipo: 'saida', picker: null, aceitos: [] }, this.dados('preenchendo'));
+  }
+
+  dados(e) {
+    const base = {
+      valor: '', desc: '', data: '28/08/2026', fornecedor: '', competencia: '08/2026',
+      conta: 'cora', contaDestino: 'nubank', categorias: [], grupo: 'Chácara (Infraestrutura)', unidade: 'CDD',
+      pagamento: 'Pix', cerimonia: 'Nenhuma — gasto da casa',
+      anexo: null, reembolso: false, pessoa: 'Lucia Prado',
+    };
+    if (e === 'ia') return Object.assign(base, { anexo: 'IMG_2481.jpg', valor: '', desc: '', fornecedor: '' });
+    if (e === 'erro') return Object.assign(base, { valor: '65+70', desc: 'recarga extintor e suporte (23/02)', data: '23/02/2026', fornecedor: 'Extintores Paty', grupo: 'Dormitório' });
+    if (e === 'travado') return Object.assign(base, { valor: '340,00', desc: 'diarista pós-cerimônia de julho', data: '31/07/2026', competencia: '07/2026', fornecedor: 'Dona Rosa', categorias: ['Administrativo'], grupo: 'Chácara (Infraestrutura)', conta: 'especie', pagamento: 'Espécie', reembolso: true });
+    if (e === 'recibo') return Object.assign(base, {});
+    return base;
+  }
+
+  irPara(e) {
+    return () => this.setState(Object.assign({ estado: e, picker: null, aceitos: [] }, this.dados(e)));
+  }
+
+  trocarTipo(t) {
+    return () => {
+      const patch = { tipo: t, picker: null };
+      if (t === 'transferencia') {
+        patch.reembolso = false;
+        patch.cerimonia = 'Nenhuma — gasto da casa';
+        if (this.state.conta === this.state.contaDestino) patch.contaDestino = this.state.conta === 'cora' ? 'nubank' : 'cora';
+        patch.pagamento = 'Pix';
+      }
+      if (t === 'entrada') { patch.reembolso = false; patch.pagamento = 'Pix'; }
+      this.setState(patch);
+    };
+  }
+
+  render_listas() {
+    return {
+      contaDestino: { titulo: 'Conta de destino', opcoes: [
+        { value: 'cora', label: 'Cora PJ', meta: 'conta principal da casa' },
+        { value: 'nubank', label: 'Nubank Paty', meta: 'conta pessoal' },
+        { value: 'especie', label: 'Espécie', meta: 'caixa da chácara' },
+        { value: 'itau', label: 'Itaú Munay', meta: 'unidade comercial' },
+      ] },
+      conta: { titulo: 'Conta', opcoes: [
+        { value: 'cora', label: 'Cora PJ', meta: 'mais usada por você' },
+        { value: 'nubank', label: 'Nubank Paty', meta: 'conta pessoal' },
+        { value: 'especie', label: 'Espécie', meta: 'caixa da chácara' },
+        { value: 'itau', label: 'Itaú Munay', meta: 'unidade comercial' },
+      ] },
+      categoria: { titulo: 'Categoria — pode marcar mais de uma', opcoes: ['Alimentação de cerimônia', 'Manutenção', 'Transporte', 'Animais', 'Insumos de feitio', 'Administrativo'].map(v => ({ value: v, label: v })) },
+      grupo: { titulo: 'Grupo', opcoes: [
+        { value: 'Lojinha', label: 'Lojinha', meta: 'venda de itens' },
+        { value: 'Dormitório', label: 'Dormitório', meta: 'hospedagem do corpo' },
+        { value: 'Chácara (Infraestrutura)', label: 'Chácara (Infraestrutura)', meta: 'terreno, obras, manutenção' },
+        { value: 'CDD', label: 'CDD', meta: 'casa e cerimônias' },
+        { value: 'Cozinha', label: 'Cozinha', meta: 'alimentação' },
+        { value: 'Secretaria', label: 'Secretaria', meta: 'administrativo' },
+      ] },
+      pagamento: { titulo: 'Forma', opcoes: ['Pix', 'Débito', 'Crédito', 'Espécie', 'Boleto', 'Transferência bancária'].map(v => ({ value: v, label: v })) },
+      cerimonia: { titulo: 'Cerimônia vinculada', opcoes: [
+        { value: '05/09 · Mãe Divina', label: '05/09 · Mãe Divina', meta: 'próxima · 78 inscritos' },
+        { value: '19/09 · Trabalho de cura', label: '19/09 · Trabalho de cura', meta: 'em 22 dias' },
+        { value: '22/08 · Mãe Divina', label: '22/08 · Mãe Divina', meta: 'contas fechadas em 24/08' },
+        { value: 'Nenhuma — gasto da casa', label: 'Nenhuma — gasto da casa', meta: 'entra no custeio geral' },
+      ] },
+      competencia: { titulo: 'Competência', opcoes: [
+        { value: '08/2026', label: '08/2026', meta: 'aberta' },
+        { value: '07/2026', label: '07/2026', meta: 'fechada em 05/08' },
+        { value: '09/2026', label: '09/2026', meta: 'ainda não começou' },
+      ] },
+      pessoa: { titulo: 'Quem adiantou o dinheiro', opcoes: ['Lucia Prado', 'Marcia Zubek', 'Aurio Neto', 'Wilson Prado'].map(v => ({ value: v, label: v })) },
+      unidade: { titulo: 'Unidade', opcoes: [
+        { value: 'CDD', label: 'CDD', meta: 'Céu do Despertar' },
+        { value: 'Munay', label: 'Munay', meta: 'unidade comercial' },
+      ] },
+    };
+  }
+
+  abrir(campo) { return () => this.setState({ picker: campo }); }
+
+  escolher(v) {
+    const campo = this.state.picker;
+    if (!campo) return;
+    if (campo === 'categoria') return this.setState({ categorias: this.alterna(v) });
+    const patch = { picker: null };
+    patch[campo] = v;
+    this.setState(patch);
+  }
+
+  alterna(v) {
+    const atuais = this.state.categorias;
+    return atuais.indexOf(v) >= 0 ? atuais.filter(c => c !== v) : atuais.concat(v);
+  }
+
+  numero(v) {
+    return String(v).split('+').map(n => parseFloat(String(n).replace(/\./g, '').replace(',', '.')) || 0).reduce((a, b) => a + b, 0);
+  }
+
+  renderVals() {
+    const s = this.state;
+    const listas = this.render_listas();
+    const contaObj = listas.conta.opcoes.find(c => c.value === s.conta) || listas.conta.opcoes[0];
+    const destinoObj = listas.conta.opcoes.find(c => c.value === s.contaDestino) || listas.conta.opcoes[1];
+    const composto = /\+/.test(s.valor);
+    const ehEntrada = s.tipo === 'entrada';
+    const ehTransferencia = s.tipo === 'transferencia';
+    const ehSaida = s.tipo === 'saida';
+    const mesmaConta = ehTransferencia && s.conta === s.contaDestino;
+    const semCategoria = s.categorias.length === 0 && !ehTransferencia;
+    const selecionar = campo => e => { const p = {}; p[campo] = e.target.value; this.setState(p); };
+
+    const aceito = k => s.aceitos.indexOf(k) >= 0;
+    const sugeridos = { valor: '187,40', desc: 'mercado cerimônia mãe divina', fornecedor: 'Assaí Atacadista', categoria: 'Alimentação de cerimônia' };
+    const aceitar = k => () => {
+      const patch = { aceitos: s.aceitos.concat(k) };
+      if (k === 'valor') patch.valor = sugeridos.valor;
+      if (k === 'desc') patch.desc = sugeridos.desc;
+      if (k === 'fornecedor') patch.fornecedor = sugeridos.fornecedor;
+      if (k === 'categoria') patch.categorias = s.categorias.concat(sugeridos.categoria);
+      this.setState(patch);
+    };
+    const descartar = k => () => this.setState({ aceitos: s.aceitos.concat(k) });
+    const pendentes = [
+      { k: 'valor', texto: 'Valor 187,40' },
+      { k: 'desc', texto: 'Descrição: mercado cerimônia mãe divina' },
+      { k: 'fornecedor', texto: 'Fornecedor: Assaí Atacadista' },
+      { k: 'categoria', texto: 'Categoria: alimentação de cerimônia' },
+    ].filter(x => !aceito(x.k));
+
+    const ehIA = s.estado === 'ia';
+    const ehErro = s.estado === 'erro';
+    const ehTravado = s.estado === 'travado';
+    const ehPermissao = s.estado === 'permissao';
+    const ehRecibo = s.estado === 'recibo';
+
+    const bloqueado = ehTravado || (ehErro && composto) || mesmaConta;
+    const motivoBloqueio = ehTravado
+      ? 'Julho está fechado. Um administrador pode reabrir, e o motivo fica registrado.'
+      : mesmaConta ? 'Origem e destino precisam ser contas diferentes.'
+      : ehErro ? 'O valor composto precisa virar um número só antes de gravar consolidado.' : undefined;
+
+    const estilos = {
+      on: 'font:var(--text-body-strong);padding:9px 14px;min-height:40px;border-radius:var(--radius-sm);cursor:pointer;border:1px solid var(--color-royal-border);background:var(--color-royal-soft);color:var(--color-royal-deep)',
+      off: 'font:var(--text-body);padding:9px 14px;min-height:40px;border-radius:var(--radius-sm);cursor:pointer;border:1px solid var(--color-line);background:var(--bg-card);color:var(--text-secondary)',
+    };
+    const listaEstados = [
+      ['preenchendo', 'Preenchendo'], ['ia', 'Comprovante lido pela IA'], ['erro', 'Erro de validação'],
+      ['travado', 'Competência fechada'], ['permissao', 'Sem permissão'], ['recibo', 'Depois de registrar'],
+    ];
+
+    const trilho = 'width:52px;height:30px;flex:0 0 auto;border-radius:var(--radius-pill);cursor:pointer;padding:3px;display:flex;justify-content:' + (s.reembolso ? 'flex-end' : 'flex-start') + ';background:' + (s.reembolso ? 'var(--color-royal)' : 'var(--color-line-strong)') + ';border:0;transition:background var(--motion-fast)';
+
+    return {
+      user: { name: 'Aurio Neto', group: 'Tesouraria' },
+      propsShell: { style: { height: '100%', minHeight: 0, overflow: 'hidden', gridTemplateRows: '100%' } },
+      subtitulo: 'Tesouraria lança já consolidado · competência ' + s.competencia + ' · CDD',
+
+      tipos: [['saida', 'Saída'], ['entrada', 'Entrada'], ['transferencia', 'Transferência']].map(([k, label]) => ({
+        label: label, ativo: k === s.tipo, onClick: this.trocarTipo(k),
+        style: k === s.tipo ? estilos.on : estilos.off,
+        styleField: (k === s.tipo ? estilos.on : estilos.off) + ';flex:1;text-align:center;font:var(--text-small);padding:10px 6px;min-height:var(--target-field, 44px)',
+      })),
+      ehTransferencia: ehTransferencia, ehEntrada: ehEntrada, ehMesmaConta: mesmaConta,
+      temGrupo: !ehTransferencia, temCategoria: !ehTransferencia, temCerimonia: !ehTransferencia,
+      temReembolso: ehSaida, temContraparte: !ehTransferencia,
+      notaTipo: ehTransferencia
+        ? 'Dinheiro que sai de uma conta da casa e entra em outra. Não é despesa nem receita: o total não muda, só o lugar onde o dinheiro está.'
+        : ehEntrada ? 'Dinheiro que entrou: doação, venda da lojinha, contribuição de cerimônia.'
+          : 'Dinheiro que saiu para fora da casa.',
+      labelValor: ehTransferencia ? 'Quanto transferir' : ehEntrada ? 'Quanto entrou' : 'Quanto foi',
+      labelDesc: ehTransferencia ? 'Motivo da transferência' : ehEntrada ? 'De onde veio' : 'O que foi',
+      placeholderDesc: ehTransferencia ? 'repasse do caixa da lojinha para o Cora' : ehEntrada ? 'contribuições da cerimônia de agosto' : 'mercado cerimônia mãe divina',
+      labelData: ehTransferencia ? 'Data da transferência' : ehEntrada ? 'Data da entrada' : 'Data do gasto',
+      labelContraparte: ehEntrada ? 'De quem veio' : 'Fornecedor',
+      placeholderContraparte: ehEntrada ? 'quem entregou o dinheiro' : 'quem recebeu o dinheiro',
+      labelConta: ehTransferencia ? 'Conta de origem' : ehEntrada ? 'Conta de entrada' : 'Conta de saída',
+      labelPagamento: ehTransferencia ? 'Forma da transferência' : ehEntrada ? 'Forma de recebimento' : 'Forma de pagamento',
+      notaGrupo: ehEntrada ? 'De onde veio a entrada. Um por lançamento.' : 'Onde o gasto aconteceu. Um por lançamento.',
+      contaDestino: s.contaDestino, contaDestinoLabel: destinoObj.label,
+      onContaDestino: e => this.setState({ contaDestino: e.target.value }),
+      abrirContaDestino: this.abrir('contaDestino'),
+      notaContaDestino: mesmaConta ? 'Escolha uma conta diferente da origem.' : destinoObj.meta || '',
+
+      estados: listaEstados.map(([k, label]) => ({ label: label, onClick: this.irPara(k), style: k === s.estado ? estilos.on : estilos.off })),
+
+      ehFormulario: !ehPermissao,
+      ehPermissao: ehPermissao, ehErro: ehErro, ehTravado: ehTravado, ehRecibo: ehRecibo,
+      mostrarSugestoes: ehIA && pendentes.length > 0,
+      sugestoes: pendentes.map(x => ({ texto: x.texto, onAccept: aceitar(x.k), onDismiss: descartar(x.k) })),
+      aceitarTudo: () => this.setState({ aceitos: ['valor', 'desc', 'fornecedor', 'categoria'], valor: sugeridos.valor, desc: sugeridos.desc, fornecedor: sugeridos.fornecedor, categorias: s.categorias.indexOf(sugeridos.categoria) >= 0 ? s.categorias : s.categorias.concat(sugeridos.categoria) }),
+
+      valor: s.valor, setValor: v => this.setState({ valor: v }),
+      desc: s.desc, onDesc: e => this.setState({ desc: e.target.value }),
+      data: s.data, onData: e => this.setState({ data: e.target.value }),
+      erroData: ehTravado ? 'Cai em julho, período fechado.' : undefined,
+      fornecedor: s.fornecedor, onFornecedor: e => this.setState({ fornecedor: e.target.value }),
+      competencia: s.competencia, contaLabel: contaObj.label, conta: s.conta,
+      grupo: s.grupo, unidade: s.unidade,
+      categoriaLabel: semCategoria ? '— escolher —' : s.categorias.join(', '),
+      catsEscolhidas: s.categorias.map(v => ({ label: v, onRemove: () => this.setState({ categorias: s.categorias.filter(c => c !== v) }) })),
+      catsDisponiveis: listas.categoria.opcoes.filter(o => s.categorias.indexOf(o.value) < 0)
+        .map(o => ({ label: o.label, onAdd: () => this.setState({ categorias: s.categorias.concat(o.value) }) })),
+      opcoesGrupo: listas.grupo.opcoes, opcoesConta: listas.conta.opcoes, opcoesPagamento: listas.pagamento.opcoes,
+      opcoesCerimonia: listas.cerimonia.opcoes, opcoesCompetencia: listas.competencia.opcoes, opcoesUnidade: listas.unidade.opcoes,
+      onGrupo: selecionar('grupo'), onConta: selecionar('conta'), onPagamento: selecionar('pagamento'),
+      onCerimonia: selecionar('cerimonia'), onCompetencia: selecionar('competencia'), onUnidade: selecionar('unidade'),
+      notaConta: ehTransferencia ? 'De onde o dinheiro sai.' : contaObj.meta || '',
+      notaCompetencia: ehTravado ? 'Veio da data do gasto — julho está fechado.' : 'Mês corrente.',
+      pagamento: s.pagamento, cerimonia: s.cerimonia, pessoa: s.pessoa,
+      origemCategoria: ehIA && aceito('categoria') ? 'do cupom' : semCategoria ? 'em branco' : 'você escolheu',
+      origemGrupo: 'último lançamento',
+      origemConta: 'mais usada',
+      origemPagamento: 'padrão da conta',
+      origemCerimonia: s.cerimonia.indexOf('Nenhuma') === 0 ? 'sem vínculo' : 'você escolheu',
+      origemCompetencia: ehTravado ? 'da data do gasto' : 'mês corrente',
+      faltaCategoria: semCategoria && !ehPermissao,
+
+      abrirGrupo: this.abrir('grupo'),
+      abrirConta: this.abrir('conta'), abrirCategoria: this.abrir('categoria'), abrirPagamento: this.abrir('pagamento'),
+      abrirCerimonia: this.abrir('cerimonia'), abrirCompetencia: this.abrir('competencia'), abrirPessoa: this.abrir('pessoa'),
+      abrirUnidade: this.abrir('unidade'),
+      pickerAberto: !!s.picker,
+      pickerTitulo: s.picker ? listas[s.picker].titulo : '',
+      pickerOpcoes: s.picker ? listas[s.picker].opcoes : [],
+      pickerValor: s.picker === 'categoria' ? (s.categorias[s.categorias.length - 1] || null) : s.picker ? s[s.picker] : null,
+      escolher: v => this.escolher(v),
+      fecharPicker: () => this.setState({ picker: null }),
+
+      anexo: s.anexo, temAnexo: !!s.anexo, semAnexo: !s.anexo,
+      anexarComprovante: () => this.setState({ anexo: 'IMG_2481.jpg' }),
+      removerAnexo: () => this.setState({ anexo: null }),
+
+      reembolso: s.reembolso,
+      alternarReembolso: () => this.setState({ reembolso: !s.reembolso }),
+      reembolsoNota: s.reembolso ? 'Vira conta a pagar para ' + s.pessoa + ' — sai do saldo só quando for paga.' : 'Alguém do corpo adiantou do próprio bolso?',
+      estiloTrilho: trilho,
+      estiloBotao: 'width:24px;height:24px;border-radius:50%;background:var(--bg-card);box-shadow:var(--shadow-raised);display:block',
+
+      notaBarra: bloqueado
+        ? 'Enquanto isso não se resolve, dá para salvar como rascunho — nada se perde.'
+        : ehTransferencia
+          ? 'Grava os dois lados de uma vez: saída em ' + contaObj.label + ' e entrada em ' + destinoObj.label + '.'
+          : semCategoria
+            ? 'Nada bloqueia o registro. Sem categoria, grava e marca como não classificado.'
+            : 'Consolidado é definitivo: depois de gravado, só estorno.',
+      bloqueado: bloqueado, motivoBloqueio: motivoBloqueio,
+      registrar: () => this.setState(Object.assign({ estado: 'recibo', picker: null, aceitos: [] }, this.dados('recibo'))),
+      limpar: this.irPara('preenchendo'),
+      desfazer: this.irPara('preenchendo'),
+      recibo: ehTransferencia ? {
+        total: 1500.00,
+        linhas: [
+          { label: 'Tipo', value: 'Transferência entre contas' },
+          { label: 'Motivo', value: 'repasse do caixa da lojinha' },
+          { label: 'Data', value: '28/08/2026' },
+          { label: 'Saiu de', value: 'Nubank Paty' },
+          { label: 'Entrou em', value: 'Cora PJ' },
+          { label: 'Comprovante', value: 'IMG_2481.jpg' },
+        ],
+      } : ehEntrada ? {
+        total: 940.00,
+        linhas: [
+          { label: 'Tipo', value: 'Entrada' },
+          { label: 'De onde veio', value: 'contribuições da cerimônia de agosto' },
+          { label: 'Data', value: '28/08/2026' },
+          { label: 'Grupo', value: 'CDD' },
+          { label: 'Conta de entrada', value: 'Cora PJ · Pix' },
+          { label: 'Cerimônia', value: '22/08 · Mãe Divina' },
+        ],
+      } : {
+        total: 187.40,
+        linhas: [
+          { label: 'O que foi', value: 'mercado cerimônia mãe divina' },
+          { label: 'Data', value: '28/08/2026' },
+          { label: 'Grupo', value: 'Cozinha' },
+          { label: 'Categoria', value: 'Alimentação de cerimônia, Insumos de feitio' },
+          { label: 'Conta', value: 'Cora PJ · Pix' },
+          { label: 'Cerimônia', value: '05/09 · Mãe Divina' },
+          { label: 'Comprovante', value: 'IMG_2481.jpg' },
+        ],
+      },
+
+      nav: [
+        { id: 'painel', label: 'Painel', icon: 'layout-dashboard' },
+        { id: 'registrar', label: 'Registrar lançamento', icon: 'circle-plus' },
+        { id: 'meus', label: 'Meus registros', icon: 'receipt-text' },
+        { section: 'Financeiro' },
+        { id: 'lote', label: 'Verificação de lote', icon: 'sparkles', count: 12 },
+        { id: 'lancamentos', label: 'Lançamentos', icon: 'list' },
+        { id: 'contas', label: 'Contas e fundo', icon: 'landmark' },
+        { id: 'relatorios', label: 'Relatórios', icon: 'chart-no-axes-column' },
+        { id: 'fechamento', label: 'Fechamento', icon: 'lock' },
+        { section: 'Cerimônias' },
+        { id: 'agenda', label: 'Agenda', icon: 'calendar-days' },
+        { id: 'ayahuasca', label: 'Ayahuasca', icon: 'flask-conical' },
+        { section: 'Pessoas' },
+        { id: 'pessoas', label: 'Pessoas', icon: 'users' },
+        { id: 'anamnese', label: 'Anamnese', icon: 'clipboard-list' },
+      ],
+    };
+  }
+}
+
+</script>
+</body>
+</html>

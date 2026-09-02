@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><script src="./ds-base.js"></script><style>body{margin:0;background:var(--bg-app)}
+@keyframes surgir{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}</style></helmet>
+
+<div style="padding:26px 28px 40px;display:flex;flex-direction:column;gap:20px;background:var(--bg-app);min-height:100%">
+
+  <div style="display:flex;flex-direction:column;gap:2px">
+    <div style="font:var(--text-label);text-transform:uppercase;letter-spacing:var(--tracking-label);color:var(--text-field-label)">F-09 · Pessoas · Secretaria</div>
+    <div style="font:var(--text-title-sm);color:var(--text-title)">Quem frequenta a casa, e o que a casa precisa saber</div>
+  </div>
+
+  <div style="display:flex;flex-wrap:wrap;gap:26px;align-items:flex-start">
+
+    <div style="position:relative;flex:0 0 auto;width:1180px;height:1000px;display:flex;border:var(--border-hairline);border-radius:var(--radius-lg);overflow:hidden;background:var(--bg-card);box-shadow:var(--shadow-raised)">
+      <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.AppShell" unit="CDD" user="{{ user }}" nav="{{ nav }}" active-id="pessoas" density="office" style="height:100%;width:100%" dc-props="{{ propsShell }}" hint-size="100%,100%">
+
+        <sc-if value="{{ modoLista }}" hint-placeholder-val="{{ true }}">
+          <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.ScreenHeader" code="F-09 · Pessoas" title="Pessoas" subtitle="{{ subtitulo }}" hint-size="100%,140px"></x-import>
+
+          <div style="padding:18px 24px 26px;display:flex;flex-direction:column;gap:14px;max-width:1020px">
+
+            <sc-if value="{{ temMensagem }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--color-royal-soft);border:1px solid var(--color-royal-border);border-radius:var(--radius);padding:10px 14px">
+                <span style="font:var(--text-body);color:var(--color-royal-deep)">{{ mensagem }}</span>
+                <button type="button" onClick="{{ fecharMensagem }}" style="border:0;background:transparent;color:var(--color-royal-deep);cursor:pointer;font:var(--text-body-strong)">×</button>
+              </div>
+            </sc-if>
+
+            <div style="display:flex;gap:6px">
+              <sc-for list="{{ abas }}" as="a" hint-placeholder-count="3">
+                <button type="button" onClick="{{ a.onClick }}" aria-pressed="{{ a.ativo }}" style="{{ a.estilo }}">{{ a.label }}</button>
+              </sc-for>
+            </div>
+
+            <sc-if value="{{ abaPessoas }}" hint-placeholder-val="{{ true }}">
+            <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px">
+              <sc-for list="{{ kpis }}" as="k" hint-placeholder-count="4">
+                <div style="background:var(--bg-card);border:var(--border-hairline);border-radius:var(--radius);padding:13px 15px;display:flex;flex-direction:column;gap:3px">
+                  <span style="font:var(--text-label);text-transform:uppercase;letter-spacing:var(--tracking-label);color:var(--text-field-label)">{{ k.label }}</span>
+                  <span style="{{ k.estiloValor }}">{{ k.valor }}</span>
+                  <span style="font:var(--text-small);color:var(--text-secondary)">{{ k.nota }}</span>
+                </div>
+              </sc-for>
+            </div>
+
+            <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px">
+              <input type="search" value="{{ busca }}" onChange="{{ onBusca }}" placeholder="buscar por nome, telefone ou cidade" style="flex:1;min-width:230px;min-height:40px;border:1px solid var(--color-line-strong);background:var(--bg-card);border-radius:var(--radius-sm);padding:8px 12px;font:var(--text-small);color:var(--text-primary);outline:none">
+              <sc-for list="{{ filtros }}" as="f" hint-placeholder-count="5">
+                <button type="button" onClick="{{ f.onClick }}" aria-pressed="{{ f.ativo }}" style="{{ f.estilo }}">{{ f.label }}</button>
+              </sc-for>
+              <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Button" variant="primary" icon-name="user-plus" density="office" onClick="{{ abrirNova }}" hint-size="160px,42px">Nova pessoa</x-import>
+            </div>
+
+            <div style="display:grid;grid-template-columns:minmax(0,1fr) 130px 150px 190px 100px;gap:0;border-bottom:1px solid var(--color-line-strong);padding-bottom:8px">
+              <sc-for list="{{ colunas }}" as="col" hint-placeholder-count="5">
+                <span style="{{ col.estilo }}">{{ col.label }}</span>
+              </sc-for>
+            </div>
+
+            <div style="display:flex;flex-direction:column;max-height:430px;overflow:auto">
+              <sc-for list="{{ pessoasVisiveis }}" as="p" hint-placeholder-count="8">
+                <div style="{{ p.estiloLinha }}">
+                  <button type="button" onClick="{{ p.abrir }}" style="min-width:0;display:flex;flex-direction:column;gap:1px;text-align:left;border:0;background:transparent;padding:0;cursor:pointer">
+                    <span style="font:var(--text-body-strong);color:var(--text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ p.nome }}</span>
+                    <span style="font:var(--text-small);color:var(--text-meta);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ p.contato }}</span>
+                  </button>
+                  <span style="font:var(--text-small);color:var(--text-secondary)">{{ p.vinculo }}</span>
+                  <span style="font:var(--text-small);color:var(--text-secondary)">{{ p.ultimaPresenca }}</span>
+                  <span style="display:flex;align-items:center">
+                    <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.StatusBadge" tone="{{ p.anamneseTone }}" hint-size="160px,26px">{{ p.anamneseTexto }}</x-import>
+                  </span>
+                  <span style="display:flex;justify-content:flex-end">
+                    <button type="button" onClick="{{ p.abrir }}" style="font:var(--text-small);border:1px solid var(--color-line);background:var(--bg-card);border-radius:var(--radius-sm);padding:6px 11px;color:var(--text-secondary);cursor:pointer">Abrir</button>
+                  </span>
+                </div>
+              </sc-for>
+              <sc-if value="{{ listaVazia }}" hint-placeholder-val="{{ false }}">
+                <div style="padding:30px 16px;text-align:center;font:var(--text-body);color:var(--text-secondary)">Ninguém encontrado com esse recorte.</div>
+              </sc-if>
+            </div>
+            </sc-if>
+
+            <sc-if value="{{ abaAcesso }}" hint-placeholder-val="{{ false }}">
+              <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px">
+                <sc-for list="{{ kpisAcesso }}" as="k" hint-placeholder-count="4">
+                  <div style="background:var(--bg-card);border:var(--border-hairline);border-radius:var(--radius);padding:13px 15px;display:flex;flex-direction:column;gap:3px">
+                    <span style="font:var(--text-label);text-transform:uppercase;letter-spacing:var(--tracking-label);color:var(--text-field-label)">{{ k.label }}</span>
+                    <span style="{{ k.estiloValor }}">{{ k.valor }}</span>
+                    <span style="font:var(--text-small);color:var(--text-secondary)">{{ k.nota }}</span>
+                  </div>
+                </sc-for>
+              </div>
+
+              <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px">
+                <span style="font:var(--text-small);color:var(--text-secondary)">{{ resumoAcesso }}</span>
+                <span style="margin-left:auto">
+                  <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Button" variant="primary" icon-name="key-round" density="office" onClick="{{ abrirConvite }}" hint-size="180px,42px">Conceder acesso</x-import>
+                </span>
+              </div>
+
+              <div style="display:grid;grid-template-columns:minmax(0,1fr) 180px 120px 150px 270px;gap:0;border-bottom:1px solid var(--color-line-strong);padding-bottom:8px">
+                <sc-for list="{{ colunasAcesso }}" as="col" hint-placeholder-count="5">
+                  <span style="{{ col.estilo }}">{{ col.label }}</span>
+                </sc-for>
+              </div>
+
+              <div style="display:flex;flex-direction:column;max-height:420px;overflow:auto">
+                <sc-for list="{{ usuarios }}" as="u" hint-placeholder-count="6">
+                  <div style="{{ u.estiloLinha }}">
+                    <span style="min-width:0;display:flex;flex-direction:column;gap:1px">
+                      <span style="font:var(--text-body-strong);color:var(--text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ u.nome }}</span>
+                      <span style="font:var(--text-small);color:var(--text-meta);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ u.email }}</span>
+                    </span>
+                    <span style="padding-right:12px">
+                      <select value="{{ u.grupo }}" onChange="{{ u.onGrupo }}" style="width:100%;min-height:36px;border:1px solid var(--color-line-strong);background:var(--bg-card);border-radius:var(--radius-sm);padding:6px 9px;font:var(--text-small);color:var(--text-primary);outline:none">
+                        <sc-for list="{{ opcoesGrupo }}" as="og" hint-placeholder-count="5">
+                          <option value="{{ og }}">{{ og }}</option>
+                        </sc-for>
+                      </select>
+                    </span>
+                    <span style="font:var(--text-small);color:var(--text-secondary)">{{ u.ultimoAcesso }}</span>
+                    <span style="display:flex;align-items:center">
+                      <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.StatusBadge" tone="{{ u.tone }}" hint-size="130px,26px">{{ u.situacao }}</x-import>
+                    </span>
+                    <span style="display:flex;justify-content:flex-end;gap:6px">
+                      <sc-if value="{{ u.ehConvite }}" hint-placeholder-val="{{ false }}">
+                        <button type="button" onClick="{{ u.reenviar }}" style="font:var(--text-small);border:1px solid var(--color-line);background:var(--bg-card);border-radius:var(--radius-sm);padding:6px 10px;color:var(--text-secondary);cursor:pointer">Reenviar</button>
+                      </sc-if>
+                      <button type="button" onClick="{{ u.alternar }}" style="{{ u.estiloAlternar }}">{{ u.textoAlternar }}</button>
+                      <button type="button" onClick="{{ u.revogar }}" style="font:var(--text-small);border:1px solid var(--color-line);background:var(--bg-card);border-radius:var(--radius-sm);padding:6px 10px;color:var(--color-attention);cursor:pointer">Revogar</button>
+                    </span>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ abaGrupos }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;gap:14px;align-items:flex-start">
+                <div style="flex:0 0 280px;display:flex;flex-direction:column;gap:8px">
+                  <sc-for list="{{ grupos }}" as="g" hint-placeholder-count="5">
+                    <button type="button" onClick="{{ g.abrir }}" style="{{ g.estiloCard }}">
+                      <span style="display:flex;align-items:center;gap:8px;width:100%">
+                        <span style="font:var(--text-body-strong);color:var(--text-primary)">{{ g.nome }}</span>
+                        <span style="margin-left:auto;font:var(--text-small);color:var(--text-meta)">{{ g.pessoas }}</span>
+                      </span>
+                      <span style="font:var(--text-small);color:var(--text-secondary);text-align:left">{{ g.descricao }}</span>
+                    </button>
+                  </sc-for>
+                </div>
+
+                <div style="flex:1;min-width:0;background:var(--bg-card);border:var(--border-hairline);border-radius:var(--radius-lg);padding:16px 18px;display:flex;flex-direction:column;gap:12px">
+                  <div style="display:flex;flex-wrap:wrap;align-items:baseline;gap:10px">
+                    <span style="font:var(--text-title-sm);color:var(--text-title)">{{ grupoAtual.nome }}</span>
+                    <span style="font:var(--text-small);color:var(--text-secondary)">{{ grupoAtual.descricao }}</span>
+                  </div>
+                  <span style="font:var(--text-small);color:var(--text-meta)">{{ grupoAtual.nota }}</span>
+
+                  <div style="display:flex;flex-direction:column;gap:8px;max-height:430px;overflow:auto">
+                    <sc-for list="{{ permissoes }}" as="pm" hint-placeholder-count="9">
+                      <div style="{{ pm.estiloLinha }}">
+                        <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+                          <span style="font:var(--text-body-strong);color:var(--text-primary)">{{ pm.titulo }}</span>
+                          <span style="font:var(--text-small);color:var(--text-secondary)">{{ pm.detalhe }}</span>
+                        </span>
+                        <button type="button" onClick="{{ pm.alternar }}" role="switch" aria-checked="{{ pm.ativa }}" style="{{ pm.estiloTrilho }}"><span style="{{ pm.estiloBotao }}"></span></button>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+              </div>
+            </sc-if>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ modoFicha }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:18px 24px 26px;display:flex;flex-direction:column;gap:16px;max-width:1020px;animation:surgir 180ms ease">
+            <button type="button" onClick="{{ voltar }}" style="align-self:flex-start;border:0;background:transparent;padding:0;cursor:pointer;font:var(--text-small);color:var(--color-royal-deep)">‹ Voltar para pessoas</button>
+
+            <sc-if value="{{ temMensagem }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--color-royal-soft);border:1px solid var(--color-royal-border);border-radius:var(--radius);padding:10px 14px">
+                <span style="font:var(--text-body);color:var(--color-royal-deep)">{{ mensagem }}</span>
+                <button type="button" onClick="{{ fecharMensagem }}" style="border:0;background:transparent;color:var(--color-royal-deep);cursor:pointer;font:var(--text-body-strong)">×</button>
+              </div>
+            </sc-if>
+
+            <div style="display:flex;flex-wrap:wrap;align-items:flex-start;gap:14px">
+              <div style="flex:1 1 400px;min-width:0;display:flex;flex-direction:column;gap:5px">
+                <span style="font:var(--text-title-sm);color:var(--text-title)">{{ ficha.nome }}</span>
+                <span style="font:var(--text-body);color:var(--text-secondary)">{{ ficha.resumo }}</span>
+              </div>
+              <div style="display:flex;gap:8px">
+                <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Button" variant="ghost" icon-name="pencil" density="office" onClick="{{ editarAtual }}" hint-size="120px,42px">Editar</x-import>
+                <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Button" variant="ghost" icon-name="send" density="office" onClick="{{ enviarAnamnese }}" hint-size="190px,42px">Enviar anamnese</x-import>
+                <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Button" variant="quiet" icon-name="user-x" density="office" onClick="{{ inativarAtual }}" hint-size="130px,42px">{{ ficha.textoInativar }}</x-import>
+              </div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px">
+              <div style="background:var(--bg-card);border:var(--border-hairline);border-radius:var(--radius-lg);padding:16px 18px;display:flex;flex-direction:column;gap:10px">
+                <span style="font:var(--text-body-strong);color:var(--text-primary)">Cadastro</span>
+                <sc-for list="{{ ficha.dados }}" as="d" hint-placeholder-count="7">
+                  <div style="display:flex;align-items:baseline;gap:10px;padding-bottom:7px;border-bottom:var(--border-hairline)">
+                    <span style="font:var(--text-small);color:var(--text-secondary);width:150px;flex:0 0 auto">{{ d.label }}</span>
+                    <span style="flex:1;min-width:0;font:var(--text-body);color:var(--text-primary)">{{ d.valor }}</span>
+                  </div>
+                </sc-for>
+              </div>
+
+              <div style="background:var(--bg-card);border:var(--border-hairline);border-radius:var(--radius-lg);padding:16px 18px;display:flex;flex-direction:column;gap:10px">
+                <div style="display:flex;align-items:center;gap:10px">
+                  <span style="font:var(--text-body-strong);color:var(--text-primary)">Anamnese</span>
+                  <span style="margin-left:auto">
+                    <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.StatusBadge" tone="{{ ficha.anamneseTone }}" hint-size="160px,26px">{{ ficha.anamneseTexto }}</x-import>
+                  </span>
+                </div>
+                <sc-for list="{{ ficha.pontos }}" as="pt" hint-placeholder-count="2">
+                  <div style="display:flex;align-items:flex-start;gap:9px;padding:9px 11px;border:var(--border-hairline);border-left:3px solid var(--color-attention);border-radius:var(--radius)">
+                    <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+                      <span style="font:var(--text-body-strong);color:var(--text-primary)">{{ pt.titulo }}</span>
+                      <span style="font:var(--text-small);color:var(--text-secondary)">{{ pt.detalhe }}</span>
+                    </span>
+                  </div>
+                </sc-for>
+                <sc-if value="{{ ficha.semPontos }}" hint-placeholder-val="{{ false }}">
+                  <span style="font:var(--text-small);color:var(--text-secondary)">Sem pontos de atenção declarados na última resposta.</span>
+                </sc-if>
+                <span style="font:var(--text-small);color:var(--text-meta);border-top:var(--border-hairline);padding-top:9px">{{ ficha.notaAnamnese }}</span>
+              </div>
+            </div>
+
+            <div style="background:var(--bg-card);border:var(--border-hairline);border-radius:var(--radius-lg);padding:16px 18px;display:flex;flex-direction:column;gap:12px">
+              <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px">
+                <span style="font:var(--text-body-strong);color:var(--text-primary)">Acesso ao sistema</span>
+                <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.StatusBadge" tone="{{ ficha.acessoTone }}" hint-size="150px,26px">{{ ficha.acessoTexto }}</x-import>
+                <span style="margin-left:auto;display:flex;gap:8px">
+                  <sc-if value="{{ ficha.temAcesso }}" hint-placeholder-val="{{ false }}">
+                    <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Button" variant="quiet" density="office" onClick="{{ alternarAcessoAtual }}" hint-size="150px,42px">{{ ficha.textoAlternarAcesso }}</x-import>
+                    <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Button" variant="ghost" density="office" onClick="{{ revogarAcessoAtual }}" hint-size="150px,42px">Revogar acesso</x-import>
+                  </sc-if>
+                  <sc-if value="{{ ficha.semAcesso }}" hint-placeholder-val="{{ true }}">
+                    <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Button" variant="primary" icon-name="key-round" density="office" onClick="{{ concederAcessoAtual }}" hint-size="180px,42px">Conceder acesso</x-import>
+                  </sc-if>
+                </span>
+              </div>
+              <sc-if value="{{ ficha.temAcesso }}" hint-placeholder-val="{{ false }}">
+                <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px">
+                  <div style="display:flex;flex-direction:column">
+                    <label style="font:var(--text-small);color:var(--text-secondary);margin-bottom:5px">Grupo de permissão</label>
+                    <select value="{{ ficha.grupoAcesso }}" onChange="{{ onGrupoFicha }}" style="min-height:42px;border:1px solid var(--color-line-strong);background:var(--bg-card);border-radius:var(--radius-sm);padding:8px 11px;font:var(--text-body);color:var(--text-primary);outline:none">
+                      <sc-for list="{{ opcoesGrupo }}" as="og" hint-placeholder-count="5">
+                        <option value="{{ og }}">{{ og }}</option>
+                      </sc-for>
+                    </select>
+                  </div>
+                  <div style="display:flex;flex-direction:column;gap:4px">
+                    <span style="font:var(--text-small);color:var(--text-secondary)">Login</span>
+                    <span style="font:var(--text-body);color:var(--text-primary)">{{ ficha.emailAcesso }}</span>
+                    <span style="font:var(--text-small);color:var(--text-meta)">{{ ficha.notaAcesso }}</span>
+                  </div>
+                </div>
+              </sc-if>
+              <sc-if value="{{ ficha.semAcesso }}" hint-placeholder-val="{{ true }}">
+                <span style="font:var(--text-small);color:var(--text-secondary)">Esta pessoa está no cadastro da casa, mas não entra no sistema. Conceder acesso cria um convite por e-mail com um grupo de permissão.</span>
+              </sc-if>
+            </div>
+
+            <div style="background:var(--bg-card);border:var(--border-hairline);border-radius:var(--radius-lg);padding:16px 18px;display:flex;flex-direction:column;gap:10px">
+              <span style="font:var(--text-body-strong);color:var(--text-primary)">Anamneses respondidas</span>
+              <div style="display:grid;grid-template-columns:120px 130px minmax(0,1fr) 140px;gap:0;border-bottom:1px solid var(--color-line-strong);padding-bottom:8px">
+                <sc-for list="{{ colunasRespostas }}" as="col" hint-placeholder-count="4">
+                  <span style="{{ col.estilo }}">{{ col.label }}</span>
+                </sc-for>
+              </div>
+              <sc-for list="{{ ficha.respostas }}" as="r" hint-placeholder-count="3">
+                <div style="display:grid;grid-template-columns:120px 130px minmax(0,1fr) 140px;align-items:center;gap:0;padding:9px 0;border-bottom:var(--border-hairline)">
+                  <span style="font:var(--text-small);color:var(--text-secondary);font-variant-numeric:tabular-nums">{{ r.data }}</span>
+                  <span style="font:var(--text-body-strong);color:var(--text-primary)">{{ r.versao }}</span>
+                  <span style="font:var(--text-small);color:var(--text-secondary);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.resumo }}</span>
+                  <span style="display:flex;justify-content:flex-end">
+                    <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.StatusBadge" tone="{{ r.tone }}" hint-size="120px,24px">{{ r.situacao }}</x-import>
+                  </span>
+                </div>
+              </sc-for>
+              <sc-if value="{{ ficha.semRespostas }}" hint-placeholder-val="{{ false }}">
+                <span style="font:var(--text-small);color:var(--text-secondary)">Nunca respondeu a anamnese. Envie o link da versão publicada.</span>
+              </sc-if>
+            </div>
+
+            <div style="background:var(--bg-card);border:var(--border-hairline);border-radius:var(--radius-lg);padding:16px 18px;display:flex;flex-direction:column;gap:10px">
+              <span style="font:var(--text-body-strong);color:var(--text-primary)">Presença nos trabalhos</span>
+              <sc-for list="{{ ficha.presencas }}" as="pr" hint-placeholder-count="4">
+                <div style="display:flex;align-items:center;gap:12px;padding-bottom:8px;border-bottom:var(--border-hairline)">
+                  <span style="font:var(--text-small);color:var(--text-meta);width:96px;flex:0 0 auto;font-variant-numeric:tabular-nums">{{ pr.data }}</span>
+                  <span style="flex:1;min-width:0;font:var(--text-body);color:var(--text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ pr.cerimonia }}</span>
+                  <span style="font:var(--text-small);color:var(--text-secondary)">{{ pr.papel }}</span>
+                  <span style="font:var(--text-amount);letter-spacing:var(--tracking-amount);color:var(--text-primary);font-variant-numeric:tabular-nums">{{ pr.contribuicao }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+      </x-import>
+
+      <sc-if value="{{ temForm }}" hint-placeholder-val="{{ false }}">
+        <div onClick="{{ cancelarForm }}" style="position:absolute;inset:0;background:rgba(20,20,24,0.42);display:flex;align-items:center;justify-content:center;z-index:20;padding:30px">
+          <div onClick="{{ pararPropagacao }}" style="width:600px;max-height:100%;background:var(--bg-card);border-radius:var(--radius-lg);box-shadow:var(--shadow-raised);display:flex;flex-direction:column;overflow:hidden">
+            <div style="padding:16px 20px;border-bottom:var(--border-hairline);display:flex;align-items:center;justify-content:space-between;gap:12px">
+              <span style="font:var(--text-label);letter-spacing:var(--tracking-label);text-transform:uppercase;color:var(--text-field-label)">{{ tituloForm }}</span>
+              <button type="button" aria-label="fechar" onClick="{{ cancelarForm }}" style="width:34px;height:34px;border:1px solid var(--color-line);background:var(--bg-card);border-radius:var(--radius-pill);cursor:pointer;font:var(--text-body-strong);color:var(--text-secondary)">×</button>
+            </div>
+            <div style="flex:1;min-height:0;overflow:auto;padding:18px 20px;display:flex;flex-direction:column;gap:12px">
+              <div style="display:flex;flex-direction:column">
+                <label style="font:var(--text-small);color:var(--text-secondary);margin-bottom:5px">Nome completo</label>
+                <input type="text" value="{{ form.nome }}" onChange="{{ onFormNome }}" style="min-height:42px;border:1px solid var(--color-line-strong);background:var(--bg-card);border-radius:var(--radius-sm);padding:8px 12px;font:var(--text-body);color:var(--text-primary);outline:none">
+              </div>
+              <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px">
+                <div style="display:flex;flex-direction:column">
+                  <label style="font:var(--text-small);color:var(--text-secondary);margin-bottom:5px">Vínculo</label>
+                  <select value="{{ form.vinculo }}" onChange="{{ onFormVinculo }}" style="min-height:42px;border:1px solid var(--color-line-strong);background:var(--bg-card);border-radius:var(--radius-sm);padding:8px 11px;font:var(--text-body);color:var(--text-primary);outline:none">
+                    <option value="Fardado">Fardado</option>
+                    <option value="Frequentador">Frequentador</option>
+                    <option value="Visitante">Visitante</option>
+                  </select>
+                </div>
+                <div style="display:flex;flex-direction:column">
+                  <label style="font:var(--text-small);color:var(--text-secondary);margin-bottom:5px">Telefone</label>
+                  <input type="text" value="{{ form.telefone }}" onChange="{{ onFormTelefone }}" placeholder="(11) 90000-0000" style="min-height:42px;border:1px solid var(--color-line-strong);background:var(--bg-card);border-radius:var(--radius-sm);padding:8px 12px;font:var(--text-body);color:var(--text-primary);outline:none">
+                </div>
+              </div>
+              <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px">
+                <div style="display:flex;flex-direction:column">
+                  <label style="font:var(--text-small);color:var(--text-secondary);margin-bottom:5px">Cidade</label>
+                  <input type="text" value="{{ form.cidade }}" onChange="{{ onFormCidade }}" style="min-height:42px;border:1px solid var(--color-line-strong);background:var(--bg-card);border-radius:var(--radius-sm);padding:8px 12px;font:var(--text-body);color:var(--text-primary);outline:none">
+                </div>
+                <div style="display:flex;flex-direction:column">
+                  <label style="font:var(--text-small);color:var(--text-secondary);margin-bottom:5px">Nascimento</label>
+                  <input type="text" value="{{ form.nascimento }}" onChange="{{ onFormNascimento }}" placeholder="12/04/1988" style="min-height:42px;border:1px solid var(--color-line-strong);background:var(--bg-card);border-radius:var(--radius-sm);padding:8px 12px;font:var(--text-body);color:var(--text-primary);outline:none">
+                </div>
+              </div>
+              <div style="display:flex;flex-direction:column">
+                <label style="font:var(--text-small);color:var(--text-secondary);margin-bottom:5px">Contato de emergência</label>
+                <input type="text" value="{{ form.emergencia }}" onChange="{{ onFormEmergencia }}" placeholder="nome e telefone" style="min-height:42px;border:1px solid var(--color-line-strong);background:var(--bg-card);border-radius:var(--radius-sm);padding:8px 12px;font:var(--text-body);color:var(--text-primary);outline:none">
+              </div>
+              <div style="display:flex;align-items:center;gap:12px;background:var(--bg-sunken);border:var(--border-hairline);border-radius:var(--radius);padding:11px 13px">
+                <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:1px">
+                  <span style="font:var(--text-body-strong);color:var(--text-primary)">Enviar anamnese ao salvar</span>
+                  <span style="font:var(--text-small);color:var(--text-secondary)">manda o link da versão publicada por WhatsApp</span>
+                </span>
+                <button type="button" onClick="{{ alternarEnvio }}" role="switch" aria-checked="{{ form.enviar }}" style="{{ estiloTrilhoEnvio }}"><span style="{{ estiloBotaoEnvio }}"></span></button>
+              </div>
+
+              <div style="display:flex;align-items:center;gap:12px;background:var(--bg-sunken);border:var(--border-hairline);border-radius:var(--radius);padding:11px 13px">
+                <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:1px">
+                  <span style="font:var(--text-body-strong);color:var(--text-primary)">Dar acesso ao sistema</span>
+                  <span style="font:var(--text-small);color:var(--text-secondary)">cria um convite por e-mail com grupo de permissão</span>
+                </span>
+                <button type="button" onClick="{{ alternarAcessoForm }}" role="switch" aria-checked="{{ form.acesso }}" style="{{ estiloTrilhoAcesso }}"><span style="{{ estiloBotaoAcesso }}"></span></button>
+              </div>
+
+              <sc-if value="{{ form.acesso }}" hint-placeholder-val="{{ false }}">
+                <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px">
+                  <div style="display:flex;flex-direction:column">
+                    <label style="font:var(--text-small);color:var(--text-secondary);margin-bottom:5px">E-mail de acesso</label>
+                    <input type="text" value="{{ form.email }}" onChange="{{ onFormEmail }}" placeholder="nome@exemplo.com" style="min-height:42px;border:1px solid var(--color-line-strong);background:var(--bg-card);border-radius:var(--radius-sm);padding:8px 12px;font:var(--text-body);color:var(--text-primary);outline:none">
+                  </div>
+                  <div style="display:flex;flex-direction:column">
+                    <label style="font:var(--text-small);color:var(--text-secondary);margin-bottom:5px">Grupo de permissão</label>
+                    <select value="{{ form.grupo }}" onChange="{{ onFormGrupo }}" style="min-height:42px;border:1px solid var(--color-line-strong);background:var(--bg-card);border-radius:var(--radius-sm);padding:8px 11px;font:var(--text-body);color:var(--text-primary);outline:none">
+                      <sc-for list="{{ opcoesGrupo }}" as="og" hint-placeholder-count="5">
+                        <option value="{{ og }}">{{ og }}</option>
+                      </sc-for>
+                    </select>
+                  </div>
+                </div>
+              </sc-if>
+            </div>
+            <div style="padding:14px 20px;border-top:var(--border-hairline);display:flex;gap:10px;justify-content:flex-end">
+              <button type="button" onClick="{{ cancelarForm }}" style="font:var(--text-body);padding:9px 16px;min-height:42px;border-radius:var(--radius-sm);cursor:pointer;border:1px solid var(--color-line);background:var(--bg-card);color:var(--text-secondary)">Cancelar</button>
+              <button type="button" onClick="{{ salvarForm }}" style="{{ estiloSalvar }}">{{ textoSalvar }}</button>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+    </div>
+
+    <div style="flex:0 0 auto;display:flex;flex-direction:column;gap:12px;align-items:center">
+      <div style="position:relative;width:392px;height:812px;display:flex;border:10px solid var(--color-ink-brand);border-radius:38px;overflow:hidden;background:var(--bg-app);box-shadow:var(--shadow-raised)">
+        <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.AppShell" unit="CDD" user="{{ user }}" nav="{{ nav }}" active-id="pessoas" density="field" style="height:100%;width:100%" dc-props="{{ propsShell }}" hint-size="100%,100%">
+          <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.ScreenHeader" code="F-09" title="Pessoas" density="field" hint-size="100%,80px"></x-import>
+
+          <div style="padding:14px 16px 20px;display:flex;flex-direction:column;gap:12px;min-width:0">
+            <sc-if value="{{ modoLista }}" hint-placeholder-val="{{ true }}">
+              <input type="search" value="{{ busca }}" onChange="{{ onBusca }}" placeholder="buscar pessoa" style="min-height:44px;border:1px solid var(--color-line-strong);background:var(--bg-card);border-radius:var(--radius-sm);padding:8px 12px;font:var(--text-body);color:var(--text-primary);outline:none">
+              <div style="display:flex;gap:6px;flex-wrap:wrap">
+                <sc-for list="{{ filtros }}" as="f" hint-placeholder-count="5">
+                  <button type="button" onClick="{{ f.onClick }}" aria-pressed="{{ f.ativo }}" style="{{ f.estiloField }}">{{ f.label }}</button>
+                </sc-for>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <sc-for list="{{ pessoasVisiveis }}" as="p" hint-placeholder-count="6">
+                  <button type="button" onClick="{{ p.abrir }}" style="{{ p.estiloLinhaField }}">
+                    <span style="display:flex;align-items:center;gap:10px">
+                      <span style="flex:1;min-width:0;font:var(--text-body-strong);color:var(--text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left">{{ p.nome }}</span>
+                      <span style="font:var(--text-small);color:var(--text-meta)">{{ p.vinculo }}</span>
+                    </span>
+                    <span style="display:flex;align-items:center;gap:8px">
+                      <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.StatusBadge" tone="{{ p.anamneseTone }}" hint-size="150px,24px">{{ p.anamneseTexto }}</x-import>
+                    </span>
+                  </button>
+                </sc-for>
+              </div>
+              <button type="button" onClick="{{ abrirNova }}" style="min-height:46px;font:var(--text-body-strong);border-radius:var(--radius-sm);cursor:pointer;border:1px solid var(--color-royal-border);background:var(--color-royal-soft);color:var(--color-royal-deep)">Nova pessoa</button>
+            </sc-if>
+
+            <sc-if value="{{ modoFicha }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;flex-direction:column;gap:12px;animation:surgir 180ms ease">
+                <button type="button" onClick="{{ voltar }}" style="align-self:flex-start;border:0;background:transparent;padding:0;cursor:pointer;font:var(--text-small);color:var(--color-royal-deep)">‹ Pessoas</button>
+                <span style="font:var(--text-title-sm);color:var(--text-title)">{{ ficha.nome }}</span>
+                <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.StatusBadge" tone="{{ ficha.anamneseTone }}" hint-size="160px,26px">{{ ficha.anamneseTexto }}</x-import>
+                <div style="background:var(--bg-card);border:var(--border-hairline);border-radius:var(--radius);padding:12px 14px;display:flex;flex-direction:column;gap:8px">
+                  <sc-for list="{{ ficha.dados }}" as="d" hint-placeholder-count="6">
+                    <div style="display:flex;gap:10px">
+                      <span style="font:var(--text-small);color:var(--text-secondary);width:120px;flex:0 0 auto">{{ d.label }}</span>
+                      <span style="flex:1;min-width:0;font:var(--text-body);color:var(--text-primary)">{{ d.valor }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+                <button type="button" onClick="{{ enviarAnamnese }}" style="min-height:46px;font:var(--text-body-strong);border-radius:var(--radius-sm);cursor:pointer;border:1px solid var(--color-royal-border);background:var(--color-royal-soft);color:var(--color-royal-deep)">Enviar anamnese</button>
+              </div>
+            </sc-if>
+          </div>
+        </x-import>
+      </div>
+      <div style="font:var(--text-small);color:var(--text-secondary);max-width:392px;text-align:center">Campo: buscar alguém e ver se a anamnese está em dia.</div>
+    </div>
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1680,&quot;height&quot;:1120}}">
+const PESSOAS = [
+  { id: 1, nome: 'Ana Beatriz Cordeiro', vinculo: 'Fardado', desde: 2014, telefone: '(11) 98812-4410', cidade: 'São Paulo · SP', nascimento: '12/04/1988', emergencia: 'Marcos Cordeiro · (11) 99110-2233', anamnese: 'em dia', respondidaEm: '14/08/2026', versao: 'v3', pontos: [['Uso contínuo de sertralina', '50 mg pela manhã, com acompanhamento psiquiátrico desde 2021']], ativa: true },
+  { id: 2, nome: 'Carlos Menezes', vinculo: 'Fardado', desde: 2009, telefone: '(11) 99740-1187', cidade: 'Cotia · SP', nascimento: '03/09/1975', emergencia: 'Rita Menezes · (11) 98800-1010', anamnese: 'em dia', respondidaEm: '02/07/2026', versao: 'v3', pontos: [['Pressão alta controlada', 'losartana 50 mg, acompanhamento semestral']], ativa: true },
+  { id: 3, nome: 'Rosa Silveira', vinculo: 'Fardado', desde: 2016, telefone: '(11) 97733-8890', cidade: 'Ibiúna · SP', nascimento: '27/01/1962', emergencia: 'Chico Aguiar · (11) 98123-4567', anamnese: 'em dia', respondidaEm: '20/06/2026', versao: 'v3', pontos: [], ativa: true },
+  { id: 4, nome: 'Eduardo Pires', vinculo: 'Frequentador', desde: 2022, telefone: '(11) 98120-7781', cidade: 'São Paulo · SP', nascimento: '19/11/1993', emergencia: 'Silvia Pires · (11) 99933-1200', anamnese: 'vencida', respondidaEm: '11/03/2024', versao: 'v2', pontos: [['Histórico de crise de ansiedade', 'declarado na v2; precisa reconfirmar na versão atual']], ativa: true },
+  { id: 5, nome: 'Marina Tavares', vinculo: 'Visitante', desde: 2026, telefone: '(21) 99811-4520', cidade: 'Rio de Janeiro · RJ', nascimento: '05/06/1991', emergencia: 'Luiz Tavares · (21) 98800-4411', anamnese: 'ausente', respondidaEm: null, versao: null, pontos: [], ativa: true },
+  { id: 6, nome: 'Sérgio Bittencourt', vinculo: 'Fardado', desde: 2011, telefone: '(11) 99180-3322', cidade: 'Vargem Grande · SP', nascimento: '30/08/1968', emergencia: 'Neide Bittencourt · (11) 98811-0099', anamnese: 'em dia', respondidaEm: '01/08/2026', versao: 'v3', pontos: [['Cirurgia cardíaca em 2023', 'liberado pelo cardiologista; evitar jejum prolongado']], ativa: true },
+  { id: 7, nome: 'Helena Duarte', vinculo: 'Frequentador', desde: 2019, telefone: '(11) 98444-2210', cidade: 'São Roque · SP', nascimento: '22/02/1996', emergencia: 'Paulo Duarte · (11) 99000-8877', anamnese: 'em dia', respondidaEm: '28/07/2026', versao: 'v3', pontos: [['Gestante — 5º mês', 'orientada a não tomar até o parto; participa fora do salão']], ativa: true },
+  { id: 8, nome: 'Tobias Aguiar', vinculo: 'Fardado', desde: 2007, telefone: '(11) 97001-1234', cidade: 'Ibiúna · SP', nascimento: '14/07/1959', emergencia: 'Secretaria da casa', anamnese: 'em dia', respondidaEm: '19/06/2026', versao: 'v3', pontos: [], ativa: true },
+  { id: 9, nome: 'Bruna Camargo', vinculo: 'Visitante', desde: 2026, telefone: '(19) 98899-6655', cidade: 'Campinas · SP', nascimento: '08/12/1999', emergencia: 'Tais Camargo · (19) 99888-1122', anamnese: 'ausente', respondidaEm: null, versao: null, pontos: [], ativa: true },
+  { id: 10, nome: 'Otávio Lins', vinculo: 'Frequentador', desde: 2021, telefone: '(11) 99666-3311', cidade: 'São Paulo · SP', nascimento: '17/05/1984', emergencia: 'Ana Lins · (11) 98777-2211', anamnese: 'vencida', respondidaEm: '09/02/2024', versao: 'v2', pontos: [['Diabetes tipo 2', 'em uso de insulina; declarado na v2']], ativa: false },
+];
+
+const PERMISSOES = [
+  ['financeiro.lancar', 'Registrar lançamentos', 'abre a tela de registro e grava gastos, entradas e transferências'],
+  ['financeiro.consolidar', 'Consolidar e conferir', 'aprova a fila de verificação e grava consolidado'],
+  ['financeiro.estornar', 'Estornar lançamentos', 'reverte um lançamento já consolidado, com motivo'],
+  ['financeiro.fechar', 'Fechar e reabrir período', 'trava o mês e reabre com motivo registrado'],
+  ['contas.gerenciar', 'Gerenciar contas e fundos', 'cria, edita e inativa contas e reservas'],
+  ['relatorios.ver', 'Ver relatórios', 'abre o painel de relatórios e exporta'],
+  ['cerimonias.gerenciar', 'Gerenciar cerimônias', 'abre, edita e cancela trabalhos na agenda'],
+  ['pessoas.gerenciar', 'Gerenciar pessoas', 'cadastra e edita pessoas da casa'],
+  ['anamnese.ver', 'Ver respostas de anamnese', 'lê a ficha de saúde completa de cada pessoa'],
+  ['anamnese.gerenciar', 'Gerenciar formulário de anamnese', 'cria versões, edita perguntas e publica'],
+  ['acesso.gerenciar', 'Gerenciar acessos', 'concede, suspende e revoga acesso ao sistema'],
+];
+
+const GRUPOS_INICIAIS = [
+  { id: 'direcao', nome: 'Direção', descricao: 'decide, autoriza exceções e reabre períodos', permissoes: ['financeiro.lancar', 'financeiro.consolidar', 'financeiro.estornar', 'financeiro.fechar', 'contas.gerenciar', 'relatorios.ver', 'cerimonias.gerenciar', 'pessoas.gerenciar', 'anamnese.ver', 'anamnese.gerenciar', 'acesso.gerenciar'] },
+  { id: 'tesouraria', nome: 'Tesouraria', descricao: 'lança, confere, concilia e fecha o mês', permissoes: ['financeiro.lancar', 'financeiro.consolidar', 'financeiro.estornar', 'financeiro.fechar', 'contas.gerenciar', 'relatorios.ver'] },
+  { id: 'secretaria', nome: 'Secretaria', descricao: 'cuida do cadastro, das anamneses e da agenda', permissoes: ['financeiro.lancar', 'cerimonias.gerenciar', 'pessoas.gerenciar', 'anamnese.ver', 'anamnese.gerenciar', 'relatorios.ver'] },
+  { id: 'rapido', nome: 'Registro rápido', descricao: 'lança do celular; tudo entra como a conferir', permissoes: ['financeiro.lancar'] },
+  { id: 'guardiao', nome: 'Guardião', descricao: 'vê a lista de preparo e os pontos de atenção do trabalho', permissoes: ['cerimonias.gerenciar'] },
+  { id: 'leitura', nome: 'Leitura', descricao: 'só consulta relatórios, não altera nada', permissoes: ['relatorios.ver'] },
+];
+
+const ACESSOS_INICIAIS = {
+  1: { email: 'ana.cordeiro@cdd.org', grupo: 'Secretaria', situacao: 'ativo', ultimoAcesso: 'hoje, 08:41' },
+  2: { email: 'carlos.menezes@cdd.org', grupo: 'Tesouraria', situacao: 'ativo', ultimoAcesso: 'ontem, 19:12' },
+  3: { email: 'rosa.silveira@cdd.org', grupo: 'Registro rápido', situacao: 'ativo', ultimoAcesso: '28/08, 14:22' },
+  6: { email: 'sergio.bittencourt@cdd.org', grupo: 'Direção', situacao: 'ativo', ultimoAcesso: '30/08, 09:05' },
+  8: { email: 'tobias.aguiar@cdd.org', grupo: 'Guardião', situacao: 'convite', ultimoAcesso: 'nunca entrou' },
+  10: { email: 'otavio.lins@cdd.org', grupo: 'Leitura', situacao: 'suspenso', ultimoAcesso: '11/04, 21:33' },
+};
+
+class Component extends DCLogic {
+  state = { aba: 'pessoas', busca: '', filtro: 'todos', fichaId: null, form: null, mensagem: null, pessoas: PESSOAS, acessos: ACESSOS_INICIAIS, grupos: GRUPOS_INICIAIS, grupoSel: 'tesouraria' };
+
+  acessoInfo(situacao) {
+    return situacao === 'ativo' ? { label: 'Acesso ativo', tone: 'confirmed' }
+      : situacao === 'convite' ? { label: 'Convite pendente', tone: 'suggest' }
+        : { label: 'Suspenso', tone: 'pending' };
+  }
+
+  mudarGrupo(id) {
+    return e => this.setState(s => ({ acessos: Object.assign({}, s.acessos, { [id]: Object.assign({}, s.acessos[id], { grupo: e.target.value }) }), mensagem: 'Grupo de permissão atualizado.' }));
+  }
+
+  alternarAcesso(id) {
+    return () => this.setState(s => {
+      const a = s.acessos[id];
+      const nova = a.situacao === 'suspenso' ? 'ativo' : 'suspenso';
+      return { acessos: Object.assign({}, s.acessos, { [id]: Object.assign({}, a, { situacao: nova }) }), mensagem: nova === 'suspenso' ? 'Acesso suspenso. A pessoa continua no cadastro da casa.' : 'Acesso reativado.' };
+    });
+  }
+
+  revogarAcesso(id) {
+    return () => this.setState(s => {
+      const copia = Object.assign({}, s.acessos);
+      delete copia[id];
+      return { acessos: copia, mensagem: 'Acesso revogado. O histórico do que essa pessoa lançou continua intacto.' };
+    });
+  }
+
+  concederAcesso(id, email, grupo) {
+    this.setState(s => ({
+      acessos: Object.assign({}, s.acessos, { [id]: { email: email, grupo: grupo || 'Leitura', situacao: 'convite', ultimoAcesso: 'nunca entrou' } }),
+      mensagem: 'Convite enviado para ' + email + '. O acesso vale quando a pessoa criar a senha.',
+    }));
+  }
+
+  alternarPermissao(chave) {
+    return () => this.setState(s => ({
+      grupos: s.grupos.map(g => g.id !== s.grupoSel ? g : Object.assign({}, g, {
+        permissoes: g.permissoes.indexOf(chave) >= 0 ? g.permissoes.filter(p => p !== chave) : g.permissoes.concat(chave),
+      })),
+    }));
+  }
+
+  pararPropagacao = e => e.stopPropagation();
+  voltar = () => this.setState({ fichaId: null });
+  cancelarForm = () => this.setState({ form: null });
+  campoForm(campo) { return e => this.setState(s => ({ form: Object.assign({}, s.form, { [campo]: e.target.value }) })); }
+  alternarEnvio = () => this.setState(s => ({ form: Object.assign({}, s.form, { enviar: !s.form.enviar }) }));
+
+  abrirNova = () => this.setState({ form: { editId: null, nome: '', vinculo: 'Frequentador', telefone: '', cidade: '', nascimento: '', emergencia: '', enviar: true, acesso: false, email: '', grupo: 'Registro rápido' } });
+  alternarAcessoForm = () => this.setState(s => ({ form: Object.assign({}, s.form, { acesso: !s.form.acesso }) }));
+  abrirConvite = () => this.setState({ mensagem: 'Escolha a pessoa na aba Pessoas da casa e use "Conceder acesso" na ficha — o acesso sempre nasce de um cadastro.' });
+
+  editarAtual = () => {
+    const p = this.state.pessoas.find(x => x.id === this.state.fichaId);
+    if (!p) return;
+    this.setState({ form: { editId: p.id, nome: p.nome, vinculo: p.vinculo, telefone: p.telefone, cidade: p.cidade, nascimento: p.nascimento, emergencia: p.emergencia, enviar: false, acesso: false, email: '', grupo: 'Registro rápido' } });
+  };
+
+  salvarForm = () => {
+    const f = this.state.form;
+    if (!f || !f.nome.trim()) return;
+    this.setState(s => {
+      if (f.editId != null) {
+        return { form: null, mensagem: 'Cadastro atualizado.', pessoas: s.pessoas.map(p => p.id === f.editId ? Object.assign({}, p, { nome: f.nome, vinculo: f.vinculo, telefone: f.telefone, cidade: f.cidade, nascimento: f.nascimento, emergencia: f.emergencia }) : p) };
+      }
+      const id = Date.now();
+      const nova = { id: id, nome: f.nome, vinculo: f.vinculo, desde: 2026, telefone: f.telefone, cidade: f.cidade, nascimento: f.nascimento, emergencia: f.emergencia, anamnese: 'ausente', respondidaEm: null, versao: null, pontos: [], ativa: true };
+      const acessos = f.acesso && f.email ? Object.assign({}, s.acessos, { [id]: { email: f.email, grupo: f.grupo, situacao: 'convite', ultimoAcesso: 'nunca entrou' } }) : s.acessos;
+      const partes = [f.enviar ? 'link da anamnese enviado' : null, f.acesso && f.email ? 'convite de acesso enviado' : null].filter(Boolean);
+      return { form: null, pessoas: s.pessoas.concat(nova), acessos: acessos, mensagem: 'Pessoa cadastrada' + (partes.length ? ' · ' + partes.join(' · ') : '') + '.' };
+    });
+  };
+
+  inativarAtual = () => {
+    const id = this.state.fichaId;
+    const p = this.state.pessoas.find(x => x.id === id);
+    this.setState(s => ({
+      pessoas: s.pessoas.map(x => x.id === id ? Object.assign({}, x, { ativa: !x.ativa }) : x),
+      mensagem: p && p.ativa ? 'Cadastro inativado. Nada é apagado: o histórico continua na ficha.' : 'Cadastro reativado.',
+    }));
+  };
+
+  enviarAnamnese = () => this.setState({ mensagem: 'Link da anamnese v3 enviado por WhatsApp. A resposta chega direto na ficha.' });
+
+  anamneseInfo(p) {
+    return p.anamnese === 'em dia' ? { texto: 'Em dia · ' + p.versao, tone: 'confirmed' }
+      : p.anamnese === 'vencida' ? { texto: 'Vencida · ' + p.versao, tone: 'suggest' }
+        : { texto: 'Sem anamnese', tone: 'pending' };
+  }
+
+  respostasDe(p) {
+    if (!p.respondidaEm) return [];
+    const atual = { data: p.respondidaEm, versao: p.versao, resumo: p.pontos.length ? p.pontos.map(pt => pt[0]).join(' · ') : 'sem pontos de atenção', situacao: p.anamnese === 'em dia' ? 'Válida' : 'Vencida', tone: p.anamnese === 'em dia' ? 'confirmed' : 'suggest' };
+    const anteriores = p.versao === 'v3'
+      ? [{ data: '18/05/2024', versao: 'v2', resumo: 'respondida na versão anterior do formulário', situacao: 'Substituída', tone: 'neutral' }]
+      : [{ data: '02/11/2022', versao: 'v1', resumo: 'primeira resposta, formulário curto', situacao: 'Substituída', tone: 'neutral' }];
+    return [atual].concat(anteriores);
+  }
+
+  presencasDe(p) {
+    const base = [
+      { data: '22/08/2026', cerimonia: 'Mãe Divina · agosto', papel: 'participante', contribuicao: 'R$ 60,00' },
+      { data: '25/07/2026', cerimonia: 'São Miguel · julho', papel: p.vinculo === 'Fardado' ? 'cantoria' : 'participante', contribuicao: 'R$ 60,00' },
+      { data: '20/06/2026', cerimonia: 'São João · junho', papel: 'participante', contribuicao: 'R$ 40,00' },
+      { data: '23/05/2026', cerimonia: 'Concentração de maio', papel: 'participante', contribuicao: 'isento' },
+    ];
+    return p.vinculo === 'Visitante' ? base.slice(0, 1) : base;
+  }
+
+  renderVals() {
+    const s = this.state;
+    const busca = s.busca.trim().toLowerCase();
+    const lista = s.pessoas.filter(p => {
+      if (s.filtro === 'inativos') { if (p.ativa) return false; }
+      else if (!p.ativa) return false;
+      if (s.filtro === 'fardados' && p.vinculo !== 'Fardado') return false;
+      if (s.filtro === 'visitantes' && p.vinculo !== 'Visitante') return false;
+      if (s.filtro === 'pendentes' && p.anamnese === 'em dia') return false;
+      if (busca && [p.nome, p.telefone, p.cidade].join(' ').toLowerCase().indexOf(busca) < 0) return false;
+      return true;
+    });
+
+    const ativos = s.pessoas.filter(p => p.ativa);
+    const chipOn = 'font:var(--text-small);padding:8px 13px;min-height:38px;border-radius:var(--radius-pill);cursor:pointer;border:1px solid var(--color-royal-border);background:var(--color-royal-soft);color:var(--color-royal-deep)';
+    const chipOff = 'font:var(--text-small);padding:8px 13px;min-height:38px;border-radius:var(--radius-pill);cursor:pointer;border:1px solid var(--color-line);background:var(--bg-card);color:var(--text-secondary)';
+    const fonteAmount = 'font:var(--text-amount-lg);letter-spacing:var(--tracking-amount);font-variant-numeric:tabular-nums';
+
+    const idsAcesso = Object.keys(s.acessos);
+    const acessosInativos = idsAcesso.filter(id => {
+      const pe = s.pessoas.find(x => String(x.id) === String(id));
+      return pe && !pe.ativa;
+    }).length;
+    const plural = (n, um, muitos) => n + ' ' + (n === 1 ? um : muitos);
+    const grupoSel = s.grupos.find(g => g.id === s.grupoSel) || s.grupos[0];
+    const p = s.fichaId != null ? s.pessoas.find(x => x.id === s.fichaId) : null;
+    const acessoFicha = p ? s.acessos[p.id] : null;
+    const f = s.form;
+    const podeSalvar = !!(f && f.nome && f.nome.trim());
+    const infoFicha = p ? this.anamneseInfo(p) : null;
+
+    return {
+      user: { name: 'Aurio Neto', group: 'Tesouraria' },
+      propsShell: { style: { height: '100%', minHeight: 0, overflow: 'hidden', gridTemplateRows: '100%' } },
+      subtitulo: 'Cadastro, anamnese e presença de quem frequenta · CDD',
+
+      temMensagem: !!s.mensagem, mensagem: s.mensagem, fecharMensagem: () => this.setState({ mensagem: null }),
+      modoLista: !p, modoFicha: !!p, voltar: this.voltar,
+
+      abas: [['pessoas', 'Pessoas da casa'], ['acesso', 'Acesso ao sistema'], ['grupos', 'Grupos e permissões']].map(([k, label]) => ({
+        label: label, ativo: k === s.aba, estilo: k === s.aba ? chipOn : chipOff,
+        onClick: () => this.setState({ aba: k, mensagem: null }),
+      })),
+      abaPessoas: s.aba === 'pessoas', abaAcesso: s.aba === 'acesso', abaGrupos: s.aba === 'grupos',
+      opcoesGrupo: s.grupos.map(g => g.nome),
+
+      kpisAcesso: [
+        { label: 'Com acesso', valor: String(idsAcesso.length), nota: acessosInativos === 0 ? 'todos com cadastro ativo' : acessosInativos + (acessosInativos === 1 ? ' com cadastro inativo' : ' com cadastro inativo'), cor: 'var(--color-royal-deep)' },
+        { label: 'Ativos', valor: String(idsAcesso.filter(id => s.acessos[id].situacao === 'ativo').length), nota: 'entram normalmente', cor: 'var(--color-confirmed)' },
+        { label: 'Convites pendentes', valor: String(idsAcesso.filter(id => s.acessos[id].situacao === 'convite').length), nota: 'ainda não criaram senha', cor: 'var(--color-pending)' },
+        { label: 'Suspensos', valor: String(idsAcesso.filter(id => s.acessos[id].situacao === 'suspenso').length), nota: 'acesso bloqueado, cadastro mantido', cor: 'var(--color-attention)' },
+      ].map(k => ({ label: k.label, valor: k.valor, nota: k.nota, estiloValor: fonteAmount + ';color:' + k.cor })),
+      resumoAcesso: 'Só quem está no cadastro da casa pode ter acesso. Revogar não apaga o histórico do que a pessoa lançou.',
+      abrirConvite: this.abrirConvite,
+      colunasAcesso: ['Usuário', 'Grupo', 'Último acesso', 'Situação', ''].map((label, i) => ({
+        label: label,
+        estilo: 'font:var(--text-label);letter-spacing:var(--tracking-label);text-transform:uppercase;color:var(--text-field-label);text-align:' + (i === 4 ? 'right' : 'left'),
+      })),
+      usuarios: idsAcesso.map(id => {
+        const pe = s.pessoas.find(x => String(x.id) === String(id)) || { nome: 'Cadastro removido' };
+        const a = s.acessos[id];
+        const info = this.acessoInfo(a.situacao);
+        return {
+          nome: pe.nome, email: a.email, grupo: a.grupo, ultimoAcesso: a.ultimoAcesso,
+          situacao: info.label, tone: info.tone, ehConvite: a.situacao === 'convite',
+          onGrupo: this.mudarGrupo(id),
+          alternar: this.alternarAcesso(id), revogar: this.revogarAcesso(id),
+          reenviar: () => this.setState({ mensagem: 'Convite reenviado para ' + a.email + '.' }),
+          textoAlternar: a.situacao === 'suspenso' ? 'Reativar' : 'Suspender',
+          estiloAlternar: 'font:var(--text-small);border:1px solid var(--color-line);background:var(--bg-card);border-radius:var(--radius-sm);padding:6px 10px;cursor:pointer;color:' + (a.situacao === 'suspenso' ? 'var(--color-confirmed)' : 'var(--text-secondary)'),
+          estiloLinha: 'display:grid;grid-template-columns:minmax(0,1fr) 180px 120px 150px 270px;align-items:center;gap:0;padding:10px 0;border-bottom:var(--border-hairline);opacity:' + (a.situacao === 'suspenso' ? 0.65 : 1),
+        };
+      }),
+
+      grupos: s.grupos.map(g => ({
+        nome: g.nome, descricao: g.descricao,
+        pessoas: plural(idsAcesso.filter(id => s.acessos[id].grupo === g.nome).length, 'pessoa', 'pessoas'),
+        abrir: () => this.setState({ grupoSel: g.id }),
+        estiloCard: 'display:flex;flex-direction:column;gap:4px;padding:12px 14px;border:1px solid ' + (g.id === s.grupoSel ? 'var(--color-royal-border)' : 'var(--color-line)') + ';border-radius:var(--radius);background:' + (g.id === s.grupoSel ? 'var(--bg-brand)' : 'var(--bg-card)') + ';cursor:pointer;width:100%;text-align:left',
+      })),
+      grupoAtual: {
+        nome: grupoSel.nome, descricao: grupoSel.descricao,
+        nota: grupoSel.permissoes.length + ' de ' + PERMISSOES.length + ' permissões ligadas · ' + plural(idsAcesso.filter(id => s.acessos[id].grupo === grupoSel.nome).length, 'pessoa neste grupo', 'pessoas neste grupo'),
+      },
+      permissoes: PERMISSOES.map(([chave, titulo, detalhe]) => {
+        const ativa = grupoSel.permissoes.indexOf(chave) >= 0;
+        return {
+          titulo: titulo, detalhe: detalhe, ativa: ativa,
+          alternar: this.alternarPermissao(chave),
+          estiloLinha: 'display:flex;align-items:center;gap:12px;padding:11px 13px;border:var(--border-hairline);border-left:3px solid ' + (ativa ? 'var(--color-confirmed)' : 'var(--color-line-strong)') + ';border-radius:var(--radius);background:var(--bg-card)',
+          estiloTrilho: 'width:46px;height:26px;flex:0 0 auto;border-radius:var(--radius-pill);border:1px solid ' + (ativa ? 'var(--color-royal-border)' : 'var(--color-line-strong)') + ';background:' + (ativa ? 'var(--color-royal-soft)' : 'var(--bg-sunken)') + ';cursor:pointer;display:flex;align-items:center;padding:2px;justify-content:' + (ativa ? 'flex-end' : 'flex-start'),
+          estiloBotao: 'width:20px;height:20px;border-radius:var(--radius-pill);background:' + (ativa ? 'var(--color-royal)' : 'var(--color-line-strong)') + ';display:block',
+        };
+      }),
+
+      kpis: [
+        { label: 'Cadastros ativos', valor: String(ativos.length), nota: s.pessoas.filter(x => !x.ativa).length + ' inativos', cor: 'var(--color-royal-deep)' },
+        { label: 'Fardados', valor: String(ativos.filter(x => x.vinculo === 'Fardado').length), nota: 'corpo da unidade', cor: 'var(--text-primary)' },
+        { label: 'Anamnese em dia', valor: String(ativos.filter(x => x.anamnese === 'em dia').length), nota: 'respondida na v3', cor: 'var(--color-confirmed)' },
+        { label: 'Pendentes', valor: String(ativos.filter(x => x.anamnese !== 'em dia').length), nota: 'sem resposta ou vencida', cor: 'var(--color-attention)' },
+      ].map(k => ({ label: k.label, valor: k.valor, nota: k.nota, estiloValor: fonteAmount + ';color:' + k.cor })),
+
+      busca: s.busca, onBusca: e => this.setState({ busca: e.target.value }),
+      filtros: [['todos', 'Todos'], ['fardados', 'Fardados'], ['visitantes', 'Visitantes'], ['pendentes', 'Anamnese pendente'], ['inativos', 'Inativos']].map(([k, label]) => ({
+        label: label, ativo: k === s.filtro, estilo: k === s.filtro ? chipOn : chipOff,
+        estiloField: (k === s.filtro ? chipOn : chipOff) + ';flex:0 0 auto',
+        onClick: () => this.setState({ filtro: k }),
+      })),
+
+      colunas: ['Pessoa', 'Vínculo', 'Última presença', 'Anamnese', ''].map((label, i) => ({
+        label: label,
+        estilo: 'font:var(--text-label);letter-spacing:var(--tracking-label);text-transform:uppercase;color:var(--text-field-label);text-align:' + (i === 4 ? 'right' : 'left'),
+      })),
+      colunasRespostas: ['Data', 'Versão', 'Resumo', ''].map((label, i) => ({
+        label: label,
+        estilo: 'font:var(--text-label);letter-spacing:var(--tracking-label);text-transform:uppercase;color:var(--text-field-label);text-align:' + (i === 3 ? 'right' : 'left'),
+      })),
+
+      listaVazia: lista.length === 0,
+      pessoasVisiveis: lista.map(pe => {
+        const info = this.anamneseInfo(pe);
+        const presencas = this.presencasDe(pe);
+        return {
+          nome: pe.nome, vinculo: pe.vinculo,
+          contato: pe.telefone + ' · ' + pe.cidade,
+          ultimaPresenca: presencas.length ? presencas[0].data : 'nunca',
+          anamneseTexto: info.texto, anamneseTone: info.tone,
+          abrir: () => this.setState({ fichaId: pe.id, mensagem: null }),
+          estiloLinha: 'display:grid;grid-template-columns:minmax(0,1fr) 130px 150px 190px 100px;align-items:center;gap:0;padding:10px 0;border-bottom:var(--border-hairline);opacity:' + (pe.ativa ? 1 : 0.6),
+          estiloLinhaField: 'display:flex;flex-direction:column;gap:6px;padding:11px 12px;border:var(--border-hairline);border-radius:var(--radius);background:var(--bg-card);cursor:pointer;width:100%',
+        };
+      }),
+
+      ficha: p ? {
+        nome: p.nome,
+        resumo: p.vinculo + ' desde ' + p.desde + ' · ' + p.cidade + (p.ativa ? '' : ' · cadastro inativo'),
+        textoInativar: p.ativa ? 'Inativar' : 'Reativar',
+        anamneseTexto: infoFicha.texto, anamneseTone: infoFicha.tone,
+        dados: [
+          { label: 'Vínculo', valor: p.vinculo },
+          { label: 'Na casa desde', valor: String(p.desde) },
+          { label: 'Telefone', valor: p.telefone },
+          { label: 'Cidade', valor: p.cidade },
+          { label: 'Nascimento', valor: p.nascimento },
+          { label: 'Emergência', valor: p.emergencia },
+          { label: 'Situação', valor: p.ativa ? 'Ativo' : 'Inativo' },
+        ],
+        pontos: p.pontos.map(([titulo, detalhe]) => ({ titulo: titulo, detalhe: detalhe })),
+        semPontos: p.pontos.length === 0,
+        notaAnamnese: p.respondidaEm
+          ? 'Última resposta em ' + p.respondidaEm + ' na versão ' + p.versao + '. Validade de 12 meses.'
+          : 'Nunca respondeu. Sem anamnese válida, a participação depende de liberação da direção.',
+        respostas: this.respostasDe(p),
+        semRespostas: !p.respondidaEm,
+        presencas: this.presencasDe(p),
+        temAcesso: !!acessoFicha, semAcesso: !acessoFicha,
+        acessoTexto: acessoFicha ? this.acessoInfo(acessoFicha.situacao).label : 'Sem acesso ao sistema',
+        acessoTone: acessoFicha ? this.acessoInfo(acessoFicha.situacao).tone : 'neutral',
+        grupoAcesso: acessoFicha ? acessoFicha.grupo : '',
+        emailAcesso: acessoFicha ? acessoFicha.email : '',
+        notaAcesso: acessoFicha ? 'último acesso: ' + acessoFicha.ultimoAcesso : '',
+        textoAlternarAcesso: acessoFicha && acessoFicha.situacao === 'suspenso' ? 'Reativar acesso' : 'Suspender acesso',
+      } : null,
+      onGrupoFicha: p ? this.mudarGrupo(p.id) : null,
+      alternarAcessoAtual: p ? this.alternarAcesso(p.id) : null,
+      revogarAcessoAtual: p ? this.revogarAcesso(p.id) : null,
+      concederAcessoAtual: p ? (() => this.concederAcesso(p.id, p.nome.toLowerCase().replace(/[^a-z ]/g, '').split(' ').slice(0, 2).join('.') + '@cdd.org', 'Registro rápido')) : null,
+      alternarAcessoForm: this.alternarAcessoForm,
+      onFormEmail: this.campoForm('email'), onFormGrupo: this.campoForm('grupo'),
+      estiloTrilhoAcesso: 'width:46px;height:26px;border-radius:var(--radius-pill);border:1px solid ' + (f && f.acesso ? 'var(--color-royal-border)' : 'var(--color-line-strong)') + ';background:' + (f && f.acesso ? 'var(--color-royal-soft)' : 'var(--bg-sunken)') + ';cursor:pointer;display:flex;align-items:center;padding:2px;justify-content:' + (f && f.acesso ? 'flex-end' : 'flex-start'),
+      estiloBotaoAcesso: 'width:20px;height:20px;border-radius:var(--radius-pill);background:' + (f && f.acesso ? 'var(--color-royal)' : 'var(--color-line-strong)') + ';display:block',
+
+      editarAtual: this.editarAtual, inativarAtual: this.inativarAtual, enviarAnamnese: this.enviarAnamnese,
+
+      temForm: !!f, form: f || {}, pararPropagacao: this.pararPropagacao,
+      tituloForm: f && f.editId != null ? 'Editar cadastro' : 'Nova pessoa',
+      textoSalvar: f && f.editId != null ? 'Salvar alterações' : 'Cadastrar pessoa',
+      estiloSalvar: 'font:var(--text-body-strong);padding:9px 18px;min-height:42px;border-radius:var(--radius-sm);cursor:' + (podeSalvar ? 'pointer' : 'not-allowed') + ';border:1px solid ' + (podeSalvar ? 'var(--color-royal-border)' : 'var(--color-line)') + ';background:' + (podeSalvar ? 'var(--color-royal-soft)' : 'var(--bg-sunken)') + ';color:' + (podeSalvar ? 'var(--color-royal-deep)' : 'var(--text-meta)'),
+      estiloTrilhoEnvio: 'width:46px;height:26px;border-radius:var(--radius-pill);border:1px solid ' + (f && f.enviar ? 'var(--color-royal-border)' : 'var(--color-line-strong)') + ';background:' + (f && f.enviar ? 'var(--color-royal-soft)' : 'var(--bg-sunken)') + ';cursor:pointer;display:flex;align-items:center;padding:2px;justify-content:' + (f && f.enviar ? 'flex-end' : 'flex-start'),
+      estiloBotaoEnvio: 'width:20px;height:20px;border-radius:var(--radius-pill);background:' + (f && f.enviar ? 'var(--color-royal)' : 'var(--color-line-strong)') + ';display:block',
+      abrirNova: this.abrirNova, cancelarForm: this.cancelarForm, salvarForm: this.salvarForm, alternarEnvio: this.alternarEnvio,
+      onFormNome: this.campoForm('nome'), onFormVinculo: this.campoForm('vinculo'), onFormTelefone: this.campoForm('telefone'),
+      onFormCidade: this.campoForm('cidade'), onFormNascimento: this.campoForm('nascimento'), onFormEmergencia: this.campoForm('emergencia'),
+
+      nav: [
+        { id: 'painel', label: 'Painel', icon: 'layout-dashboard' },
+        { id: 'registrar', label: 'Registrar lançamento', icon: 'circle-plus' },
+        { id: 'meus', label: 'Meus registros', icon: 'receipt-text' },
+        { section: 'Financeiro' },
+        { id: 'lote', label: 'Verificação de lote', icon: 'sparkles', count: 12 },
+        { id: 'lancamentos', label: 'Lançamentos', icon: 'list' },
+        { id: 'contas', label: 'Contas e fundo', icon: 'landmark' },
+        { id: 'relatorios', label: 'Relatórios', icon: 'chart-no-axes-column' },
+        { id: 'fechamento', label: 'Fechamento', icon: 'lock' },
+        { section: 'Cerimônias' },
+        { id: 'agenda', label: 'Agenda', icon: 'calendar-days' },
+        { id: 'ayahuasca', label: 'Ayahuasca', icon: 'flask-conical' },
+        { section: 'Pessoas' },
+        { id: 'pessoas', label: 'Pessoas', icon: 'users' },
+        { id: 'anamnese', label: 'Anamnese', icon: 'clipboard-list' },
+      ],
+    };
+  }
+}
+
+</script>
+</body>
+</html>

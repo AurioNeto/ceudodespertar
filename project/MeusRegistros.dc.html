@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><script src="./ds-base.js"></script><style>body{margin:0;background:var(--bg-app)}</style></helmet>
+
+<div style="padding:26px 28px 40px;display:flex;flex-direction:column;gap:20px;background:var(--bg-app);min-height:100%">
+
+  <div style="display:flex;flex-wrap:wrap;align-items:center;gap:14px">
+    <div style="display:flex;flex-direction:column;gap:2px">
+      <div style="font:var(--text-label);text-transform:uppercase;letter-spacing:var(--tracking-label);color:var(--text-field-label)">F-02 · Meus registros · Tesouraria</div>
+      <div style="font:var(--text-title-sm);color:var(--text-title)">A lista para achar, o cartão para conferir</div>
+    </div>
+  </div>
+
+  <div style="display:flex;flex-wrap:wrap;gap:26px;align-items:flex-start">
+
+    <div style="position:relative;flex:0 0 auto;width:1180px;height:900px;display:flex;border:var(--border-hairline);border-radius:var(--radius-lg);overflow:hidden;background:var(--bg-card);box-shadow:var(--shadow-raised)">
+      <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.AppShell" unit="CDD" user="{{ user }}" nav="{{ nav }}" active-id="meus" density="office" style="height:100%;width:100%" dc-props="{{ propsShell }}" hint-size="100%,100%">
+        <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.ScreenHeader" code="F-02 · Meus registros" title="Meus registros" subtitle="{{ subtitulo }}" hint-size="100%,140px"></x-import>
+
+        <div style="padding:18px 24px 26px;display:flex;flex-direction:column;gap:18px;max-width:1000px">
+
+          <div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px">
+            <div style="display:flex;gap:8px">
+              <sc-for list="{{ visoes }}" as="v" hint-placeholder-count="2">
+                <button type="button" onClick="{{ v.onClick }}" aria-pressed="{{ v.ativo }}" style="{{ v.style }}">{{ v.label }}</button>
+              </sc-for>
+            </div>
+            <span style="margin-left:auto;font:var(--text-small);color:var(--text-secondary)">{{ resumo }}</span>
+          </div>
+
+          <sc-if value="{{ ehLista }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <sc-for list="{{ registrosPagina }}" as="r" hint-placeholder-count="7">
+                <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.RecordRow" description="{{ r.motivo }}" amount="{{ r.valor }}" nature="{{ r.nature }}" meta="{{ r.tipoLabel }}" status="{{ r.status }}" density="office" onClick="{{ r.abrir }}" hint-size="100%,66px"></x-import>
+              </sc-for>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:center;gap:10px;padding-top:4px">
+              <button type="button" onClick="{{ paginaAnterior }}" disabled="{{ noInicio }}" style="{{ estiloPagBotao }}">‹ Anterior</button>
+              <span style="font:var(--text-small);color:var(--text-secondary)">{{ textoPagina }}</span>
+              <button type="button" onClick="{{ proximaPagina }}" disabled="{{ noFim }}" style="{{ estiloPagBotao }}">Próxima ›</button>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ ehCarrossel }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;flex-direction:column;gap:14px">
+
+              <div style="display:flex;align-items:center;gap:14px">
+                <button type="button" aria-label="anterior" onClick="{{ anterior }}" style="width:44px;height:44px;flex:0 0 auto;border:1px solid var(--color-line-strong);background:var(--bg-card);border-radius:var(--radius-pill);cursor:pointer;font:var(--text-body-strong);color:var(--text-primary)">‹</button>
+                <div style="flex:1;min-width:0;overflow:hidden;padding:4px 0">
+                  <div style="{{ trilhoEstilo }}">
+                    <sc-for list="{{ registros }}" as="r" hint-placeholder-count="3">
+                      <div style="flex:0 0 560px;opacity:1;position:relative;border-radius:var(--radius-lg);overflow:hidden">
+                        <div style="{{ r.faixaEstilo }}"></div>
+                        <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Receipt" title="{{ r.tituloRecibo }}" amount="{{ r.valor }}" lines="{{ r.linhas }}" footnote="{{ r.rodape }}" hint-size="560px,420px"></x-import>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+                <button type="button" aria-label="próximo" onClick="{{ proximo }}" style="width:44px;height:44px;flex:0 0 auto;border:1px solid var(--color-line-strong);background:var(--bg-card);border-radius:var(--radius-pill);cursor:pointer;font:var(--text-body-strong);color:var(--text-primary)">›</button>
+              </div>
+
+              <div style="display:flex;align-items:center;justify-content:center;gap:8px">
+                <sc-for list="{{ registros }}" as="r" hint-placeholder-count="7">
+                  <button type="button" aria-label="ir para o registro" onClick="{{ r.ir }}" style="{{ r.pontoEstilo }}"></button>
+                </sc-for>
+              </div>
+
+              <div style="text-align:center;font:var(--text-small);color:var(--text-secondary)">{{ posicao }}</div>
+            </div>
+          </sc-if>
+        </div>
+      </x-import>
+    </div>
+
+    <div style="flex:0 0 auto;display:flex;flex-direction:column;gap:12px;align-items:center">
+      <div style="position:relative;width:392px;height:812px;display:flex;border:10px solid var(--color-ink-brand);border-radius:38px;overflow:hidden;background:var(--bg-app);box-shadow:var(--shadow-raised)">
+        <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.AppShell" unit="CDD" user="{{ user }}" nav="{{ nav }}" active-id="meus" density="field" style="height:100%;width:100%" dc-props="{{ propsShell }}" hint-size="100%,100%">
+          <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.ScreenHeader" code="F-02" title="Meus registros" density="field" hint-size="100%,80px"></x-import>
+
+          <div style="padding:14px 16px 20px;display:flex;flex-direction:column;gap:12px;min-width:0">
+            <div style="display:flex;gap:6px">
+              <sc-for list="{{ visoes }}" as="v" hint-placeholder-count="2">
+                <button type="button" onClick="{{ v.onClick }}" aria-pressed="{{ v.ativo }}" style="{{ v.styleField }}">{{ v.label }}</button>
+              </sc-for>
+            </div>
+
+            <sc-if value="{{ ehLista }}" hint-placeholder-val="{{ true }}">
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <sc-for list="{{ registrosPagina }}" as="r" hint-placeholder-count="7">
+                  <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.RecordRow" description="{{ r.motivo }}" amount="{{ r.valor }}" nature="{{ r.nature }}" meta="{{ r.tipoLabel }}" status="{{ r.status }}" onClick="{{ r.abrir }}" hint-size="100%,74px"></x-import>
+                </sc-for>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding-top:2px">
+                <button type="button" onClick="{{ paginaAnterior }}" disabled="{{ noInicio }}" style="{{ estiloPagBotaoField }}">‹</button>
+                <span style="font:var(--text-small);color:var(--text-secondary)">{{ textoPagina }}</span>
+                <button type="button" onClick="{{ proximaPagina }}" disabled="{{ noFim }}" style="{{ estiloPagBotaoField }}">›</button>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ ehCarrossel }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;flex-direction:column;gap:12px;min-width:0">
+                <div style="overflow:hidden;min-width:0">
+                  <div style="{{ trilhoEstiloField }}">
+                    <sc-for list="{{ registros }}" as="r" hint-placeholder-count="3">
+                      <div style="flex:0 0 328px;position:relative;border-radius:var(--radius-lg);overflow:hidden">
+                        <div style="{{ r.faixaEstilo }}"></div>
+                        <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Receipt" title="{{ r.tituloRecibo }}" amount="{{ r.valor }}" lines="{{ r.linhas }}" hint-size="328px,400px"></x-import>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px">
+                  <button type="button" aria-label="anterior" onClick="{{ anterior }}" style="flex:1;min-height:48px;border:1px solid var(--color-line-strong);background:var(--bg-card);border-radius:var(--radius);cursor:pointer;font:var(--text-body-strong);color:var(--text-primary)">‹ Anterior</button>
+                  <button type="button" aria-label="próximo" onClick="{{ proximo }}" style="flex:1;min-height:48px;border:1px solid var(--color-line-strong);background:var(--bg-card);border-radius:var(--radius);cursor:pointer;font:var(--text-body-strong);color:var(--text-primary)">Próximo ›</button>
+                </div>
+                <div style="text-align:center;font:var(--text-small);color:var(--text-secondary)">{{ posicao }}</div>
+              </div>
+            </sc-if>
+          </div>
+        </x-import>
+      </div>
+      <div style="font:var(--text-small);color:var(--text-secondary);max-width:392px;text-align:center">Campo: mesma lista, mesmo cartão — um por vez, deslizando.</div>
+    </div>
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1680,&quot;height&quot;:1010},&quot;visaoInicial&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;lista&quot;,&quot;carrossel&quot;],&quot;default&quot;:&quot;lista&quot;,&quot;tsType&quot;:&quot;'lista' | 'carrossel'&quot;}}">
+class Component extends DCLogic {
+  state = { visao: null, indice: 0, pagina: 0 };
+  tamanhoPagina = 4;
+
+  corFaixa(tipo) {
+    return tipo === 'entrada' ? 'var(--color-confirmed)' : tipo === 'transferencia' ? 'var(--color-royal)' : 'var(--color-attention)';
+  }
+
+  dados() {
+    return [
+      { id: 1, tipo: 'saida', motivo: 'mercado cerimônia mãe divina', valor: 187.40, data: '28/08/2026', hora: '14:22', grupo: 'Cozinha', categorias: 'Alimentação de cerimônia', conta: 'Cora PJ', forma: 'Pix', cerimonia: '05/09 · Mãe Divina', fornecedor: 'Assaí Atacadista', comprovante: 'IMG_2481.jpg', status: 'confirmed' },
+      { id: 2, tipo: 'entrada', motivo: 'contribuições da cerimônia de agosto', valor: 940.00, data: '24/08/2026', hora: '19:40', grupo: 'CDD', categorias: 'Contribuições', conta: 'Cora PJ', forma: 'Pix', cerimonia: '22/08 · Mãe Divina', fornecedor: 'Corpo de fardados', comprovante: null, status: 'confirmed' },
+      { id: 3, tipo: 'transferencia', motivo: 'repasse do caixa da lojinha', valor: 1500.00, data: '23/08/2026', hora: '10:05', conta: 'Nubank Paty', contaDestino: 'Cora PJ', forma: 'Transferência bancária', comprovante: 'comprovante-ted.pdf', status: 'confirmed' },
+      { id: 4, tipo: 'saida', motivo: 'diarista pós-cerimônia', valor: 340.00, data: '31/07/2026', hora: '08:12', grupo: 'Chácara (Infraestrutura)', categorias: 'Administrativo', conta: 'Espécie', forma: 'Espécie', cerimonia: 'Nenhuma — gasto da casa', fornecedor: 'Dona Rosa', comprovante: null, status: 'pending' },
+      { id: 5, tipo: 'entrada', motivo: 'venda de camisetas na lojinha', valor: 285.00, data: '22/08/2026', hora: '21:15', grupo: 'Lojinha', categorias: 'Vendas', conta: 'Nubank Paty', forma: 'Pix', cerimonia: '22/08 · Mãe Divina', fornecedor: 'Balcão da lojinha', comprovante: null, status: 'confirmed' },
+      { id: 6, tipo: 'saida', motivo: 'ração e vermífugo dos cavalos', valor: 128.90, data: '20/08/2026', hora: '16:47', grupo: 'Chácara (Infraestrutura)', categorias: 'Animais', conta: 'Cora PJ', forma: 'Débito', cerimonia: 'Nenhuma — gasto da casa', fornecedor: 'Agropecuária Vale', comprovante: 'IMG_2402.jpg', status: 'confirmed' },
+      { id: 7, tipo: 'saida', motivo: 'gasolina para buscar mantimentos', valor: 65.00, data: '19/08/2026', hora: '11:30', grupo: 'Chácara (Infraestrutura)', categorias: 'Transporte', conta: 'Espécie', forma: 'Espécie', cerimonia: 'Nenhuma — gasto da casa', fornecedor: 'Posto Ipiranga', comprovante: null, status: 'reversed' },
+    ];
+  }
+
+  rotuloTipo(t) {
+    return t === 'entrada' ? 'Entrada' : t === 'transferencia' ? 'Transferência' : 'Saída';
+  }
+
+  linhas(r) {
+    if (r.tipo === 'transferencia') {
+      return [
+        { label: 'Tipo', value: 'Transferência entre contas' },
+        { label: 'Motivo', value: r.motivo },
+        { label: 'Data', value: r.data },
+        { label: 'Saiu de', value: r.conta },
+        { label: 'Entrou em', value: r.contaDestino },
+        { label: 'Comprovante', value: r.comprovante || 'sem anexo' },
+      ];
+    }
+    return [
+      { label: 'Tipo', value: this.rotuloTipo(r.tipo) },
+      { label: r.tipo === 'entrada' ? 'De onde veio' : 'O que foi', value: r.motivo },
+      { label: 'Data', value: r.data },
+      { label: 'Grupo', value: r.grupo },
+      { label: 'Categoria', value: r.categorias },
+      { label: r.tipo === 'entrada' ? 'Conta de entrada' : 'Conta de saída', value: r.conta + ' · ' + r.forma },
+      { label: 'Cerimônia', value: r.cerimonia },
+      { label: 'Comprovante', value: r.comprovante || 'sem anexo' },
+    ];
+  }
+
+  irPara(i) {
+    const total = this.dados().length;
+    return () => this.setState({ indice: (i + total) % total });
+  }
+
+  renderVals() {
+    const s = this.state;
+    const lista = this.dados();
+    const visao = s.visao || this.props.visaoInicial || 'lista';
+    const ehLista = visao === 'lista';
+    const largura = 560, gap = 20;
+    const larguraField = 328, gapField = 12;
+
+    const estilos = {
+      on: 'font:var(--text-body-strong);padding:9px 16px;min-height:40px;border-radius:var(--radius-sm);cursor:pointer;border:1px solid var(--color-royal-border);background:var(--color-royal-soft);color:var(--color-royal-deep)',
+      off: 'font:var(--text-body);padding:9px 16px;min-height:40px;border-radius:var(--radius-sm);cursor:pointer;border:1px solid var(--color-line);background:var(--bg-card);color:var(--text-secondary)',
+    };
+
+    const totalSaida = lista.filter(r => r.tipo === 'saida' && r.status !== 'reversed').reduce((a, r) => a + r.valor, 0);
+    const totalEntrada = lista.filter(r => r.tipo === 'entrada').reduce((a, r) => a + r.valor, 0);
+    const brl = n => n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+    return {
+      user: { name: 'Aurio Neto', group: 'Tesouraria' },
+      propsShell: { style: { height: '100%', minHeight: 0, overflow: 'hidden', gridTemplateRows: '100%' } },
+      subtitulo: 'O que você lançou nos últimos 30 dias · CDD',
+      resumo: lista.length + ' lançamentos · saídas ' + brl(totalSaida) + ' · entradas ' + brl(totalEntrada),
+
+      visoes: [['lista', 'Lista simplificada'], ['carrossel', 'Visão completa']].map(([k, label]) => ({
+        label: label, ativo: k === visao, onClick: () => this.setState({ visao: k }),
+        style: k === visao ? estilos.on : estilos.off,
+        styleField: (k === visao ? estilos.on : estilos.off) + ';flex:1;text-align:center;font:var(--text-small);padding:11px 6px',
+      })),
+      ehLista: ehLista, ehCarrossel: !ehLista,
+
+      registrosPagina: lista.slice(s.pagina * this.tamanhoPagina, s.pagina * this.tamanhoPagina + this.tamanhoPagina).map((r, iRel) => {
+        const i = s.pagina * this.tamanhoPagina + iRel;
+        return {
+          motivo: r.motivo, valor: r.valor, status: r.status,
+          nature: r.tipo === 'entrada' ? 'receita' : r.tipo === 'saida' ? 'despesa' : 'neutral',
+          tipoLabel: this.rotuloTipo(r.tipo),
+          abrir: () => this.setState({ visao: 'carrossel', indice: i }),
+        };
+      }),
+      paginaAnterior: () => this.setState(st => ({ pagina: Math.max(0, st.pagina - 1) })),
+      proximaPagina: () => this.setState(st => ({ pagina: Math.min(Math.ceil(lista.length / this.tamanhoPagina) - 1, st.pagina + 1) })),
+      noInicio: s.pagina === 0, noFim: s.pagina >= Math.ceil(lista.length / this.tamanhoPagina) - 1,
+      textoPagina: 'Página ' + (s.pagina + 1) + ' de ' + Math.ceil(lista.length / this.tamanhoPagina),
+      estiloPagBotao: 'font:var(--text-body);padding:8px 16px;min-height:38px;border-radius:var(--radius-sm);cursor:pointer;border:1px solid var(--color-line);background:var(--bg-card);color:var(--text-secondary)',
+      estiloPagBotaoField: 'font:var(--text-body-strong);width:40px;height:40px;border-radius:var(--radius-pill);cursor:pointer;border:1px solid var(--color-line);background:var(--bg-card);color:var(--text-secondary)',
+
+      registros: lista.map((r, i) => ({
+        motivo: r.motivo, valor: r.valor, status: r.status,
+        nature: r.tipo === 'entrada' ? 'receita' : r.tipo === 'saida' ? 'despesa' : 'neutral',
+        tipoLabel: this.rotuloTipo(r.tipo),
+        tituloRecibo: 'Registrado em ' + r.data + ' às ' + r.hora,
+        rodape: r.status === 'reversed' ? 'Estornado — o lançamento fica no histórico com a marca de estorno.'
+          : r.status === 'pending' ? 'A conferir: gravado por você, ainda sem consolidação da tesouraria.'
+            : 'Consolidado por Aurio Neto. Alteração só por estorno.',
+        linhas: this.linhas(r),
+        abrir: () => this.setState({ visao: 'carrossel', indice: i }),
+        ir: this.irPara(i),
+        pontoEstilo: 'width:' + (i === s.indice ? 26 : 9) + 'px;height:9px;border-radius:var(--radius-pill);border:0;cursor:pointer;padding:0;background:' + (i === s.indice ? 'var(--color-royal)' : 'var(--color-line-strong)') + ';transition:width var(--motion-fast)',
+        faixaEstilo: 'position:absolute;left:0;right:0;top:0;height:4px;z-index:1;background:repeating-linear-gradient(to right,' + this.corFaixa(r.tipo) + ' 0 6px,transparent 6px 12px)',
+      })),
+
+      trilhoEstilo: 'display:flex;gap:' + gap + 'px;align-items:flex-start;transform:translateX(' + (-s.indice * (largura + gap)) + 'px);transition:transform var(--motion-base, 220ms) ease',
+      trilhoEstiloField: 'display:flex;gap:' + gapField + 'px;align-items:flex-start;transform:translateX(' + (-s.indice * (larguraField + gapField)) + 'px);transition:transform var(--motion-base, 220ms) ease',
+      anterior: this.irPara(s.indice - 1),
+      proximo: this.irPara(s.indice + 1),
+      posicao: (s.indice + 1) + ' de ' + lista.length,
+
+      nav: [
+        { id: 'painel', label: 'Painel', icon: 'layout-dashboard' },
+        { id: 'registrar', label: 'Registrar lançamento', icon: 'circle-plus' },
+        { id: 'meus', label: 'Meus registros', icon: 'receipt-text' },
+        { section: 'Financeiro' },
+        { id: 'lote', label: 'Verificação de lote', icon: 'sparkles', count: 12 },
+        { id: 'lancamentos', label: 'Lançamentos', icon: 'list' },
+        { id: 'contas', label: 'Contas e fundo', icon: 'landmark' },
+        { id: 'relatorios', label: 'Relatórios', icon: 'chart-no-axes-column' },
+        { id: 'fechamento', label: 'Fechamento', icon: 'lock' },
+        { section: 'Cerimônias' },
+        { id: 'agenda', label: 'Agenda', icon: 'calendar-days' },
+        { id: 'ayahuasca', label: 'Ayahuasca', icon: 'flask-conical' },
+        { section: 'Pessoas' },
+        { id: 'pessoas', label: 'Pessoas', icon: 'users' },
+        { id: 'anamnese', label: 'Anamnese', icon: 'clipboard-list' },
+      ],
+    };
+  }
+}
+
+</script>
+</body>
+</html>

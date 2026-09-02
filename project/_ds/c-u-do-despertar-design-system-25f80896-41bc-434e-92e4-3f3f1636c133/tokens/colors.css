@@ -1,0 +1,125 @@
+/* =====================================================================
+   Céu do Despertar — COLOR
+   v3 — PAPEL QUENTE, TINTA FRIA.
+
+   A identidade dá o papel: creme da logo, linha dourada da flor da
+   vida, marrom do wordmark nos títulos, ouro e verde do merkaba nos
+   estados. O azul royal não entra como bloco de chrome nem como botão
+   solto — ele entra na **tinta e na estrutura**: é o tom escuro de
+   todo texto de leitura, de todo hairline, de toda superfície
+   afundada e de toda sombra do sistema.
+
+   Resultado: o azul aparece em cada linha da tela sem nunca gritar, e
+   o calor da marca fica onde a marca é — título, rótulo, estado.
+   Light theme only. Todo par de texto essencial atinge WCAG AA.
+   ===================================================================== */
+
+:root {
+  /* ---------------------------------------------------------------
+     SUPERFÍCIE — o papel é quente; tudo que afunda esfria.
+     --------------------------------------------------------------- */
+  --color-paper:            #FAF7F0;  /* fundo da aplicação; creme da logo */
+  --color-surface:          #FFFFFF;  /* cartão, campo, linha de lista */
+  --color-surface-sunken:   #F0F1F4;  /* royal a 5% — faixa, cabeçalho de tabela, code */
+  --color-surface-rail:     #E9EAEF;  /* royal a 8% — rail de navegação, barra de contexto */
+  --color-surface-warm:     #F3EEE2;  /* gold a 6% — só recibo, hero de valor e documento */
+
+  /* ---------------------------------------------------------------
+     LINHA — duas famílias, e a diferença é semântica.
+     A estrutural é fria (royal diluído). A dourada é a flor da vida, e
+     sobrevive onde a marca fala: régua do recibo, ornamento, documento.
+     --------------------------------------------------------------- */
+  --color-line:             #DEDFE6;  /* hairline estrutural */
+  --color-line-strong:      #C6C9D6;  /* divisor de seção, borda de campo */
+  --color-line-gold:        #E3D9C5;  /* a linha da flor da vida */
+
+  /* ---------------------------------------------------------------
+     TINTA — fria para ler, quente para intitular.
+     O contraste entre as duas é a assinatura da v3: o olho separa
+     título de corpo pela temperatura antes de separar pelo tamanho.
+     --------------------------------------------------------------- */
+  --color-ink:              #22304E;  /* texto principal — royal profundo  12,6:1 */
+  --color-ink-muted:        #4C5670;  /* texto secundário   6,9:1 */
+  --color-ink-subtle:       #6E7593;  /* metadado  4,3:1 — nunca em texto essencial */
+  --color-ink-inverse:      #FFFFFF;
+
+  --color-ink-brand:        #764C29;  /* títulos; marrom exato do wordmark  6,9:1 */
+  --color-label:            #8A6539;  /* rótulo caixa alta; bronze da tagline  4,9:1 */
+
+  /* ---------------------------------------------------------------
+     ROYAL SATURADO — o mesmo azul da tinta, sem diluição.
+     Onde a interface age: botão, foco, link, seleção, e o número que a
+     tela quer que se leia primeiro. Não é estado: nenhum estado do
+     domínio é azul.
+     --------------------------------------------------------------- */
+  --color-royal:            #1A3DA8;  /* 8,6:1 */
+  --color-royal-hover:      #14307F;
+  --color-royal-deep:       #0F2467;  /* numeral de destaque, texto sobre royal-soft */
+  --color-royal-ink:        #17357F;
+  --color-royal-soft:       #E9EDFA;  /* linha selecionada, anexo capturado */
+  --color-royal-border:     #C2CFEF;
+
+  /* ---------------------------------------------------------------
+     VIOLETA DO ÁPICE — a cor da SUGESTÃO
+     O elemento mais raro do símbolo carrega a coisa mais delicada da
+     interface: "o sistema propõe, o humano confirma".
+     --------------------------------------------------------------- */
+  --color-suggest:          #5C3E75;  /* 8,2:1 */
+  --color-suggest-hover:    #4C3162;
+  --color-suggest-soft:     #EFE9F3;
+  --color-suggest-border:   #D5C7E0;
+
+  /* ---------- estado: A CONFERIR — metade dourada do merkaba ---------- */
+  --color-pending:          #8F5714;  /* 5,5:1 */
+  --color-pending-soft:     #F8ECD9;
+  --color-pending-border:   #E4CDA4;
+
+  /* ---------- estado: CONFIRMADO — metade verde do merkaba ---------- */
+  --color-confirmed:        #1B6E40;  /* 5,9:1 */
+  --color-confirmed-soft:   #E2F0E7;
+  --color-confirmed-border: #B6D8C3;
+
+  /* ---------- atenção: alguém precisa agir ---------- */
+  --color-attention:        #9E3520;  /* 6,6:1 */
+  --color-attention-soft:   #F8E5DF;
+  --color-attention-border: #E6C4B8;
+
+  /* ---------- neutro: estornado, inativo, superseded ---------- */
+  --color-neutral:          #6E7593;
+  --color-neutral-soft:     #EDEEF2;
+
+  /* ---------------------------------------------------------------
+     ALIASES SEMÂNTICOS — é por aqui que se consome.
+     --------------------------------------------------------------- */
+  --bg-app:            var(--color-paper);
+  --bg-card:           var(--color-surface);
+  --bg-sunken:         var(--color-surface-sunken);
+  --bg-rail:           var(--color-surface-rail);
+  --bg-brand:          var(--color-surface-warm);
+
+  --text-primary:      var(--color-ink);
+  --text-title:        var(--color-ink-brand);
+  --text-secondary:    var(--color-ink-muted);
+  --text-meta:         var(--color-ink-subtle);
+  --text-on-royal:     var(--color-ink-inverse);
+  --text-field-label:  var(--color-label);
+  --text-link:         var(--color-royal);
+  --text-link-hover:   var(--color-royal-hover);
+
+  --border-subtle:     var(--color-line);
+  --border-section:    var(--color-line-strong);
+  --border-brand:      var(--color-line-gold);
+
+  --action-bg:         var(--color-royal);
+  --action-bg-hover:   var(--color-royal-hover);
+  --action-fg:         var(--color-ink-inverse);
+  --focus-ring:        var(--color-royal);
+
+  /* compatibilidade com a v1 e a v2 */
+  --color-action:        var(--color-royal);
+  --color-action-hover:  var(--color-royal-hover);
+  --color-action-soft:   var(--color-royal-soft);
+  --color-action-border: var(--color-royal-border);
+  --color-royal-chrome:  var(--color-royal-deep);
+  --text-on-chrome:      var(--color-ink-inverse);
+}

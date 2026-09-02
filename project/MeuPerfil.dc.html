@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><script src="./ds-base.js"></script><style>body{margin:0;background:var(--bg-app)}
+@keyframes surgir{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}</style></helmet>
+
+<div style="padding:26px 28px 40px;display:flex;flex-direction:column;gap:20px;background:var(--bg-app);min-height:100%">
+
+  <div style="display:flex;flex-direction:column;gap:2px">
+    <div style="font:var(--text-label);text-transform:uppercase;letter-spacing:var(--tracking-label);color:var(--text-field-label)">F-12 · Meu perfil</div>
+    <div style="font:var(--text-title-sm);color:var(--text-title)">O que a casa sabe sobre você, e o que você controla</div>
+  </div>
+
+  <div style="display:flex;flex-wrap:wrap;gap:26px;align-items:flex-start">
+
+    <div style="position:relative;flex:0 0 auto;width:1180px;height:1000px;display:flex;border:var(--border-hairline);border-radius:var(--radius-lg);overflow:hidden;background:var(--bg-card);box-shadow:var(--shadow-raised)">
+      <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.AppShell" unit="CDD" user="{{ user }}" nav="{{ nav }}" active-id="perfil" density="office" style="height:100%;width:100%" dc-props="{{ propsShell }}" hint-size="100%,100%">
+        <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.ScreenHeader" code="F-12 · Meu perfil" title="Meu perfil" subtitle="{{ subtitulo }}" hint-size="100%,140px"></x-import>
+
+        <div style="padding:18px 24px 26px;display:flex;flex-direction:column;gap:16px;max-width:1000px">
+
+          <sc-if value="{{ temMensagem }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--color-royal-soft);border:1px solid var(--color-royal-border);border-radius:var(--radius);padding:10px 14px">
+              <span style="font:var(--text-body);color:var(--color-royal-deep)">{{ mensagem }}</span>
+              <button type="button" onClick="{{ fecharMensagem }}" style="border:0;background:transparent;color:var(--color-royal-deep);cursor:pointer;font:var(--text-body-strong)">×</button>
+            </div>
+          </sc-if>
+
+          <div style="background:var(--bg-brand);border:1px solid var(--border-brand);border-radius:var(--radius-lg);padding:18px 20px;display:flex;flex-wrap:wrap;align-items:center;gap:18px">
+            <div style="{{ estiloAvatar }}">{{ iniciais }}</div>
+            <div style="flex:1 1 320px;min-width:0;display:flex;flex-direction:column;gap:4px">
+              <span style="font:var(--text-title-sm);color:var(--text-title)">{{ dados.nome }}</span>
+              <span style="font:var(--text-body);color:var(--text-secondary)">{{ resumoPerfil }}</span>
+              <span style="display:flex;flex-wrap:wrap;gap:7px;padding-top:4px">
+                <sc-for list="{{ selos }}" as="se" hint-placeholder-count="3">
+                  <span style="{{ se.estilo }}">{{ se.label }}</span>
+                </sc-for>
+              </span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Button" variant="ghost" icon-name="camera" density="office" onClick="{{ trocarFoto }}" hint-size="170px,42px">Trocar foto</x-import>
+              <sc-if value="{{ temFoto }}" hint-placeholder-val="{{ false }}">
+                <button type="button" onClick="{{ removerFoto }}" style="font:var(--text-small);border:0;background:transparent;color:var(--text-secondary);cursor:pointer;text-decoration:underline">Remover foto</button>
+              </sc-if>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:6px">
+            <sc-for list="{{ abas }}" as="a" hint-placeholder-count="4">
+              <button type="button" onClick="{{ a.onClick }}" aria-pressed="{{ a.ativo }}" style="{{ a.estilo }}">{{ a.label }}</button>
+            </sc-for>
+          </div>
+
+          <sc-if value="{{ abaDados }}" hint-placeholder-val="{{ true }}">
+            <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px">
+              <div style="display:flex;flex-direction:column">
+                <label style="font:var(--text-small);color:var(--text-secondary);margin-bottom:5px">Nome completo</label>
+                <input type="text" value="{{ dados.nome }}" onChange="{{ onNome }}" style="min-height:44px;border:1px solid var(--color-line-strong);background:var(--bg-card);border-radius:var(--radius-sm);padding:8px 12px;font:var(--text-body);color:var(--text-primary);outline:none">
+              </div>
+              <div style="display:flex;flex-direction:column">
+                <label style="font:var(--text-small);color:var(--text-secondary);margin-bottom:5px">Como querem te chamar</label>
+                <input type="text" value="{{ dados.apelido }}" onChange="{{ onApelido }}" style="min-height:44px;border:1px solid var(--color-line-strong);background:var(--bg-card);border-radius:var(--radius-sm);padding:8px 12px;font:var(--text-body);color:var(--text-primary);outline:none">
+              </div>
+              <div style="display:flex;flex-direction:column">
+                <label style="font:var(--text-small);color:var(--text-secondary);margin-bottom:5px">Telefone / WhatsApp</label>
+                <input type="text" value="{{ dados.telefone }}" onChange="{{ onTelefone }}" style="min-height:44px;border:1px solid var(--color-line-strong);background:var(--bg-card);border-radius:var(--radius-sm);padding:8px 12px;font:var(--text-body);color:var(--text-primary);outline:none">
+              </div>
+              <div style="display:flex;flex-direction:column">
+                <label style="font:var(--text-small);color:var(--text-secondary);margin-bottom:5px">E-mail</label>
+                <input type="text" value="{{ dados.email }}" onChange="{{ onEmail }}" style="min-height:44px;border:1px solid var(--color-line-strong);background:var(--bg-card);border-radius:var(--radius-sm);padding:8px 12px;font:var(--text-body);color:var(--text-primary);outline:none">
+              </div>
+              <div style="display:flex;flex-direction:column">
+                <label style="font:var(--text-small);color:var(--text-secondary);margin-bottom:5px">Cidade</label>
+                <input type="text" value="{{ dados.cidade }}" onChange="{{ onCidade }}" style="min-height:44px;border:1px solid var(--color-line-strong);background:var(--bg-card);border-radius:var(--radius-sm);padding:8px 12px;font:var(--text-body);color:var(--text-primary);outline:none">
+              </div>
+              <div style="display:flex;flex-direction:column">
+                <label style="font:var(--text-small);color:var(--text-secondary);margin-bottom:5px">Nascimento</label>
+                <input type="text" value="{{ dados.nascimento }}" onChange="{{ onNascimento }}" style="min-height:44px;border:1px solid var(--color-line-strong);background:var(--bg-card);border-radius:var(--radius-sm);padding:8px 12px;font:var(--text-body);color:var(--text-primary);outline:none">
+              </div>
+              <div style="display:flex;flex-direction:column">
+                <label style="font:var(--text-small);color:var(--text-secondary);margin-bottom:5px">Contato de emergência</label>
+                <input type="text" value="{{ dados.emergencia }}" onChange="{{ onEmergencia }}" placeholder="nome e telefone" style="min-height:44px;border:1px solid var(--color-line-strong);background:var(--bg-card);border-radius:var(--radius-sm);padding:8px 12px;font:var(--text-body);color:var(--text-primary);outline:none">
+              </div>
+              <div style="display:flex;flex-direction:column">
+                <label style="font:var(--text-small);color:var(--text-secondary);margin-bottom:5px">Vínculo com a casa</label>
+                <input type="text" value="{{ dados.vinculo }}" readonly="{{ true }}" style="min-height:44px;border:1px solid var(--color-line);background:var(--bg-sunken);border-radius:var(--radius-sm);padding:8px 12px;font:var(--text-body);color:var(--text-secondary);outline:none">
+                <span style="margin-top:5px;font:var(--text-small);color:var(--text-meta)">quem altera é a secretaria</span>
+              </div>
+            </div>
+
+            <div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px">
+              <span style="font:var(--text-small);color:var(--text-secondary)">{{ notaSalvar }}</span>
+              <span style="margin-left:auto;display:flex;gap:8px">
+                <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Button" variant="ghost" density="office" onClick="{{ desfazer }}" hint-size="130px,44px">Desfazer</x-import>
+                <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Button" variant="primary" icon-name="check" density="office" onClick="{{ salvar }}" hint-size="180px,44px">Salvar alterações</x-import>
+              </span>
+            </div>
+
+            <div style="background:var(--bg-card);border:var(--border-hairline);border-radius:var(--radius-lg);padding:16px 18px;display:flex;flex-direction:column;gap:10px">
+              <span style="font:var(--text-body-strong);color:var(--text-primary)">Minha atividade</span>
+              <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px">
+                <sc-for list="{{ atividade }}" as="at" hint-placeholder-count="3">
+                  <div style="background:var(--bg-sunken);border:var(--border-hairline);border-radius:var(--radius);padding:12px 14px;display:flex;flex-direction:column;gap:2px">
+                    <span style="font:var(--text-label);text-transform:uppercase;letter-spacing:var(--tracking-label);color:var(--text-field-label)">{{ at.label }}</span>
+                    <span style="{{ at.estiloValor }}">{{ at.valor }}</span>
+                    <span style="font:var(--text-small);color:var(--text-secondary)">{{ at.nota }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ abaAcesso }}" hint-placeholder-val="{{ false }}">
+            <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px">
+              <div style="background:var(--bg-card);border:var(--border-hairline);border-radius:var(--radius-lg);padding:16px 18px;display:flex;flex-direction:column;gap:12px">
+                <span style="font:var(--text-body-strong);color:var(--text-primary)">Entrada no sistema</span>
+                <div style="display:flex;align-items:baseline;gap:10px;padding-bottom:8px;border-bottom:var(--border-hairline)">
+                  <span style="font:var(--text-small);color:var(--text-secondary);width:120px;flex:0 0 auto">Login</span>
+                  <span style="flex:1;min-width:0;font:var(--text-body);color:var(--text-primary)">{{ dados.email }}</span>
+                </div>
+                <div style="display:flex;align-items:baseline;gap:10px;padding-bottom:8px;border-bottom:var(--border-hairline)">
+                  <span style="font:var(--text-small);color:var(--text-secondary);width:120px;flex:0 0 auto">Grupo</span>
+                  <span style="flex:1;min-width:0;font:var(--text-body);color:var(--text-primary)">{{ dados.grupo }}</span>
+                </div>
+                <div style="display:flex;align-items:baseline;gap:10px">
+                  <span style="font:var(--text-small);color:var(--text-secondary);width:120px;flex:0 0 auto">Senha</span>
+                  <span style="flex:1;min-width:0;font:var(--text-body);color:var(--text-primary)">alterada em 14/05/2026</span>
+                </div>
+                <div style="display:flex;gap:8px">
+                  <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Button" variant="ghost" icon-name="key-round" density="office" onClick="{{ trocarSenha }}" hint-size="170px,42px">Trocar senha</x-import>
+                </div>
+                <div style="display:flex;align-items:center;gap:12px;background:var(--bg-sunken);border:var(--border-hairline);border-radius:var(--radius);padding:11px 13px">
+                  <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:1px">
+                    <span style="font:var(--text-body-strong);color:var(--text-primary)">Código por WhatsApp ao entrar</span>
+                    <span style="font:var(--text-small);color:var(--text-secondary)">segunda etapa para quem mexe em dinheiro</span>
+                  </span>
+                  <button type="button" onClick="{{ alternarDuasEtapas }}" role="switch" aria-checked="{{ duasEtapas }}" style="{{ estiloTrilho2fa }}"><span style="{{ estiloBotao2fa }}"></span></button>
+                </div>
+                <span style="font:var(--text-small);color:var(--text-meta)">Permissões vêm do grupo. Para mudar o que você pode fazer, fale com a direção.</span>
+              </div>
+
+              <div style="background:var(--bg-card);border:var(--border-hairline);border-radius:var(--radius-lg);padding:16px 18px;display:flex;flex-direction:column;gap:10px">
+                <div style="display:flex;align-items:center;gap:10px">
+                  <span style="font:var(--text-body-strong);color:var(--text-primary)">Onde você está conectado</span>
+                  <button type="button" onClick="{{ encerrarTodas }}" style="margin-left:auto;font:var(--text-small);border:1px solid var(--color-line);background:var(--bg-card);border-radius:var(--radius-sm);padding:7px 12px;color:var(--color-attention);cursor:pointer">Encerrar todas</button>
+                </div>
+                <sc-for list="{{ sessoes }}" as="se" hint-placeholder-count="3">
+                  <div style="display:flex;align-items:center;gap:11px;padding:10px 12px;border:var(--border-hairline);border-radius:var(--radius)">
+                    <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Icon" name="{{ se.icone }}" size="{{ 17 }}" color="var(--color-royal)" hint-size="17px,17px"></x-import>
+                    <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:1px">
+                      <span style="font:var(--text-body-strong);color:var(--text-primary)">{{ se.aparelho }}</span>
+                      <span style="font:var(--text-small);color:var(--text-meta)">{{ se.meta }}</span>
+                    </span>
+                    <sc-if value="{{ se.ehAtual }}" hint-placeholder-val="{{ false }}">
+                      <span style="font:var(--text-small);color:var(--color-confirmed)">este aparelho</span>
+                    </sc-if>
+                    <sc-if value="{{ se.podeEncerrar }}" hint-placeholder-val="{{ true }}">
+                      <button type="button" onClick="{{ se.encerrar }}" style="font:var(--text-small);border:1px solid var(--color-line);background:var(--bg-card);border-radius:var(--radius-sm);padding:6px 11px;color:var(--text-secondary);cursor:pointer">Encerrar</button>
+                    </sc-if>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ abaAvisos }}" hint-placeholder-val="{{ false }}">
+            <div style="background:var(--bg-card);border:var(--border-hairline);border-radius:var(--radius-lg);padding:16px 18px;display:flex;flex-direction:column;gap:12px">
+              <div style="display:grid;grid-template-columns:minmax(0,1fr) 110px 110px;gap:0;border-bottom:1px solid var(--color-line-strong);padding-bottom:8px">
+                <sc-for list="{{ colunasAvisos }}" as="col" hint-placeholder-count="3">
+                  <span style="{{ col.estilo }}">{{ col.label }}</span>
+                </sc-for>
+              </div>
+              <sc-for list="{{ avisos }}" as="av" hint-placeholder-count="5">
+                <div style="display:grid;grid-template-columns:minmax(0,1fr) 110px 110px;align-items:center;gap:0;padding:9px 0;border-bottom:var(--border-hairline)">
+                  <span style="min-width:0;display:flex;flex-direction:column;gap:2px">
+                    <span style="font:var(--text-body-strong);color:var(--text-primary)">{{ av.titulo }}</span>
+                    <span style="font:var(--text-small);color:var(--text-secondary)">{{ av.detalhe }}</span>
+                  </span>
+                  <span style="display:flex;justify-content:center">
+                    <button type="button" onClick="{{ av.alternarWhats }}" role="switch" aria-checked="{{ av.whats }}" style="{{ av.estiloTrilhoWhats }}"><span style="{{ av.estiloBotaoWhats }}"></span></button>
+                  </span>
+                  <span style="display:flex;justify-content:center">
+                    <button type="button" onClick="{{ av.alternarEmail }}" role="switch" aria-checked="{{ av.email }}" style="{{ av.estiloTrilhoEmail }}"><span style="{{ av.estiloBotaoEmail }}"></span></button>
+                  </span>
+                </div>
+              </sc-for>
+              <span style="font:var(--text-small);color:var(--text-meta)">Avisos de segurança e de fechamento de período são sempre enviados.</span>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ abaAnamnese }}" hint-placeholder-val="{{ false }}">
+            <div style="background:var(--bg-card);border:var(--border-hairline);border-radius:var(--radius-lg);padding:16px 18px;display:flex;flex-direction:column;gap:12px">
+              <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px">
+                <span style="font:var(--text-body-strong);color:var(--text-primary)">Minha anamnese</span>
+                <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.StatusBadge" tone="{{ anamnese.tone }}" hint-size="160px,26px">{{ anamnese.situacao }}</x-import>
+                <span style="margin-left:auto">
+                  <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Button" variant="primary" icon-name="clipboard-list" density="office" onClick="{{ responderAnamnese }}" hint-size="200px,42px">{{ anamnese.textoBotao }}</x-import>
+                </span>
+              </div>
+              <span style="font:var(--text-small);color:var(--text-secondary)">{{ anamnese.nota }}</span>
+
+              <sc-for list="{{ anamnese.pontos }}" as="pt" hint-placeholder-count="2">
+                <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border:var(--border-hairline);border-left:3px solid var(--color-attention);border-radius:var(--radius)">
+                  <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+                    <span style="font:var(--text-body-strong);color:var(--text-primary)">{{ pt.titulo }}</span>
+                    <span style="font:var(--text-small);color:var(--text-secondary)">{{ pt.detalhe }}</span>
+                  </span>
+                </div>
+              </sc-for>
+
+              <div style="display:flex;align-items:center;gap:12px;background:var(--bg-sunken);border:var(--border-hairline);border-radius:var(--radius);padding:11px 13px">
+                <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:1px">
+                  <span style="font:var(--text-body-strong);color:var(--text-primary)">Mostrar pontos de atenção ao guardião do trabalho</span>
+                  <span style="font:var(--text-small);color:var(--text-secondary)">sem isso, só a direção e a secretaria enxergam</span>
+                </span>
+                <button type="button" onClick="{{ alternarCompartilhar }}" role="switch" aria-checked="{{ compartilhar }}" style="{{ estiloTrilhoShare }}"><span style="{{ estiloBotaoShare }}"></span></button>
+              </div>
+
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <span style="font:var(--text-body-strong);color:var(--text-primary)">Respostas anteriores</span>
+                <sc-for list="{{ anamnese.respostas }}" as="r" hint-placeholder-count="2">
+                  <div style="display:flex;align-items:center;gap:12px;padding-bottom:8px;border-bottom:var(--border-hairline)">
+                    <span style="font:var(--text-small);color:var(--text-meta);width:100px;flex:0 0 auto;font-variant-numeric:tabular-nums">{{ r.data }}</span>
+                    <span style="font:var(--text-body);color:var(--text-primary);width:70px;flex:0 0 auto">{{ r.versao }}</span>
+                    <span style="flex:1;min-width:0;font:var(--text-small);color:var(--text-secondary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.resumo }}</span>
+                    <span style="font:var(--text-small);color:var(--text-meta)">{{ r.situacao }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+        </div>
+      </x-import>
+    </div>
+
+    <div style="flex:0 0 auto;display:flex;flex-direction:column;gap:12px;align-items:center">
+      <div style="position:relative;width:392px;height:812px;display:flex;border:10px solid var(--color-ink-brand);border-radius:38px;overflow:hidden;background:var(--bg-app);box-shadow:var(--shadow-raised)">
+        <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.AppShell" unit="CDD" user="{{ user }}" nav="{{ nav }}" active-id="perfil" density="field" style="height:100%;width:100%" dc-props="{{ propsShell }}" hint-size="100%,100%">
+          <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.ScreenHeader" code="F-12" title="Meu perfil" density="field" hint-size="100%,80px"></x-import>
+
+          <div style="padding:14px 16px 20px;display:flex;flex-direction:column;gap:12px;min-width:0">
+            <div style="display:flex;align-items:center;gap:12px">
+              <div style="{{ estiloAvatarField }}">{{ iniciais }}</div>
+              <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+                <span style="font:var(--text-body-strong);color:var(--text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ dados.nome }}</span>
+                <span style="font:var(--text-small);color:var(--text-secondary)">{{ dados.grupo }} · {{ dados.vinculo }}</span>
+              </span>
+            </div>
+
+            <button type="button" onClick="{{ trocarFoto }}" style="min-height:44px;font:var(--text-small);border-radius:var(--radius-sm);cursor:pointer;border:1px dashed var(--color-line-strong);background:var(--bg-card);color:var(--color-royal-deep)">Trocar foto</button>
+
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              <sc-for list="{{ abas }}" as="a" hint-placeholder-count="4">
+                <button type="button" onClick="{{ a.onClick }}" aria-pressed="{{ a.ativo }}" style="{{ a.estiloField }}">{{ a.label }}</button>
+              </sc-for>
+            </div>
+
+            <sc-if value="{{ abaDados }}" hint-placeholder-val="{{ true }}">
+              <div style="display:flex;flex-direction:column;gap:10px">
+                <div style="display:flex;flex-direction:column">
+                  <label style="font:var(--text-small);color:var(--text-secondary);margin-bottom:5px">Telefone / WhatsApp</label>
+                  <input type="text" value="{{ dados.telefone }}" onChange="{{ onTelefone }}" style="min-height:46px;border:1px solid var(--color-line-strong);background:var(--bg-card);border-radius:var(--radius-sm);padding:8px 12px;font:var(--text-body);color:var(--text-primary);outline:none">
+                </div>
+                <div style="display:flex;flex-direction:column">
+                  <label style="font:var(--text-small);color:var(--text-secondary);margin-bottom:5px">E-mail</label>
+                  <input type="text" value="{{ dados.email }}" onChange="{{ onEmail }}" style="min-height:46px;border:1px solid var(--color-line-strong);background:var(--bg-card);border-radius:var(--radius-sm);padding:8px 12px;font:var(--text-body);color:var(--text-primary);outline:none">
+                </div>
+                <div style="display:flex;flex-direction:column">
+                  <label style="font:var(--text-small);color:var(--text-secondary);margin-bottom:5px">Contato de emergência</label>
+                  <input type="text" value="{{ dados.emergencia }}" onChange="{{ onEmergencia }}" style="min-height:46px;border:1px solid var(--color-line-strong);background:var(--bg-card);border-radius:var(--radius-sm);padding:8px 12px;font:var(--text-body);color:var(--text-primary);outline:none">
+                </div>
+                <button type="button" onClick="{{ salvar }}" style="min-height:48px;font:var(--text-body-strong);border-radius:var(--radius-sm);cursor:pointer;border:1px solid var(--color-royal-border);background:var(--color-royal-soft);color:var(--color-royal-deep)">Salvar alterações</button>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ abaAcesso }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <sc-for list="{{ sessoes }}" as="se" hint-placeholder-count="3">
+                  <div style="display:flex;flex-direction:column;gap:4px;padding:11px 12px;border:var(--border-hairline);border-radius:var(--radius);background:var(--bg-card)">
+                    <span style="display:flex;align-items:center;gap:9px">
+                      <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Icon" name="{{ se.icone }}" size="{{ 15 }}" color="var(--color-royal)" hint-size="15px,15px"></x-import>
+                      <span style="flex:1;min-width:0;font:var(--text-body-strong);color:var(--text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ se.aparelho }}</span>
+                    </span>
+                    <span style="font:var(--text-small);color:var(--text-meta)">{{ se.meta }}</span>
+                  </div>
+                </sc-for>
+                <button type="button" onClick="{{ trocarSenha }}" style="min-height:46px;font:var(--text-body-strong);border-radius:var(--radius-sm);cursor:pointer;border:1px solid var(--color-royal-border);background:var(--color-royal-soft);color:var(--color-royal-deep)">Trocar senha</button>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ abaAvisos }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <sc-for list="{{ avisos }}" as="av" hint-placeholder-count="5">
+                  <div style="display:flex;align-items:center;gap:10px;padding:11px 12px;border:var(--border-hairline);border-radius:var(--radius);background:var(--bg-card)">
+                    <span style="flex:1;min-width:0;font:var(--text-body);color:var(--text-primary)">{{ av.titulo }}</span>
+                    <button type="button" onClick="{{ av.alternarWhats }}" role="switch" aria-checked="{{ av.whats }}" style="{{ av.estiloTrilhoWhats }}"><span style="{{ av.estiloBotaoWhats }}"></span></button>
+                  </div>
+                </sc-for>
+                <span style="font:var(--text-small);color:var(--text-meta)">No celular, o controle é do WhatsApp. E-mail fica no computador.</span>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ abaAnamnese }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;flex-direction:column;gap:10px">
+                <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.StatusBadge" tone="{{ anamnese.tone }}" hint-size="160px,26px">{{ anamnese.situacao }}</x-import>
+                <span style="font:var(--text-small);color:var(--text-secondary)">{{ anamnese.nota }}</span>
+                <button type="button" onClick="{{ responderAnamnese }}" style="min-height:48px;font:var(--text-body-strong);border-radius:var(--radius-sm);cursor:pointer;border:1px solid var(--color-royal-border);background:var(--color-royal-soft);color:var(--color-royal-deep)">{{ anamnese.textoBotao }}</button>
+              </div>
+            </sc-if>
+          </div>
+        </x-import>
+      </div>
+      <div style="font:var(--text-small);color:var(--text-secondary);max-width:392px;text-align:center">Campo: contato, senha e anamnese na mão.</div>
+    </div>
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1680,&quot;height&quot;:1120}}">
+const ORIGINAL = {
+  nome: 'Aurio Neto', apelido: 'Aurio', telefone: '(11) 98123-4567', email: 'aurio.neto@cdd.org',
+  cidade: 'Ibiúna · SP', nascimento: '09/03/1979', emergencia: 'Marta Neto · (11) 99888-1212',
+  vinculo: 'Fardado desde 2010', grupo: 'Tesouraria',
+};
+
+class Component extends DCLogic {
+  state = {
+    aba: 'dados', dados: Object.assign({}, ORIGINAL), mensagem: null, temFoto: false,
+    duasEtapas: true, compartilhar: true,
+    avisos: {
+      cerimonia: { whats: true, email: false },
+      preparo: { whats: true, email: false },
+      anamnese: { whats: true, email: true },
+      fila: { whats: false, email: true },
+      resumo: { whats: false, email: true },
+    },
+    sessoes: [
+      { id: 1, aparelho: 'iPhone de Aurio', icone: 'smartphone', meta: 'Ibiúna · agora mesmo', atual: true },
+      { id: 2, aparelho: 'Notebook da secretaria', icone: 'monitor', meta: 'Ibiúna · ontem, 19:40', atual: false },
+      { id: 3, aparelho: 'Chrome · Windows', icone: 'globe', meta: 'São Paulo · 24/08, 08:12', atual: false },
+    ],
+  };
+
+  campo(nome) { return e => this.setState(s => ({ dados: Object.assign({}, s.dados, { [nome]: e.target.value }) })); }
+
+  salvar = () => this.setState({ mensagem: 'Dados salvos. A secretaria vê a alteração no seu cadastro.' });
+  desfazer = () => this.setState({ dados: Object.assign({}, ORIGINAL), mensagem: 'Alterações desfeitas.' });
+  trocarFoto = () => this.setState(s => ({ temFoto: true, mensagem: s.temFoto ? 'Foto atualizada.' : 'Foto enviada. Ela aparece para quem organiza os trabalhos.' }));
+  removerFoto = () => this.setState({ temFoto: false, mensagem: 'Foto removida — voltamos para as iniciais.' });
+  trocarSenha = () => this.setState({ mensagem: 'Enviamos um link de troca de senha para o seu e-mail.' });
+  alternarDuasEtapas = () => this.setState(s => ({ duasEtapas: !s.duasEtapas, mensagem: s.duasEtapas ? 'Código por WhatsApp desligado.' : 'Código por WhatsApp ligado.' }));
+  alternarCompartilhar = () => this.setState(s => ({ compartilhar: !s.compartilhar, mensagem: s.compartilhar ? 'Só direção e secretaria verão seus pontos de atenção.' : 'O guardião do trabalho passará a ver seus pontos de atenção.' }));
+  encerrarTodas = () => this.setState(s => ({ sessoes: s.sessoes.filter(x => x.atual), mensagem: 'Todas as outras sessões foram encerradas.' }));
+  encerrar(id) { return () => this.setState(s => ({ sessoes: s.sessoes.filter(x => x.id !== id), mensagem: 'Sessão encerrada.' })); }
+  responderAnamnese = () => this.setState({ mensagem: 'Formulário v3 aberto. Suas respostas ficam com a direção e a secretaria.' });
+
+  alternarAviso(chave, canal) {
+    return () => this.setState(s => ({
+      avisos: Object.assign({}, s.avisos, { [chave]: Object.assign({}, s.avisos[chave], { [canal]: !s.avisos[chave][canal] }) }),
+    }));
+  }
+
+  trilho(ativo) {
+    return 'width:44px;height:25px;flex:0 0 auto;border-radius:var(--radius-pill);border:1px solid ' + (ativo ? 'var(--color-royal-border)' : 'var(--color-line-strong)') + ';background:' + (ativo ? 'var(--color-royal-soft)' : 'var(--bg-sunken)') + ';cursor:pointer;display:flex;align-items:center;padding:2px;justify-content:' + (ativo ? 'flex-end' : 'flex-start');
+  }
+
+  bolinha(ativo) {
+    return 'width:19px;height:19px;border-radius:var(--radius-pill);background:' + (ativo ? 'var(--color-royal)' : 'var(--color-line-strong)') + ';display:block';
+  }
+
+  renderVals() {
+    const s = this.state;
+    const d = s.dados;
+    const alterado = Object.keys(ORIGINAL).some(k => ORIGINAL[k] !== d[k]);
+    const iniciais = d.nome.split(' ').filter(Boolean).slice(0, 2).map(p => p[0]).join('').toUpperCase();
+
+    const chipOn = 'font:var(--text-small);padding:8px 15px;min-height:38px;border-radius:var(--radius-pill);cursor:pointer;border:1px solid var(--color-royal-border);background:var(--color-royal-soft);color:var(--color-royal-deep)';
+    const chipOff = 'font:var(--text-small);padding:8px 15px;min-height:38px;border-radius:var(--radius-pill);cursor:pointer;border:1px solid var(--color-line);background:var(--bg-card);color:var(--text-secondary)';
+
+    const avisosLista = [
+      ['cerimonia', 'Lembrete de cerimônia', 'dois dias antes de cada trabalho confirmado'],
+      ['preparo', 'Tarefas de preparo', 'quando alguém te marca como responsável'],
+      ['anamnese', 'Anamnese vencendo', 'trinta dias antes de perder a validade'],
+      ['fila', 'Fila de conferência', 'quando há lançamentos esperando você'],
+      ['resumo', 'Resumo do mês', 'entradas, saídas e saldo no fechamento'],
+    ];
+
+    return {
+      user: { name: d.nome, group: d.grupo },
+      propsShell: { style: { height: '100%', minHeight: 0, overflow: 'hidden', gridTemplateRows: '100%' } },
+      subtitulo: 'Seus dados, seu acesso e o que a casa avisa você',
+
+      temMensagem: !!s.mensagem, mensagem: s.mensagem, fecharMensagem: () => this.setState({ mensagem: null }),
+
+      dados: d, iniciais: iniciais, temFoto: s.temFoto,
+      estiloAvatar: 'width:84px;height:84px;flex:0 0 auto;border-radius:var(--radius-pill);display:flex;align-items:center;justify-content:center;font:var(--text-title-sm);letter-spacing:0.04em;background:' + (s.temFoto ? 'var(--color-royal)' : 'var(--color-royal-soft)') + ';color:' + (s.temFoto ? 'var(--bg-card)' : 'var(--color-royal-deep)') + ';border:1px solid var(--color-royal-border)',
+      estiloAvatarField: 'width:56px;height:56px;flex:0 0 auto;border-radius:var(--radius-pill);display:flex;align-items:center;justify-content:center;font:var(--text-body-strong);background:' + (s.temFoto ? 'var(--color-royal)' : 'var(--color-royal-soft)') + ';color:' + (s.temFoto ? 'var(--bg-card)' : 'var(--color-royal-deep)') + ';border:1px solid var(--color-royal-border)',
+      resumoPerfil: d.vinculo + ' · ' + d.cidade + ' · ' + d.telefone,
+      selos: [
+        { label: d.grupo, cor: 'var(--color-royal)' },
+        { label: 'Anamnese em dia', cor: 'var(--color-confirmed)' },
+        { label: s.duasEtapas ? 'Duas etapas ligada' : 'Duas etapas desligada', cor: s.duasEtapas ? 'var(--color-confirmed)' : 'var(--color-attention)' },
+      ].map(x => ({ label: x.label, estilo: 'font:var(--text-small);padding:4px 11px;border-radius:var(--radius-pill);border:1px solid ' + x.cor + ';color:' + x.cor })),
+      trocarFoto: this.trocarFoto, removerFoto: this.removerFoto,
+
+      abas: [['dados', 'Meus dados'], ['acesso', 'Acesso e segurança'], ['avisos', 'Avisos'], ['anamnese', 'Minha anamnese']].map(([k, label]) => ({
+        label: label, ativo: k === s.aba, estilo: k === s.aba ? chipOn : chipOff,
+        estiloField: (k === s.aba ? chipOn : chipOff) + ';flex:0 0 auto',
+        onClick: () => this.setState({ aba: k, mensagem: null }),
+      })),
+      abaDados: s.aba === 'dados', abaAcesso: s.aba === 'acesso', abaAvisos: s.aba === 'avisos', abaAnamnese: s.aba === 'anamnese',
+
+      onNome: this.campo('nome'), onApelido: this.campo('apelido'), onTelefone: this.campo('telefone'),
+      onEmail: this.campo('email'), onCidade: this.campo('cidade'), onNascimento: this.campo('nascimento'),
+      onEmergencia: this.campo('emergencia'),
+      salvar: this.salvar, desfazer: this.desfazer,
+      notaSalvar: alterado ? 'Você mudou alguma coisa e ainda não salvou.' : 'Tudo salvo. O telefone é o que a casa usa para te avisar.',
+
+      atividade: [
+        { label: 'Lançamentos meus', valor: '38', nota: 'nos últimos 90 dias', cor: 'var(--color-royal-deep)' },
+        { label: 'Trabalhos', valor: '11', nota: 'presenças registradas em 2026', cor: 'var(--text-primary)' },
+        { label: 'Último acesso', valor: 'hoje', nota: '08:41, pelo iPhone', cor: 'var(--text-primary)' },
+      ].map(a => ({ label: a.label, valor: a.valor, nota: a.nota, estiloValor: 'font:var(--text-amount-lg);letter-spacing:var(--tracking-amount);font-variant-numeric:tabular-nums;color:' + a.cor })),
+
+      duasEtapas: s.duasEtapas, alternarDuasEtapas: this.alternarDuasEtapas,
+      estiloTrilho2fa: this.trilho(s.duasEtapas), estiloBotao2fa: this.bolinha(s.duasEtapas),
+      trocarSenha: this.trocarSenha, encerrarTodas: this.encerrarTodas,
+      sessoes: s.sessoes.map(x => ({
+        aparelho: x.aparelho, icone: x.icone, meta: x.meta,
+        ehAtual: x.atual, podeEncerrar: !x.atual, encerrar: this.encerrar(x.id),
+      })),
+
+      colunasAvisos: ['Aviso', 'WhatsApp', 'E-mail'].map((label, i) => ({
+        label: label,
+        estilo: 'font:var(--text-label);letter-spacing:var(--tracking-label);text-transform:uppercase;color:var(--text-field-label);text-align:' + (i === 0 ? 'left' : 'center'),
+      })),
+      avisos: avisosLista.map(([chave, titulo, detalhe]) => {
+        const a = s.avisos[chave];
+        return {
+          titulo: titulo, detalhe: detalhe, whats: a.whats, email: a.email,
+          alternarWhats: this.alternarAviso(chave, 'whats'), alternarEmail: this.alternarAviso(chave, 'email'),
+          estiloTrilhoWhats: this.trilho(a.whats), estiloBotaoWhats: this.bolinha(a.whats),
+          estiloTrilhoEmail: this.trilho(a.email), estiloBotaoEmail: this.bolinha(a.email),
+        };
+      }),
+
+      compartilhar: s.compartilhar, alternarCompartilhar: this.alternarCompartilhar,
+      estiloTrilhoShare: this.trilho(s.compartilhar), estiloBotaoShare: this.bolinha(s.compartilhar),
+      responderAnamnese: this.responderAnamnese,
+      anamnese: {
+        situacao: 'Em dia · v3', tone: 'confirmed',
+        textoBotao: 'Atualizar respostas',
+        nota: 'Respondida em 19/06/2026 na versão v3. Vence em 19/06/2027. Só direção e secretaria leem as respostas completas.',
+        pontos: [{ titulo: 'Pressão alta controlada', detalhe: 'losartana 50 mg, acompanhamento semestral' }],
+        respostas: [
+          { data: '19/06/2026', versao: 'v3', resumo: 'pressão alta controlada · sem outras condições', situacao: 'Válida' },
+          { data: '03/03/2024', versao: 'v2', resumo: 'sem pontos de atenção declarados', situacao: 'Substituída' },
+        ],
+      },
+
+      nav: [
+        { id: 'painel', label: 'Painel', icon: 'layout-dashboard' },
+        { id: 'registrar', label: 'Registrar lançamento', icon: 'circle-plus' },
+        { id: 'meus', label: 'Meus registros', icon: 'receipt-text' },
+        { section: 'Financeiro' },
+        { id: 'lote', label: 'Verificação de lote', icon: 'sparkles', count: 12 },
+        { id: 'lancamentos', label: 'Lançamentos', icon: 'list' },
+        { id: 'contas', label: 'Contas e fundo', icon: 'landmark' },
+        { id: 'relatorios', label: 'Relatórios', icon: 'chart-no-axes-column' },
+        { id: 'fechamento', label: 'Fechamento', icon: 'lock' },
+        { section: 'Cerimônias' },
+        { id: 'agenda', label: 'Agenda', icon: 'calendar-days' },
+        { id: 'ayahuasca', label: 'Ayahuasca', icon: 'flask-conical' },
+        { section: 'Pessoas' },
+        { id: 'pessoas', label: 'Pessoas', icon: 'users' },
+        { id: 'anamnese', label: 'Anamnese', icon: 'clipboard-list' },
+      ],
+    };
+  }
+}
+
+</script>
+</body>
+</html>

@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><script src="./ds-base.js"></script><style>body{margin:0;background:var(--bg-app)}</style></helmet>
+
+<div style="padding:26px 28px 40px;display:flex;flex-direction:column;gap:20px;background:var(--bg-app);min-height:100%">
+
+  <div style="display:flex;flex-direction:column;gap:2px">
+    <div style="font:var(--text-label);text-transform:uppercase;letter-spacing:var(--tracking-label);color:var(--text-field-label)">F-04 · Contas e fundo · Tesouraria</div>
+    <div style="font:var(--text-title-sm);color:var(--text-title)">Onde o dinheiro está, e quanto dele já tem destino</div>
+  </div>
+
+  <div style="display:flex;flex-wrap:wrap;gap:26px;align-items:flex-start">
+
+    <div style="position:relative;flex:0 0 auto;width:1180px;height:940px;display:flex;border:var(--border-hairline);border-radius:var(--radius-lg);overflow:hidden;background:var(--bg-card);box-shadow:var(--shadow-raised)">
+      <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.AppShell" unit="CDD" user="{{ user }}" nav="{{ nav }}" active-id="contas" density="office" style="height:100%;width:100%" dc-props="{{ propsShell }}" hint-size="100%,100%">
+        <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.ScreenHeader" code="F-04 · Contas e fundo" title="Contas e fundo" subtitle="{{ subtitulo }}" hint-size="100%,140px"></x-import>
+
+        <div style="padding:18px 24px 26px;display:flex;flex-direction:column;gap:20px;max-width:1000px">
+
+          <div style="background:var(--bg-brand);border:1px solid var(--border-brand);border-radius:var(--radius-lg);padding:18px 20px;display:flex;flex-wrap:wrap;gap:22px;align-items:flex-end">
+            <div style="display:flex;flex-direction:column;gap:4px;flex:1 1 260px">
+              <span style="font:var(--text-label);text-transform:uppercase;letter-spacing:var(--tracking-label);color:var(--text-field-label)">Saldo consolidado da unidade</span>
+              <span style="font:var(--text-amount-hero);letter-spacing:var(--tracking-amount);font-variant-numeric:tabular-nums;color:var(--color-royal-deep)">{{ totalGeral }}</span>
+              <span style="font:var(--text-small);color:var(--text-secondary)">{{ posicaoNota }}</span>
+            </div>
+            <sc-for list="{{ resumo }}" as="b" hint-placeholder-count="3">
+              <div style="display:flex;flex-direction:column;gap:3px;padding-left:20px;border-left:1px solid var(--border-brand)">
+                <span style="font:var(--text-label);text-transform:uppercase;letter-spacing:var(--tracking-label);color:var(--text-field-label)">{{ b.label }}</span>
+                <span style="font:var(--text-amount-lg);letter-spacing:var(--tracking-amount);font-variant-numeric:tabular-nums;color:var(--text-primary)">{{ b.valor }}</span>
+                <span style="font:var(--text-small);color:var(--text-secondary)">{{ b.nota }}</span>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <div style="display:flex;align-items:baseline;gap:12px">
+              <span style="font:var(--text-label);text-transform:uppercase;letter-spacing:var(--tracking-label);color:var(--text-field-label)">Contas</span>
+              <span style="font:var(--text-small);color:var(--text-secondary)">{{ notaContas }}</span>
+              <span style="margin-left:auto;display:flex;gap:8px">
+                <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Button" variant="ghost" icon-name="settings-2" density="office" onClick="{{ abrirGerenciar }}" hint-size="220px,44px">Gerenciar contas e fundos</x-import>
+                <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Button" variant="ghost" icon-name="arrow-left-right" density="office" hint-size="190px,44px">Transferir entre contas</x-import>
+              </span>
+            </div>
+
+            <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:stretch">
+              <sc-for list="{{ contas }}" as="c" hint-placeholder-count="4">
+                <div style="{{ c.estiloCard }}">
+                  <div style="display:flex;align-items:flex-start;gap:12px">
+                    <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Icon" name="{{ c.icone }}" size="{{ 18 }}" color="var(--color-royal)" hint-size="18px,18px"></x-import>
+                    <div style="display:flex;flex-direction:column;gap:2px;min-width:0;flex:1">
+                      <span style="font:var(--text-body-strong);color:var(--text-primary)">{{ c.nome }}</span>
+                      <span style="font:var(--text-small);color:var(--text-secondary)">{{ c.descricao }}</span>
+                    </div>
+                    <sc-if value="{{ c.temAlerta }}" hint-placeholder-val="{{ false }}">
+                      <span title="{{ c.alerta }}" style="cursor:help;display:flex;align-items:center;padding-top:2px">
+                        <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Icon" name="triangle-alert" size="{{ 17 }}" color="var(--color-attention)" hint-size="17px,17px"></x-import>
+                      </span>
+                    </sc-if>
+                    <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.StatusBadge" tone="{{ c.tone }}" hint-size="120px,26px">{{ c.conciliacao }}</x-import>
+                  </div>
+                  <div style="font:var(--text-amount-lg);letter-spacing:var(--tracking-amount);font-variant-numeric:tabular-nums;color:var(--text-primary)">{{ c.saldo }}</div>
+                  <div style="display:flex;justify-content:space-between;gap:12px;font:var(--text-small);color:var(--text-meta)">
+                    <span>{{ c.ultimoMovimento }}</span>
+                    <span>{{ c.responsavel }}</span>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <div style="display:flex;align-items:baseline;gap:12px">
+              <span style="font:var(--text-label);text-transform:uppercase;letter-spacing:var(--tracking-label);color:var(--text-field-label)">Fundo próprio</span>
+              <span style="font:var(--text-small);color:var(--text-secondary)">{{ notaFundo }}</span>
+            </div>
+
+            <div style="background:var(--bg-card);border:var(--border-hairline);border-radius:var(--radius-lg);padding:18px 20px;display:flex;flex-direction:column;gap:16px">
+              <div style="display:flex;flex-wrap:wrap;gap:20px;align-items:flex-end">
+                <div style="display:flex;flex-direction:column;gap:3px">
+                  <span style="font:var(--text-label);text-transform:uppercase;letter-spacing:var(--tracking-label);color:var(--text-field-label)">Total do fundo</span>
+                  <span style="font:var(--text-amount-lg);letter-spacing:var(--tracking-amount);font-variant-numeric:tabular-nums;color:var(--color-royal-deep)">{{ fundoTotal }}</span>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:3px;padding-left:20px;border-left:var(--border-hairline)">
+                  <span style="font:var(--text-label);text-transform:uppercase;letter-spacing:var(--tracking-label);color:var(--text-field-label)">Já com destino</span>
+                  <span style="font:var(--text-amount);letter-spacing:var(--tracking-amount);font-variant-numeric:tabular-nums;color:var(--text-primary)">{{ fundoComprometido }}</span>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:3px;padding-left:20px;border-left:var(--border-hairline)">
+                  <span style="font:var(--text-label);text-transform:uppercase;letter-spacing:var(--tracking-label);color:var(--text-field-label)">Livre</span>
+                  <span style="font:var(--text-amount);letter-spacing:var(--tracking-amount);font-variant-numeric:tabular-nums;color:var(--color-confirmed)">{{ fundoLivre }}</span>
+                </div>
+              </div>
+
+              <div style="display:flex;height:12px;border-radius:var(--radius-pill);overflow:hidden;background:var(--bg-sunken)">
+                <sc-for list="{{ reservas }}" as="r" hint-placeholder-count="4">
+                  <div style="{{ r.estiloFatia }}" title="{{ r.nome }}"></div>
+                </sc-for>
+              </div>
+
+              <div style="display:flex;flex-direction:column;gap:10px">
+                <sc-for list="{{ reservas }}" as="r" hint-placeholder-count="4">
+                  <div style="display:flex;align-items:center;gap:12px">
+                    <span style="{{ r.estiloPonto }}"></span>
+                    <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:1px">
+                      <span style="font:var(--text-body-strong);color:var(--text-primary)">{{ r.nome }}</span>
+                      <span style="font:var(--text-small);color:var(--text-secondary)">{{ r.nota }}</span>
+                    </span>
+                    <span style="font:var(--text-amount);letter-spacing:var(--tracking-amount);font-variant-numeric:tabular-nums;color:var(--text-primary);text-align:right">{{ r.valor }}</span>
+                    <span style="width:56px;text-align:right;font:var(--text-small);color:var(--text-meta)">{{ r.percentual }}</span>
+                  </div>
+                </sc-for>
+              </div>
+
+              <p style="margin:0;font:var(--text-small);color:var(--text-secondary);border-top:var(--border-hairline);padding-top:12px">O fundo não é uma conta: é uma parte do saldo que já tem destino combinado. Gastar de uma reserva não muda o saldo das contas, muda o que ainda está livre.</p>
+            </div>
+          </div>
+        </div>
+      </x-import>
+
+      <sc-if value="{{ modalAberto }}" hint-placeholder-val="{{ false }}">
+        <div onClick="{{ fecharGerenciar }}" style="position:absolute;inset:0;background:rgba(20,20,24,0.42);display:flex;align-items:center;justify-content:center;z-index:20;padding:30px">
+          <div onClick="{{ pararPropagacao }}" style="width:640px;max-height:100%;display:flex;flex-direction:column;background:var(--bg-card);border-radius:var(--radius-lg);box-shadow:var(--shadow-raised);overflow:hidden">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 20px;border-bottom:var(--border-hairline)">
+              <span style="font:var(--text-label);letter-spacing:var(--tracking-label);text-transform:uppercase;color:var(--text-field-label)">Gerenciar contas e fundos</span>
+              <button type="button" aria-label="fechar" onClick="{{ fecharGerenciar }}" style="width:34px;height:34px;border:1px solid var(--color-line);background:var(--bg-card);border-radius:var(--radius-pill);cursor:pointer;font:var(--text-body-strong);color:var(--text-secondary)">×</button>
+            </div>
+
+            <sc-if value="{{ semForm }}" hint-placeholder-val="{{ true }}">
+              <div style="display:flex;gap:8px;padding:16px 20px 0">
+                <sc-for list="{{ modalAbas }}" as="m" hint-placeholder-count="2">
+                  <button type="button" onClick="{{ m.onClick }}" aria-pressed="{{ m.ativo }}" style="{{ m.estilo }}">{{ m.label }}</button>
+                </sc-for>
+              </div>
+            </sc-if>
+
+            <div style="flex:1;min-height:0;overflow:auto;padding:16px 20px 20px;display:flex;flex-direction:column;gap:10px">
+
+              <sc-if value="{{ mostrarListaContas }}" hint-placeholder-val="{{ true }}">
+                <button type="button" onClick="{{ abrirNovaConta }}" style="align-self:flex-start;font:var(--text-small);padding:8px 14px;border-radius:var(--radius-sm);cursor:pointer;border:1px dashed var(--color-line-strong);background:var(--bg-card);color:var(--color-royal-deep)">+ Nova conta</button>
+                <sc-for list="{{ listaContas }}" as="c" hint-placeholder-count="4">
+                  <div style="{{ c.estiloLinha }}">
+                    <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Icon" name="{{ c.icone }}" size="{{ 17 }}" color="var(--color-royal)" hint-size="17px,17px"></x-import>
+                    <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:1px">
+                      <span style="font:var(--text-body-strong);color:var(--text-primary)">{{ c.nome }}</span>
+                      <span style="font:var(--text-small);color:var(--text-secondary)">{{ c.descricao }}</span>
+                    </span>
+                    <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.StatusBadge" tone="{{ c.badgeTone }}" hint-size="90px,24px">{{ c.badgeTexto }}</x-import>
+                    <button type="button" aria-label="editar" onClick="{{ c.onEditar }}" style="width:32px;height:32px;flex:0 0 auto;border:1px solid var(--color-line);background:var(--bg-card);border-radius:var(--radius-pill);cursor:pointer;display:flex;align-items:center;justify-content:center">
+                      <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Icon" name="pencil" size="{{ 15 }}" color="var(--text-secondary)" hint-size="15px,15px"></x-import>
+                    </button>
+                    <button type="button" onClick="{{ c.onAlternar }}" style="{{ c.estiloBotaoAlternar }}">{{ c.textoAlternar }}</button>
+                  </div>
+                </sc-for>
+              </sc-if>
+
+              <sc-if value="{{ mostrarListaFundos }}" hint-placeholder-val="{{ false }}">
+                <button type="button" onClick="{{ abrirNovoFundo }}" style="align-self:flex-start;font:var(--text-small);padding:8px 14px;border-radius:var(--radius-sm);cursor:pointer;border:1px dashed var(--color-line-strong);background:var(--bg-card);color:var(--color-royal-deep)">+ Novo fundo</button>
+                <sc-for list="{{ listaFundos }}" as="f" hint-placeholder-count="3">
+                  <div style="{{ f.estiloLinha }}">
+                    <span style="{{ f.estiloPonto }}"></span>
+                    <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:1px">
+                      <span style="font:var(--text-body-strong);color:var(--text-primary)">{{ f.nome }}</span>
+                      <span style="font:var(--text-small);color:var(--text-secondary)">{{ f.nota }}</span>
+                    </span>
+                    <span style="font:var(--text-body-strong);color:var(--text-primary);font-variant-numeric:tabular-nums">{{ f.valorTexto }}</span>
+                    <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.StatusBadge" tone="{{ f.badgeTone }}" hint-size="90px,24px">{{ f.badgeTexto }}</x-import>
+                    <button type="button" aria-label="editar" onClick="{{ f.onEditar }}" style="width:32px;height:32px;flex:0 0 auto;border:1px solid var(--color-line);background:var(--bg-card);border-radius:var(--radius-pill);cursor:pointer;display:flex;align-items:center;justify-content:center">
+                      <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Icon" name="pencil" size="{{ 15 }}" color="var(--text-secondary)" hint-size="15px,15px"></x-import>
+                    </button>
+                    <button type="button" onClick="{{ f.onAlternar }}" style="{{ f.estiloBotaoAlternar }}">{{ f.textoAlternar }}</button>
+                  </div>
+                </sc-for>
+              </sc-if>
+
+              <sc-if value="{{ mostrarFormConta }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;flex-direction:column;gap:12px">
+                  <span style="font:var(--text-label);letter-spacing:var(--tracking-label);text-transform:uppercase;color:var(--text-field-label)">{{ tituloForm }}</span>
+                  <div style="display:flex;flex-direction:column">
+                    <label style="font:var(--text-small);color:var(--text-secondary);margin-bottom:5px">Nome da conta</label>
+                    <input type="text" value="{{ form.nome }}" onChange="{{ onFormNome }}" placeholder="Cora PJ" style="min-height:40px;border:1px solid var(--color-line-strong);background:var(--bg-card);border-radius:var(--radius-sm);padding:8px 12px;font:var(--text-body);color:var(--text-primary);outline:none">
+                  </div>
+                  <div style="display:flex;flex-direction:column">
+                    <label style="font:var(--text-small);color:var(--text-secondary);margin-bottom:5px">Descrição</label>
+                    <input type="text" value="{{ form.descricao }}" onChange="{{ onFormDescricao }}" placeholder="conta principal da casa" style="min-height:40px;border:1px solid var(--color-line-strong);background:var(--bg-card);border-radius:var(--radius-sm);padding:8px 12px;font:var(--text-body);color:var(--text-primary);outline:none">
+                  </div>
+                  <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px">
+                    <div style="display:flex;flex-direction:column">
+                      <label style="font:var(--text-small);color:var(--text-secondary);margin-bottom:5px">Categoria</label>
+                      <select value="{{ form.categoria }}" onChange="{{ onFormCategoria }}" style="min-height:40px;border:1px solid var(--color-line-strong);background:var(--bg-card);border-radius:var(--radius-sm);padding:8px 11px;font:var(--text-body);color:var(--text-primary);outline:none">
+                        <option value="banco">Banco</option>
+                        <option value="caixa">Espécie (caixa)</option>
+                      </select>
+                    </div>
+                    <div style="display:flex;flex-direction:column">
+                      <label style="font:var(--text-small);color:var(--text-secondary);margin-bottom:5px">Responsável</label>
+                      <input type="text" value="{{ form.responsavel }}" onChange="{{ onFormResponsavel }}" placeholder="quem cuida desta conta" style="min-height:40px;border:1px solid var(--color-line-strong);background:var(--bg-card);border-radius:var(--radius-sm);padding:8px 12px;font:var(--text-body);color:var(--text-primary);outline:none">
+                    </div>
+                  </div>
+                  <div style="display:flex;gap:10px;justify-content:flex-end;padding-top:6px">
+                    <button type="button" onClick="{{ cancelarForm }}" style="font:var(--text-body);padding:9px 16px;min-height:40px;border-radius:var(--radius-sm);cursor:pointer;border:1px solid var(--color-line);background:var(--bg-card);color:var(--text-secondary)">Cancelar</button>
+                    <button type="button" onClick="{{ salvarForm }}" style="font:var(--text-body-strong);padding:9px 18px;min-height:40px;border-radius:var(--radius-sm);cursor:pointer;border:1px solid var(--color-royal-border);background:var(--color-royal-soft);color:var(--color-royal-deep)">Salvar conta</button>
+                  </div>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ mostrarFormFundo }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;flex-direction:column;gap:12px">
+                  <span style="font:var(--text-label);letter-spacing:var(--tracking-label);text-transform:uppercase;color:var(--text-field-label)">{{ tituloForm }}</span>
+                  <div style="display:flex;flex-direction:column">
+                    <label style="font:var(--text-small);color:var(--text-secondary);margin-bottom:5px">Nome do fundo</label>
+                    <input type="text" value="{{ form.nome }}" onChange="{{ onFormNome }}" placeholder="Obra do dormitório" style="min-height:40px;border:1px solid var(--color-line-strong);background:var(--bg-card);border-radius:var(--radius-sm);padding:8px 12px;font:var(--text-body);color:var(--text-primary);outline:none">
+                  </div>
+                  <div style="display:flex;flex-direction:column">
+                    <label style="font:var(--text-small);color:var(--text-secondary);margin-bottom:5px">Nota</label>
+                    <input type="text" value="{{ form.nota }}" onChange="{{ onFormNota }}" placeholder="meta, prazo ou destino combinado" style="min-height:40px;border:1px solid var(--color-line-strong);background:var(--bg-card);border-radius:var(--radius-sm);padding:8px 12px;font:var(--text-body);color:var(--text-primary);outline:none">
+                  </div>
+                  <div style="display:flex;flex-direction:column">
+                    <label style="font:var(--text-small);color:var(--text-secondary);margin-bottom:5px">Valor alocado (R$)</label>
+                    <input type="text" value="{{ form.valor }}" onChange="{{ onFormValor }}" placeholder="0,00" style="min-height:40px;border:1px solid var(--color-line-strong);background:var(--bg-card);border-radius:var(--radius-sm);padding:8px 12px;font:var(--text-body);color:var(--text-primary);outline:none">
+                  </div>
+                  <div style="display:flex;gap:10px;justify-content:flex-end;padding-top:6px">
+                    <button type="button" onClick="{{ cancelarForm }}" style="font:var(--text-body);padding:9px 16px;min-height:40px;border-radius:var(--radius-sm);cursor:pointer;border:1px solid var(--color-line);background:var(--bg-card);color:var(--text-secondary)">Cancelar</button>
+                    <button type="button" onClick="{{ salvarForm }}" style="font:var(--text-body-strong);padding:9px 18px;min-height:40px;border-radius:var(--radius-sm);cursor:pointer;border:1px solid var(--color-royal-border);background:var(--color-royal-soft);color:var(--color-royal-deep)">Salvar fundo</button>
+                  </div>
+                </div>
+              </sc-if>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+    </div>
+
+    <div style="flex:0 0 auto;display:flex;flex-direction:column;gap:12px;align-items:center">
+      <div style="position:relative;width:392px;height:812px;display:flex;border:10px solid var(--color-ink-brand);border-radius:38px;overflow:hidden;background:var(--bg-app);box-shadow:var(--shadow-raised)">
+        <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.AppShell" unit="CDD" user="{{ user }}" nav="{{ nav }}" active-id="contas" density="field" style="height:100%;width:100%" dc-props="{{ propsShell }}" hint-size="100%,100%">
+          <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.ScreenHeader" code="F-04" title="Contas e fundo" density="field" hint-size="100%,80px"></x-import>
+
+          <div style="padding:14px 16px 20px;display:flex;flex-direction:column;gap:14px;min-width:0">
+
+            <div style="background:var(--bg-brand);border:1px solid var(--border-brand);border-radius:var(--radius-lg);padding:14px 16px;display:flex;flex-direction:column;gap:3px">
+              <span style="font:var(--text-label);text-transform:uppercase;letter-spacing:var(--tracking-label);color:var(--text-field-label)">Saldo consolidado</span>
+              <span style="font:var(--text-amount-hero);letter-spacing:var(--tracking-amount);font-variant-numeric:tabular-nums;color:var(--color-royal-deep)">{{ totalGeral }}</span>
+              <span style="font:var(--text-small);color:var(--text-secondary)">{{ posicaoNota }}</span>
+            </div>
+
+            <button type="button" onClick="{{ abrirGerenciar }}" style="min-height:44px;font:var(--text-small);border-radius:var(--radius-sm);cursor:pointer;border:1px dashed var(--color-line-strong);background:var(--bg-card);color:var(--color-royal-deep)">Gerenciar contas e fundos</button>
+
+            <div style="display:flex;gap:6px">
+              <sc-for list="{{ abas }}" as="a" hint-placeholder-count="2">
+                <button type="button" onClick="{{ a.onClick }}" aria-pressed="{{ a.ativo }}" style="{{ a.estilo }}">{{ a.label }}</button>
+              </sc-for>
+            </div>
+
+            <sc-if value="{{ ehContas }}" hint-placeholder-val="{{ true }}">
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <sc-for list="{{ contas }}" as="c" hint-placeholder-count="4">
+                  <div style="background:var(--bg-card);border:var(--border-hairline);border-radius:var(--radius);padding:12px 14px;display:flex;flex-direction:column;gap:6px">
+                    <div style="display:flex;align-items:center;gap:10px">
+                      <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Icon" name="{{ c.icone }}" size="{{ 16 }}" color="var(--color-royal)" hint-size="16px,16px"></x-import>
+                      <span style="flex:1;min-width:0;font:var(--text-body-strong);color:var(--text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ c.nome }}</span>
+                      <span style="font:var(--text-amount);letter-spacing:var(--tracking-amount);font-variant-numeric:tabular-nums;color:var(--text-primary)">{{ c.saldo }}</span>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:8px">
+                      <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.StatusBadge" tone="{{ c.tone }}" hint-size="120px,24px">{{ c.conciliacao }}</x-import>
+                      <span style="font:var(--text-small);color:var(--text-meta);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ c.ultimoMovimento }}</span>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ ehFundo }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;flex-direction:column;gap:12px">
+                <div style="background:var(--bg-card);border:var(--border-hairline);border-radius:var(--radius);padding:12px 14px;display:flex;justify-content:space-between;gap:10px">
+                  <span style="display:flex;flex-direction:column;gap:2px">
+                    <span style="font:var(--text-label);text-transform:uppercase;letter-spacing:var(--tracking-label);color:var(--text-field-label)">Total</span>
+                    <span style="font:var(--text-amount);letter-spacing:var(--tracking-amount);font-variant-numeric:tabular-nums;color:var(--text-primary)">{{ fundoTotal }}</span>
+                  </span>
+                  <span style="display:flex;flex-direction:column;gap:2px;text-align:right">
+                    <span style="font:var(--text-label);text-transform:uppercase;letter-spacing:var(--tracking-label);color:var(--text-field-label)">Livre</span>
+                    <span style="font:var(--text-amount);letter-spacing:var(--tracking-amount);font-variant-numeric:tabular-nums;color:var(--color-confirmed)">{{ fundoLivre }}</span>
+                  </span>
+                </div>
+                <div style="display:flex;height:10px;border-radius:var(--radius-pill);overflow:hidden;background:var(--bg-sunken)">
+                  <sc-for list="{{ reservas }}" as="r" hint-placeholder-count="4">
+                    <div style="{{ r.estiloFatia }}"></div>
+                  </sc-for>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:10px">
+                  <sc-for list="{{ reservas }}" as="r" hint-placeholder-count="4">
+                    <div style="display:flex;align-items:center;gap:10px">
+                      <span style="{{ r.estiloPonto }}"></span>
+                      <span style="flex:1;min-width:0;font:var(--text-body);color:var(--text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.nome }}</span>
+                      <span style="font:var(--text-amount);letter-spacing:var(--tracking-amount);font-variant-numeric:tabular-nums;color:var(--text-primary)">{{ r.valor }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-if>
+          </div>
+        </x-import>
+
+        <sc-if value="{{ modalAberto }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute;inset:0;background:rgba(20,20,24,0.42);z-index:20;display:flex;flex-direction:column;justify-content:flex-end">
+            <div style="max-height:88%;display:flex;flex-direction:column;background:var(--bg-card);border-radius:20px 20px 0 0;box-shadow:var(--shadow-raised);overflow:hidden">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;border-bottom:var(--border-hairline)">
+                <span style="font:var(--text-label);letter-spacing:var(--tracking-label);text-transform:uppercase;color:var(--text-field-label)">Gerenciar</span>
+                <button type="button" aria-label="fechar" onClick="{{ fecharGerenciar }}" style="width:40px;height:40px;border:1px solid var(--color-line);background:var(--bg-card);border-radius:var(--radius-pill);cursor:pointer;font:var(--text-body-strong);color:var(--text-secondary)">×</button>
+              </div>
+
+              <sc-if value="{{ semForm }}" hint-placeholder-val="{{ true }}">
+                <div style="display:flex;gap:6px;padding:12px 16px 0">
+                  <sc-for list="{{ modalAbas }}" as="m" hint-placeholder-count="2">
+                    <button type="button" onClick="{{ m.onClick }}" aria-pressed="{{ m.ativo }}" style="{{ m.estiloField }}">{{ m.label }}</button>
+                  </sc-for>
+                </div>
+              </sc-if>
+
+              <div style="flex:1;min-height:0;overflow:auto;padding:14px 16px 20px;display:flex;flex-direction:column;gap:8px">
+
+                <sc-if value="{{ mostrarListaContas }}" hint-placeholder-val="{{ true }}">
+                  <button type="button" onClick="{{ abrirNovaConta }}" style="align-self:flex-start;font:var(--text-small);padding:8px 14px;border-radius:var(--radius-sm);cursor:pointer;border:1px dashed var(--color-line-strong);background:var(--bg-card);color:var(--color-royal-deep)">+ Nova conta</button>
+                  <sc-for list="{{ listaContas }}" as="c" hint-placeholder-count="4">
+                    <div style="{{ c.estiloLinhaField }}">
+                      <div style="display:flex;align-items:center;gap:10px">
+                        <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Icon" name="{{ c.icone }}" size="{{ 16 }}" color="var(--color-royal)" hint-size="16px,16px"></x-import>
+                        <span style="flex:1;min-width:0;font:var(--text-body-strong);color:var(--text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ c.nome }}</span>
+                        <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.StatusBadge" tone="{{ c.badgeTone }}" hint-size="86px,22px">{{ c.badgeTexto }}</x-import>
+                      </div>
+                      <div style="display:flex;gap:8px">
+                        <button type="button" onClick="{{ c.onEditar }}" style="flex:1;min-height:38px;font:var(--text-small);border:1px solid var(--color-line);background:var(--bg-card);border-radius:var(--radius-sm);color:var(--text-secondary);cursor:pointer">Editar</button>
+                        <button type="button" onClick="{{ c.onAlternar }}" style="{{ c.estiloBotaoAlternarField }}">{{ c.textoAlternar }}</button>
+                      </div>
+                    </div>
+                  </sc-for>
+                </sc-if>
+
+                <sc-if value="{{ mostrarListaFundos }}" hint-placeholder-val="{{ false }}">
+                  <button type="button" onClick="{{ abrirNovoFundo }}" style="align-self:flex-start;font:var(--text-small);padding:8px 14px;border-radius:var(--radius-sm);cursor:pointer;border:1px dashed var(--color-line-strong);background:var(--bg-card);color:var(--color-royal-deep)">+ Novo fundo</button>
+                  <sc-for list="{{ listaFundos }}" as="f" hint-placeholder-count="3">
+                    <div style="{{ f.estiloLinhaField }}">
+                      <div style="display:flex;align-items:center;gap:10px">
+                        <span style="{{ f.estiloPonto }}"></span>
+                        <span style="flex:1;min-width:0;font:var(--text-body-strong);color:var(--text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ f.nome }}</span>
+                        <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.StatusBadge" tone="{{ f.badgeTone }}" hint-size="86px,22px">{{ f.badgeTexto }}</x-import>
+                      </div>
+                      <div style="display:flex;gap:8px">
+                        <button type="button" onClick="{{ f.onEditar }}" style="flex:1;min-height:38px;font:var(--text-small);border:1px solid var(--color-line);background:var(--bg-card);border-radius:var(--radius-sm);color:var(--text-secondary);cursor:pointer">Editar</button>
+                        <button type="button" onClick="{{ f.onAlternar }}" style="{{ f.estiloBotaoAlternarField }}">{{ f.textoAlternar }}</button>
+                      </div>
+                    </div>
+                  </sc-for>
+                </sc-if>
+
+                <sc-if value="{{ mostrarFormConta }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;flex-direction:column;gap:10px">
+                    <span style="font:var(--text-label);letter-spacing:var(--tracking-label);text-transform:uppercase;color:var(--text-field-label)">{{ tituloForm }}</span>
+                    <div style="display:flex;flex-direction:column">
+                      <label style="font:var(--text-small);color:var(--text-secondary);margin-bottom:5px">Nome da conta</label>
+                      <input type="text" value="{{ form.nome }}" onChange="{{ onFormNome }}" style="min-height:44px;border:1px solid var(--color-line-strong);background:var(--bg-card);border-radius:var(--radius-sm);padding:8px 12px;font:var(--text-body);color:var(--text-primary);outline:none">
+                    </div>
+                    <div style="display:flex;flex-direction:column">
+                      <label style="font:var(--text-small);color:var(--text-secondary);margin-bottom:5px">Descrição</label>
+                      <input type="text" value="{{ form.descricao }}" onChange="{{ onFormDescricao }}" style="min-height:44px;border:1px solid var(--color-line-strong);background:var(--bg-card);border-radius:var(--radius-sm);padding:8px 12px;font:var(--text-body);color:var(--text-primary);outline:none">
+                    </div>
+                    <div style="display:flex;flex-direction:column">
+                      <label style="font:var(--text-small);color:var(--text-secondary);margin-bottom:5px">Categoria</label>
+                      <select value="{{ form.categoria }}" onChange="{{ onFormCategoria }}" style="min-height:44px;border:1px solid var(--color-line-strong);background:var(--bg-card);border-radius:var(--radius-sm);padding:8px 11px;font:var(--text-body);color:var(--text-primary);outline:none">
+                        <option value="banco">Banco</option>
+                        <option value="caixa">Espécie (caixa)</option>
+                      </select>
+                    </div>
+                    <div style="display:flex;flex-direction:column">
+                      <label style="font:var(--text-small);color:var(--text-secondary);margin-bottom:5px">Responsável</label>
+                      <input type="text" value="{{ form.responsavel }}" onChange="{{ onFormResponsavel }}" style="min-height:44px;border:1px solid var(--color-line-strong);background:var(--bg-card);border-radius:var(--radius-sm);padding:8px 12px;font:var(--text-body);color:var(--text-primary);outline:none">
+                    </div>
+                    <div style="display:flex;gap:10px;padding-top:4px">
+                      <button type="button" onClick="{{ cancelarForm }}" style="flex:1;min-height:44px;font:var(--text-body);border-radius:var(--radius-sm);cursor:pointer;border:1px solid var(--color-line);background:var(--bg-card);color:var(--text-secondary)">Cancelar</button>
+                      <button type="button" onClick="{{ salvarForm }}" style="flex:1;min-height:44px;font:var(--text-body-strong);border-radius:var(--radius-sm);cursor:pointer;border:1px solid var(--color-royal-border);background:var(--color-royal-soft);color:var(--color-royal-deep)">Salvar</button>
+                    </div>
+                  </div>
+                </sc-if>
+
+                <sc-if value="{{ mostrarFormFundo }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;flex-direction:column;gap:10px">
+                    <span style="font:var(--text-label);letter-spacing:var(--tracking-label);text-transform:uppercase;color:var(--text-field-label)">{{ tituloForm }}</span>
+                    <div style="display:flex;flex-direction:column">
+                      <label style="font:var(--text-small);color:var(--text-secondary);margin-bottom:5px">Nome do fundo</label>
+                      <input type="text" value="{{ form.nome }}" onChange="{{ onFormNome }}" style="min-height:44px;border:1px solid var(--color-line-strong);background:var(--bg-card);border-radius:var(--radius-sm);padding:8px 12px;font:var(--text-body);color:var(--text-primary);outline:none">
+                    </div>
+                    <div style="display:flex;flex-direction:column">
+                      <label style="font:var(--text-small);color:var(--text-secondary);margin-bottom:5px">Nota</label>
+                      <input type="text" value="{{ form.nota }}" onChange="{{ onFormNota }}" style="min-height:44px;border:1px solid var(--color-line-strong);background:var(--bg-card);border-radius:var(--radius-sm);padding:8px 12px;font:var(--text-body);color:var(--text-primary);outline:none">
+                    </div>
+                    <div style="display:flex;flex-direction:column">
+                      <label style="font:var(--text-small);color:var(--text-secondary);margin-bottom:5px">Valor alocado (R$)</label>
+                      <input type="text" value="{{ form.valor }}" onChange="{{ onFormValor }}" style="min-height:44px;border:1px solid var(--color-line-strong);background:var(--bg-card);border-radius:var(--radius-sm);padding:8px 12px;font:var(--text-body);color:var(--text-primary);outline:none">
+                    </div>
+                    <div style="display:flex;gap:10px;padding-top:4px">
+                      <button type="button" onClick="{{ cancelarForm }}" style="flex:1;min-height:44px;font:var(--text-body);border-radius:var(--radius-sm);cursor:pointer;border:1px solid var(--color-line);background:var(--bg-card);color:var(--text-secondary)">Cancelar</button>
+                      <button type="button" onClick="{{ salvarForm }}" style="flex:1;min-height:44px;font:var(--text-body-strong);border-radius:var(--radius-sm);cursor:pointer;border:1px solid var(--color-royal-border);background:var(--color-royal-soft);color:var(--color-royal-deep)">Salvar</button>
+                    </div>
+                  </div>
+                </sc-if>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+      </div>
+      <div style="font:var(--text-small);color:var(--text-secondary);max-width:392px;text-align:center">Campo: saldo, contas e reservas em duas abas.</div>
+    </div>
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1680,&quot;height&quot;:1050}}">
+const FUNDO_POOL = 39235.40;
+const CORES_FUNDO = ['var(--color-royal)', 'var(--color-confirmed)', 'var(--color-pending)', 'var(--color-attention)'];
+
+class Component extends DCLogic {
+  state = {
+    aba: 'contas',
+    modalAberto: false,
+    modalAba: 'contas',
+    form: null,
+    contasData: [
+      { id: 'cora', nome: 'Cora PJ', descricao: 'conta principal da casa · CNPJ do CDD', icone: 'landmark', saldo: 41902.10, categoria: 'banco', responsavel: 'Aurio Neto', ultimoMovimento: 'movimento hoje, 14:22', conciliacao: 'Conciliada ontem', tone: 'confirmed', alerta: null, ativa: true },
+      { id: 'especie', nome: 'Espécie', descricao: 'caixa da chácara · cofre da secretaria', icone: 'wallet', saldo: 3180.40, categoria: 'caixa', responsavel: 'Chico Aguiar', ultimoMovimento: 'movimento em 19/08', conciliacao: 'Contagem pendente', tone: 'pending', alerta: 'Última contagem física foi em 31/07. O combinado é contar todo dia 15.', ativa: true },
+      { id: 'nubank', nome: 'Nubank Paty', descricao: 'conta pessoal usada em nome da casa', icone: 'credit-card', saldo: 1240.55, categoria: 'banco', responsavel: 'Paty Munay', ultimoMovimento: 'movimento em 23/08', conciliacao: 'A conferir', tone: 'pending', alerta: 'Conta pessoal: o combinado é zerar para o Cora até o fim de cada mês.', ativa: true },
+      { id: 'itau', nome: 'Itaú Munay', descricao: 'unidade comercial · lojinha', icone: 'landmark', saldo: 37994.85, categoria: 'banco', responsavel: 'Paty Munay', ultimoMovimento: 'movimento em 22/08', conciliacao: 'Conciliada ontem', tone: 'confirmed', alerta: null, ativa: true },
+    ],
+    fundosData: [
+      { id: 'obra', nome: 'Obra do dormitório', valor: 18400.00, cor: 'var(--color-royal)', nota: 'meta 24.000,00 · previsão de conclusão em novembro', ativa: true },
+      { id: 'feitio', nome: 'Feitio de dezembro', valor: 9200.00, cor: 'var(--color-confirmed)', nota: 'insumos, garrafas e deslocamento', ativa: true },
+      { id: 'emergencia', nome: 'Emergência e saúde', valor: 6000.00, cor: 'var(--color-pending)', nota: 'intocável fora de emergência, decisão da direção', ativa: true },
+    ],
+  };
+
+  numero(v) {
+    const n = parseFloat(String(v).replace(/\./g, '').replace(',', '.'));
+    return isNaN(n) ? 0 : n;
+  }
+
+  abrirGerenciar = () => this.setState({ modalAberto: true, modalAba: 'contas', form: null });
+  fecharGerenciar = () => this.setState({ modalAberto: false, form: null });
+  pararPropagacao = e => e.stopPropagation();
+  cancelarForm = () => this.setState({ form: null });
+
+  abrirNovaConta = () => this.setState({ form: { modo: 'conta', editId: null, nome: '', descricao: '', categoria: 'banco', responsavel: '' } });
+  abrirNovoFundo = () => this.setState({ form: { modo: 'fundo', editId: null, nome: '', nota: '', valor: '' } });
+
+  editarConta(c) {
+    return () => this.setState({ form: { modo: 'conta', editId: c.id, nome: c.nome, descricao: c.descricao, categoria: c.categoria, responsavel: c.responsavel } });
+  }
+
+  editarFundo(f) {
+    return () => this.setState({ form: { modo: 'fundo', editId: f.id, nome: f.nome, nota: f.nota, valor: String(f.valor).replace('.', ',') } });
+  }
+
+  campoForm(campo) {
+    return e => this.setState(s => ({ form: Object.assign({}, s.form, { [campo]: e.target.value }) }));
+  }
+
+  alternarAtivaConta(id) {
+    return () => this.setState(s => ({ contasData: s.contasData.map(c => c.id === id ? Object.assign({}, c, { ativa: !c.ativa }) : c) }));
+  }
+
+  alternarAtivaFundo(id) {
+    return () => this.setState(s => ({ fundosData: s.fundosData.map(f => f.id === id ? Object.assign({}, f, { ativa: !f.ativa }) : f) }));
+  }
+
+  salvarForm = () => {
+    const f = this.state.form;
+    if (!f || !f.nome || !f.nome.trim()) return;
+    if (f.modo === 'conta') {
+      this.setState(s => {
+        if (f.editId != null) {
+          return { form: null, contasData: s.contasData.map(c => c.id === f.editId ? Object.assign({}, c, { nome: f.nome, descricao: f.descricao, categoria: f.categoria, responsavel: f.responsavel, icone: f.categoria === 'caixa' ? 'wallet' : 'landmark' }) : c) };
+        }
+        const novo = { id: 'c' + Date.now(), nome: f.nome, descricao: f.descricao || '', icone: f.categoria === 'caixa' ? 'wallet' : 'landmark', saldo: 0, categoria: f.categoria || 'banco', responsavel: f.responsavel || '', ultimoMovimento: 'sem movimentos ainda', conciliacao: 'Nova conta', tone: 'pending', alerta: null, ativa: true };
+        return { form: null, contasData: s.contasData.concat(novo) };
+      });
+    } else {
+      this.setState(s => {
+        if (f.editId != null) {
+          return { form: null, fundosData: s.fundosData.map(r => r.id === f.editId ? Object.assign({}, r, { nome: f.nome, nota: f.nota, valor: this.numero(f.valor) }) : r) };
+        }
+        const cor = CORES_FUNDO[s.fundosData.length % CORES_FUNDO.length];
+        const novo = { id: 'f' + Date.now(), nome: f.nome, nota: f.nota || '', valor: this.numero(f.valor), cor: cor, ativa: true };
+        return { form: null, fundosData: s.fundosData.concat(novo) };
+      });
+    }
+  };
+
+  renderVals() {
+    const s = this.state;
+    const brl = n => n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const contasAtivas = s.contasData.filter(c => c.ativa);
+    const fundosAtivos = s.fundosData.filter(f => f.ativa);
+
+    const somaFundosAtivos = fundosAtivos.reduce((a, f) => a + f.valor, 0);
+    const livre = FUNDO_POOL - somaFundosAtivos;
+    const reservasDisplay = fundosAtivos.concat([{ nome: 'Livre', valor: livre, cor: 'var(--color-line-strong)', nota: 'sem destino combinado' }]);
+
+    const emBanco = contasAtivas.filter(c => c.categoria === 'banco').reduce((a, c) => a + c.saldo, 0);
+    const emCaixa = contasAtivas.filter(c => c.categoria === 'caixa').reduce((a, c) => a + c.saldo, 0);
+    const pendentes = contasAtivas.filter(c => c.tone === 'pending').length;
+
+    const abaOn = 'flex:1;font:var(--text-small);padding:11px 6px;min-height:44px;border-radius:var(--radius-sm);cursor:pointer;border:1px solid var(--color-royal-border);background:var(--color-royal-soft);color:var(--color-royal-deep)';
+    const abaOff = 'flex:1;font:var(--text-small);padding:11px 6px;min-height:44px;border-radius:var(--radius-sm);cursor:pointer;border:1px solid var(--color-line);background:var(--bg-card);color:var(--text-secondary)';
+    const modalAbaOn = 'font:var(--text-small);padding:9px 16px;min-height:38px;border-radius:var(--radius-sm);cursor:pointer;border:1px solid var(--color-royal-border);background:var(--color-royal-soft);color:var(--color-royal-deep)';
+    const modalAbaOff = 'font:var(--text-small);padding:9px 16px;min-height:38px;border-radius:var(--radius-sm);cursor:pointer;border:1px solid var(--color-line);background:var(--bg-card);color:var(--text-secondary)';
+
+    const botaoAtivo = 'flex:0 0 auto;padding:0 14px;min-height:38px;font:var(--text-small);border-radius:var(--radius-sm);cursor:pointer;border:1px solid var(--color-line);background:var(--bg-card);color:var(--color-attention)';
+    const botaoInativo = 'flex:0 0 auto;padding:0 14px;min-height:38px;font:var(--text-small);border-radius:var(--radius-sm);cursor:pointer;border:1px solid var(--color-confirmed);background:var(--bg-card);color:var(--color-confirmed)';
+    const botaoAtivoField = 'flex:1;min-height:38px;font:var(--text-small);border-radius:var(--radius-sm);cursor:pointer;border:1px solid var(--color-line);background:var(--bg-card);color:var(--color-attention)';
+    const botaoInativoField = 'flex:1;min-height:38px;font:var(--text-small);border-radius:var(--radius-sm);cursor:pointer;border:1px solid var(--color-confirmed);background:var(--bg-card);color:var(--color-confirmed)';
+
+    const f = s.form;
+
+    return {
+      user: { name: 'Aurio Neto', group: 'Tesouraria' },
+      propsShell: { style: { height: '100%', minHeight: 0, overflow: 'hidden', gridTemplateRows: '100%' } },
+      subtitulo: 'Saldo por conta e destino do fundo próprio · CDD',
+
+      totalGeral: 'R$ ' + brl(emBanco + emCaixa),
+      posicaoNota: 'posição de hoje, 09:12 · ' + contasAtivas.length + ' contas ativas',
+      resumo: [
+        { label: 'Em banco', valor: brl(emBanco), nota: contasAtivas.filter(c => c.categoria === 'banco').length + ' contas' },
+        { label: 'Em espécie', valor: brl(emCaixa), nota: 'caixa da chácara' },
+        { label: 'Fundo próprio', valor: brl(FUNDO_POOL), nota: 'parte do saldo, já com destino' },
+      ],
+
+      notaContas: pendentes + ' contas esperando conferência',
+      contas: contasAtivas.map(c => ({
+        nome: c.nome, descricao: c.descricao, icone: c.icone, tone: c.tone,
+        conciliacao: c.conciliacao, responsavel: 'responsável: ' + c.responsavel,
+        ultimoMovimento: c.ultimoMovimento,
+        saldo: 'R$ ' + brl(c.saldo),
+        temAlerta: !!c.alerta, alerta: c.alerta,
+        estiloCard: 'background:var(--bg-card);border:var(--border-hairline);border-left:3px solid ' + (c.tone === 'pending' ? 'var(--color-pending)' : 'var(--color-confirmed)') + ';border-radius:var(--radius);padding:14px 16px;display:flex;flex-direction:column;justify-content:space-between;gap:10px;height:100%',
+      })),
+
+      notaFundo: 'reservado dentro do saldo, não é uma conta separada',
+      fundoTotal: 'R$ ' + brl(FUNDO_POOL),
+      fundoComprometido: 'R$ ' + brl(somaFundosAtivos),
+      fundoLivre: 'R$ ' + brl(livre),
+      reservas: reservasDisplay.map(r => ({
+        nome: r.nome, nota: r.nota,
+        valor: 'R$ ' + brl(r.valor),
+        percentual: Math.round((r.valor / FUNDO_POOL) * 100) + '%',
+        estiloFatia: 'width:' + Math.max(0, (r.valor / FUNDO_POOL) * 100) + '%;background:' + r.cor,
+        estiloPonto: 'width:10px;height:10px;border-radius:var(--radius-pill);flex:0 0 auto;background:' + r.cor,
+      })),
+
+      abas: [['contas', 'Contas'], ['fundo', 'Fundo']].map(([k, label]) => ({
+        label: label, ativo: k === s.aba, estilo: k === s.aba ? abaOn : abaOff,
+        onClick: () => this.setState({ aba: k }),
+      })),
+      ehContas: s.aba === 'contas', ehFundo: s.aba === 'fundo',
+
+      modalAberto: s.modalAberto,
+      abrirGerenciar: this.abrirGerenciar, fecharGerenciar: this.fecharGerenciar, pararPropagacao: this.pararPropagacao,
+      semForm: !f,
+      modalAbas: [['contas', 'Contas'], ['fundos', 'Fundos']].map(([k, label]) => ({
+        label: label, ativo: k === s.modalAba, estilo: k === s.modalAba ? modalAbaOn : modalAbaOff,
+        estiloField: (k === s.modalAba ? modalAbaOn : modalAbaOff) + ';flex:1;text-align:center',
+        onClick: () => this.setState({ modalAba: k, form: null }),
+      })),
+      mostrarListaContas: !f && s.modalAba === 'contas',
+      mostrarListaFundos: !f && s.modalAba === 'fundos',
+      mostrarFormConta: !!f && f.modo === 'conta',
+      mostrarFormFundo: !!f && f.modo === 'fundo',
+      tituloForm: f && f.editId != null ? 'Editar ' + (f.modo === 'conta' ? 'conta' : 'fundo') : 'Novo ' + (f && f.modo === 'conta' ? 'conta' : 'fundo'),
+      form: f || {},
+      onFormNome: this.campoForm('nome'), onFormDescricao: this.campoForm('descricao'),
+      onFormCategoria: this.campoForm('categoria'), onFormResponsavel: this.campoForm('responsavel'),
+      onFormNota: this.campoForm('nota'), onFormValor: this.campoForm('valor'),
+      cancelarForm: this.cancelarForm, salvarForm: this.salvarForm,
+      abrirNovaConta: this.abrirNovaConta, abrirNovoFundo: this.abrirNovoFundo,
+
+      listaContas: s.contasData.map(c => ({
+        nome: c.nome, descricao: c.descricao, icone: c.icone,
+        badgeTexto: c.ativa ? 'Ativa' : 'Inativa', badgeTone: c.ativa ? 'confirmed' : 'neutral',
+        onEditar: this.editarConta(c), onAlternar: this.alternarAtivaConta(c.id),
+        textoAlternar: c.ativa ? 'Excluir' : 'Reativar',
+        estiloBotaoAlternar: c.ativa ? botaoAtivo : botaoInativo,
+        estiloBotaoAlternarField: c.ativa ? botaoAtivoField : botaoInativoField,
+        estiloLinha: 'display:flex;align-items:center;gap:10px;padding:10px 12px;border:var(--border-hairline);border-radius:var(--radius);background:' + (c.ativa ? 'var(--bg-card)' : 'var(--bg-sunken)') + ';opacity:' + (c.ativa ? '1' : '0.65'),
+        estiloLinhaField: 'display:flex;flex-direction:column;gap:8px;padding:10px 12px;border:var(--border-hairline);border-radius:var(--radius);background:' + (c.ativa ? 'var(--bg-card)' : 'var(--bg-sunken)') + ';opacity:' + (c.ativa ? '1' : '0.65'),
+      })),
+      listaFundos: s.fundosData.map(fu => ({
+        nome: fu.nome, nota: fu.nota, valorTexto: 'R$ ' + brl(fu.valor),
+        estiloPonto: 'width:10px;height:10px;border-radius:var(--radius-pill);flex:0 0 auto;background:' + fu.cor,
+        badgeTexto: fu.ativa ? 'Ativo' : 'Inativo', badgeTone: fu.ativa ? 'confirmed' : 'neutral',
+        onEditar: this.editarFundo(fu), onAlternar: this.alternarAtivaFundo(fu.id),
+        textoAlternar: fu.ativa ? 'Excluir' : 'Reativar',
+        estiloBotaoAlternar: fu.ativa ? botaoAtivo : botaoInativo,
+        estiloBotaoAlternarField: fu.ativa ? botaoAtivoField : botaoInativoField,
+        estiloLinha: 'display:flex;align-items:center;gap:10px;padding:10px 12px;border:var(--border-hairline);border-radius:var(--radius);background:' + (fu.ativa ? 'var(--bg-card)' : 'var(--bg-sunken)') + ';opacity:' + (fu.ativa ? '1' : '0.65'),
+        estiloLinhaField: 'display:flex;flex-direction:column;gap:8px;padding:10px 12px;border:var(--border-hairline);border-radius:var(--radius);background:' + (fu.ativa ? 'var(--bg-card)' : 'var(--bg-sunken)') + ';opacity:' + (fu.ativa ? '1' : '0.65'),
+      })),
+
+      nav: [
+        { id: 'painel', label: 'Painel', icon: 'layout-dashboard' },
+        { id: 'registrar', label: 'Registrar lançamento', icon: 'circle-plus' },
+        { id: 'meus', label: 'Meus registros', icon: 'receipt-text' },
+        { section: 'Financeiro' },
+        { id: 'lote', label: 'Verificação de lote', icon: 'sparkles', count: 12 },
+        { id: 'lancamentos', label: 'Lançamentos', icon: 'list' },
+        { id: 'contas', label: 'Contas e fundo', icon: 'landmark' },
+        { id: 'relatorios', label: 'Relatórios', icon: 'chart-no-axes-column' },
+        { id: 'fechamento', label: 'Fechamento', icon: 'lock' },
+        { section: 'Cerimônias' },
+        { id: 'agenda', label: 'Agenda', icon: 'calendar-days' },
+        { id: 'ayahuasca', label: 'Ayahuasca', icon: 'flask-conical' },
+        { section: 'Pessoas' },
+        { id: 'pessoas', label: 'Pessoas', icon: 'users' },
+        { id: 'anamnese', label: 'Anamnese', icon: 'clipboard-list' },
+      ],
+    };
+  }
+}
+
+</script>
+</body>
+</html>

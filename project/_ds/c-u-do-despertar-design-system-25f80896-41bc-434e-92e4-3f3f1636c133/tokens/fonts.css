@@ -1,0 +1,12 @@
+/* =====================================================================
+   Céu do Despertar — WEBFONTS
+   Nenhum binário licenciado acompanha a identidade (Doc 5, questão D1:
+   "existe fonte oficial da marca além do wordmark?" — sem resposta).
+   As três famílias abaixo são as escolhidas no Doc 5 §3.2 e vêm do
+   Google Fonts. Se o centro licenciar famílias próprias, a troca é um
+   token — só estes três @import e as três variáveis de família mudam.
+   ===================================================================== */
+
+@import url("https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap");

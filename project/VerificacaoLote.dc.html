@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><script src="./ds-base.js"></script><style>body{margin:0;background:var(--bg-app)}</style></helmet>
+
+<div style="padding:26px 28px 40px;display:flex;flex-direction:column;gap:20px;background:var(--bg-app);min-height:100%">
+
+  <div style="display:flex;flex-direction:column;gap:2px">
+    <div style="font:var(--text-label);text-transform:uppercase;letter-spacing:var(--tracking-label);color:var(--text-field-label)">F-05 · Verificação de lote · Tesouraria</div>
+    <div style="font:var(--text-title-sm);color:var(--text-title)">Confira rápido o que está certo, corrija o resto</div>
+  </div>
+
+  <div style="display:flex;flex-wrap:wrap;gap:26px;align-items:flex-start">
+
+    <div style="position:relative;flex:0 0 auto;width:1180px;height:940px;display:flex;border:var(--border-hairline);border-radius:var(--radius-lg);overflow:hidden;background:var(--bg-card);box-shadow:var(--shadow-raised)">
+      <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.AppShell" unit="CDD" user="{{ user }}" nav="{{ nav }}" active-id="lote" density="office" style="height:100%;width:100%" dc-props="{{ propsShell }}" hint-size="100%,100%">
+        <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.ScreenHeader" code="F-05 · Verificação de lote" title="Verificação de lote" subtitle="{{ subtitulo }}" hint-size="100%,140px"></x-import>
+
+        <div style="padding:18px 24px 26px;display:flex;flex-direction:column;gap:14px;max-width:1020px">
+
+          <sc-if value="{{ temMensagem }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--color-royal-soft);border:1px solid var(--color-royal-border);border-radius:var(--radius);padding:10px 14px">
+              <span style="font:var(--text-body);color:var(--color-royal-deep)">{{ mensagem }}</span>
+              <button type="button" onClick="{{ fecharMensagem }}" style="border:0;background:transparent;color:var(--color-royal-deep);cursor:pointer;font:var(--text-body-strong)">×</button>
+            </div>
+          </sc-if>
+
+          <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px">
+            <sc-for list="{{ filtros }}" as="fi" hint-placeholder-count="4">
+              <button type="button" onClick="{{ fi.onClick }}" aria-pressed="{{ fi.ativo }}" style="{{ fi.estilo }}">{{ fi.label }}</button>
+            </sc-for>
+            <span style="margin-left:auto;font:var(--text-small);color:var(--text-secondary)">{{ resumoLista }}</span>
+          </div>
+
+          <sc-if value="{{ temSelecao }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;align-items:center;gap:12px;background:var(--bg-brand);border:1px solid var(--border-brand);border-radius:var(--radius);padding:10px 14px">
+              <span style="font:var(--text-body-strong);color:var(--text-primary)">{{ textoSelecao }}</span>
+              <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Button" variant="quiet" icon-name="check-check" density="office" onClick="{{ aprovarSelecionados }}" hint-size="180px,38px">Aprovar selecionados</x-import>
+              <button type="button" onClick="{{ limparSelecao }}" style="margin-left:auto;font:var(--text-small);border:0;background:transparent;color:var(--text-secondary);cursor:pointer;text-decoration:underline">Limpar seleção</button>
+            </div>
+          </sc-if>
+          <sc-if value="{{ temSelecao }}" hint-placeholder-val="{{ false }}"></sc-if>
+
+          <div style="display:flex;align-items:center;gap:10px;padding:0 4px">
+            <input type="checkbox" checked="{{ todosSelecionados }}" onChange="{{ alternarSelecionarTodos }}" style="width:17px;height:17px;cursor:pointer">
+            <span style="font:var(--text-small);color:var(--text-secondary)">Selecionar todos visíveis</span>
+            <button type="button" onClick="{{ aprovarAltaConfianca }}" style="margin-left:auto;font:var(--text-small);padding:7px 13px;border-radius:var(--radius-sm);cursor:pointer;border:1px solid var(--color-confirmed);background:var(--bg-card);color:var(--color-confirmed)">Aprovar todos de alta confiança ({{ contagemAlta }})</button>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:8px;overflow:auto;max-height:600px">
+            <sc-for list="{{ itensVisiveis }}" as="it" hint-placeholder-count="6">
+              <div style="{{ it.estiloLinha }}">
+                <input type="checkbox" checked="{{ it.selecionado }}" onChange="{{ it.onSelecionar }}" style="width:17px;height:17px;cursor:pointer;flex:0 0 auto">
+                <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Icon" name="{{ it.icone }}" size="{{ 18 }}" color="var(--color-royal)" hint-size="18px,18px"></x-import>
+                <button type="button" onClick="{{ it.abrir }}" style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;text-align:left;border:0;background:transparent;cursor:pointer;padding:0">
+                  <span style="font:var(--text-body-strong);color:var(--text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ it.motivo }}</span>
+                  <span style="font:var(--text-small);color:var(--text-meta);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ it.meta }}</span>
+                </button>
+                <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.StatusBadge" tone="{{ it.confiancaTone }}" hint-size="130px,26px">{{ it.confiancaTexto }}</x-import>
+                <span style="{{ it.estiloValor }}">{{ it.valorTexto }}</span>
+                <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Button" variant="ghost" density="office" onClick="{{ it.abrir }}" hint-size="90px,36px">Revisar</x-import>
+              </div>
+            </sc-for>
+            <sc-if value="{{ vazio }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:32px 16px;text-align:center;font:var(--text-body);color:var(--text-secondary)">Nada nessa fila. Tudo que chegou já foi conferido.</div>
+            </sc-if>
+          </div>
+        </div>
+      </x-import>
+
+      <sc-if value="{{ temDetalhe }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;top:0;right:0;bottom:0;width:440px;background:var(--bg-card);border-left:1px solid var(--color-line-strong);box-shadow:var(--shadow-raised);display:flex;flex-direction:column;z-index:5">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 18px;border-bottom:var(--border-hairline)">
+            <span style="font:var(--text-label);letter-spacing:var(--tracking-label);text-transform:uppercase;color:var(--text-field-label)">Revisar lançamento</span>
+            <button type="button" aria-label="fechar" onClick="{{ fecharDetalhe }}" style="width:34px;height:34px;border:1px solid var(--color-line);background:var(--bg-card);border-radius:var(--radius-pill);cursor:pointer;font:var(--text-body-strong);color:var(--text-secondary)">×</button>
+          </div>
+          <div style="flex:1;min-height:0;overflow:auto;padding:18px;display:flex;flex-direction:column;gap:14px">
+            <div style="display:flex;align-items:center;gap:10px;background:var(--bg-sunken);border:var(--border-hairline);border-radius:var(--radius);padding:10px 12px">
+              <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Icon" name="{{ detalhe.icone }}" size="{{ 16 }}" color="var(--color-royal)" hint-size="16px,16px"></x-import>
+              <span style="font:var(--text-small);color:var(--text-secondary)">{{ detalhe.meta }}</span>
+            </div>
+
+            <sc-if value="{{ detalhe.temAnexo }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;align-items:center;gap:8px;font:var(--text-small);color:var(--text-secondary)">
+                <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Icon" name="paperclip" size="{{ 15 }}" color="var(--text-secondary)" hint-size="15px,15px"></x-import>
+                {{ detalhe.anexo }}
+              </div>
+            </sc-if>
+
+            <div style="display:flex;flex-direction:column">
+              <label style="font:var(--text-small);color:var(--text-secondary);margin-bottom:5px">{{ detalhe.labelValor }}</label>
+              <input type="text" value="{{ detalhe.valor }}" onChange="{{ onDetalheValor }}" style="min-height:44px;border:1px solid var(--color-line-strong);background:var(--bg-card);border-radius:var(--radius-sm);padding:8px 12px;font:var(--text-body);color:var(--text-primary);outline:none">
+            </div>
+            <div style="display:flex;flex-direction:column">
+              <label style="font:var(--text-small);color:var(--text-secondary);margin-bottom:5px">{{ detalhe.labelMotivo }}</label>
+              <input type="text" value="{{ detalhe.motivo }}" onChange="{{ onDetalheMotivo }}" style="min-height:44px;border:1px solid var(--color-line-strong);background:var(--bg-card);border-radius:var(--radius-sm);padding:8px 12px;font:var(--text-body);color:var(--text-primary);outline:none">
+            </div>
+            <div style="display:flex;flex-direction:column">
+              <label style="font:var(--text-small);color:var(--text-secondary);margin-bottom:5px">Data</label>
+              <input type="text" value="{{ detalhe.data }}" onChange="{{ onDetalheData }}" style="min-height:44px;border:1px solid var(--color-line-strong);background:var(--bg-card);border-radius:var(--radius-sm);padding:8px 12px;font:var(--text-body);color:var(--text-primary);outline:none">
+            </div>
+
+            <sc-if value="{{ detalhe.ehTransferencia }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;flex-direction:column">
+                <label style="font:var(--text-small);color:var(--text-secondary);margin-bottom:5px">Conta de origem</label>
+                <input type="text" value="{{ detalhe.conta }}" onChange="{{ onDetalheConta }}" style="min-height:44px;border:1px solid var(--color-line-strong);background:var(--bg-card);border-radius:var(--radius-sm);padding:8px 12px;font:var(--text-body);color:var(--text-primary);outline:none">
+              </div>
+              <div style="display:flex;flex-direction:column">
+                <label style="font:var(--text-small);color:var(--text-secondary);margin-bottom:5px">Conta de destino</label>
+                <input type="text" value="{{ detalhe.contaDestino }}" onChange="{{ onDetalheContaDestino }}" style="min-height:44px;border:1px solid var(--color-line-strong);background:var(--bg-card);border-radius:var(--radius-sm);padding:8px 12px;font:var(--text-body);color:var(--text-primary);outline:none">
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ detalhe.temClassificacao }}" hint-placeholder-val="{{ true }}">
+              <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px">
+                <div style="display:flex;flex-direction:column">
+                  <label style="font:var(--text-small);color:var(--text-secondary);margin-bottom:5px">Grupo</label>
+                  <input type="text" value="{{ detalhe.grupo }}" onChange="{{ onDetalheGrupo }}" style="min-height:44px;border:1px solid var(--color-line-strong);background:var(--bg-card);border-radius:var(--radius-sm);padding:8px 12px;font:var(--text-body);color:var(--text-primary);outline:none">
+                </div>
+                <div style="display:flex;flex-direction:column">
+                  <label style="font:var(--text-small);color:var(--text-secondary);margin-bottom:5px">Categoria</label>
+                  <input type="text" value="{{ detalhe.categoria }}" onChange="{{ onDetalheCategoria }}" style="min-height:44px;border:1px solid var(--color-line-strong);background:var(--bg-card);border-radius:var(--radius-sm);padding:8px 12px;font:var(--text-body);color:var(--text-primary);outline:none">
+                </div>
+              </div>
+              <div style="display:flex;flex-direction:column">
+                <label style="font:var(--text-small);color:var(--text-secondary);margin-bottom:5px">Conta</label>
+                <input type="text" value="{{ detalhe.conta }}" onChange="{{ onDetalheConta }}" style="min-height:44px;border:1px solid var(--color-line-strong);background:var(--bg-card);border-radius:var(--radius-sm);padding:8px 12px;font:var(--text-body);color:var(--text-primary);outline:none">
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ detalhe.rejeitando }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;flex-direction:column;gap:8px;border-top:var(--border-hairline);padding-top:14px">
+                <label style="font:var(--text-small);color:var(--text-secondary)">Motivo da devolução para {{ detalhe.remetente }}</label>
+                <textarea value="{{ motivoRejeicao }}" onChange="{{ onMotivoRejeicao }}" rows="3" placeholder="o que precisa ser corrigido antes de reenviar" style="border:1px solid var(--color-line-strong);background:var(--bg-card);border-radius:var(--radius-sm);padding:10px 12px;font:var(--text-body);color:var(--text-primary);outline:none;resize:vertical"></textarea>
+              </div>
+            </sc-if>
+          </div>
+          <div style="display:flex;gap:10px;padding:14px 18px;border-top:var(--border-hairline)">
+            <sc-if value="{{ detalhe.rejeitando }}" hint-placeholder-val="{{ false }}">
+              <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Button" variant="ghost" onClick="{{ cancelarRejeicao }}" hint-size="110px,44px">Cancelar</x-import>
+              <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Button" variant="primary" icon-name="undo-2" onClick="{{ confirmarRejeicao }}" hint-size="220px,44px">Devolver com o motivo</x-import>
+            </sc-if>
+            <sc-if value="{{ detalhe.mostrarAcoes }}" hint-placeholder-val="{{ true }}">
+              <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Button" variant="quiet" icon-name="undo-2" onClick="{{ iniciarRejeicao }}" hint-size="150px,44px">Devolver</x-import>
+              <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Button" variant="primary" icon-name="check" onClick="{{ aprovarDetalhe }}" hint-size="180px,44px">Aprovar e consolidar</x-import>
+            </sc-if>
+          </div>
+        </div>
+      </sc-if>
+    </div>
+
+    <div style="flex:0 0 auto;display:flex;flex-direction:column;gap:12px;align-items:center">
+      <div style="position:relative;width:392px;height:812px;display:flex;border:10px solid var(--color-ink-brand);border-radius:38px;overflow:hidden;background:var(--bg-app);box-shadow:var(--shadow-raised)">
+        <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.AppShell" unit="CDD" user="{{ user }}" nav="{{ nav }}" active-id="lote" density="field" style="height:100%;width:100%" dc-props="{{ propsShell }}" hint-size="100%,100%">
+          <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.ScreenHeader" code="F-05" title="Verificação de lote" density="field" hint-size="100%,80px"></x-import>
+
+          <div style="padding:14px 16px 20px;display:flex;flex-direction:column;gap:10px;min-width:0">
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              <sc-for list="{{ filtros }}" as="fi" hint-placeholder-count="4">
+                <button type="button" onClick="{{ fi.onClick }}" aria-pressed="{{ fi.ativo }}" style="{{ fi.estiloField }}">{{ fi.label }}</button>
+              </sc-for>
+            </div>
+
+            <sc-if value="{{ temSelecao }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;flex-direction:column;gap:8px;background:var(--bg-brand);border:1px solid var(--border-brand);border-radius:var(--radius);padding:10px 12px">
+                <span style="font:var(--text-body-strong);color:var(--text-primary)">{{ textoSelecao }}</span>
+                <button type="button" onClick="{{ aprovarSelecionados }}" style="min-height:40px;font:var(--text-small);border-radius:var(--radius-sm);cursor:pointer;border:1px solid var(--color-royal-border);background:var(--color-royal-soft);color:var(--color-royal-deep)">Aprovar selecionados</button>
+              </div>
+            </sc-if>
+
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <sc-for list="{{ itensVisiveis }}" as="it" hint-placeholder-count="6">
+                <div style="{{ it.estiloLinhaField }}">
+                  <div style="display:flex;align-items:center;gap:8px">
+                    <input type="checkbox" checked="{{ it.selecionado }}" onChange="{{ it.onSelecionar }}" style="width:18px;height:18px;cursor:pointer;flex:0 0 auto">
+                    <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Icon" name="{{ it.icone }}" size="{{ 15 }}" color="var(--color-royal)" hint-size="15px,15px"></x-import>
+                    <span style="flex:1;min-width:0;font:var(--text-body-strong);color:var(--text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ it.motivo }}</span>
+                    <span style="{{ it.estiloValor }}">{{ it.valorTexto }}</span>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:8px">
+                    <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.StatusBadge" tone="{{ it.confiancaTone }}" hint-size="120px,24px">{{ it.confiancaTexto }}</x-import>
+                    <button type="button" onClick="{{ it.abrir }}" style="margin-left:auto;font:var(--text-small);color:var(--color-royal-deep);background:transparent;border:0;cursor:pointer;text-decoration:underline">Revisar</button>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </x-import>
+
+        <sc-if value="{{ temDetalhe }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute;left:0;right:0;bottom:0;top:96px;background:var(--bg-card);border-top:1px solid var(--color-line-strong);border-radius:20px 20px 0 0;box-shadow:var(--shadow-raised);display:flex;flex-direction:column;z-index:5">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;border-bottom:var(--border-hairline)">
+              <span style="font:var(--text-label);letter-spacing:var(--tracking-label);text-transform:uppercase;color:var(--text-field-label)">Revisar</span>
+              <button type="button" aria-label="fechar" onClick="{{ fecharDetalhe }}" style="width:40px;height:40px;border:1px solid var(--color-line);background:var(--bg-card);border-radius:var(--radius-pill);cursor:pointer;font:var(--text-body-strong);color:var(--text-secondary)">×</button>
+            </div>
+            <div style="flex:1;min-height:0;overflow:auto;padding:16px;display:flex;flex-direction:column;gap:12px">
+              <span style="font:var(--text-small);color:var(--text-secondary)">{{ detalhe.meta }}</span>
+              <div style="display:flex;flex-direction:column">
+                <label style="font:var(--text-small);color:var(--text-secondary);margin-bottom:5px">{{ detalhe.labelValor }}</label>
+                <input type="text" value="{{ detalhe.valor }}" onChange="{{ onDetalheValor }}" style="min-height:44px;border:1px solid var(--color-line-strong);background:var(--bg-card);border-radius:var(--radius-sm);padding:8px 12px;font:var(--text-body);color:var(--text-primary);outline:none">
+              </div>
+              <div style="display:flex;flex-direction:column">
+                <label style="font:var(--text-small);color:var(--text-secondary);margin-bottom:5px">{{ detalhe.labelMotivo }}</label>
+                <input type="text" value="{{ detalhe.motivo }}" onChange="{{ onDetalheMotivo }}" style="min-height:44px;border:1px solid var(--color-line-strong);background:var(--bg-card);border-radius:var(--radius-sm);padding:8px 12px;font:var(--text-body);color:var(--text-primary);outline:none">
+              </div>
+              <sc-if value="{{ detalhe.rejeitando }}" hint-placeholder-val="{{ false }}">
+                <textarea value="{{ motivoRejeicao }}" onChange="{{ onMotivoRejeicao }}" rows="3" placeholder="motivo da devolução" style="border:1px solid var(--color-line-strong);background:var(--bg-card);border-radius:var(--radius-sm);padding:10px 12px;font:var(--text-body);color:var(--text-primary);outline:none;resize:vertical"></textarea>
+              </sc-if>
+            </div>
+            <div style="display:flex;gap:10px;padding:14px 16px;border-top:var(--border-hairline)">
+              <sc-if value="{{ detalhe.rejeitando }}" hint-placeholder-val="{{ false }}">
+                <button type="button" onClick="{{ cancelarRejeicao }}" style="flex:1;min-height:46px;font:var(--text-body);border-radius:var(--radius-sm);cursor:pointer;border:1px solid var(--color-line);background:var(--bg-card);color:var(--text-secondary)">Cancelar</button>
+                <button type="button" onClick="{{ confirmarRejeicao }}" style="flex:1;min-height:46px;font:var(--text-body-strong);border-radius:var(--radius-sm);cursor:pointer;border:1px solid var(--color-royal-border);background:var(--color-royal-soft);color:var(--color-royal-deep)">Devolver</button>
+              </sc-if>
+              <sc-if value="{{ detalhe.mostrarAcoes }}" hint-placeholder-val="{{ true }}">
+                <button type="button" onClick="{{ iniciarRejeicao }}" style="flex:1;min-height:46px;font:var(--text-body);border-radius:var(--radius-sm);cursor:pointer;border:1px solid var(--color-line);background:var(--bg-card);color:var(--text-secondary)">Devolver</button>
+                <button type="button" onClick="{{ aprovarDetalhe }}" style="flex:1;min-height:46px;font:var(--text-body-strong);border-radius:var(--radius-sm);cursor:pointer;border:1px solid var(--color-royal-border);background:var(--color-royal-soft);color:var(--color-royal-deep)">Aprovar</button>
+              </sc-if>
+            </div>
+          </div>
+        </sc-if>
+      </div>
+      <div style="font:var(--text-small);color:var(--text-secondary);max-width:392px;text-align:center">Campo: seleção múltipla, revisão em folha, mesmas ações.</div>
+    </div>
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1680,&quot;height&quot;:1010}}">
+const ORIGENS = {
+  comprovante: { label: 'Foto de comprovante', icone: 'camera' },
+  extrato: { label: 'Extrato bancário', icone: 'file-spreadsheet' },
+  registro_rapido: { label: 'Registro rápido', icone: 'user-round' },
+};
+
+class Component extends DCLogic {
+  state = { filtroOrigem: 'todas', selecionados: [], detalheId: null, formEdicao: null, rejeitando: false, motivoRejeicao: '', mensagem: null, itens: this.dadosIniciais() };
+
+  dadosIniciais() {
+    return [
+      { id: 1, origem: 'comprovante', confianca: 'alta', tipo: 'saida', valor: 187.40, motivo: 'mercado cerimônia mãe divina', data: '28/08/2026', grupo: 'Cozinha', categoria: 'Alimentação de cerimônia', conta: 'Cora PJ', remetente: 'Lucia Prado', anexo: 'IMG_2481.jpg' },
+      { id: 2, origem: 'extrato', confianca: 'alta', tipo: 'saida', valor: 738.15, motivo: 'Enel — conta de luz', data: '12/08/2026', grupo: 'Chácara (Infraestrutura)', categoria: 'Administrativo', conta: 'Cora PJ', remetente: null, anexo: null },
+      { id: 3, origem: 'registro_rapido', confianca: 'media', tipo: 'saida', valor: 65.00, motivo: 'gasolina para buscar mantimentos', data: '19/08/2026', grupo: 'Chácara (Infraestrutura)', categoria: 'Transporte', conta: 'Espécie', remetente: 'Chico Aguiar', anexo: null },
+      { id: 4, origem: 'comprovante', confianca: 'media', tipo: 'saida', valor: 128.90, motivo: 'ração e vermífugo dos cavalos', data: '20/08/2026', grupo: 'Chácara (Infraestrutura)', categoria: 'Animais', conta: 'Cora PJ', remetente: 'Chico Aguiar', anexo: 'IMG_2402.jpg' },
+      { id: 5, origem: 'extrato', confianca: 'baixa', tipo: 'entrada', valor: 3000.00, motivo: 'PIX recebido — Antônio Vieira', data: '15/08/2026', grupo: 'Dormitório', categoria: 'Doações', conta: 'Cora PJ', remetente: null, anexo: null },
+      { id: 6, origem: 'registro_rapido', confianca: 'alta', tipo: 'entrada', valor: 285.00, motivo: 'venda de camisetas na lojinha', data: '22/08/2026', grupo: 'Lojinha', categoria: 'Vendas', conta: 'Nubank Paty', remetente: 'Paty Munay', anexo: null },
+      { id: 7, origem: 'comprovante', confianca: 'baixa', tipo: 'saida', valor: 412.60, motivo: 'garrafas e rótulos para o feitio', data: '18/08/2026', grupo: 'CDD', categoria: 'Insumos de feitio', conta: 'Cora PJ', remetente: 'Lucia Prado', anexo: 'IMG_2388.jpg' },
+      { id: 8, origem: 'extrato', confianca: 'media', tipo: 'saida', valor: 890.00, motivo: 'TED — Hidro Serviços', data: '21/07/2026', grupo: 'Chácara (Infraestrutura)', categoria: 'Manutenção', conta: 'Cora PJ', remetente: null, anexo: null },
+      { id: 9, origem: 'registro_rapido', confianca: 'alta', tipo: 'saida', valor: 340.00, motivo: 'diarista pós-cerimônia', data: '31/07/2026', grupo: 'Chácara (Infraestrutura)', categoria: 'Administrativo', conta: 'Espécie', remetente: 'Lucia Prado', anexo: null },
+      { id: 10, origem: 'comprovante', confianca: 'alta', tipo: 'saida', valor: 135.00, motivo: 'recarga de extintor e suporte', data: '24/08/2026', grupo: 'Secretaria', categoria: 'Administrativo', conta: 'Cora PJ', remetente: 'Paty Munay', anexo: 'IMG_2500.jpg' },
+      { id: 11, origem: 'extrato', confianca: 'alta', tipo: 'transferencia', valor: 1500.00, motivo: 'Transferência recebida do Nubank Paty', data: '23/08/2026', conta: 'Nubank Paty', contaDestino: 'Cora PJ', remetente: null, anexo: null },
+      { id: 12, origem: 'registro_rapido', confianca: 'media', tipo: 'entrada', valor: 940.00, motivo: 'contribuições da cerimônia de agosto', data: '24/08/2026', grupo: 'CDD', categoria: 'Contribuições', conta: 'Cora PJ', remetente: 'Frei Tobias', anexo: null },
+    ];
+  }
+
+  confiancaInfo(c) {
+    return c === 'alta' ? { texto: 'Alta confiança', tone: 'confirmed' } : c === 'media' ? { texto: 'Média confiança', tone: 'suggest' } : { texto: 'Baixa confiança', tone: 'pending' };
+  }
+
+  alternarSelecao(id) {
+    return () => this.setState(s => ({ selecionados: s.selecionados.indexOf(id) >= 0 ? s.selecionados.filter(x => x !== id) : s.selecionados.concat(id) }));
+  }
+
+  visiveis(itens, filtro) {
+    return filtro === 'todas' ? itens : itens.filter(i => i.origem === filtro);
+  }
+
+  abrirDetalhe(item) {
+    return () => this.setState({ detalheId: item.id, formEdicao: Object.assign({}, item), rejeitando: false, motivoRejeicao: '' });
+  }
+
+  fecharDetalhe = () => this.setState({ detalheId: null, formEdicao: null, rejeitando: false, motivoRejeicao: '' });
+  campoDetalhe(campo) { return e => this.setState(s => ({ formEdicao: Object.assign({}, s.formEdicao, { [campo]: e.target.value }) })); }
+
+  aprovarSelecionados = () => {
+    const n = this.state.selecionados.length;
+    this.setState(s => ({
+      itens: s.itens.filter(i => s.selecionados.indexOf(i.id) < 0),
+      selecionados: [], mensagem: n + ' lançamento' + (n > 1 ? 's' : '') + ' aprovado' + (n > 1 ? 's' : '') + ' e consolidado' + (n > 1 ? 's' : '') + '.',
+    }));
+  };
+
+  aprovarAltaConfianca = () => {
+    const ids = this.state.itens.filter(i => i.confianca === 'alta').map(i => i.id);
+    this.setState(s => ({
+      itens: s.itens.filter(i => ids.indexOf(i.id) < 0),
+      selecionados: s.selecionados.filter(id => ids.indexOf(id) < 0),
+      mensagem: ids.length + ' lançamento' + (ids.length !== 1 ? 's' : '') + ' de alta confiança aprovado' + (ids.length !== 1 ? 's' : '') + '.',
+    }));
+  };
+
+  aprovarDetalhe = () => {
+    const id = this.state.detalheId;
+    this.setState(s => ({ itens: s.itens.filter(i => i.id !== id), detalheId: null, formEdicao: null, mensagem: 'Lançamento aprovado e consolidado.' }));
+  };
+
+  iniciarRejeicao = () => this.setState({ rejeitando: true });
+  cancelarRejeicao = () => this.setState({ rejeitando: false, motivoRejeicao: '' });
+  onMotivoRejeicao = e => this.setState({ motivoRejeicao: e.target.value });
+
+  confirmarRejeicao = () => {
+    const id = this.state.detalheId;
+    const item = this.state.itens.find(i => i.id === id);
+    const quem = (item && item.remetente) || 'quem enviou';
+    this.setState(s => ({ itens: s.itens.filter(i => i.id !== id), detalheId: null, formEdicao: null, rejeitando: false, motivoRejeicao: '', mensagem: 'Devolvido a ' + quem + ' com o motivo informado.' }));
+  };
+
+  renderVals() {
+    const s = this.state;
+    const brl = n => n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const visiveis = this.visiveis(s.itens, s.filtroOrigem);
+    const todosVisiveisSelecionados = visiveis.length > 0 && visiveis.every(i => s.selecionados.indexOf(i.id) >= 0);
+    const contagemAlta = s.itens.filter(i => i.confianca === 'alta').length;
+
+    const chipOn = 'font:var(--text-small);padding:8px 14px;min-height:38px;border-radius:var(--radius-pill);cursor:pointer;border:1px solid var(--color-royal-border);background:var(--color-royal-soft);color:var(--color-royal-deep)';
+    const chipOff = 'font:var(--text-small);padding:8px 14px;min-height:38px;border-radius:var(--radius-pill);cursor:pointer;border:1px solid var(--color-line);background:var(--bg-card);color:var(--text-secondary)';
+
+    const contagemPorOrigem = k => s.itens.filter(i => k === 'todas' || i.origem === k).length;
+
+    const detalheItem = s.formEdicao;
+    const ehEntrada = detalheItem && detalheItem.tipo === 'entrada';
+    const ehTransferencia = detalheItem && detalheItem.tipo === 'transferencia';
+
+    return {
+      user: { name: 'Aurio Neto', group: 'Tesouraria' },
+      propsShell: { style: { height: '100%', minHeight: 0, overflow: 'hidden', gridTemplateRows: '100%' } },
+      subtitulo: s.itens.length + ' lançamentos esperando conferência · CDD',
+
+      temMensagem: !!s.mensagem, mensagem: s.mensagem, fecharMensagem: () => this.setState({ mensagem: null }),
+
+      filtros: [['todas', 'Todas (' + contagemPorOrigem('todas') + ')'], ['comprovante', 'Comprovante (' + contagemPorOrigem('comprovante') + ')'], ['extrato', 'Extrato (' + contagemPorOrigem('extrato') + ')'], ['registro_rapido', 'Registro rápido (' + contagemPorOrigem('registro_rapido') + ')']].map(([k, label]) => ({
+        label: label, ativo: k === s.filtroOrigem,
+        estilo: k === s.filtroOrigem ? chipOn : chipOff,
+        estiloField: (k === s.filtroOrigem ? chipOn : chipOff) + ';flex:0 0 auto',
+        onClick: () => this.setState({ filtroOrigem: k }),
+      })),
+      resumoLista: visiveis.length + ' nesta lista',
+
+      temSelecao: s.selecionados.length > 0,
+      textoSelecao: s.selecionados.length + ' selecionado' + (s.selecionados.length !== 1 ? 's' : ''),
+      aprovarSelecionados: this.aprovarSelecionados,
+      limparSelecao: () => this.setState({ selecionados: [] }),
+
+      todosSelecionados: todosVisiveisSelecionados,
+      alternarSelecionarTodos: () => this.setState(st => ({ selecionados: todosVisiveisSelecionados ? st.selecionados.filter(id => visiveis.every(v => v.id !== id)) : Array.from(new Set(st.selecionados.concat(visiveis.map(v => v.id)))) })),
+      aprovarAltaConfianca: this.aprovarAltaConfianca, contagemAlta: contagemAlta,
+
+      vazio: visiveis.length === 0,
+      itensVisiveis: visiveis.map(it => {
+        const conf = this.confiancaInfo(it.confianca);
+        const cor = it.tipo === 'entrada' ? 'var(--color-confirmed)' : it.tipo === 'transferencia' ? 'var(--color-royal)' : 'var(--text-primary)';
+        return {
+          motivo: it.motivo,
+          meta: (ORIGENS[it.origem].label) + (it.remetente ? ' · ' + it.remetente : '') + ' · ' + it.data.slice(0, 5),
+          icone: ORIGENS[it.origem].icone,
+          confiancaTexto: conf.texto, confiancaTone: conf.tone,
+          valorTexto: (it.tipo === 'entrada' ? '+ ' : it.tipo === 'saida' ? '− ' : '') + 'R$ ' + brl(it.valor),
+          estiloValor: 'font:var(--text-amount);letter-spacing:var(--tracking-amount);font-variant-numeric:tabular-nums;color:' + cor,
+          selecionado: s.selecionados.indexOf(it.id) >= 0,
+          onSelecionar: this.alternarSelecao(it.id),
+          abrir: this.abrirDetalhe(it),
+          estiloLinha: 'display:flex;align-items:center;gap:12px;padding:11px 13px;border:var(--border-hairline);border-radius:var(--radius);background:' + (s.selecionados.indexOf(it.id) >= 0 ? 'var(--bg-brand)' : 'var(--bg-card)') + ';border-color:' + (s.selecionados.indexOf(it.id) >= 0 ? 'var(--border-brand)' : 'var(--color-line)'),
+          estiloLinhaField: 'display:flex;flex-direction:column;gap:8px;padding:11px 12px;border:var(--border-hairline);border-radius:var(--radius);background:' + (s.selecionados.indexOf(it.id) >= 0 ? 'var(--bg-brand)' : 'var(--bg-card)') + ';border-color:' + (s.selecionados.indexOf(it.id) >= 0 ? 'var(--border-brand)' : 'var(--color-line)'),
+        };
+      }),
+
+      temDetalhe: !!detalheItem,
+      fecharDetalhe: this.fecharDetalhe,
+      onDetalheValor: this.campoDetalhe('valor'), onDetalheMotivo: this.campoDetalhe('motivo'), onDetalheData: this.campoDetalhe('data'),
+      onDetalheGrupo: this.campoDetalhe('grupo'), onDetalheCategoria: this.campoDetalhe('categoria'), onDetalheConta: this.campoDetalhe('conta'),
+      onDetalheContaDestino: this.campoDetalhe('contaDestino'),
+      motivoRejeicao: s.motivoRejeicao, onMotivoRejeicao: this.onMotivoRejeicao,
+      iniciarRejeicao: this.iniciarRejeicao, cancelarRejeicao: this.cancelarRejeicao, confirmarRejeicao: this.confirmarRejeicao,
+      aprovarDetalhe: this.aprovarDetalhe,
+      detalhe: detalheItem ? {
+        icone: ORIGENS[detalheItem.origem].icone,
+        meta: ORIGENS[detalheItem.origem].label + (detalheItem.remetente ? ' · enviado por ' + detalheItem.remetente : ' · sem remetente identificado'),
+        temAnexo: !!detalheItem.anexo, anexo: detalheItem.anexo,
+        labelValor: ehTransferencia ? 'Valor transferido' : ehEntrada ? 'Quanto entrou' : 'Quanto foi',
+        labelMotivo: ehTransferencia ? 'Motivo' : ehEntrada ? 'De onde veio' : 'O que foi',
+        valor: String(detalheItem.valor).replace('.', ','), motivo: detalheItem.motivo, data: detalheItem.data,
+        ehTransferencia: ehTransferencia, temClassificacao: !ehTransferencia,
+        grupo: detalheItem.grupo, categoria: detalheItem.categoria, conta: detalheItem.conta, contaDestino: detalheItem.contaDestino,
+        remetente: detalheItem.remetente || 'quem enviou',
+        rejeitando: s.rejeitando, mostrarAcoes: !s.rejeitando,
+      } : null,
+
+      nav: [
+        { id: 'painel', label: 'Painel', icon: 'layout-dashboard' },
+        { id: 'registrar', label: 'Registrar lançamento', icon: 'circle-plus' },
+        { id: 'meus', label: 'Meus registros', icon: 'receipt-text' },
+        { section: 'Financeiro' },
+        { id: 'lote', label: 'Verificação de lote', icon: 'sparkles', count: s.itens.length },
+        { id: 'lancamentos', label: 'Lançamentos', icon: 'list' },
+        { id: 'contas', label: 'Contas e fundo', icon: 'landmark' },
+        { id: 'relatorios', label: 'Relatórios', icon: 'chart-no-axes-column' },
+        { id: 'fechamento', label: 'Fechamento', icon: 'lock' },
+        { section: 'Cerimônias' },
+        { id: 'agenda', label: 'Agenda', icon: 'calendar-days' },
+        { id: 'ayahuasca', label: 'Ayahuasca', icon: 'flask-conical' },
+        { section: 'Pessoas' },
+        { id: 'pessoas', label: 'Pessoas', icon: 'users' },
+        { id: 'anamnese', label: 'Anamnese', icon: 'clipboard-list' },
+      ],
+    };
+  }
+}
+
+</script>
+</body>
+</html>

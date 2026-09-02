@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><script src="./ds-base.js"></script><style>body{margin:0;background:var(--bg-app)}
+@keyframes surgir{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}</style></helmet>
+
+<div style="padding:26px 28px 40px;display:flex;flex-direction:column;gap:20px;background:var(--bg-app);min-height:100%">
+
+  <div style="display:flex;flex-direction:column;gap:2px">
+    <div style="font:var(--text-label);text-transform:uppercase;letter-spacing:var(--tracking-label);color:var(--text-field-label)">F-10 · Anamnese · Secretaria</div>
+    <div style="font:var(--text-title-sm);color:var(--text-title)">O formulário que a casa usa, e o histórico do que já foi perguntado</div>
+  </div>
+
+  <div style="display:flex;flex-wrap:wrap;gap:26px;align-items:flex-start">
+
+    <div style="position:relative;flex:0 0 auto;width:1180px;height:1000px;display:flex;border:var(--border-hairline);border-radius:var(--radius-lg);overflow:hidden;background:var(--bg-card);box-shadow:var(--shadow-raised)">
+      <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.AppShell" unit="CDD" user="{{ user }}" nav="{{ nav }}" active-id="anamnese" density="office" style="height:100%;width:100%" dc-props="{{ propsShell }}" hint-size="100%,100%">
+        <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.ScreenHeader" code="F-10 · Anamnese" title="Formulário de anamnese" subtitle="{{ subtitulo }}" hint-size="100%,140px"></x-import>
+
+        <div style="padding:18px 24px 26px;display:flex;flex-direction:column;gap:14px;max-width:1020px">
+
+          <sc-if value="{{ temMensagem }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--color-royal-soft);border:1px solid var(--color-royal-border);border-radius:var(--radius);padding:10px 14px">
+              <span style="font:var(--text-body);color:var(--color-royal-deep)">{{ mensagem }}</span>
+              <button type="button" onClick="{{ fecharMensagem }}" style="border:0;background:transparent;color:var(--color-royal-deep);cursor:pointer;font:var(--text-body-strong)">×</button>
+            </div>
+          </sc-if>
+
+          <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px">
+            <sc-for list="{{ kpis }}" as="k" hint-placeholder-count="4">
+              <div style="background:var(--bg-card);border:var(--border-hairline);border-radius:var(--radius);padding:13px 15px;display:flex;flex-direction:column;gap:3px">
+                <span style="font:var(--text-label);text-transform:uppercase;letter-spacing:var(--tracking-label);color:var(--text-field-label)">{{ k.label }}</span>
+                <span style="{{ k.estiloValor }}">{{ k.valor }}</span>
+                <span style="font:var(--text-small);color:var(--text-secondary)">{{ k.nota }}</span>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="display:flex;gap:14px;align-items:flex-start">
+            <div style="flex:0 0 300px;display:flex;flex-direction:column;gap:10px">
+              <div style="display:flex;align-items:center;gap:10px">
+                <span style="font:var(--text-label);text-transform:uppercase;letter-spacing:var(--tracking-label);color:var(--text-field-label)">Versões</span>
+                <button type="button" onClick="{{ novaVersao }}" style="margin-left:auto;font:var(--text-small);border:1px dashed var(--color-line-strong);background:var(--bg-card);border-radius:var(--radius-sm);padding:7px 12px;color:var(--color-royal-deep);cursor:pointer">+ Nova versão</button>
+              </div>
+              <sc-for list="{{ versoes }}" as="v" hint-placeholder-count="3">
+                <button type="button" onClick="{{ v.abrir }}" style="{{ v.estiloCard }}">
+                  <span style="display:flex;align-items:center;gap:8px;width:100%">
+                    <span style="font:var(--text-body-strong);color:var(--text-primary)">{{ v.rotulo }}</span>
+                    <span style="margin-left:auto">
+                      <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.StatusBadge" tone="{{ v.tone }}" hint-size="110px,24px">{{ v.situacao }}</x-import>
+                    </span>
+                  </span>
+                  <span style="font:var(--text-small);color:var(--text-secondary);text-align:left">{{ v.meta }}</span>
+                  <span style="font:var(--text-small);color:var(--text-meta);text-align:left">{{ v.respostas }}</span>
+                </button>
+              </sc-for>
+
+              <div style="background:var(--bg-sunken);border:var(--border-hairline);border-radius:var(--radius);padding:13px 14px;display:flex;flex-direction:column;gap:10px">
+                <span style="font:var(--text-label);text-transform:uppercase;letter-spacing:var(--tracking-label);color:var(--text-field-label)">Regras do formulário</span>
+                <div style="display:flex;flex-direction:column">
+                  <label style="font:var(--text-small);color:var(--text-secondary);margin-bottom:5px">Validade da resposta</label>
+                  <select value="{{ validade }}" onChange="{{ onValidade }}" style="min-height:38px;border:1px solid var(--color-line-strong);background:var(--bg-card);border-radius:var(--radius-sm);padding:7px 10px;font:var(--text-small);color:var(--text-primary);outline:none">
+                    <option value="6">6 meses</option>
+                    <option value="12">12 meses</option>
+                    <option value="24">24 meses</option>
+                  </select>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px">
+                  <span style="flex:1;min-width:0;font:var(--text-small);color:var(--text-primary)">Exigir anamnese válida para confirmar presença</span>
+                  <button type="button" onClick="{{ alternarExigir }}" role="switch" aria-checked="{{ exigir }}" style="{{ estiloTrilhoExigir }}"><span style="{{ estiloBotaoExigir }}"></span></button>
+                </div>
+                <span style="font:var(--text-small);color:var(--text-meta)">Quem vê as respostas: dirigentes e secretaria. Guardião vê só o ponto de atenção da cerimônia.</span>
+              </div>
+            </div>
+
+            <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:12px">
+              <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px">
+                <span style="font:var(--text-title-sm);color:var(--text-title)">{{ versaoAtual.rotulo }}</span>
+                <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.StatusBadge" tone="{{ versaoAtual.tone }}" hint-size="120px,26px">{{ versaoAtual.situacao }}</x-import>
+                <span style="margin-left:auto;display:flex;gap:8px">
+                  <sc-if value="{{ versaoAtual.ehRascunho }}" hint-placeholder-val="{{ false }}">
+                    <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Button" variant="ghost" icon-name="plus" density="office" onClick="{{ abrirNovaPergunta }}" hint-size="170px,42px">Nova pergunta</x-import>
+                    <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Button" variant="primary" icon-name="send" density="office" onClick="{{ publicar }}" hint-size="160px,42px">Publicar versão</x-import>
+                  </sc-if>
+                  <sc-if value="{{ versaoAtual.ehPublicada }}" hint-placeholder-val="{{ true }}">
+                    <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Button" variant="ghost" icon-name="link" density="office" onClick="{{ copiarLink }}" hint-size="180px,42px">Copiar link público</x-import>
+                    <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Button" variant="quiet" icon-name="copy" density="office" onClick="{{ novaVersao }}" hint-size="180px,42px">Duplicar em rascunho</x-import>
+                  </sc-if>
+                  <sc-if value="{{ versaoAtual.ehArquivada }}" hint-placeholder-val="{{ false }}">
+                    <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Button" variant="quiet" icon-name="copy" density="office" onClick="{{ novaVersao }}" hint-size="180px,42px">Duplicar em rascunho</x-import>
+                  </sc-if>
+                </span>
+              </div>
+
+              <span style="font:var(--text-small);color:var(--text-secondary)">{{ versaoAtual.descricao }}</span>
+
+              <div style="display:flex;flex-direction:column;gap:8px;max-height:480px;overflow:auto;padding-right:2px">
+                <sc-for list="{{ perguntas }}" as="q" hint-placeholder-count="7">
+                  <div style="{{ q.estiloLinha }}">
+                    <span style="font:var(--text-small);color:var(--text-meta);width:26px;flex:0 0 auto;font-variant-numeric:tabular-nums">{{ q.indice }}</span>
+                    <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px">
+                      <span style="font:var(--text-body-strong);color:var(--text-primary);text-wrap:pretty">{{ q.titulo }}</span>
+                      <span style="display:flex;flex-wrap:wrap;gap:7px">
+                        <span style="font:var(--text-small);color:var(--text-secondary)">{{ q.tipo }}</span>
+                        <sc-if value="{{ q.obrigatoria }}" hint-placeholder-val="{{ false }}">
+                          <span style="font:var(--text-small);color:var(--color-royal-deep)">obrigatória</span>
+                        </sc-if>
+                        <sc-if value="{{ q.temAlerta }}" hint-placeholder-val="{{ false }}">
+                          <span style="font:var(--text-small);color:var(--color-attention)">{{ q.alerta }}</span>
+                        </sc-if>
+                      </span>
+                    </span>
+                    <sc-if value="{{ q.editavel }}" hint-placeholder-val="{{ false }}">
+                      <span style="display:flex;gap:6px">
+                        <button type="button" aria-label="subir" onClick="{{ q.subir }}" style="width:32px;height:32px;border:1px solid var(--color-line);background:var(--bg-card);border-radius:var(--radius-pill);cursor:pointer;color:var(--text-secondary)">↑</button>
+                        <button type="button" aria-label="descer" onClick="{{ q.descer }}" style="width:32px;height:32px;border:1px solid var(--color-line);background:var(--bg-card);border-radius:var(--radius-pill);cursor:pointer;color:var(--text-secondary)">↓</button>
+                        <button type="button" onClick="{{ q.remover }}" style="font:var(--text-small);border:1px solid var(--color-line);background:var(--bg-card);border-radius:var(--radius-sm);padding:6px 11px;color:var(--color-attention);cursor:pointer">Remover</button>
+                      </span>
+                    </sc-if>
+                  </div>
+                </sc-for>
+              </div>
+
+              <div style="background:var(--bg-card);border:var(--border-hairline);border-radius:var(--radius-lg);padding:16px 18px;display:flex;flex-direction:column;gap:10px">
+                <span style="font:var(--text-body-strong);color:var(--text-primary)">Histórico da versão</span>
+                <sc-for list="{{ versaoAtual.historico }}" as="h" hint-placeholder-count="3">
+                  <div style="display:flex;gap:10px;align-items:baseline;padding-bottom:7px;border-bottom:var(--border-hairline)">
+                    <span style="font:var(--text-small);color:var(--text-meta);width:110px;flex:0 0 auto;font-variant-numeric:tabular-nums">{{ h.quando }}</span>
+                    <span style="flex:1;min-width:0;font:var(--text-small);color:var(--text-primary)">{{ h.texto }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+        </div>
+      </x-import>
+
+      <sc-if value="{{ temForm }}" hint-placeholder-val="{{ false }}">
+        <div onClick="{{ cancelarForm }}" style="position:absolute;inset:0;background:rgba(20,20,24,0.42);display:flex;align-items:center;justify-content:center;z-index:20;padding:30px">
+          <div onClick="{{ pararPropagacao }}" style="width:580px;background:var(--bg-card);border-radius:var(--radius-lg);box-shadow:var(--shadow-raised);display:flex;flex-direction:column;overflow:hidden">
+            <div style="padding:16px 20px;border-bottom:var(--border-hairline);display:flex;align-items:center;justify-content:space-between;gap:12px">
+              <span style="font:var(--text-label);letter-spacing:var(--tracking-label);text-transform:uppercase;color:var(--text-field-label)">Nova pergunta</span>
+              <button type="button" aria-label="fechar" onClick="{{ cancelarForm }}" style="width:34px;height:34px;border:1px solid var(--color-line);background:var(--bg-card);border-radius:var(--radius-pill);cursor:pointer;font:var(--text-body-strong);color:var(--text-secondary)">×</button>
+            </div>
+            <div style="padding:18px 20px;display:flex;flex-direction:column;gap:12px">
+              <div style="display:flex;flex-direction:column">
+                <label style="font:var(--text-small);color:var(--text-secondary);margin-bottom:5px">Pergunta</label>
+                <input type="text" value="{{ form.titulo }}" onChange="{{ onFormTitulo }}" placeholder="Faz uso de medicação contínua?" style="min-height:42px;border:1px solid var(--color-line-strong);background:var(--bg-card);border-radius:var(--radius-sm);padding:8px 12px;font:var(--text-body);color:var(--text-primary);outline:none">
+              </div>
+              <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px">
+                <div style="display:flex;flex-direction:column">
+                  <label style="font:var(--text-small);color:var(--text-secondary);margin-bottom:5px">Tipo de resposta</label>
+                  <select value="{{ form.tipo }}" onChange="{{ onFormTipo }}" style="min-height:42px;border:1px solid var(--color-line-strong);background:var(--bg-card);border-radius:var(--radius-sm);padding:8px 11px;font:var(--text-body);color:var(--text-primary);outline:none">
+                    <option value="Sim ou não">Sim ou não</option>
+                    <option value="Texto curto">Texto curto</option>
+                    <option value="Texto longo">Texto longo</option>
+                    <option value="Escolha única">Escolha única</option>
+                    <option value="Múltipla escolha">Múltipla escolha</option>
+                    <option value="Data">Data</option>
+                  </select>
+                </div>
+                <div style="display:flex;flex-direction:column">
+                  <label style="font:var(--text-small);color:var(--text-secondary);margin-bottom:5px">Gera ponto de atenção quando</label>
+                  <input type="text" value="{{ form.alerta }}" onChange="{{ onFormAlerta }}" placeholder="resposta sim" style="min-height:42px;border:1px solid var(--color-line-strong);background:var(--bg-card);border-radius:var(--radius-sm);padding:8px 12px;font:var(--text-body);color:var(--text-primary);outline:none">
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;gap:12px;background:var(--bg-sunken);border:var(--border-hairline);border-radius:var(--radius);padding:11px 13px">
+                <span style="flex:1;min-width:0;font:var(--text-body-strong);color:var(--text-primary)">Resposta obrigatória</span>
+                <button type="button" onClick="{{ alternarObrigatoria }}" role="switch" aria-checked="{{ form.obrigatoria }}" style="{{ estiloTrilhoObrigatoria }}"><span style="{{ estiloBotaoObrigatoria }}"></span></button>
+              </div>
+            </div>
+            <div style="padding:14px 20px;border-top:var(--border-hairline);display:flex;gap:10px;justify-content:flex-end">
+              <button type="button" onClick="{{ cancelarForm }}" style="font:var(--text-body);padding:9px 16px;min-height:42px;border-radius:var(--radius-sm);cursor:pointer;border:1px solid var(--color-line);background:var(--bg-card);color:var(--text-secondary)">Cancelar</button>
+              <button type="button" onClick="{{ salvarForm }}" style="{{ estiloSalvar }}">Adicionar pergunta</button>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+    </div>
+
+    <div style="flex:0 0 auto;display:flex;flex-direction:column;gap:12px;align-items:center">
+      <div style="position:relative;width:392px;height:812px;display:flex;border:10px solid var(--color-ink-brand);border-radius:38px;overflow:hidden;background:var(--bg-app);box-shadow:var(--shadow-raised)">
+        <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.AppShell" unit="CDD" user="{{ user }}" nav="{{ nav }}" active-id="anamnese" density="field" style="height:100%;width:100%" dc-props="{{ propsShell }}" hint-size="100%,100%">
+          <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.ScreenHeader" code="F-10" title="Anamnese" density="field" hint-size="100%,80px"></x-import>
+
+          <div style="padding:14px 16px 20px;display:flex;flex-direction:column;gap:12px;min-width:0">
+            <div style="background:var(--bg-brand);border:1px solid var(--border-brand);border-radius:var(--radius);padding:12px 14px;display:flex;flex-direction:column;gap:3px">
+              <span style="font:var(--text-label);text-transform:uppercase;letter-spacing:var(--tracking-label);color:var(--text-field-label)">Versão em uso</span>
+              <span style="font:var(--text-title-sm);color:var(--color-royal-deep)">{{ publicadaRotulo }}</span>
+              <span style="font:var(--text-small);color:var(--text-secondary)">{{ publicadaMeta }}</span>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <sc-for list="{{ versoes }}" as="v" hint-placeholder-count="3">
+                <button type="button" onClick="{{ v.abrir }}" style="{{ v.estiloCardField }}">
+                  <span style="display:flex;align-items:center;gap:8px">
+                    <span style="flex:1;min-width:0;font:var(--text-body-strong);color:var(--text-primary);text-align:left">{{ v.rotulo }}</span>
+                    <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.StatusBadge" tone="{{ v.tone }}" hint-size="110px,24px">{{ v.situacao }}</x-import>
+                  </span>
+                  <span style="font:var(--text-small);color:var(--text-secondary);text-align:left">{{ v.meta }}</span>
+                </button>
+              </sc-for>
+            </div>
+
+            <div style="background:var(--bg-card);border:var(--border-hairline);border-radius:var(--radius);padding:12px 14px;display:flex;flex-direction:column;gap:8px">
+              <span style="font:var(--text-body-strong);color:var(--text-primary)">{{ versaoAtual.rotulo }} · perguntas</span>
+              <sc-for list="{{ perguntas }}" as="q" hint-placeholder-count="6">
+                <div style="display:flex;gap:9px;align-items:baseline">
+                  <span style="font:var(--text-small);color:var(--text-meta);width:20px;flex:0 0 auto">{{ q.indice }}</span>
+                  <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:1px">
+                    <span style="font:var(--text-body);color:var(--text-primary)">{{ q.titulo }}</span>
+                    <span style="font:var(--text-small);color:var(--text-meta)">{{ q.tipo }}</span>
+                  </span>
+                </div>
+              </sc-for>
+            </div>
+
+            <button type="button" onClick="{{ copiarLink }}" style="min-height:46px;font:var(--text-body-strong);border-radius:var(--radius-sm);cursor:pointer;border:1px solid var(--color-royal-border);background:var(--color-royal-soft);color:var(--color-royal-deep)">Copiar link público</button>
+          </div>
+        </x-import>
+      </div>
+      <div style="font:var(--text-small);color:var(--text-secondary);max-width:392px;text-align:center">Campo: qual versão está valendo e o que ela pergunta.</div>
+    </div>
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1680,&quot;height&quot;:1120}}">
+const PERGUNTAS_V3 = [
+  ['Você faz uso de medicação contínua?', 'Sim ou não', true, 'resposta sim'],
+  ['Quais medicações e doses?', 'Texto longo', false, 'qualquer resposta com antidepressivo'],
+  ['Tem ou teve diagnóstico psiquiátrico?', 'Escolha única', true, 'resposta diferente de não'],
+  ['Tem alguma condição cardíaca, hipertensão ou diabetes?', 'Múltipla escolha', true, 'qualquer marcação'],
+  ['Está gestante ou amamentando?', 'Sim ou não', true, 'resposta sim'],
+  ['Fez uso de álcool ou outras substâncias nos últimos 3 dias?', 'Sim ou não', true, 'resposta sim'],
+  ['Já participou de trabalho com ayahuasca antes?', 'Sim ou não', true, null],
+  ['Contato de emergência (nome e telefone)', 'Texto curto', true, null],
+  ['Alguma coisa que a casa precise saber e não foi perguntada?', 'Texto longo', false, null],
+];
+const PERGUNTAS_V2 = [
+  ['Faz uso de medicação contínua?', 'Sim ou não', true, 'resposta sim'],
+  ['Tem diagnóstico psiquiátrico?', 'Sim ou não', true, 'resposta sim'],
+  ['Tem condição cardíaca?', 'Sim ou não', true, 'resposta sim'],
+  ['Está gestante?', 'Sim ou não', true, 'resposta sim'],
+  ['Contato de emergência', 'Texto curto', true, null],
+];
+const PERGUNTAS_V1 = [
+  ['Toma algum remédio?', 'Texto curto', false, null],
+  ['Tem algum problema de saúde?', 'Texto longo', false, null],
+  ['Contato de emergência', 'Texto curto', true, null],
+];
+
+class Component extends DCLogic {
+  state = {
+    selecionada: 'v3', validade: '12', exigir: true, form: null, mensagem: null,
+    versoes: [
+      { id: 'v4', rotulo: 'Anamnese do corpo · v4', situacao: 'rascunho', criadaEm: '28/08/2026', criadaPor: 'Lucia Prado', publicadaEm: null, respostas: 0,
+        descricao: 'Rascunho aberto a partir da v3. Enquanto não for publicada, ninguém recebe este formulário.',
+        perguntas: PERGUNTAS_V3.concat([['Faz acompanhamento terapêutico hoje?', 'Sim ou não', false, null]]),
+        historico: [['28/08/2026', 'Rascunho criado por Lucia Prado a partir da v3.'], ['29/08/2026', 'Pergunta sobre acompanhamento terapêutico adicionada.']] },
+      { id: 'v3', rotulo: 'Anamnese do corpo · v3', situacao: 'publicada', criadaEm: '02/06/2026', criadaPor: 'Lucia Prado', publicadaEm: '12/06/2026', respostas: 128,
+        descricao: 'Versão em uso. Todo link enviado hoje abre esta versão, e as respostas ficam presas a ela.',
+        perguntas: PERGUNTAS_V3,
+        historico: [['02/06/2026', 'Rascunho criado a partir da v2.'], ['10/06/2026', 'Revisada pela direção.'], ['12/06/2026', 'Publicada por Aurio Neto. v2 passou a arquivada.']] },
+      { id: 'v2', rotulo: 'Anamnese do corpo · v2', situacao: 'arquivada', criadaEm: '15/01/2024', criadaPor: 'Aurio Neto', publicadaEm: '01/02/2024', respostas: 96,
+        descricao: 'Arquivada. As respostas dadas nela continuam válidas até vencer, mas ninguém responde mais por aqui.',
+        perguntas: PERGUNTAS_V2,
+        historico: [['01/02/2024', 'Publicada por Aurio Neto.'], ['12/06/2026', 'Arquivada pela publicação da v3.']] },
+      { id: 'v1', rotulo: 'Anamnese do corpo · v1', situacao: 'arquivada', criadaEm: '08/2022', criadaPor: 'Secretaria', publicadaEm: '09/2022', respostas: 41,
+        descricao: 'Primeiro formulário, três perguntas abertas. Mantido só como histórico.',
+        perguntas: PERGUNTAS_V1,
+        historico: [['09/2022', 'Publicada pela secretaria.'], ['01/02/2024', 'Arquivada pela publicação da v2.']] },
+    ],
+  };
+
+  pararPropagacao = e => e.stopPropagation();
+  cancelarForm = () => this.setState({ form: null });
+  campoForm(campo) { return e => this.setState(s => ({ form: Object.assign({}, s.form, { [campo]: e.target.value }) })); }
+  alternarObrigatoria = () => this.setState(s => ({ form: Object.assign({}, s.form, { obrigatoria: !s.form.obrigatoria }) }));
+  alternarExigir = () => this.setState(s => ({ exigir: !s.exigir }));
+  abrirNovaPergunta = () => this.setState({ form: { titulo: '', tipo: 'Sim ou não', alerta: '', obrigatoria: true } });
+  copiarLink = () => this.setState({ mensagem: 'Link público copiado: cdd.app/anamnese/v3 — quem responde não precisa de conta.' });
+
+  novaVersao = () => {
+    const base = this.state.versoes.find(v => v.id === this.state.selecionada) || this.state.versoes[0];
+    if (this.state.versoes.some(v => v.situacao === 'rascunho')) {
+      this.setState({ mensagem: 'Já existe um rascunho aberto. Publique ou descarte antes de criar outro.' });
+      return;
+    }
+    const numero = this.state.versoes.length + 1;
+    const nova = {
+      id: 'v' + (100 + numero), rotulo: 'Anamnese do corpo · v' + numero, situacao: 'rascunho',
+      criadaEm: '01/09/2026', criadaPor: 'Aurio Neto', publicadaEm: null, respostas: 0,
+      descricao: 'Rascunho criado a partir da ' + base.rotulo + '.',
+      perguntas: base.perguntas.slice(),
+      historico: [['01/09/2026', 'Rascunho criado a partir da ' + base.rotulo + '.']],
+    };
+    this.setState(s => ({ versoes: [nova].concat(s.versoes), selecionada: nova.id, mensagem: 'Rascunho criado. Edite as perguntas e publique quando estiver pronto.' }));
+  };
+
+  publicar = () => {
+    const id = this.state.selecionada;
+    this.setState(s => ({
+      versoes: s.versoes.map(v => {
+        if (v.id === id) return Object.assign({}, v, { situacao: 'publicada', publicadaEm: '01/09/2026', historico: v.historico.concat([['01/09/2026', 'Publicada por Aurio Neto.']]) });
+        if (v.situacao === 'publicada') return Object.assign({}, v, { situacao: 'arquivada', historico: v.historico.concat([['01/09/2026', 'Arquivada pela publicação de uma versão nova.']]) });
+        return v;
+      }),
+      mensagem: 'Versão publicada. Quem já respondeu continua ligado à versão antiga até a resposta vencer.',
+    }));
+  };
+
+  alterarPerguntas(fn) {
+    const id = this.state.selecionada;
+    this.setState(s => ({ versoes: s.versoes.map(v => v.id === id ? Object.assign({}, v, { perguntas: fn(v.perguntas.slice()) }) : v) }));
+  }
+
+  moverPergunta(i, delta) {
+    return () => this.alterarPerguntas(lista => {
+      const j = i + delta;
+      if (j < 0 || j >= lista.length) return lista;
+      const tmp = lista[i]; lista[i] = lista[j]; lista[j] = tmp;
+      return lista;
+    });
+  }
+
+  removerPergunta(i) {
+    return () => this.alterarPerguntas(lista => { lista.splice(i, 1); return lista; });
+  }
+
+  salvarForm = () => {
+    const f = this.state.form;
+    if (!f || !f.titulo.trim()) return;
+    this.alterarPerguntas(lista => lista.concat([[f.titulo, f.tipo, !!f.obrigatoria, f.alerta ? f.alerta : null]]));
+    this.setState({ form: null, mensagem: 'Pergunta adicionada ao rascunho.' });
+  };
+
+  situacaoInfo(sit) {
+    return sit === 'publicada' ? { label: 'Publicada', tone: 'confirmed' }
+      : sit === 'rascunho' ? { label: 'Rascunho', tone: 'suggest' }
+        : { label: 'Arquivada', tone: 'neutral' };
+  }
+
+  renderVals() {
+    const s = this.state;
+    const atual = s.versoes.find(v => v.id === s.selecionada) || s.versoes[0];
+    const publicada = s.versoes.find(v => v.situacao === 'publicada');
+    const infoAtual = this.situacaoInfo(atual.situacao);
+    const fonteAmount = 'font:var(--text-amount-lg);letter-spacing:var(--tracking-amount);font-variant-numeric:tabular-nums';
+    const totalRespostas = s.versoes.reduce((a, v) => a + v.respostas, 0);
+    const f = s.form;
+    const podeSalvar = !!(f && f.titulo && f.titulo.trim());
+
+    return {
+      user: { name: 'Aurio Neto', group: 'Tesouraria' },
+      propsShell: { style: { height: '100%', minHeight: 0, overflow: 'hidden', gridTemplateRows: '100%' } },
+      subtitulo: 'Versões do formulário, perguntas e regras de validade · CDD',
+
+      temMensagem: !!s.mensagem, mensagem: s.mensagem, fecharMensagem: () => this.setState({ mensagem: null }),
+
+      kpis: [
+        { label: 'Versão publicada', valor: publicada ? publicada.rotulo.split('· ')[1] : '—', nota: publicada ? 'desde ' + publicada.publicadaEm : 'nenhuma no ar', cor: 'var(--color-royal-deep)' },
+        { label: publicada ? 'Respostas na ' + publicada.rotulo.split('· ')[1] : 'Respostas na versão publicada', valor: publicada ? String(publicada.respostas) : '0', nota: 'pessoas com resposta nesta versão', cor: 'var(--color-confirmed)' },
+        { label: 'Respostas no total', valor: String(totalRespostas), nota: 'somando todas as versões', cor: 'var(--text-primary)' },
+        { label: 'Validade', valor: s.validade + ' meses', nota: s.exigir ? 'obrigatória para confirmar presença' : 'não bloqueia presença', cor: 'var(--text-primary)' },
+      ].map(k => ({ label: k.label, valor: k.valor, nota: k.nota, estiloValor: fonteAmount + ';color:' + k.cor })),
+
+      versoes: s.versoes.map(v => {
+        const info = this.situacaoInfo(v.situacao);
+        const ativa = v.id === s.selecionada;
+        return {
+          rotulo: v.rotulo, situacao: info.label, tone: info.tone,
+          meta: v.situacao === 'publicada' ? 'publicada em ' + v.publicadaEm + ' · ' + v.perguntas.length + ' perguntas'
+            : v.situacao === 'rascunho' ? 'criada em ' + v.criadaEm + ' por ' + v.criadaPor + ' · ' + v.perguntas.length + ' perguntas'
+              : 'arquivada · ' + v.perguntas.length + ' perguntas',
+          respostas: v.respostas + (v.respostas === 1 ? ' resposta' : ' respostas'),
+          abrir: () => this.setState({ selecionada: v.id, mensagem: null }),
+          estiloCard: 'display:flex;flex-direction:column;gap:4px;padding:12px 14px;border:1px solid ' + (ativa ? 'var(--color-royal-border)' : 'var(--color-line)') + ';border-radius:var(--radius);background:' + (ativa ? 'var(--bg-brand)' : 'var(--bg-card)') + ';cursor:pointer;width:100%;text-align:left',
+          estiloCardField: 'display:flex;flex-direction:column;gap:4px;padding:11px 12px;border:1px solid ' + (ativa ? 'var(--color-royal-border)' : 'var(--color-line)') + ';border-radius:var(--radius);background:' + (ativa ? 'var(--bg-brand)' : 'var(--bg-card)') + ';cursor:pointer;width:100%',
+        };
+      }),
+
+      versaoAtual: {
+        rotulo: atual.rotulo, situacao: infoAtual.label, tone: infoAtual.tone, descricao: atual.descricao,
+        ehRascunho: atual.situacao === 'rascunho',
+        ehPublicada: atual.situacao === 'publicada',
+        ehArquivada: atual.situacao === 'arquivada',
+        historico: atual.historico.map(([quando, texto]) => ({ quando: quando, texto: texto })),
+      },
+
+      publicadaRotulo: publicada ? publicada.rotulo : 'nenhuma publicada',
+      publicadaMeta: publicada ? publicada.perguntas.length + ' perguntas · ' + publicada.respostas + ' respostas · validade ' + s.validade + ' meses' : '',
+
+      perguntas: atual.perguntas.map((q, i) => ({
+        indice: String(i + 1).padStart(2, '0'),
+        titulo: q[0], tipo: q[1], obrigatoria: q[2], temAlerta: !!q[3], alerta: q[3] ? 'atenção: ' + q[3] : '',
+        editavel: atual.situacao === 'rascunho',
+        subir: this.moverPergunta(i, -1), descer: this.moverPergunta(i, 1), remover: this.removerPergunta(i),
+        estiloLinha: 'display:flex;align-items:center;gap:12px;padding:11px 13px;border:var(--border-hairline);border-left:3px solid ' + (q[3] ? 'var(--color-attention)' : 'var(--color-line-strong)') + ';border-radius:var(--radius);background:var(--bg-card)',
+      })),
+
+      validade: s.validade, onValidade: e => this.setState({ validade: e.target.value }),
+      exigir: s.exigir, alternarExigir: this.alternarExigir,
+      estiloTrilhoExigir: 'width:46px;height:26px;border-radius:var(--radius-pill);border:1px solid ' + (s.exigir ? 'var(--color-royal-border)' : 'var(--color-line-strong)') + ';background:' + (s.exigir ? 'var(--color-royal-soft)' : 'var(--bg-sunken)') + ';cursor:pointer;display:flex;align-items:center;padding:2px;justify-content:' + (s.exigir ? 'flex-end' : 'flex-start'),
+      estiloBotaoExigir: 'width:20px;height:20px;border-radius:var(--radius-pill);background:' + (s.exigir ? 'var(--color-royal)' : 'var(--color-line-strong)') + ';display:block',
+
+      novaVersao: this.novaVersao, publicar: this.publicar, copiarLink: this.copiarLink,
+      abrirNovaPergunta: this.abrirNovaPergunta, cancelarForm: this.cancelarForm, salvarForm: this.salvarForm,
+      temForm: !!f, form: f || {},
+      onFormTitulo: this.campoForm('titulo'), onFormTipo: this.campoForm('tipo'), onFormAlerta: this.campoForm('alerta'),
+      alternarObrigatoria: this.alternarObrigatoria,
+      estiloTrilhoObrigatoria: 'width:46px;height:26px;border-radius:var(--radius-pill);border:1px solid ' + (f && f.obrigatoria ? 'var(--color-royal-border)' : 'var(--color-line-strong)') + ';background:' + (f && f.obrigatoria ? 'var(--color-royal-soft)' : 'var(--bg-sunken)') + ';cursor:pointer;display:flex;align-items:center;padding:2px;justify-content:' + (f && f.obrigatoria ? 'flex-end' : 'flex-start'),
+      estiloBotaoObrigatoria: 'width:20px;height:20px;border-radius:var(--radius-pill);background:' + (f && f.obrigatoria ? 'var(--color-royal)' : 'var(--color-line-strong)') + ';display:block',
+      estiloSalvar: 'font:var(--text-body-strong);padding:9px 18px;min-height:42px;border-radius:var(--radius-sm);cursor:' + (podeSalvar ? 'pointer' : 'not-allowed') + ';border:1px solid ' + (podeSalvar ? 'var(--color-royal-border)' : 'var(--color-line)') + ';background:' + (podeSalvar ? 'var(--color-royal-soft)' : 'var(--bg-sunken)') + ';color:' + (podeSalvar ? 'var(--color-royal-deep)' : 'var(--text-meta)'),
+
+      nav: [
+        { id: 'painel', label: 'Painel', icon: 'layout-dashboard' },
+        { id: 'registrar', label: 'Registrar lançamento', icon: 'circle-plus' },
+        { id: 'meus', label: 'Meus registros', icon: 'receipt-text' },
+        { section: 'Financeiro' },
+        { id: 'lote', label: 'Verificação de lote', icon: 'sparkles', count: 12 },
+        { id: 'lancamentos', label: 'Lançamentos', icon: 'list' },
+        { id: 'contas', label: 'Contas e fundo', icon: 'landmark' },
+        { id: 'relatorios', label: 'Relatórios', icon: 'chart-no-axes-column' },
+        { id: 'fechamento', label: 'Fechamento', icon: 'lock' },
+        { section: 'Cerimônias' },
+        { id: 'agenda', label: 'Agenda', icon: 'calendar-days' },
+        { id: 'ayahuasca', label: 'Ayahuasca', icon: 'flask-conical' },
+        { section: 'Pessoas' },
+        { id: 'pessoas', label: 'Pessoas', icon: 'users' },
+        { id: 'anamnese', label: 'Anamnese', icon: 'clipboard-list' },
+      ],
+    };
+  }
+}
+
+</script>
+</body>
+</html>

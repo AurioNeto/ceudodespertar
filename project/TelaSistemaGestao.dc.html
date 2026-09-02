@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><script src="./ds-base.js"></script><script src="./image-slot.js"></script><style>image-slot::part(empty){display:none !important}image-slot::part(ring){display:none !important}</style></helmet>
+<x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.AppShell" unit="CDD" user="{{ user }}" nav="{{ nav }}" active-id="painel" density="office" hint-size="100%,100%">
+  <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.ScreenHeader" code="T-02 · Painel" title="Painel" subtitle="Competência 08/2026 · CDD — o que o dinheiro e as cerimônias estão fazendo agora." hint-size="100%,150px"></x-import>
+
+  <div style="padding:22px 24px 44px;max-width:1220px;display:flex;flex-direction:column;gap:20px">
+
+    <div style="display:flex;flex-wrap:wrap;gap:16px;align-items:stretch">
+      <div style="flex:1 1 300px;max-width:336px;min-width:0;background:var(--bg-brand);border:1px solid var(--border-brand);border-radius:var(--radius-lg);padding:18px 20px 16px;display:flex;flex-direction:column;gap:14px">
+        <div style="display:flex;align-items:center;gap:9px">
+          <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Icon" name="landmark" size="{{ 18 }}" color="var(--color-royal-deep)" hint-size="18px,18px"></x-import>
+          <div style="font:var(--text-label);text-transform:uppercase;letter-spacing:var(--tracking-label);color:var(--text-field-label)">Saldo consolidado da unidade</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <div style="font:var(--text-amount-hero);letter-spacing:var(--tracking-amount);font-variant-numeric:tabular-nums;color:var(--color-royal-deep)">84.317,90</div>
+          <div style="font:var(--text-small);color:var(--text-secondary)">em reais · posição de hoje, 09:12</div>
+        </div>
+        <div style="height:1px;background:var(--border-brand)"></div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px">
+            <span style="font:var(--text-body);color:var(--text-primary)">caixa</span>
+            <span style="font:var(--text-amount);letter-spacing:var(--tracking-amount);font-variant-numeric:tabular-nums;color:var(--text-primary)">3.180,40</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px">
+            <span style="font:var(--text-body);color:var(--text-primary)">banco</span>
+            <span style="font:var(--text-amount);letter-spacing:var(--tracking-amount);font-variant-numeric:tabular-nums;color:var(--text-primary)">81.137,50</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px">
+            <span style="font:var(--text-body);color:var(--text-primary)">dos quais, fundo próprio</span>
+            <span style="font:var(--text-amount);letter-spacing:var(--tracking-amount);font-variant-numeric:tabular-nums;color:var(--text-primary)">39.235,40</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="flex:3 1 480px;min-width:0;background:var(--bg-card);border:var(--border-hairline);border-radius:var(--radius-lg);padding:18px 22px 18px;display:flex;flex-direction:column;gap:16px">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Icon" name="chart-no-axes-column" size="{{ 18 }}" color="var(--color-royal)" hint-size="18px,18px"></x-import>
+          <div style="font:var(--text-label);text-transform:uppercase;letter-spacing:var(--tracking-label);color:var(--text-field-label)">Movimento de 08/2026</div>
+          <span style="margin-left:auto;font:var(--text-small);color:var(--text-secondary)">comparado com 07/2026</span>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:18px">
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div style="display:flex;align-items:center;gap:7px">
+              <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Icon" name="arrow-down-left" size="{{ 16 }}" color="var(--color-confirmed)" hint-size="16px,16px"></x-import>
+              <span style="font:var(--text-body);color:var(--text-secondary)">entradas</span>
+            </div>
+            <div style="font:var(--text-amount-lg);letter-spacing:var(--tracking-amount);font-variant-numeric:tabular-nums;color:var(--color-confirmed)">62.480,00</div>
+            <div style="font:var(--text-small);color:var(--text-secondary)">54.130,00 no mês anterior — <span style="color:var(--color-confirmed);font-weight:600">8.350,00 acima</span></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px;padding-left:18px;border-left:var(--border-hairline)">
+            <div style="display:flex;align-items:center;gap:7px">
+              <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Icon" name="arrow-up-right" size="{{ 16 }}" color="var(--color-attention)" hint-size="16px,16px"></x-import>
+              <span style="font:var(--text-body);color:var(--text-secondary)">saídas</span>
+            </div>
+            <div style="font:var(--text-amount-lg);letter-spacing:var(--tracking-amount);font-variant-numeric:tabular-nums;color:var(--color-attention)">48.117,60</div>
+            <div style="font:var(--text-small);color:var(--text-secondary)">51.870,20 no mês anterior — <span style="color:var(--text-primary);font-weight:600">3.752,60 abaixo</span></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px;padding-left:18px;border-left:var(--border-hairline)">
+            <div style="display:flex;align-items:center;gap:7px">
+              <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Icon" name="scale" size="{{ 16 }}" color="var(--color-royal)" hint-size="16px,16px"></x-import>
+              <span style="font:var(--text-body);color:var(--text-secondary)">resultado</span>
+            </div>
+            <div style="font:var(--text-amount-lg);letter-spacing:var(--tracking-amount);font-variant-numeric:tabular-nums;color:var(--color-royal-deep)">+ 14.362,40</div>
+            <div style="font:var(--text-small);color:var(--text-secondary)">+ 2.259,80 no mês anterior — o mês fecha melhor se nada grande entrar até 31/08</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-wrap:wrap;align-items:center;gap:16px;background:var(--color-pending-soft);border:1px solid var(--color-pending-border);border-radius:var(--radius);padding:14px 18px">
+      <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Icon" name="sparkles" size="{{ 20 }}" color="var(--color-pending)" hint-size="20px,20px"></x-import>
+      <div style="display:flex;flex-direction:column;gap:2px;flex:1 1 320px;min-width:0">
+        <div style="font:var(--text-body-strong);color:var(--text-primary)">{{ loteLinha }}</div>
+        <div style="font:var(--text-small);color:var(--text-secondary)">A IA leu os comprovantes e propôs valor, data e categoria — uma pessoa precisa verificar antes de consolidar. Lançamento feito à mão já entra consolidado.</div>
+      </div>
+      <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Button" variant="primary" density="office" hint-size="150px,44px">Verificar lote</x-import>
+    </div>
+
+    <div style="background:var(--bg-card);border:var(--border-hairline);border-radius:var(--radius-lg);overflow:hidden">
+      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:14px 16px 14px 20px;border-bottom:var(--border-hairline)">
+        <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Icon" name="calendar-days" size="{{ 18 }}" color="var(--color-royal)" hint-size="18px,18px"></x-import>
+        <div style="display:flex;flex-wrap:wrap;gap:6px">
+          <sc-for list="{{ abas }}" as="t" hint-placeholder-count="3">
+            <button type="button" onClick="{{ t.onClick }}" style="{{ t.style }}">{{ t.label }}</button>
+          </sc-for>
+        </div>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+          <span style="font:var(--text-code);font-variant-numeric:tabular-nums;color:var(--text-meta)">{{ passo }}</span>
+          <button type="button" onClick="{{ anterior }}" aria-label="Painel anterior" style="width:44px;height:44px;display:flex;align-items:center;justify-content:center;background:var(--bg-card);border:var(--border-hairline);border-radius:var(--radius-sm);cursor:pointer;color:var(--color-royal)" style-hover="background:var(--color-royal-soft)">
+            <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Icon" name="arrow-left" size="{{ 18 }}" color="var(--color-royal)" hint-size="18px,18px"></x-import>
+          </button>
+          <button type="button" onClick="{{ proximo }}" aria-label="Próximo painel" style="width:44px;height:44px;display:flex;align-items:center;justify-content:center;background:var(--bg-card);border:var(--border-hairline);border-radius:var(--radius-sm);cursor:pointer;color:var(--color-royal)" style-hover="background:var(--color-royal-soft)">
+            <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Icon" name="arrow-right" size="{{ 18 }}" color="var(--color-royal)" hint-size="18px,18px"></x-import>
+          </button>
+        </div>
+      </div>
+
+      <sc-if value="{{ ehProximas }}" hint-placeholder-val="{{ true }}">
+        <div style="padding:18px 20px 22px;display:flex;flex-wrap:wrap;gap:22px;align-items:flex-start">
+          <div style="position:relative;flex:0 0 auto;width:132px;height:178px;border:var(--border-hairline);border-radius:var(--radius-sm);overflow:hidden;background:var(--bg-brand);display:flex;align-items:center;justify-content:center">
+            <span style="font:var(--text-label);text-transform:uppercase;letter-spacing:var(--tracking-label);color:var(--text-meta)">cartaz</span>
+            <image-slot id="cartaz-0509" shape="rect" fit="cover" style="position:absolute;inset:0;width:100%;height:100%"></image-slot>
+          </div>
+
+          <div style="flex:1 1 460px;min-width:0;display:flex;flex-direction:column;gap:18px">
+            <div style="display:flex;flex-direction:column;gap:4px">
+              <div style="font:var(--text-label);text-transform:uppercase;letter-spacing:var(--tracking-label);color:var(--text-field-label)">Próxima cerimônia · em 8 dias</div>
+              <h2 style="margin:0;font:var(--text-title);letter-spacing:var(--tracking-display);color:var(--text-title)">05/09 · Cerimônia Mãe Divina</h2>
+              <div style="display:flex;flex-wrap:wrap;gap:16px;margin-top:2px">
+                <span style="display:flex;align-items:center;gap:6px;font:var(--text-small);color:var(--text-secondary)">
+                  <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Icon" name="calendar-days" size="{{ 14 }}" color="var(--text-meta)" hint-size="14px,14px"></x-import>
+                  sexta, 20h · abertura 18h30
+                </span>
+                <span style="display:flex;align-items:center;gap:6px;font:var(--text-small);color:var(--text-secondary)">
+                  <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Icon" name="user-round" size="{{ 14 }}" color="var(--text-meta)" hint-size="14px,14px"></x-import>
+                  Marcia Zubek
+                </span>
+                <span style="display:flex;align-items:center;gap:6px;font:var(--text-small);color:var(--text-secondary)">
+                  <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Icon" name="landmark" size="{{ 14 }}" color="var(--text-meta)" hint-size="14px,14px"></x-import>
+                  hospedagem 24 / 30 leitos
+                </span>
+              </div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(158px,1fr));gap:16px">
+              <div style="display:flex;flex-direction:column;gap:6px;padding:12px 14px;background:var(--bg-brand);border:1px solid var(--border-brand);border-radius:var(--radius-sm)">
+                <span style="display:flex;align-items:center;gap:7px;font:var(--text-label);text-transform:uppercase;letter-spacing:var(--tracking-label);color:var(--text-field-label)">
+                  <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Icon" name="users" size="{{ 15 }}" color="var(--color-royal-deep)" hint-size="15px,15px"></x-import>
+                  Inscritos
+                </span>
+                <span style="font:var(--text-amount-lg);letter-spacing:var(--tracking-amount);font-variant-numeric:tabular-nums;color:var(--color-royal-deep)">78</span>
+                <span style="font:var(--text-small);color:var(--text-secondary)">de 90 vagas — 12 ainda abertas</span>
+              </div>
+
+              <div style="display:flex;flex-direction:column;gap:6px;padding:12px 14px;background:var(--bg-card);border:var(--border-hairline);border-radius:var(--radius-sm)">
+                <span style="display:flex;align-items:center;gap:7px;font:var(--text-label);text-transform:uppercase;letter-spacing:var(--tracking-label);color:var(--text-field-label)">
+                  <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Icon" name="receipt-text" size="{{ 15 }}" color="var(--color-pending)" hint-size="15px,15px"></x-import>
+                  Sem pagamento
+                </span>
+                <span style="font:var(--text-amount-lg);letter-spacing:var(--tracking-amount);font-variant-numeric:tabular-nums;color:var(--color-pending)">19</span>
+                <span style="font:var(--text-small);color:var(--text-secondary)">2.850,00 a receber até 04/09</span>
+              </div>
+
+              <div style="display:flex;flex-direction:column;gap:6px;padding:12px 14px;background:var(--bg-card);border:var(--border-hairline);border-radius:var(--radius-sm)">
+                <span style="display:flex;align-items:center;gap:7px;font:var(--text-label);text-transform:uppercase;letter-spacing:var(--tracking-label);color:var(--text-field-label)">
+                  <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Icon" name="log-in" size="{{ 15 }}" color="var(--color-royal)" hint-size="15px,15px"></x-import>
+                  Primeira vez
+                </span>
+                <span style="font:var(--text-amount-lg);letter-spacing:var(--tracking-amount);font-variant-numeric:tabular-nums;color:var(--color-royal-deep)">11</span>
+                <span style="font:var(--text-small);color:var(--text-secondary)">na casa — <span style="color:var(--text-primary);font-weight:600">6</span> deles nunca tomaram ayahuasca</span>
+              </div>
+
+              <div style="display:flex;flex-direction:column;gap:6px;padding:12px 14px;background:var(--bg-card);border:var(--border-hairline);border-radius:var(--radius-sm)">
+                <span style="display:flex;align-items:center;gap:7px;font:var(--text-label);text-transform:uppercase;letter-spacing:var(--tracking-label);color:var(--text-field-label)">
+                  <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Icon" name="message-circle-question" size="{{ 15 }}" color="var(--color-pending)" hint-size="15px,15px"></x-import>
+                  Anamnese
+                </span>
+                <span style="font:var(--text-amount-lg);letter-spacing:var(--tracking-amount);font-variant-numeric:tabular-nums;color:var(--color-pending)">14</span>
+                <span style="font:var(--text-small);color:var(--text-secondary)">ainda não responderam — 64 de 78 entregues</span>
+              </div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:10px;padding:14px 16px;background:var(--color-attention-soft);border:1px solid var(--color-attention-border);border-radius:var(--radius-sm)">
+              <div style="display:flex;flex-wrap:wrap;align-items:center;gap:9px">
+                <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Icon" name="triangle-alert" size="{{ 16 }}" color="var(--color-attention)" hint-size="16px,16px"></x-import>
+                <span style="font:var(--text-body-strong);color:var(--text-primary)">3 pontos de atenção em medicação ou saúde</span>
+                <a href="#" style="margin-left:auto;font:var(--text-small);color:var(--text-link);text-decoration:none">ver anamneses</a>
+              </div>
+              <sc-for list="{{ atencoes }}" as="a" hint-placeholder-count="3">
+                <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:baseline;font:var(--text-small);color:var(--text-secondary)">
+                  <span style="font:var(--text-body);color:var(--text-primary)">{{ a.nome }}</span>
+                  <span>{{ a.nota }}</span>
+                </div>
+              </sc-for>
+              <span style="font:var(--text-small);color:var(--text-secondary)">Quem cuida da recepção precisa falar com essas três pessoas antes da abertura.</span>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ ehResultado }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:18px 20px 20px">
+          <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap">
+            <h2 style="margin:0;font:var(--text-title);letter-spacing:var(--tracking-display);color:var(--text-title)">Resultado por cerimônia</h2>
+            <span style="margin-left:auto;font:var(--text-small);color:var(--text-secondary)">contribuições menos custos · seis últimas</span>
+          </div>
+          <div style="margin-top:12px">
+            <svg viewBox="0 0 620 172" width="100%" height="196" role="img" aria-label="Resultado por cerimônia nas seis últimas cerimônias">
+              <path d="{{ chart.areaD }}" fill="var(--color-royal-soft)"></path>
+              <line x1="16" x2="612" y1="{{ chart.zeroY }}" y2="{{ chart.zeroY }}" stroke="var(--border-section)" stroke-width="1"></line>
+              <text x="16" y="{{ chart.zeroLabelY }}" fill="var(--text-secondary)" font-size="12" font-family="var(--font-data)">0</text>
+              <polyline points="{{ chart.points }}" fill="none" stroke="var(--color-royal)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"></polyline>
+              <sc-for list="{{ chart.dots }}" as="d" hint-placeholder-count="6">
+                <circle cx="{{ d.x }}" cy="{{ d.y }}" r="4.5" fill="var(--bg-card)" stroke="{{ d.cor }}" stroke-width="2.5"></circle>
+              </sc-for>
+            </svg>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;margin-top:2px">
+            <sc-for list="{{ chart.dots }}" as="d" hint-placeholder-count="6">
+              <div style="display:flex;flex-direction:column;gap:2px;align-items:center;text-align:center;min-width:0">
+                <span style="font:var(--text-amount);letter-spacing:var(--tracking-amount);font-variant-numeric:tabular-nums;color:{{ d.cor }}">{{ d.valor }}</span>
+                <span style="font:var(--text-code);font-variant-numeric:tabular-nums;color:var(--text-meta)">{{ d.data }}</span>
+                <span style="font:var(--text-small);color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%">{{ d.nome }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ ehUltima }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:18px 20px 22px;display:flex;flex-wrap:wrap;gap:22px;align-items:flex-start">
+          <div style="position:relative;flex:0 0 auto;width:132px;height:178px;border:var(--border-hairline);border-radius:var(--radius-sm);overflow:hidden;background:var(--bg-brand);display:flex;align-items:center;justify-content:center">
+            <span style="font:var(--text-label);text-transform:uppercase;letter-spacing:var(--tracking-label);color:var(--text-meta)">cartaz</span>
+            <image-slot id="cartaz-ultima" shape="rect" fit="cover" style="position:absolute;inset:0;width:100%;height:100%"></image-slot>
+          </div>
+          <div style="flex:1 1 420px;min-width:0;display:flex;flex-direction:column;gap:16px">
+            <div style="display:flex;flex-direction:column;gap:4px">
+              <div style="font:var(--text-label);text-transform:uppercase;letter-spacing:var(--tracking-label);color:var(--text-field-label)">Última cerimônia</div>
+              <h2 style="margin:0;font:var(--text-title);letter-spacing:var(--tracking-display);color:var(--text-title)">22/08 · Mãe Divina</h2>
+              <div style="display:flex;flex-wrap:wrap;gap:16px;margin-top:2px">
+                <span style="display:flex;align-items:center;gap:6px;font:var(--text-small);color:var(--text-secondary)">
+                  <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Icon" name="users" size="{{ 14 }}" color="var(--text-meta)" hint-size="14px,14px"></x-import>
+                  84 participantes
+                </span>
+                <span style="display:flex;align-items:center;gap:6px;font:var(--text-small);color:var(--text-secondary)">
+                  <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Icon" name="check-check" size="{{ 14 }}" color="var(--color-confirmed)" hint-size="14px,14px"></x-import>
+                  contas fechadas em 24/08
+                </span>
+                <span style="display:flex;align-items:center;gap:6px;font:var(--text-small);color:var(--text-secondary)">
+                  <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Icon" name="user-round" size="{{ 14 }}" color="var(--text-meta)" hint-size="14px,14px"></x-import>
+                  Marcia Zubek
+                </span>
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:18px">
+              <div style="display:flex;flex-direction:column;gap:6px">
+                <span style="font:var(--text-label);text-transform:uppercase;letter-spacing:var(--tracking-label);color:var(--text-field-label)">Contribuições</span>
+                <span style="font:var(--text-amount-lg);letter-spacing:var(--tracking-amount);font-variant-numeric:tabular-nums;color:var(--color-confirmed)">18.940,00</span>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:6px;padding-left:18px;border-left:var(--border-hairline)">
+                <span style="font:var(--text-label);text-transform:uppercase;letter-spacing:var(--tracking-label);color:var(--text-field-label)">Custos</span>
+                <span style="font:var(--text-amount-lg);letter-spacing:var(--tracking-amount);font-variant-numeric:tabular-nums;color:var(--color-attention)">7.412,30</span>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:6px;padding-left:18px;border-left:var(--border-hairline)">
+                <span style="font:var(--text-label);text-transform:uppercase;letter-spacing:var(--tracking-label);color:var(--text-field-label)">Resultado</span>
+                <span style="font:var(--text-amount-lg);letter-spacing:var(--tracking-amount);font-variant-numeric:tabular-nums;color:var(--color-royal-deep)">+ 11.527,70</span>
+              </div>
+            </div>
+            <div style="font:var(--text-small);color:var(--text-secondary)">Média de 225,48 por participante — 11,2 L de ayahuasca servidos, dentro do consumo habitual.</div>
+          </div>
+        </div>
+      </sc-if>
+    </div>
+
+    <sc-if value="{{ mostrarAyahuasca }}" hint-placeholder-val="{{ true }}">
+      <div style="background:var(--bg-card);border:var(--border-hairline);border-radius:var(--radius-lg);padding:16px 20px 20px;display:flex;flex-direction:column;gap:14px">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Icon" name="flask-conical" size="{{ 18 }}" color="var(--color-royal)" hint-size="18px,18px"></x-import>
+          <h2 style="margin:0;font:var(--text-title);letter-spacing:var(--tracking-display);color:var(--text-title)">Ayahuasca em estoque</h2>
+          <span style="font:var(--text-small);color:var(--text-secondary)">estoque após cada cerimônia, por lote · litros</span>
+          <span style="margin-left:auto;font:var(--text-small);color:var(--text-link)">conferido 24/08</span>
+        </div>
+
+        <div style="display:flex;flex-wrap:wrap;gap:24px;align-items:baseline">
+          <div style="display:flex;align-items:baseline;gap:8px">
+            <span style="font:var(--text-amount-lg);letter-spacing:var(--tracking-amount);font-variant-numeric:tabular-nums;color:var(--color-royal-deep)">{{ estoque.totalAtual }}</span>
+            <span style="font:var(--text-body);color:var(--text-secondary)">litros hoje</span>
+          </div>
+          <div style="display:flex;align-items:baseline;gap:8px">
+            <span style="font:var(--text-amount);letter-spacing:var(--tracking-amount);font-variant-numeric:tabular-nums;color:var(--text-primary)">{{ estoque.media }}</span>
+            <span style="font:var(--text-small);color:var(--text-secondary)">consumo médio por cerimônia</span>
+          </div>
+          <div style="display:flex;align-items:baseline;gap:8px">
+            <span style="font:var(--text-amount);letter-spacing:var(--tracking-amount);font-variant-numeric:tabular-nums;color:var(--text-primary)">{{ estoque.cobertura }}</span>
+            <span style="font:var(--text-small);color:var(--text-secondary)">cerimônias de folga no ritmo atual</span>
+          </div>
+        </div>
+
+        <svg viewBox="0 0 620 240" style="width:100%;height:auto;display:block" role="img" aria-label="Estoque de ayahuasca por lote após cada cerimônia, com a parcela consumida em hachura">
+          <defs>
+            <pattern id="hachura-0" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+              <rect width="7" height="7" fill="var(--bg-card)"></rect>
+              <line x1="0" y1="0" x2="0" y2="7" stroke="var(--color-royal-deep)" stroke-width="2.6"></line>
+            </pattern>
+            <pattern id="hachura-1" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+              <rect width="7" height="7" fill="var(--bg-card)"></rect>
+              <line x1="0" y1="0" x2="0" y2="7" stroke="var(--color-royal)" stroke-width="2.6"></line>
+            </pattern>
+            <pattern id="hachura-2" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+              <rect width="7" height="7" fill="var(--bg-card)"></rect>
+              <line x1="0" y1="0" x2="0" y2="7" stroke="var(--color-pending)" stroke-width="2.6"></line>
+            </pattern>
+          </defs>
+
+          <line x1="34" x2="612" y1="226" y2="226" stroke="var(--border-subtle)" stroke-width="1" stroke-dasharray="3 4"></line>
+          <line x1="34" x2="612" y1="181" y2="181" stroke="var(--border-subtle)" stroke-width="1" stroke-dasharray="3 4"></line>
+          <line x1="34" x2="612" y1="136" y2="136" stroke="var(--border-subtle)" stroke-width="1" stroke-dasharray="3 4"></line>
+          <line x1="34" x2="612" y1="91" y2="91" stroke="var(--border-subtle)" stroke-width="1" stroke-dasharray="3 4"></line>
+          <line x1="34" x2="612" y1="46" y2="46" stroke="var(--border-subtle)" stroke-width="1" stroke-dasharray="3 4"></line>
+          <text x="0" y="230" fill="var(--text-meta)" font-size="13" font-family="var(--font-data)">0</text>
+          <text x="0" y="185" fill="var(--text-meta)" font-size="13" font-family="var(--font-data)">30</text>
+          <text x="0" y="140" fill="var(--text-meta)" font-size="13" font-family="var(--font-data)">60</text>
+          <text x="0" y="95" fill="var(--text-meta)" font-size="13" font-family="var(--font-data)">90</text>
+          <text x="0" y="50" fill="var(--text-meta)" font-size="13" font-family="var(--font-data)">120</text>
+          <line x1="34" x2="612" y1="226" y2="226" stroke="var(--border-section)" stroke-width="1"></line>
+
+          <line x1="322" x2="322" y1="26" y2="226" stroke="var(--color-pending)" stroke-width="1" stroke-dasharray="5 4"></line>
+          <text x="328" y="18" fill="var(--color-pending)" font-size="13" font-family="var(--font-data)">feitio 12/07 · + 60,0 L</text>
+
+          <sc-for list="{{ estoque.solidos }}" as="r" hint-placeholder-count="12">
+            <rect x="{{ r.x }}" y="{{ r.y }}" width="{{ r.w }}" height="{{ r.h }}" fill="{{ r.fill }}"></rect>
+          </sc-for>
+          <sc-for list="{{ estoque.consumos }}" as="r" hint-placeholder-count="12">
+            <rect x="{{ r.x }}" y="{{ r.y }}" width="{{ r.w }}" height="{{ r.h }}" fill="{{ r.fill }}" stroke="{{ r.stroke }}" stroke-width="1" stroke-dasharray="3 3"></rect>
+          </sc-for>
+          {{ estoque.rotulosSvg }}
+        </svg>
+
+        <div style="display:grid;grid-template-columns:5.5% repeat(6,minmax(0,1fr));gap:0;margin-top:2px">
+          <div></div>
+          <sc-for list="{{ estoque.rotulos }}" as="l" hint-placeholder-count="6">
+            <div style="display:flex;flex-direction:column;gap:2px;align-items:center;text-align:center;min-width:0">
+              <span style="font:var(--text-code);font-variant-numeric:tabular-nums;color:var(--text-primary)">{{ l.data }}</span>
+              <span style="font:var(--text-small);color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%">{{ l.nome }}</span>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="display:flex;flex-wrap:wrap;gap:18px;padding-top:12px;border-top:var(--border-hairline)">
+          <sc-for list="{{ estoque.legenda }}" as="l" hint-placeholder-count="3">
+            <div style="display:flex;align-items:center;gap:9px">
+              <span style="width:14px;height:14px;border-radius:2px;flex:0 0 auto;background:{{ l.cor }}"></span>
+              <span style="font:var(--text-body);color:var(--text-primary)">{{ l.nome }}</span>
+              <span style="font:var(--text-amount);letter-spacing:var(--tracking-amount);font-variant-numeric:tabular-nums;color:var(--text-secondary)">{{ l.saldo }}</span>
+            </div>
+          </sc-for>
+          <div style="display:flex;align-items:center;gap:9px;margin-left:auto">
+            <svg width="16" height="16" aria-hidden="true"><rect x="0.5" y="0.5" width="15" height="15" fill="url(#hachura-1)" stroke="var(--color-royal)" stroke-width="1" stroke-dasharray="3 3"></rect></svg>
+            <span style="font:var(--text-small);color:var(--text-secondary)">hachura: consumido na própria cerimônia</span>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+  </div>
+</x-import>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1360,&quot;height&quot;:980},&quot;userName&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Aurio Neto&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;userGroup&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Administrador&quot;,&quot;Governança&quot;,&quot;Tesouraria&quot;,&quot;Acolhimento e Organização&quot;,&quot;Registro rápido&quot;,&quot;Leitura&quot;],&quot;default&quot;:&quot;Tesouraria&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;loteCount&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:12,&quot;min&quot;:0,&quot;max&quot;:80,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Painel&quot;},&quot;mostrarAyahuasca&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Painel&quot;}}">
+class Component extends DCLogic {
+  state = { slide: 0 };
+
+  renderVals() {
+    const lote = this.props.loteCount ?? 12;
+    const slide = this.state.slide;
+    const brl = n => Math.abs(n).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const L = n => n.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+    const meter = (pct, cor) => ({ width: pct + '%', height: '100%', background: cor, borderRadius: '3px' });
+
+    const cerimoniasPassadas = [
+      { data: '13/06', nome: 'Trabalho de cura', v: 4980.60, consumo: [6.5, 4.7, 0] },
+      { data: '27/06', nome: 'São João', v: 14205.00, consumo: [7.0, 5.2, 0] },
+      { data: '11/07', nome: 'Mãe Divina', v: 9870.20, consumo: [6.0, 5.0, 0] },
+      { data: '25/07', nome: 'Concentração', v: -1240.50, consumo: [4.5, 3.0, 3.6], entrada: [0, 0, 60] },
+      { data: '08/08', nome: 'Trabalho de cura', v: 6310.00, consumo: [4.0, 2.4, 4.8] },
+      { data: '22/08', nome: 'Mãe Divina', v: 11527.70, consumo: [0, 5.0, 6.2] },
+    ];
+
+    // gráfico de linha — resultado por cerimônia
+    const top = 18, hgt = 132, max = 15500, min = -3000;
+    const y = v => +(top + (max - v) / (max - min) * hgt).toFixed(1);
+    const x = i => +(56 + i * 106).toFixed(1);
+    const zeroY = y(0);
+    const dots = cerimoniasPassadas.map((d, i) => ({
+      x: x(i), y: y(d.v), data: d.data, nome: d.nome,
+      valor: (d.v < 0 ? '− ' : '+ ') + L(Math.abs(d.v / 1000)) + ' mil',
+      cor: d.v < 0 ? 'var(--color-attention)' : 'var(--color-royal)',
+    }));
+    const pts = dots.map(d => d.x + ',' + d.y).join(' ');
+    const chart = {
+      points: pts, zeroY: zeroY, zeroLabelY: zeroY - 5, dots: dots,
+      areaD: 'M ' + x(0) + ',' + zeroY + ' L ' + pts.split(' ').join(' L ') + ' L ' + x(dots.length - 1) + ',' + zeroY + ' Z',
+    };
+
+    // estoque de ayahuasca — barra empilhada por lote, hachura = consumo da cerimônia
+    const lotes = [
+      { nome: 'Feitio set/25', cor: 'var(--color-royal-deep)', hachura: 'url(#hachura-0)' },
+      { nome: 'Feitio fev/26', cor: 'var(--color-royal)', hachura: 'url(#hachura-1)' },
+      { nome: 'Feitio jul/26', cor: 'var(--color-pending)', hachura: 'url(#hachura-2)' },
+    ];
+    const base = 226, plotTop = 46, escala = (base - plotTop) / 120, barW = 54, passoX = 96;
+    const saldo = [28.0, 62.0, 0];
+    const solidos = [], consumos = [], rotulos = [];
+    let consumoTotal = 0;
+    cerimoniasPassadas.forEach((c, i) => {
+      if (c.entrada) c.entrada.forEach((e, j) => { saldo[j] += e; });
+      const bx = 55 + i * passoX;
+      const gasto = c.consumo.reduce((a, b) => a + b, 0);
+      consumoTotal += gasto;
+      let acc = 0;
+      lotes.forEach((lo, j) => {
+        const restante = +(saldo[j] - c.consumo[j]).toFixed(1);
+        if (restante > 0.05) {
+          const h = restante * escala;
+          solidos.push({ x: bx, w: barW, y: +(base - (acc + restante) * escala).toFixed(1), h: +h.toFixed(1), fill: lo.cor });
+        }
+        acc += Math.max(restante, 0);
+      });
+      const topoSolido = acc;
+      let accC = acc;
+      lotes.forEach((lo, j) => {
+        const g = c.consumo[j];
+        if (g > 0.05) {
+          consumos.push({ x: bx, w: barW, y: +(base - (accC + g) * escala).toFixed(1), h: +(g * escala).toFixed(1), fill: lo.hachura, stroke: lo.cor });
+          accC += g;
+        }
+      });
+      rotulos.push({
+        cx: bx + barW / 2, data: c.data, nome: c.nome,
+        total: L(topoSolido), totalCor: 'var(--color-royal-deep)',
+        totalY: +(base - topoSolido * escala + 18).toFixed(1),
+        consumo: '− ' + L(gasto), consumoY: +(base - accC * escala - 7).toFixed(1),
+      });
+      c.consumo.forEach((g, j) => { saldo[j] = +(saldo[j] - g).toFixed(1); });
+    });
+    const totalAtual = saldo.reduce((a, b) => a + b, 0);
+    const media = consumoTotal / cerimoniasPassadas.length;
+    const h = React.createElement;
+    const rotulosSvg = h('g', { key: 'rot' }, rotulos.flatMap((r, i) => [
+      h('text', { key: 'c' + i, x: r.cx, y: r.consumoY, textAnchor: 'middle', fill: 'var(--text-secondary)', fontSize: 13, fontFamily: 'var(--font-data)' }, r.consumo),
+      h('text', { key: 't' + i, x: r.cx, y: r.totalY, textAnchor: 'middle', fill: 'var(--color-ink-inverse)', fontSize: 13, fontWeight: 600, fontFamily: 'var(--font-data)' }, r.total),
+    ]));
+    const estoque = {
+      solidos: solidos, consumos: consumos, rotulos: rotulos, rotulosSvg: rotulosSvg,
+      totalAtual: L(totalAtual),
+      media: L(media) + ' L',
+      cobertura: String(Math.floor(totalAtual / media)),
+      legenda: lotes.map((lo, j) => ({ nome: lo.nome, cor: lo.cor, saldo: saldo[j] > 0.05 ? L(saldo[j]) + ' L' : 'esgotado' })),
+    };
+
+    const abaBase = 'font:var(--text-body);padding:10px 14px;min-height:44px;border-radius:var(--radius-sm);cursor:pointer;border:1px solid transparent;background:transparent;color:var(--text-secondary)';
+    const abaAtiva = 'font:var(--text-body-strong);padding:10px 14px;min-height:44px;border-radius:var(--radius-sm);cursor:pointer;border:1px solid var(--color-royal-border);background:var(--color-royal-soft);color:var(--color-royal-deep)';
+    const rotulosAbas = ['Próxima cerimônia', 'Resultado por cerimônia', 'Última cerimônia'];
+    const irPara = n => () => this.setState({ slide: (n + 3) % 3 });
+
+    return {
+      user: { name: this.props.userName ?? 'Aurio Neto', group: this.props.userGroup ?? 'Tesouraria' },
+      mostrarAyahuasca: this.props.mostrarAyahuasca ?? true,
+      loteLinha: lote + ' lançamentos em lote aguardando verificação — 3 remessas de comprovantes',
+      chart: chart,
+      estoque: estoque,
+      ehProximas: slide === 0,
+      ehResultado: slide === 1,
+      ehUltima: slide === 2,
+      passo: (slide + 1) + ' / 3',
+      anterior: irPara(slide - 1),
+      proximo: irPara(slide + 1),
+      abas: rotulosAbas.map((label, i) => ({ label: label, onClick: irPara(i), style: i === slide ? abaAtiva : abaBase })),
+      atencoes: [
+        { nome: 'Renata Salles', nota: '— uso contínuo de sertralina, redução em curso com a médica' },
+        { nome: 'Wilson Prado', nota: '— pressão alta, medicação diária; pediu para não jejuar' },
+        { nome: 'Ana Beatriz Rocha', nota: '— crise de ansiedade na última cerimônia; primeira vez sem acompanhante' },
+      ],
+      cerimonias: [
+        { slotId: 'cartaz-0509', dataLonga: '05/09 · sexta, 20h', nome: 'Cerimônia Mãe Divina', resp: 'Marcia Zubek', pessoas: '78 / 90', leitos: '24 / 30', pessoasStyle: meter(87, 'var(--color-royal)'), leitosStyle: meter(80, 'var(--color-royal)') },
+        { slotId: 'cartaz-1909', dataLonga: '19/09 · sexta, 20h', nome: 'Trabalho de cura', resp: 'Aurio Neto', pessoas: '41 / 90', leitos: '11 / 30', pessoasStyle: meter(46, 'var(--color-royal)'), leitosStyle: meter(37, 'var(--color-royal)') },
+        { slotId: 'cartaz-0310', dataLonga: '03/10 · sábado, 15h', nome: 'Concentração', resp: 'Lucia Prado', pessoas: '12 / 60', leitos: '4 / 30', pessoasStyle: meter(20, 'var(--color-royal)'), leitosStyle: meter(13, 'var(--color-royal)') },
+      ],
+      nav: [
+        { id: 'painel', label: 'Painel', icon: 'layout-dashboard' },
+        { id: 'registrar', label: 'Registrar gasto', icon: 'circle-plus' },
+        { id: 'meus', label: 'Meus registros', icon: 'receipt-text' },
+        { section: 'Financeiro' },
+        { id: 'lote', label: 'Verificação de lote', icon: 'sparkles', count: lote },
+        { id: 'lancamentos', label: 'Lançamentos', icon: 'list' },
+        { id: 'contas', label: 'Contas e fundo', icon: 'landmark' },
+        { id: 'relatorios', label: 'Relatórios', icon: 'chart-no-axes-column' },
+        { id: 'fechamento', label: 'Fechamento', icon: 'lock' },
+        { section: 'Cerimônias' },
+        { id: 'agenda', label: 'Agenda', icon: 'calendar-days' },
+        { id: 'ayahuasca', label: 'Ayahuasca', icon: 'flask-conical' },
+        { section: 'Pessoas' },
+        { id: 'pessoas', label: 'Pessoas', icon: 'users' },
+        { id: 'anamnese', label: 'Anamnese', icon: 'clipboard-list' },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><script src="./ds-base.js"></script><style>body{margin:0;background:var(--bg-app)}
+@keyframes surgir{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}</style></helmet>
+
+<div style="padding:26px 28px 40px;display:flex;flex-direction:column;gap:20px;background:var(--bg-app);min-height:100%">
+
+  <div style="display:flex;flex-direction:column;gap:2px">
+    <div style="font:var(--text-label);text-transform:uppercase;letter-spacing:var(--tracking-label);color:var(--text-field-label)">F-11 · Ayahuasca · Guardião do daime</div>
+    <div style="font:var(--text-title-sm);color:var(--text-title)">Cada litro com lote, origem e destino</div>
+  </div>
+
+  <div style="display:flex;flex-wrap:wrap;gap:26px;align-items:flex-start">
+
+    <div style="position:relative;flex:0 0 auto;width:1180px;height:1000px;display:flex;border:var(--border-hairline);border-radius:var(--radius-lg);overflow:hidden;background:var(--bg-card);box-shadow:var(--shadow-raised)">
+      <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.AppShell" unit="CDD" user="{{ user }}" nav="{{ nav }}" active-id="ayahuasca" density="office" style="height:100%;width:100%" dc-props="{{ propsShell }}" hint-size="100%,100%">
+        <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.ScreenHeader" code="F-11 · Ayahuasca" title="Estoque de ayahuasca" subtitle="{{ subtitulo }}" hint-size="100%,140px"></x-import>
+
+        <div style="padding:18px 24px 26px;display:flex;flex-direction:column;gap:14px;max-width:1020px">
+
+          <sc-if value="{{ temMensagem }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--color-royal-soft);border:1px solid var(--color-royal-border);border-radius:var(--radius);padding:10px 14px">
+              <span style="font:var(--text-body);color:var(--color-royal-deep)">{{ mensagem }}</span>
+              <button type="button" onClick="{{ fecharMensagem }}" style="border:0;background:transparent;color:var(--color-royal-deep);cursor:pointer;font:var(--text-body-strong)">×</button>
+            </div>
+          </sc-if>
+
+          <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px">
+            <sc-for list="{{ kpis }}" as="k" hint-placeholder-count="4">
+              <div style="{{ k.estiloCard }}">
+                <span style="font:var(--text-label);text-transform:uppercase;letter-spacing:var(--tracking-label);color:var(--text-field-label)">{{ k.label }}</span>
+                <span style="{{ k.estiloValor }}">{{ k.valor }}</span>
+                <span style="font:var(--text-small);color:var(--text-secondary)">{{ k.nota }}</span>
+              </div>
+            </sc-for>
+          </div>
+
+          <sc-if value="{{ temAlerta }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;align-items:center;gap:10px;background:var(--bg-card);border:var(--border-hairline);border-left:3px solid var(--color-attention);border-radius:var(--radius);padding:11px 14px">
+              <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Icon" name="triangle-alert" size="{{ 16 }}" color="var(--color-attention)" hint-size="16px,16px"></x-import>
+              <span style="font:var(--text-body);color:var(--text-primary)">{{ textoAlerta }}</span>
+            </div>
+          </sc-if>
+
+          <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px">
+            <div style="display:flex;gap:6px">
+              <sc-for list="{{ abas }}" as="a" hint-placeholder-count="3">
+                <button type="button" onClick="{{ a.onClick }}" aria-pressed="{{ a.ativo }}" style="{{ a.estilo }}">{{ a.label }}</button>
+              </sc-for>
+            </div>
+            <span style="margin-left:auto;display:flex;gap:8px">
+              <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Button" variant="ghost" icon-name="arrow-left-right" density="office" onClick="{{ abrirTransferencia }}" hint-size="160px,42px">Transferir</x-import>
+              <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Button" variant="ghost" icon-name="minus" density="office" onClick="{{ abrirSaida }}" hint-size="170px,42px">Registrar saída</x-import>
+              <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Button" variant="primary" icon-name="flask-conical" density="office" onClick="{{ abrirFeitio }}" hint-size="180px,42px">Entrada de feitio</x-import>
+            </span>
+          </div>
+
+          <sc-if value="{{ abaLotes }}" hint-placeholder-val="{{ true }}">
+            <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:stretch">
+              <sc-for list="{{ lotes }}" as="l" hint-placeholder-count="4">
+                <button type="button" onClick="{{ l.abrir }}" style="{{ l.estiloCard }}">
+                  <span style="display:flex;align-items:flex-start;gap:10px;width:100%">
+                    <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;text-align:left">
+                      <span style="font:var(--text-body-strong);color:var(--text-primary)">{{ l.codigo }}</span>
+                      <span style="font:var(--text-small);color:var(--text-secondary)">{{ l.origem }}</span>
+                    </span>
+                    <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.StatusBadge" tone="{{ l.tone }}" hint-size="120px,26px">{{ l.situacao }}</x-import>
+                  </span>
+
+                  <span style="display:flex;align-items:baseline;gap:8px">
+                    <span style="font:var(--text-amount-lg);letter-spacing:var(--tracking-amount);color:var(--text-primary);font-variant-numeric:tabular-nums">{{ l.restante }}</span>
+                    <span style="font:var(--text-small);color:var(--text-meta)">{{ l.deTotal }}</span>
+                  </span>
+
+                  <span style="width:100%;height:8px;border-radius:var(--radius-pill);background:var(--bg-sunken);overflow:hidden;display:block">
+                    <span style="{{ l.estiloBarra }}"></span>
+                  </span>
+
+                  <span style="display:flex;flex-wrap:wrap;gap:12px;width:100%">
+                    <span style="font:var(--text-small);color:var(--text-secondary)">{{ l.forca }}</span>
+                    <span style="font:var(--text-small);color:var(--text-secondary)">{{ l.local }}</span>
+                    <span style="margin-left:auto;font:var(--text-small);color:var(--text-meta)">{{ l.reservado }}</span>
+                  </span>
+                </button>
+              </sc-for>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ abaMovimentos }}" hint-placeholder-val="{{ false }}">
+            <div style="display:grid;grid-template-columns:100px 150px 120px minmax(0,1fr) 130px;gap:0;border-bottom:1px solid var(--color-line-strong);padding-bottom:8px">
+              <sc-for list="{{ colunasMovimentos }}" as="col" hint-placeholder-count="5">
+                <span style="{{ col.estilo }}">{{ col.label }}</span>
+              </sc-for>
+            </div>
+            <div style="display:flex;flex-direction:column;max-height:470px;overflow:auto">
+              <sc-for list="{{ movimentos }}" as="m" hint-placeholder-count="8">
+                <div style="{{ m.estiloLinha }}">
+                  <span style="font:var(--text-small);color:var(--text-secondary);font-variant-numeric:tabular-nums">{{ m.data }}</span>
+                  <span style="{{ m.estiloTipo }}">{{ m.tipo }}</span>
+                  <span style="font:var(--text-small);color:var(--text-primary)">{{ m.lote }}</span>
+                  <span style="min-width:0;display:flex;flex-direction:column;gap:1px">
+                    <span style="font:var(--text-body);color:var(--text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ m.destino }}</span>
+                    <span style="font:var(--text-small);color:var(--text-meta)">{{ m.responsavel }}</span>
+                  </span>
+                  <span style="{{ m.estiloLitros }}">{{ m.litros }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ abaReservas }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <sc-for list="{{ reservas }}" as="r" hint-placeholder-count="4">
+                <div style="{{ r.estiloLinha }}">
+                  <span style="display:flex;flex-direction:column;align-items:center;gap:1px;width:56px;flex:0 0 auto">
+                    <span style="font:var(--text-amount);letter-spacing:var(--tracking-amount);color:var(--text-primary)">{{ r.dia }}</span>
+                    <span style="font:var(--text-small);color:var(--text-meta)">{{ r.mes }}</span>
+                  </span>
+                  <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+                    <span style="font:var(--text-body-strong);color:var(--text-primary)">{{ r.nome }}</span>
+                    <span style="font:var(--text-small);color:var(--text-secondary)">{{ r.meta }}</span>
+                  </span>
+                  <span style="display:flex;flex-direction:column;align-items:flex-end;gap:2px">
+                    <span style="font:var(--text-amount);letter-spacing:var(--tracking-amount);color:var(--text-primary);font-variant-numeric:tabular-nums">{{ r.litros }}</span>
+                    <span style="{{ r.estiloSituacao }}">{{ r.situacao }}</span>
+                  </span>
+                  <button type="button" onClick="{{ r.acao }}" style="font:var(--text-small);border:1px solid var(--color-line);background:var(--bg-card);border-radius:var(--radius-sm);padding:8px 13px;color:var(--text-secondary);cursor:pointer;white-space:nowrap">{{ r.textoAcao }}</button>
+                </div>
+              </sc-for>
+              <span style="font:var(--text-small);color:var(--text-meta)">Reservar separa os litros do estoque livre, mas só dá baixa quando o trabalho acontece.</span>
+            </div>
+          </sc-if>
+        </div>
+      </x-import>
+
+      <sc-if value="{{ temDetalhe }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;top:0;right:0;bottom:0;width:430px;background:var(--bg-card);border-left:1px solid var(--color-line-strong);box-shadow:var(--shadow-raised);display:flex;flex-direction:column;z-index:5">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:16px 18px;border-bottom:var(--border-hairline)">
+            <span style="display:flex;flex-direction:column;gap:2px">
+              <span style="font:var(--text-label);letter-spacing:var(--tracking-label);text-transform:uppercase;color:var(--text-field-label)">Lote</span>
+              <span style="font:var(--text-title-sm);color:var(--text-title)">{{ detalhe.codigo }}</span>
+              <span style="font:var(--text-small);color:var(--text-secondary)">{{ detalhe.origem }}</span>
+            </span>
+            <button type="button" aria-label="fechar" onClick="{{ fecharDetalhe }}" style="width:34px;height:34px;flex:0 0 auto;border:1px solid var(--color-line);background:var(--bg-card);border-radius:var(--radius-pill);cursor:pointer;font:var(--text-body-strong);color:var(--text-secondary)">×</button>
+          </div>
+
+          <div style="flex:1;min-height:0;overflow:auto;padding:16px 18px;display:flex;flex-direction:column;gap:14px">
+            <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px">
+              <sc-for list="{{ detalhe.numeros }}" as="n" hint-placeholder-count="4">
+                <div style="background:var(--bg-sunken);border:var(--border-hairline);border-radius:var(--radius);padding:11px 13px;display:flex;flex-direction:column;gap:2px">
+                  <span style="font:var(--text-label);text-transform:uppercase;letter-spacing:var(--tracking-label);color:var(--text-field-label)">{{ n.label }}</span>
+                  <span style="{{ n.estiloValor }}">{{ n.valor }}</span>
+                </div>
+              </sc-for>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <sc-for list="{{ detalhe.dados }}" as="d" hint-placeholder-count="6">
+                <div style="display:flex;align-items:baseline;gap:10px;padding-bottom:7px;border-bottom:var(--border-hairline)">
+                  <span style="font:var(--text-small);color:var(--text-secondary);width:140px;flex:0 0 auto">{{ d.label }}</span>
+                  <span style="flex:1;min-width:0;font:var(--text-body);color:var(--text-primary)">{{ d.valor }}</span>
+                </div>
+              </sc-for>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <span style="font:var(--text-body-strong);color:var(--text-primary)">Movimentos deste lote</span>
+              <sc-for list="{{ detalhe.movimentos }}" as="m" hint-placeholder-count="4">
+                <div style="display:flex;align-items:center;gap:10px;padding:9px 11px;border:var(--border-hairline);border-radius:var(--radius)">
+                  <span style="font:var(--text-small);color:var(--text-meta);width:56px;flex:0 0 auto;font-variant-numeric:tabular-nums">{{ m.data }}</span>
+                  <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:1px">
+                    <span style="font:var(--text-body);color:var(--text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ m.destino }}</span>
+                    <span style="font:var(--text-small);color:var(--text-meta)">{{ m.responsavel }}</span>
+                  </span>
+                  <span style="{{ m.estiloLitros }}">{{ m.litros }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="padding:14px 18px;border-top:var(--border-hairline);display:flex;gap:10px">
+            <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Button" variant="ghost" icon-name="minus" onClick="{{ saidaDesteLote }}" hint-size="150px,44px">Registrar saída</x-import>
+            <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Button" variant="quiet" icon-name="shield-alert" onClick="{{ alternarQuarentena }}" hint-size="180px,44px">{{ detalhe.textoQuarentena }}</x-import>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ temForm }}" hint-placeholder-val="{{ false }}">
+        <div onClick="{{ cancelarForm }}" style="position:absolute;inset:0;background:rgba(20,20,24,0.42);display:flex;align-items:center;justify-content:center;z-index:20;padding:30px">
+          <div onClick="{{ pararPropagacao }}" style="width:580px;background:var(--bg-card);border-radius:var(--radius-lg);box-shadow:var(--shadow-raised);display:flex;flex-direction:column;overflow:hidden">
+            <div style="padding:16px 20px;border-bottom:var(--border-hairline);display:flex;align-items:center;justify-content:space-between;gap:12px">
+              <span style="font:var(--text-label);letter-spacing:var(--tracking-label);text-transform:uppercase;color:var(--text-field-label)">{{ tituloForm }}</span>
+              <button type="button" aria-label="fechar" onClick="{{ cancelarForm }}" style="width:34px;height:34px;border:1px solid var(--color-line);background:var(--bg-card);border-radius:var(--radius-pill);cursor:pointer;font:var(--text-body-strong);color:var(--text-secondary)">×</button>
+            </div>
+
+            <div style="padding:18px 20px;display:flex;flex-direction:column;gap:12px">
+              <sc-if value="{{ formEhFeitio }}" hint-placeholder-val="{{ false }}">
+                <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px">
+                  <div style="display:flex;flex-direction:column">
+                    <label style="font:var(--text-small);color:var(--text-secondary);margin-bottom:5px">Código do lote</label>
+                    <input type="text" value="{{ form.codigo }}" onChange="{{ onFormCodigo }}" placeholder="Lote 01/2027" style="min-height:42px;border:1px solid var(--color-line-strong);background:var(--bg-card);border-radius:var(--radius-sm);padding:8px 12px;font:var(--text-body);color:var(--text-primary);outline:none">
+                  </div>
+                  <div style="display:flex;flex-direction:column">
+                    <label style="font:var(--text-small);color:var(--text-secondary);margin-bottom:5px">Feitio de origem</label>
+                    <input type="text" value="{{ form.origem }}" onChange="{{ onFormOrigem }}" placeholder="Feitio de dezembro · CDD" style="min-height:42px;border:1px solid var(--color-line-strong);background:var(--bg-card);border-radius:var(--radius-sm);padding:8px 12px;font:var(--text-body);color:var(--text-primary);outline:none">
+                  </div>
+                </div>
+                <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px">
+                  <div style="display:flex;flex-direction:column">
+                    <label style="font:var(--text-small);color:var(--text-secondary);margin-bottom:5px">Litros</label>
+                    <input type="text" value="{{ form.litros }}" onChange="{{ onFormLitros }}" style="min-height:42px;border:1px solid var(--color-line-strong);background:var(--bg-card);border-radius:var(--radius-sm);padding:8px 12px;font:var(--text-body);color:var(--text-primary);outline:none">
+                  </div>
+                  <div style="display:flex;flex-direction:column">
+                    <label style="font:var(--text-small);color:var(--text-secondary);margin-bottom:5px">Força</label>
+                    <select value="{{ form.forca }}" onChange="{{ onFormForca }}" style="min-height:42px;border:1px solid var(--color-line-strong);background:var(--bg-card);border-radius:var(--radius-sm);padding:8px 11px;font:var(--text-body);color:var(--text-primary);outline:none">
+                      <option value="Força 1">Força 1</option>
+                      <option value="Força 2">Força 2</option>
+                      <option value="Força 3">Força 3</option>
+                      <option value="Mel">Mel</option>
+                    </select>
+                  </div>
+                  <div style="display:flex;flex-direction:column">
+                    <label style="font:var(--text-small);color:var(--text-secondary);margin-bottom:5px">Data do feitio</label>
+                    <input type="text" value="{{ form.data }}" onChange="{{ onFormData }}" placeholder="01/09/2026" style="min-height:42px;border:1px solid var(--color-line-strong);background:var(--bg-card);border-radius:var(--radius-sm);padding:8px 12px;font:var(--text-body);color:var(--text-primary);outline:none">
+                  </div>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ formTemLote }}" hint-placeholder-val="{{ true }}">
+                <div style="display:flex;flex-direction:column">
+                  <label style="font:var(--text-small);color:var(--text-secondary);margin-bottom:5px">Lote</label>
+                  <select value="{{ form.loteId }}" onChange="{{ onFormLote }}" style="min-height:42px;border:1px solid var(--color-line-strong);background:var(--bg-card);border-radius:var(--radius-sm);padding:8px 11px;font:var(--text-body);color:var(--text-primary);outline:none">
+                    <sc-for list="{{ opcoesLote }}" as="o" hint-placeholder-count="4">
+                      <option value="{{ o.value }}">{{ o.label }}</option>
+                    </sc-for>
+                  </select>
+                </div>
+                <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px">
+                  <div style="display:flex;flex-direction:column">
+                    <label style="font:var(--text-small);color:var(--text-secondary);margin-bottom:5px">Litros</label>
+                    <input type="text" value="{{ form.litros }}" onChange="{{ onFormLitros }}" placeholder="6" style="min-height:42px;border:1px solid var(--color-line-strong);background:var(--bg-card);border-radius:var(--radius-sm);padding:8px 12px;font:var(--text-body);color:var(--text-primary);outline:none">
+                  </div>
+                  <div style="display:flex;flex-direction:column">
+                    <label style="font:var(--text-small);color:var(--text-secondary);margin-bottom:5px">{{ rotuloDestino }}</label>
+                    <input type="text" value="{{ form.destino }}" onChange="{{ onFormDestino }}" placeholder="{{ placeholderDestino }}" style="min-height:42px;border:1px solid var(--color-line-strong);background:var(--bg-card);border-radius:var(--radius-sm);padding:8px 12px;font:var(--text-body);color:var(--text-primary);outline:none">
+                  </div>
+                </div>
+                <span style="font:var(--text-small);color:var(--text-secondary)">{{ notaLote }}</span>
+              </sc-if>
+
+              <sc-if value="{{ temErroForm }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;align-items:center;gap:9px;background:var(--bg-sunken);border:1px solid var(--color-attention);border-radius:var(--radius);padding:10px 12px">
+                  <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Icon" name="triangle-alert" size="{{ 15 }}" color="var(--color-attention)" hint-size="15px,15px"></x-import>
+                  <span style="font:var(--text-small);color:var(--text-primary)">{{ erroForm }}</span>
+                </div>
+              </sc-if>
+
+              <div style="display:flex;flex-direction:column">
+                <label style="font:var(--text-small);color:var(--text-secondary);margin-bottom:5px">Observação</label>
+                <input type="text" value="{{ form.observacao }}" onChange="{{ onFormObservacao }}" placeholder="o que precisa ficar registrado" style="min-height:42px;border:1px solid var(--color-line-strong);background:var(--bg-card);border-radius:var(--radius-sm);padding:8px 12px;font:var(--text-body);color:var(--text-primary);outline:none">
+              </div>
+            </div>
+
+            <div style="padding:14px 20px;border-top:var(--border-hairline);display:flex;gap:10px;justify-content:flex-end">
+              <button type="button" onClick="{{ cancelarForm }}" style="font:var(--text-body);padding:9px 16px;min-height:42px;border-radius:var(--radius-sm);cursor:pointer;border:1px solid var(--color-line);background:var(--bg-card);color:var(--text-secondary)">Cancelar</button>
+              <button type="button" onClick="{{ salvarForm }}" disabled="{{ salvarBloqueado }}" title="{{ dicaSalvar }}" style="{{ estiloSalvar }}">{{ textoSalvar }}</button>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+    </div>
+
+    <div style="flex:0 0 auto;display:flex;flex-direction:column;gap:12px;align-items:center">
+      <div style="position:relative;width:392px;height:812px;display:flex;border:10px solid var(--color-ink-brand);border-radius:38px;overflow:hidden;background:var(--bg-app);box-shadow:var(--shadow-raised)">
+        <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.AppShell" unit="CDD" user="{{ user }}" nav="{{ nav }}" active-id="ayahuasca" density="field" style="height:100%;width:100%" dc-props="{{ propsShell }}" hint-size="100%,100%">
+          <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.ScreenHeader" code="F-11" title="Ayahuasca" density="field" hint-size="100%,80px"></x-import>
+
+          <div style="padding:14px 16px 20px;display:flex;flex-direction:column;gap:12px;min-width:0">
+            <div style="background:var(--bg-brand);border:1px solid var(--border-brand);border-radius:var(--radius);padding:13px 15px;display:flex;justify-content:space-between;gap:10px">
+              <span style="display:flex;flex-direction:column;gap:2px">
+                <span style="font:var(--text-label);text-transform:uppercase;letter-spacing:var(--tracking-label);color:var(--text-field-label)">Em estoque</span>
+                <span style="font:var(--text-amount-hero);letter-spacing:var(--tracking-amount);color:var(--color-royal-deep);font-variant-numeric:tabular-nums">{{ totalEstoque }}</span>
+              </span>
+              <span style="display:flex;flex-direction:column;gap:2px;text-align:right">
+                <span style="font:var(--text-label);text-transform:uppercase;letter-spacing:var(--tracking-label);color:var(--text-field-label)">Livre</span>
+                <span style="font:var(--text-amount);letter-spacing:var(--tracking-amount);color:var(--color-confirmed);font-variant-numeric:tabular-nums">{{ totalLivre }}</span>
+              </span>
+            </div>
+
+            <div style="display:flex;gap:6px">
+              <sc-for list="{{ abas }}" as="a" hint-placeholder-count="3">
+                <button type="button" onClick="{{ a.onClick }}" aria-pressed="{{ a.ativo }}" style="{{ a.estiloField }}">{{ a.label }}</button>
+              </sc-for>
+            </div>
+
+            <sc-if value="{{ abaLotes }}" hint-placeholder-val="{{ true }}">
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <sc-for list="{{ lotes }}" as="l" hint-placeholder-count="4">
+                  <button type="button" onClick="{{ l.abrir }}" style="{{ l.estiloCardField }}">
+                    <span style="display:flex;align-items:center;gap:10px">
+                      <span style="flex:1;min-width:0;font:var(--text-body-strong);color:var(--text-primary);text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ l.codigo }}</span>
+                      <span style="font:var(--text-amount);letter-spacing:var(--tracking-amount);color:var(--text-primary);font-variant-numeric:tabular-nums">{{ l.restante }}</span>
+                    </span>
+                    <span style="width:100%;height:7px;border-radius:var(--radius-pill);background:var(--bg-sunken);overflow:hidden;display:block">
+                      <span style="{{ l.estiloBarra }}"></span>
+                    </span>
+                    <span style="display:flex;align-items:center;gap:8px">
+                      <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.StatusBadge" tone="{{ l.tone }}" hint-size="120px,24px">{{ l.situacao }}</x-import>
+                      <span style="font:var(--text-small);color:var(--text-meta)">{{ l.forca }}</span>
+                    </span>
+                  </button>
+                </sc-for>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ abaMovimentos }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <sc-for list="{{ movimentos }}" as="m" hint-placeholder-count="6">
+                  <div style="{{ m.estiloLinhaField }}">
+                    <span style="display:flex;align-items:center;gap:9px">
+                      <span style="font:var(--text-small);color:var(--text-meta);font-variant-numeric:tabular-nums">{{ m.data }}</span>
+                      <span style="flex:1;min-width:0;font:var(--text-body);color:var(--text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ m.destino }}</span>
+                      <span style="{{ m.estiloLitros }}">{{ m.litros }}</span>
+                    </span>
+                    <span style="font:var(--text-small);color:var(--text-meta)">{{ m.lote }} · {{ m.responsavel }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ abaReservas }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <sc-for list="{{ reservas }}" as="r" hint-placeholder-count="4">
+                  <div style="{{ r.estiloLinhaField }}">
+                    <span style="display:flex;align-items:center;gap:10px">
+                      <span style="flex:1;min-width:0;font:var(--text-body-strong);color:var(--text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.nome }}</span>
+                      <span style="font:var(--text-amount);letter-spacing:var(--tracking-amount);color:var(--text-primary);font-variant-numeric:tabular-nums">{{ r.litros }}</span>
+                    </span>
+                    <span style="display:flex;align-items:center;gap:8px">
+                      <span style="font:var(--text-small);color:var(--text-meta)">{{ r.diaMes }}</span>
+                      <span style="{{ r.estiloSituacao }}">{{ r.situacao }}</span>
+                    </span>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+
+            <button type="button" onClick="{{ abrirSaida }}" style="min-height:46px;font:var(--text-body-strong);border-radius:var(--radius-sm);cursor:pointer;border:1px solid var(--color-royal-border);background:var(--color-royal-soft);color:var(--color-royal-deep)">Registrar saída</button>
+          </div>
+        </x-import>
+      </div>
+      <div style="font:var(--text-small);color:var(--text-secondary);max-width:392px;text-align:center">Campo: quanto tem, de qual lote, e dar baixa na hora.</div>
+    </div>
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1680,&quot;height&quot;:1120}}">
+class Component extends DCLogic {
+  state = {
+    aba: 'lotes', detalheId: null, form: null, mensagem: null,
+    lotes: [
+      { id: 1, codigo: 'Lote 12/2025', origem: 'Feitio de dezembro · CDD', data: '18/12/2025', forca: 'Força 2', litros: 42, restante: 23.5, local: 'Despensa do salão', guardiao: 'Chico Aguiar', situacao: 'em uso', analise: 'aprovada em 20/12/2025', garrafas: '47 garrafas de 500 ml' },
+      { id: 2, codigo: 'Lote 06/2026', origem: 'Feitio de junho · CDD', data: '22/06/2026', forca: 'Força 1', litros: 30, restante: 27, local: 'Casa de feitio', guardiao: 'Chico Aguiar', situacao: 'lacrado', analise: 'aprovada em 25/06/2026', garrafas: '54 garrafas de 500 ml' },
+      { id: 3, codigo: 'Lote 03/2026', origem: 'Recebido do Céu do Mar', data: '14/03/2026', forca: 'Força 3', litros: 12, restante: 4, local: 'Despensa do salão', guardiao: 'Lucia Prado', situacao: 'em uso', analise: 'laudo da unidade de origem', garrafas: '8 garrafas de 500 ml' },
+      { id: 4, codigo: 'Lote 09/2025', origem: 'Feitio de setembro · CDD', data: '09/09/2025', forca: 'Força 2', litros: 36, restante: 0, local: 'Despensa do salão', guardiao: 'Chico Aguiar', situacao: 'esgotado', analise: 'aprovada em 12/09/2025', garrafas: '—' },
+    ],
+    movimentos: [
+      { id: 1, data: '22/08/2026', tipo: 'saida', loteId: 1, litros: 8, destino: 'Mãe Divina · agosto', responsavel: 'Chico Aguiar' },
+      { id: 2, data: '25/07/2026', tipo: 'saida', loteId: 1, litros: 7.5, destino: 'São Miguel · julho', responsavel: 'Chico Aguiar' },
+      { id: 3, data: '22/06/2026', tipo: 'entrada', loteId: 2, litros: 30, destino: 'Feitio de junho', responsavel: 'Chico Aguiar' },
+      { id: 4, data: '20/06/2026', tipo: 'saida', loteId: 3, litros: 5, destino: 'São João · junho', responsavel: 'Lucia Prado' },
+      { id: 5, data: '02/06/2026', tipo: 'transferencia', loteId: 3, litros: 3, destino: 'Repasse ao Céu do Vale', responsavel: 'Aurio Neto' },
+      { id: 6, data: '14/03/2026', tipo: 'entrada', loteId: 3, litros: 12, destino: 'Recebido do Céu do Mar', responsavel: 'Lucia Prado' },
+      { id: 7, data: '18/12/2025', tipo: 'entrada', loteId: 1, litros: 42, destino: 'Feitio de dezembro', responsavel: 'Chico Aguiar' },
+      { id: 8, data: '10/11/2025', tipo: 'perda', loteId: 4, litros: 1.5, destino: 'Garrafa quebrada no transporte', responsavel: 'Chico Aguiar' },
+    ],
+    reservasBase: [
+      { id: 1, nome: 'Mãe Divina', dia: 5, mes: 'set', litros: 9, confirmada: true },
+      { id: 2, nome: 'Trabalho de cura', dia: 19, mes: 'set', litros: 6, confirmada: false },
+      { id: 3, nome: 'Bailado de São Miguel', dia: 27, mes: 'set', litros: 14, confirmada: false },
+    ],
+    reservado: { 1: true, 2: false, 3: false },
+  };
+
+  pararPropagacao = e => e.stopPropagation();
+  fecharDetalhe = () => this.setState({ detalheId: null });
+  cancelarForm = () => this.setState({ form: null });
+  campoForm(campo) { return e => this.setState(s => ({ form: Object.assign({}, s.form, { [campo]: e.target.value }), erroForm: null })); }
+
+  validar(f) {
+    if (!f) return null;
+    const qtd = this.numero(f.litros);
+    if (f.modo === 'feitio') {
+      if (!f.codigo || !f.codigo.trim()) return 'Dê um código ao lote (ex.: Lote 01/2027).';
+      if (qtd <= 0) return 'Informe quantos litros entraram.';
+      return null;
+    }
+    const lote = this.state.lotes.find(l => String(l.id) === String(f.loteId));
+    if (!lote) return 'Escolha um lote com daime disponível.';
+    if (qtd <= 0) return 'Informe quantos litros vão sair.';
+    if (qtd > lote.restante) return lote.codigo + ' tem só ' + this.litros(lote.restante) + ' disponíveis.';
+    if (lote.situacao === 'quarentena') return lote.codigo + ' está em quarentena e não pode sair.';
+    return null;
+  }
+
+  numero(v) {
+    const n = parseFloat(String(v).replace(',', '.'));
+    return isNaN(n) ? 0 : n;
+  }
+
+  litros(n) {
+    return (Math.round(n * 10) / 10).toLocaleString('pt-BR') + ' L';
+  }
+
+  abrirFeitio = () => this.setState({ form: { modo: 'feitio', codigo: '', origem: '', litros: '', forca: 'Força 2', data: '01/09/2026', observacao: '' } });
+  abrirSaida = () => this.setState({ form: { modo: 'saida', loteId: String(this.primeiroDisponivel()), litros: '', destino: '', observacao: '' } });
+  abrirTransferencia = () => this.setState({ form: { modo: 'transferencia', loteId: String(this.primeiroDisponivel()), litros: '', destino: '', observacao: '' } });
+
+  primeiroDisponivel() {
+    const l = this.state.lotes.find(x => x.restante > 0 && x.situacao !== 'quarentena');
+    return l ? l.id : (this.state.lotes[0] || {}).id;
+  }
+
+  alternarQuarentena = () => {
+    const id = this.state.detalheId;
+    this.setState(s => ({
+      lotes: s.lotes.map(l => l.id !== id ? l : Object.assign({}, l, { situacao: l.situacao === 'quarentena' ? (l.restante > 0 ? 'em uso' : 'esgotado') : 'quarentena' })),
+      mensagem: 'Situação do lote alterada. Lote em quarentena não pode sair para trabalho.',
+    }));
+  };
+
+  saidaDesteLote = () => this.setState(s => ({ form: { modo: 'saida', loteId: String(s.detalheId), litros: '', destino: '', observacao: '' } }));
+
+  alternarReserva(id) {
+    return () => this.setState(s => ({
+      reservado: Object.assign({}, s.reservado, { [id]: !s.reservado[id] }),
+      mensagem: s.reservado[id] ? 'Reserva liberada — os litros voltam ao estoque livre.' : 'Litros reservados para o trabalho. A baixa acontece no dia.',
+    }));
+  }
+
+  salvarForm = () => {
+    const f = this.state.form;
+    if (!f) return;
+    const erro = this.validar(f);
+    if (erro) { this.setState({ erroForm: erro }); return; }
+    const qtd = this.numero(f.litros);
+    if (f.modo === 'feitio') {
+      this.setState(s => {
+        const id = Date.now();
+        const novo = { id: id, codigo: f.codigo, origem: f.origem || 'Feitio da casa', data: f.data, forca: f.forca, litros: qtd, restante: qtd, local: 'Casa de feitio', guardiao: 'Chico Aguiar', situacao: 'lacrado', analise: 'aguardando laudo', garrafas: Math.round(qtd * 1.8) + ' garrafas de 500 ml' };
+        const mov = { id: id + 1, data: f.data, tipo: 'entrada', loteId: id, litros: qtd, destino: f.origem || 'Entrada de feitio', responsavel: 'Chico Aguiar' };
+        return { form: null, erroForm: null, lotes: [novo].concat(s.lotes), movimentos: [mov].concat(s.movimentos), mensagem: 'Lote registrado com ' + this.litros(qtd) + '.' };
+      });
+      return;
+    }
+    const loteId = parseInt(f.loteId, 10);
+    const lote = this.state.lotes.find(l => l.id === loteId);
+    this.setState(s => {
+      const restante = lote.restante - qtd;
+      const mov = { id: Date.now(), data: '01/09/2026', tipo: f.modo, loteId: loteId, litros: qtd, destino: f.destino || (f.modo === 'saida' ? 'Trabalho da casa' : 'Repasse'), responsavel: 'Chico Aguiar' };
+      return {
+        form: null, erroForm: null,
+        lotes: s.lotes.map(l => l.id !== loteId ? l : Object.assign({}, l, { restante: restante, situacao: restante === 0 ? 'esgotado' : l.situacao === 'lacrado' ? 'em uso' : l.situacao })),
+        movimentos: [mov].concat(s.movimentos),
+        mensagem: (f.modo === 'saida' ? 'Saída' : 'Transferência') + ' de ' + this.litros(qtd) + ' registrada no ' + lote.codigo + '.',
+      };
+    });
+  };
+
+  situacaoInfo(sit) {
+    return sit === 'em uso' ? { label: 'Em uso', tone: 'confirmed' }
+      : sit === 'lacrado' ? { label: 'Lacrado', tone: 'suggest' }
+        : sit === 'quarentena' ? { label: 'Quarentena', tone: 'pending' }
+          : { label: 'Esgotado', tone: 'neutral' };
+  }
+
+  tipoInfo(tipo) {
+    return tipo === 'entrada' ? { label: 'Entrada', cor: 'var(--color-confirmed)', sinal: '+' }
+      : tipo === 'saida' ? { label: 'Saída', cor: 'var(--color-attention)', sinal: '−' }
+        : tipo === 'transferencia' ? { label: 'Transferência', cor: 'var(--color-royal)', sinal: '−' }
+          : { label: 'Perda', cor: 'var(--color-pending)', sinal: '−' };
+  }
+
+  renderVals() {
+    const s = this.state;
+    const lotes = s.lotes;
+    const emEstoque = lotes.filter(l => l.situacao !== 'quarentena').reduce((a, l) => a + l.restante, 0);
+    const emQuarentena = lotes.filter(l => l.situacao === 'quarentena').reduce((a, l) => a + l.restante, 0);
+    const reservadoTotal = s.reservasBase.filter(r => s.reservado[r.id]).reduce((a, r) => a + r.litros, 0);
+    const livre = emEstoque - reservadoTotal;
+    const previstoProximos = s.reservasBase.reduce((a, r) => a + r.litros, 0);
+
+    const chipOn = 'font:var(--text-small);padding:8px 15px;min-height:38px;border-radius:var(--radius-pill);cursor:pointer;border:1px solid var(--color-royal-border);background:var(--color-royal-soft);color:var(--color-royal-deep)';
+    const chipOff = 'font:var(--text-small);padding:8px 15px;min-height:38px;border-radius:var(--radius-pill);cursor:pointer;border:1px solid var(--color-line);background:var(--bg-card);color:var(--text-secondary)';
+    const fonteAmount = 'font:var(--text-amount-lg);letter-spacing:var(--tracking-amount);font-variant-numeric:tabular-nums';
+    const cardBase = 'background:var(--bg-card);border:var(--border-hairline);border-radius:var(--radius);padding:13px 15px;display:flex;flex-direction:column;gap:3px';
+
+    const detalheLote = s.detalheId != null ? lotes.find(l => l.id === s.detalheId) : null;
+    const f = s.form;
+    const loteForm = f && f.loteId ? lotes.find(l => String(l.id) === String(f.loteId)) : null;
+    const erroAtual = f ? this.validar(f) : null;
+    const podeSalvar = !!f && !erroAtual;
+
+    return {
+      user: { name: 'Aurio Neto', group: 'Tesouraria' },
+      propsShell: { style: { height: '100%', minHeight: 0, overflow: 'hidden', gridTemplateRows: '100%' } },
+      subtitulo: 'Lotes, movimentos e reservas por trabalho · CDD',
+
+      temMensagem: !!s.mensagem, mensagem: s.mensagem, fecharMensagem: () => this.setState({ mensagem: null }),
+
+      kpis: [
+        { label: 'Em estoque', valor: this.litros(emEstoque), nota: lotes.filter(l => l.restante > 0).length + ' lotes com daime', cor: 'var(--color-royal-deep)' },
+        { label: 'Reservado', valor: this.litros(reservadoTotal), nota: 'separado para trabalhos confirmados', cor: 'var(--text-primary)' },
+        { label: 'Livre', valor: this.litros(livre), nota: livre >= 0 ? 'disponível para novas reservas' : 'reservas passam do estoque', cor: livre >= 0 ? 'var(--color-confirmed)' : 'var(--color-attention)' },
+        { label: 'Previsto até out.', valor: this.litros(previstoProximos), nota: '3 trabalhos na agenda', cor: 'var(--text-primary)' },
+      ].map(k => ({ label: k.label, valor: k.valor, nota: k.nota, estiloCard: cardBase, estiloValor: fonteAmount + ';color:' + k.cor })),
+
+      temAlerta: previstoProximos > emEstoque || emQuarentena > 0,
+      textoAlerta: previstoProximos > emEstoque
+        ? 'Os trabalhos da agenda pedem ' + this.litros(previstoProximos) + ' e o estoque tem ' + this.litros(emEstoque) + '. Faltam ' + this.litros(previstoProximos - emEstoque) + ' até o bailado de 27/09.'
+        : 'Há ' + this.litros(emQuarentena) + ' em quarentena, fora do estoque disponível.',
+
+      totalEstoque: this.litros(emEstoque), totalLivre: this.litros(livre),
+
+      abas: [['lotes', 'Lotes'], ['movimentos', 'Movimentos'], ['reservas', 'Reservas']].map(([k, label]) => ({
+        label: label, ativo: k === s.aba, estilo: k === s.aba ? chipOn : chipOff,
+        estiloField: (k === s.aba ? chipOn : chipOff) + ';flex:1;text-align:center',
+        onClick: () => this.setState({ aba: k }),
+      })),
+      abaLotes: s.aba === 'lotes', abaMovimentos: s.aba === 'movimentos', abaReservas: s.aba === 'reservas',
+
+      abrirFeitio: this.abrirFeitio, abrirSaida: this.abrirSaida, abrirTransferencia: this.abrirTransferencia,
+
+      lotes: lotes.map(l => {
+        const info = this.situacaoInfo(l.situacao);
+        const pct = l.litros ? (l.restante / l.litros) * 100 : 0;
+        const cor = l.situacao === 'quarentena' ? 'var(--color-pending)' : l.restante === 0 ? 'var(--color-line-strong)' : 'var(--color-royal)';
+        return {
+          codigo: l.codigo, origem: l.origem + ' · ' + l.data,
+          situacao: info.label, tone: info.tone,
+          restante: this.litros(l.restante), deTotal: 'de ' + this.litros(l.litros),
+          forca: l.forca, local: l.local,
+          reservado: l.restante > 0 ? l.garrafas : 'sem garrafas em uso',
+          abrir: () => this.setState({ detalheId: l.id }),
+          estiloBarra: 'display:block;height:100%;border-radius:var(--radius-pill);background:' + cor + ';width:' + Math.max(0, pct) + '%;transition:width 420ms cubic-bezier(.22,.61,.36,1)',
+          estiloCard: 'display:flex;flex-direction:column;gap:9px;padding:14px 16px;border:var(--border-hairline);border-left:3px solid ' + cor + ';border-radius:var(--radius);background:var(--bg-card);cursor:pointer;height:100%;width:100%;text-align:left',
+          estiloCardField: 'display:flex;flex-direction:column;gap:7px;padding:11px 12px;border:var(--border-hairline);border-left:3px solid ' + cor + ';border-radius:var(--radius);background:var(--bg-card);cursor:pointer;width:100%',
+        };
+      }),
+
+      colunasMovimentos: ['Data', 'Tipo', 'Lote', 'Destino ou origem', 'Litros'].map((label, i) => ({
+        label: label,
+        estilo: 'font:var(--text-label);letter-spacing:var(--tracking-label);text-transform:uppercase;color:var(--text-field-label);text-align:' + (i === 4 ? 'right' : 'left'),
+      })),
+      movimentos: s.movimentos.map(m => {
+        const info = this.tipoInfo(m.tipo);
+        const lote = lotes.find(l => l.id === m.loteId);
+        return {
+          data: m.data.slice(0, 5), tipo: info.label, lote: lote ? lote.codigo.replace('Lote ', '') : '—',
+          destino: m.destino, responsavel: 'por ' + m.responsavel,
+          litros: info.sinal + ' ' + this.litros(m.litros),
+          estiloTipo: 'justify-self:start;font:var(--text-small);padding:3px 10px;border-radius:var(--radius-pill);border:1px solid ' + info.cor + ';color:' + info.cor,
+          estiloLitros: 'font:var(--text-amount);letter-spacing:var(--tracking-amount);font-variant-numeric:tabular-nums;text-align:right;color:' + info.cor,
+          estiloLinha: 'display:grid;grid-template-columns:100px 150px 120px minmax(0,1fr) 130px;align-items:center;gap:0;padding:10px 0;border-bottom:var(--border-hairline)',
+          estiloLinhaField: 'display:flex;flex-direction:column;gap:4px;padding:11px 12px;border:var(--border-hairline);border-left:3px solid ' + info.cor + ';border-radius:var(--radius);background:var(--bg-card)',
+        };
+      }),
+
+      reservas: s.reservasBase.map(r => {
+        const ativa = !!s.reservado[r.id];
+        return {
+          nome: r.nome, dia: String(r.dia).padStart(2, '0'), mes: r.mes,
+          diaMes: String(r.dia).padStart(2, '0') + '/' + r.mes,
+          litros: this.litros(r.litros),
+          meta: ativa ? 'litros separados do estoque livre' : 'ainda não reservado — depende do estoque no dia',
+          situacao: ativa ? 'Reservado' : 'Sem reserva',
+          estiloSituacao: 'font:var(--text-small);color:' + (ativa ? 'var(--color-confirmed)' : 'var(--text-meta)'),
+          textoAcao: ativa ? 'Liberar' : 'Reservar',
+          acao: this.alternarReserva(r.id),
+          estiloLinha: 'display:flex;align-items:center;gap:14px;padding:12px 14px;border:var(--border-hairline);border-left:3px solid ' + (ativa ? 'var(--color-confirmed)' : 'var(--color-line-strong)') + ';border-radius:var(--radius);background:var(--bg-card)',
+          estiloLinhaField: 'display:flex;flex-direction:column;gap:5px;padding:11px 12px;border:var(--border-hairline);border-left:3px solid ' + (ativa ? 'var(--color-confirmed)' : 'var(--color-line-strong)') + ';border-radius:var(--radius);background:var(--bg-card)',
+        };
+      }),
+
+      temDetalhe: !!detalheLote,
+      fecharDetalhe: this.fecharDetalhe, alternarQuarentena: this.alternarQuarentena, saidaDesteLote: this.saidaDesteLote,
+      detalhe: detalheLote ? {
+        codigo: detalheLote.codigo, origem: detalheLote.origem + ' · ' + detalheLote.data,
+        textoQuarentena: detalheLote.situacao === 'quarentena' ? 'Tirar da quarentena' : 'Pôr em quarentena',
+        numeros: [
+          { label: 'Restante', valor: this.litros(detalheLote.restante), cor: 'var(--color-royal-deep)' },
+          { label: 'Feito', valor: this.litros(detalheLote.litros), cor: 'var(--text-primary)' },
+          { label: 'Consumido', valor: this.litros(detalheLote.litros - detalheLote.restante), cor: 'var(--color-attention)' },
+          { label: 'Força', valor: detalheLote.forca, cor: 'var(--text-primary)' },
+        ].map(n => ({ label: n.label, valor: n.valor, estiloValor: 'font:var(--text-amount);letter-spacing:var(--tracking-amount);font-variant-numeric:tabular-nums;color:' + n.cor })),
+        dados: [
+          { label: 'Situação', valor: this.situacaoInfo(detalheLote.situacao).label },
+          { label: 'Guardado em', valor: detalheLote.local },
+          { label: 'Guardião', valor: detalheLote.guardiao },
+          { label: 'Envase', valor: detalheLote.garrafas },
+          { label: 'Análise', valor: detalheLote.analise },
+          { label: 'Data do feitio', valor: detalheLote.data },
+        ],
+        movimentos: s.movimentos.filter(m => m.loteId === detalheLote.id).map(m => {
+          const info = this.tipoInfo(m.tipo);
+          return {
+            data: m.data.slice(0, 5), destino: m.destino, responsavel: info.label + ' · por ' + m.responsavel,
+            litros: info.sinal + ' ' + this.litros(m.litros),
+            estiloLitros: 'font:var(--text-amount);letter-spacing:var(--tracking-amount);font-variant-numeric:tabular-nums;color:' + info.cor,
+          };
+        }),
+      } : null,
+
+      temForm: !!f, form: f || {}, pararPropagacao: this.pararPropagacao,
+      formEhFeitio: !!f && f.modo === 'feitio', formTemLote: !!f && f.modo !== 'feitio',
+      tituloForm: f ? (f.modo === 'feitio' ? 'Entrada de feitio' : f.modo === 'saida' ? 'Registrar saída' : 'Transferir para outra unidade') : '',
+      textoSalvar: f ? (f.modo === 'feitio' ? 'Registrar lote' : f.modo === 'saida' ? 'Dar baixa' : 'Registrar transferência') : '',
+      rotuloDestino: f && f.modo === 'transferencia' ? 'Unidade de destino' : 'Trabalho ou motivo',
+      placeholderDestino: f && f.modo === 'transferencia' ? 'Céu do Vale' : 'Mãe Divina · 05/09',
+      notaLote: loteForm ? loteForm.codigo + ' tem ' + this.litros(loteForm.restante) + ' · ' + loteForm.forca + ' · ' + loteForm.local : 'escolha um lote com daime disponível',
+      opcoesLote: lotes.filter(l => l.restante > 0).map(l => ({ value: String(l.id), label: l.codigo + ' · ' + this.litros(l.restante) + ' · ' + l.forca })),
+      onFormCodigo: this.campoForm('codigo'), onFormOrigem: this.campoForm('origem'), onFormLitros: this.campoForm('litros'),
+      onFormForca: this.campoForm('forca'), onFormData: this.campoForm('data'), onFormLote: this.campoForm('loteId'),
+      onFormDestino: this.campoForm('destino'), onFormObservacao: this.campoForm('observacao'),
+      cancelarForm: this.cancelarForm, salvarForm: this.salvarForm,
+      temErroForm: !!(f && (s.erroForm || (erroAtual && this.numero(f.litros) > 0))),
+      erroForm: s.erroForm || erroAtual || '',
+      salvarBloqueado: !podeSalvar,
+      dicaSalvar: erroAtual || '',
+      estiloSalvar: 'font:var(--text-body-strong);padding:9px 18px;min-height:42px;border-radius:var(--radius-sm);cursor:' + (podeSalvar ? 'pointer' : 'not-allowed') + ';border:1px solid ' + (podeSalvar ? 'var(--color-royal-border)' : 'var(--color-line)') + ';background:' + (podeSalvar ? 'var(--color-royal-soft)' : 'var(--bg-sunken)') + ';color:' + (podeSalvar ? 'var(--color-royal-deep)' : 'var(--text-meta)'),
+
+      nav: [
+        { id: 'painel', label: 'Painel', icon: 'layout-dashboard' },
+        { id: 'registrar', label: 'Registrar lançamento', icon: 'circle-plus' },
+        { id: 'meus', label: 'Meus registros', icon: 'receipt-text' },
+        { section: 'Financeiro' },
+        { id: 'lote', label: 'Verificação de lote', icon: 'sparkles', count: 12 },
+        { id: 'lancamentos', label: 'Lançamentos', icon: 'list' },
+        { id: 'contas', label: 'Contas e fundo', icon: 'landmark' },
+        { id: 'relatorios', label: 'Relatórios', icon: 'chart-no-axes-column' },
+        { id: 'fechamento', label: 'Fechamento', icon: 'lock' },
+        { section: 'Cerimônias' },
+        { id: 'agenda', label: 'Agenda', icon: 'calendar-days' },
+        { id: 'ayahuasca', label: 'Ayahuasca', icon: 'flask-conical' },
+        { section: 'Pessoas' },
+        { id: 'pessoas', label: 'Pessoas', icon: 'users' },
+        { id: 'anamnese', label: 'Anamnese', icon: 'clipboard-list' },
+      ],
+    };
+  }
+}
+
+</script>
+</body>
+</html>

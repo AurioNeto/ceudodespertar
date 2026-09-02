@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><script src="./ds-base.js"></script><style>body{margin:0;background:var(--bg-app)}</style></helmet>
+
+<div style="padding:26px 28px 40px;display:flex;flex-direction:column;gap:20px;background:var(--bg-app);min-height:100%">
+
+  <div style="display:flex;flex-direction:column;gap:2px">
+    <div style="font:var(--text-label);text-transform:uppercase;letter-spacing:var(--tracking-label);color:var(--text-field-label)">F-03 · Lançamentos · Tesouraria</div>
+    <div style="font:var(--text-title-sm);color:var(--text-title)">O livro da casa: tudo que entrou e saiu, de todo mundo</div>
+  </div>
+
+  <div style="display:flex;flex-wrap:wrap;gap:26px;align-items:flex-start">
+
+    <div style="position:relative;flex:0 0 auto;width:1180px;height:900px;display:flex;border:var(--border-hairline);border-radius:var(--radius-lg);overflow:hidden;background:var(--bg-card);box-shadow:var(--shadow-raised)">
+      <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.AppShell" unit="CDD" user="{{ user }}" nav="{{ nav }}" active-id="lancamentos" density="office" style="height:100%;width:100%" dc-props="{{ propsShell }}" hint-size="100%,100%">
+        <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.ScreenHeader" code="F-03 · Lançamentos" title="Lançamentos" subtitle="{{ subtitulo }}" hint-size="100%,140px"></x-import>
+
+        <div style="padding:18px 24px 26px;display:flex;flex-direction:column;gap:16px">
+
+          <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px">
+            <div style="display:flex;flex-direction:column">
+              <label for="l-periodo" style="font:var(--text-label);letter-spacing:var(--tracking-label);text-transform:uppercase;color:var(--text-field-label);margin-bottom:6px">Período</label>
+              <select id="l-periodo" value="{{ periodo }}" onChange="{{ onPeriodo }}" style="min-height:40px;border:1px solid var(--color-line-strong);background:var(--bg-card);border-radius:var(--radius-sm);padding:8px 11px;font:var(--text-small);color:var(--text-primary);outline:none">
+                <sc-for list="{{ opcoesPeriodo }}" as="o" hint-placeholder-count="3">
+                  <option value="{{ o.value }}">{{ o.label }}</option>
+                </sc-for>
+              </select>
+            </div>
+            <div style="display:flex;flex-direction:column">
+              <label for="l-tipo" style="font:var(--text-label);letter-spacing:var(--tracking-label);text-transform:uppercase;color:var(--text-field-label);margin-bottom:6px">Tipo</label>
+              <select id="l-tipo" value="{{ tipo }}" onChange="{{ onTipo }}" style="min-height:40px;border:1px solid var(--color-line-strong);background:var(--bg-card);border-radius:var(--radius-sm);padding:8px 11px;font:var(--text-small);color:var(--text-primary);outline:none">
+                <sc-for list="{{ opcoesTipo }}" as="o" hint-placeholder-count="4">
+                  <option value="{{ o.value }}">{{ o.label }}</option>
+                </sc-for>
+              </select>
+            </div>
+            <div style="display:flex;flex-direction:column">
+              <label for="l-grupo" style="font:var(--text-label);letter-spacing:var(--tracking-label);text-transform:uppercase;color:var(--text-field-label);margin-bottom:6px">Grupo</label>
+              <select id="l-grupo" value="{{ grupo }}" onChange="{{ onGrupo }}" style="min-height:40px;border:1px solid var(--color-line-strong);background:var(--bg-card);border-radius:var(--radius-sm);padding:8px 11px;font:var(--text-small);color:var(--text-primary);outline:none">
+                <sc-for list="{{ opcoesGrupo }}" as="o" hint-placeholder-count="5">
+                  <option value="{{ o.value }}">{{ o.label }}</option>
+                </sc-for>
+              </select>
+            </div>
+            <div style="display:flex;flex-direction:column">
+              <label for="l-status" style="font:var(--text-label);letter-spacing:var(--tracking-label);text-transform:uppercase;color:var(--text-field-label);margin-bottom:6px">Situação</label>
+              <select id="l-status" value="{{ status }}" onChange="{{ onStatus }}" style="min-height:40px;border:1px solid var(--color-line-strong);background:var(--bg-card);border-radius:var(--radius-sm);padding:8px 11px;font:var(--text-small);color:var(--text-primary);outline:none">
+                <sc-for list="{{ opcoesStatus }}" as="o" hint-placeholder-count="4">
+                  <option value="{{ o.value }}">{{ o.label }}</option>
+                </sc-for>
+              </select>
+            </div>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:12px">
+            <input type="search" value="{{ busca }}" onChange="{{ onBusca }}" placeholder="buscar por motivo, fornecedor ou quem lançou" style="flex:1;min-height:40px;border:1px solid var(--color-line-strong);background:var(--bg-card);border-radius:var(--radius-sm);padding:8px 12px;font:var(--text-small);color:var(--text-primary);outline:none">
+            <button type="button" onClick="{{ limpar }}" style="min-height:40px;padding:8px 14px;border:1px solid var(--color-line);background:var(--bg-card);border-radius:var(--radius-sm);font:var(--text-small);color:var(--text-secondary);cursor:pointer">Limpar filtros</button>
+          </div>
+
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <sc-for list="{{ totais }}" as="t" hint-placeholder-count="4">
+              <div style="flex:1 1 170px;background:var(--bg-sunken);border:var(--border-hairline);border-radius:var(--radius);padding:11px 14px;display:flex;flex-direction:column;gap:3px">
+                <span style="font:var(--text-label);letter-spacing:var(--tracking-label);text-transform:uppercase;color:var(--text-field-label)">{{ t.label }}</span>
+                <span style="{{ t.estiloValor }}">{{ t.valor }}</span>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="border:var(--border-hairline);border-radius:var(--radius);overflow:hidden;background:var(--bg-card)">
+            <div style="display:grid;grid-template-columns:96px minmax(0,1fr) 150px 132px 116px 132px;gap:0;background:var(--bg-sunken);border-bottom:1px solid var(--color-line-strong)">
+              <sc-for list="{{ colunas }}" as="c" hint-placeholder-count="6">
+                <div style="{{ c.estilo }}">{{ c.label }}</div>
+              </sc-for>
+            </div>
+            <sc-for list="{{ linhasPagina }}" as="r" hint-placeholder-count="8">
+              <button type="button" onClick="{{ r.abrir }}" style="{{ r.estiloLinha }}" style-hover="background:var(--bg-sunken)">
+                <span style="font:var(--text-small);color:var(--text-secondary);text-align:left;font-variant-numeric:tabular-nums">{{ r.data }}</span>
+                <span style="display:flex;flex-direction:column;gap:2px;min-width:0;text-align:left">
+                  <span style="font:var(--text-body-strong);color:var(--text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.motivo }}</span>
+                  <span style="font:var(--text-small);color:var(--text-meta);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.sublinha }}</span>
+                </span>
+                <span style="font:var(--text-small);color:var(--text-secondary);text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.pessoa }}</span>
+                <span style="font:var(--text-small);color:var(--text-secondary);text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.grupo }}</span>
+                <span style="{{ r.estiloTipo }}">{{ r.tipoLabel }}</span>
+                <span style="{{ r.estiloValor }}">{{ r.valorTexto }}</span>
+              </button>
+            </sc-for>
+            <sc-if value="{{ vazio }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:28px 16px;text-align:center;font:var(--text-body);color:var(--text-secondary)">Nenhum lançamento com esses filtros. Tente limpar a busca ou ampliar o período.</div>
+            </sc-if>
+          </div>
+
+          <div style="display:flex;align-items:center;justify-content:center;gap:10px">
+            <button type="button" onClick="{{ paginaAnterior }}" disabled="{{ noInicio }}" style="{{ estiloPagBotao }}">‹ Anterior</button>
+            <span style="font:var(--text-small);color:var(--text-secondary)">{{ textoPagina }}</span>
+            <button type="button" onClick="{{ proximaPagina }}" disabled="{{ noFim }}" style="{{ estiloPagBotao }}">Próxima ›</button>
+          </div>
+        </div>
+      </x-import>
+
+      <sc-if value="{{ temSelecao }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;top:0;right:0;bottom:0;width:400px;background:var(--bg-card);border-left:1px solid var(--color-line-strong);box-shadow:var(--shadow-raised);display:flex;flex-direction:column;z-index:5">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 18px;border-bottom:var(--border-hairline)">
+            <span style="font:var(--text-label);letter-spacing:var(--tracking-label);text-transform:uppercase;color:var(--text-field-label)">Detalhe do lançamento</span>
+            <button type="button" aria-label="fechar" onClick="{{ fechar }}" style="width:34px;height:34px;border:1px solid var(--color-line);background:var(--bg-card);border-radius:var(--radius-pill);cursor:pointer;font:var(--text-body-strong);color:var(--text-secondary)">×</button>
+          </div>
+          <div style="flex:1;min-height:0;overflow:auto;padding:18px;display:flex;flex-direction:column;gap:14px">
+            <div style="position:relative;border-radius:var(--radius-lg);overflow:hidden">
+              <div style="{{ selecionado.faixaEstilo }}"></div>
+              <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Receipt" title="{{ selecionado.tituloRecibo }}" amount="{{ selecionado.valor }}" lines="{{ selecionado.linhas }}" footnote="{{ selecionado.rodape }}" hint-size="100%,420px"></x-import>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <span style="font:var(--text-label);letter-spacing:var(--tracking-label);text-transform:uppercase;color:var(--text-field-label)">Histórico</span>
+              <sc-for list="{{ selecionado.historico }}" as="h" hint-placeholder-count="3">
+                <div style="display:flex;gap:10px;align-items:baseline;padding-bottom:7px;border-bottom:var(--border-hairline)">
+                  <span style="font:var(--text-small);color:var(--text-meta);white-space:nowrap;font-variant-numeric:tabular-nums">{{ h.quando }}</span>
+                  <span style="font:var(--text-small);color:var(--text-primary)">{{ h.texto }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;padding:14px 18px;border-top:var(--border-hairline)">
+            <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Button" variant="ghost" icon-name="paperclip" hint-size="150px,44px">Comprovante</x-import>
+            <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Button" variant="quiet" icon-name="rotate-ccw" blocked-reason="{{ selecionado.motivoEstorno }}" hint-size="130px,44px">Estornar</x-import>
+          </div>
+        </div>
+      </sc-if>
+    </div>
+
+    <div style="flex:0 0 auto;display:flex;flex-direction:column;gap:12px;align-items:center">
+      <div style="position:relative;width:392px;height:812px;display:flex;border:10px solid var(--color-ink-brand);border-radius:38px;overflow:hidden;background:var(--bg-app);box-shadow:var(--shadow-raised)">
+        <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.AppShell" unit="CDD" user="{{ user }}" nav="{{ nav }}" active-id="lancamentos" density="field" style="height:100%;width:100%" dc-props="{{ propsShell }}" hint-size="100%,100%">
+          <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.ScreenHeader" code="F-03" title="Lançamentos" density="field" hint-size="100%,80px"></x-import>
+
+          <div style="padding:14px 16px 20px;display:flex;flex-direction:column;gap:12px;min-width:0">
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              <sc-for list="{{ chipsTipo }}" as="c" hint-placeholder-count="4">
+                <button type="button" onClick="{{ c.onClick }}" aria-pressed="{{ c.ativo }}" style="{{ c.estilo }}">{{ c.label }}</button>
+              </sc-for>
+            </div>
+
+            <div style="background:var(--bg-sunken);border:var(--border-hairline);border-radius:var(--radius);padding:11px 13px;display:flex;justify-content:space-between;gap:10px">
+              <sc-for list="{{ totaisCurtos }}" as="t" hint-placeholder-count="3">
+                <span style="display:flex;flex-direction:column;gap:2px">
+                  <span style="font:var(--text-label);letter-spacing:var(--tracking-label);text-transform:uppercase;color:var(--text-field-label)">{{ t.label }}</span>
+                  <span style="{{ t.estiloValor }}">{{ t.valor }}</span>
+                </span>
+              </sc-for>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <sc-for list="{{ linhasPagina }}" as="r" hint-placeholder-count="6">
+                <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.RecordRow" description="{{ r.motivo }}" amount="{{ r.valor }}" nature="{{ r.nature }}" meta="{{ r.metaField }}" status="{{ r.status }}" onClick="{{ r.abrir }}" hint-size="100%,74px"></x-import>
+              </sc-for>
+            </div>
+
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+              <button type="button" onClick="{{ paginaAnterior }}" disabled="{{ noInicio }}" style="{{ estiloPagBotaoField }}">‹</button>
+              <span style="font:var(--text-small);color:var(--text-secondary)">{{ textoPagina }}</span>
+              <button type="button" onClick="{{ proximaPagina }}" disabled="{{ noFim }}" style="{{ estiloPagBotaoField }}">›</button>
+            </div>
+          </div>
+        </x-import>
+
+        <sc-if value="{{ temSelecao }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute;left:0;right:0;bottom:0;top:96px;background:var(--bg-card);border-top:1px solid var(--color-line-strong);border-radius:20px 20px 0 0;box-shadow:var(--shadow-raised);display:flex;flex-direction:column;z-index:5">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;border-bottom:var(--border-hairline)">
+              <span style="font:var(--text-label);letter-spacing:var(--tracking-label);text-transform:uppercase;color:var(--text-field-label)">Detalhe</span>
+              <button type="button" aria-label="fechar" onClick="{{ fechar }}" style="width:44px;height:44px;border:1px solid var(--color-line);background:var(--bg-card);border-radius:var(--radius-pill);cursor:pointer;font:var(--text-body-strong);color:var(--text-secondary)">×</button>
+            </div>
+            <div style="flex:1;min-height:0;overflow:auto;padding:16px;display:flex;flex-direction:column;gap:12px">
+              <div style="position:relative;border-radius:var(--radius-lg);overflow:hidden">
+                <div style="{{ selecionado.faixaEstilo }}"></div>
+                <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Receipt" title="{{ selecionado.tituloRecibo }}" amount="{{ selecionado.valor }}" lines="{{ selecionado.linhas }}" footnote="{{ selecionado.rodape }}" hint-size="100%,420px"></x-import>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+      </div>
+      <div style="font:var(--text-small);color:var(--text-secondary);max-width:392px;text-align:center">Campo: filtro por tipo, totais do período e o mesmo detalhe em folha.</div>
+    </div>
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1680,&quot;height&quot;:1010}}">
+class Component extends DCLogic {
+  state = { periodo: '08/2026', tipo: 'todos', grupo: 'todos', status: 'todos', busca: '', pagina: 0, selecionado: null };
+  tamanhoPagina = 8;
+
+  dados() {
+    return [
+      { id: 1, data: '28/08/2026', hora: '14:22', tipo: 'saida', motivo: 'mercado cerimônia mãe divina', valor: 187.40, pessoa: 'Aurio Neto', grupo: 'Cozinha', categorias: 'Alimentação de cerimônia', conta: 'Cora PJ', forma: 'Pix', cerimonia: '05/09 · Mãe Divina', contraparte: 'Assaí Atacadista', comprovante: 'IMG_2481.jpg', status: 'confirmed', periodo: '08/2026' },
+      { id: 2, data: '27/08/2026', hora: '09:14', tipo: 'saida', motivo: 'material de obra do dormitório', valor: 1245.00, pessoa: 'Lucia Prado', grupo: 'Dormitório', categorias: 'Manutenção', conta: 'Cora PJ', forma: 'Boleto', cerimonia: 'Nenhuma — gasto da casa', contraparte: 'Depósito São Jorge', comprovante: 'nf-4471.pdf', status: 'pending', periodo: '08/2026' },
+      { id: 3, data: '24/08/2026', hora: '19:40', tipo: 'entrada', motivo: 'contribuições da cerimônia de agosto', valor: 940.00, pessoa: 'Aurio Neto', grupo: 'CDD', categorias: 'Contribuições', conta: 'Cora PJ', forma: 'Pix', cerimonia: '22/08 · Mãe Divina', contraparte: 'Corpo de fardados', comprovante: null, status: 'confirmed', periodo: '08/2026' },
+      { id: 4, data: '23/08/2026', hora: '10:05', tipo: 'transferencia', motivo: 'repasse do caixa da lojinha', valor: 1500.00, pessoa: 'Paty Munay', grupo: null, conta: 'Nubank Paty', contaDestino: 'Cora PJ', forma: 'Transferência bancária', comprovante: 'comprovante-ted.pdf', status: 'confirmed', periodo: '08/2026' },
+      { id: 5, data: '22/08/2026', hora: '21:15', tipo: 'entrada', motivo: 'venda de camisetas na lojinha', valor: 285.00, pessoa: 'Paty Munay', grupo: 'Lojinha', categorias: 'Vendas', conta: 'Nubank Paty', forma: 'Pix', cerimonia: '22/08 · Mãe Divina', contraparte: 'Balcão da lojinha', comprovante: null, status: 'confirmed', periodo: '08/2026' },
+      { id: 6, data: '20/08/2026', hora: '16:47', tipo: 'saida', motivo: 'ração e vermífugo dos cavalos', valor: 128.90, pessoa: 'Chico Aguiar', grupo: 'Chácara (Infraestrutura)', categorias: 'Animais', conta: 'Cora PJ', forma: 'Débito', cerimonia: 'Nenhuma — gasto da casa', contraparte: 'Agropecuária Vale', comprovante: 'IMG_2402.jpg', status: 'confirmed', periodo: '08/2026' },
+      { id: 7, data: '19/08/2026', hora: '11:30', tipo: 'saida', motivo: 'gasolina para buscar mantimentos', valor: 65.00, pessoa: 'Chico Aguiar', grupo: 'Chácara (Infraestrutura)', categorias: 'Transporte', conta: 'Espécie', forma: 'Espécie', cerimonia: 'Nenhuma — gasto da casa', contraparte: 'Posto Ipiranga', comprovante: null, status: 'reversed', periodo: '08/2026' },
+      { id: 8, data: '18/08/2026', hora: '08:52', tipo: 'saida', motivo: 'garrafas e rótulos para o feitio', valor: 412.60, pessoa: 'Lucia Prado', grupo: 'CDD', categorias: 'Insumos de feitio', conta: 'Cora PJ', forma: 'Pix', cerimonia: 'Nenhuma — gasto da casa', contraparte: 'Vidraria Nova', comprovante: 'IMG_2388.jpg', status: 'confirmed', periodo: '08/2026' },
+      { id: 9, data: '15/08/2026', hora: '17:03', tipo: 'entrada', motivo: 'doação de padrinho para o dormitório', valor: 3000.00, pessoa: 'Aurio Neto', grupo: 'Dormitório', categorias: 'Doações', conta: 'Cora PJ', forma: 'Pix', cerimonia: 'Nenhuma — gasto da casa', contraparte: 'Sr. Antônio Vieira', comprovante: 'pix-3000.pdf', status: 'confirmed', periodo: '08/2026' },
+      { id: 10, data: '12/08/2026', hora: '13:20', tipo: 'saida', motivo: 'conta de luz da chácara', valor: 738.15, pessoa: 'Paty Munay', grupo: 'Chácara (Infraestrutura)', categorias: 'Administrativo', conta: 'Cora PJ', forma: 'Boleto', cerimonia: 'Nenhuma — gasto da casa', contraparte: 'Enel', comprovante: 'fatura-ago.pdf', status: 'confirmed', periodo: '08/2026' },
+      { id: 11, data: '09/08/2026', hora: '20:11', tipo: 'transferencia', motivo: 'reforço do caixa em espécie', valor: 600.00, pessoa: 'Aurio Neto', grupo: null, conta: 'Cora PJ', contaDestino: 'Espécie', forma: 'Transferência bancária', comprovante: null, status: 'pending', periodo: '08/2026' },
+      { id: 12, data: '31/07/2026', hora: '08:12', tipo: 'saida', motivo: 'diarista pós-cerimônia', valor: 340.00, pessoa: 'Lucia Prado', grupo: 'Chácara (Infraestrutura)', categorias: 'Administrativo', conta: 'Espécie', forma: 'Espécie', cerimonia: 'Nenhuma — gasto da casa', contraparte: 'Dona Rosa', comprovante: null, status: 'confirmed', periodo: '07/2026' },
+      { id: 13, data: '28/07/2026', hora: '19:55', tipo: 'entrada', motivo: 'contribuições da cerimônia de julho', valor: 1120.00, pessoa: 'Aurio Neto', grupo: 'CDD', categorias: 'Contribuições', conta: 'Cora PJ', forma: 'Pix', cerimonia: '25/07 · São Miguel', contraparte: 'Corpo de fardados', comprovante: null, status: 'confirmed', periodo: '07/2026' },
+      { id: 14, data: '21/07/2026', hora: '15:38', tipo: 'saida', motivo: 'reparo da bomba d’água', valor: 890.00, pessoa: 'Chico Aguiar', grupo: 'Chácara (Infraestrutura)', categorias: 'Manutenção', conta: 'Cora PJ', forma: 'Pix', cerimonia: 'Nenhuma — gasto da casa', contraparte: 'Hidro Serviços', comprovante: 'IMG_2201.jpg', status: 'confirmed', periodo: '07/2026' },
+    ];
+  }
+
+  rotuloTipo(t) {
+    return t === 'entrada' ? 'Entrada' : t === 'transferencia' ? 'Transferência' : 'Saída';
+  }
+
+  corTipo(t) {
+    return t === 'entrada' ? 'var(--color-confirmed)' : t === 'transferencia' ? 'var(--color-royal)' : 'var(--color-attention)';
+  }
+
+  rotuloStatus(s) {
+    return s === 'pending' ? 'A conferir' : s === 'reversed' ? 'Estornado' : 'Consolidado';
+  }
+
+  linhas(r) {
+    if (r.tipo === 'transferencia') {
+      return [
+        { label: 'Tipo', value: 'Transferência entre contas' },
+        { label: 'Motivo', value: r.motivo },
+        { label: 'Data', value: r.data },
+        { label: 'Saiu de', value: r.conta },
+        { label: 'Entrou em', value: r.contaDestino },
+        { label: 'Quem lançou', value: r.pessoa },
+        { label: 'Situação', value: this.rotuloStatus(r.status) },
+      ];
+    }
+    return [
+      { label: 'Tipo', value: this.rotuloTipo(r.tipo) },
+      { label: r.tipo === 'entrada' ? 'De onde veio' : 'O que foi', value: r.motivo },
+      { label: 'Data', value: r.data },
+      { label: 'Grupo', value: r.grupo },
+      { label: 'Categoria', value: r.categorias },
+      { label: r.tipo === 'entrada' ? 'Conta de entrada' : 'Conta de saída', value: r.conta + ' · ' + r.forma },
+      { label: 'Quem lançou', value: r.pessoa },
+      { label: 'Comprovante', value: r.comprovante || 'sem anexo' },
+    ];
+  }
+
+  filtrar() {
+    const s = this.state;
+    const busca = s.busca.trim().toLowerCase();
+    return this.dados().filter(r => {
+      if (s.periodo !== 'todos' && r.periodo !== s.periodo) return false;
+      if (s.tipo !== 'todos' && r.tipo !== s.tipo) return false;
+      if (s.grupo !== 'todos' && r.grupo !== s.grupo) return false;
+      if (s.status !== 'todos' && r.status !== s.status) return false;
+      if (busca && [r.motivo, r.contraparte, r.pessoa].join(' ').toLowerCase().indexOf(busca) < 0) return false;
+      return true;
+    });
+  }
+
+  filtrarPor(campo) {
+    return e => this.setState({ pagina: 0, selecionado: null, [campo]: e.target.value });
+  }
+
+  renderVals() {
+    const s = this.state;
+    const lista = this.filtrar();
+    const brl = n => n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const totalPaginas = Math.max(1, Math.ceil(lista.length / this.tamanhoPagina));
+    const pagina = Math.min(s.pagina, totalPaginas - 1);
+    const vivos = lista.filter(r => r.status !== 'reversed');
+    const entradas = vivos.filter(r => r.tipo === 'entrada').reduce((a, r) => a + r.valor, 0);
+    const saidas = vivos.filter(r => r.tipo === 'saida').reduce((a, r) => a + r.valor, 0);
+    const aConferir = lista.filter(r => r.status === 'pending').length;
+
+    const fonteAmount = 'font:var(--text-amount);letter-spacing:var(--tracking-amount);font-variant-numeric:tabular-nums';
+    const sel = s.selecionado != null ? this.dados().find(r => r.id === s.selecionado) : null;
+
+    const grupos = ['Lojinha', 'Dormitório', 'Chácara (Infraestrutura)', 'CDD', 'Cozinha', 'Secretaria'];
+    const chipOn = 'font:var(--text-small);padding:9px 13px;min-height:40px;border-radius:var(--radius-pill);cursor:pointer;border:1px solid var(--color-royal-border);background:var(--color-royal-soft);color:var(--color-royal-deep)';
+    const chipOff = 'font:var(--text-small);padding:9px 13px;min-height:40px;border-radius:var(--radius-pill);cursor:pointer;border:1px solid var(--color-line);background:var(--bg-card);color:var(--text-secondary)';
+
+    return {
+      user: { name: 'Aurio Neto', group: 'Tesouraria' },
+      propsShell: { style: { height: '100%', minHeight: 0, overflow: 'hidden', gridTemplateRows: '100%' } },
+      subtitulo: 'Todos os lançamentos da unidade, de todas as pessoas · CDD',
+
+      periodo: s.periodo, tipo: s.tipo, grupo: s.grupo, status: s.status, busca: s.busca,
+      onPeriodo: this.filtrarPor('periodo'), onTipo: this.filtrarPor('tipo'),
+      onGrupo: this.filtrarPor('grupo'), onStatus: this.filtrarPor('status'),
+      onBusca: e => this.setState({ busca: e.target.value, pagina: 0, selecionado: null }),
+      limpar: () => this.setState({ periodo: '08/2026', tipo: 'todos', grupo: 'todos', status: 'todos', busca: '', pagina: 0, selecionado: null }),
+
+      opcoesPeriodo: [{ value: '08/2026', label: 'Agosto 2026' }, { value: '07/2026', label: 'Julho 2026' }, { value: 'todos', label: 'Todo o histórico' }],
+      opcoesTipo: [{ value: 'todos', label: 'Todos' }, { value: 'saida', label: 'Saída' }, { value: 'entrada', label: 'Entrada' }, { value: 'transferencia', label: 'Transferência' }],
+      opcoesGrupo: [{ value: 'todos', label: 'Todos os grupos' }].concat(grupos.map(g => ({ value: g, label: g }))),
+      opcoesStatus: [{ value: 'todos', label: 'Todas' }, { value: 'pending', label: 'A conferir' }, { value: 'confirmed', label: 'Consolidado' }, { value: 'reversed', label: 'Estornado' }],
+
+      chipsTipo: [['todos', 'Todos'], ['saida', 'Saída'], ['entrada', 'Entrada'], ['transferencia', 'Transf.']].map(([k, label]) => ({
+        label: label, ativo: k === s.tipo, estilo: k === s.tipo ? chipOn : chipOff,
+        onClick: () => this.setState({ tipo: k, pagina: 0, selecionado: null }),
+      })),
+
+      totais: [
+        { label: 'Entradas', valor: 'R$ ' + brl(entradas), estiloValor: fonteAmount + ';color:var(--color-confirmed)' },
+        { label: 'Saídas', valor: 'R$ ' + brl(saidas), estiloValor: fonteAmount + ';color:var(--color-attention)' },
+        { label: 'Saldo do período', valor: 'R$ ' + brl(entradas - saidas), estiloValor: fonteAmount + ';color:var(--text-primary)' },
+        { label: 'A conferir', valor: aConferir + ' de ' + lista.length, estiloValor: 'font:var(--text-body-strong);color:var(--color-pending)' },
+      ],
+      totaisCurtos: [
+        { label: 'Entradas', valor: brl(entradas), estiloValor: fonteAmount + ';color:var(--color-confirmed)' },
+        { label: 'Saídas', valor: brl(saidas), estiloValor: fonteAmount + ';color:var(--color-attention)' },
+        { label: 'Saldo', valor: brl(entradas - saidas), estiloValor: fonteAmount + ';color:var(--text-primary)' },
+      ],
+
+      colunas: ['Data', 'Lançamento', 'Quem lançou', 'Grupo', 'Tipo', 'Valor'].map((label, i) => ({
+        label: label,
+        estilo: 'padding:10px 13px;font:var(--text-label);letter-spacing:var(--tracking-label);text-transform:uppercase;color:var(--text-field-label);text-align:' + (i === 5 ? 'right' : 'left'),
+      })),
+
+      linhasPagina: lista.slice(pagina * this.tamanhoPagina, pagina * this.tamanhoPagina + this.tamanhoPagina).map(r => ({
+        data: r.data.slice(0, 5),
+        motivo: r.motivo,
+        valor: r.valor,
+        status: r.status,
+        nature: r.tipo === 'entrada' ? 'receita' : r.tipo === 'saida' ? 'despesa' : 'neutral',
+        tipoLabel: this.rotuloTipo(r.tipo),
+        metaField: r.data.slice(0, 5) + ' · ' + this.rotuloTipo(r.tipo) + ' · ' + r.pessoa,
+        sublinha: r.tipo === 'transferencia' ? r.conta + ' → ' + r.contaDestino : r.contraparte + ' · ' + r.conta,
+        pessoa: r.pessoa,
+        grupo: r.grupo || '—',
+        valorTexto: (r.tipo === 'entrada' ? '+ ' : r.tipo === 'saida' ? '− ' : '') + brl(r.valor),
+        estiloTipo: 'justify-self:start;font:var(--text-small);padding:3px 10px;border-radius:var(--radius-pill);border:1px solid ' + this.corTipo(r.tipo) + ';color:' + this.corTipo(r.tipo),
+        estiloValor: fonteAmount + ';text-align:right;color:' + (r.status === 'reversed' ? 'var(--text-meta)' : r.tipo === 'entrada' ? 'var(--color-confirmed)' : 'var(--text-primary)') + (r.status === 'reversed' ? ';text-decoration:line-through' : ''),
+        estiloLinha: 'display:grid;grid-template-columns:96px minmax(0,1fr) 150px 132px 116px 132px;align-items:center;gap:0;width:100%;padding:11px 13px;background:' + (r.id === s.selecionado ? 'var(--bg-sunken)' : 'transparent') + ';border:0;border-bottom:var(--border-hairline);border-left:3px solid ' + (r.status === 'pending' ? 'var(--color-pending)' : r.status === 'reversed' ? 'var(--color-neutral)' : 'transparent') + ';cursor:pointer;text-align:left;font:var(--text-small)',
+        abrir: () => this.setState({ selecionado: r.id }),
+      })),
+      vazio: lista.length === 0,
+
+      paginaAnterior: () => this.setState({ pagina: Math.max(0, pagina - 1), selecionado: null }),
+      proximaPagina: () => this.setState({ pagina: Math.min(totalPaginas - 1, pagina + 1), selecionado: null }),
+      noInicio: pagina === 0, noFim: pagina >= totalPaginas - 1,
+      textoPagina: 'Página ' + (pagina + 1) + ' de ' + totalPaginas + ' · ' + lista.length + ' lançamentos',
+      estiloPagBotao: 'font:var(--text-body);padding:8px 16px;min-height:38px;border-radius:var(--radius-sm);cursor:pointer;border:1px solid var(--color-line);background:var(--bg-card);color:var(--text-secondary)',
+      estiloPagBotaoField: 'font:var(--text-body-strong);width:44px;height:44px;border-radius:var(--radius-pill);cursor:pointer;border:1px solid var(--color-line);background:var(--bg-card);color:var(--text-secondary)',
+
+      temSelecao: !!sel,
+      fechar: () => this.setState({ selecionado: null }),
+      selecionado: sel ? {
+        valor: sel.valor,
+        tituloRecibo: 'Registrado em ' + sel.data + ' às ' + sel.hora,
+        linhas: this.linhas(sel),
+        rodape: sel.status === 'reversed' ? 'Estornado — o lançamento fica no histórico com a marca de estorno.'
+          : sel.status === 'pending' ? 'A conferir: lançado por ' + sel.pessoa + ', ainda sem consolidação da tesouraria.'
+            : 'Consolidado. Alteração só por estorno, com motivo registrado.',
+        faixaEstilo: 'position:absolute;left:0;right:0;top:0;height:4px;z-index:1;background:repeating-linear-gradient(to right,' + this.corTipo(sel.tipo) + ' 0 6px,transparent 6px 12px)',
+        motivoEstorno: sel.status === 'reversed' ? 'Este lançamento já foi estornado.' : undefined,
+        historico: [
+          { quando: sel.data + ' ' + sel.hora, texto: 'Lançado por ' + sel.pessoa + '.' },
+          { quando: sel.status === 'pending' ? '—' : sel.data + ' 21:04', texto: sel.status === 'pending' ? 'Aguardando conferência da tesouraria.' : 'Consolidado por Aurio Neto.' },
+        ].concat(sel.status === 'reversed' ? [{ quando: '20/08/2026 09:30', texto: 'Estornado: valor lançado em duplicidade.' }] : []),
+      } : null,
+
+      nav: [
+        { id: 'painel', label: 'Painel', icon: 'layout-dashboard' },
+        { id: 'registrar', label: 'Registrar lançamento', icon: 'circle-plus' },
+        { id: 'meus', label: 'Meus registros', icon: 'receipt-text' },
+        { section: 'Financeiro' },
+        { id: 'lote', label: 'Verificação de lote', icon: 'sparkles', count: 12 },
+        { id: 'lancamentos', label: 'Lançamentos', icon: 'list' },
+        { id: 'contas', label: 'Contas e fundo', icon: 'landmark' },
+        { id: 'relatorios', label: 'Relatórios', icon: 'chart-no-axes-column' },
+        { id: 'fechamento', label: 'Fechamento', icon: 'lock' },
+        { section: 'Cerimônias' },
+        { id: 'agenda', label: 'Agenda', icon: 'calendar-days' },
+        { id: 'ayahuasca', label: 'Ayahuasca', icon: 'flask-conical' },
+        { section: 'Pessoas' },
+        { id: 'pessoas', label: 'Pessoas', icon: 'users' },
+        { id: 'anamnese', label: 'Anamnese', icon: 'clipboard-list' },
+      ],
+    };
+  }
+}
+
+</script>
+</body>
+</html>

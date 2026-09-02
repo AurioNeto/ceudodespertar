@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><script src="./ds-base.js"></script><style>body{margin:0;background:var(--bg-app)}</style></helmet>
+
+<div style="padding:26px 28px 40px;display:flex;flex-direction:column;gap:20px;background:var(--bg-app);min-height:100%">
+
+  <div style="display:flex;flex-wrap:wrap;align-items:flex-end;gap:16px">
+    <div style="display:flex;flex-direction:column;gap:2px">
+      <div style="font:var(--text-label);text-transform:uppercase;letter-spacing:var(--tracking-label);color:var(--text-field-label)">F-07 · Fechamento · Tesouraria</div>
+      <div style="font:var(--text-title-sm);color:var(--text-title)">Fechar o mês é dizer: estes números são os definitivos</div>
+    </div>
+    <div style="margin-left:auto;display:flex;gap:6px">
+      <sc-for list="{{ cenarios }}" as="c" hint-placeholder-count="3">
+        <button type="button" onClick="{{ c.onClick }}" aria-pressed="{{ c.ativo }}" style="{{ c.estilo }}">{{ c.label }}</button>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="display:flex;flex-wrap:wrap;gap:26px;align-items:flex-start">
+
+    <div style="position:relative;flex:0 0 auto;width:1180px;height:980px;display:flex;border:var(--border-hairline);border-radius:var(--radius-lg);overflow:hidden;background:var(--bg-card);box-shadow:var(--shadow-raised)">
+      <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.AppShell" unit="CDD" user="{{ user }}" nav="{{ nav }}" active-id="fechamento" density="office" style="height:100%;width:100%" dc-props="{{ propsShell }}" hint-size="100%,100%">
+        <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.ScreenHeader" code="F-07 · Fechamento" title="Fechamento de agosto de 2026" subtitle="{{ subtitulo }}" hint-size="100%,140px"></x-import>
+
+        <div style="padding:18px 24px 26px;display:flex;flex-direction:column;gap:16px;max-width:1000px">
+
+          <sc-if value="{{ temMensagem }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--color-royal-soft);border:1px solid var(--color-royal-border);border-radius:var(--radius);padding:10px 14px">
+              <span style="font:var(--text-body);color:var(--color-royal-deep)">{{ mensagem }}</span>
+              <button type="button" onClick="{{ fecharMensagem }}" style="border:0;background:transparent;color:var(--color-royal-deep);cursor:pointer;font:var(--text-body-strong)">×</button>
+            </div>
+          </sc-if>
+
+          <div style="{{ estiloFaixaStatus }}">
+            <div style="display:flex;flex-direction:column;gap:4px;flex:1 1 260px;min-width:0">
+              <span style="font:var(--text-label);text-transform:uppercase;letter-spacing:var(--tracking-label);color:var(--text-field-label)">Situação do período</span>
+              <span style="{{ estiloTituloStatus }}">{{ tituloStatus }}</span>
+              <span style="font:var(--text-small);color:var(--text-secondary)">{{ notaStatus }}</span>
+            </div>
+            <div style="flex:0 0 auto;display:grid;grid-template-columns:repeat(3,minmax(150px,1fr));gap:20px">
+              <sc-for list="{{ resumoPeriodo }}" as="r" hint-placeholder-count="3">
+                <div style="{{ r.estiloColuna }}">
+                  <span style="font:var(--text-label);text-transform:uppercase;letter-spacing:var(--tracking-label);color:var(--text-field-label)">{{ r.label }}</span>
+                  <span style="{{ r.estiloValor }}">{{ r.valor }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div style="display:flex;align-items:baseline;gap:12px">
+              <span style="font:var(--text-label);text-transform:uppercase;letter-spacing:var(--tracking-label);color:var(--text-field-label)">Antes de fechar</span>
+              <span style="font:var(--text-small);color:var(--text-secondary)">{{ resumoChecklist }}</span>
+            </div>
+
+            <sc-for list="{{ checklist }}" as="ck" hint-placeholder-count="5">
+              <div style="{{ ck.estiloLinha }}">
+                <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Icon" name="{{ ck.icone }}" size="{{ 18 }}" color="{{ ck.cor }}" hint-size="18px,18px"></x-import>
+                <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+                  <span style="font:var(--text-body-strong);color:var(--text-primary)">{{ ck.titulo }}</span>
+                  <span style="font:var(--text-small);color:var(--text-secondary)">{{ ck.detalhe }}</span>
+                </span>
+                <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.StatusBadge" tone="{{ ck.tone }}" hint-size="120px,26px">{{ ck.badge }}</x-import>
+                <sc-if value="{{ ck.temAcao }}" hint-placeholder-val="{{ false }}">
+                  <button type="button" onClick="{{ ck.onAcao }}" style="font:var(--text-small);border:1px solid var(--color-line);background:var(--bg-card);border-radius:var(--radius-sm);padding:8px 13px;color:var(--text-secondary);cursor:pointer;white-space:nowrap">{{ ck.acao }}</button>
+                </sc-if>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px">
+            <div style="background:var(--bg-card);border:var(--border-hairline);border-radius:var(--radius-lg);padding:16px 18px;display:flex;flex-direction:column;gap:12px">
+              <span style="font:var(--text-body-strong);color:var(--text-primary)">Saldo que fica registrado</span>
+              <sc-for list="{{ saldos }}" as="sl" hint-placeholder-count="4">
+                <div style="display:flex;align-items:center;gap:10px;padding-bottom:8px;border-bottom:var(--border-hairline)">
+                  <span style="flex:1;min-width:0;font:var(--text-small);color:var(--text-primary)">{{ sl.nome }}</span>
+                  <span style="font:var(--text-amount);letter-spacing:var(--tracking-amount);color:var(--text-primary);font-variant-numeric:tabular-nums">{{ sl.valor }}</span>
+                </div>
+              </sc-for>
+              <div style="display:flex;align-items:baseline;gap:10px;padding-top:2px">
+                <span style="flex:1;font:var(--text-body-strong);color:var(--text-primary)">Total</span>
+                <span style="font:var(--text-amount-lg);letter-spacing:var(--tracking-amount);color:var(--color-royal-deep);font-variant-numeric:tabular-nums">{{ totalSaldos }}</span>
+              </div>
+            </div>
+
+            <div style="background:var(--bg-card);border:var(--border-hairline);border-radius:var(--radius-lg);padding:16px 18px;display:flex;flex-direction:column;gap:12px">
+              <span style="font:var(--text-body-strong);color:var(--text-primary)">Fechamentos anteriores</span>
+              <sc-for list="{{ historico }}" as="h" hint-placeholder-count="4">
+                <div style="display:flex;align-items:center;gap:10px;padding-bottom:8px;border-bottom:var(--border-hairline)">
+                  <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:1px">
+                    <span style="font:var(--text-body-strong);color:var(--text-primary)">{{ h.periodo }}</span>
+                    <span style="font:var(--text-small);color:var(--text-meta)">{{ h.meta }}</span>
+                  </span>
+                  <span style="{{ h.estiloResultado }}">{{ h.resultado }}</span>
+                  <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.StatusBadge" tone="{{ h.tone }}" hint-size="110px,24px">{{ h.badge }}</x-import>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="background:var(--bg-brand);border:1px solid var(--border-brand);border-radius:var(--radius-lg);padding:16px 18px;display:flex;flex-wrap:wrap;align-items:center;gap:14px">
+            <span style="flex:1 1 380px;min-width:0;display:flex;flex-direction:column;gap:3px">
+              <span style="font:var(--text-body-strong);color:var(--text-primary)">{{ tituloAcao }}</span>
+              <span style="font:var(--text-small);color:var(--text-secondary)">{{ notaAcao }}</span>
+            </span>
+            <sc-if value="{{ podeFechar }}" hint-placeholder-val="{{ false }}">
+              <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Button" variant="primary" icon-name="lock" density="office" onClick="{{ fecharPeriodo }}" blocked-reason="{{ motivoBloqueio }}" hint-size="230px,46px">Fechar agosto de 2026</x-import>
+            </sc-if>
+            <sc-if value="{{ estaFechado }}" hint-placeholder-val="{{ false }}">
+              <span style="display:flex;gap:10px">
+                <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Button" variant="ghost" icon-name="file-down" density="office" onClick="{{ exportarAta }}" hint-size="200px,46px">Ata do fechamento</x-import>
+                <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Button" variant="quiet" icon-name="lock-open" density="office" onClick="{{ iniciarReabertura }}" hint-size="150px,46px">Reabrir</x-import>
+              </span>
+            </sc-if>
+          </div>
+        </div>
+      </x-import>
+
+      <sc-if value="{{ reabrindo }}" hint-placeholder-val="{{ false }}">
+        <div onClick="{{ cancelarReabertura }}" style="position:absolute;inset:0;background:rgba(20,20,24,0.42);display:flex;align-items:center;justify-content:center;z-index:20;padding:30px">
+          <div onClick="{{ pararPropagacao }}" style="width:520px;background:var(--bg-card);border-radius:var(--radius-lg);box-shadow:var(--shadow-raised);display:flex;flex-direction:column;overflow:hidden">
+            <div style="padding:16px 20px;border-bottom:var(--border-hairline);display:flex;flex-direction:column;gap:3px">
+              <span style="font:var(--text-label);letter-spacing:var(--tracking-label);text-transform:uppercase;color:var(--text-field-label)">Reabrir agosto de 2026</span>
+              <span style="font:var(--text-small);color:var(--text-secondary)">Reabrir permite lançar e corrigir de novo. O motivo fica no histórico do período, com seu nome.</span>
+            </div>
+            <div style="padding:18px 20px;display:flex;flex-direction:column;gap:8px">
+              <label style="font:var(--text-small);color:var(--text-secondary)">Motivo da reabertura</label>
+              <textarea value="{{ motivoReabertura }}" onChange="{{ onMotivoReabertura }}" rows="3" placeholder="ex: nota fiscal da obra chegou depois do fechamento" style="border:1px solid var(--color-line-strong);background:var(--bg-card);border-radius:var(--radius-sm);padding:10px 12px;font:var(--text-body);color:var(--text-primary);outline:none;resize:vertical"></textarea>
+            </div>
+            <div style="padding:14px 20px;border-top:var(--border-hairline);display:flex;gap:10px;justify-content:flex-end">
+              <button type="button" onClick="{{ cancelarReabertura }}" style="font:var(--text-body);padding:9px 16px;min-height:42px;border-radius:var(--radius-sm);cursor:pointer;border:1px solid var(--color-line);background:var(--bg-card);color:var(--text-secondary)">Cancelar</button>
+              <button type="button" onClick="{{ confirmarReabertura }}" style="{{ estiloConfirmarReabertura }}">Reabrir período</button>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+    </div>
+
+    <div style="flex:0 0 auto;display:flex;flex-direction:column;gap:12px;align-items:center">
+      <div style="position:relative;width:392px;height:812px;display:flex;border:10px solid var(--color-ink-brand);border-radius:38px;overflow:hidden;background:var(--bg-app);box-shadow:var(--shadow-raised)">
+        <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.AppShell" unit="CDD" user="{{ user }}" nav="{{ nav }}" active-id="fechamento" density="field" style="height:100%;width:100%" dc-props="{{ propsShell }}" hint-size="100%,100%">
+          <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.ScreenHeader" code="F-07" title="Fechamento" density="field" hint-size="100%,80px"></x-import>
+
+          <div style="padding:14px 16px 20px;display:flex;flex-direction:column;gap:12px;min-width:0">
+            <div style="{{ estiloFaixaStatusField }}">
+              <span style="font:var(--text-label);text-transform:uppercase;letter-spacing:var(--tracking-label);color:var(--text-field-label)">Agosto de 2026</span>
+              <span style="{{ estiloTituloStatus }}">{{ tituloStatus }}</span>
+              <span style="font:var(--text-small);color:var(--text-secondary)">{{ notaStatus }}</span>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <sc-for list="{{ checklist }}" as="ck" hint-placeholder-count="5">
+                <div style="{{ ck.estiloLinhaField }}">
+                  <div style="display:flex;align-items:center;gap:9px">
+                    <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Icon" name="{{ ck.icone }}" size="{{ 16 }}" color="{{ ck.cor }}" hint-size="16px,16px"></x-import>
+                    <span style="flex:1;min-width:0;font:var(--text-body-strong);color:var(--text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ ck.titulo }}</span>
+                  </div>
+                  <span style="font:var(--text-small);color:var(--text-secondary)">{{ ck.detalhe }}</span>
+                </div>
+              </sc-for>
+            </div>
+
+            <div style="background:var(--bg-card);border:var(--border-hairline);border-radius:var(--radius);padding:12px 14px;display:flex;justify-content:space-between;gap:10px">
+              <span style="display:flex;flex-direction:column;gap:2px">
+                <span style="font:var(--text-label);text-transform:uppercase;letter-spacing:var(--tracking-label);color:var(--text-field-label)">Resultado</span>
+                <span style="{{ estiloResultadoField }}">{{ resultadoMes }}</span>
+              </span>
+              <span style="display:flex;flex-direction:column;gap:2px;text-align:right">
+                <span style="font:var(--text-label);text-transform:uppercase;letter-spacing:var(--tracking-label);color:var(--text-field-label)">Saldo final</span>
+                <span style="font:var(--text-amount);letter-spacing:var(--tracking-amount);color:var(--text-primary);font-variant-numeric:tabular-nums">{{ totalSaldos }}</span>
+              </span>
+            </div>
+
+            <sc-if value="{{ podeFechar }}" hint-placeholder-val="{{ false }}">
+              <button type="button" onClick="{{ fecharPeriodo }}" disabled="{{ temBloqueio }}" style="{{ estiloBotaoFecharField }}">{{ textoBotaoFecharField }}</button>
+            </sc-if>
+            <sc-if value="{{ estaFechado }}" hint-placeholder-val="{{ false }}">
+              <button type="button" onClick="{{ iniciarReabertura }}" style="min-height:46px;font:var(--text-body-strong);border-radius:var(--radius-sm);cursor:pointer;border:1px solid var(--color-line);background:var(--bg-card);color:var(--text-secondary)">Reabrir período</button>
+            </sc-if>
+          </div>
+        </x-import>
+
+        <sc-if value="{{ reabrindo }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute;inset:0;background:rgba(20,20,24,0.42);z-index:20;display:flex;flex-direction:column;justify-content:flex-end">
+            <div style="background:var(--bg-card);border-radius:20px 20px 0 0;box-shadow:var(--shadow-raised);display:flex;flex-direction:column;gap:12px;padding:16px">
+              <span style="font:var(--text-body-strong);color:var(--text-primary)">Reabrir agosto de 2026</span>
+              <textarea value="{{ motivoReabertura }}" onChange="{{ onMotivoReabertura }}" rows="3" placeholder="motivo da reabertura" style="border:1px solid var(--color-line-strong);background:var(--bg-card);border-radius:var(--radius-sm);padding:10px 12px;font:var(--text-body);color:var(--text-primary);outline:none;resize:vertical"></textarea>
+              <div style="display:flex;gap:10px">
+                <button type="button" onClick="{{ cancelarReabertura }}" style="flex:1;min-height:46px;font:var(--text-body);border-radius:var(--radius-sm);cursor:pointer;border:1px solid var(--color-line);background:var(--bg-card);color:var(--text-secondary)">Cancelar</button>
+                <button type="button" onClick="{{ confirmarReabertura }}" style="{{ estiloConfirmarReaberturaField }}">Reabrir</button>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+      </div>
+      <div style="font:var(--text-small);color:var(--text-secondary);max-width:392px;text-align:center">Campo: o que falta, o resultado e o botão — nada mais.</div>
+    </div>
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1680,&quot;height&quot;:1100}}">
+class Component extends DCLogic {
+  state = { cenario: 'pendencias', reabrindo: false, motivoReabertura: '', mensagem: null };
+
+  itens(cenario) {
+    const pendente = cenario === 'pendencias';
+    return [
+      { id: 'fila', titulo: 'Fila de verificação zerada', bloqueia: true, ok: !pendente,
+        detalhe: pendente ? '12 lançamentos ainda esperando conferência' : 'nada pendente na fila',
+        acao: 'Ir para a fila' },
+      { id: 'conciliacao', titulo: 'Contas conciliadas com o extrato', bloqueia: true, ok: !pendente,
+        detalhe: pendente ? 'Espécie e Nubank Paty sem conciliação de agosto' : '4 contas conciliadas em 31/08',
+        acao: 'Abrir contas' },
+      { id: 'contagem', titulo: 'Contagem do caixa em espécie', bloqueia: true, ok: !pendente,
+        detalhe: pendente ? 'última contagem foi em 31/07' : 'contada em 31/08 por Chico Aguiar, sem diferença',
+        acao: 'Registrar contagem' },
+      { id: 'comprovantes', titulo: 'Comprovantes anexados', bloqueia: false, ok: false,
+        detalhe: '7 lançamentos sem anexo — não impede o fechamento, mas fica registrado assim',
+        acao: 'Ver lançamentos' },
+      { id: 'transferencias', titulo: 'Transferências com os dois lados', bloqueia: true, ok: true,
+        detalhe: '3 transferências do mês batem origem e destino', acao: null },
+    ];
+  }
+
+  pararPropagacao = e => e.stopPropagation();
+  iniciarReabertura = () => this.setState({ reabrindo: true, motivoReabertura: '' });
+  cancelarReabertura = () => this.setState({ reabrindo: false, motivoReabertura: '' });
+  onMotivoReabertura = e => this.setState({ motivoReabertura: e.target.value });
+
+  confirmarReabertura = () => {
+    if (!this.state.motivoReabertura.trim()) return;
+    this.setState({ cenario: 'pronto', reabrindo: false, mensagem: 'Agosto reaberto por Aurio Neto. O motivo ficou no histórico do período.' });
+  };
+
+  fecharPeriodo = () => {
+    const bloqueios = this.itens(this.state.cenario).filter(i => i.bloqueia && !i.ok);
+    if (bloqueios.length) return;
+    this.setState({ cenario: 'fechado', mensagem: 'Agosto de 2026 fechado. Novos lançamentos no período só depois de reabrir.' });
+  };
+
+  renderVals() {
+    const s = this.state;
+    const brl = n => n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const lista = this.itens(s.cenario);
+    const bloqueios = lista.filter(i => i.bloqueia && !i.ok);
+    const avisos = lista.filter(i => !i.bloqueia && !i.ok);
+    const fechado = s.cenario === 'fechado';
+
+    const contas = [
+      { nome: 'Cora PJ', valor: 41902.10 },
+      { nome: 'Espécie', valor: 3180.40 },
+      { nome: 'Nubank Paty', valor: 1240.55 },
+      { nome: 'Itaú Munay', valor: 37994.85 },
+    ];
+    const total = contas.reduce((a, c) => a + c.valor, 0);
+    const entradas = 14820.00, saidas = 9435.62;
+    const resultado = entradas - saidas;
+
+    const chipOn = 'font:var(--text-small);padding:7px 13px;min-height:36px;border-radius:var(--radius-pill);cursor:pointer;border:1px solid var(--color-royal-border);background:var(--color-royal-soft);color:var(--color-royal-deep)';
+    const chipOff = 'font:var(--text-small);padding:7px 13px;min-height:36px;border-radius:var(--radius-pill);cursor:pointer;border:1px solid var(--color-line);background:var(--bg-card);color:var(--text-secondary)';
+    const fonteAmount = 'font:var(--text-amount-lg);letter-spacing:var(--tracking-amount);font-variant-numeric:tabular-nums';
+
+    const corStatus = fechado ? 'var(--color-confirmed)' : bloqueios.length ? 'var(--color-pending)' : 'var(--color-royal-deep)';
+    const fundoStatus = fechado ? 'var(--bg-card)' : 'var(--bg-brand)';
+    const bordaStatus = fechado ? 'var(--color-confirmed)' : 'var(--border-brand)';
+
+    return {
+      user: { name: 'Aurio Neto', group: 'Tesouraria' },
+      propsShell: { style: { height: '100%', minHeight: 0, overflow: 'hidden', gridTemplateRows: '100%' } },
+      subtitulo: 'Confere o que falta, registra o saldo e trava o período · CDD',
+
+      temMensagem: !!s.mensagem, mensagem: s.mensagem, fecharMensagem: () => this.setState({ mensagem: null }),
+
+      cenarios: [['pendencias', 'Com pendências'], ['pronto', 'Pronto para fechar'], ['fechado', 'Fechado']].map(([k, label]) => ({
+        label: label, ativo: k === s.cenario, estilo: k === s.cenario ? chipOn : chipOff,
+        onClick: () => this.setState({ cenario: k, mensagem: null, reabrindo: false }),
+      })),
+
+      estiloFaixaStatus: 'background:' + fundoStatus + ';border:1px solid ' + bordaStatus + ';border-radius:var(--radius-lg);padding:18px 20px;display:flex;flex-wrap:wrap;gap:22px;align-items:flex-end',
+      estiloFaixaStatusField: 'background:' + fundoStatus + ';border:1px solid ' + bordaStatus + ';border-radius:var(--radius);padding:12px 14px;display:flex;flex-direction:column;gap:3px',
+      estiloTituloStatus: 'font:var(--text-title-sm);color:' + corStatus,
+      tituloStatus: fechado ? 'Fechado' : bloqueios.length ? 'Aberto, com ' + bloqueios.length + (bloqueios.length === 1 ? ' pendência' : ' pendências') : 'Pronto para fechar',
+      notaStatus: fechado
+        ? 'Fechado por Aurio Neto em 01/09/2026, 09:20. Lançamentos com data de agosto ficam bloqueados.'
+        : bloqueios.length
+          ? 'Resolva as pendências abaixo para liberar o fechamento.'
+          : 'Nada bloqueia o fechamento. Depois de fechado, correção só reabrindo o período.',
+
+      resumoPeriodo: [
+        { label: 'Entradas', valor: 'R$ ' + brl(entradas), estiloValor: fonteAmount + ';color:var(--color-confirmed)' },
+        { label: 'Saídas', valor: 'R$ ' + brl(saidas), estiloValor: fonteAmount + ';color:var(--color-attention)' },
+        { label: 'Resultado', valor: 'R$ ' + brl(resultado), estiloValor: fonteAmount + ';color:var(--color-royal-deep)' },
+      ].map((r, i) => Object.assign({}, r, {
+        estiloColuna: 'display:flex;flex-direction:column;gap:3px;min-width:0' + (i === 0 ? '' : ';padding-left:20px;border-left:1px solid var(--border-brand)'),
+      })),
+      resultadoMes: 'R$ ' + brl(resultado),
+      estiloResultadoField: 'font:var(--text-amount);letter-spacing:var(--tracking-amount);font-variant-numeric:tabular-nums;color:' + (resultado >= 0 ? 'var(--color-confirmed)' : 'var(--color-attention)'),
+
+      resumoChecklist: bloqueios.length === 0
+        ? (avisos.length ? 'tudo resolvido · ' + avisos.length + ' aviso que não bloqueia' : 'tudo resolvido')
+        : bloqueios.length + (bloqueios.length === 1 ? ' item bloqueia o fechamento' : ' itens bloqueiam o fechamento'),
+
+      checklist: lista.map(i => {
+        const estado = i.ok ? 'ok' : i.bloqueia ? 'bloqueia' : 'aviso';
+        const cor = estado === 'ok' ? 'var(--color-confirmed)' : estado === 'bloqueia' ? 'var(--color-pending)' : 'var(--color-attention)';
+        return {
+          titulo: i.titulo, detalhe: i.detalhe,
+          icone: estado === 'ok' ? 'circle-check' : estado === 'bloqueia' ? 'circle-alert' : 'triangle-alert',
+          cor: cor,
+          tone: estado === 'ok' ? 'confirmed' : estado === 'bloqueia' ? 'pending' : 'suggest',
+          badge: estado === 'ok' ? 'Resolvido' : estado === 'bloqueia' ? 'Bloqueia' : 'Só aviso',
+          temAcao: !!i.acao && !i.ok, acao: i.acao,
+          onAcao: () => this.setState({ mensagem: i.acao + ' — atalho para a tela correspondente.' }),
+          estiloLinha: 'display:flex;align-items:center;gap:12px;padding:12px 14px;border:var(--border-hairline);border-left:3px solid ' + cor + ';border-radius:var(--radius);background:var(--bg-card)',
+          estiloLinhaField: 'display:flex;flex-direction:column;gap:5px;padding:11px 12px;border:var(--border-hairline);border-left:3px solid ' + cor + ';border-radius:var(--radius);background:var(--bg-card)',
+        };
+      }),
+
+      saldos: contas.map(c => ({ nome: c.nome, valor: 'R$ ' + brl(c.valor) })),
+      totalSaldos: 'R$ ' + brl(total),
+
+      historico: [
+        { periodo: 'Julho de 2026', meta: 'fechado por Aurio Neto em 03/08 · reaberto uma vez', resultado: '+ 4.180,22', tone: 'confirmed', badge: 'Fechado', positivo: true },
+        { periodo: 'Junho de 2026', meta: 'fechado por Lucia Prado em 02/07', resultado: '+ 2.905,10', tone: 'confirmed', badge: 'Fechado', positivo: true },
+        { periodo: 'Maio de 2026', meta: 'fechado por Aurio Neto em 04/06', resultado: '− 1.244,80', tone: 'confirmed', badge: 'Fechado', positivo: false },
+        { periodo: 'Abril de 2026', meta: 'fechado por Aurio Neto em 05/05', resultado: '+ 6.512,45', tone: 'confirmed', badge: 'Fechado', positivo: true },
+      ].map(h => Object.assign({}, h, {
+        estiloResultado: 'font:var(--text-amount);letter-spacing:var(--tracking-amount);font-variant-numeric:tabular-nums;color:' + (h.positivo ? 'var(--color-confirmed)' : 'var(--color-attention)'),
+      })),
+
+      podeFechar: !fechado, estaFechado: fechado, temBloqueio: bloqueios.length > 0,
+      tituloAcao: fechado ? 'Período fechado' : bloqueios.length ? 'Fechamento bloqueado' : 'Tudo pronto',
+      notaAcao: fechado
+        ? 'A ata guarda os saldos, o resultado e quem assinou o fechamento.'
+        : bloqueios.length
+          ? bloqueios.map(b => b.titulo).join(' · ')
+          : 'Ao fechar, os saldos acima viram o registro oficial de agosto.',
+      motivoBloqueio: bloqueios.length ? 'Resolva ' + bloqueios.length + (bloqueios.length === 1 ? ' pendência' : ' pendências') + ' antes de fechar.' : undefined,
+      fecharPeriodo: this.fecharPeriodo,
+      exportarAta: () => this.setState({ mensagem: 'Ata de fechamento de agosto de 2026 gerada em PDF.' }),
+      estiloBotaoFecharField: 'min-height:48px;font:var(--text-body-strong);border-radius:var(--radius-sm);cursor:' + (bloqueios.length ? 'not-allowed' : 'pointer') + ';border:1px solid ' + (bloqueios.length ? 'var(--color-line)' : 'var(--color-royal-border)') + ';background:' + (bloqueios.length ? 'var(--bg-sunken)' : 'var(--color-royal-soft)') + ';color:' + (bloqueios.length ? 'var(--text-meta)' : 'var(--color-royal-deep)'),
+      textoBotaoFecharField: bloqueios.length ? 'Resolva as pendências para fechar' : 'Fechar agosto de 2026',
+
+      reabrindo: s.reabrindo,
+      iniciarReabertura: this.iniciarReabertura, cancelarReabertura: this.cancelarReabertura,
+      confirmarReabertura: this.confirmarReabertura, pararPropagacao: this.pararPropagacao,
+      motivoReabertura: s.motivoReabertura, onMotivoReabertura: this.onMotivoReabertura,
+      estiloConfirmarReabertura: 'font:var(--text-body-strong);padding:9px 18px;min-height:42px;border-radius:var(--radius-sm);cursor:' + (s.motivoReabertura.trim() ? 'pointer' : 'not-allowed') + ';border:1px solid ' + (s.motivoReabertura.trim() ? 'var(--color-royal-border)' : 'var(--color-line)') + ';background:' + (s.motivoReabertura.trim() ? 'var(--color-royal-soft)' : 'var(--bg-sunken)') + ';color:' + (s.motivoReabertura.trim() ? 'var(--color-royal-deep)' : 'var(--text-meta)'),
+      estiloConfirmarReaberturaField: 'flex:1;min-height:46px;font:var(--text-body-strong);border-radius:var(--radius-sm);cursor:' + (s.motivoReabertura.trim() ? 'pointer' : 'not-allowed') + ';border:1px solid ' + (s.motivoReabertura.trim() ? 'var(--color-royal-border)' : 'var(--color-line)') + ';background:' + (s.motivoReabertura.trim() ? 'var(--color-royal-soft)' : 'var(--bg-sunken)') + ';color:' + (s.motivoReabertura.trim() ? 'var(--color-royal-deep)' : 'var(--text-meta)'),
+
+      nav: [
+        { id: 'painel', label: 'Painel', icon: 'layout-dashboard' },
+        { id: 'registrar', label: 'Registrar lançamento', icon: 'circle-plus' },
+        { id: 'meus', label: 'Meus registros', icon: 'receipt-text' },
+        { section: 'Financeiro' },
+        { id: 'lote', label: 'Verificação de lote', icon: 'sparkles', count: s.cenario === 'pendencias' ? 12 : 0 },
+        { id: 'lancamentos', label: 'Lançamentos', icon: 'list' },
+        { id: 'contas', label: 'Contas e fundo', icon: 'landmark' },
+        { id: 'relatorios', label: 'Relatórios', icon: 'chart-no-axes-column' },
+        { id: 'fechamento', label: 'Fechamento', icon: 'lock' },
+        { section: 'Cerimônias' },
+        { id: 'agenda', label: 'Agenda', icon: 'calendar-days' },
+        { id: 'ayahuasca', label: 'Ayahuasca', icon: 'flask-conical' },
+        { section: 'Pessoas' },
+        { id: 'pessoas', label: 'Pessoas', icon: 'users' },
+        { id: 'anamnese', label: 'Anamnese', icon: 'clipboard-list' },
+      ],
+    };
+  }
+}
+
+</script>
+</body>
+</html>

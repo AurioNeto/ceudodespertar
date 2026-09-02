@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><script src="./ds-base.js"></script><style>body{margin:0;background:var(--bg-app)}
+@keyframes surgir{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}</style></helmet>
+
+<div style="padding:26px 28px 40px;display:flex;flex-direction:column;gap:20px;background:var(--bg-app);min-height:100%">
+
+  <div style="display:flex;flex-direction:column;gap:2px">
+    <div style="font:var(--text-label);text-transform:uppercase;letter-spacing:var(--tracking-label);color:var(--text-field-label)">F-06 · Relatórios · Tesouraria</div>
+    <div style="font:var(--text-title-sm);color:var(--text-title)">O período inteiro em números, do total ao lançamento</div>
+  </div>
+
+  <div style="display:flex;flex-wrap:wrap;gap:26px;align-items:flex-start">
+
+    <div style="position:relative;flex:0 0 auto;width:1180px;height:1180px;display:flex;border:var(--border-hairline);border-radius:var(--radius-lg);overflow:hidden;background:var(--bg-card);box-shadow:var(--shadow-raised)">
+      <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.AppShell" unit="CDD" user="{{ user }}" nav="{{ nav }}" active-id="relatorios" density="office" style="height:100%;width:100%" dc-props="{{ propsShell }}" hint-size="100%,100%">
+        <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.ScreenHeader" code="F-06 · Relatórios" title="Relatórios" subtitle="{{ subtitulo }}" hint-size="100%,140px"></x-import>
+
+        <div style="padding:18px 24px 26px;display:flex;flex-direction:column;gap:16px;max-width:1020px">
+
+          <sc-if value="{{ temMensagem }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--color-royal-soft);border:1px solid var(--color-royal-border);border-radius:var(--radius);padding:10px 14px">
+              <span style="font:var(--text-body);color:var(--color-royal-deep)">{{ mensagem }}</span>
+              <button type="button" onClick="{{ fecharMensagem }}" style="border:0;background:transparent;color:var(--color-royal-deep);cursor:pointer;font:var(--text-body-strong)">×</button>
+            </div>
+          </sc-if>
+
+          <div style="background:var(--bg-sunken);border:var(--border-hairline);border-radius:var(--radius-lg);padding:14px 16px;display:flex;flex-direction:column;gap:12px">
+            <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px">
+              <button type="button" onClick="{{ alternarFiltros }}" aria-expanded="{{ filtrosAbertos }}" style="display:flex;align-items:center;gap:8px;border:0;background:transparent;padding:0;cursor:pointer">
+                <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Icon" name="{{ iconeFiltros }}" size="{{ 16 }}" color="var(--text-secondary)" hint-size="16px,16px"></x-import>
+                <span style="font:var(--text-label);text-transform:uppercase;letter-spacing:var(--tracking-label);color:var(--text-field-label)">Filtros e período</span>
+              </button>
+              <span style="font:var(--text-small);color:var(--text-secondary);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ resumoFiltros }}</span>
+              <span style="margin-left:auto;display:flex;gap:8px;align-items:center">
+                <button type="button" onClick="{{ alternarFiltros }}" style="font:var(--text-small);border:1px solid var(--color-line);background:var(--bg-card);border-radius:var(--radius-sm);padding:8px 12px;color:var(--text-secondary);cursor:pointer">{{ textoAlternarFiltros }}</button>
+                <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Button" variant="ghost" icon-name="file-down" density="office" onClick="{{ exportarPdf }}" hint-size="130px,40px">PDF</x-import>
+                <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Button" variant="ghost" icon-name="sheet" density="office" onClick="{{ exportarCsv }}" hint-size="150px,40px">Planilha</x-import>
+              </span>
+            </div>
+
+            <sc-if value="{{ filtrosAbertos }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px">
+              <span style="font:var(--text-label);text-transform:uppercase;letter-spacing:var(--tracking-label);color:var(--text-field-label)">Unidades</span>
+              <sc-for list="{{ unidades }}" as="u" hint-placeholder-count="2">
+                <button type="button" onClick="{{ u.onClick }}" aria-pressed="{{ u.ativo }}" style="{{ u.estilo }}">{{ u.label }}</button>
+              </sc-for>
+            </div>
+
+            <div style="display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px">
+              <div style="display:flex;gap:6px">
+                <sc-for list="{{ periodos }}" as="p" hint-placeholder-count="4">
+                  <button type="button" onClick="{{ p.onClick }}" aria-pressed="{{ p.ativo }}" style="{{ p.estilo }}">{{ p.label }}</button>
+                </sc-for>
+              </div>
+              <sc-if value="{{ ehPersonalizado }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;align-items:flex-end;gap:8px">
+                  <div style="display:flex;flex-direction:column">
+                    <label style="font:var(--text-small);color:var(--text-secondary);margin-bottom:4px">De</label>
+                    <input type="text" value="{{ de }}" onChange="{{ onDe }}" placeholder="03/2026" style="width:100px;min-height:38px;border:1px solid var(--color-line-strong);background:var(--bg-card);border-radius:var(--radius-sm);padding:7px 10px;font:var(--text-small);color:var(--text-primary);outline:none">
+                  </div>
+                  <div style="display:flex;flex-direction:column">
+                    <label style="font:var(--text-small);color:var(--text-secondary);margin-bottom:4px">Até</label>
+                    <input type="text" value="{{ ate }}" onChange="{{ onAte }}" placeholder="08/2026" style="width:100px;min-height:38px;border:1px solid var(--color-line-strong);background:var(--bg-card);border-radius:var(--radius-sm);padding:7px 10px;font:var(--text-small);color:var(--text-primary);outline:none">
+                  </div>
+                </div>
+              </sc-if>
+              <div style="display:flex;flex-direction:column;margin-left:auto">
+                <label style="font:var(--text-small);color:var(--text-secondary);margin-bottom:4px">Comparar com</label>
+                <select value="{{ comparar }}" onChange="{{ onComparar }}" style="min-height:38px;border:1px solid var(--color-line-strong);background:var(--bg-card);border-radius:var(--radius-sm);padding:7px 10px;font:var(--text-small);color:var(--text-primary);outline:none">
+                  <option value="nenhum">Não comparar</option>
+                  <option value="anterior">Período anterior</option>
+                  <option value="ano_passado">Mesmo período do ano passado</option>
+                </select>
+              </div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px">
+              <sc-for list="{{ filtros }}" as="f" hint-placeholder-count="6">
+                <div style="display:flex;flex-direction:column">
+                  <label style="font:var(--text-small);color:var(--text-secondary);margin-bottom:4px">{{ f.label }}</label>
+                  <select value="{{ f.valor }}" onChange="{{ f.onChange }}" style="min-height:38px;border:1px solid var(--color-line-strong);background:var(--bg-card);border-radius:var(--radius-sm);padding:7px 9px;font:var(--text-small);color:var(--text-primary);outline:none">
+                    <sc-for list="{{ f.opcoes }}" as="o" hint-placeholder-count="4">
+                      <option value="{{ o.value }}">{{ o.label }}</option>
+                    </sc-for>
+                  </select>
+                </div>
+              </sc-for>
+            </div>
+            </sc-if>
+
+            <div style="display:flex;align-items:center;gap:10px">
+              <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Icon" name="triangle-alert" size="{{ 15 }}" color="var(--color-attention)" hint-size="15px,15px"></x-import>
+              <span style="font:var(--text-small);color:var(--text-secondary)">{{ avisoConferir }}</span>
+              <button type="button" onClick="{{ limparFiltros }}" style="margin-left:auto;font:var(--text-small);border:1px solid var(--color-line);background:var(--bg-card);border-radius:var(--radius-sm);padding:7px 12px;color:var(--text-secondary);cursor:pointer">Limpar filtros</button>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px">
+            <sc-for list="{{ kpis }}" as="k" hint-placeholder-count="4">
+              <div style="{{ k.estiloCard }}">
+                <span style="font:var(--text-label);text-transform:uppercase;letter-spacing:var(--tracking-label);color:var(--text-field-label)">{{ k.label }}</span>
+                <span style="{{ k.estiloValor }}">{{ k.valor }}</span>
+                <span style="{{ k.estiloDelta }}">{{ k.delta }}</span>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="background:var(--bg-card);border:var(--border-hairline);border-radius:var(--radius-lg);padding:16px 18px;display:flex;flex-direction:column;gap:14px">
+            <div style="display:flex;align-items:baseline;gap:12px">
+              <span style="font:var(--text-body-strong);color:var(--text-primary)">Entradas e saídas ao longo do tempo</span>
+              <span style="font:var(--text-small);color:var(--text-secondary)">{{ rotuloPeriodo }}</span>
+              <span style="margin-left:auto;display:flex;gap:14px">
+                <span style="display:flex;align-items:center;gap:6px;font:var(--text-small);color:var(--text-secondary)"><span style="width:10px;height:10px;border-radius:2px;background:var(--color-confirmed)"></span>entradas</span>
+                <span style="display:flex;align-items:center;gap:6px;font:var(--text-small);color:var(--text-secondary)"><span style="width:10px;height:10px;border-radius:2px;background:var(--color-attention)"></span>saídas</span>
+                <span style="display:flex;align-items:center;gap:6px;font:var(--text-small);color:var(--text-secondary)"><span style="width:14px;height:2px;background:var(--color-royal-deep)"></span>resultado acumulado</span>
+              </span>
+            </div>
+
+            <div style="position:relative;height:208px;padding-top:6px">
+              <div style="display:flex;height:182px">
+                <sc-for list="{{ serie }}" as="m" hint-placeholder-count="8">
+                  <div onMouseEnter="{{ m.onEnter }}" onMouseLeave="{{ m.onLeave }}" style="position:relative;flex:1;min-width:0;display:flex;flex-direction:column;height:100%;padding:0 5px">
+                    <sc-if value="{{ m.hover }}" hint-placeholder-val="{{ false }}">
+                      <div style="position:absolute;left:50%;top:-4px;transform:translate(-50%,-100%);z-index:3;pointer-events:none;background:var(--color-ink-brand);color:var(--bg-card);border-radius:var(--radius-sm);padding:8px 10px;display:flex;flex-direction:column;gap:3px;white-space:nowrap;box-shadow:var(--shadow-raised);animation:surgir 140ms ease">
+                        <span style="font:var(--text-label);letter-spacing:var(--tracking-label);text-transform:uppercase;opacity:0.7">{{ m.rotulo }}</span>
+                        <span style="font:var(--text-small)">entradas {{ m.textoEntrada }}</span>
+                        <span style="font:var(--text-small)">saídas {{ m.textoSaida }}</span>
+                        <span style="font:var(--text-small);opacity:0.8">acumulado {{ m.textoAcumulado }}</span>
+                      </div>
+                    </sc-if>
+                    <div style="flex:1;display:flex;align-items:flex-end;justify-content:center">
+                      <div style="{{ m.estiloBarraEntrada }}"></div>
+                    </div>
+                    <div style="flex:1;display:flex;align-items:flex-start;justify-content:center">
+                      <div style="{{ m.estiloBarraSaida }}"></div>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="position:absolute;left:0;right:0;top:97px;height:1px;background:var(--color-line-strong);pointer-events:none"></div>
+              <div style="display:flex;height:20px;align-items:center">
+                <sc-for list="{{ serie }}" as="m" hint-placeholder-count="8">
+                  <span style="flex:1;min-width:0;text-align:center;font:var(--text-small);color:var(--text-meta)">{{ m.rotulo }}</span>
+                </sc-for>
+              </div>
+              <svg viewBox="0 0 100 100" preserveAspectRatio="none" style="position:absolute;left:0;top:6px;width:100%;height:182px;pointer-events:none;overflow:visible">
+                <polyline points="{{ linhaPontos }}" fill="none" stroke="var(--color-royal-deep)" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round"></polyline>
+              </svg>
+            </div>
+
+            <div style="display:flex;gap:24px;border-top:var(--border-hairline);padding-top:12px">
+              <sc-for list="{{ totaisSerie }}" as="t" hint-placeholder-count="3">
+                <span style="display:flex;flex-direction:column;gap:2px">
+                  <span style="font:var(--text-label);text-transform:uppercase;letter-spacing:var(--tracking-label);color:var(--text-field-label)">{{ t.label }}</span>
+                  <span style="{{ t.estiloValor }}">{{ t.valor }}</span>
+                </span>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px">
+            <div style="background:var(--bg-card);border:var(--border-hairline);border-radius:var(--radius-lg);padding:16px 18px;display:flex;flex-direction:column;gap:12px">
+              <div style="display:flex;align-items:center;gap:10px">
+                <span style="font:var(--text-body-strong);color:var(--text-primary)">Saídas por grupo</span>
+                <span style="margin-left:auto;display:flex;gap:6px">
+                  <sc-for list="{{ vistasGrupo }}" as="v" hint-placeholder-count="2">
+                    <button type="button" onClick="{{ v.onClick }}" aria-pressed="{{ v.ativo }}" style="{{ v.estilo }}">{{ v.label }}</button>
+                  </sc-for>
+                </span>
+              </div>
+
+              <sc-if value="{{ grupoEmBarras }}" hint-placeholder-val="{{ true }}">
+                <sc-for list="{{ porGrupo }}" as="g" hint-placeholder-count="6">
+                  <button type="button" onClick="{{ g.abrir }}" onMouseEnter="{{ g.onEnter }}" onMouseLeave="{{ g.onLeave }}" title="{{ g.dica }}" style="display:flex;flex-direction:column;gap:5px;border:0;background:transparent;padding:0;cursor:pointer;text-align:left">
+                    <span style="display:flex;justify-content:space-between;gap:10px;width:100%">
+                      <span style="font:var(--text-small);color:var(--text-primary)">{{ g.nome }}</span>
+                      <span style="font:var(--text-small);color:var(--text-secondary);font-variant-numeric:tabular-nums">{{ g.valor }}</span>
+                    </span>
+                    <span style="width:100%;height:8px;border-radius:var(--radius-pill);background:var(--bg-sunken);overflow:hidden;display:block">
+                      <span style="{{ g.estiloBarra }}"></span>
+                    </span>
+                  </button>
+                </sc-for>
+              </sc-if>
+
+              <sc-if value="{{ grupoEmRosca }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;align-items:center;gap:16px">
+                  <div style="position:relative;width:148px;height:148px;flex:0 0 auto">
+                    <svg viewBox="0 0 160 160" style="width:148px;height:148px;display:block">
+                      <circle cx="80" cy="80" r="60" fill="none" stroke="var(--bg-sunken)" stroke-width="26"></circle>
+                      <sc-for list="{{ porGrupo }}" as="g" hint-placeholder-count="6">
+                        <circle cx="80" cy="80" r="60" fill="none" stroke="{{ g.cor }}" stroke-width="{{ g.tracoLargura }}" stroke-dasharray="{{ g.dash }}" stroke-dashoffset="{{ g.offset }}" style="{{ g.estiloSegmento }}" onMouseEnter="{{ g.onEnter }}" onMouseLeave="{{ g.onLeave }}" onClick="{{ g.abrir }}"></circle>
+                      </sc-for>
+                    </svg>
+                  </div>
+                  <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:7px">
+                    <sc-for list="{{ porGrupo }}" as="g" hint-placeholder-count="6">
+                      <button type="button" onClick="{{ g.abrir }}" onMouseEnter="{{ g.onEnter }}" onMouseLeave="{{ g.onLeave }}" style="{{ g.estiloLegenda }}">
+                        <span style="{{ g.estiloPonto }}"></span>
+                        <span style="flex:1;min-width:0;font:var(--text-small);color:var(--text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ g.nome }}</span>
+                        <span style="font:var(--text-small);color:var(--text-secondary);font-variant-numeric:tabular-nums">{{ g.percentual }}</span>
+                      </button>
+                    </sc-for>
+                  </div>
+                </div>
+                <div style="display:flex;align-items:baseline;gap:8px;border-top:var(--border-hairline);padding-top:10px">
+                  <span style="font:var(--text-small);color:var(--text-secondary);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ rotuloCentroGrupo }}</span>
+                  <span style="margin-left:auto;font:var(--text-amount);letter-spacing:var(--tracking-amount);color:var(--text-primary);font-variant-numeric:tabular-nums">{{ totalGrupoTexto }}</span>
+                </div>
+              </sc-if>
+            </div>
+
+            <div style="background:var(--bg-card);border:var(--border-hairline);border-radius:var(--radius-lg);padding:16px 18px;display:flex;flex-direction:column;gap:12px">
+              <div style="display:flex;align-items:center;gap:10px">
+                <span style="font:var(--text-body-strong);color:var(--text-primary)">Saídas por categoria</span>
+                <span style="margin-left:auto;display:flex;gap:6px">
+                  <sc-for list="{{ vistasCategoria }}" as="v" hint-placeholder-count="2">
+                    <button type="button" onClick="{{ v.onClick }}" aria-pressed="{{ v.ativo }}" style="{{ v.estilo }}">{{ v.label }}</button>
+                  </sc-for>
+                </span>
+              </div>
+
+              <sc-if value="{{ categoriaEmBarras }}" hint-placeholder-val="{{ true }}">
+                <sc-for list="{{ porCategoria }}" as="c" hint-placeholder-count="6">
+                  <button type="button" onClick="{{ c.abrir }}" onMouseEnter="{{ c.onEnter }}" onMouseLeave="{{ c.onLeave }}" title="{{ c.dica }}" style="display:flex;flex-direction:column;gap:5px;border:0;background:transparent;padding:0;cursor:pointer;text-align:left">
+                    <span style="display:flex;justify-content:space-between;gap:10px;width:100%">
+                      <span style="font:var(--text-small);color:var(--text-primary)">{{ c.nome }}</span>
+                      <span style="font:var(--text-small);color:var(--text-secondary);font-variant-numeric:tabular-nums">{{ c.valor }}</span>
+                    </span>
+                    <span style="width:100%;height:8px;border-radius:var(--radius-pill);background:var(--bg-sunken);overflow:hidden;display:block">
+                      <span style="{{ c.estiloBarra }}"></span>
+                    </span>
+                  </button>
+                </sc-for>
+              </sc-if>
+
+              <sc-if value="{{ categoriaEmRosca }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;align-items:center;gap:16px">
+                  <div style="position:relative;width:148px;height:148px;flex:0 0 auto">
+                    <svg viewBox="0 0 160 160" style="width:148px;height:148px;display:block">
+                      <circle cx="80" cy="80" r="60" fill="none" stroke="var(--bg-sunken)" stroke-width="26"></circle>
+                      <sc-for list="{{ porCategoria }}" as="c" hint-placeholder-count="6">
+                        <circle cx="80" cy="80" r="60" fill="none" stroke="{{ c.cor }}" stroke-width="{{ c.tracoLargura }}" stroke-dasharray="{{ c.dash }}" stroke-dashoffset="{{ c.offset }}" style="{{ c.estiloSegmento }}" onMouseEnter="{{ c.onEnter }}" onMouseLeave="{{ c.onLeave }}" onClick="{{ c.abrir }}"></circle>
+                      </sc-for>
+                    </svg>
+                  </div>
+                  <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:7px">
+                    <sc-for list="{{ porCategoria }}" as="c" hint-placeholder-count="6">
+                      <button type="button" onClick="{{ c.abrir }}" onMouseEnter="{{ c.onEnter }}" onMouseLeave="{{ c.onLeave }}" style="{{ c.estiloLegenda }}">
+                        <span style="{{ c.estiloPonto }}"></span>
+                        <span style="flex:1;min-width:0;font:var(--text-small);color:var(--text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ c.nome }}</span>
+                        <span style="font:var(--text-small);color:var(--text-secondary);font-variant-numeric:tabular-nums">{{ c.percentual }}</span>
+                      </button>
+                    </sc-for>
+                  </div>
+                </div>
+                <div style="display:flex;align-items:baseline;gap:8px;border-top:var(--border-hairline);padding-top:10px">
+                  <span style="font:var(--text-small);color:var(--text-secondary);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ rotuloCentroCategoria }}</span>
+                  <span style="margin-left:auto;font:var(--text-amount);letter-spacing:var(--tracking-amount);color:var(--text-primary);font-variant-numeric:tabular-nums">{{ totalCategoriaTexto }}</span>
+                </div>
+              </sc-if>
+            </div>
+          </div>
+
+          <div style="background:var(--bg-card);border:var(--border-hairline);border-radius:var(--radius-lg);padding:16px 18px;display:flex;flex-direction:column;gap:12px">
+            <div style="display:flex;align-items:baseline;gap:12px">
+              <span style="font:var(--text-body-strong);color:var(--text-primary)">Movimento por conta</span>
+              <span style="font:var(--text-small);color:var(--text-secondary)">cada conta exporta separada</span>
+            </div>
+            <div style="display:grid;grid-template-columns:minmax(0,1fr) 130px 130px 140px 108px;gap:0;border-bottom:1px solid var(--color-line-strong);padding-bottom:8px">
+              <sc-for list="{{ colunasContas }}" as="col" hint-placeholder-count="5">
+                <span style="{{ col.estilo }}">{{ col.label }}</span>
+              </sc-for>
+            </div>
+            <sc-for list="{{ porConta }}" as="ct" hint-placeholder-count="4">
+              <div style="display:grid;grid-template-columns:minmax(0,1fr) 130px 130px 140px 108px;align-items:center;gap:0;padding:8px 0;border-bottom:var(--border-hairline)">
+                <button type="button" onClick="{{ ct.abrir }}" style="text-align:left;border:0;background:transparent;padding:0;cursor:pointer;font:var(--text-body-strong);color:var(--text-primary)">{{ ct.nome }}</button>
+                <span style="font:var(--text-small);color:var(--color-confirmed);text-align:right;font-variant-numeric:tabular-nums">{{ ct.entradas }}</span>
+                <span style="font:var(--text-small);color:var(--color-attention);text-align:right;font-variant-numeric:tabular-nums">{{ ct.saidas }}</span>
+                <span style="font:var(--text-amount);letter-spacing:var(--tracking-amount);color:var(--text-primary);text-align:right;font-variant-numeric:tabular-nums">{{ ct.resultado }}</span>
+                <span style="display:flex;justify-content:flex-end">
+                  <button type="button" onClick="{{ ct.exportar }}" style="font:var(--text-small);border:1px solid var(--color-line);background:var(--bg-card);border-radius:var(--radius-sm);padding:6px 10px;color:var(--text-secondary);cursor:pointer">Exportar</button>
+                </span>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px">
+            <div style="background:var(--bg-card);border:var(--border-hairline);border-radius:var(--radius-lg);padding:16px 18px;display:flex;flex-direction:column;gap:14px">
+              <span style="font:var(--text-body-strong);color:var(--text-primary)">Fundo próprio e metas</span>
+              <sc-for list="{{ fundos }}" as="fu" hint-placeholder-count="3">
+                <div style="display:flex;flex-direction:column;gap:5px">
+                  <div style="display:flex;justify-content:space-between;gap:10px">
+                    <span style="font:var(--text-small);color:var(--text-primary)">{{ fu.nome }}</span>
+                    <span style="font:var(--text-small);color:var(--text-secondary);font-variant-numeric:tabular-nums">{{ fu.texto }}</span>
+                  </div>
+                  <div style="width:100%;height:9px;border-radius:var(--radius-pill);background:var(--bg-sunken);overflow:hidden">
+                    <div style="{{ fu.estiloBarra }}"></div>
+                  </div>
+                  <span style="font:var(--text-small);color:var(--text-meta)">{{ fu.nota }}</span>
+                </div>
+              </sc-for>
+            </div>
+
+            <div style="background:var(--bg-card);border:var(--border-hairline);border-radius:var(--radius-lg);padding:16px 18px;display:flex;flex-direction:column;gap:12px">
+              <span style="font:var(--text-body-strong);color:var(--text-primary)">Custo por cerimônia</span>
+              <sc-for list="{{ porCerimonia }}" as="ce" hint-placeholder-count="4">
+                <button type="button" onClick="{{ ce.abrir }}" style="display:flex;flex-direction:column;gap:5px;border:0;background:transparent;padding:0;cursor:pointer;text-align:left">
+                  <span style="display:flex;justify-content:space-between;gap:10px;width:100%">
+                    <span style="font:var(--text-small);color:var(--text-primary)">{{ ce.nome }}</span>
+                    <span style="font:var(--text-small);color:var(--text-secondary);font-variant-numeric:tabular-nums">{{ ce.valor }}</span>
+                  </span>
+                  <span style="width:100%;height:8px;border-radius:var(--radius-pill);background:var(--bg-sunken);overflow:hidden;display:block">
+                    <span style="{{ ce.estiloBarra }}"></span>
+                  </span>
+                </button>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </x-import>
+
+      <sc-if value="{{ temDrill }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;top:0;right:0;bottom:0;width:440px;background:var(--bg-card);border-left:1px solid var(--color-line-strong);box-shadow:var(--shadow-raised);display:flex;flex-direction:column;z-index:5">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:16px 18px;border-bottom:var(--border-hairline)">
+            <span style="display:flex;flex-direction:column;gap:2px">
+              <span style="font:var(--text-label);letter-spacing:var(--tracking-label);text-transform:uppercase;color:var(--text-field-label)">{{ drill.rotulo }}</span>
+              <span style="font:var(--text-body-strong);color:var(--text-primary)">{{ drill.titulo }}</span>
+              <span style="font:var(--text-small);color:var(--text-secondary)">{{ drill.resumo }}</span>
+            </span>
+            <button type="button" aria-label="fechar" onClick="{{ fecharDrill }}" style="width:34px;height:34px;flex:0 0 auto;border:1px solid var(--color-line);background:var(--bg-card);border-radius:var(--radius-pill);cursor:pointer;font:var(--text-body-strong);color:var(--text-secondary)">×</button>
+          </div>
+          <div style="flex:1;min-height:0;overflow:auto;padding:14px 18px;display:flex;flex-direction:column;gap:8px">
+            <sc-for list="{{ drill.linhas }}" as="l" hint-placeholder-count="8">
+              <div style="display:flex;align-items:center;gap:10px;padding:9px 11px;border:var(--border-hairline);border-radius:var(--radius)">
+                <span style="font:var(--text-small);color:var(--text-meta);font-variant-numeric:tabular-nums">{{ l.data }}</span>
+                <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:1px">
+                  <span style="font:var(--text-body);color:var(--text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ l.motivo }}</span>
+                  <span style="font:var(--text-small);color:var(--text-meta)">{{ l.meta }}</span>
+                </span>
+                <span style="{{ l.estiloValor }}">{{ l.valor }}</span>
+              </div>
+            </sc-for>
+          </div>
+          <div style="padding:14px 18px;border-top:var(--border-hairline);display:flex;gap:10px">
+            <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.Button" variant="ghost" icon-name="sheet" onClick="{{ exportarDrill }}" hint-size="200px,44px">Exportar este recorte</x-import>
+          </div>
+        </div>
+      </sc-if>
+    </div>
+
+    <div style="flex:0 0 auto;display:flex;flex-direction:column;gap:12px;align-items:center">
+      <div style="position:relative;width:392px;height:812px;display:flex;border:10px solid var(--color-ink-brand);border-radius:38px;overflow:hidden;background:var(--bg-app);box-shadow:var(--shadow-raised)">
+        <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.AppShell" unit="CDD" user="{{ user }}" nav="{{ nav }}" active-id="relatorios" density="field" style="height:100%;width:100%" dc-props="{{ propsShell }}" hint-size="100%,100%">
+          <x-import component-from-global-scope="CUDoDespertarDesignSystem_25f808.ScreenHeader" code="F-06" title="Relatórios" density="field" hint-size="100%,80px"></x-import>
+
+          <div style="padding:14px 16px 20px;display:flex;flex-direction:column;gap:12px;min-width:0">
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              <sc-for list="{{ periodos }}" as="p" hint-placeholder-count="4">
+                <button type="button" onClick="{{ p.onClick }}" aria-pressed="{{ p.ativo }}" style="{{ p.estiloField }}">{{ p.label }}</button>
+              </sc-for>
+            </div>
+
+            <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px">
+              <sc-for list="{{ kpis }}" as="k" hint-placeholder-count="4">
+                <div style="{{ k.estiloCardField }}">
+                  <span style="font:var(--text-label);text-transform:uppercase;letter-spacing:var(--tracking-label);color:var(--text-field-label)">{{ k.label }}</span>
+                  <span style="{{ k.estiloValorField }}">{{ k.valor }}</span>
+                  <span style="{{ k.estiloDelta }}">{{ k.delta }}</span>
+                </div>
+              </sc-for>
+            </div>
+
+            <div style="background:var(--bg-card);border:var(--border-hairline);border-radius:var(--radius);padding:12px 14px;display:flex;flex-direction:column;gap:10px">
+              <div style="display:flex;align-items:center;gap:10px">
+                <span style="font:var(--text-body-strong);color:var(--text-primary)">Entradas e saídas</span>
+                <span style="margin-left:auto;display:flex;align-items:center;gap:5px;font:var(--text-small);color:var(--text-secondary)"><span style="width:12px;height:2px;background:var(--color-royal-deep)"></span>acumulado</span>
+              </div>
+              <div style="position:relative;height:132px">
+                <div style="display:flex;height:112px">
+                  <sc-for list="{{ serie }}" as="m" hint-placeholder-count="8">
+                    <div onMouseEnter="{{ m.onEnter }}" onMouseLeave="{{ m.onLeave }}" style="position:relative;flex:1;min-width:0;display:flex;flex-direction:column;height:100%;padding:0 2px">
+                      <sc-if value="{{ m.hover }}" hint-placeholder-val="{{ false }}">
+                        <div style="position:absolute;left:50%;top:-4px;transform:translate(-50%,-100%);z-index:3;pointer-events:none;background:var(--color-ink-brand);color:var(--bg-card);border-radius:var(--radius-sm);padding:6px 8px;display:flex;flex-direction:column;gap:2px;white-space:nowrap;animation:surgir 140ms ease">
+                          <span style="font:var(--text-small)">+{{ m.textoEntrada }}</span>
+                          <span style="font:var(--text-small)">−{{ m.textoSaida }}</span>
+                        </div>
+                      </sc-if>
+                      <div style="flex:1;display:flex;align-items:flex-end;justify-content:center">
+                        <div style="{{ m.estiloBarraEntradaField }}"></div>
+                      </div>
+                      <div style="flex:1;display:flex;align-items:flex-start;justify-content:center">
+                        <div style="{{ m.estiloBarraSaidaField }}"></div>
+                      </div>
+                    </div>
+                  </sc-for>
+                </div>
+                <div style="position:absolute;left:0;right:0;top:56px;height:1px;background:var(--color-line-strong);pointer-events:none"></div>
+                <div style="display:flex;height:20px;align-items:center">
+                  <sc-for list="{{ serie }}" as="m" hint-placeholder-count="8">
+                    <span style="flex:1;min-width:0;text-align:center;font:var(--text-small);color:var(--text-meta)">{{ m.rotuloCurto }}</span>
+                  </sc-for>
+                </div>
+                <svg viewBox="0 0 100 100" preserveAspectRatio="none" style="position:absolute;left:0;top:0;width:100%;height:112px;pointer-events:none;overflow:visible">
+                  <polyline points="{{ linhaPontos }}" fill="none" stroke="var(--color-royal-deep)" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round"></polyline>
+                </svg>
+              </div>
+            </div>
+
+            <div style="background:var(--bg-card);border:var(--border-hairline);border-radius:var(--radius);padding:12px 14px;display:flex;flex-direction:column;gap:10px">
+              <span style="font:var(--text-body-strong);color:var(--text-primary)">Saídas por grupo</span>
+              <sc-for list="{{ porGrupo }}" as="g" hint-placeholder-count="5">
+                <div style="display:flex;flex-direction:column;gap:4px">
+                  <div style="display:flex;justify-content:space-between;gap:10px">
+                    <span style="font:var(--text-small);color:var(--text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ g.nome }}</span>
+                    <span style="font:var(--text-small);color:var(--text-secondary);font-variant-numeric:tabular-nums">{{ g.valor }}</span>
+                  </div>
+                  <div style="width:100%;height:7px;border-radius:var(--radius-pill);background:var(--bg-sunken);overflow:hidden">
+                    <div style="{{ g.estiloBarra }}"></div>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+
+            <div style="display:flex;gap:8px">
+              <button type="button" onClick="{{ exportarPdf }}" style="flex:1;min-height:44px;font:var(--text-small);border-radius:var(--radius-sm);cursor:pointer;border:1px solid var(--color-line);background:var(--bg-card);color:var(--text-secondary)">PDF</button>
+              <button type="button" onClick="{{ exportarCsv }}" style="flex:1;min-height:44px;font:var(--text-small);border-radius:var(--radius-sm);cursor:pointer;border:1px solid var(--color-line);background:var(--bg-card);color:var(--text-secondary)">Planilha</button>
+            </div>
+          </div>
+        </x-import>
+      </div>
+      <div style="font:var(--text-small);color:var(--text-secondary);max-width:392px;text-align:center">Campo: período, números do mês e onde o dinheiro saiu.</div>
+    </div>
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1680,&quot;height&quot;:1290}}">
+const GRUPOS = ['Lojinha', 'Dormitório', 'Chácara (Infraestrutura)', 'CDD', 'Cozinha', 'Secretaria'];
+const CAT_SAIDA = ['Alimentação de cerimônia', 'Manutenção', 'Transporte', 'Animais', 'Insumos de feitio', 'Administrativo'];
+const CAT_ENTRADA = ['Contribuições', 'Doações', 'Vendas'];
+const CONTAS = ['Cora PJ', 'Espécie', 'Nubank Paty', 'Itaú Munay'];
+const CERIMONIAS = ['Mãe Divina · setembro', 'Mãe Divina · agosto', 'São Miguel · julho', 'São João · junho', 'Sem cerimônia'];
+const MESES = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+const PALETA = ['oklch(0.52 0.13 265)', 'oklch(0.62 0.11 205)', 'oklch(0.64 0.12 155)', 'oklch(0.72 0.13 110)', 'oklch(0.76 0.13 78)', 'oklch(0.66 0.14 48)', 'oklch(0.58 0.15 25)', 'oklch(0.55 0.12 330)', 'oklch(0.46 0.10 290)'];
+const CIRC = 2 * Math.PI * 60;
+const DESCRICOES = {
+  'Alimentação de cerimônia': ['mercado da cerimônia', 'feira e hortifruti', 'padaria e café'],
+  'Manutenção': ['reparo da bomba d’água', 'material de obra', 'reforma do telhado'],
+  'Transporte': ['gasolina da caminhonete', 'frete de mantimentos', 'pedágio e diesel'],
+  'Animais': ['ração dos cavalos', 'vermífugo e vacina', 'veterinário'],
+  'Insumos de feitio': ['garrafas e rótulos', 'lenha para o feitio', 'cipó e folha'],
+  'Administrativo': ['conta de luz', 'internet da secretaria', 'diarista'],
+  'Contribuições': ['contribuições da cerimônia', 'mensalidade do corpo'],
+  'Doações': ['doação de padrinho', 'doação avulsa'],
+  'Vendas': ['venda de camisetas', 'venda de livros', 'venda de velas'],
+};
+
+class Component extends DCLogic {
+  state = {
+    periodo: 'mes', de: '03/2026', ate: '08/2026', comparar: 'anterior',
+    unidades: ['CDD', 'Munay'],
+    grupo: 'todos', categoria: 'todas', conta: 'todas', tipo: 'todos', cerimonia: 'todas', situacao: 'todas',
+    drill: null, mensagem: null,
+    filtrosAbertos: true, vistaGrupo: 'barras', vistaCategoria: 'barras',
+    hoverSerie: null, hoverGrupo: null, hoverCategoria: null,
+    dados: null,
+  };
+
+  componentDidMount() {
+    if (!this.state.dados) this.setState({ dados: this.gerar() });
+  }
+
+  gerar() {
+    let seed = 20260901;
+    const rnd = () => { seed = (seed * 1103515245 + 12345) % 2147483648; return seed / 2147483648; };
+    const escolher = arr => arr[Math.floor(rnd() * arr.length)];
+    const linhas = [];
+    let id = 1;
+    const anos = [{ ano: 2025, ate: 12 }, { ano: 2026, ate: 8 }];
+    anos.forEach(({ ano, ate }) => {
+      for (let m = 1; m <= ate; m++) {
+        const qtd = 7;
+        for (let i = 0; i < qtd; i++) {
+          const tipo = i < 4 ? 'saida' : i < 6 ? 'entrada' : 'transferencia';
+          const categoria = tipo === 'saida' ? escolher(CAT_SAIDA) : tipo === 'entrada' ? escolher(CAT_ENTRADA) : null;
+          const base = tipo === 'saida' ? 60 + rnd() * 1700 : tipo === 'entrada' ? 200 + rnd() * 2900 : 500 + rnd() * 1500;
+          const fator = ano === 2025 ? 0.82 : 1;
+          const cerimonia = tipo === 'transferencia' ? 'Sem cerimônia' : escolher(CERIMONIAS);
+          const descs = categoria ? DESCRICOES[categoria] : ['repasse entre contas'];
+          linhas.push({
+            id: id++, ano: ano, mes: m,
+            data: String(2 + Math.floor(rnd() * 26)).padStart(2, '0') + '/' + String(m).padStart(2, '0') + '/' + ano,
+            tipo: tipo,
+            valor: Math.round(base * fator * 100) / 100,
+            grupo: tipo === 'transferencia' ? null : escolher(GRUPOS),
+            categoria: categoria,
+            conta: escolher(CONTAS),
+            cerimonia: cerimonia,
+            unidade: rnd() < 0.78 ? 'CDD' : 'Munay',
+            situacao: rnd() < 0.12 ? 'a conferir' : 'consolidado',
+            motivo: escolher(descs),
+          });
+        }
+      }
+    });
+    return linhas;
+  }
+
+  intervalo(periodo, de, ate) {
+    const parse = t => {
+      const p = String(t).split('/');
+      const m = parseInt(p[0], 10), a = parseInt(p[1], 10);
+      return { mes: isNaN(m) ? 1 : Math.min(12, Math.max(1, m)), ano: isNaN(a) ? 2026 : a };
+    };
+    if (periodo === 'mes') return { inicio: { mes: 8, ano: 2026 }, fim: { mes: 8, ano: 2026 } };
+    if (periodo === 'trimestre') return { inicio: { mes: 6, ano: 2026 }, fim: { mes: 8, ano: 2026 } };
+    if (periodo === 'ano') return { inicio: { mes: 1, ano: 2026 }, fim: { mes: 8, ano: 2026 } };
+    return { inicio: parse(de), fim: parse(ate) };
+  }
+
+  indice(p) { return p.ano * 12 + p.mes; }
+
+  meses(intv) {
+    const out = [];
+    for (let i = this.indice(intv.inicio); i <= this.indice(intv.fim); i++) out.push({ ano: Math.floor((i - 1) / 12), mes: ((i - 1) % 12) + 1 });
+    return out;
+  }
+
+  deslocar(intv, passos) {
+    const desl = i => { const j = i + passos; return { ano: Math.floor((j - 1) / 12), mes: ((j - 1) % 12) + 1 }; };
+    return { inicio: desl(this.indice(intv.inicio)), fim: desl(this.indice(intv.fim)) };
+  }
+
+  filtrar(linhas, intv) {
+    const s = this.state;
+    const ini = this.indice(intv.inicio), fim = this.indice(intv.fim);
+    return linhas.filter(l => {
+      const i = l.ano * 12 + l.mes;
+      if (i < ini || i > fim) return false;
+      if (s.unidades.indexOf(l.unidade) < 0) return false;
+      if (s.grupo !== 'todos' && l.grupo !== s.grupo) return false;
+      if (s.categoria !== 'todas' && l.categoria !== s.categoria) return false;
+      if (s.conta !== 'todas' && l.conta !== s.conta) return false;
+      if (s.tipo !== 'todos' && l.tipo !== s.tipo) return false;
+      if (s.cerimonia !== 'todas' && l.cerimonia !== s.cerimonia) return false;
+      if (s.situacao !== 'todas' && l.situacao !== s.situacao) return false;
+      return true;
+    });
+  }
+
+  soma(linhas, tipo) { return linhas.filter(l => l.tipo === tipo).reduce((a, l) => a + l.valor, 0); }
+
+  agrupar(linhas, campo, tipo) {
+    const mapa = {};
+    linhas.filter(l => (!tipo || l.tipo === tipo) && l[campo]).forEach(l => { mapa[l[campo]] = (mapa[l[campo]] || 0) + l.valor; });
+    return Object.keys(mapa).map(k => ({ nome: k, valor: mapa[k] })).sort((a, b) => b.valor - a.valor);
+  }
+
+  abrirDrill(rotulo, campo, valor, tipo) {
+    return () => this.setState({ drill: { rotulo: rotulo, campo: campo, valor: valor, tipo: tipo || null } });
+  }
+
+  renderVals() {
+    const s = this.state;
+    const brl = n => n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const linhas = s.dados || [];
+    const intv = this.intervalo(s.periodo, s.de, s.ate);
+    const atual = this.filtrar(linhas, intv);
+
+    const passos = this.indice(intv.fim) - this.indice(intv.inicio) + 1;
+    const intvComp = s.comparar === 'anterior' ? this.deslocar(intv, -passos) : s.comparar === 'ano_passado' ? this.deslocar(intv, -12) : null;
+    const comparado = intvComp ? this.filtrar(linhas, intvComp) : null;
+
+    const entradas = this.soma(atual, 'entrada');
+    const saidas = this.soma(atual, 'saida');
+    const transferencias = this.soma(atual, 'transferencia');
+    const aConferir = atual.filter(l => l.situacao === 'a conferir');
+    const valorConferir = aConferir.reduce((a, l) => a + l.valor, 0);
+
+    const compEntradas = comparado ? this.soma(comparado, 'entrada') : null;
+    const compSaidas = comparado ? this.soma(comparado, 'saida') : null;
+    const compResultado = comparado ? compEntradas - compSaidas : null;
+
+    const delta = (a, b) => {
+      if (b == null || b === 0) return s.comparar === 'nenhum' ? '' : 'sem base de comparação';
+      const p = ((a - b) / Math.abs(b)) * 100;
+      return (p >= 0 ? '+' : '') + p.toFixed(0) + '% vs ' + (s.comparar === 'anterior' ? 'período anterior' : 'ano passado');
+    };
+    const corDelta = (a, b, bomSeSobe) => {
+      if (b == null || b === 0 || s.comparar === 'nenhum') return 'var(--text-meta)';
+      const sobe = a >= b;
+      return (sobe === bomSeSobe) ? 'var(--color-confirmed)' : 'var(--color-attention)';
+    };
+
+    const fonteAmount = 'font:var(--text-amount-lg);letter-spacing:var(--tracking-amount);font-variant-numeric:tabular-nums';
+    const cardBase = 'background:var(--bg-card);border:var(--border-hairline);border-radius:var(--radius);padding:13px 15px;display:flex;flex-direction:column;gap:4px';
+    const cardField = 'background:var(--bg-card);border:var(--border-hairline);border-radius:var(--radius);padding:11px 12px;display:flex;flex-direction:column;gap:3px';
+
+    const mesesRange = this.meses(intv);
+    const serieDados = mesesRange.map(m => {
+      const doMes = atual.filter(l => l.ano === m.ano && l.mes === m.mes);
+      return { m: m, entrada: this.soma(doMes, 'entrada'), saida: this.soma(doMes, 'saida') };
+    });
+    const maxSerie = Math.max(1, ...serieDados.map(d => Math.max(d.entrada, d.saida)));
+
+    const porGrupo = this.agrupar(atual, 'grupo', 'saida');
+    const maxGrupo = Math.max(1, ...porGrupo.map(g => g.valor));
+    const porCategoria = this.agrupar(atual, 'categoria', 'saida');
+    const maxCategoria = Math.max(1, ...porCategoria.map(c => c.valor));
+    const porCerimonia = this.agrupar(atual.filter(l => l.cerimonia !== 'Sem cerimônia'), 'cerimonia', 'saida');
+    const maxCerimonia = Math.max(1, ...porCerimonia.map(c => c.valor));
+
+    const contas = CONTAS.map(nome => {
+      const doConta = atual.filter(l => l.conta === nome);
+      const e = this.soma(doConta, 'entrada'), sa = this.soma(doConta, 'saida');
+      return { nome: nome, entradas: e, saidas: sa, resultado: e - sa };
+    });
+
+    const metas = [
+      { nome: 'Obra do dormitório', valor: 18400, meta: 24000, cor: 'var(--color-royal)', nota: 'previsão de conclusão em novembro' },
+      { nome: 'Feitio de dezembro', valor: 9200, meta: 12000, cor: 'var(--color-confirmed)', nota: 'insumos, garrafas e deslocamento' },
+      { nome: 'Emergência e saúde', valor: 6000, meta: 6000, cor: 'var(--color-pending)', nota: 'meta atingida, mantida intocada' },
+    ];
+
+    const chipOn = 'font:var(--text-small);padding:7px 13px;min-height:36px;border-radius:var(--radius-pill);cursor:pointer;border:1px solid var(--color-royal-border);background:var(--color-royal-soft);color:var(--color-royal-deep)';
+    const chipOff = 'font:var(--text-small);padding:7px 13px;min-height:36px;border-radius:var(--radius-pill);cursor:pointer;border:1px solid var(--color-line);background:var(--bg-card);color:var(--text-secondary)';
+
+    const totalGrupo = porGrupo.reduce((a, g) => a + g.valor, 0);
+    const totalCategoria = porCategoria.reduce((a, c) => a + c.valor, 0);
+
+    const fatias = (lista, total, max, campo, rotuloDrill, chaveHover) => {
+      const ativo = s[chaveHover];
+      let acumulado = 0;
+      return lista.map((item, i) => {
+        const cor = PALETA[i % PALETA.length];
+        const frac = total > 0 ? item.valor / total : 0;
+        const dash = (frac * CIRC).toFixed(2) + ' ' + CIRC.toFixed(2);
+        const offset = (-acumulado * CIRC).toFixed(2);
+        acumulado += frac;
+        const destacado = ativo === i;
+        const apagado = ativo != null && ativo !== i;
+        return {
+          nome: item.nome, valor: 'R$ ' + brl(item.valor),
+          percentual: Math.round(frac * 100) + '%',
+          dica: item.nome + ' · R$ ' + brl(item.valor) + ' · ' + Math.round(frac * 100) + '%',
+          cor: cor, dash: dash, offset: offset,
+          tracoLargura: destacado ? 32 : 26,
+          estiloSegmento: 'transform-origin:80px 80px;transform:rotate(-90deg) scale(' + (destacado ? 1.07 : 1) + ');opacity:' + (apagado ? 0.45 : 1) + ';cursor:pointer;transition:transform 220ms cubic-bezier(.22,.61,.36,1),stroke-width 220ms ease,opacity 200ms ease,stroke-dasharray 520ms cubic-bezier(.22,.61,.36,1),stroke-dashoffset 520ms cubic-bezier(.22,.61,.36,1)',
+          estiloBarra: 'display:block;height:100%;border-radius:var(--radius-pill);background:' + cor + ';width:' + ((item.valor / max) * 100) + '%;opacity:' + (apagado ? 0.5 : 1) + ';transition:width 520ms cubic-bezier(.22,.61,.36,1),opacity 200ms ease',
+          estiloPonto: 'width:10px;height:10px;border-radius:var(--radius-pill);flex:0 0 auto;background:' + cor + ';transform:scale(' + (destacado ? 1.35 : 1) + ');transition:transform 200ms ease',
+          estiloLegenda: 'display:flex;align-items:center;gap:8px;border:0;background:transparent;padding:0;cursor:pointer;text-align:left;width:100%;opacity:' + (apagado ? 0.5 : 1) + ';transition:opacity 200ms ease',
+          onEnter: () => this.setState({ [chaveHover]: i }),
+          onLeave: () => this.setState({ [chaveHover]: null }),
+          abrir: this.abrirDrill(rotuloDrill, campo, item.nome, 'saida'),
+        };
+      });
+    };
+
+    const vistaOn = 'font:var(--text-small);padding:6px 11px;min-height:32px;border-radius:var(--radius-sm);cursor:pointer;border:1px solid var(--color-royal-border);background:var(--color-royal-soft);color:var(--color-royal-deep)';
+    const vistaOff = 'font:var(--text-small);padding:6px 11px;min-height:32px;border-radius:var(--radius-sm);cursor:pointer;border:1px solid var(--color-line);background:var(--bg-card);color:var(--text-secondary)';
+    const vistas = (campo, atualVista) => [['barras', 'Barras'], ['rosca', 'Rosca']].map(([k, label]) => ({
+      label: label, ativo: k === atualVista, estilo: k === atualVista ? vistaOn : vistaOff,
+      onClick: () => this.setState({ [campo]: k }),
+    }));
+
+    let acumuladoResultado = 0;
+    const acumulados = serieDados.map(d => { acumuladoResultado += d.entrada - d.saida; return acumuladoResultado; });
+    const escala = Math.max(maxSerie, ...acumulados.map(v => Math.abs(v)), 1);
+    const linhaPontos = acumulados.map((v, i) => {
+      const x = (i + 0.5) / serieDados.length * 100;
+      const y = 50 - (v / escala) * 50;
+      return x.toFixed(2) + ',' + y.toFixed(2);
+    }).join(' ');
+
+    const rotulo = p => MESES[p.mes - 1] + '/' + String(p.ano).slice(2);
+    const rotuloPeriodo = rotulo(intv.inicio) === rotulo(intv.fim) ? rotulo(intv.inicio) : rotulo(intv.inicio) + ' — ' + rotulo(intv.fim);
+
+    const drillLinhas = s.drill ? atual.filter(l => l[s.drill.campo] === s.drill.valor && (!s.drill.tipo || l.tipo === s.drill.tipo)) : [];
+    const drillTotal = drillLinhas.reduce((a, l) => a + l.valor, 0);
+
+    const selecionar = campo => e => this.setState({ [campo]: e.target.value, drill: null });
+    const opt = (todos, arr) => [{ value: todos[0], label: todos[1] }].concat(arr.map(v => ({ value: v, label: v })));
+
+    return {
+      user: { name: 'Aurio Neto', group: 'Tesouraria' },
+      propsShell: { style: { height: '100%', minHeight: 0, overflow: 'hidden', gridTemplateRows: '100%' } },
+      subtitulo: 'Período, unidade e recorte — do total ao lançamento',
+
+      temMensagem: !!s.mensagem, mensagem: s.mensagem, fecharMensagem: () => this.setState({ mensagem: null }),
+      exportarPdf: () => this.setState({ mensagem: 'Relatório de ' + rotuloPeriodo + ' preparado em PDF.' }),
+      exportarCsv: () => this.setState({ mensagem: 'Planilha de ' + rotuloPeriodo + ' gerada com ' + atual.length + ' lançamentos.' }),
+
+      unidades: ['CDD', 'Munay'].map(u => ({
+        label: u, ativo: s.unidades.indexOf(u) >= 0,
+        estilo: s.unidades.indexOf(u) >= 0 ? chipOn : chipOff,
+        onClick: () => this.setState(st => ({ unidades: st.unidades.indexOf(u) >= 0 ? (st.unidades.length > 1 ? st.unidades.filter(x => x !== u) : st.unidades) : st.unidades.concat(u), drill: null })),
+      })),
+
+      periodos: [['mes', 'Mês'], ['trimestre', 'Trimestre'], ['ano', 'Ano'], ['personalizado', 'Personalizado']].map(([k, label]) => ({
+        label: label, ativo: k === s.periodo,
+        estilo: k === s.periodo ? chipOn : chipOff,
+        estiloField: (k === s.periodo ? chipOn : chipOff) + ';flex:0 0 auto',
+        onClick: () => this.setState({ periodo: k, drill: null }),
+      })),
+      ehPersonalizado: s.periodo === 'personalizado',
+      de: s.de, ate: s.ate,
+      onDe: e => this.setState({ de: e.target.value }), onAte: e => this.setState({ ate: e.target.value }),
+      comparar: s.comparar, onComparar: e => this.setState({ comparar: e.target.value }),
+      rotuloPeriodo: rotuloPeriodo,
+      linhaPontos: linhaPontos,
+      filtrosAbertos: s.filtrosAbertos,
+      alternarFiltros: () => this.setState(st => ({ filtrosAbertos: !st.filtrosAbertos })),
+      iconeFiltros: s.filtrosAbertos ? 'chevron-down' : 'chevron-right',
+      textoAlternarFiltros: s.filtrosAbertos ? 'Ocultar filtros' : 'Mostrar filtros',
+      resumoFiltros: [
+        rotuloPeriodo,
+        s.unidades.join(' + '),
+        s.grupo !== 'todos' ? s.grupo : null,
+        s.categoria !== 'todas' ? s.categoria : null,
+        s.conta !== 'todas' ? s.conta : null,
+        s.tipo !== 'todos' ? s.tipo : null,
+        s.cerimonia !== 'todas' ? s.cerimonia : null,
+        s.situacao !== 'todas' ? s.situacao : null,
+      ].filter(Boolean).join(' · '),
+
+      filtros: [
+        { label: 'Grupo', valor: s.grupo, onChange: selecionar('grupo'), opcoes: opt(['todos', 'Todos'], GRUPOS) },
+        { label: 'Categoria', valor: s.categoria, onChange: selecionar('categoria'), opcoes: opt(['todas', 'Todas'], CAT_SAIDA.concat(CAT_ENTRADA)) },
+        { label: 'Conta', valor: s.conta, onChange: selecionar('conta'), opcoes: opt(['todas', 'Todas'], CONTAS) },
+        { label: 'Tipo', valor: s.tipo, onChange: selecionar('tipo'), opcoes: [{ value: 'todos', label: 'Todos' }, { value: 'saida', label: 'Saída' }, { value: 'entrada', label: 'Entrada' }, { value: 'transferencia', label: 'Transferência' }] },
+        { label: 'Cerimônia', valor: s.cerimonia, onChange: selecionar('cerimonia'), opcoes: opt(['todas', 'Todas'], CERIMONIAS) },
+        { label: 'Situação', valor: s.situacao, onChange: selecionar('situacao'), opcoes: [{ value: 'todas', label: 'Todas' }, { value: 'consolidado', label: 'Consolidado' }, { value: 'a conferir', label: 'A conferir' }] },
+      ],
+      limparFiltros: () => this.setState({ grupo: 'todos', categoria: 'todas', conta: 'todas', tipo: 'todos', cerimonia: 'todas', situacao: 'todas', drill: null }),
+      avisoConferir: aConferir.length === 0
+        ? 'Todos os lançamentos deste recorte estão consolidados.'
+        : 'Inclui ' + aConferir.length + (aConferir.length === 1 ? ' lançamento a conferir' : ' lançamentos a conferir') + ' (R$ ' + brl(valorConferir) + ') — os números podem mudar depois da conferência.',
+
+      kpis: [
+        { label: 'Entradas', valor: 'R$ ' + brl(entradas), delta: delta(entradas, compEntradas), cor: 'var(--color-confirmed)', bom: true, base: compEntradas },
+        { label: 'Saídas', valor: 'R$ ' + brl(saidas), delta: delta(saidas, compSaidas), cor: 'var(--color-attention)', bom: false, base: compSaidas },
+        { label: 'Resultado', valor: 'R$ ' + brl(entradas - saidas), delta: delta(entradas - saidas, compResultado), cor: (entradas - saidas) >= 0 ? 'var(--color-royal-deep)' : 'var(--color-attention)', bom: true, base: compResultado },
+        { label: 'Transferências', valor: 'R$ ' + brl(transferencias), delta: atual.filter(l => l.tipo === 'transferencia').length + ' movimentos entre contas', cor: 'var(--text-primary)', bom: true, base: null },
+      ].map(k => ({
+        label: k.label, valor: k.valor, delta: k.delta,
+        estiloCard: cardBase, estiloCardField: cardField,
+        estiloValor: fonteAmount + ';color:' + k.cor,
+        estiloValorField: 'font:var(--text-amount);letter-spacing:var(--tracking-amount);font-variant-numeric:tabular-nums;color:' + k.cor,
+        estiloDelta: 'font:var(--text-small);color:' + (k.base == null ? 'var(--text-meta)' : corDelta(this.numeroKpi(k.valor), k.base, k.bom)),
+      })),
+
+      serie: serieDados.map((d, i) => {
+        const destacado = s.hoverSerie === i;
+        const apagado = s.hoverSerie != null && !destacado;
+        const transicao = ';transition:height 520ms cubic-bezier(.22,.61,.36,1),opacity 180ms ease;opacity:' + (apagado ? 0.45 : 1);
+        return {
+          rotulo: rotulo(d.m), rotuloCurto: MESES[d.m.mes - 1],
+          hover: destacado,
+          textoEntrada: 'R$ ' + brl(d.entrada), textoSaida: 'R$ ' + brl(d.saida),
+          textoAcumulado: 'R$ ' + brl(acumulados[i]),
+          onEnter: () => this.setState({ hoverSerie: i }),
+          onLeave: () => this.setState({ hoverSerie: null }),
+          estiloBarraEntrada: 'width:14px;border-radius:3px 3px 0 0;background:var(--color-confirmed);height:' + Math.max(2, (d.entrada / escala) * 100) + '%' + transicao,
+          estiloBarraSaida: 'width:14px;border-radius:0 0 3px 3px;background:var(--color-attention);height:' + Math.max(2, (d.saida / escala) * 100) + '%' + transicao,
+          estiloBarraEntradaField: 'width:9px;border-radius:2px 2px 0 0;background:var(--color-confirmed);height:' + Math.max(2, (d.entrada / escala) * 100) + '%' + transicao,
+          estiloBarraSaidaField: 'width:9px;border-radius:0 0 2px 2px;background:var(--color-attention);height:' + Math.max(2, (d.saida / escala) * 100) + '%' + transicao,
+        };
+      }),
+      totaisSerie: [
+        { label: 'Entradas no período', valor: 'R$ ' + brl(entradas), estiloValor: 'font:var(--text-amount);letter-spacing:var(--tracking-amount);font-variant-numeric:tabular-nums;color:var(--color-confirmed)' },
+        { label: 'Saídas no período', valor: 'R$ ' + brl(saidas), estiloValor: 'font:var(--text-amount);letter-spacing:var(--tracking-amount);font-variant-numeric:tabular-nums;color:var(--color-attention)' },
+        { label: 'Lançamentos', valor: String(atual.length), estiloValor: 'font:var(--text-amount);letter-spacing:var(--tracking-amount);font-variant-numeric:tabular-nums;color:var(--text-primary)' },
+      ],
+
+      porGrupo: fatias(porGrupo, totalGrupo, maxGrupo, 'grupo', 'Saídas do grupo', 'hoverGrupo'),
+      porCategoria: fatias(porCategoria, totalCategoria, maxCategoria, 'categoria', 'Saídas da categoria', 'hoverCategoria'),
+      rotuloCentroGrupo: s.hoverGrupo != null && porGrupo[s.hoverGrupo] ? porGrupo[s.hoverGrupo].nome : 'saídas',
+      rotuloCentroCategoria: s.hoverCategoria != null && porCategoria[s.hoverCategoria] ? porCategoria[s.hoverCategoria].nome : 'saídas',
+      totalGrupoTexto: 'R$ ' + brl(s.hoverGrupo != null && porGrupo[s.hoverGrupo] ? porGrupo[s.hoverGrupo].valor : totalGrupo),
+      totalCategoriaTexto: 'R$ ' + brl(s.hoverCategoria != null && porCategoria[s.hoverCategoria] ? porCategoria[s.hoverCategoria].valor : totalCategoria),
+      vistasGrupo: vistas('vistaGrupo', s.vistaGrupo),
+      vistasCategoria: vistas('vistaCategoria', s.vistaCategoria),
+      grupoEmBarras: s.vistaGrupo === 'barras', grupoEmRosca: s.vistaGrupo === 'rosca',
+      categoriaEmBarras: s.vistaCategoria === 'barras', categoriaEmRosca: s.vistaCategoria === 'rosca',
+      porCerimonia: porCerimonia.map(c => ({
+        nome: c.nome, valor: 'R$ ' + brl(c.valor),
+        estiloBarra: 'display:block;height:100%;border-radius:var(--radius-pill);background:var(--color-pending);width:' + ((c.valor / maxCerimonia) * 100) + '%;transition:width 520ms cubic-bezier(.22,.61,.36,1)',
+        abrir: this.abrirDrill('Gastos da cerimônia', 'cerimonia', c.nome, 'saida'),
+      })),
+
+      colunasContas: ['Conta', 'Entradas', 'Saídas', 'Resultado', ''].map((label, i) => ({
+        label: label,
+        estilo: 'font:var(--text-label);letter-spacing:var(--tracking-label);text-transform:uppercase;color:var(--text-field-label);text-align:' + (i === 0 ? 'left' : 'right'),
+      })),
+      porConta: contas.map(c => ({
+        nome: c.nome, entradas: brl(c.entradas), saidas: brl(c.saidas), resultado: brl(c.resultado),
+        abrir: this.abrirDrill('Movimento da conta', 'conta', c.nome),
+        exportar: () => this.setState({ mensagem: 'Extrato de ' + c.nome + ' em ' + rotuloPeriodo + ' exportado em planilha.' }),
+      })),
+
+      fundos: metas.map(f => ({
+        nome: f.nome, nota: f.nota,
+        texto: 'R$ ' + brl(f.valor) + ' de ' + brl(f.meta),
+        estiloBarra: 'height:100%;border-radius:var(--radius-pill);background:' + f.cor + ';width:' + Math.min(100, (f.valor / f.meta) * 100) + '%;transition:width 520ms cubic-bezier(.22,.61,.36,1)',
+      })),
+
+      temDrill: !!s.drill,
+      fecharDrill: () => this.setState({ drill: null }),
+      exportarDrill: () => this.setState({ mensagem: 'Recorte exportado com ' + drillLinhas.length + ' lançamentos.' }),
+      drill: s.drill ? {
+        rotulo: s.drill.rotulo, titulo: s.drill.valor,
+        resumo: drillLinhas.length + (drillLinhas.length === 1 ? ' lançamento · R$ ' : ' lançamentos · R$ ') + brl(drillTotal) + ' · ' + rotuloPeriodo,
+        linhas: drillLinhas.slice(0, 40).map(l => ({
+          data: l.data.slice(0, 5), motivo: l.motivo,
+          meta: (l.grupo || l.conta) + ' · ' + l.conta + (l.situacao === 'a conferir' ? ' · a conferir' : ''),
+          valor: (l.tipo === 'entrada' ? '+ ' : l.tipo === 'saida' ? '− ' : '') + brl(l.valor),
+          estiloValor: 'font:var(--text-amount);letter-spacing:var(--tracking-amount);font-variant-numeric:tabular-nums;color:' + (l.tipo === 'entrada' ? 'var(--color-confirmed)' : 'var(--text-primary)'),
+        })),
+      } : null,
+
+      nav: [
+        { id: 'painel', label: 'Painel', icon: 'layout-dashboard' },
+        { id: 'registrar', label: 'Registrar lançamento', icon: 'circle-plus' },
+        { id: 'meus', label: 'Meus registros', icon: 'receipt-text' },
+        { section: 'Financeiro' },
+        { id: 'lote', label: 'Verificação de lote', icon: 'sparkles', count: 12 },
+        { id: 'lancamentos', label: 'Lançamentos', icon: 'list' },
+        { id: 'contas', label: 'Contas e fundo', icon: 'landmark' },
+        { id: 'relatorios', label: 'Relatórios', icon: 'chart-no-axes-column' },
+        { id: 'fechamento', label: 'Fechamento', icon: 'lock' },
+        { section: 'Cerimônias' },
+        { id: 'agenda', label: 'Agenda', icon: 'calendar-days' },
+        { id: 'ayahuasca', label: 'Ayahuasca', icon: 'flask-conical' },
+        { section: 'Pessoas' },
+        { id: 'pessoas', label: 'Pessoas', icon: 'users' },
+        { id: 'anamnese', label: 'Anamnese', icon: 'clipboard-list' },
+      ],
+    };
+  }
+
+  numeroKpi(texto) {
+    return parseFloat(String(texto).replace('R$ ', '').replace(/\./g, '').replace(',', '.')) || 0;
+  }
+}
+
+</script>
+</body>
+</html>
