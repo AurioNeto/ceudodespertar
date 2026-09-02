@@ -6,6 +6,7 @@ import { RegistrarLancamentoPage } from '../pages/lancamento/RegistrarLancamento
 import { MeusRegistrosPage } from '../pages/registros/MeusRegistrosPage';
 import { LancamentosPage } from '../pages/registros/LancamentosPage';
 import { ContasEFundoPage } from '../pages/contas/ContasEFundoPage';
+import { VerificacaoLotePage } from '../pages/verificacao/VerificacaoLotePage';
 
 export const router = createBrowserRouter([
   {
@@ -17,6 +18,7 @@ export const router = createBrowserRouter([
       { path: ROTAS.meus, element: <MeusRegistrosPage /> },
       { path: ROTAS.lancamentos, element: <LancamentosPage /> },
       { path: ROTAS.contas, element: <ContasEFundoPage /> },
+      { path: ROTAS.lote, element: <VerificacaoLotePage /> },
     ],
   },
 ]);

@@ -4,7 +4,13 @@
  * agregado. É este o contrato que o front-end consome.
  */
 import type { Competencia, DataLocal, Dinheiro, EventoId, LancamentoId } from './kernel.js';
-import type { OrigemLancamento, StatusLancamento, TipoLancamento } from './financeiro.js';
+import type {
+  Confianca,
+  OrigemCaptura,
+  OrigemLancamento,
+  StatusLancamento,
+  TipoLancamento,
+} from './financeiro.js';
 
 export interface LancamentoNaLista {
   readonly id: LancamentoId;
@@ -33,4 +39,22 @@ export interface EventoDoHistorico {
   readonly quando: string;
   readonly quem: string;
   readonly oQue: string;
+}
+
+/** Um item da fila de verificação em lote, como a tela o lê. */
+export interface ItemNaFila {
+  readonly id: LancamentoId;
+  readonly origem: OrigemCaptura;
+  readonly confianca: Confianca;
+  readonly tipo: TipoLancamento;
+  readonly valor: Dinheiro;
+  readonly motivo: string;
+  readonly data: DataLocal;
+  readonly grupo: string | null;
+  readonly categoria: string | null;
+  readonly conta: string;
+  readonly contaDestino: string | null;
+  /** Quem mandou o comprovante ou fez o registro rápido; nulo no extrato. */
+  readonly remetente: string | null;
+  readonly anexo: string | null;
 }

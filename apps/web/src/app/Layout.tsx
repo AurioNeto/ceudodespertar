@@ -3,7 +3,7 @@ import { AppShell } from '../ds';
 import { construirNav, ROTAS, rotaAtiva, type RotaId } from './navegacao';
 import { useDensidade } from '../lib/useDensidade';
 import { usuarioAtual } from '../mocks/sessao';
-import { filaDeVerificacao } from '../mocks/financeiro';
+import { filaDeVerificacaoInicial } from '../mocks/verificacao';
 
 export function Layout() {
   const navigate = useNavigate();
@@ -15,7 +15,7 @@ export function Layout() {
       unit="CDD"
       density={useDensidade()}
       user={{ name: usuarioAtual.nome, group: usuarioAtual.grupoNome }}
-      nav={construirNav(filaDeVerificacao.length)}
+      nav={construirNav(filaDeVerificacaoInicial.length)}
       activeId={ativo}
       onNavigate={(id) => navigate(ROTAS[id as RotaId] ?? '/')}
       onUserClick={() => navigate(ROTAS.perfil)}

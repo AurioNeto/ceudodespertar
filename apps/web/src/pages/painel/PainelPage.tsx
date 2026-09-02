@@ -4,7 +4,6 @@ import { Button, Icon, ScreenHeader, type IconName } from '../../ds';
 import { ROTAS } from '../../app/navegacao';
 import { proximaCerimonia, ultimaCerimonia } from '../../mocks/cerimonias';
 import {
-  filaDeVerificacao,
   fundoProprio,
   movimentoDoMes,
   remessasEmLote,
@@ -12,6 +11,7 @@ import {
   saldoEmBanco,
   saldoEmCaixa,
 } from '../../mocks/financeiro';
+import { filaDeVerificacaoInicial } from '../../mocks/verificacao';
 import { competenciaAtual, competenciaAnterior } from '../../mocks/sessao';
 import {
   competenciaPorExtenso,
@@ -182,7 +182,7 @@ export function PainelPage() {
           <Icon name="sparkles" size={20} color="var(--color-pending)" />
           <div style={{ display: 'flex', flexDirection: 'column', gap: 2, flex: '1 1 320px', minWidth: 0 }}>
             <div style={{ font: 'var(--text-body-strong)', color: 'var(--text-primary)' }}>
-              {filaDeVerificacao.length} lançamentos em lote aguardando verificação —{' '}
+              {filaDeVerificacaoInicial.length} lançamentos em lote aguardando verificação —{' '}
               {pluralizar(remessasEmLote, 'remessa')} de comprovantes
             </div>
             <div style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>

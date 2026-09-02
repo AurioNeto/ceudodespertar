@@ -1,4 +1,4 @@
-import type { Conta, ContaId, Fundo, FundoId, ItemDeVerificacao, LancamentoId, PessoaId } from '@cdd/contracts';
+import type { Conta, ContaId, Fundo, FundoId, PessoaId } from '@cdd/contracts';
 import { dataLocal, reais } from '@cdd/contracts';
 import { id } from './ids';
 
@@ -120,18 +120,5 @@ export const movimentoDoMes = {
   resultado: reais(14362.4),
   resultadoAnterior: reais(2259.8),
 } as const;
-
-/**
- * A única coisa que pede verificação humana é a remessa lida pela IA —
- * lançamento manual entra consolidado. 12 itens em 3 remessas.
- */
-export const filaDeVerificacao: readonly Pick<ItemDeVerificacao, 'id' | 'origem' | 'confianca'>[] = Array.from(
-  { length: 12 },
-  (_, i) => ({
-    id: id<LancamentoId>(`v-${i + 1}`),
-    origem: i < 7 ? 'COMPROVANTE' : i < 10 ? 'EXTRATO' : 'REGISTRO_RAPIDO',
-    confianca: i % 3 === 0 ? 'ALTA' : i % 3 === 1 ? 'MEDIA' : 'BAIXA',
-  }),
-);
 
 export const remessasEmLote = 3;
