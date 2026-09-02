@@ -26,7 +26,8 @@ export function ActionBar({ children, note, sticky = true, style }: ActionBarPro
       {note ? (
         <p style={{ font: 'var(--text-small)', color: 'var(--text-secondary)', textAlign: 'center' }}>{note}</p>
       ) : null}
-      <div style={{ display: 'flex', gap: 10 }}>{children}</div>
+      {/* flex-start: o motivo de bloqueio cresce sob um botão sem esticar os vizinhos. */}
+      <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>{children}</div>
     </div>
   );
 }
