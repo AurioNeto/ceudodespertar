@@ -1,4 +1,32 @@
-# CODING AGENTS: READ THIS FIRST
+# Céu do Despertar — Sistema de Gestão
+
+Front-end do sistema, implementado a partir do handoff de design que está em
+`project/`. Segue o método do Doc 1 §8.1 — design → front-end (com mocks) →
+backend: as telas existem em React com fixtures tipadas, e o backend
+implementa depois os contratos de `packages/contracts`.
+
+```bash
+pnpm install
+pnpm dev        # http://localhost:5173
+pnpm build      # typecheck + build de produção
+pnpm typecheck
+```
+
+| Onde | O que é |
+|---|---|
+| `apps/web/src/ds` | Design system em TSX, portado do bundle exportado |
+| `apps/web/src/styles/tokens` | Tokens do design system — a fonte da verdade visual |
+| `apps/web/src/pages` | As 13 telas |
+| `apps/web/src/mocks` | Fixtures tipadas; saem quando o backend entrar |
+| `packages/contracts` | Tipos do domínio e read models (Doc 2 e Doc 3) |
+| `project/` | O bundle de design original, mantido como referência |
+
+O que ainda não existe: backend (NestJS + MikroORM + PostgreSQL), Keycloak e
+os testes. A sessão do usuário e as permissões são fixtures.
+
+---
+
+## Handoff original do Claude Design
 
 This is a **handoff bundle** from Claude Design (claude.ai/design).
 
