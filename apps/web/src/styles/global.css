@@ -1,0 +1,30 @@
+/*
+  Ordem importa: os tokens do design system vêm antes do Tailwind, para que
+  as utilidades possam referenciar as variáveis, e base.css continue sendo o
+  reset do documento. Os cinco arquivos em tokens/ são cópia fiel do design
+  system exportado (_ds/.../tokens) — a fonte da verdade visual.
+*/
+@import './tokens/fonts.css';
+@import './tokens/colors.css';
+@import './tokens/typography.css';
+@import './tokens/spacing.css';
+@import './tokens/base.css';
+
+@import 'tailwindcss';
+
+@theme {
+  --color-paper: var(--bg-app);
+  --color-card: var(--bg-card);
+  --color-sunken: var(--bg-sunken);
+  --color-rail: var(--bg-rail);
+  --font-display: 'Archivo', sans-serif;
+  --font-body: 'Public Sans', sans-serif;
+  --font-data: 'IBM Plex Mono', monospace;
+}
+
+/* O app ocupa a janela inteira; a rolagem mora dentro do AppShell. */
+html,
+body,
+#root {
+  height: 100%;
+}

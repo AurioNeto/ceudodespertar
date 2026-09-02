@@ -1,0 +1,27 @@
+/* Céu do Despertar — reset mínimo e defaults de documento. */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg-app);
+  color: var(--text-primary);
+  font: var(--text-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4 { font-family: var(--font-display); color: var(--text-title); margin: 0; letter-spacing: var(--tracking-display); }
+p { margin: 0; text-wrap: pretty; }
+
+a { color: var(--text-link); text-decoration: none; border-bottom: 1px solid var(--color-royal-border); }
+a:hover { color: var(--text-link-hover); border-bottom-color: var(--color-royal); }
+
+button { font: inherit; color: inherit; border: 0; background: none; cursor: pointer; }
+
+code { font: var(--text-code); background: var(--bg-sunken); padding: 1px 5px; border-radius: var(--radius-sm); color: var(--color-ink-brand); }
+
+/* foco visível: anel de 2,5px em royal, deslocamento de 2px. Nunca removido. */
+:focus-visible { outline: 2.5px solid var(--focus-ring); outline-offset: 2px; border-radius: var(--radius-sm); }
+
+/* numerais tabulares obrigatórios em toda coluna de valor */
+[data-numeric], .cdd-amount { font-variant-numeric: tabular-nums; }

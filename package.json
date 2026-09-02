@@ -1,0 +1,15 @@
+{
+  "name": "cdd-sistema-gestao",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.33.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "pnpm --filter @cdd/web dev",
+    "build": "pnpm --filter @cdd/web build",
+    "preview": "pnpm --filter @cdd/web preview",
+    "typecheck": "pnpm -r typecheck"
+  }
+}

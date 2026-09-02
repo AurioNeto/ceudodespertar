@@ -1,0 +1,65 @@
+/* =====================================================================
+   Céu do Despertar — SPACE, SHAPE, ELEVATION, DENSITY, MOTION
+   Raio baixo: o símbolo é feito só de retas e ângulos de 60°.
+   ===================================================================== */
+
+:root {
+  --space-1: 4px;  --space-2: 8px;  --space-3: 12px; --space-4: 16px;
+  --space-5: 20px; --space-6: 24px; --space-8: 32px; --space-12: 48px;
+  --space-16: 64px;
+
+  --radius-sm:   6px;
+  --radius:     10px;
+  --radius-lg:  14px;
+  --radius-pill: 999px;  /* só em badge de estado — nunca estrutural */
+
+  --border-hairline: 1px solid var(--color-line);
+  --edge-state: 3px;     /* barra de estado à esquerda — a assinatura do sistema */
+
+  /* A sombra é o mesmo azul da tinta, diluído — nunca cinza neutro. */
+  --shadow-raised: 0 1px 2px rgba(34,48,78,.07), 0 6px 16px -8px rgba(34,48,78,.20);
+  --shadow-sheet:  0 -2px 24px -6px rgba(34,48,78,.24);
+  --shadow-royal:  0 2px 10px -4px rgba(15,36,103,.30);
+
+  /* densidade — a escolha de cada tela está no Doc 4, coluna "Plataforma" */
+  --target-field:  56px;  /* campo: em pé, uma mão, com pressa */
+  --target-office: 44px;  /* escritório: sentado, mouse */
+  --tap-min:       44px;
+
+  --motion-fast: 120ms cubic-bezier(.2,0,.2,1); /* @kind other */
+  --motion:      200ms cubic-bezier(.2,0,.2,1); /* @kind other */
+}
+
+[data-density="field"] {
+  --target: var(--target-field);
+  --text-body-default: var(--text-body-lg);
+  --pad-x: var(--space-5);
+  --pad-y: var(--space-4);
+}
+[data-density="office"] {
+  --target: var(--target-office);
+  --text-body-default: var(--text-body);
+  --pad-x: var(--space-4);
+  --pad-y: var(--space-3);
+}
+
+/* ---------------------------------------------------------------
+   REGIME DE UNIDADE — o vocabulário comuta, o token não.
+   --------------------------------------------------------------- */
+[data-regime="contribuicao"] {
+  --term-receita: "contribuição";   /* @kind other */
+  --term-pessoa: "participante";    /* @kind other */
+  --term-valor: "valor sugerido";   /* @kind other */
+}
+[data-regime="comercial"] {
+  --term-receita: "venda";          /* @kind other */
+  --term-pessoa: "cliente";         /* @kind other */
+  --term-valor: "preço";            /* @kind other */
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-fast: 0ms; /* @kind other */
+    --motion: 0ms;      /* @kind other */
+  }
+}
