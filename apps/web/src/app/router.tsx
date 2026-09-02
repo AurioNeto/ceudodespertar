@@ -9,6 +9,7 @@ import { ContasEFundoPage } from '../pages/contas/ContasEFundoPage';
 import { VerificacaoLotePage } from '../pages/verificacao/VerificacaoLotePage';
 import { RelatoriosPage } from '../pages/relatorios/RelatoriosPage';
 import { FechamentoPage } from '../pages/fechamento/FechamentoPage';
+import { AgendaPage } from '../pages/agenda/AgendaPage';
 
 export const router = createBrowserRouter([
   {
@@ -23,6 +24,7 @@ export const router = createBrowserRouter([
       { path: ROTAS.lote, element: <VerificacaoLotePage /> },
       { path: ROTAS.relatorios, element: <RelatoriosPage /> },
       { path: ROTAS.fechamento, element: <FechamentoPage /> },
+      { path: ROTAS.agenda, element: <AgendaPage /> },
     ],
   },
 ]);
