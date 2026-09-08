@@ -1,6 +1,11 @@
 import { createBrowserRouter } from 'react-router-dom';
 import { Layout } from './Layout';
-import { ROTAS } from './navegacao';
+import { ROTAS, ROTAS_PUBLICAS } from './navegacao';
+import { ExigeSessao } from './sessao';
+import { EntrarPage } from '../pages/entrada/EntrarPage';
+import { EsqueciSenhaPage } from '../pages/entrada/EsqueciSenhaPage';
+import { RedefinirSenhaPage } from '../pages/entrada/RedefinirSenhaPage';
+import { ConvitePage } from '../pages/entrada/ConvitePage';
 import { PainelPage } from '../pages/painel/PainelPage';
 import { RegistrarLancamentoPage } from '../pages/lancamento/RegistrarLancamentoPage';
 import { MeusRegistrosPage } from '../pages/registros/MeusRegistrosPage';
@@ -16,9 +21,17 @@ import { AyahuascaPage } from '../pages/ayahuasca/AyahuascaPage';
 import { MeuPerfilPage } from '../pages/perfil/MeuPerfilPage';
 
 export const router = createBrowserRouter([
+  { path: ROTAS_PUBLICAS.entrar, element: <EntrarPage /> },
+  { path: ROTAS_PUBLICAS.esqueci, element: <EsqueciSenhaPage /> },
+  { path: ROTAS_PUBLICAS.redefinir, element: <RedefinirSenhaPage /> },
+  { path: ROTAS_PUBLICAS.convite, element: <ConvitePage /> },
   {
     path: '/',
-    element: <Layout />,
+    element: (
+      <ExigeSessao>
+        <Layout />
+      </ExigeSessao>
+    ),
     children: [
       { path: ROTAS.painel, element: <PainelPage /> },
       { path: ROTAS.registrar, element: <RegistrarLancamentoPage /> },

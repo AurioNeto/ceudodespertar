@@ -1,11 +1,20 @@
 import { useId } from 'react';
 import type { CSSProperties, InputHTMLAttributes, ReactNode, TextareaHTMLAttributes } from 'react';
 import type { Density } from './Button';
+import { Icon, type IconName } from './Icon';
 
 type NativeProps = Omit<
   InputHTMLAttributes<HTMLInputElement> & TextareaHTMLAttributes<HTMLTextAreaElement>,
   'style'
 >;
+
+/** Botão dentro do campo — mostrar/ocultar senha, limpar busca. */
+export interface FieldAction {
+  icon: IconName;
+  /** Vai para o `aria-label` e para o `title`; o botão não tem texto. */
+  label: string;
+  onClick: () => void;
+}
 
 export interface TextFieldProps extends NativeProps {
   label?: string;
@@ -14,6 +23,7 @@ export interface TextFieldProps extends NativeProps {
   density?: Density;
   multiline?: boolean;
   suffix?: ReactNode;
+  action?: FieldAction;
   style?: CSSProperties;
 }
 
@@ -24,6 +34,7 @@ export function TextField({
   density = 'office',
   multiline = false,
   suffix,
+  action,
   id,
   readOnly,
   style,
@@ -45,7 +56,7 @@ export function TextField({
     color: 'var(--text-primary)',
     outline: 'none',
     boxShadow: error ? '0 0 0 3px var(--color-attention-soft)' : 'none',
-    paddingRight: suffix ? 64 : undefined,
+    paddingRight: suffix ? 64 : action ? (field ? 52 : 46) : undefined,
     resize: 'vertical',
   };
 
@@ -84,6 +95,28 @@ export function TextField({
           >
             {suffix}
           </span>
+        ) : null}
+
+        {action ? (
+          <button
+            type="button"
+            onClick={action.onClick}
+            aria-label={action.label}
+            title={action.label}
+            style={{
+              position: 'absolute',
+              right: 5,
+              display: 'grid',
+              placeItems: 'center',
+              width: field ? 42 : 36,
+              height: field ? 42 : 36,
+              borderRadius: 'var(--radius-sm)',
+              color: 'var(--text-meta)',
+              cursor: 'pointer',
+            }}
+          >
+            <Icon name={action.icon} size={field ? 20 : 18} />
+          </button>
         ) : null}
       </div>
 

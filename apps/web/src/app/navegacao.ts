@@ -28,6 +28,17 @@ export const ROTAS = {
 
 export type RotaId = keyof typeof ROTAS;
 
+/**
+ * As telas de entrada ficam fora de `ROTAS` de propósito: elas não têm item de
+ * menu, não entram no cálculo de rota ativa e não moram dentro do AppShell.
+ */
+export const ROTAS_PUBLICAS = {
+  entrar: '/entrar',
+  esqueci: '/esqueci-a-senha',
+  redefinir: '/redefinir-senha',
+  convite: '/convite',
+} as const;
+
 export const construirNav = (lotePendente: number): readonly NavEntry[] => [
   { id: 'painel', label: 'Painel', icon: 'layout-dashboard' },
   { id: 'registrar', label: 'Registrar lançamento', icon: 'circle-plus' },

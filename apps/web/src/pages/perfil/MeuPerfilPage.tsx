@@ -3,6 +3,7 @@ import { Button, Icon, ScreenHeader, StatusBadge, TextField, type IconName } fro
 import { Interruptor, SeletorDeTipo } from '../../components/Campo';
 import { useDensidade } from '../../lib/useDensidade';
 import { iniciais } from '../../lib/formato';
+import { useSessao } from '../../app/sessao';
 
 type Aba = 'dados' | 'acesso' | 'avisos' | 'anamnese';
 
@@ -39,6 +40,7 @@ const rotuloLabel = {
 export function MeuPerfilPage() {
   const densidade = useDensidade();
   const campo = densidade === 'field';
+  const { encerrar } = useSessao();
 
   const [aba, setAba] = useState<Aba>('dados');
   const [dados, setDados] = useState<Dados>({ ...ORIGINAL });
@@ -297,6 +299,20 @@ export function MeuPerfilPage() {
                   )}
                 </div>
               ))}
+            </Cartao>
+
+            <Cartao>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+                <span style={{ flex: 1, minWidth: 200, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <span style={{ font: 'var(--text-body-strong)', color: 'var(--text-primary)' }}>Sair da conta</span>
+                  <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>
+                    encerra a sessão apenas neste aparelho
+                  </span>
+                </span>
+                <Button variant="quiet" iconName="log-in" onClick={encerrar}>
+                  Sair
+                </Button>
+              </div>
             </Cartao>
           </>
         ) : null}

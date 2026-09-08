@@ -28,4 +28,5 @@ export { StatusBadge } from './StatusBadge';
 export type { BadgeTone } from './StatusBadge';
 export { SuggestionChip } from './SuggestionChip';
 export { TextField } from './TextField';
+export type { FieldAction } from './TextField';
 export { TwoAxisGuard } from './TwoAxisGuard';
