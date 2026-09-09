@@ -10,6 +10,9 @@
 @import './tokens/spacing.css';
 @import './tokens/base.css';
 
+/* Acréscimo da aplicação, fora da cópia fiel dos tokens exportados. */
+@import './marca.css';
+
 @import 'tailwindcss';
 
 @theme {

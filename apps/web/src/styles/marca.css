@@ -1,0 +1,39 @@
+/* =====================================================================
+   Céu do Despertar — ESTAMPA DA MARCA
+
+   A flor da vida ladrilhada no papel das telas internas.
+
+   Não é o `FlowerOfLife` do login repetido: aquele são sete círculos soltos
+   num quadro, e repetir aquilo mostraria a emenda. Aqui os centros ficam numa
+   malha triangular de passo r — cada círculo passa pelo centro dos seis
+   vizinhos, que é o que faz a figura ser a flor da vida — e o menor retângulo
+   que se repete é r × r√3. Com r = 96px, o ladrilho é 96 × 166,277px, e os
+   nove círculos do arquivo cobrem tudo que cruza a borda, então o desenho
+   fecha nos quatro lados.
+
+   Dois botões para regular, se um dia precisar:
+   · o traço, em `stroke-opacity` dentro da URI (hoje 0,33 sobre o dourado
+     #E3D9C5, que é o `--color-line-gold`);
+   · o tamanho da flor, em `--estampa-flor-tamanho` (o traço acompanha).
+
+   A estampa vive só atrás do conteúdo. Rail, cabeçalho, cartões e gavetas
+   continuam lisos — é o contraste com eles que faz o papel parecer papel.
+   ===================================================================== */
+
+:root {
+  --estampa-flor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='166.277' viewBox='0 0 96 166.277'%3E%3Cg fill='none' stroke='%23E3D9C5' stroke-width='1' stroke-opacity='0.33'%3E%3Ccircle cx='48' cy='-83.138' r='96'/%3E%3Ccircle cx='0' cy='0' r='96'/%3E%3Ccircle cx='96' cy='0' r='96'/%3E%3Ccircle cx='-48' cy='83.138' r='96'/%3E%3Ccircle cx='48' cy='83.138' r='96'/%3E%3Ccircle cx='144' cy='83.138' r='96'/%3E%3Ccircle cx='0' cy='166.277' r='96'/%3E%3Ccircle cx='96' cy='166.277' r='96'/%3E%3Ccircle cx='48' cy='249.415' r='96'/%3E%3C/g%3E%3C/svg%3E");
+  --estampa-flor-tamanho: 96px 166.277px;
+}
+
+.cdd-papel-estampado {
+  background-image: var(--estampa-flor);
+  background-repeat: repeat;
+  background-size: var(--estampa-flor-tamanho);
+}
+
+/* Papel impresso não leva estampa: gasta tinta e suja a leitura. */
+@media print {
+  .cdd-papel-estampado {
+    background-image: none;
+  }
+}

@@ -211,7 +211,14 @@ export function AppShell({
           </span>
         </header>
 
-        <main style={{ flex: 1, minWidth: 0, minHeight: 0, overflow: 'auto' }}>{children}</main>
+        {/*
+          A estampa fica no papel do conteúdo, e só nele: a barra de rolagem é
+          desta caixa, então o desenho se mantém parado enquanto o conteúdo
+          corre por cima — textura de papel, não plano de fundo em movimento.
+        */}
+        <main className="cdd-papel-estampado" style={{ flex: 1, minWidth: 0, minHeight: 0, overflow: 'auto' }}>
+          {children}
+        </main>
 
         {field && links.length ? (
           <nav style={{ display: 'flex', background: 'var(--bg-card)', borderTop: '1px solid var(--color-line)' }}>

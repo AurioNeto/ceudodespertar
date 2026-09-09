@@ -39,7 +39,11 @@ export function DomainError({ rule, explanation, way, style }: DomainErrorProps)
   );
 }
 
-/** A flor da vida aparece em três lugares e só: login, estado vazio e marca d'água. */
+/**
+ * A flor da vida como figura única — login, estado vazio e marca d'água.
+ * Ladrilhada, no papel das telas internas, ela é outra coisa: uma malha que
+ * fecha nas bordas, e mora em `styles/marca.css`.
+ */
 export function FlowerOfLife() {
   const centros: readonly [number, number][] = [
     [100, 100],
