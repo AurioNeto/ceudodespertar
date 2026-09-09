@@ -43,7 +43,60 @@ O Doc 4 cataloga **68 telas**. O protótipo tem 13 telas internas, que cobrem **
 
 **Ausências que importam para o backend**, porque são fluxos inteiros e não detalhes de tela: adiantamento e ressarcimento (`F-11`–`F-13`), faturas de cartão (`F-09`), empréstimos (`F-10`), importação e conciliação (`F-25`, `F-26`), prestação de contas (`F-24`), plano de contas e unidades (`F-15`, `F-16`), devoluções (`E-08`, `E-09`), leitos e refeições (`E-10`, `E-11`), contratação da Munay (`E-13`), feitio e consumo real (`S-04`, `S-05`), auditoria (`A-04`).
 
-### 1.3 O que o protótipo provou
+### 1.3 Remapeamento sob a diretriz de tela única
+
+**Diretriz (setembro/2026):** não se constrói uma tela por grupo de acesso. A tela é uma só, e a
+autorização é **por bloco, resolvida no backend** — quem não tem a permissão não recebe o bloco.
+
+Isso muda a conta. Boa parte dos 68 itens do Doc 4 existia porque o mesmo objeto precisava de duas
+telas para dois grupos; sob a nova diretriz esses itens **colapsam em blocos** da mesma tela. Outros
+sempre foram gaveta, modal ou estado, e nunca precisaram de rota própria.
+
+Percorrendo os 68 itens um a um:
+
+| Destino | Qtde | O que é |
+|---|:--:|---|
+| ✅ Telas construídas | 13 | cobrem 31 itens |
+| 🆕 **Telas a construir** | **13** | cobrem 16 itens |
+| Modais e folhas | 7 | atos curtos dentro de uma tela existente |
+| Blocos em telas existentes | 10 | inclusive os que a autorização por bloco passa a governar |
+| Comportamento do shell | 2 | unidade ativa (`T-03`) e estado sem-permissão (`T-05`) |
+
+**O inventário fecha em 26 telas** — 13 de pé, 13 a fazer — para os mesmos 68 itens.
+
+#### As 13 telas que faltam
+
+| # | Tela | Cobre | Módulo |
+|:--:|---|---|---|
+| 1 | Faturas de cartão | `F-09` | Financeiro |
+| 2 | Empréstimos | `F-10` | Financeiro |
+| 3 | Adiantamentos e reembolsos | `F-11` `F-12` `F-13` | Financeiro |
+| 4 | Prestação de contas | `F-24` | Financeiro |
+| 5 | Conciliação e importação de extrato | `F-25` `F-26` | Financeiro |
+| 6 | Parâmetros — categorias, unidades, instituição | `F-15` `F-16` `A-03` | Financeiro · Sistema |
+| 7 | Auditoria | `A-04` | Sistema |
+| 8 | Anamnese presencial | `P-06` | Pessoas |
+| 9 | Inscrição | `E-06` | Eventos |
+| 10 | Devoluções a pagar | `E-09` | Eventos |
+| 11 | Leitos — mapa e cadastro | `E-10` `E-15` | Eventos |
+| 12 | Contratações da Munay | `E-13` | Eventos |
+| 13 | Feitio | `S-04` | Estoque |
+
+#### Modais e folhas
+
+`E-07` marcar pagamento · `E-08` cancelar inscrição e solicitar devolução · `E-12` acolhimento de
+primeira vez · `S-05` registrar consumo real · `P-08` autorização de responsável · `P-09`
+consentimento · `P-10` anonimização.
+
+#### Blocos a acrescentar em telas que já existem
+
+Fila de trabalho no Painel · pendências em Meus registros e Verificação de lote · leitura e parecer de
+anamnese na ficha da pessoa (`P-05`) · resultado financeiro do evento com bloco governado por
+permissão (`E-04`) · demanda de refeições (`E-11`) · estimativa × saldo (`S-06`) · estimado ×
+realizado (`S-07`) · custo por litro (`S-08`) · resultado por fornecedor (`F-20`) · faturamento ×
+teto (`F-21`).
+
+### 1.4 O que o protótipo provou
 
 Dos cinco percursos críticos do Doc 4 §11, o protótipo percorre **um e meio**: o registro do gasto até o relatório existe sem a conferência com pendência e sem a conciliação; a agenda chega ao painel do evento mas para antes da inscrição. Os percursos 3, 4 e 5 (devolução, adiantamento, consumo real) **não existem em tela alguma** — e são exatamente os três que provam as fronteiras de permissão.
 
@@ -57,11 +110,24 @@ O Doc 1 §8.1 previu design → front → back, e prometeu que a interface exigi
 
 Elas estão em §2.3, e a maioria precisa de decisão **antes** da etapa B1.
 
-### 2.2 A tela única com campos ocultos — a que não deveria existir
+### 2.2 Tela única com autorização por bloco
 
-O Doc 4 §10 lista, entre as telas que deliberadamente não existem: *"tela única de evento com campos ocultos por perfil — é como vazamento de permissão nasce"*. O Doc 1 §8.1 é ainda mais direto: *"não existe 'a tela de evento' — existe a tela de evento como o Acolhimento a vê e como a Tesouraria a vê"*.
+O Doc 4 §10 listava, entre as telas que deliberadamente não existem, a *"tela única de evento com campos ocultos por perfil"*, e o Doc 1 §8.1 mandava desenhar uma tela por grupo de acesso.
 
-**O protótipo construiu exatamente a tela proibida**, em três lugares:
+**Essa diretriz foi revista em setembro/2026**, com três razões declaradas: quem hoje opera apenas eventos é um grupo pequeno e de confiança conhecida; duplicar telas por grupo custa mais que resolver a permissão por bloco; e a filtragem no backend esconde a informação por completo, não parcialmente.
+
+A revisão é compatível com o Doc 3 §10.2 — *"read model que o usuário não pode ver não é consultado"* — **desde que a composição seja por bloco**:
+
+| O que vale | O que não vale |
+|---|---|
+| A tela pede N blocos; o backend devolve só os que a permissão autoriza | A tela pede tudo e esconde o que não pode mostrar |
+| O bloco negado **não existe na resposta** | O bloco vem no DTO com uma marca `visivel: false` |
+| O front desenha o que chegou | O front tem layout fixo e aplica `display:none` |
+| Cada bloco é um read model com sua permissão | Um read model gordo servindo todos os grupos |
+
+A diferença não é de estilo. Na primeira coluna, um endpoint de exportação esquecido não vaza nada, porque o dado nunca foi buscado. Na segunda, vaza — e é exatamente a classe de bug que o Doc 3 §10.2 existe para impedir.
+
+**As três telas que hoje misturam fronteiras** deixam de ser erro e passam a ser o caso de teste da nova diretriz: são elas que provam se a autorização por bloco foi implementada como omissão ou como ocultação.
 
 | Tela do protótipo | Mistura | Consequência |
 |---|---|---|
@@ -69,7 +135,9 @@ O Doc 4 §10 lista, entre as telas que deliberadamente não existem: *"tela úni
 | **Painel** | Saldo consolidado, movimento do mês, resultado por cerimônia, fila de lote | Só `TESOURARIA`/`GOVERNANCA`/`ADMIN` podem abrir. Não há painel para `ACOLHIMENTO`, `REGISTRO` nem `LEITURA`. |
 | **Pessoas → ficha** | Cadastro (`pessoa.ler`) **e** pontos de atenção da anamnese (`anamnese.ler`) | Ver §2.3, divergência 8 — é vazamento de dado de saúde. |
 
-Isso não invalida o protótipo: ele foi desenhado para uma pessoa só, a Tesouraria, que é quem o validou. Mas significa que **o backend não pode ser construído para essas telas como estão** — ele serviria read models que misturam dois lados de uma fronteira que o Doc 2 §5.3 chama de estrutural. A correção é do front (uma tela por grupo, consumindo read models distintos) e deve acontecer junto com B1, não depois.
+Das três, **a ficha de pessoa é a única que continua sendo defeito** mesmo sob a nova diretriz: `pontosDeAtencao` não é um bloco a mais na resposta, é um campo dentro do read model de pessoa. Enquanto for campo, quem tem `pessoa.ler` recebe dado de saúde e a leitura não deixa rastro (RA3). A correção é extrair o bloco de anamnese para um read model próprio, com sua permissão e seu registro de acesso — ver §2.3 #8, acatada.
+
+As outras duas — o detalhe da cerimônia e o Painel — passam a ser o caso de teste da composição por bloco.
 
 ### 2.3 Divergências entre o protótipo e o modelo de domínio
 
@@ -104,6 +172,49 @@ Não são divergências de modelo; são o que falta para o front conseguir falar
 | **`packages/contracts`** | Contém formas de read model derivadas do protótipo. Não tem comandos, nem erros de domínio, nem validação em tempo de execução. | Médio — ver §5. |
 
 > **Dois componentes do design system existem e nenhuma tela os usa:** `PendencyCard` e `RegimeVocabulary`. O primeiro é justamente a `Pendencia` que falta (§2.3 #4); o segundo é o vocabulário que muda com o regime da unidade — *contribuição* × *venda*, *participante* × *cliente* (Doc 1 §4.3), que o Doc 2 trata como regra e o protótipo nunca aplicou. As peças foram desenhadas; ninguém as ligou. É o sinal mais barato de que as duas regras existem no papel e não no produto.
+
+---
+
+### 2.5 Decisões tomadas sobre as quatorze divergências
+
+Respondidas em setembro/2026. Onde a decisão contraria a recomendação, a razão é do domínio e está registrada.
+
+| # | Decisão | Razão |
+|:--:|---|---|
+| 1 | **Manter as categorias por lançamento** | O lançamento composto detalha um pagamento único a uma pessoa: *Aline devia 100, forneceu flores (70) e ervas (50), e o CDD paga a diferença de 20.* É encontro de contas, não valor somado. **Consequência de modelo:** o contrato hoje tem `categoriaIds[]` com um único `valor`, e não representa esse caso — a etiqueta de categoria passa a carregar **valor próprio**, mantendo a tela como está. |
+| 2 | **Manter "Grupo" ao lado de `Unidade`** | Decisão do usuário; a tela permanece como no protótipo. Fica registrado que o Doc 2 §1.1 os trata como o mesmo conceito, e que o relatório por unidade e o relatório por grupo vão conviver. |
+| 3 | Acatada — `Transferencia` é agregado próprio | O seletor de três tipos permanece na tela; a API separa. |
+| 4 | Acatada — implementar `Pendencia` | Com L10 e L11. |
+| 5 | Acatada — estados do evento do Doc 2 | Volta `INSCRICOES_ABERTAS` e `INSCRICOES_ENCERRADAS`. |
+| 6 | **Redefinida pelo domínio** | Ver abaixo. |
+| 7 | Acatada — dois eixos para papel e vínculo | Membro / frequentador / visitante vira campo próprio. |
+| 8 | Acatada — tirar dado de saúde do read model de pessoa | Bloco próprio, permissão própria, registro de acesso. |
+| 9 | Acatada — inscrição com contato de emergência e restrições | IN4, obrigatório sempre. |
+| 10 | Acatada — trocar reserva por estimativa | EC1: projeção não movimenta saldo. |
+| 11 | Acatada — unir as listas de origem | |
+| 12 | Acatada com ajuste — **a lista de preparo exige login** | Tela simplificada com as informações abertas da cerimônia e a to-do. Versão posterior. |
+| 13 | Acatada — fila de trabalho como bloco do Painel | |
+| 14 | **Adiada** — vocabulário por regime | Fica para versão posterior; `RegimeVocabulary` permanece no design system, sem uso. |
+
+#### A contribuição, como ela realmente funciona (decisão 6)
+
+Os padrinhos definem **três níveis sugeridos** para a participação na cerimônia:
+
+| Nível | Natureza |
+|---|---|
+| **Valor social** | o piso sugerido |
+| **Valor sustentável** | o que cobre o custo |
+| **Valor próspero** | quem pode contribuir acima |
+
+Regras que decorrem disso, e que substituem a `TabelaDeContribuicao` do Doc 2:
+
+- Os três valores são **sugestão, nunca cobrança**. Pode ser negociado para menos conforme a condição financeira de quem participa, ou pago acima por vontade própria. `permiteValorLivre` é sempre verdadeiro, nos dois sentidos.
+- Os níveis referem-se **exclusivamente à participação na cerimônia**.
+- **Hospedagem é paga à parte**, por quem usa a acomodação — não entra no valor da contribuição.
+- **Dormir na igreja em colchonete próprio é gratuito e não se registra.** Não é uma opção de hospedagem no sistema; é a ausência dela.
+- **Alimentação só é cobrada em ocasiões especiais** — jornadas de três dias, por exemplo. Não é adicional padrão do evento.
+
+Isso simplifica o agregado em relação ao Doc 2: nada de mapa de adicional por refeição, nada de adicional de hospedagem por dia embutido no cálculo. O evento carrega três valores sugeridos e um valor de hospedagem quando houver; o resto é acordo entre pessoas, registrado como valor efetivo da inscrição.
 
 ---
 
@@ -162,6 +273,16 @@ O catálogo de erros é o que faz o Doc 4 §13 ("erro de domínio em português,
 ## 6. Etapas
 
 Sequência derivada do Doc 1 §9.2, com o tamanho relativo de cada uma. As semanas são para uma pessoa em tempo parcial, que é o cenário real (Doc 1 §5.2), e servem para ordenar, não para prometer.
+
+**A etapa F vem primeiro por decisão de setembro/2026:** completar o inventário de telas antes de começar o servidor. O motivo é o mesmo do método design-first — cada tela que falta é um contrato que ainda não foi escrito, e descobrir isso com o agregado pronto custa mais.
+
+### F — Completar o front · ~5 semanas · **precede B0**
+
+As 13 telas que faltam (§1.3), os 7 modais, os 10 blocos e os dois comportamentos de shell. Junto com elas, três correções que o inventário exige: `Pendencia` em Meus registros e Verificação de lote, valor por etiqueta de categoria em Registrar lançamento, e os três níveis de contribuição no evento.
+
+**Entrega:** o inventário do Doc 4 coberto por 26 telas, com os cinco percursos críticos navegáveis ponta a ponta — inclusive os três que hoje não existem.
+
+> Ainda sobre mocks. O que esta etapa produz não é sistema: é o contrato de API desenhado em forma de tela, que é o que o Doc 1 §8.1 pede como saída da etapa de front.
 
 ### B0 — Fundação · ~3 semanas · **bloqueia tudo**
 
@@ -242,13 +363,13 @@ Parser OFX/CSV, `ImportacaoDeExtrato`, `LinhaExtrato` com idempotência por `FIT
 
 ### 9.1 Bloqueiam B1
 
-| # | Decisão | Quem decide | Referência |
+| # | Decisão | Quem decide | Situação |
 |:--:|---|---|---|
-| 1 | Categoria: uma, várias, ou **itens de lançamento** | Tesouraria | §2.3 #1 |
-| 2 | "Grupo" e `Unidade` são a mesma coisa? Cozinha e Secretaria viram unidades? | Tesouraria | §2.3 #2 |
-| 3 | Regime da Chácara e dos Dormitórios | Coordenação | Doc 1 §10.3 #1 |
-| 4 | A unidade ativa filtra tudo ou só pré-preenche formulários? | Tesouraria | Doc 4 §14.2, Q5 |
-| 5 | Corrigir as telas que misturam fronteiras (§2.2) antes ou depois de B1? | Você | §2.2 |
+| 1 | Categoria por lançamento | Tesouraria | ✅ resolvida — §2.5 #1, com valor por etiqueta |
+| 2 | "Grupo" e `Unidade` | Tesouraria | ✅ resolvida — §2.5 #2, os dois permanecem |
+| 3 | Regime da Chácara e dos Dormitórios | Coordenação | ⏳ aberta — Doc 1 §10.3 #1 |
+| 4 | A unidade ativa filtra tudo ou só pré-preenche formulários? | Tesouraria | ⏳ aberta — Doc 4 §14.2, Q5 |
+| 5 | Telas por grupo de acesso | Você | ✅ resolvida — §2.2, autorização por bloco |
 
 ### 9.2 Bloqueiam etapas posteriores
 
@@ -268,7 +389,7 @@ Parser OFX/CSV, `ImportacaoDeExtrato`, `LinhaExtrato` com idempotência por `FIT
 | Risco | Por que é real aqui | Mitigação |
 |---|---|---|
 | **O front parece pronto e não está** | 14 telas navegáveis com dado inventado passam impressão de sistema pronto; o backend é 80% do trabalho restante | Faixa de "dados de demonstração" por módulo (§7); não demonstrar tela sem backend como se fosse operação |
-| **As telas fundidas travarem a autorização** | Corrigir §2.2 depois de B1 significa refazer read models já construídos | Corrigir junto com B1, não depois |
+| **Autorização por bloco virar campo escondido** | É a forma mais fácil de implementar a nova diretriz, e a que a anula: o dado chega e o front esconde | Contrato por bloco desde o primeiro read model (§2.2); teste que confere a **ausência** da chave na resposta, não a invisibilidade na tela |
 | **A camada de dados virar refactor de 14 telas** | Hoje são 32 importações diretas de constantes síncronas | Introduzir o cliente e o cache em B0, migrando tela a tela com o mock atrás da mesma interface |
 | **`ADMINISTRADOR` para todo mundo** | Seis pessoas que se conhecem; a matriz vira teoria | Não é técnico (Doc 3 §5.4): a matriz escrita, revisada, e o acesso pleno tratado como exceção |
 | **A migração introduzir erro no histórico** | 1.760 linhas com 31 lançamentos já sinalizados como ambíguos | Operação paralela com conciliação por dois meses; histórico somente leitura |
@@ -279,6 +400,6 @@ Parser OFX/CSV, `ImportacaoDeExtrato`, `LinhaExtrato` com idempotência por `FIT
 
 O front-end está mais largo e mais raso do que parece: 13 telas internas cobrem 31 dos 68 itens do inventário, fundindo telas que o Doc 4 mandou separar, e tudo roda sobre constantes síncronas, sem camada de dados. Antes de escrever o primeiro agregado, há **quatorze divergências de modelo** (§2.3) e **cinco decisões** (§9.1) a resolver — a maioria delas de negócio, não de código.
 
-O caminho é o do Doc 1: fundação com acesso e multi-tenancy (B0), Financeiro núcleo até o fechamento bater com a planilha (B1), o resto do Financeiro e a conciliação (B2, B3), e então Pessoas, Eventos e Estoque (B4–B6). Cerca de **27 semanas em tempo parcial**, com o marco de confiança — o fechamento que bate — na nona.
+O caminho começa por completar o front (F) e segue o do Doc 1: fundação com acesso e multi-tenancy (B0), Financeiro núcleo até o fechamento bater com a planilha (B1), o resto do Financeiro e a conciliação (B2, B3), e então Pessoas, Eventos e Estoque (B4–B6). Cerca de **32 semanas em tempo parcial**, com o marco de confiança — o fechamento que bate — na décima quarta.
 
 Duas coisas valem ser feitas fora de ordem: os trinta testes de autorização, escritos em B0 falhando, e a correção das telas que misturam fronteiras, junto de B1. As duas ficam caras exatamente na proporção em que forem adiadas.
