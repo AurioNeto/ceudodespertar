@@ -17,6 +17,7 @@ import { AdiantamentosPage } from '../pages/adiantamentos/AdiantamentosPage';
 import { VerificacaoLotePage } from '../pages/verificacao/VerificacaoLotePage';
 import { RelatoriosPage } from '../pages/relatorios/RelatoriosPage';
 import { FechamentoPage } from '../pages/fechamento/FechamentoPage';
+import { PrestacaoDeContasPage } from '../pages/prestacao/PrestacaoDeContasPage';
 import { AgendaPage } from '../pages/agenda/AgendaPage';
 import { PessoasPage } from '../pages/pessoas/PessoasPage';
 import { AnamnesePage } from '../pages/pessoas/AnamnesePage';
@@ -47,6 +48,7 @@ export const router = createBrowserRouter([
       { path: ROTAS.lote, element: <VerificacaoLotePage /> },
       { path: ROTAS.relatorios, element: <RelatoriosPage /> },
       { path: ROTAS.fechamento, element: <FechamentoPage /> },
+      { path: ROTAS.prestacao, element: <PrestacaoDeContasPage /> },
       { path: ROTAS.agenda, element: <AgendaPage /> },
       { path: ROTAS.pessoas, element: <PessoasPage /> },
       { path: ROTAS.anamnese, element: <AnamnesePage /> },
