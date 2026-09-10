@@ -13,7 +13,9 @@ import type {
   EventoId,
   FaturaId,
   FundoId,
+  ImportacaoId,
   LancamentoId,
+  LinhaExtratoId,
   PessoaId,
   TransferenciaId,
   UnidadeId,
@@ -259,6 +261,67 @@ export interface Adiantamento {
   /** A4: o ressarcimento é transferência de valor igual; A5: não gera lançamento. */
   readonly ressarcidoEm: DataLocal | null;
   readonly contaRessarcimentoNome: string | null;
+}
+
+/* ---------------------------------------------------------------------------
+   Importação e conciliação — Doc 2 §1.11.
+
+   É o que o Doc 1 §5.3 chama de estratégia principal de captura, e o Doc 4 de
+   "o que consolida a confiança": o extrato é a **verdade bancária**, e o
+   registro humano é a **intenção**. Cruzar os dois faz aparecer o que hoje é
+   invisível — o dinheiro que saiu e ninguém registrou.
+   --------------------------------------------------------------------------- */
+
+export type StatusLinhaExtrato = 'NAO_CONCILIADA' | 'CONCILIADA' | 'IGNORADA';
+
+export interface LinhaExtrato {
+  readonly id: LinhaExtratoId;
+  /** FITID do OFX — chave de idempotência: reimportar não duplica (I1). */
+  readonly identificadorExterno: string;
+  readonly data: DataLocal;
+  readonly valor: Dinheiro;
+  readonly sinal: 'CREDITO' | 'DEBITO';
+  readonly descricaoBanco: string;
+  readonly status: StatusLinhaExtrato;
+  /** I2: no máximo um dos dois, nunca os dois. */
+  readonly lancamentoId: LancamentoId | null;
+  readonly transferenciaId: TransferenciaId | null;
+  readonly motivoIgnorada: string | null;
+}
+
+/** O lançamento como a conciliação o enxerga. */
+export interface LancamentoAConciliar {
+  readonly id: LancamentoId;
+  readonly data: DataLocal;
+  readonly motivo: string;
+  readonly valor: Dinheiro;
+  readonly natureza: Natureza;
+  readonly conta: string;
+  readonly registradoPorNome: string;
+}
+
+export type ForcaDaSugestao = 'ALTA' | 'MEDIA';
+
+/** O motor propõe; o humano confirma — sempre (Doc 2 §1.11). */
+export interface SugestaoDeCasamento {
+  readonly linha: LinhaExtrato;
+  readonly lancamento: LancamentoAConciliar;
+  readonly forca: ForcaDaSugestao;
+  /** Por que casou: mesmo valor, proximidade de data, mesma conta. */
+  readonly porque: string;
+}
+
+export interface ImportacaoDeExtrato {
+  readonly id: ImportacaoId;
+  readonly contaId: ContaId;
+  readonly contaNome: string;
+  readonly arquivo: string;
+  readonly periodo: { readonly de: DataLocal; readonly ate: DataLocal };
+  readonly importadoPorNome: string;
+  readonly importadoEm: DataHora;
+  readonly linhasLidas: number;
+  /** Quantas já existiam por FITID e foram descartadas na entrada (I1). */
+  readonly linhasJaConhecidas: number;
 }
 
 export interface PeriodoContabil {
