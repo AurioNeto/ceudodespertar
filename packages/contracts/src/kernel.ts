@@ -31,6 +31,8 @@ export type LoteId = Brand<string, 'LoteId'>;
 export type MovimentoId = Brand<string, 'MovimentoId'>;
 export type AnexoId = Brand<string, 'AnexoId'>;
 export type TarefaId = Brand<string, 'TarefaId'>;
+export type RegistroAuditoriaId = Brand<string, 'RegistroAuditoriaId'>;
+export type RegistroAcessoId = Brand<string, 'RegistroAcessoId'>;
 
 /** Dinheiro em centavos. Nunca float — Doc 1 §4.7. */
 export type Dinheiro = Brand<number, 'Dinheiro'>;

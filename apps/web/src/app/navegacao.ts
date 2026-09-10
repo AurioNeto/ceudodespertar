@@ -29,6 +29,7 @@ export const ROTAS = {
   ayahuasca: '/ayahuasca',
   pessoas: '/pessoas',
   anamnese: '/anamnese',
+  auditoria: '/auditoria',
   perfil: '/meu-perfil',
 } as const;
 
@@ -67,6 +68,8 @@ export const construirNav = (lotePendente: number): readonly NavEntry[] => [
   { section: 'Pessoas' },
   { id: 'pessoas', label: 'Pessoas', icon: 'users' },
   { id: 'anamnese', label: 'Anamnese', icon: 'clipboard-list' },
+  { section: 'Sistema' },
+  { id: 'auditoria', label: 'Auditoria', icon: 'scroll-text' },
 ];
 
 const POR_CAMINHO = new Map<string, RotaId>(
