@@ -8,6 +8,7 @@ import type {
   DataLocal,
   Dinheiro,
   EventoId,
+  FaturaId,
   FundoId,
   LancamentoId,
   PessoaId,
@@ -140,6 +141,44 @@ export interface ItemDeVerificacao {
   readonly proposta: Lancamento;
   readonly camposIncertos: readonly string[];
   readonly comprovante: Anexo | null;
+}
+
+/* ---------------------------------------------------------------------------
+   Fatura de cartão — Doc 2 §1.6.
+
+   Existe para resolver a dupla contagem: a compra no cartão é despesa, e o
+   pagamento da fatura é **transferência**, não uma segunda despesa (F4). Sem o
+   agregado, os dois entram como saída e o mês fecha com o dobro do que saiu —
+   foram cerca de R$ 3,5 mil identificados assim na migração (Doc 1 §7.2).
+   --------------------------------------------------------------------------- */
+
+export type StatusFatura = 'ABERTA' | 'FECHADA' | 'PAGA';
+
+/** A compra como a fatura a enxerga — o lançamento em si vive no livro geral. */
+export interface CompraNaFatura {
+  readonly id: LancamentoId;
+  readonly data: DataLocal;
+  readonly motivo: string;
+  readonly categoria: string;
+  readonly grupo: string | null;
+  readonly valor: Dinheiro;
+  readonly status: StatusLancamento;
+  readonly registradoPorNome: string;
+}
+
+export interface Fatura {
+  readonly id: FaturaId;
+  /** Sempre uma conta de tipo `CARTAO_CREDITO` — invariante F1. */
+  readonly contaId: ContaId;
+  readonly competencia: Competencia;
+  readonly dataFechamento: DataLocal;
+  readonly dataVencimento: DataLocal;
+  readonly status: StatusFatura;
+  readonly compras: readonly CompraNaFatura[];
+  /** Preenchidos no pagamento; a transferência é que quita (F3). */
+  readonly pagaEm: DataLocal | null;
+  readonly transferenciaPagamentoId: TransferenciaId | null;
+  readonly contaPagamentoId: ContaId | null;
 }
 
 export interface PeriodoContabil {

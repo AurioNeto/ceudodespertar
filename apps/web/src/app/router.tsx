@@ -11,6 +11,7 @@ import { RegistrarLancamentoPage } from '../pages/lancamento/RegistrarLancamento
 import { MeusRegistrosPage } from '../pages/registros/MeusRegistrosPage';
 import { LancamentosPage } from '../pages/registros/LancamentosPage';
 import { ContasEFundoPage } from '../pages/contas/ContasEFundoPage';
+import { FaturasPage } from '../pages/faturas/FaturasPage';
 import { VerificacaoLotePage } from '../pages/verificacao/VerificacaoLotePage';
 import { RelatoriosPage } from '../pages/relatorios/RelatoriosPage';
 import { FechamentoPage } from '../pages/fechamento/FechamentoPage';
@@ -38,6 +39,7 @@ export const router = createBrowserRouter([
       { path: ROTAS.meus, element: <MeusRegistrosPage /> },
       { path: ROTAS.lancamentos, element: <LancamentosPage /> },
       { path: ROTAS.contas, element: <ContasEFundoPage /> },
+      { path: ROTAS.faturas, element: <FaturasPage /> },
       { path: ROTAS.lote, element: <VerificacaoLotePage /> },
       { path: ROTAS.relatorios, element: <RelatoriosPage /> },
       { path: ROTAS.fechamento, element: <FechamentoPage /> },

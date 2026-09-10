@@ -11,6 +11,7 @@ export type UnidadeId = Brand<string, 'UnidadeId'>;
 export type CategoriaId = Brand<string, 'CategoriaId'>;
 export type ContaId = Brand<string, 'ContaId'>;
 export type FundoId = Brand<string, 'FundoId'>;
+export type FaturaId = Brand<string, 'FaturaId'>;
 export type LancamentoId = Brand<string, 'LancamentoId'>;
 export type TransferenciaId = Brand<string, 'TransferenciaId'>;
 export type EventoId = Brand<string, 'EventoId'>;
