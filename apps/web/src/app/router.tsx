@@ -13,6 +13,7 @@ import { LancamentosPage } from '../pages/registros/LancamentosPage';
 import { ContasEFundoPage } from '../pages/contas/ContasEFundoPage';
 import { FaturasPage } from '../pages/faturas/FaturasPage';
 import { EmprestimosPage } from '../pages/emprestimos/EmprestimosPage';
+import { AdiantamentosPage } from '../pages/adiantamentos/AdiantamentosPage';
 import { VerificacaoLotePage } from '../pages/verificacao/VerificacaoLotePage';
 import { RelatoriosPage } from '../pages/relatorios/RelatoriosPage';
 import { FechamentoPage } from '../pages/fechamento/FechamentoPage';
@@ -42,6 +43,7 @@ export const router = createBrowserRouter([
       { path: ROTAS.contas, element: <ContasEFundoPage /> },
       { path: ROTAS.faturas, element: <FaturasPage /> },
       { path: ROTAS.emprestimos, element: <EmprestimosPage /> },
+      { path: ROTAS.adiantamentos, element: <AdiantamentosPage /> },
       { path: ROTAS.lote, element: <VerificacaoLotePage /> },
       { path: ROTAS.relatorios, element: <RelatoriosPage /> },
       { path: ROTAS.fechamento, element: <FechamentoPage /> },

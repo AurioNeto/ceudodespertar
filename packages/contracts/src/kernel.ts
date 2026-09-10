@@ -13,6 +13,7 @@ export type ContaId = Brand<string, 'ContaId'>;
 export type FundoId = Brand<string, 'FundoId'>;
 export type FaturaId = Brand<string, 'FaturaId'>;
 export type EmprestimoId = Brand<string, 'EmprestimoId'>;
+export type AdiantamentoId = Brand<string, 'AdiantamentoId'>;
 export type DevolucaoEmprestimoId = Brand<string, 'DevolucaoEmprestimoId'>;
 export type LancamentoId = Brand<string, 'LancamentoId'>;
 export type TransferenciaId = Brand<string, 'TransferenciaId'>;

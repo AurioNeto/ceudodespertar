@@ -1,5 +1,6 @@
 /** Contexto Financeiro — Doc 2 §1. */
 import type {
+  AdiantamentoId,
   Anexo,
   Competencia,
   ContaId,
@@ -220,6 +221,44 @@ export interface Emprestimo {
   readonly motivo: string;
   readonly devolucoes: readonly DevolucaoDeEmprestimo[];
   readonly observacao: string | null;
+}
+
+/* ---------------------------------------------------------------------------
+   Adiantamento — Doc 2 §1.8.
+
+   Formaliza a prática informal de pessoas físicas custearem despesa da casa
+   com recurso próprio. A invariante que governa tudo é A1: **quem autoriza
+   precisa de vínculo ativo de padrinho ou madrinha na data da despesa.** Não é
+   permissão de grupo — é verificação no agregado (Doc 3 §8.1). Um
+   administrador sem esse vínculo tem a permissão, abre a tela, e a operação
+   falha no domínio.
+   --------------------------------------------------------------------------- */
+
+export type StatusAdiantamento = 'AGUARDANDO_AUTORIZACAO' | 'AUTORIZADO' | 'RECUSADO' | 'RESSARCIDO';
+
+export interface Adiantamento {
+  readonly id: AdiantamentoId;
+  /** Quem tirou do próprio bolso. */
+  readonly pessoaId: PessoaId;
+  readonly pessoaNome: string;
+  /** A2: sempre uma conta de titularidade `PESSOAL_DE_TERCEIRO`, e A3: dela. */
+  readonly contaOrigemId: ContaId;
+  readonly contaOrigemNome: string;
+  readonly valor: Dinheiro;
+  readonly dataDespesa: DataLocal;
+  readonly motivo: string;
+  readonly categoria: string;
+  readonly grupo: string | null;
+  /** A despesa em si já foi lançada; o adiantamento só a acompanha. */
+  readonly lancamentoId: LancamentoId;
+  readonly comprovante: Anexo | null;
+  readonly status: StatusAdiantamento;
+  readonly autorizadoPorNome: string | null;
+  readonly autorizadoEm: DataLocal | null;
+  readonly recusaMotivo: string | null;
+  /** A4: o ressarcimento é transferência de valor igual; A5: não gera lançamento. */
+  readonly ressarcidoEm: DataLocal | null;
+  readonly contaRessarcimentoNome: string | null;
 }
 
 export interface PeriodoContabil {
