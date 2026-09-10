@@ -6,7 +6,9 @@ import type {
   CategoriaId,
   DataHora,
   DataLocal,
+  DevolucaoEmprestimoId,
   Dinheiro,
+  EmprestimoId,
   EventoId,
   FaturaId,
   FundoId,
@@ -179,6 +181,45 @@ export interface Fatura {
   readonly pagaEm: DataLocal | null;
   readonly transferenciaPagamentoId: TransferenciaId | null;
   readonly contaPagamentoId: ContaId | null;
+}
+
+/* ---------------------------------------------------------------------------
+   Empréstimo — Doc 2 §1.7.
+
+   Cobre os dois casos reais: o de R$ 4.800 concedido e devolvido, e o de
+   R$ 6.000 com devolução parcial de R$ 562,40. Existe em ambas as direções
+   (Anexo A, regra 18).
+
+   E1 é a razão de o agregado existir: empréstimo **não é receita nem despesa**,
+   é movimentação patrimonial. Conceder e devolver são transferências; se
+   entrarem como lançamento, o resultado do mês mente nas duas pontas.
+   --------------------------------------------------------------------------- */
+
+export type DirecaoEmprestimo = 'CONCEDIDO' | 'RECEBIDO';
+
+/** Entidade interna do agregado — toda devolução tem transferência (E3). */
+export interface DevolucaoDeEmprestimo {
+  readonly id: DevolucaoEmprestimoId;
+  readonly valor: Dinheiro;
+  readonly data: DataLocal;
+  readonly contaId: ContaId;
+  readonly contaNome: string;
+  readonly registradoPorNome: string;
+}
+
+export interface Emprestimo {
+  readonly id: EmprestimoId;
+  readonly direcao: DirecaoEmprestimo;
+  readonly contraparteId: PessoaId;
+  readonly contraparteNome: string;
+  readonly valorPrincipal: Dinheiro;
+  readonly dataConcessao: DataLocal;
+  /** Conta de onde saiu, no concedido; onde entrou, no recebido. */
+  readonly contaId: ContaId;
+  readonly contaNome: string;
+  readonly motivo: string;
+  readonly devolucoes: readonly DevolucaoDeEmprestimo[];
+  readonly observacao: string | null;
 }
 
 export interface PeriodoContabil {

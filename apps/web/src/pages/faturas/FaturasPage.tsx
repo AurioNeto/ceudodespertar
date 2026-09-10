@@ -1,9 +1,9 @@
 import { useMemo, useState } from 'react';
-import type { ReactNode } from 'react';
 import type { Conta, ContaId, Fatura, StatusFatura } from '@cdd/contracts';
 import { dataLocal } from '@cdd/contracts';
 import { Button, DomainError, EmptyState, Icon, ScreenHeader, StatusBadge, TextField, type BadgeTone } from '../../ds';
 import { Select } from '../../components/Campo';
+import { Cartao, Numero, Recado, Rotulo, Td, Th } from '../../components/Blocos';
 import { useDensidade } from '../../lib/useDensidade';
 import { competenciaPorExtenso, formatarData, formatarDinheiro, pluralizar } from '../../lib/formato';
 import { cartoes, contasPagadoras, faturas as faturasIniciais, totalDaFatura } from '../../mocks/faturas';
@@ -99,30 +99,7 @@ export function FaturasPage() {
           ))}
         </div>
 
-        {recado ? (
-          <div
-            style={{
-              background: 'var(--color-confirmed-soft)',
-              border: '1px solid var(--color-confirmed-border)',
-              borderRadius: 'var(--radius)',
-              padding: '12px 15px',
-              display: 'flex',
-              gap: 10,
-              alignItems: 'flex-start',
-            }}
-          >
-            <Icon name="circle-check" size={17} color="var(--color-confirmed)" style={{ marginTop: 1 }} />
-            <span style={{ flex: 1, font: 'var(--text-small)', color: 'var(--text-primary)' }}>{recado}</span>
-            <button
-              type="button"
-              onClick={() => setRecado(null)}
-              aria-label="fechar recado"
-              style={{ color: 'var(--text-meta)', cursor: 'pointer', lineHeight: 1 }}
-            >
-              ×
-            </button>
-          </div>
-        ) : null}
+        {recado ? <Recado texto={recado} onFechar={() => setRecado(null)} /> : null}
 
         <div
           style={{
@@ -133,16 +110,7 @@ export function FaturasPage() {
           }}
         >
           <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
-            <span
-              style={{
-                font: 'var(--text-label)',
-                letterSpacing: 'var(--tracking-label)',
-                textTransform: 'uppercase',
-                color: 'var(--text-field-label)',
-              }}
-            >
-              Faturas de {cartao.nome}
-            </span>
+            <Rotulo>Faturas de {cartao.nome}</Rotulo>
             {doCartao.map((f) => (
               <LinhaDaFatura
                 key={f.id}
@@ -303,17 +271,7 @@ function DetalheDaFatura({
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14, minWidth: 0 }}>
-      <div
-        style={{
-          background: 'var(--bg-card)',
-          border: 'var(--border-hairline)',
-          borderRadius: 'var(--radius)',
-          padding: campo ? '15px 16px' : '18px 20px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 14,
-        }}
-      >
+      <Cartao campo={campo}>
         <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', gap: '6px 14px' }}>
           <span style={{ font: 'var(--text-title-sm)', color: 'var(--text-title)' }}>
             {cartao.nome} · {competenciaPorExtenso(fatura.competencia)}
@@ -348,7 +306,7 @@ function DetalheDaFatura({
             <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>{cartao.alerta}</span>
           </div>
         ) : null}
-      </div>
+      </Cartao>
 
       <DomainError
         rule="Pagar a fatura não é uma despesa nova"
@@ -357,16 +315,7 @@ function DetalheDaFatura({
       />
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8, minWidth: 0 }}>
-        <span
-          style={{
-            font: 'var(--text-label)',
-            letterSpacing: 'var(--tracking-label)',
-            textTransform: 'uppercase',
-            color: 'var(--text-field-label)',
-          }}
-        >
-          Compras desta fatura
-        </span>
+        <Rotulo>Compras desta fatura</Rotulo>
         <TabelaDeCompras fatura={fatura} campo={campo} total={total} />
       </div>
 
@@ -576,51 +525,3 @@ function FormularioDePagamento({
     </div>
   );
 }
-
-function Numero({ rotulo, valor, destaque = false }: { rotulo: string; valor: string; destaque?: boolean }) {
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 4, minWidth: 0 }}>
-      <span
-        style={{
-          font: 'var(--text-label)',
-          letterSpacing: 'var(--tracking-label)',
-          textTransform: 'uppercase',
-          color: 'var(--text-field-label)',
-        }}
-      >
-        {rotulo}
-      </span>
-      <span
-        data-numeric
-        style={{
-          font: destaque ? 'var(--text-amount-lg)' : 'var(--text-amount)',
-          color: destaque ? 'var(--color-royal-deep)' : 'var(--text-primary)',
-        }}
-      >
-        {valor}
-      </span>
-    </div>
-  );
-}
-
-const Th = ({ children, alinharDireita = false }: { children?: ReactNode; alinharDireita?: boolean }) => (
-  <th
-    style={{
-      textAlign: alinharDireita ? 'right' : 'left',
-      padding: '9px 13px',
-      font: 'var(--text-label)',
-      letterSpacing: 'var(--tracking-label)',
-      textTransform: 'uppercase',
-      color: 'var(--text-field-label)',
-      whiteSpace: 'nowrap',
-    }}
-  >
-    {children}
-  </th>
-);
-
-const Td = ({ children, alinharDireita = false }: { children?: ReactNode; alinharDireita?: boolean }) => (
-  <td style={{ padding: '11px 13px', textAlign: alinharDireita ? 'right' : 'left', color: 'var(--text-secondary)', verticalAlign: 'top' }}>
-    {children}
-  </td>
-);
