@@ -21,7 +21,7 @@ Este documento faz duas coisas: **§1 e §2** dizem onde o projeto está de fato
 |---|---|
 | Monorepo pnpm (`apps/web`, `packages/contracts`) | ✅ conforme Doc 1 §4.5 |
 | Design system em TSX (28 componentes, tokens fiéis ao export) | ✅ |
-| Telas implementadas | 17 (13 internas + 4 de entrada) |
+| Telas implementadas | 32 (27 internas + 4 de entrada + 1 pública de inscrição) |
 | `packages/contracts` | 8 arquivos, ~650 linhas de tipos |
 | Camada de dados | ❌ **inexistente** — ver §2.4 |
 | Backend | ❌ nada |
@@ -56,15 +56,15 @@ Percorrendo os 68 itens um a um:
 
 | Destino | Qtde | O que é |
 |---|:--:|---|
-| ✅ Telas construídas | 13 | cobrem 31 itens |
-| 🆕 **Telas a construir** | **13** | cobrem 16 itens |
+| ✅ Telas construídas | 27 | cobrem 47 itens |
+| 🆕 Telas a construir | 0 | — |
 | Modais e folhas | 7 | atos curtos dentro de uma tela existente |
 | Blocos em telas existentes | 10 | inclusive os que a autorização por bloco passa a governar |
 | Comportamento do shell | 2 | unidade ativa (`T-03`) e estado sem-permissão (`T-05`) |
 
-**O inventário fecha em 26 telas** — 13 de pé, 13 a fazer — para os mesmos 68 itens.
+**O inventário fecha em 27 telas** — todas de pé — para os mesmos 68 itens. O que resta da etapa F são modais, blocos em telas existentes e comportamentos do shell, listados abaixo.
 
-#### As 13 telas que faltam
+#### As 13 telas que faltavam, e foram construídas
 
 | # | Tela | Cobre | Módulo |
 |:--:|---|---|---|
@@ -81,6 +81,8 @@ Percorrendo os 68 itens um a um:
 | 11 | Leitos — mapa e cadastro | `E-10` `E-15` | Eventos |
 | 12 | Contratações da Munay | `E-13` | Eventos |
 | 13 | Feitio | `S-04` | Estoque |
+
+Todas concluídas em setembro/2026, com verificação em navegador nas duas densidades. Três levantaram divergência de modelo pelo caminho — a devolução como estorno (§2.5.1), a anamnese respondida pela própria pessoa e a autoinscrição (§2.6) —, e uma trouxe conceito novo, a declaração de veracidade por cerimônia.
 
 #### Modais e folhas
 
