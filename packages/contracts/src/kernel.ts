@@ -21,6 +21,7 @@ export type LancamentoId = Brand<string, 'LancamentoId'>;
 export type TransferenciaId = Brand<string, 'TransferenciaId'>;
 export type EventoId = Brand<string, 'EventoId'>;
 export type InscricaoId = Brand<string, 'InscricaoId'>;
+export type DevolucaoId = Brand<string, 'DevolucaoId'>;
 export type PessoaId = Brand<string, 'PessoaId'>;
 export type UsuarioId = Brand<string, 'UsuarioId'>;
 export type GrupoId = Brand<string, 'GrupoId'>;

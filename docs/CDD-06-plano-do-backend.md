@@ -220,6 +220,27 @@ Isso simplifica o agregado em relação ao Doc 2: nada de mapa de adicional por 
 
 ---
 
+### 2.5.1 Devolução é estorno de receita, não despesa — divergência contra o Doc 2
+
+O Doc 2 se contradiz sobre isso e vale resolver antes de virar tabela. O §5.1.4 desenha o fluxo terminando em *"`Lancamento` de **DESPESA** vinculado ao mesmo `eventoId`"*; a assinatura de `DevolucaoDevida.efetivar(transferenciaId)`, três páginas antes, recebe uma **transferência**. Os dois não podem estar certos.
+
+**A tela `E-09` foi construída como estorno da receita original.** A razão é a mesma que sustenta F2, E1 e A5: quando a casa devolve uma contribuição, ela não teve custo — ela desfaz uma receita que não se confirmou.
+
+O erro de lançar como despesa é traiçoeiro porque **fecha o resultado pelo mesmo número**: as duas pontas incham juntas e o lucro do período não muda. O que muda é tudo o que se lê a partir das linhas:
+
+| | Como estorno | Como despesa |
+|---|---|---|
+| Receita de contribuição no ano | cai R$ 210 | fica R$ 210 a mais |
+| Custo do trabalho | intacto | sobe R$ 210 que a casa nunca gastou |
+| Resultado | igual | igual |
+| Resposta a *"quanto a casa arrecadou?"* | verdadeira | inflada dos dois lados |
+
+**Competência.** O estorno vai para a competência da receita original quando o período está aberto. Quando está fechado — e o de julho está —, ele entra na competência corrente, dita na tela, em vez de reabrir um período já prestado à assembleia. Reabrir é possível (`financeiro.periodo.reabrir`, com motivo e trilha), mas transformar prestação entregue em rascunho por causa de uma devolução é caro demais para o que resolve.
+
+**Decisão da coordenação**, e sugiro fechar junto com as divergências de §2.3.
+
+---
+
 ### 2.6 Duas premissas dos documentos que não são da casa
 
 Levantadas em setembro/2026, depois de a tela de anamnese presencial estar construída. Ambas vinham dos Documentos, não de quem toca o CDD — e as duas invertem o desenho.

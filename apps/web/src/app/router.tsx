@@ -23,6 +23,7 @@ import { ConciliacaoPage } from '../pages/conciliacao/ConciliacaoPage';
 import { ParametrosPage } from '../pages/parametros/ParametrosPage';
 import { AgendaPage } from '../pages/agenda/AgendaPage';
 import { InscricaoPage } from '../pages/eventos/InscricaoPage';
+import { DevolucoesPage } from '../pages/eventos/DevolucoesPage';
 import { PessoasPage } from '../pages/pessoas/PessoasPage';
 import { AnamnesePage } from '../pages/pessoas/AnamnesePage';
 import { AyahuascaPage } from '../pages/ayahuasca/AyahuascaPage';
@@ -55,6 +56,7 @@ export const router = createBrowserRouter([
       { path: ROTAS.relatorios, element: <RelatoriosPage /> },
       { path: ROTAS.fechamento, element: <FechamentoPage /> },
       { path: ROTAS.conciliacao, element: <ConciliacaoPage /> },
+      { path: ROTAS.devolucoes, element: <DevolucoesPage /> },
       { path: ROTAS.prestacao, element: <PrestacaoDeContasPage /> },
       { path: ROTAS.parametros, element: <ParametrosPage /> },
       { path: ROTAS.agenda, element: <AgendaPage /> },

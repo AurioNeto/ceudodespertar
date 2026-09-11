@@ -1,7 +1,9 @@
 /** Contexto Eventos — Doc 2 §2. */
 import type {
   Anexo,
+  ContaId,
   DataLocal,
+  DevolucaoId,
   Dinheiro,
   EventoId,
   InscricaoId,
@@ -124,6 +126,35 @@ export interface OpcaoDeRefeicao {
   readonly refeicao: Refeicao;
   readonly rotulo: string;
   readonly valor: Dinheiro;
+}
+
+/* ---------------------------------------------------------------------------
+   Devolução — Doc 2 §2.9 e Doc 4, E-08/E-09.
+
+   Dois atos, duas permissões, duas telas (DV3): o Acolhimento registra que a
+   pessoa **pediu** o dinheiro de volta; a Tesouraria **paga**. Não é burocracia
+   — é a fronteira "sem acesso a saídas financeiras do evento" expressa como
+   desenho, e não como aviso.
+
+   Cancelar não devolve (DV1). Quem falta e não pede, não recebe.
+   --------------------------------------------------------------------------- */
+
+export type StatusDevolucao = 'PENDENTE' | 'PAGA' | 'CANCELADA';
+
+export interface DevolucaoDevida {
+  readonly id: DevolucaoId;
+  /** Nulo quando é devolução a contratante, não a participante (CN4). */
+  readonly inscricaoId: InscricaoId | null;
+  readonly eventoId: EventoId;
+  readonly pessoaId: PessoaId;
+  /** DV2: integral, igual ao efetivamente pago. Exibido, nunca editável. */
+  readonly valor: Dinheiro;
+  readonly solicitadaEm: DataLocal;
+  readonly solicitadaPor: string;
+  readonly motivo: string;
+  readonly status: StatusDevolucao;
+  readonly pagaEm: DataLocal | null;
+  readonly contaId: ContaId | null;
 }
 
 /** Lista de preparo do trabalho — compartilhável por link e atualizável por webhook. */
