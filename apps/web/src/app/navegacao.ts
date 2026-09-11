@@ -29,6 +29,7 @@ export const ROTAS = {
   ayahuasca: '/ayahuasca',
   pessoas: '/pessoas',
   anamnese: '/anamnese',
+  presencial: '/anamnese-presencial',
   auditoria: '/auditoria',
   perfil: '/meu-perfil',
 } as const;
@@ -68,6 +69,7 @@ export const construirNav = (lotePendente: number): readonly NavEntry[] => [
   { section: 'Pessoas' },
   { id: 'pessoas', label: 'Pessoas', icon: 'users' },
   { id: 'anamnese', label: 'Anamnese', icon: 'clipboard-list' },
+  { id: 'presencial', label: 'Anamnese presencial', icon: 'smartphone' },
   { section: 'Sistema' },
   { id: 'auditoria', label: 'Auditoria', icon: 'scroll-text' },
 ];

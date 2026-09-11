@@ -9,6 +9,7 @@ import type {
   PessoaId,
   RespostaId,
   UnidadeId,
+  UsuarioId,
 } from './kernel.js';
 import type { StatusAnamnese } from './eventos.js';
 
@@ -86,6 +87,56 @@ export interface FormularioDeAnamnese {
   readonly arquivadaEm: DataHora | null;
   readonly linkPublico: string | null;
   readonly respostas: number;
+}
+
+/* ---------------------------------------------------------------------------
+   Preenchimento presencial — Doc 4, P-06.
+
+   O cálculo de pendências é serviço de domínio (Doc 2 §3.4.3), e o resultado
+   dele é o que a tela de campo recebe: não uma lista de perguntas, mas uma
+   lista de perguntas **com o motivo de estarem ali**. Sem o motivo, quem
+   preenche não sabe por que está perguntando de novo algo que a pessoa já
+   respondeu — e é exatamente isso que faz a anamnese incremental parecer
+   desleixo em vez de cuidado.
+   --------------------------------------------------------------------------- */
+
+export type MotivoDaPendencia =
+  | { readonly tipo: 'PRIMEIRA_VEZ' }
+  | { readonly tipo: 'NOVA_NA_VERSAO'; readonly versao: number }
+  | { readonly tipo: 'SUBSTITUIU'; readonly textoAnterior: string }
+  /** RA1 — resposta vencida exige revalidação completa, não incremental. */
+  | { readonly tipo: 'REVALIDACAO' };
+
+export interface PerguntaPendente {
+  readonly pergunta: Pergunta;
+  readonly motivo: MotivoDaPendencia;
+}
+
+/**
+ * Resposta que atravessou a versão: a pergunta só teve correção cosmética,
+ * manteve o `PerguntaId` e por isso não se pergunta de novo (Doc 2 §4).
+ */
+export interface RespostaHerdada {
+  readonly perguntaId: PerguntaId;
+  readonly texto: string;
+  readonly valor: string;
+  readonly deVersao: number;
+}
+
+export type ModoDePreenchimento = 'PRIMEIRA_VEZ' | 'INCREMENTAL' | 'REVALIDACAO_COMPLETA' | 'EM_DIA';
+
+/**
+ * Salvamento parcial contínuo. A anamnese interrompida não se perde, e num
+ * lugar sem sinal `sincronizado` é falso por um tempo — o que a tela precisa
+ * dizer sem assustar: o dado está no aparelho, sobe quando der.
+ */
+export interface RascunhoDeAnamnese {
+  readonly pessoaId: PessoaId;
+  readonly versaoAlvo: number;
+  readonly respondidoPor: UsuarioId;
+  readonly valores: Readonly<Record<string, string>>;
+  readonly salvoEm: DataHora;
+  readonly sincronizado: boolean;
 }
 
 export interface RespostaDeAnamnese {
