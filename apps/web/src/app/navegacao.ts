@@ -30,7 +30,6 @@ export const ROTAS = {
   ayahuasca: '/ayahuasca',
   pessoas: '/pessoas',
   anamnese: '/anamnese',
-  presencial: '/anamnese-presencial',
   auditoria: '/auditoria',
   perfil: '/meu-perfil',
 } as const;
@@ -40,12 +39,17 @@ export type RotaId = keyof typeof ROTAS;
 /**
  * As telas de entrada ficam fora de `ROTAS` de propósito: elas não têm item de
  * menu, não entram no cálculo de rota ativa e não moram dentro do AppShell.
+ *
+ * `inscricaoPublica` é a única delas que não é do time da casa: é o link da
+ * cerimônia, gerado quando a cerimônia é criada e mandado pela recepção no
+ * WhatsApp. Caminho curto de propósito — ele vai ser colado numa conversa.
  */
 export const ROTAS_PUBLICAS = {
   entrar: '/entrar',
   esqueci: '/esqueci-a-senha',
   redefinir: '/redefinir-senha',
   convite: '/convite',
+  inscricaoPublica: '/i/:token',
 } as const;
 
 export const construirNav = (lotePendente: number): readonly NavEntry[] => [
@@ -71,7 +75,6 @@ export const construirNav = (lotePendente: number): readonly NavEntry[] => [
   { section: 'Pessoas' },
   { id: 'pessoas', label: 'Pessoas', icon: 'users' },
   { id: 'anamnese', label: 'Anamnese', icon: 'clipboard-list' },
-  { id: 'presencial', label: 'Anamnese presencial', icon: 'smartphone' },
   { section: 'Sistema' },
   { id: 'auditoria', label: 'Auditoria', icon: 'scroll-text' },
 ];

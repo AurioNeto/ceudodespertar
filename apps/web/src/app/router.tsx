@@ -6,6 +6,7 @@ import { EntrarPage } from '../pages/entrada/EntrarPage';
 import { EsqueciSenhaPage } from '../pages/entrada/EsqueciSenhaPage';
 import { RedefinirSenhaPage } from '../pages/entrada/RedefinirSenhaPage';
 import { ConvitePage } from '../pages/entrada/ConvitePage';
+import { InscricaoPublicaPage } from '../pages/publico/InscricaoPublicaPage';
 import { PainelPage } from '../pages/painel/PainelPage';
 import { RegistrarLancamentoPage } from '../pages/lancamento/RegistrarLancamentoPage';
 import { MeusRegistrosPage } from '../pages/registros/MeusRegistrosPage';
@@ -24,7 +25,6 @@ import { AgendaPage } from '../pages/agenda/AgendaPage';
 import { InscricaoPage } from '../pages/eventos/InscricaoPage';
 import { PessoasPage } from '../pages/pessoas/PessoasPage';
 import { AnamnesePage } from '../pages/pessoas/AnamnesePage';
-import { AnamnesePresencialPage } from '../pages/pessoas/AnamnesePresencialPage';
 import { AyahuascaPage } from '../pages/ayahuasca/AyahuascaPage';
 import { AuditoriaPage } from '../pages/auditoria/AuditoriaPage';
 import { MeuPerfilPage } from '../pages/perfil/MeuPerfilPage';
@@ -34,6 +34,7 @@ export const router = createBrowserRouter([
   { path: ROTAS_PUBLICAS.esqueci, element: <EsqueciSenhaPage /> },
   { path: ROTAS_PUBLICAS.redefinir, element: <RedefinirSenhaPage /> },
   { path: ROTAS_PUBLICAS.convite, element: <ConvitePage /> },
+  { path: ROTAS_PUBLICAS.inscricaoPublica, element: <InscricaoPublicaPage /> },
   {
     path: '/',
     element: (
@@ -60,7 +61,6 @@ export const router = createBrowserRouter([
       { path: ROTAS.inscricao, element: <InscricaoPage /> },
       { path: ROTAS.pessoas, element: <PessoasPage /> },
       { path: ROTAS.anamnese, element: <AnamnesePage /> },
-      { path: ROTAS.presencial, element: <AnamnesePresencialPage /> },
       { path: ROTAS.ayahuasca, element: <AyahuascaPage /> },
       { path: ROTAS.auditoria, element: <AuditoriaPage /> },
       { path: ROTAS.perfil, element: <MeuPerfilPage /> },

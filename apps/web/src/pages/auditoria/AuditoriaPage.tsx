@@ -184,7 +184,7 @@ function NotaDeImutabilidade() {
         alignItems: 'flex-start',
       }}
     >
-      <Icon name="scroll-text" size={18} color="var(--color-brand)" style={{ marginTop: 2 }} />
+      <Icon name="scroll-text" size={18} color="var(--color-ink-brand)" style={{ marginTop: 2 }} />
       <p style={{ font: 'var(--text-small)', color: 'var(--text-secondary)', maxWidth: '78ch' }}>
         A trilha <b>só cresce</b>. Não há edição, não há exclusão e não há linha que não tenha autor e instante — nem
         para quem administra o sistema. Uma trilha que se pode apagar não serve para a conversa que ela existe para
@@ -458,7 +458,7 @@ function GrupoDeAcessos({
         <Icon
           name={agrupamento === 'leitor' ? 'user-round' : 'clipboard-list'}
           size={17}
-          color="var(--color-brand)"
+          color="var(--color-ink-brand)"
         />
         <span style={{ font: 'var(--text-title-sm)', color: 'var(--text-title)' }}>{grupo.titulo}</span>
         <span style={{ font: 'var(--text-small)', color: 'var(--text-meta)' }}>· {grupo.legenda}</span>

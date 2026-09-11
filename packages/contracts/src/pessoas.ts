@@ -9,7 +9,6 @@ import type {
   PessoaId,
   RespostaId,
   UnidadeId,
-  UsuarioId,
 } from './kernel.js';
 import type { StatusAnamnese } from './eventos.js';
 
@@ -90,14 +89,20 @@ export interface FormularioDeAnamnese {
 }
 
 /* ---------------------------------------------------------------------------
-   Preenchimento presencial — Doc 4, P-06.
+   Anamnese respondida pela própria pessoa, online, durante a inscrição.
 
-   O cálculo de pendências é serviço de domínio (Doc 2 §3.4.3), e o resultado
-   dele é o que a tela de campo recebe: não uma lista de perguntas, mas uma
+   Correção de premissa (coordenação, set/2026): **não existe preenchimento
+   presencial**. O Doc 4 previa a tela `P-06`, de campo, com alguém do
+   Acolhimento digitando pela pessoa; a casa não trabalha assim. Quem responde
+   é o participante, no aparelho dele, pelo link da cerimônia. Some com isso a
+   permissão `anamnese.responder_por_terceiro`, que não tem caso de uso.
+
+   O cálculo de pendências continua sendo serviço de domínio (Doc 2 §3.4.3), e
+   o resultado dele é o que a tela recebe: não uma lista de perguntas, mas uma
    lista de perguntas **com o motivo de estarem ali**. Sem o motivo, quem
-   preenche não sabe por que está perguntando de novo algo que a pessoa já
-   respondeu — e é exatamente isso que faz a anamnese incremental parecer
-   desleixo em vez de cuidado.
+   responde não entende por que a casa pergunta de novo algo que ela já
+   respondeu — e é isso que faz a anamnese incremental parecer desleixo em vez
+   de cuidado.
    --------------------------------------------------------------------------- */
 
 export type MotivoDaPendencia =
@@ -126,17 +131,31 @@ export interface RespostaHerdada {
 export type ModoDePreenchimento = 'PRIMEIRA_VEZ' | 'INCREMENTAL' | 'REVALIDACAO_COMPLETA' | 'EM_DIA';
 
 /**
- * Salvamento parcial contínuo. A anamnese interrompida não se perde, e num
- * lugar sem sinal `sincronizado` é falso por um tempo — o que a tela precisa
- * dizer sem assustar: o dado está no aparelho, sobe quando der.
+ * Salvamento parcial contínuo. A anamnese interrompida não se perde — quem
+ * responde está no celular, no meio da vida, e vai fechar a aba.
  */
 export interface RascunhoDeAnamnese {
   readonly pessoaId: PessoaId;
   readonly versaoAlvo: number;
-  readonly respondidoPor: UsuarioId;
   readonly valores: Readonly<Record<string, string>>;
   readonly salvoEm: DataHora;
   readonly sincronizado: boolean;
+}
+
+/**
+ * Declaração de veracidade — **por cerimônia**.
+ *
+ * Anamnese em dia não basta: a cada trabalho a pessoa declara que o que ela
+ * respondeu continua verdadeiro para *aquela* data. É barato para quem está
+ * bem e é a única forma de a casa saber de uma medicação que começou semana
+ * passada sem obrigar todo mundo a refazer o formulário inteiro.
+ */
+export interface DeclaracaoDeVeracidade {
+  readonly eventoId: EventoId;
+  readonly pessoaId: PessoaId;
+  readonly respostaId: RespostaId;
+  readonly texto: string;
+  readonly declaradoEm: DataHora;
 }
 
 export interface RespostaDeAnamnese {

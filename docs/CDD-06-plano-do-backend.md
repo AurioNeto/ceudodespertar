@@ -75,7 +75,7 @@ Percorrendo os 68 itens um a um:
 | 5 | Conciliação e importação de extrato | `F-25` `F-26` | Financeiro |
 | 6 | Parâmetros — categorias, unidades, instituição | `F-15` `F-16` `A-03` | Financeiro · Sistema |
 | 7 | Auditoria | `A-04` | Sistema |
-| 8 | Anamnese presencial | `P-06` | Pessoas |
+| 8 | Inscrição pelo link da cerimônia — autocadastro e anamnese | *(substitui `P-06`)* | Pessoas · Eventos |
 | 9 | Inscrição | `E-06` | Eventos |
 | 10 | Devoluções a pagar | `E-09` | Eventos |
 | 11 | Leitos — mapa e cadastro | `E-10` `E-15` | Eventos |
@@ -215,6 +215,29 @@ Regras que decorrem disso, e que substituem a `TabelaDeContribuicao` do Doc 2:
 - **Alimentação só é cobrada em ocasiões especiais** — jornadas de três dias, por exemplo. Não é adicional padrão do evento.
 
 Isso simplifica o agregado em relação ao Doc 2: nada de mapa de adicional por refeição, nada de adicional de hospedagem por dia embutido no cálculo. O evento carrega três valores sugeridos e um valor de hospedagem quando houver; o resto é acordo entre pessoas, registrado como valor efetivo da inscrição.
+
+> **Ponto em aberto — o colchonete.** A decisão diz *"opção grátis, que não vamos registrar"*. Li isso como **não cobrar**, e mantive `COLCHONETE` como opção de hospedagem sem valor: a pergunta *"onde você vai dormir"* precisa de resposta verdadeira para quem fica, e a operação conta gente para café e espaço. Se a intenção era literalmente não existir no sistema, é uma linha a remover — e a pergunta passa a ter só "não vou dormir aqui" e as pagas. **Decisão da coordenação.**
+
+---
+
+### 2.6 Duas premissas dos documentos que não são da casa
+
+Levantadas em setembro/2026, depois de a tela de anamnese presencial estar construída. Ambas vinham dos Documentos, não de quem toca o CDD — e as duas invertem o desenho.
+
+| Premissa documentada | O que a casa faz | Consequência |
+|---|---|---|
+| **`P-06` · anamnese de preenchimento presencial** (Doc 4 §6): alguém do Acolhimento digita pela pessoa, na chácara, possivelmente sem sinal | **Não existe.** A anamnese é respondida pelo **próprio participante**, online, durante a inscrição | A tela `P-06` foi removida. A permissão `anamnese.responder_por_terceiro` some do catálogo: não tem caso de uso. O cálculo de pendências (delta, RA1, RA4) migra intacto para a tela pública |
+| **Não há autoinscrição** (Doc 1 §1.3), listada entre as "telas que deliberadamente não existem" | **A pessoa pode se inscrever sozinha.** O que a casa quer humanizado é o **atendimento da recepção**, que acontece no WhatsApp — e é de lá que sai o link | Entra uma tela pública, fora do AppShell. `E-06` deixa de ser a única porta de inscrição e passa a ser a da recepção: inscrever quem chegou por outro caminho e conferir o que veio pelo link |
+
+**Como o link funciona.** Um token **por cerimônia**, gerado no cadastro dela e enviado pela recepção. O mesmo link serve para todo mundo; quem identifica a pessoa é o **CPF que ela declara ao abrir**:
+
+- **CPF conhecido** → a casa reconhece, calcula o delta da anamnese e pergunta só o que mudou.
+- **CPF desconhecido** → cadastro (cinco campos, uma vez só) e formulário inteiro.
+- **Sempre, nos dois casos** → a pessoa **declara que a anamnese segue verdadeira para aquela cerimônia**.
+
+**A declaração de veracidade é conceito novo, e é a peça que faltava.** Anamnese em dia não basta: uma medicação que começou semana passada não aparece em nenhuma revalidação anual. Declarar por cerimônia é barato para quem está bem, e é a única forma de a casa saber do que mudou sem obrigar todo mundo a refazer o formulário. Vai para o domínio como agregado próprio, ligado a `Inscricao` e à `RespostaDeAnamnese` vigente, com autor e instante — e a confirmação de inscrição (IN5) passa a exigir as duas coisas: resposta em dia **e** declaração para aquele evento.
+
+**Área do participante ≠ autocadastro.** São coisas separadas, e só a segunda entra agora. A área do participante — com login, para acompanhar as próprias inscrições — continua sendo a decisão 12, adiada. O autocadastro pelo link não exige login nenhum.
 
 ---
 

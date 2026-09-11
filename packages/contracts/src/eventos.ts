@@ -72,6 +72,24 @@ export interface Inscricao {
    natureza do regime de contribuição.
    --------------------------------------------------------------------------- */
 
+/**
+ * Link de inscrição — um por cerimônia, gerado quando a cerimônia é criada e
+ * enviado pela recepção (na prática, por WhatsApp). É por ele que a pessoa se
+ * cadastra e responde a própria anamnese.
+ *
+ * O token é do evento, não da pessoa: o mesmo link serve para todo mundo, e
+ * quem identifica a pessoa é o CPF que ela declara ao abrir.
+ */
+export interface LinkDeInscricao {
+  readonly eventoId: EventoId;
+  readonly token: string;
+  readonly url: string;
+  readonly criadoEm: DataLocal;
+  readonly inscricoesAbertas: boolean;
+  readonly aberturas: number;
+  readonly inscricoesPeloLink: number;
+}
+
 export type NivelDeContribuicao = 'SOCIAL' | 'SUSTENTAVEL' | 'PROSPERO';
 
 export interface ContribuicaoSugerida {

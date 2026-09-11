@@ -21,6 +21,7 @@ import {
   TIPO_ROTULO,
   type PessoaDoDiretorio,
 } from '../../mocks/inscricao';
+import { linkDaCerimonia } from '../../mocks/inscricaoPublica';
 
 /**
  * `E-06` · Inscrição — Doc 4 §7 e Doc 2 §2.4.
@@ -79,6 +80,7 @@ export function InscricaoPage() {
   const [emergencia, setEmergencia] = useState('');
   const [restricoes, setRestricoes] = useState('');
   const [recado, setRecado] = useState<string | null>(null);
+  const [linkCopiado, setLinkCopiado] = useState(false);
 
   const escolher = (p: PessoaDoDiretorio) => {
     setPessoa(p);
@@ -152,8 +154,9 @@ export function InscricaoPage() {
         chave: 'anamnese',
         titulo: pessoa.anamnese === 'VENCIDA' ? 'Anamnese vencida' : 'Anamnese pendente',
         detalhe:
-          'Quem consagra precisa da anamnese em dia. Não é burocracia: é o que identifica medicação e condição incompatíveis com a consagração.',
+          'Quem consagra precisa da anamnese em dia. Não é burocracia: é o que identifica medicação e condição incompatíveis com a consagração. Quem responde é a própria pessoa, pelo link da cerimônia — ninguém da casa preenche por ela.',
         invariante: 'IN5',
+        acao: { rotulo: 'Copiar o link para mandar no WhatsApp', ao: () => setLinkCopiado(true) },
       });
     }
 
@@ -241,6 +244,8 @@ export function InscricaoPage() {
           }}
           campo={campo}
         />
+
+        <LinkDaCerimonia campo={campo} copiado={linkCopiado} onCopiar={() => setLinkCopiado(true)} />
 
         {pessoa === null ? (
           <BuscaDePessoa busca={busca} onBusca={setBusca} onEscolher={escolher} campo={campo} />
@@ -492,6 +497,49 @@ function EscolhaDoEvento({
   );
 }
 
+/**
+ * O link da cerimônia. Fica em cima porque, na prática, é por ele que a maior
+ * parte das inscrições entra: a recepção manda no WhatsApp e a pessoa se
+ * cadastra e responde a própria anamnese. O que esta tela faz é o resto —
+ * inscrever quem chegou por outro caminho e conferir o que já veio.
+ */
+function LinkDaCerimonia({
+  campo,
+  copiado,
+  onCopiar,
+}: {
+  campo: boolean;
+  copiado: boolean;
+  onCopiar: () => void;
+}) {
+  return (
+    <Cartao campo={campo} style={{ gap: 10 }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px 12px' }}>
+        <Icon name="link" size={17} color="var(--color-ink-brand)" />
+        <Rotulo>Link de inscrição desta cerimônia</Rotulo>
+        <span style={{ flex: 1 }} />
+        <span data-numeric style={{ font: 'var(--text-small)', color: 'var(--text-meta)' }}>
+          {linkDaCerimonia.aberturas} aberturas · {linkDaCerimonia.inscricoesPeloLink} inscrições
+        </span>
+      </div>
+
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center' }}>
+        <code style={{ font: 'var(--text-code)', color: 'var(--text-link)', wordBreak: 'break-all' }}>
+          {linkDaCerimonia.url}
+        </code>
+        <Button variant={copiado ? 'quiet' : 'ghost'} iconName={copiado ? 'check' : 'copy'} onClick={onCopiar}>
+          {copiado ? 'Copiado' : 'Copiar'}
+        </Button>
+      </div>
+
+      <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)', maxWidth: '76ch' }}>
+        Gerado quando a cerimônia foi criada. A pessoa abre, declara o CPF, se cadastra se for a primeira vez e{' '}
+        <b>responde a própria anamnese</b> — ninguém da casa preenche saúde por ninguém.
+      </span>
+    </Cartao>
+  );
+}
+
 function BuscaDePessoa({
   busca,
   onBusca,
@@ -569,7 +617,7 @@ function PessoaEscolhida({
   return (
     <Cartao campo={campo} style={{ gap: 8 }}>
       <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '6px 11px' }}>
-        <Icon name="user-round" size={18} color="var(--color-brand)" />
+        <Icon name="user-round" size={18} color="var(--color-ink-brand)" />
         <span style={{ font: 'var(--text-title-sm)', color: 'var(--text-title)' }}>{pessoa.nome}</span>
         {pessoa.menorDeIdade ? <StatusBadge tone="suggest">Menor de idade</StatusBadge> : null}
         <span style={{ flex: 1 }} />
