@@ -5,8 +5,10 @@ import type {
   DataLocal,
   DevolucaoId,
   Dinheiro,
+  DormitorioId,
   EventoId,
   InscricaoId,
+  LeitoId,
   PessoaId,
   TarefaId,
   UnidadeId,
@@ -126,6 +128,40 @@ export interface OpcaoDeRefeicao {
   readonly refeicao: Refeicao;
   readonly rotulo: string;
   readonly valor: Dinheiro;
+}
+
+/* ---------------------------------------------------------------------------
+   Leitos — Doc 2 §2.6 e Doc 4, E-10/E-15.
+
+   O cadastro (`Dormitorio`) vive fora do evento; o mapa (`AlocacaoDeLeito`)
+   vive dentro dele. A fronteira transacional é o evento, e é justamente daí
+   que vem a limitação assumida: conflito entre **eventos simultâneos no mesmo
+   local** não é invariante, é aviso. A tela precisa desenhar esse aviso com
+   clareza, porque o domínio não o impede.
+   --------------------------------------------------------------------------- */
+
+export type TipoLeito = 'BELICHE_SUPERIOR' | 'BELICHE_INFERIOR' | 'CAMA_SOLTEIRO' | 'QUARTO_PRIVATIVO';
+
+export interface Leito {
+  readonly id: LeitoId;
+  readonly identificacao: string;
+  readonly tipo: TipoLeito;
+  readonly ativo: boolean;
+}
+
+export interface Dormitorio {
+  readonly id: DormitorioId;
+  readonly unidadeId: UnidadeId;
+  readonly nome: string;
+  readonly leitos: readonly Leito[];
+  readonly ativo: boolean;
+}
+
+export interface AlocacaoDeLeito {
+  readonly inscricaoId: InscricaoId;
+  readonly leitoId: LeitoId;
+  /** ML4: contido no intervalo do evento. */
+  readonly noites: readonly DataLocal[];
 }
 
 /* ---------------------------------------------------------------------------
