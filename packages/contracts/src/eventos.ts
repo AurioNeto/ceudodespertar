@@ -131,6 +131,36 @@ export interface OpcaoDeRefeicao {
 }
 
 /* ---------------------------------------------------------------------------
+   Contratação — Doc 2 §2.3 e Doc 4, E-13.
+
+   A Munay conduz cerimônia ou apresentação em outra instituição. O evento
+   continua sendo evento (CN1): tem data, local, equipe e custos apurados por
+   `eventoId`.
+
+   O nó que o modelo veio desfazer é a palavra **cachê**, que aponta para os
+   dois lados: o contratante paga a Munay (`CACHE_RECEBIDO`, receita) e a Munay
+   paga os músicos (`CACHE_PAGO`, despesa) — no mesmo evento, com naturezas
+   opostas (CN2, CN3). Por isso são duas categorias e não uma, e por isso a
+   tela mostra os dois lados juntos.
+   --------------------------------------------------------------------------- */
+
+export type FormaDePagamento = 'ANTECIPADO' | 'NO_ATO' | 'FATURADO';
+export type StatusContratacao = 'PROPOSTA' | 'CONFIRMADA' | 'REALIZADA' | 'CANCELADA';
+
+export interface Contratacao {
+  readonly eventoId: EventoId;
+  /** Pessoa jurídica, tipicamente. */
+  readonly contratanteId: PessoaId;
+  readonly valorAcordado: Dinheiro;
+  readonly formaPagamento: FormaDePagamento;
+  readonly dataPrevistaPagamento: DataLocal | null;
+  readonly status: StatusContratacao;
+  /** CN2: existe depois do recebimento, nunca antes. */
+  readonly lancamentoReceitaId: string | null;
+  readonly observacoes: string;
+}
+
+/* ---------------------------------------------------------------------------
    Leitos — Doc 2 §2.6 e Doc 4, E-10/E-15.
 
    O cadastro (`Dormitorio`) vive fora do evento; o mapa (`AlocacaoDeLeito`)
