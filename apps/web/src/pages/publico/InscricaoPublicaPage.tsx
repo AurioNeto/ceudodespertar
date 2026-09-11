@@ -63,6 +63,8 @@ export function InscricaoPublicaPage() {
 
   const [valores, setValores] = useState<Record<string, string>>({});
   const [declarado, setDeclarado] = useState(false);
+  /** A pessoa pediu para refazer a anamnese estando no prazo. */
+  const [refazendo, setRefazendo] = useState(false);
 
   const [nivel, setNivel] = useState<NivelDeContribuicao | null>(null);
   const [valor, setValor] = useState('');
@@ -75,7 +77,11 @@ export function InscricaoPublicaPage() {
   /** Quem é a pessoa, venha do cadastro achado ou do que ela acabou de digitar. */
   const nome = cadastro?.nome ?? novo.nome;
   const primeiroNome = (cadastro?.primeiroNome ?? novo.nome.trim().split(/\s+/)[0]) || 'você';
-  const pendentes = cadastro ? cadastro.pendentes : formularioInteiro('PRIMEIRA_VEZ');
+  const pendentes = refazendo
+    ? formularioInteiro('POR_ESCOLHA')
+    : cadastro
+      ? cadastro.pendentes
+      : formularioInteiro('PRIMEIRA_VEZ');
   const modo = cadastro?.modo ?? 'PRIMEIRA_VEZ';
   const jaParticipou = cadastro?.jaParticipou ?? false;
 
@@ -197,22 +203,36 @@ export function InscricaoPublicaPage() {
 
       {passo === 'ANAMNESE' ? (
         <Passos
-          titulo={cadastro ? `Olá, ${primeiroNome}` : 'Sobre a sua saúde'}
+          titulo={refazendo ? 'Vamos do começo' : cadastro ? `Olá, ${primeiroNome}` : 'Sobre a sua saúde'}
           recado={
-            cadastro?.explicacao ??
-            'A casa pergunta isso para cuidar de você durante o trabalho. Nada aqui impede a sua participação — o que existe é gente lendo com atenção.'
+            refazendo
+              ? 'Você pediu para responder de novo, então o formulário vem inteiro. O que você escrever agora substitui o que a casa tinha.'
+              : (cadastro?.explicacao ??
+                'A casa pergunta isso para cuidar de você durante o trabalho. Nada aqui impede a sua participação — o que existe é gente lendo com atenção.')
           }
         >
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-            <StatusBadge tone={modo === 'REVALIDACAO_COMPLETA' ? 'attention' : modo === 'INCREMENTAL' ? 'suggest' : 'royal'}>
-              {MODO_RECADO[modo]}
+            <StatusBadge
+              tone={
+                refazendo
+                  ? 'confirmed'
+                  : modo === 'REVALIDACAO_COMPLETA'
+                    ? 'attention'
+                    : modo === 'INCREMENTAL'
+                      ? 'suggest'
+                      : 'royal'
+              }
+            >
+              {refazendo ? 'A seu pedido' : MODO_RECADO[modo]}
             </StatusBadge>
             <span style={{ font: 'var(--text-small)', color: 'var(--text-meta)' }}>
               {pluralizar(pendentes.length, 'pergunta')} · leva uns {Math.max(2, Math.round(pendentes.length * 0.6))} minutos
             </span>
           </div>
 
-          {cadastro && cadastro.herdadas.length > 0 ? <Herdadas cadastro={cadastro} campo={campo} /> : null}
+          {cadastro && cadastro.herdadas.length > 0 && !refazendo ? (
+            <Herdadas cadastro={cadastro} campo={campo} />
+          ) : null}
 
           {pendentes.map((x, i) => (
             <BlocoDePergunta
@@ -251,8 +271,15 @@ export function InscricaoPublicaPage() {
           campo={campo}
           cadastro={cadastro}
           primeiroNome={primeiroNome}
+          refeita={refazendo}
           declarado={declarado}
           onDeclarar={() => setDeclarado((d) => !d)}
+          onRefazer={() => {
+            setRefazendo(true);
+            setValores({});
+            setDeclarado(false);
+            setPasso('ANAMNESE');
+          }}
           onSeguir={() => setPasso('PARTICIPACAO')}
         />
       ) : null}
@@ -516,18 +543,22 @@ function Declaracao({
   campo,
   cadastro,
   primeiroNome,
+  refeita,
   declarado,
   onDeclarar,
+  onRefazer,
   onSeguir,
 }: {
   campo: boolean;
   cadastro: CadastroEncontrado | null;
   primeiroNome: string;
+  refeita: boolean;
   declarado: boolean;
   onDeclarar: () => void;
+  onRefazer: () => void;
   onSeguir: () => void;
 }) {
-  const emDia = cadastro?.modo === 'EM_DIA';
+  const emDia = cadastro?.modo === 'EM_DIA' && !refeita;
   return (
     <Passos
       titulo={emDia ? `Olá, ${primeiroNome}` : 'Uma última confirmação'}
@@ -541,10 +572,16 @@ function Declaracao({
         <Cartao campo={campo} style={{ gap: 7 }}>
           <Rotulo>O que a casa tem de você</Rotulo>
           <span style={{ font: 'var(--text-body)', color: 'var(--text-primary)' }}>
-            Anamnese v{cadastro.versaoAnterior} respondida em {cadastro.respondidaEm}
+            {refeita
+              ? `Anamnese v${VERSAO_VIGENTE} respondida agora, por você`
+              : `Anamnese v${cadastro.versaoAnterior} respondida em ${cadastro.respondidaEm}`}
           </span>
           <span style={{ font: 'var(--text-small)', color: 'var(--text-meta)' }}>
-            {emDia ? `Vale até ${cadastro.validaAte}.` : `Atualizada agora para a v${VERSAO_VIGENTE}.`}
+            {refeita
+              ? `Substitui a resposta de ${cadastro.respondidaEm}. A anterior fica no histórico da casa, sem valer mais.`
+              : emDia
+                ? `Vale até ${cadastro.validaAte}.`
+                : `Atualizada agora para a v${VERSAO_VIGENTE}.`}
           </span>
         </Cartao>
       ) : null}
@@ -590,6 +627,8 @@ function Declaracao({
         semana passada sem obrigar todo mundo a refazer o formulário inteiro.
       </span>
 
+      {refeita ? null : <PortaDeRefazer campo={campo} onRefazer={onRefazer} />}
+
       <Button
         fullWidth
         density={campo ? 'field' : 'office'}
@@ -602,6 +641,36 @@ function Declaracao({
         Continuar
       </Button>
     </Passos>
+  );
+}
+
+/**
+ * A saída de quem **não pode** declarar que segue verdadeiro.
+ *
+ * Sem ela a declaração é uma armadilha: quem mudou de condição fica entre
+ * afirmar algo falso e abandonar a inscrição, e as duas saídas são piores para
+ * a casa do que a pergunta a mais. Fica ao lado da declaração, não escondida
+ * num "editar" — é ali que a pessoa descobre que precisa dela.
+ */
+function PortaDeRefazer({ campo, onRefazer }: { campo: boolean; onRefazer: () => void }) {
+  return (
+    <Cartao campo={campo} style={{ gap: 9 }}>
+      <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+        <Icon name="rotate-ccw" size={17} color="var(--color-ink-brand)" style={{ marginTop: 2 }} />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 4, minWidth: 0 }}>
+          <span style={{ font: 'var(--text-body-strong)', color: 'var(--text-primary)' }}>
+            Mudou alguma coisa na sua saúde?
+          </span>
+          <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>
+            Se você não pode confirmar o que está acima, não marque. Responder de novo é melhor para todo mundo — e
+            não tem problema nenhum.
+          </span>
+        </div>
+      </div>
+      <Button variant="quiet" fullWidth density={campo ? 'field' : 'office'} iconName="rotate-ccw" onClick={onRefazer}>
+        Quero responder de novo
+      </Button>
+    </Cartao>
   );
 }
 

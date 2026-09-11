@@ -167,6 +167,7 @@ export function MotivoDaPergunta({ pendente }: { pendente: PerguntaPendente }) {
   const m = pendente.motivo;
   if (m.tipo === 'PRIMEIRA_VEZ') return <StatusBadge tone="royal">primeira vez</StatusBadge>;
   if (m.tipo === 'REVALIDACAO') return <StatusBadge tone="attention">revalidação</StatusBadge>;
+  if (m.tipo === 'POR_ESCOLHA') return <StatusBadge tone="confirmed">a seu pedido</StatusBadge>;
   if (m.tipo === 'NOVA_NA_VERSAO') return <StatusBadge tone="suggest">nova na v{m.versao}</StatusBadge>;
   return (
     <span style={{ font: 'var(--text-small)', color: 'var(--text-meta)', textAlign: 'right' }}>

@@ -159,7 +159,7 @@ const substituiu = (n: string, textoAnterior: string): PerguntaPendente => ({
 });
 
 export const formularioInteiro = (
-  motivo: 'PRIMEIRA_VEZ' | 'REVALIDACAO',
+  motivo: 'PRIMEIRA_VEZ' | 'REVALIDACAO' | 'POR_ESCOLHA',
 ): readonly PerguntaPendente[] => PERGUNTAS_V3.map((x) => ({ pergunta: x, motivo: { tipo: motivo } as const }));
 
 /**

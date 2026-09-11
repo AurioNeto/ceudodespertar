@@ -110,7 +110,14 @@ export type MotivoDaPendencia =
   | { readonly tipo: 'NOVA_NA_VERSAO'; readonly versao: number }
   | { readonly tipo: 'SUBSTITUIU'; readonly textoAnterior: string }
   /** RA1 — resposta vencida exige revalidação completa, não incremental. */
-  | { readonly tipo: 'REVALIDACAO' };
+  | { readonly tipo: 'REVALIDACAO' }
+  /**
+   * A pessoa pediu para responder de novo, estando no prazo. É distinto de
+   * `REVALIDACAO` de propósito: uma resposta refeita por vencimento é rotina;
+   * refeita por escolha significa que algo mudou na vida de alguém, e quem lê
+   * o parecer depois merece saber a diferença.
+   */
+  | { readonly tipo: 'POR_ESCOLHA' };
 
 export interface PerguntaPendente {
   readonly pergunta: Pergunta;

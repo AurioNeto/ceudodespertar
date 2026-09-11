@@ -237,6 +237,10 @@ Levantadas em setembro/2026, depois de a tela de anamnese presencial estar const
 
 **A declaração de veracidade é conceito novo, e é a peça que faltava.** Anamnese em dia não basta: uma medicação que começou semana passada não aparece em nenhuma revalidação anual. Declarar por cerimônia é barato para quem está bem, e é a única forma de a casa saber do que mudou sem obrigar todo mundo a refazer o formulário. Vai para o domínio como agregado próprio, ligado a `Inscricao` e à `RespostaDeAnamnese` vigente, com autor e instante — e a confirmação de inscrição (IN5) passa a exigir as duas coisas: resposta em dia **e** declaração para aquele evento.
 
+**E ao lado da declaração tem que haver a porta de refazer.** Sem ela a declaração vira armadilha: quem mudou de condição fica entre afirmar algo falso e abandonar a inscrição, e as duas saídas são piores para a casa do que a pergunta a mais. A tela oferece *"quero responder de novo"* ao lado do próprio texto que a pessoa não consegue assinar — não escondida atrás de um "editar", porque é ali que ela descobre que precisa.
+
+Isso traz uma distinção nova para o domínio: **resposta refeita por escolha não é o mesmo que resposta refeita por vencimento.** Vencimento é rotina de calendário; escolha significa que algo mudou na vida de alguém, e quem lê o parecer depois merece saber a diferença. Entra como `MotivoDaPendencia.POR_ESCOLHA`, ao lado de `REVALIDACAO`. A resposta anterior não se apaga — fica no histórico, supersedida, como já acontece na troca de versão do formulário.
+
 **Área do participante ≠ autocadastro.** São coisas separadas, e só a segunda entra agora. A área do participante — com login, para acompanhar as próprias inscrições — continua sendo a decisão 12, adiada. O autocadastro pelo link não exige login nenhum.
 
 ---
