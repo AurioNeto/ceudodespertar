@@ -37,8 +37,8 @@ import {
 
 type Aba = 'mapa' | 'cadastro';
 
-/** `leitoId → noiteId → inscricaoId`. */
-type Alocacao = Record<string, Record<string, string>>;
+/** `leitoId → noiteId → inscricaoIds`. Lista por causa da cama de casal. */
+type Alocacao = Record<string, Record<string, string[]>>;
 
 export function LeitosPage() {
   const densidade = useDensidade();
@@ -52,14 +52,14 @@ export function LeitosPage() {
   const [escolhendo, setEscolhendo] = useState<{ leitoId: string; noite: NoiteId } | null>(null);
   const [recado, setRecado] = useState<string | null>(null);
 
-  const ocupadoPor = (leitoId: string, noite: string) => alocacao[leitoId]?.[noite];
+  const ocupantesDe = (leitoId: string, noite: string): readonly string[] => alocacao[leitoId]?.[noite] ?? [];
 
   /** Quantas noites cada pessoa ainda precisa. */
   const pendencias = useMemo(
     () =>
       hospedes.map((h) => {
         const alocadas = h.noites.filter((n) =>
-          Object.entries(alocacao).some(([, noites]) => noites[n] === (h.inscricaoId as string)),
+          Object.values(alocacao).some((noites) => (noites[n] ?? []).includes(h.inscricaoId as string)),
         );
         return { hospede: h, faltam: h.noites.filter((n) => !alocadas.includes(n)) };
       }),
@@ -69,11 +69,18 @@ export function LeitosPage() {
   const semLeito = pendencias.filter((p) => p.faltam.length > 0);
 
   const leitosAtivos = dormitorios.flatMap((d) => d.leitos.filter((l) => l.ativo));
-  const vagas = leitosAtivos.length * eventoDoMapa.noites.length;
-  const ocupadas = Object.values(alocacao).reduce((s, n) => s + Object.keys(n).length, 0);
+  const capacidadeTotal = leitosAtivos.reduce((s, l) => s + l.capacidade, 0);
+  const vagas = capacidadeTotal * eventoDoMapa.noites.length;
+  const ocupadas = Object.values(alocacao).reduce(
+    (s, n) => s + Object.values(n).reduce((x, pessoas) => x + pessoas.length, 0),
+    0,
+  );
 
   const alocar = (leitoId: string, noite: NoiteId, inscricaoId: string, nome: string) => {
-    setAlocacao((a) => ({ ...a, [leitoId]: { ...(a[leitoId] ?? {}), [noite]: inscricaoId } }));
+    setAlocacao((a) => ({
+      ...a,
+      [leitoId]: { ...(a[leitoId] ?? {}), [noite]: [...(a[leitoId]?.[noite] ?? []), inscricaoId] },
+    }));
     setEscolhendo(null);
     const emConflito = noite === conflitoDeAgenda.noite;
     setRecado(
@@ -83,10 +90,12 @@ export function LeitosPage() {
     );
   };
 
-  const liberar = (leitoId: string, noite: string) => {
+  const liberar = (leitoId: string, noite: string, inscricaoId: string) => {
     setAlocacao((a) => {
       const noites = { ...(a[leitoId] ?? {}) };
-      delete noites[noite];
+      const restantes = (noites[noite] ?? []).filter((x) => x !== inscricaoId);
+      if (restantes.length === 0) delete noites[noite];
+      else noites[noite] = restantes;
       return { ...a, [leitoId]: noites };
     });
     setRecado(null);
@@ -139,7 +148,12 @@ export function LeitosPage() {
                   gap: campo ? 14 : 20,
                 }}
               >
-                <Numero rotulo="Vagas-noite ocupadas" valor={`${ocupadas} de ${vagas}`} nota={`${leitosAtivos.length} leitos ativos × ${eventoDoMapa.noites.length} noites`} destaque />
+                <Numero
+                  rotulo="Vagas-noite ocupadas"
+                  valor={`${ocupadas} de ${vagas}`}
+                  nota={`${capacidadeTotal} vagas em ${pluralizar(leitosAtivos.length, 'leito')} × ${eventoDoMapa.noites.length} noites`}
+                  destaque
+                />
                 <Numero
                   rotulo="Ainda sem leito"
                   valor={String(semLeito.length)}
@@ -153,7 +167,7 @@ export function LeitosPage() {
             <Grade
               dormitorios={dormitorios}
               campo={campo}
-              ocupadoPor={ocupadoPor}
+              ocupantesDe={ocupantesDe}
               escolhendo={escolhendo}
               onEscolher={(leitoId, noite) => {
                 setEscolhendo({ leitoId, noite });
@@ -175,7 +189,9 @@ export function LeitosPage() {
             onMudar={setDormitorios}
             campo={campo}
             onRecado={setRecado}
-            noitesOcupadas={(leitoId) => Object.keys(alocacao[leitoId] ?? {}).length}
+            noitesOcupadas={(leitoId) =>
+              Object.values(alocacao[leitoId] ?? {}).filter((pessoas) => pessoas.length > 0).length
+            }
           />
         )}
       </div>
@@ -232,7 +248,7 @@ interface Pendencia {
 function Grade({
   dormitorios,
   campo,
-  ocupadoPor,
+  ocupantesDe,
   escolhendo,
   onEscolher,
   onFechar,
@@ -242,11 +258,11 @@ function Grade({
 }: {
   dormitorios: readonly Dormitorio[];
   campo: boolean;
-  ocupadoPor: (leitoId: string, noite: string) => string | undefined;
+  ocupantesDe: (leitoId: string, noite: string) => readonly string[];
   escolhendo: { leitoId: string; noite: NoiteId } | null;
   onEscolher: (leitoId: string, noite: NoiteId) => void;
   onFechar: () => void;
-  onLiberar: (leitoId: string, noite: string) => void;
+  onLiberar: (leitoId: string, noite: string, inscricaoId: string) => void;
   onAlocar: (leitoId: string, noite: NoiteId, inscricaoId: string, nome: string) => void;
   pendencias: readonly Pendencia[];
 }) {
@@ -282,7 +298,7 @@ function Grade({
                     key={l.id}
                     leito={l}
                     campo={campo}
-                    ocupadoPor={ocupadoPor}
+                    ocupantesDe={ocupantesDe}
                     escolhendo={escolhendo}
                     onEscolher={onEscolher}
                     onLiberar={onLiberar}
@@ -310,17 +326,17 @@ function Grade({
 function LinhaDeLeito({
   leito: l,
   campo,
-  ocupadoPor,
+  ocupantesDe,
   escolhendo,
   onEscolher,
   onLiberar,
 }: {
   leito: Leito;
   campo: boolean;
-  ocupadoPor: (leitoId: string, noite: string) => string | undefined;
+  ocupantesDe: (leitoId: string, noite: string) => readonly string[];
   escolhendo: { leitoId: string; noite: NoiteId } | null;
   onEscolher: (leitoId: string, noite: NoiteId) => void;
-  onLiberar: (leitoId: string, noite: string) => void;
+  onLiberar: (leitoId: string, noite: string, inscricaoId: string) => void;
 }) {
   const leitoId = l.id as string;
   const liberado = liberadoPorCancelamento.leitoId === leitoId;
@@ -334,85 +350,143 @@ function LinhaDeLeito({
         </span>
       </div>
 
-      {eventoDoMapa.noites.map((n) => {
-        const inscricaoId = ocupadoPor(leitoId, n.chave);
-        const nome = hospedes.find((h) => (h.inscricaoId as string) === inscricaoId)?.nome;
-        const conflita = n.chave === conflitoDeAgenda.noite;
-        const selecionada = escolhendo?.leitoId === leitoId && escolhendo.noite === n.chave;
+      {eventoDoMapa.noites.map((n) => (
+        <Celula
+          key={n.chave}
+          leito={l}
+          noite={n}
+          campo={campo}
+          ocupantes={ocupantesDe(leitoId, n.chave)}
+          selecionada={escolhendo?.leitoId === leitoId && escolhendo.noite === n.chave}
+          mostrarLiberado={liberado && n.chave === eventoDoMapa.noites[0].chave}
+          onEscolher={() => onEscolher(leitoId, n.chave)}
+          onLiberar={(inscricaoId) => onLiberar(leitoId, n.chave, inscricaoId)}
+        />
+      ))}
+    </div>
+  );
+}
 
-        if (!l.ativo) {
-          return (
-            <div
-              key={n.chave}
-              style={{
-                borderRadius: 'var(--radius-sm)',
-                border: '1px dashed var(--color-line)',
-                background: 'var(--bg-sunken)',
-                minHeight: campo ? 52 : 48,
-              }}
-            />
-          );
-        }
+/**
+ * Uma vaga-noite. Deixou de ser um botão só quando a casa mostrou que tem uma
+ * cama de casal: a célula passou a caber mais de uma pessoa, e cada uma sai
+ * sozinha de lá.
+ */
+function Celula({
+  leito: l,
+  noite: n,
+  campo,
+  ocupantes,
+  selecionada,
+  mostrarLiberado,
+  onEscolher,
+  onLiberar,
+}: {
+  leito: Leito;
+  noite: (typeof eventoDoMapa.noites)[number];
+  campo: boolean;
+  ocupantes: readonly string[];
+  selecionada: boolean;
+  mostrarLiberado: boolean;
+  onEscolher: () => void;
+  onLiberar: (inscricaoId: string) => void;
+}) {
+  const conflita = n.chave === conflitoDeAgenda.noite;
+  const temVaga = ocupantes.length < l.capacidade;
 
-        if (nome) {
-          return (
-            <button
-              key={n.chave}
-              type="button"
-              aria-label={`liberar ${l.identificacao} na ${n.rotulo} — ${nome}`}
-              onClick={() => onLiberar(leitoId, n.chave)}
-              style={{
-                borderRadius: 'var(--radius-sm)',
-                border: `1px solid ${conflita ? 'var(--color-pending)' : 'var(--color-royal)'}`,
-                background: 'var(--color-royal-soft)',
-                color: 'var(--color-royal-ink)',
-                minHeight: campo ? 52 : 48,
-                padding: '6px 9px',
-                cursor: 'pointer',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                gap: 2,
-                textAlign: 'left',
-              }}
-            >
-              <span style={{ font: 'var(--text-small)', fontWeight: 600 }}>{nome.split(' ')[0]}</span>
-              <span style={{ font: 'var(--text-small)', opacity: 0.7 }}>{nome.split(' ').slice(1).join(' ')}</span>
-            </button>
-          );
-        }
+  if (!l.ativo) {
+    return (
+      <div
+        style={{
+          borderRadius: 'var(--radius-sm)',
+          border: '1px dashed var(--color-line)',
+          background: 'var(--bg-sunken)',
+          minHeight: campo ? 52 : 48,
+        }}
+      />
+    );
+  }
 
+  return (
+    <div
+      style={{
+        borderRadius: 'var(--radius-sm)',
+        border: `1px ${ocupantes.length > 0 || selecionada ? 'solid' : 'dashed'} ${
+          selecionada
+            ? 'var(--color-royal)'
+            : conflita
+              ? 'var(--color-pending)'
+              : ocupantes.length > 0
+                ? 'var(--color-royal)'
+                : 'var(--color-line-strong)'
+        }`,
+        background:
+          ocupantes.length > 0
+            ? 'var(--color-royal-soft)'
+            : selecionada
+              ? 'var(--color-royal-soft)'
+              : conflita
+                ? 'var(--color-pending-soft)'
+                : 'var(--bg-card)',
+        minHeight: campo ? 52 : 48,
+        padding: 4,
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        gap: 3,
+      }}
+    >
+      {ocupantes.map((inscricaoId) => {
+        const nome = hospedes.find((h) => (h.inscricaoId as string) === inscricaoId)?.nome ?? inscricaoId;
         return (
           <button
-            key={n.chave}
+            key={inscricaoId}
             type="button"
-            aria-label={`alocar em ${l.identificacao} na ${n.rotulo}`}
-            onClick={() => onEscolher(leitoId, n.chave)}
+            aria-label={`liberar ${l.identificacao} na ${n.rotulo} — ${nome}`}
+            onClick={() => onLiberar(inscricaoId)}
             style={{
-              borderRadius: 'var(--radius-sm)',
-              border: `1px ${selecionada ? 'solid' : 'dashed'} ${
-                selecionada ? 'var(--color-royal)' : conflita ? 'var(--color-pending)' : 'var(--color-line-strong)'
-              }`,
-              background: selecionada ? 'var(--color-royal-soft)' : conflita ? 'var(--color-pending-soft)' : 'var(--bg-card)',
-              minHeight: campo ? 52 : 48,
+              background: 'transparent',
+              color: 'var(--color-royal-ink)',
               cursor: 'pointer',
+              textAlign: 'left',
+              padding: '2px 5px',
               display: 'flex',
               flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 2,
-              padding: '4px 6px',
+              gap: 1,
             }}
           >
-            <span style={{ font: 'var(--text-small)', color: 'var(--text-meta)' }}>livre</span>
-            {liberado && n.chave === eventoDoMapa.noites[0].chave ? (
-              <span style={{ font: 'var(--text-small)', color: 'var(--color-confirmed)', textAlign: 'center' }}>
-                liberado em {liberadoPorCancelamento.quando}
-              </span>
-            ) : null}
+            <span style={{ font: 'var(--text-small)', fontWeight: 600 }}>{nome.split(' ')[0]}</span>
+            <span style={{ font: 'var(--text-small)', opacity: 0.7 }}>{nome.split(' ').slice(1).join(' ')}</span>
           </button>
         );
       })}
+
+      {temVaga ? (
+        <button
+          type="button"
+          aria-label={`alocar em ${l.identificacao} na ${n.rotulo}`}
+          onClick={onEscolher}
+          style={{
+            cursor: 'pointer',
+            padding: '3px 5px',
+            borderRadius: 'var(--radius-sm)',
+            border: ocupantes.length > 0 ? '1px dashed var(--color-line-strong)' : 0,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 2,
+          }}
+        >
+          <span style={{ font: 'var(--text-small)', color: 'var(--text-meta)' }}>
+            {ocupantes.length > 0 ? `livre · cabe mais ${l.capacidade - ocupantes.length}` : 'livre'}
+          </span>
+          {mostrarLiberado ? (
+            <span style={{ font: 'var(--text-small)', color: 'var(--color-confirmed)', textAlign: 'center' }}>
+              liberado em {liberadoPorCancelamento.quando}
+            </span>
+          ) : null}
+        </button>
+      ) : null}
     </div>
   );
 }
@@ -626,6 +700,8 @@ function Cadastro({
       id: `l-novo-${Date.now()}` as Leito['id'],
       identificacao: identificacao.trim(),
       tipo,
+      /** A capacidade vem do tipo: só cama de casal comporta duas pessoas. */
+      capacidade: tipo === 'CAMA_CASAL' ? 2 : 1,
       ativo: true,
     };
     onMudar(dormitorios.map((x) => (x.id === d.id ? { ...x, leitos: [...x.leitos, novo] } : x)));

@@ -140,12 +140,24 @@ export interface OpcaoDeRefeicao {
    clareza, porque o domínio não o impede.
    --------------------------------------------------------------------------- */
 
-export type TipoLeito = 'BELICHE_SUPERIOR' | 'BELICHE_INFERIOR' | 'CAMA_SOLTEIRO' | 'QUARTO_PRIVATIVO';
+export type TipoLeito =
+  | 'BELICHE_SUPERIOR'
+  | 'BELICHE_INFERIOR'
+  | 'CAMA_SOLTEIRO'
+  | 'CAMA_CASAL'
+  | 'QUARTO_PRIVATIVO';
 
 export interface Leito {
   readonly id: LeitoId;
   readonly identificacao: string;
   readonly tipo: TipoLeito;
+  /**
+   * Quantas pessoas o leito comporta. Um beliche vale 1; uma cama de casal
+   * vale 2. ML1 no Doc 2 diz "um leito não pode ter duas alocações com noites
+   * sobrepostas" — com cama de casal a regra vira **não exceder a
+   * capacidade**, que é o mesmo enunciado quando a capacidade é 1.
+   */
+  readonly capacidade: number;
   readonly ativo: boolean;
 }
 
@@ -163,6 +175,10 @@ export interface AlocacaoDeLeito {
   /** ML4: contido no intervalo do evento. */
   readonly noites: readonly DataLocal[];
 }
+
+/** Quantas vagas-noite o dormitório oferece — capacidade, não número de leitos. */
+export const vagasDoDormitorio = (d: Dormitorio): number =>
+  d.leitos.filter((l) => l.ativo).reduce((s, l) => s + l.capacidade, 0);
 
 /* ---------------------------------------------------------------------------
    Devolução — Doc 2 §2.9 e Doc 4, E-08/E-09.

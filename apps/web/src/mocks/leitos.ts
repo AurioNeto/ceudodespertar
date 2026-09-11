@@ -39,43 +39,40 @@ export const conflitoDeAgenda = {
 const dorm = (n: string) => id<DormitorioId>(n);
 const leito = (n: string) => id<LeitoId>(n);
 
-const L = (n: string, identificacao: string, tipo: TipoLeito, ativo = true) => ({
+const L = (n: string, identificacao: string, tipo: TipoLeito, capacidade = 1, ativo = true) => ({
   id: leito(n),
   identificacao,
   tipo,
+  capacidade,
   ativo,
 });
 
+/**
+ * O que a casa tem de verdade: dois dormitórios, sem separação por gênero.
+ * Um com uma cama de casal — que é para onde vai quem pede "quarto" —, outro
+ * com três beliches, seis leitos.
+ */
 export const dormitorios: readonly Dormitorio[] = [
   {
-    id: dorm('d-fem'),
+    id: dorm('d-1'),
     unidadeId: id<UnidadeId>('u-dorm'),
-    nome: 'Dormitório feminino',
+    nome: 'Dormitório 1',
     ativo: true,
-    leitos: [
-      L('l-f1', 'F1 · superior', 'BELICHE_SUPERIOR'),
-      L('l-f2', 'F2 · inferior', 'BELICHE_INFERIOR'),
-      L('l-f3', 'F3 · superior', 'BELICHE_SUPERIOR'),
-      L('l-f4', 'F4 · inferior', 'BELICHE_INFERIOR'),
-    ],
+    leitos: [L('l-casal', 'Cama de casal', 'CAMA_CASAL', 2)],
   },
   {
-    id: dorm('d-masc'),
+    id: dorm('d-2'),
     unidadeId: id<UnidadeId>('u-dorm'),
-    nome: 'Dormitório masculino',
+    nome: 'Dormitório 2',
     ativo: true,
     leitos: [
-      L('l-m1', 'M1 · superior', 'BELICHE_SUPERIOR'),
-      L('l-m2', 'M2 · inferior', 'BELICHE_INFERIOR'),
-      L('l-m3', 'M3 · superior', 'BELICHE_SUPERIOR', false),
+      L('l-b1-sup', 'Beliche 1 · superior', 'BELICHE_SUPERIOR'),
+      L('l-b1-inf', 'Beliche 1 · inferior', 'BELICHE_INFERIOR'),
+      L('l-b2-sup', 'Beliche 2 · superior', 'BELICHE_SUPERIOR'),
+      L('l-b2-inf', 'Beliche 2 · inferior', 'BELICHE_INFERIOR'),
+      L('l-b3-sup', 'Beliche 3 · superior', 'BELICHE_SUPERIOR'),
+      L('l-b3-inf', 'Beliche 3 · inferior', 'BELICHE_INFERIOR'),
     ],
-  },
-  {
-    id: dorm('d-quartos'),
-    unidadeId: id<UnidadeId>('u-dorm'),
-    nome: 'Quartos da sede',
-    ativo: true,
-    leitos: [L('l-q1', 'Quarto 1', 'QUARTO_PRIVATIVO'), L('l-q2', 'Quarto 2', 'QUARTO_PRIVATIVO')],
   },
 ];
 
@@ -83,6 +80,7 @@ export const TIPO_LEITO_ROTULO: Record<TipoLeito, string> = {
   BELICHE_SUPERIOR: 'Beliche superior',
   BELICHE_INFERIOR: 'Beliche inferior',
   CAMA_SOLTEIRO: 'Cama de solteiro',
+  CAMA_CASAL: 'Cama de casal',
   QUARTO_PRIVATIVO: 'Quarto privativo',
 };
 
@@ -152,10 +150,14 @@ export const foraDoMapa: readonly { nome: string; hospedagem: Hospedagem; razao:
   { nome: 'Eduardo Pires', hospedagem: 'SEM_HOSPEDAGEM', razao: 'Vai embora depois do trabalho.' },
 ];
 
-/** Alocações já feitas quando a tela abre. `leitoId → noiteId → inscricaoId`. */
-export const alocacaoInicial: Readonly<Record<string, Readonly<Record<string, string>>>> = {
-  'l-f1': { '2026-10-24': 'i-501', '2026-10-25': 'i-501' },
-  'l-q1': { '2026-10-24': 'i-505', '2026-10-25': 'i-505' },
+/**
+ * Alocações já feitas quando a tela abre: `leitoId → noiteId → inscricaoIds`.
+ * A lista existe por causa da cama de casal, que comporta duas pessoas — nos
+ * beliches ela sempre tem um elemento só.
+ */
+export const alocacaoInicial: Readonly<Record<string, Readonly<Record<string, readonly string[]>>>> = {
+  'l-b1-sup': { '2026-10-24': ['i-501'], '2026-10-25': ['i-501'] },
+  'l-casal': { '2026-10-24': ['i-505'], '2026-10-25': ['i-505'] },
 };
 
 /**
@@ -163,7 +165,7 @@ export const alocacaoInicial: Readonly<Record<string, Readonly<Record<string, st
  * para o mapa sozinho. Fica dito para que a vaga livre tenha história.
  */
 export const liberadoPorCancelamento = {
-  leitoId: 'l-f2',
+  leitoId: 'l-b1-inf',
   nome: 'Rita Belmonte',
   quando: '10/09',
 };
