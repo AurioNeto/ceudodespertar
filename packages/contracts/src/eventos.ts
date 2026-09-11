@@ -60,6 +60,54 @@ export interface Inscricao {
   readonly pontoDeAtencao: string | null;
 }
 
+/* ---------------------------------------------------------------------------
+   Inscrição — Doc 2 §2.4 e Doc 4, E-06.
+
+   O que a v2.2 do domínio chamava de `TabelaDeContribuicao` com `valorBase`
+   virou outra coisa depois da decisão da coordenação: **três níveis sugeridos**
+   — social, sustentável e próspero —, definidos pelos padrinhos e referentes
+   só à participação na cerimônia. Não são preço: são sugestão. Pode-se pagar
+   menos, conversado, e pode-se pagar mais por vontade própria. Por isso
+   `permiteValorLivre` deixa de ser opção de quem cria o evento e passa a ser a
+   natureza do regime de contribuição.
+   --------------------------------------------------------------------------- */
+
+export type NivelDeContribuicao = 'SOCIAL' | 'SUSTENTAVEL' | 'PROSPERO';
+
+export interface ContribuicaoSugerida {
+  readonly nivel: NivelDeContribuicao;
+  readonly rotulo: string;
+  readonly valor: Dinheiro;
+  readonly explicacao: string;
+}
+
+export type ModalidadeCrianca = 'PARTICIPA_RITUAL' | 'PERMANECE_SOB_SUPERVISAO';
+export type StatusAcolhimento = 'NAO_NECESSARIO' | 'PENDENTE' | 'REALIZADO';
+
+/**
+ * `COLCHONETE` é grátis e, por decisão da casa, não gera cobrança nem linha
+ * financeira — mas existe no domínio porque a operação precisa saber quem
+ * dorme na igreja para contar gente e não para contar dinheiro.
+ */
+export type Hospedagem = 'SEM_HOSPEDAGEM' | 'COLCHONETE' | 'BELICHE' | 'QUARTO';
+
+export type Refeicao = 'CEIA' | 'CAFE' | 'ALMOCO' | 'JANTAR';
+
+export interface OpcaoDeHospedagem {
+  readonly tipo: Hospedagem;
+  readonly rotulo: string;
+  readonly valorDiaria: Dinheiro;
+  readonly nota: string;
+  /** Ocupa vaga no mapa de leitos e por isso pede alocação antes de confirmar. */
+  readonly ocupaLeito: boolean;
+}
+
+export interface OpcaoDeRefeicao {
+  readonly refeicao: Refeicao;
+  readonly rotulo: string;
+  readonly valor: Dinheiro;
+}
+
 /** Lista de preparo do trabalho — compartilhável por link e atualizável por webhook. */
 export type OrigemMarcacao = 'SISTEMA' | 'LINK_PUBLICO' | 'WEBHOOK';
 

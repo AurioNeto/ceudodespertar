@@ -21,6 +21,7 @@ import { PrestacaoDeContasPage } from '../pages/prestacao/PrestacaoDeContasPage'
 import { ConciliacaoPage } from '../pages/conciliacao/ConciliacaoPage';
 import { ParametrosPage } from '../pages/parametros/ParametrosPage';
 import { AgendaPage } from '../pages/agenda/AgendaPage';
+import { InscricaoPage } from '../pages/eventos/InscricaoPage';
 import { PessoasPage } from '../pages/pessoas/PessoasPage';
 import { AnamnesePage } from '../pages/pessoas/AnamnesePage';
 import { AnamnesePresencialPage } from '../pages/pessoas/AnamnesePresencialPage';
@@ -56,6 +57,7 @@ export const router = createBrowserRouter([
       { path: ROTAS.prestacao, element: <PrestacaoDeContasPage /> },
       { path: ROTAS.parametros, element: <ParametrosPage /> },
       { path: ROTAS.agenda, element: <AgendaPage /> },
+      { path: ROTAS.inscricao, element: <InscricaoPage /> },
       { path: ROTAS.pessoas, element: <PessoasPage /> },
       { path: ROTAS.anamnese, element: <AnamnesePage /> },
       { path: ROTAS.presencial, element: <AnamnesePresencialPage /> },
