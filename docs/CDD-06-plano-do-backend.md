@@ -1,6 +1,6 @@
 # Sistema de Gestão — Céu do Despertar (CDD)
 
-## Documento 6 de 6 — Plano do Backend
+## Documento 6 — Plano do Backend
 
 **Versão 1.0** · setembro/2026 · Status: proposta
 
@@ -8,6 +8,8 @@
 > Onde este documento divergir daqueles, **prevalecem aqueles** — salvo nos pontos listados em §2.3, que são divergências que o front-end produziu e que exigem decisão antes de virar código de servidor.
 
 Este documento faz duas coisas: **§1 e §2** dizem onde o projeto está de fato, comparando o que foi construído com o que os quatro documentos especificam; **§3 em diante** organiza a construção do backend.
+
+> **Continua no [Documento 7 — Backend: arquitetura, banco de dados e plano de construção](CDD-07-backend-arquitetura-e-banco.md)**, que detalha a forma do servidor, o desenho completo do banco (com esquema SQL executável e verificação) e o que cada etapa de §6 entrega em tabela, endpoint e teste.
 
 ---
 
