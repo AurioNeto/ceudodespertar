@@ -26,8 +26,8 @@ os testes. A sessão do usuário e as permissões são fixtures.
 
 ## Ambiente local
 
-Postgres 16 (com os papéis de cluster do Doc 7 §8), MinIO/SeaweedFS e Mailpit
-via Docker Compose:
+Postgres 16 (com os papéis de cluster do Doc 7 §8), MinIO/SeaweedFS, Mailpit
+e Keycloak 26 via Docker Compose:
 
 ```bash
 cp .env.example .env
@@ -42,11 +42,27 @@ pnpm infra:zerar    # para e apaga os volumes
 | Postgres | `127.0.0.1:${POSTGRES_PORTA:-5432}` | `BANCO_URL` (papel `cdd_app`) e `BANCO_URL_MIGRACAO` (papel `cdd_owner`) |
 | MinIO/SeaweedFS (S3) | `127.0.0.1:9000` | `S3_ENDPOINT`, bucket `cdd-anexos`, com IAM (credencial obrigatória) |
 | Mailpit | `127.0.0.1:8025` (UI), `127.0.0.1:1025` (SMTP) | e-mails de convite/redefinição de senha do Keycloak |
+| Keycloak | `127.0.0.1:8080` | Console admin (`/admin`, usuário `admin`/`KEYCLOAK_ADMIN_SENHA`); realm `cdd` (`OIDC_EMISSOR`) |
 
 Todas as portas ficam só em `127.0.0.1`: nada aqui tem senha forte o
 suficiente para escutar na rede. O filer do SeaweedFS (porta 8888) não é
 publicado — sua API HTTP aceita leitura, escrita e exclusão sem credencial,
-mesmo com o `s3.json` configurado na API S3 (9000).
+mesmo com o `s3.json` configurado na API S3 (9000). A porta de gestão do
+Keycloak (9000, `/health/*`) também não é publicada — nesta máquina a 9000
+já é do SeaweedFS; o healthcheck do Keycloak fala com ela de dentro do
+próprio container.
+
+O realm `cdd` (`infra/keycloak/realm-cdd.json`) é versionado e importado a
+cada subida (`--import-realm`); nenhum segredo fica em claro nele — o
+segredo do client de serviço `cdd-api-admin` e a senha do usuário de
+desenvolvimento (`dev@cdd.local`) chegam por placeholder de variável de
+ambiente (`CDD_KC_ADMIN_SEGREDO`, `CDD_KC_DEV_SENHA`), substituído pelo
+próprio Keycloak no import.
+
+```bash
+node infra/keycloak/verificar-realm.mjs   # falha se alguma regra de segurança do realm regredir
+bash infra/keycloak/fumaca.sh             # com o compose de pé: discovery, token do cdd-teste, cdd-web recusa password grant
+```
 
 ---
 
