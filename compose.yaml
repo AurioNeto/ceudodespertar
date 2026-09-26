@@ -11,7 +11,7 @@ services:
       CDD_OWNER_SENHA: ${CDD_OWNER_SENHA}
       CDD_APP_SENHA: ${CDD_APP_SENHA}
     ports:
-      - "${POSTGRES_PORTA:-5432}:5432"
+      - "127.0.0.1:${POSTGRES_PORTA:-5432}:5432"
     volumes:
       - ./infra/postgres/papeis.sql:/cdd/papeis.sql:ro
       - ./infra/postgres/init:/docker-entrypoint-initdb.d:ro
@@ -29,6 +29,13 @@ services:
   # existir no Docker Hub, e `quay.io/minio/minio` passou a exigir login.
   # SeaweedFS `server -s3` é S3-compatível, mantido e não exige conta —
   # a porta S3 é o contrato (Doc 6 §11); trocar de novo não muda quem a usa.
+  #
+  # O filer (porta 8888) não é publicado: sua API HTTP não obedece o
+  # s3.json — GET/POST/DELETE anônimos por ali leem, criam e apagam objetos
+  # do mesmo bucket que a API S3 (9000) protege por credencial. Confirmado
+  # ao vivo (GET 200, POST 201, DELETE 204 sem credencial). Ficar só na rede
+  # interna do Compose não tira a utilidade do filer para o container `storage`
+  # e para o serviço `storage-bucket` — só tira o acesso de fora.
   storage:
     image: chrislusf/seaweedfs:3.97
     hostname: storage
@@ -40,8 +47,7 @@ services:
       - ./infra/storage/iniciar.sh:/cdd/iniciar.sh:ro
       - cdd_storage_dados:/dados
     ports:
-      - "9000:9000" # API S3 (S3_ENDPOINT)
-      - "8888:8888" # navegador de arquivos do filer — não é um console S3 como o do MinIO
+      - "127.0.0.1:9000:9000" # API S3 (S3_ENDPOINT), com IAM (s3.json)
     healthcheck:
       # Sem IAM (s3.json) a raiz responde 200; com IAM ela vira 403 mesmo com
       # o servidor no ar, então a checagem é só a porta abrir.
@@ -70,8 +76,8 @@ services:
   mailpit:
     image: axllent/mailpit:v1.31.2
     ports:
-      - "8025:8025" # UI
-      - "1025:1025" # SMTP
+      - "127.0.0.1:8025:8025" # UI
+      - "127.0.0.1:1025:1025" # SMTP
     healthcheck:
       test: ["CMD", "/mailpit", "readyz"]
       interval: 2s
