@@ -15,7 +15,11 @@
   "files": ["dist", "src"],
   "scripts": {
     "build": "tsc -b",
-    "typecheck": "tsc -p . --noEmit"
+    "typecheck": "tsc -p . --noEmit",
+    "test": "tsc -b && node --test \"test/**/*.test.mjs\""
+  },
+  "dependencies": {
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "typescript": "^5.7.3"

@@ -2,6 +2,7 @@ export * from './kernel.js';
 export * from './financeiro.js';
 export * from './eventos.js';
 export * from './pessoas.js';
-export * from './identidade.js';
+export * from './identidade/index.js';
 export * from './estoque.js';
 export * from './readmodels.js';
+export * from './comandos/identidade.js';
