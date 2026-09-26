@@ -19,9 +19,9 @@ import {
   type ReceiptTone,
   type SheetOption,
 } from '../../ds';
+import { useSessao } from '../../app/sessao';
 import { CampoDeTags, Select, SeletorDeTipo, Interruptor } from '../../components/Campo';
 import { useDensidade } from '../../lib/useDensidade';
-import { usuarioAtual } from '../../mocks/sessao';
 import {
   opcoesDeCategoria,
   opcoesDeCerimonia,
@@ -66,28 +66,23 @@ const rotuloLabel = {
   color: 'var(--text-field-label)',
 } as const;
 
-/** Tesouraria lança já consolidado; Registro rápido grava como "a conferir". */
-const PODE_CONSOLIDAR = usuarioAtual.grupoNome === 'Tesouraria' || usuarioAtual.grupoNome === 'Administrador';
-
 export function RegistrarLancamentoPage() {
   const densidade = useDensidade();
-  const f = useFormularioDeLancamento();
+  const { usuario, pode } = useSessao();
+  const consolida = pode('financeiro.lancamento.confirmar');
+  const f = useFormularioDeLancamento(consolida);
   const campo = densidade === 'field';
 
-  if (!PODE_CONSOLIDAR) {
+  if (!pode('financeiro.lancamento.registrar')) {
     return (
       <>
         <ScreenHeader code="F-01 · Lançamento" title="Registrar lançamento" density={densidade} />
         <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 760 }}>
           <PermissionDenied
             screen="Registrar lançamento"
-            group={usuarioAtual.grupoNome}
+            group={usuario?.grupoNome ?? ''}
             missing="financeiro.lancamento.registrar"
             whoToAsk="Aurio Neto, administrador da unidade"
-          />
-          <TwoAxisGuard
-            explanation="Quem é do grupo Registro rápido abre esta tela e grava um lançamento — mas grava como A conferir. Lançar já consolidado é operação de tesouraria, e é por isso que o botão não está aqui."
-            requirement="Precisa da permissão financeiro.lancamento.confirmar no grupo Tesouraria."
           />
         </div>
       </>
@@ -116,7 +111,11 @@ export function RegistrarLancamentoPage() {
         code={campo ? 'F-01' : 'F-01 · Lançamento'}
         title="Registrar lançamento"
         subtitle={
-          campo ? undefined : `Tesouraria lança já consolidado · competência ${f.campos.competencia} · CDD`
+          campo
+            ? undefined
+            : consolida
+              ? `Tesouraria lança já consolidado · competência ${f.campos.competencia} · CDD`
+              : `Grava como a conferir · competência ${f.campos.competencia} · CDD`
         }
         density={densidade}
       />
@@ -142,7 +141,9 @@ export function RegistrarLancamentoPage() {
               footnote={
                 campo
                   ? 'Campos limpos, pronto para o próximo. Desfazer nos próximos 2 minutos.'
-                  : 'Gravado consolidado, com seu nome no histórico. Desfazer só nos próximos 2 minutos; depois disso, estorno.'
+                  : consolida
+                    ? 'Gravado consolidado, com seu nome no histórico. Desfazer só nos próximos 2 minutos; depois disso, estorno.'
+                    : 'Gravado como a conferir, com seu nome no histórico. A tesouraria confere antes de consolidar.'
               }
             />
             {campo ? null : (
@@ -495,7 +496,14 @@ export function RegistrarLancamentoPage() {
           </>
         )}
 
-        {f.composto ? (
+        {!consolida && !f.recibo ? (
+          <TwoAxisGuard
+            explanation="Você grava este lançamento como A conferir. Lançar já consolidado é operação de tesouraria, e é por isso que o botão não está aqui."
+            requirement="Precisa da permissão financeiro.lancamento.confirmar."
+          />
+        ) : null}
+
+        {consolida && f.composto ? (
           <DomainError
             rule="Um lançamento consolidado tem um valor só"
             explanation={
@@ -513,7 +521,11 @@ export function RegistrarLancamentoPage() {
 
         {campo ? (
           <div style={{ display: 'flex', gap: 7, flexWrap: 'wrap' }}>
-            <StatusBadge tone="confirmed">Grava consolidado</StatusBadge>
+            {consolida ? (
+              <StatusBadge tone="confirmed">Grava consolidado</StatusBadge>
+            ) : (
+              <StatusBadge>Grava a conferir</StatusBadge>
+            )}
           </div>
         ) : null}
       </div>

@@ -1,7 +1,8 @@
 import { createContext, useCallback, useContext, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import type { Usuario } from '@cdd/contracts';
+import type { Permissao, Usuario } from '@cdd/contracts';
+import { permissoesDoGrupo } from '../mocks/sessao';
 import { ROTAS_PUBLICAS } from './navegacao';
 
 /**
@@ -16,6 +17,7 @@ const CHAVE = 'cdd.sessao';
 
 interface Sessao {
   readonly usuario: Usuario | null;
+  pode(permissao: Permissao): boolean;
   abrir(usuario: Usuario): void;
   encerrar(): void;
 }
@@ -53,7 +55,12 @@ export function SessaoProvider({ children }: { children: ReactNode }) {
     setUsuario(null);
   }, []);
 
-  const valor = useMemo<Sessao>(() => ({ usuario, abrir, encerrar }), [usuario, abrir, encerrar]);
+  const pode = useCallback(
+    (permissao: Permissao) => (usuario ? permissoesDoGrupo(usuario.grupoId).includes(permissao) : false),
+    [usuario],
+  );
+
+  const valor = useMemo<Sessao>(() => ({ usuario, pode, abrir, encerrar }), [usuario, pode, abrir, encerrar]);
 
   return <Contexto.Provider value={valor}>{children}</Contexto.Provider>;
 }

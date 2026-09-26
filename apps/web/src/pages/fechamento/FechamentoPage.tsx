@@ -56,6 +56,7 @@ export function FechamentoPage() {
   const doMes = lancamentos.filter((l) => l.competencia === competenciaAtual);
   const semComprovante = doMes.filter((l) => l.comprovante === null);
   const transferenciasDoMes = doMes.filter((l) => l.tipo === 'TRANSFERENCIA');
+  const transferenciasSemOutroLado = transferenciasDoMes.filter((l) => !l.contaDestino || l.contaDestino === l.conta);
 
   const checklist: readonly ItemDoChecklist[] = [
     {
@@ -99,9 +100,12 @@ export function FechamentoPage() {
       id: 'transferencias',
       titulo: 'Transferências com os dois lados',
       bloqueia: true,
-      ok: true,
-      detalhe: `${pluralizar(transferenciasDoMes.length, 'transferência do mês bate', 'transferências do mês batem')} origem e destino`,
-      acao: null,
+      ok: transferenciasSemOutroLado.length === 0,
+      detalhe:
+        transferenciasSemOutroLado.length === 0
+          ? `${pluralizar(transferenciasDoMes.length, 'transferência do mês bate', 'transferências do mês batem')} origem e destino`
+          : `${pluralizar(transferenciasSemOutroLado.length, 'transferência', 'transferências')} sem conta de destino, ou com a mesma conta nos dois lados`,
+      acao: transferenciasSemOutroLado.length === 0 ? null : { rotulo: 'Ver lançamentos', rota: 'lancamentos' },
     },
   ];
 

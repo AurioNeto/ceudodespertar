@@ -78,7 +78,7 @@ const somar = (valor: string): number =>
     .map((parcela) => parseFloat(parcela.replace(/\./g, '').replace(',', '.')) || 0)
     .reduce((a, b) => a + b, 0);
 
-export function useFormularioDeLancamento() {
+export function useFormularioDeLancamento(consolida: boolean) {
   const [tipo, setTipo] = useState<TipoLancamento>('SAIDA');
   const [campos, setCampos] = useState<EstadoDoFormulario>(INICIAL);
   const [picker, setPicker] = useState<CampoComPicker | null>(null);
@@ -155,12 +155,13 @@ export function useFormularioDeLancamento() {
     const conta = rotuloDaOpcao(opcoesDeConta, campos.conta);
     const contaDestino = rotuloDaOpcao(opcoesDeConta, campos.contaDestino);
 
-    const bloqueado = competenciaFechada || composto || mesmaConta;
+    const compostoBloqueia = consolida && composto;
+    const bloqueado = competenciaFechada || compostoBloqueia || mesmaConta;
     const motivoBloqueio = competenciaFechada
       ? 'Julho está fechado. Um administrador pode reabrir, e o motivo fica registrado.'
       : mesmaConta
         ? 'Origem e destino precisam ser contas diferentes.'
-        : composto
+        : compostoBloqueia
           ? 'O valor composto precisa virar um número só antes de gravar consolidado.'
           : undefined;
 
@@ -215,11 +216,15 @@ export function useFormularioDeLancamento() {
         ? 'Enquanto isso não se resolve, dá para salvar como rascunho — nada se perde.'
         : ehTransferencia
           ? `Grava os dois lados de uma vez: saída em ${conta} e entrada em ${contaDestino}.`
-          : semCategoria
-            ? 'Nada bloqueia o registro. Sem categoria, grava e marca como não classificado.'
-            : 'Consolidado é definitivo: depois de gravado, só estorno.',
+          : !consolida && composto
+            ? 'Grava como a conferir: o valor composto vira pendência na conferência.'
+            : semCategoria
+              ? 'Nada bloqueia o registro. Sem categoria, grava e marca como não classificado.'
+              : consolida
+                ? 'Consolidado é definitivo: depois de gravado, só estorno.'
+                : 'Grava como a conferir: a tesouraria confere antes de consolidar.',
     };
-  }, [tipo, campos]);
+  }, [tipo, campos, consolida]);
 
   const sugestoesPendentes = useMemo(() => {
     if (!campos.anexo) return [];
