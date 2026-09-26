@@ -18,17 +18,26 @@ import {
 const aquiDir = dirname(fileURLToPath(import.meta.url));
 const caminhoDoEsquema = resolve(aquiDir, '../../../docs/sql/cdd-07-esquema.sql');
 
-function codigosDoInsertDeReferencia() {
+function blocosDeInsertDeReferencia() {
   const sql = readFileSync(caminhoDoEsquema, 'utf8');
-  const linhas = sql.split('\n');
-  const inicio = linhas.findIndex((linha) => linha.includes('INSERT INTO identidade.permissao'));
-  assert.ok(inicio >= 0, 'INSERT INTO identidade.permissao não encontrado no esquema de referência');
+  const casamentos = sql.matchAll(/INSERT INTO identidade\.permissao[^;]*;/gs);
+  const blocos = [...casamentos].map((casamento) => casamento[0]);
+  assert.ok(blocos.length > 0, 'INSERT INTO identidade.permissao não encontrado no esquema de referência');
+  return blocos;
+}
 
+function codigosDoInsertDeReferencia() {
+  const blocos = blocosDeInsertDeReferencia();
   const codigos = [];
-  for (let i = inicio + 1; i < linhas.length; i++) {
-    const casamento = linhas[i].match(/^\s*\('([^']+)'/);
-    if (!casamento) break;
-    codigos.push(casamento[1]);
+  for (const bloco of blocos) {
+    const ocorrenciasDeAberturaDeTupla = bloco.split("('").length - 1;
+    const casamentos = [...bloco.matchAll(/\(\s*'([^']+)'/g)];
+    assert.equal(
+      casamentos.length,
+      ocorrenciasDeAberturaDeTupla,
+      'tupla do INSERT com formatação divergente do padrão esperado',
+    );
+    for (const casamento of casamentos) codigos.push(casamento[1]);
   }
   return codigos;
 }
@@ -75,10 +84,28 @@ test('ConvidarUsuario aceita exemplo válido e recusa e-mail inválido', () => {
   assert.equal(ConvidarUsuario.safeParse({ nome: '', email: 'ana@exemplo.org' }).success, false);
 });
 
-test('AlterarGruposDoUsuario aceita lista vazia e recusa item vazio', () => {
+const grupoIdA = '550e8400-e29b-41d4-a716-446655440000';
+const grupoIdB = '6ba7b810-9dad-11d1-80b4-00c04fd430c8';
+
+test('AlterarGruposDoUsuario aceita lista vazia e UUIDs distintos', () => {
   assert.equal(AlterarGruposDoUsuario.safeParse({ grupos: [] }).success, true);
-  assert.equal(AlterarGruposDoUsuario.safeParse({ grupos: ['grupo-1'] }).success, true);
+  assert.equal(AlterarGruposDoUsuario.safeParse({ grupos: [grupoIdA, grupoIdB] }).success, true);
+});
+
+test('AlterarGruposDoUsuario recusa item que não é UUID', () => {
   assert.equal(AlterarGruposDoUsuario.safeParse({ grupos: [''] }).success, false);
+  assert.equal(AlterarGruposDoUsuario.safeParse({ grupos: ['grupo-1'] }).success, false);
+});
+
+test('AlterarGruposDoUsuario recusa UUIDs duplicados', () => {
+  assert.equal(AlterarGruposDoUsuario.safeParse({ grupos: [grupoIdA, grupoIdA] }).success, false);
+});
+
+test('AlterarGruposDoUsuario recusa mais grupos que o limite permitido', () => {
+  const grupos = Array.from({ length: 101 }, (_, indice) =>
+    `00000000-0000-4000-8000-${String(indice).padStart(12, '0')}`,
+  );
+  assert.equal(AlterarGruposDoUsuario.safeParse({ grupos }).success, false);
 });
 
 test('DesativarUsuario e ReativarUsuario exigem motivo entre 1 e 500 caracteres', () => {

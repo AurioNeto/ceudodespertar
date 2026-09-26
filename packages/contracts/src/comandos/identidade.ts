@@ -1,11 +1,9 @@
 import { z } from 'zod';
 import type { GrupoId } from '../kernel.js';
 
-const grupoIdSchema = z
-  .string()
-  .trim()
-  .min(1)
-  .transform((valor) => valor as GrupoId);
+const MAXIMO_DE_GRUPOS_POR_USUARIO = 100;
+
+const grupoIdSchema = z.uuid().transform((valor) => valor as GrupoId);
 
 export const ConvidarUsuario = z.object({
   nome: z.string().trim().min(1).max(200),
@@ -15,7 +13,12 @@ export const ConvidarUsuario = z.object({
 export type ConvidarUsuario = z.infer<typeof ConvidarUsuario>;
 
 export const AlterarGruposDoUsuario = z.object({
-  grupos: z.array(grupoIdSchema),
+  grupos: z
+    .array(grupoIdSchema)
+    .max(MAXIMO_DE_GRUPOS_POR_USUARIO)
+    .refine((grupos) => new Set(grupos).size === grupos.length, {
+      message: 'grupos não pode conter itens duplicados',
+    }),
 });
 
 export type AlterarGruposDoUsuario = z.infer<typeof AlterarGruposDoUsuario>;

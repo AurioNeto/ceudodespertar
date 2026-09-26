@@ -124,7 +124,7 @@ export interface Eu {
 
 export interface UsuarioDaInstituicao {
   readonly id: UsuarioId;
-  readonly pessoaId: PessoaId;
+  readonly pessoaId: PessoaId | null;
   readonly nome: string;
   readonly email: string;
   readonly situacao: SituacaoDoUsuario;
