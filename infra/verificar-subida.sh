@@ -21,6 +21,18 @@ eh_execucao_unica() {
 
 falhou=0
 
+estado_dos_containers="$(docker compose ps -a --format '{{.Service}}|{{.State}}|{{.Health}}|{{.ExitCode}}')"
+
+# O laço abaixo só enxerga containers que existem; um 'up' que falhou antes de
+# criá-los devolveria lista vazia e passaria. Cada serviço declarado precisa
+# aparecer no estado real.
+for esperado in $(docker compose config --services); do
+  if ! printf '%s\n' "$estado_dos_containers" | grep -q "^${esperado}|"; then
+    echo "FALHA: '${esperado}' não foi criado" >&2
+    falhou=1
+  fi
+done
+
 while IFS='|' read -r servico estado saude codigo; do
   [ -z "$servico" ] && continue
 
@@ -40,7 +52,7 @@ while IFS='|' read -r servico estado saude codigo; do
     echo "FALHA: '${servico}' não está saudável (estado '${estado}', saúde '${saude:-sem healthcheck}')" >&2
     falhou=1
   fi
-done < <(docker compose ps -a --format '{{.Service}}|{{.State}}|{{.Health}}|{{.ExitCode}}')
+done <<< "$estado_dos_containers"
 
 if [ "$falhou" != "0" ]; then
   exit 1

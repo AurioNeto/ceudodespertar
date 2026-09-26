@@ -18,7 +18,9 @@ services:
       - ./docs/sql:/cdd/referencia:ro
       - cdd_postgres_dados:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      # Por TCP: durante o init a imagem sobe um servidor temporário só em
+      # socket, e o healthcheck não pode dar 'healthy' antes do init acabar.
+      test: ["CMD-SHELL", "pg_isready -U postgres -h 127.0.0.1"]
       interval: 2s
       timeout: 3s
       retries: 20

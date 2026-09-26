@@ -4,6 +4,9 @@ set -euo pipefail
 # Roda uma vez, na primeira inicialização do volume de dados (contrato do
 # docker-entrypoint-initdb.d). $POSTGRES_USER é o superusuário do container.
 
+: "${CDD_OWNER_SENHA:?defina CDD_OWNER_SENHA no .env}"
+: "${CDD_APP_SENHA:?defina CDD_APP_SENHA no .env}"
+
 psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname postgres \
   --file /cdd/papeis.sql
 
