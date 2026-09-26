@@ -719,6 +719,59 @@ CREATE TRIGGER reabertura_somente_insercao
   BEFORE UPDATE OR DELETE ON financeiro.reabertura_de_periodo
   FOR EACH ROW EXECUTE FUNCTION shared.somente_insercao();
 
+-- O banco carimba a hora da reabertura: é ela que prova, na guarda abaixo,
+-- que a reabertura foi gravada na mesma transação que reabre.
+CREATE FUNCTION financeiro.carimba_reabertura() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+  NEW.reaberto_em := now();
+  RETURN NEW;
+END $$;
+
+CREATE TRIGGER reabertura_carimbo
+  BEFORE INSERT ON financeiro.reabertura_de_periodo
+  FOR EACH ROW EXECUTE FUNCTION financeiro.carimba_reabertura();
+
+-- P2/P3: o período não troca de unidade nem de competência. Fechado, não muda
+-- nem some, e só reabre com a reabertura do hash corrente gravada na mesma
+-- transação — uma reabertura antiga não serve para reabrir de novo.
+CREATE FUNCTION financeiro.guarda_periodo() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+  IF TG_OP = 'UPDATE' AND (NEW.id, NEW.instituicao_id, NEW.unidade_id, NEW.competencia)
+                          IS DISTINCT FROM (OLD.id, OLD.instituicao_id, OLD.unidade_id, OLD.competencia) THEN
+    RAISE EXCEPTION 'PERIODO_FECHADO: o período da competência % não troca de unidade nem de competência', OLD.competencia
+      USING ERRCODE = 'P0001';
+  END IF;
+
+  IF NOT OLD.fechado THEN
+    RETURN coalesce(NEW, OLD);
+  END IF;
+
+  IF TG_OP = 'DELETE' THEN
+    RAISE EXCEPTION 'PERIODO_FECHADO: competência % da unidade % está fechada', OLD.competencia, OLD.unidade_id
+      USING ERRCODE = 'P0001';
+  END IF;
+
+  IF NEW.fechado THEN
+    IF (to_jsonb(NEW) - 'versao') <> (to_jsonb(OLD) - 'versao') THEN
+      RAISE EXCEPTION 'PERIODO_FECHADO: competência % da unidade % está fechada', OLD.competencia, OLD.unidade_id
+        USING ERRCODE = 'P0001';
+    END IF;
+    RETURN NEW;
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM financeiro.reabertura_de_periodo r
+                  WHERE r.instituicao_id = OLD.instituicao_id AND r.periodo_id = OLD.id
+                    AND r.hash_anterior = OLD.hash_sha256 AND r.reaberto_em = now()) THEN
+    RAISE EXCEPTION 'PERIODO_FECHADO: competência % da unidade % só reabre com o registro de reabertura',
+      OLD.competencia, OLD.unidade_id USING ERRCODE = 'P0001';
+  END IF;
+  RETURN NEW;
+END $$;
+
+CREATE TRIGGER periodo_guarda
+  BEFORE UPDATE OR DELETE ON financeiro.periodo_contabil
+  FOR EACH ROW EXECUTE FUNCTION financeiro.guarda_periodo();
+
 CREATE TABLE financeiro.importacao_de_extrato (
   id                    uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   instituicao_id        uuid NOT NULL,
@@ -789,7 +842,7 @@ CREATE TRIGGER prestacao_somente_insercao
 -- um script de suporte ou uma migration não consiga fazer o que o domínio
 -- proíbe. O código do erro é o mesmo do catálogo (Documento 7 §12).
 
--- L5 / P1: nada nasce em competência fechada. A única escrita admitida num
+-- L5 / T4: nada nasce em competência fechada. A única escrita admitida num
 -- lançamento de período fechado é marcá-lo ESTORNADO (Doc 6 §2.5.1).
 CREATE FUNCTION financeiro.periodo_esta_fechado(p_instituicao uuid, p_unidade uuid, p_competencia date)
   RETURNS boolean LANGUAGE sql STABLE AS $$
@@ -900,11 +953,19 @@ CREATE CONSTRAINT TRIGGER etiqueta_confere_etiquetas
   AFTER INSERT OR UPDATE OR DELETE ON financeiro.lancamento_categoria
   DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION financeiro.confere_etiquetas();
 
--- Transferência também não nasce em período fechado — de nenhum dos lados.
+-- Transferência confirmada não muda nem some, como o lançamento (L2); e não
+-- nasce em período fechado — de nenhum dos lados.
 CREATE FUNCTION financeiro.guarda_transferencia() RETURNS trigger LANGUAGE plpgsql AS $$
 DECLARE
-  v_comp date := date_trunc('month', NEW.data)::date;
+  v_comp date;
 BEGIN
+  IF TG_OP = 'DELETE' THEN
+    IF OLD.status <> 'A_CONFERIR' THEN
+      RAISE EXCEPTION 'TRANSFERENCIA_IMUTAVEL: transferência % já foi confirmada', OLD.id USING ERRCODE = 'P0001';
+    END IF;
+    RETURN OLD;
+  END IF;
+
   IF TG_OP = 'UPDATE' AND OLD.status <> 'A_CONFERIR' THEN
     IF (to_jsonb(NEW) - 'status' - 'versao') <> (to_jsonb(OLD) - 'status' - 'versao')
        OR NOT (NEW.status = OLD.status OR (OLD.status = 'CONFIRMADO' AND NEW.status = 'ESTORNADO')) THEN
@@ -912,6 +973,8 @@ BEGIN
     END IF;
     RETURN NEW;
   END IF;
+
+  v_comp := date_trunc('month', NEW.data)::date;
   IF financeiro.periodo_esta_fechado(NEW.instituicao_id, NEW.unidade_id, v_comp)
      OR (NEW.unidade_destino_id IS NOT NULL
          AND financeiro.periodo_esta_fechado(NEW.instituicao_id, NEW.unidade_destino_id, v_comp)) THEN
@@ -921,7 +984,7 @@ BEGIN
 END $$;
 
 CREATE TRIGGER transferencia_guarda
-  BEFORE INSERT OR UPDATE ON financeiro.transferencia
+  BEFORE INSERT OR UPDATE OR DELETE ON financeiro.transferencia
   FOR EACH ROW EXECUTE FUNCTION financeiro.guarda_transferencia();
 
 -- ---- Leituras do Financeiro -------------------------------------------------
@@ -1100,7 +1163,7 @@ CREATE TABLE eventos.inscricao (
   -- IN4 (decisão 9): sempre.
   contato_emergencia_nome   text NOT NULL,
   contato_emergencia_tel    text NOT NULL,
-  restricoes_alimentares    text,
+  restricoes_alimentares    text NOT NULL CONSTRAINT in4_restricoes_respondidas CHECK (btrim(restricoes_alimentares) <> ''),  -- "nenhuma" é resposta
   acolhimento               text NOT NULL CHECK (acolhimento IN ('NAO_NECESSARIO','PENDENTE','REALIZADO')),
   declaracao_id             uuid,             -- pessoas.declaracao_de_veracidade
   registrada_por            uuid,             -- NULL quando veio pelo link
@@ -1220,6 +1283,8 @@ CREATE TABLE eventos.alocacao_de_leito (
 -- Conflito entre eventos simultâneos é aviso, não invariante: índice para achá-lo.
 CREATE INDEX alocacao_por_leito_noite ON eventos.alocacao_de_leito (instituicao_id, leito_id, noite);
 
+-- Doc 6 §2.5, decisão 12: a lista de preparo exige login — quem marca é um
+-- usuário, nunca um link público ou um webhook.
 CREATE TABLE eventos.tarefa_de_preparo (
   id               uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   instituicao_id   uuid NOT NULL,
@@ -1228,9 +1293,9 @@ CREATE TABLE eventos.tarefa_de_preparo (
   responsavel_id   uuid,
   ordem            smallint NOT NULL,
   feita_em         timestamptz,
-  origem_marcacao  text CHECK (origem_marcacao IN ('SISTEMA','LINK_PUBLICO','WEBHOOK')),
+  feita_por        uuid,                      -- identidade.usuario
   FOREIGN KEY (instituicao_id, evento_id) REFERENCES eventos.evento (instituicao_id, id) ON DELETE CASCADE,
-  CHECK ((feita_em IS NULL) = (origem_marcacao IS NULL))
+  CHECK ((feita_em IS NULL) = (feita_por IS NULL))
 );
 
 -- -----------------------------------------------------------------------------
@@ -1271,6 +1336,21 @@ CREATE TABLE estoque.feitio (
   CONSTRAINT feitio_concluido_tem_custo CHECK ((status = 'CONCLUIDO') = (data_fim IS NOT NULL AND litros_produzidos IS NOT NULL
          AND custo_por_litro IS NOT NULL AND custo_materia_prima IS NOT NULL AND custo_lancamentos IS NOT NULL))
 );
+
+-- O CHECK garante que a conclusão grava os custos; esta guarda, que depois
+-- dela a linha não muda nem some.
+CREATE FUNCTION estoque.guarda_feitio() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+  IF OLD.status = 'CONCLUIDO'
+     AND (TG_OP = 'DELETE' OR (to_jsonb(NEW) - 'versao') <> (to_jsonb(OLD) - 'versao')) THEN
+    RAISE EXCEPTION 'FEITIO_IMUTAVEL: feitio % já foi concluído', OLD.id USING ERRCODE = 'P0001';
+  END IF;
+  RETURN coalesce(NEW, OLD);
+END $$;
+
+CREATE TRIGGER feitio_guarda
+  BEFORE UPDATE OR DELETE ON estoque.feitio
+  FOR EACH ROW EXECUTE FUNCTION estoque.guarda_feitio();
 
 CREATE TABLE estoque.lote (
   id                  uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -1366,6 +1446,26 @@ CREATE VIEW estoque.v_saldo_por_lote WITH (security_invoker = true) AS
 SELECT l.instituicao_id, l.id AS lote_id, l.item_id, l.nome, l.situacao,
        estoque.saldo_do_lote(l.id) AS saldo
   FROM estoque.lote l;
+
+-- -----------------------------------------------------------------------------
+-- TRUNCATE passa por fora dos gatilhos de linha. Nas tabelas que guardam o
+-- histórico, nem o dono do banco — que é quem roda migration — as esvazia,
+-- nem por CASCADE a partir de outra tabela.
+-- -----------------------------------------------------------------------------
+
+DO $$
+DECLARE
+  t text;
+BEGIN
+  FOREACH t IN ARRAY ARRAY['financeiro.lancamento', 'financeiro.lancamento_categoria', 'financeiro.transferencia',
+                           'financeiro.periodo_contabil', 'financeiro.reabertura_de_periodo',
+                           'financeiro.prestacao_de_contas', 'identidade.registro_de_auditoria',
+                           'pessoas.registro_de_acesso', 'estoque.movimento_de_estoque', 'estoque.feitio']
+  LOOP
+    EXECUTE format('CREATE TRIGGER sem_truncate BEFORE TRUNCATE ON %s
+                      FOR EACH STATEMENT EXECUTE FUNCTION shared.somente_insercao()', t);
+  END LOOP;
+END $$;
 
 -- -----------------------------------------------------------------------------
 -- RLS — aplicada por varredura, não à mão

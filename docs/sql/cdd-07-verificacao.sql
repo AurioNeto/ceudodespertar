@@ -76,6 +76,14 @@ SELECT verif.confere('nenhuma chave estrangeira cruza schema',
 SELECT verif.confere('o papel da aplicação não ignora RLS',
   (SELECT rolbypassrls FROM pg_roles WHERE rolname = 'cdd_app'), false);
 
+-- O dono é quem roda migration: é dele que o TRUNCATE descuidado viria.
+SELECT verif.espera_erro('nem o dono esvazia o histórico com TRUNCATE', $$
+  TRUNCATE identidade.registro_de_auditoria
+$$, 'REGISTRO_IMUTAVEL');
+SELECT verif.espera_erro('nem por CASCADE a partir de outra tabela', $$
+  TRUNCATE financeiro.conta CASCADE
+$$, 'REGISTRO_IMUTAVEL');
+
 -- -----------------------------------------------------------------------------
 -- Daqui em diante, como a aplicação
 -- -----------------------------------------------------------------------------
@@ -322,6 +330,51 @@ SELECT verif.espera_erro('P3 · reabertura sem motivo de verdade não existe', $
     SELECT instituicao_id, id, 'erro', gen_random_uuid(), hash_sha256 FROM financeiro.periodo_contabil
 $$, 'p3_reabertura_tem_motivo');
 
+SELECT verif.espera_erro('P3 · competência fechada não se reabre em silêncio', $$
+  UPDATE financeiro.periodo_contabil SET fechado = false, fechado_por = NULL, fechado_em = NULL, hash_sha256 = NULL
+   WHERE competencia = '2026-07-01'
+$$, 'PERIODO_FECHADO');
+SELECT verif.espera_erro('P2 · nem troca o hash do fechamento', $$
+  UPDATE financeiro.periodo_contabil SET hash_sha256 = sha256('outro julho') WHERE competencia = '2026-07-01'
+$$, 'PERIODO_FECHADO');
+SELECT verif.espera_erro('P3 · nem some', $$
+  DELETE FROM financeiro.periodo_contabil WHERE competencia = '2026-07-01'
+$$, 'PERIODO_FECHADO');
+
+SELECT verif.espera_ok('P3 · reabre com o motivo registrado na mesma transação', $$
+  INSERT INTO financeiro.reabertura_de_periodo (instituicao_id, periodo_id, motivo, reaberto_por, hash_anterior)
+    SELECT instituicao_id, id, 'nota da padaria de julho chegou depois', gen_random_uuid(), hash_sha256
+      FROM financeiro.periodo_contabil WHERE competencia = '2026-07-01';
+  UPDATE financeiro.periodo_contabil SET fechado = false, fechado_por = NULL, fechado_em = NULL, hash_sha256 = NULL
+   WHERE competencia = '2026-07-01'
+$$);
+SELECT verif.espera_erro('P3 · reaberta, a competência não troca de mês', $$
+  UPDATE financeiro.periodo_contabil SET competencia = '2026-06-01' WHERE competencia = '2026-07-01'
+$$, 'PERIODO_FECHADO');
+UPDATE financeiro.periodo_contabil SET fechado = true, fechado_por = gen_random_uuid(), fechado_em = now(), hash_sha256 = sha256('julho')
+ WHERE competencia = '2026-07-01';
+SELECT verif.espera_erro('P3 · a reabertura de antes não serve para reabrir de novo', $$
+  UPDATE financeiro.periodo_contabil SET fechado = false, fechado_por = NULL, fechado_em = NULL, hash_sha256 = NULL
+   WHERE competencia = '2026-07-01'
+$$, 'PERIODO_FECHADO');
+SELECT verif.espera_erro('P3 · nem reabrindo e trocando de mês em dois comandos', $$
+  INSERT INTO financeiro.reabertura_de_periodo (instituicao_id, periodo_id, motivo, reaberto_por, hash_anterior)
+    SELECT instituicao_id, id, 'conferência do extrato de julho', gen_random_uuid(), hash_sha256
+      FROM financeiro.periodo_contabil WHERE competencia = '2026-07-01';
+  UPDATE financeiro.periodo_contabil SET fechado = false, fechado_por = NULL, fechado_em = NULL, hash_sha256 = NULL
+   WHERE competencia = '2026-07-01';
+  UPDATE financeiro.periodo_contabil SET competencia = '2026-05-01' WHERE competencia = '2026-07-01'
+$$, 'PERIODO_FECHADO');
+SELECT verif.espera_ok('P3 · o banco carimba a hora da reabertura, mesmo que a aplicação mande outra', $$
+  INSERT INTO financeiro.reabertura_de_periodo (instituicao_id, periodo_id, motivo, reaberto_por, reaberto_em, hash_anterior)
+    SELECT instituicao_id, id, 'conferência do extrato de julho', gen_random_uuid(), '2026-09-26T12:00:00.123Z', hash_sha256
+      FROM financeiro.periodo_contabil WHERE competencia = '2026-07-01';
+  UPDATE financeiro.periodo_contabil SET fechado = false, fechado_por = NULL, fechado_em = NULL, hash_sha256 = NULL
+   WHERE competencia = '2026-07-01'
+$$);
+UPDATE financeiro.periodo_contabil SET fechado = true, fechado_por = gen_random_uuid(), fechado_em = now(), hash_sha256 = sha256('julho')
+ WHERE competencia = '2026-07-01';
+
 -- -----------------------------------------------------------------------------
 -- Transferência, fatura, adiantamento
 -- -----------------------------------------------------------------------------
@@ -347,6 +400,29 @@ SELECT verif.espera_erro('FD3 · aporte a fundo sem o fundo não existe', $$
             'a2000000-0000-0000-0000-000000000001', 'a2000000-0000-0000-0000-000000000002',
             'a1000000-0000-0000-0000-000000000001', 'movim. Ayahuasca pra caixinha', gen_random_uuid())
 $$, 'fd3_aporte_tem_fundo');
+
+INSERT INTO financeiro.transferencia (id, instituicao_id, finalidade, status, valor, data, conta_origem_id, conta_destino_id,
+                                      unidade_id, motivo, registrado_por, confirmado_por)
+  VALUES ('a9800000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000000', 'MOVIMENTACAO_SIMPLES', 'CONFIRMADO',
+          30000, '2026-09-15', 'a2000000-0000-0000-0000-000000000001', 'a2000000-0000-0000-0000-000000000002',
+          'a1000000-0000-0000-0000-000000000001', 'pagamento antecipado do cartão', gen_random_uuid(), gen_random_uuid());
+
+SELECT verif.espera_erro('transferência confirmada não muda de valor', $$
+  UPDATE financeiro.transferencia SET valor = 29000 WHERE id = 'a9800000-0000-0000-0000-000000000001'
+$$, 'TRANSFERENCIA_IMUTAVEL');
+SELECT verif.espera_erro('transferência confirmada não some', $$
+  DELETE FROM financeiro.transferencia WHERE id = 'a9800000-0000-0000-0000-000000000001'
+$$, 'TRANSFERENCIA_IMUTAVEL');
+SELECT verif.espera_ok('transferência A_CONFERIR ainda se descarta', $$
+  INSERT INTO financeiro.transferencia (id, instituicao_id, finalidade, status, valor, data, conta_origem_id, conta_destino_id,
+                                        unidade_id, motivo, registrado_por)
+    VALUES ('a9800000-0000-0000-0000-000000000002', 'a0000000-0000-0000-0000-000000000000', 'MOVIMENTACAO_SIMPLES', 'A_CONFERIR',
+            500, '2026-09-16', 'a2000000-0000-0000-0000-000000000001', 'a2000000-0000-0000-0000-000000000002',
+            'a1000000-0000-0000-0000-000000000001', 'registrada em dobro', gen_random_uuid());
+  DELETE FROM financeiro.transferencia WHERE id = 'a9800000-0000-0000-0000-000000000002'
+$$);
+SELECT verif.confere('e some de fato, não é descartada em silêncio pela guarda',
+  (SELECT count(*) FROM financeiro.transferencia WHERE id = 'a9800000-0000-0000-0000-000000000002'), 0::bigint);
 
 SELECT verif.espera_erro('A2 · adiantamento sai de conta pessoal, nunca da institucional', $$
   INSERT INTO financeiro.adiantamento (instituicao_id, pessoa_id, conta_origem_id, valor, data_despesa, lancamento_id, status)
@@ -464,6 +540,12 @@ SELECT verif.espera_erro('RA3 · leitura de anamnese registrada não se apaga', 
   DELETE FROM pessoas.registro_de_acesso
 $$, '42501|REGISTRO_IMUTAVEL');
 
+SELECT verif.espera_erro('§23 · o cabeçalho da resposta lida não se apaga: o registro de acesso aponta para ele', $$
+  DELETE FROM pessoas.declaracao_de_veracidade WHERE resposta_id = 'ac000000-0000-0000-0000-000000000001';
+  DELETE FROM pessoas.item_de_resposta WHERE resposta_id = 'ac000000-0000-0000-0000-000000000001';
+  DELETE FROM pessoas.resposta_de_anamnese WHERE id = 'ac000000-0000-0000-0000-000000000001'
+$$, 'registro_de_acesso_instituicao_id_resposta_id_fkey');
+
 -- -----------------------------------------------------------------------------
 -- Auditoria
 -- -----------------------------------------------------------------------------
@@ -508,44 +590,96 @@ $$, 'colchonete_gratis_e_sem_leito');
 SELECT verif.espera_erro('isento ≠ zero · valor combinado zero não é isenção', $$
   INSERT INTO eventos.inscricao (instituicao_id, evento_id, pessoa_id, canal, tipo_participacao, status,
                                  primeira_vez_na_casa, primeira_vez_na_ayahuasca, consagra, valor_combinado,
-                                 contato_emergencia_nome, contato_emergencia_tel, acolhimento)
+                                 contato_emergencia_nome, contato_emergencia_tel, restricoes_alimentares, acolhimento)
     VALUES ('a0000000-0000-0000-0000-000000000000', 'a4000000-0000-0000-0000-000000000001', 'a5000000-0000-0000-0000-000000000001',
-            'LINK', 'PARTICIPANTE', 'PENDENTE', false, false, true, 0, 'Mãe', '11999990000', 'NAO_NECESSARIO')
+            'LINK', 'PARTICIPANTE', 'PENDENTE', false, false, true, 0, 'Mãe', '11999990000', 'Nenhuma', 'NAO_NECESSARIO')
 $$, 'in_zero_nao_e_isencao');
 
 SELECT verif.espera_erro('isenção tem motivo', $$
   INSERT INTO eventos.inscricao (instituicao_id, evento_id, pessoa_id, canal, tipo_participacao, status,
                                  primeira_vez_na_casa, primeira_vez_na_ayahuasca, consagra, isento,
-                                 contato_emergencia_nome, contato_emergencia_tel, acolhimento)
+                                 contato_emergencia_nome, contato_emergencia_tel, restricoes_alimentares, acolhimento)
     VALUES ('a0000000-0000-0000-0000-000000000000', 'a4000000-0000-0000-0000-000000000001', 'a5000000-0000-0000-0000-000000000001',
-            'LINK', 'PARTICIPANTE', 'PENDENTE', false, false, true, true, 'Mãe', '11999990000', 'NAO_NECESSARIO')
+            'LINK', 'PARTICIPANTE', 'PENDENTE', false, false, true, true, 'Mãe', '11999990000', 'Nenhuma', 'NAO_NECESSARIO')
 $$, 'in_isencao_tem_motivo');
 
 SELECT verif.espera_erro('IN4 · sem contato de emergência não há inscrição', $$
   INSERT INTO eventos.inscricao (instituicao_id, evento_id, pessoa_id, canal, tipo_participacao, status,
-                                 primeira_vez_na_casa, primeira_vez_na_ayahuasca, consagra, acolhimento)
+                                 primeira_vez_na_casa, primeira_vez_na_ayahuasca, consagra, restricoes_alimentares, acolhimento)
     VALUES ('a0000000-0000-0000-0000-000000000000', 'a4000000-0000-0000-0000-000000000001', 'a5000000-0000-0000-0000-000000000001',
-            'LINK', 'PARTICIPANTE', 'PENDENTE', false, false, true, 'NAO_NECESSARIO')
+            'LINK', 'PARTICIPANTE', 'PENDENTE', false, false, true, 'Nenhuma', 'NAO_NECESSARIO')
 $$, 'contato_emergencia_nome');
+
+SELECT verif.espera_erro('IN4 · nem sem responder às restrições alimentares', $$
+  INSERT INTO eventos.inscricao (instituicao_id, evento_id, pessoa_id, canal, tipo_participacao, status,
+                                 primeira_vez_na_casa, primeira_vez_na_ayahuasca, consagra,
+                                 contato_emergencia_nome, contato_emergencia_tel, acolhimento)
+    VALUES ('a0000000-0000-0000-0000-000000000000', 'a4000000-0000-0000-0000-000000000001', 'a5000000-0000-0000-0000-000000000001',
+            'LINK', 'PARTICIPANTE', 'PENDENTE', false, false, true, 'Mãe', '11999990000', 'NAO_NECESSARIO')
+$$, 'restricoes_alimentares');
+SELECT verif.espera_erro('IN4 · e resposta em branco não é resposta — "nenhuma" é', $$
+  INSERT INTO eventos.inscricao (instituicao_id, evento_id, pessoa_id, canal, tipo_participacao, status,
+                                 primeira_vez_na_casa, primeira_vez_na_ayahuasca, consagra,
+                                 contato_emergencia_nome, contato_emergencia_tel, restricoes_alimentares, acolhimento)
+    VALUES ('a0000000-0000-0000-0000-000000000000', 'a4000000-0000-0000-0000-000000000001', 'a5000000-0000-0000-0000-000000000001',
+            'LINK', 'PARTICIPANTE', 'PENDENTE', false, false, true, 'Mãe', '11999990000', '  ', 'NAO_NECESSARIO')
+$$, 'in4_restricoes_respondidas');
 
 INSERT INTO eventos.inscricao (id, instituicao_id, evento_id, pessoa_id, canal, tipo_participacao, status,
                                primeira_vez_na_casa, primeira_vez_na_ayahuasca, consagra, nivel_escolhido, valor_combinado,
-                               hospedagem_id, noites, contato_emergencia_nome, contato_emergencia_tel, acolhimento) VALUES
+                               hospedagem_id, noites, contato_emergencia_nome, contato_emergencia_tel, restricoes_alimentares,
+                               acolhimento) VALUES
   ('ae000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000000', 'a4000000-0000-0000-0000-000000000001',
    'a5000000-0000-0000-0000-000000000001', 'LINK', 'PARTICIPANTE', 'CONFIRMADA', false, false, true, 'SUSTENTAVEL', 22000,
-   'ad000000-0000-0000-0000-000000000001', '[2026-10-17,2026-10-18)', 'Mãe', '11999990000', 'NAO_NECESSARIO'),
+   'ad000000-0000-0000-0000-000000000001', '[2026-10-17,2026-10-18)', 'Mãe', '11999990000', 'Nenhuma', 'NAO_NECESSARIO'),
   ('ae000000-0000-0000-0000-000000000002', 'a0000000-0000-0000-0000-000000000000', 'a4000000-0000-0000-0000-000000000001',
    'a5000000-0000-0000-0000-000000000002', 'LINK', 'PARTICIPANTE', 'PENDENTE', true, true, true, NULL, NULL,
-   'ad000000-0000-0000-0000-000000000001', '[2026-10-17,2026-10-18)', 'Irmão', '11988880000', 'PENDENTE');
+   'ad000000-0000-0000-0000-000000000001', '[2026-10-17,2026-10-18)', 'Irmão', '11988880000', 'vegetariana', 'PENDENTE');
 
 SELECT verif.espera_erro('IN · uma inscrição viva por pessoa por evento', $$
   INSERT INTO eventos.inscricao (instituicao_id, evento_id, pessoa_id, canal, tipo_participacao, status,
                                  primeira_vez_na_casa, primeira_vez_na_ayahuasca, consagra, contato_emergencia_nome,
-                                 contato_emergencia_tel, acolhimento, registrada_por)
+                                 contato_emergencia_tel, restricoes_alimentares, acolhimento, registrada_por)
     VALUES ('a0000000-0000-0000-0000-000000000000', 'a4000000-0000-0000-0000-000000000001', 'a5000000-0000-0000-0000-000000000001',
-            'RECEPCAO', 'PARTICIPANTE', 'PENDENTE', false, false, true, 'Mãe', '11999990000', 'NAO_NECESSARIO',
+            'RECEPCAO', 'PARTICIPANTE', 'PENDENTE', false, false, true, 'Mãe', '11999990000', 'Nenhuma', 'NAO_NECESSARIO',
             gen_random_uuid())
 $$, 'inscricao_uma_por_pessoa');
+
+-- Anonimização (Documento 7 §23) da Clarice: a anamnese dela já foi lida e
+-- declarada, ela tem inscrição e abriu o link com o CPF.
+INSERT INTO eventos.sessao_de_inscricao (instituicao_id, evento_id, segredo_sha256, documento, pessoa_id, conferida_em, expira_em)
+  VALUES ('a0000000-0000-0000-0000-000000000000', 'a4000000-0000-0000-0000-000000000001', sha256('segredo da sessão'),
+          '33091877542', 'a5000000-0000-0000-0000-000000000002', now(), now() + interval '1 hour');
+
+SELECT verif.espera_ok('§23 · anonimizar apaga o conteúdo da anamnese, mesmo já lida, e o CPF das sessões do link', $$
+  DELETE FROM pessoas.item_de_resposta
+   WHERE resposta_id IN (SELECT id FROM pessoas.resposta_de_anamnese WHERE pessoa_id = 'a5000000-0000-0000-0000-000000000002');
+  UPDATE pessoas.resposta_de_anamnese SET dispara_alerta = false WHERE pessoa_id = 'a5000000-0000-0000-0000-000000000002';
+  UPDATE pessoas.declaracao_de_veracidade SET origem_ip_hash = NULL WHERE pessoa_id = 'a5000000-0000-0000-0000-000000000002';
+  DELETE FROM eventos.sessao_de_inscricao
+   WHERE pessoa_id = 'a5000000-0000-0000-0000-000000000002'
+      OR documento = (SELECT documento FROM pessoas.pessoa WHERE id = 'a5000000-0000-0000-0000-000000000002');
+  UPDATE eventos.inscricao
+     SET contato_emergencia_nome = 'anonimizado', contato_emergencia_tel = 'anonimizado', restricoes_alimentares = 'anonimizado'
+   WHERE pessoa_id = 'a5000000-0000-0000-0000-000000000002';
+  UPDATE pessoas.pessoa
+     SET nome = 'Pessoa anonimizada', apelido = NULL, documento = NULL, telefone = NULL, email = NULL, cidade = NULL,
+         nascimento = NULL, foto_anexo_id = NULL, contato_emergencia_nome = NULL, contato_emergencia_tel = NULL,
+         anonimizada_em = now()
+   WHERE id = 'a5000000-0000-0000-0000-000000000002'
+$$);
+SELECT verif.confere('§23 · nenhum item de resposta sobra',
+  (SELECT count(*) FROM pessoas.item_de_resposta i JOIN pessoas.resposta_de_anamnese r ON r.id = i.resposta_id
+    WHERE r.pessoa_id = 'a5000000-0000-0000-0000-000000000002'), 0::bigint);
+SELECT verif.confere('§23 · e a leitura registrada continua de pé (RA3)',
+  (SELECT count(*) FROM pessoas.registro_de_acesso WHERE pessoa_id = 'a5000000-0000-0000-0000-000000000002'), 1::bigint);
+SELECT verif.confere('§23 · nenhuma sessão do link guarda o CPF da pessoa anonimizada',
+  (SELECT count(*) FROM eventos.sessao_de_inscricao
+    WHERE pessoa_id = 'a5000000-0000-0000-0000-000000000002' OR documento = '33091877542'), 0::bigint);
+SELECT verif.confere('§23 · a inscrição fica sem contato nem restrição reais',
+  (SELECT count(*) FROM eventos.inscricao WHERE pessoa_id = 'a5000000-0000-0000-0000-000000000002'
+     AND (contato_emergencia_nome, contato_emergencia_tel, restricoes_alimentares)
+         IS DISTINCT FROM ('anonimizado', 'anonimizado', 'anonimizado')), 0::bigint);
 
 INSERT INTO eventos.dormitorio (id, instituicao_id, unidade_id, nome) VALUES
   ('af000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000000', 'a1000000-0000-0000-0000-000000000001', 'Dormitório 1'),
@@ -626,6 +760,22 @@ SELECT verif.espera_erro('feitio concluído sem custo por litro não existe', $$
     VALUES ('a0000000-0000-0000-0000-000000000000', gen_random_uuid(), 'Feitio de setembro', '2026-09-01', '2026-09-08',
             'CONCLUIDO', 55)
 $$, 'feitio_concluido_tem_custo');
+
+INSERT INTO estoque.feitio (id, instituicao_id, evento_id, nome, data_inicio, status)
+  VALUES ('b0500000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000000', gen_random_uuid(),
+          'Feitio de agosto', '2026-08-01', 'EM_ANDAMENTO');
+SELECT verif.espera_ok('feitio em andamento conclui e grava os três custos', $$
+  UPDATE estoque.feitio
+     SET status = 'CONCLUIDO', data_fim = '2026-08-08', litros_produzidos = 50,
+         custo_materia_prima = 180000, custo_lancamentos = 95000, custo_por_litro = 5500
+   WHERE id = 'b0500000-0000-0000-0000-000000000001'
+$$);
+SELECT verif.espera_erro('S-04 · e o custo por litro fica congelado', $$
+  UPDATE estoque.feitio SET custo_por_litro = 5000 WHERE id = 'b0500000-0000-0000-0000-000000000001'
+$$, 'FEITIO_IMUTAVEL');
+SELECT verif.espera_erro('S-04 · feitio concluído não some', $$
+  DELETE FROM estoque.feitio WHERE id = 'b0500000-0000-0000-0000-000000000001'
+$$, 'FEITIO_IMUTAVEL');
 
 -- -----------------------------------------------------------------------------
 -- E, por fim, B continua sem ver nada de A
