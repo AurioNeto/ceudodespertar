@@ -24,6 +24,9 @@ DO $$ BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'cdd_app') THEN
     CREATE ROLE cdd_app NOLOGIN NOBYPASSRLS;
   END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'cdd_resolvedor_link') THEN
+    CREATE ROLE cdd_resolvedor_link NOLOGIN NOBYPASSRLS;
+  END IF;
 END $$;
 
 CREATE SCHEMA shared;
@@ -273,6 +276,7 @@ CREATE TABLE pessoas.autorizacao_de_responsavel (
   registrada_por     uuid NOT NULL,
   registrada_em      timestamptz NOT NULL DEFAULT now(),
   revogada_em        timestamptz,
+  versao             integer NOT NULL DEFAULT 1,
   FOREIGN KEY (instituicao_id, menor_id)       REFERENCES pessoas.pessoa (instituicao_id, id),
   FOREIGN KEY (instituicao_id, responsavel_id) REFERENCES pessoas.pessoa (instituicao_id, id),
   CHECK (menor_id <> responsavel_id),
@@ -294,13 +298,14 @@ CREATE TABLE pessoas.consentimento (
 CREATE TABLE pessoas.formulario_de_anamnese (
   id              uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   instituicao_id  uuid NOT NULL,
-  versao          integer NOT NULL CHECK (versao > 0),
+  numero          integer NOT NULL CHECK (numero > 0),   -- a "versão" do Doc 2 §3.4.1; `versao` é a trava (§14)
   status          text NOT NULL CHECK (status IN ('RASCUNHO','PUBLICADA','SUPERSEDIDA')),
   validade_meses  smallint NOT NULL CHECK (validade_meses BETWEEN 1 AND 60),
   publicada_em    timestamptz,
   publicada_por   uuid,
+  versao          integer NOT NULL DEFAULT 1,
   UNIQUE (instituicao_id, id),
-  UNIQUE (instituicao_id, versao),
+  UNIQUE (instituicao_id, numero),
   CHECK (status = 'RASCUNHO' OR publicada_em IS NOT NULL)
 );
 -- FA: no máximo uma versão publicada por vez.
@@ -349,6 +354,7 @@ CREATE TABLE pessoas.resposta_de_anamnese (
   evento_origem_id uuid,                      -- a inscrição que motivou, quando houve
   dispara_alerta   boolean NOT NULL DEFAULT false,
   supersedida_por  uuid,
+  versao           integer NOT NULL DEFAULT 1,
   UNIQUE (instituicao_id, id),
   FOREIGN KEY (instituicao_id, pessoa_id)       REFERENCES pessoas.pessoa (instituicao_id, id),
   FOREIGN KEY (instituicao_id, formulario_id)   REFERENCES pessoas.formulario_de_anamnese (instituicao_id, id),
@@ -434,6 +440,7 @@ CREATE TABLE financeiro.grupo_de_custo (
   codigo_sistema  text NOT NULL,
   nome            text NOT NULL,
   ativo           boolean NOT NULL DEFAULT true,
+  versao          integer NOT NULL DEFAULT 1,
   UNIQUE (instituicao_id, id),
   UNIQUE (instituicao_id, codigo_sistema)
 );
@@ -449,6 +456,7 @@ CREATE TABLE financeiro.categoria (
   unidade_padrao_id  uuid,
   linha_relatorio    text NOT NULL,
   ativa              boolean NOT NULL DEFAULT true,
+  versao             integer NOT NULL DEFAULT 1,
   UNIQUE (instituicao_id, id),
   UNIQUE (instituicao_id, id, natureza),      -- alvo da FK que garante L3 na etiqueta
   UNIQUE (instituicao_id, codigo_sistema),
@@ -485,6 +493,7 @@ CREATE TABLE financeiro.fundo (
   meta                bigint CHECK (meta > 0),
   categorias_permitidas text[] NOT NULL DEFAULT '{}',  -- códigos de sistema (FD1)
   ativo               boolean NOT NULL DEFAULT true,
+  versao              integer NOT NULL DEFAULT 1,
   UNIQUE (instituicao_id, id),
   UNIQUE (instituicao_id, codigo_sistema),
   FOREIGN KEY (instituicao_id, conta_vinculada_id) REFERENCES financeiro.conta (instituicao_id, id)
@@ -538,6 +547,7 @@ CREATE TABLE financeiro.lancamento (
   registrado_em     timestamptz NOT NULL DEFAULT now(),
   confirmado_por    uuid,
   confirmado_em     timestamptz,
+  gravado_na_transacao xid8,                  -- escrita só por guarda_lancamento
   versao            integer NOT NULL DEFAULT 1,
   UNIQUE (instituicao_id, id),
   UNIQUE (instituicao_id, id, natureza),
@@ -658,6 +668,7 @@ CREATE TABLE financeiro.transferencia (
   registrado_por     uuid NOT NULL,
   registrado_em      timestamptz NOT NULL DEFAULT now(),
   confirmado_por     uuid,
+  confirmado_em      timestamptz,
   versao             integer NOT NULL DEFAULT 1,
   UNIQUE (instituicao_id, id),
   FOREIGN KEY (instituicao_id, conta_origem_id)    REFERENCES financeiro.conta (instituicao_id, id),
@@ -669,6 +680,7 @@ CREATE TABLE financeiro.transferencia (
   FOREIGN KEY (instituicao_id, emprestimo_id)      REFERENCES financeiro.emprestimo (instituicao_id, id),
   FOREIGN KEY (instituicao_id, adiantamento_id)    REFERENCES financeiro.adiantamento (instituicao_id, id),
   FOREIGN KEY (instituicao_id, estorno_de_id)      REFERENCES financeiro.transferencia (instituicao_id, id),
+  CONSTRAINT t_confirmada_tem_conferente CHECK (status = 'A_CONFERIR' OR confirmado_por IS NOT NULL),
   CHECK (conta_origem_id IS DISTINCT FROM conta_destino_id),
   CHECK (conta_origem_id IS NOT NULL OR conta_destino_id IS NOT NULL),
   CHECK ((conta_origem_id IS NOT NULL AND conta_destino_id IS NOT NULL)
@@ -736,6 +748,13 @@ CREATE TRIGGER reabertura_carimbo
 -- transação — uma reabertura antiga não serve para reabrir de novo.
 CREATE FUNCTION financeiro.guarda_periodo() RETURNS trigger LANGUAGE plpgsql AS $$
 BEGIN
+  IF TG_OP = 'INSERT' THEN
+    IF NEW.fechado THEN
+      PERFORM financeiro.travar_periodo_para_fechar(NEW.instituicao_id, NEW.unidade_id, NEW.competencia);
+    END IF;
+    RETURN NEW;
+  END IF;
+
   IF TG_OP = 'UPDATE' AND (NEW.id, NEW.instituicao_id, NEW.unidade_id, NEW.competencia)
                           IS DISTINCT FROM (OLD.id, OLD.instituicao_id, OLD.unidade_id, OLD.competencia) THEN
     RAISE EXCEPTION 'PERIODO_FECHADO: o período da competência % não troca de unidade nem de competência', OLD.competencia
@@ -743,6 +762,9 @@ BEGIN
   END IF;
 
   IF NOT OLD.fechado THEN
+    IF TG_OP = 'UPDATE' AND NEW.fechado THEN
+      PERFORM financeiro.travar_periodo_para_fechar(NEW.instituicao_id, NEW.unidade_id, NEW.competencia);
+    END IF;
     RETURN coalesce(NEW, OLD);
   END IF;
 
@@ -769,7 +791,7 @@ BEGIN
 END $$;
 
 CREATE TRIGGER periodo_guarda
-  BEFORE UPDATE OR DELETE ON financeiro.periodo_contabil
+  BEFORE INSERT OR UPDATE OR DELETE ON financeiro.periodo_contabil
   FOR EACH ROW EXECUTE FUNCTION financeiro.guarda_periodo();
 
 CREATE TABLE financeiro.importacao_de_extrato (
@@ -844,23 +866,42 @@ CREATE TRIGGER prestacao_somente_insercao
 
 -- L5 / T4: nada nasce em competência fechada. A única escrita admitida num
 -- lançamento de período fechado é marcá-lo ESTORNADO (Doc 6 §2.5.1).
+--
+-- Fechar e gravar na mesma competência disputam uma trava consultiva: quem
+-- grava a toma compartilhada, quem fecha a toma exclusiva. Sem ela, um
+-- lançamento que leu "aberto" pode ser gravado depois do fechamento, fora do
+-- hash. O comando de fechamento a toma antes de conferir P1 e calcular o hash.
+CREATE FUNCTION financeiro.chave_do_periodo(p_instituicao uuid, p_unidade uuid, p_competencia date)
+  RETURNS bigint LANGUAGE sql IMMUTABLE AS $$
+  SELECT hashtextextended(p_instituicao::text || p_unidade::text || (p_competencia - DATE '2000-01-01')::text, 0)
+$$;
+
+-- A trava só serve em READ COMMITTED: em REPEATABLE READ o snapshot é anterior
+-- à espera, e quem esperou leria o período como estava antes.
+CREATE FUNCTION financeiro.exigir_read_committed() RETURNS void LANGUAGE plpgsql AS $$
+BEGIN
+  IF current_setting('transaction_isolation') <> 'read committed' THEN
+    RAISE EXCEPTION 'PERIODO_FECHADO: fechar ou gravar na competência exige READ COMMITTED (a transação está em %)',
+      current_setting('transaction_isolation') USING ERRCODE = 'P0001';
+  END IF;
+END $$;
+
+CREATE FUNCTION financeiro.travar_periodo_para_fechar(p_instituicao uuid, p_unidade uuid, p_competencia date)
+  RETURNS void LANGUAGE plpgsql AS $$
+BEGIN
+  PERFORM financeiro.exigir_read_committed();
+  PERFORM pg_advisory_xact_lock(financeiro.chave_do_periodo(p_instituicao, p_unidade, p_competencia));
+END $$;
+
 CREATE FUNCTION financeiro.periodo_esta_fechado(p_instituicao uuid, p_unidade uuid, p_competencia date)
-  RETURNS boolean LANGUAGE sql STABLE AS $$
-  SELECT coalesce((SELECT fechado FROM financeiro.periodo_contabil
+  RETURNS boolean LANGUAGE plpgsql AS $$
+BEGIN
+  PERFORM financeiro.exigir_read_committed();
+  PERFORM pg_advisory_xact_lock_shared(financeiro.chave_do_periodo(p_instituicao, p_unidade, p_competencia));
+  RETURN coalesce((SELECT fechado FROM financeiro.periodo_contabil
                     WHERE instituicao_id = p_instituicao AND unidade_id = p_unidade
-                      AND competencia = p_competencia), false)
-$$;
-
--- Marca, até o fim da transação, que este lançamento foi gravado nela. É o
--- que deixa a própria unidade de trabalho que confirma (ou a integração que já
--- nasce CONFIRMADO) gravar as etiquetas — e nenhuma transação depois dela.
-CREATE FUNCTION financeiro.marca_escrita(p_id uuid) RETURNS void LANGUAGE sql AS $$
-  SELECT set_config('cdd.lancamento_' || replace(p_id::text, '-', ''), 'gravado', true)
-$$;
-
-CREATE FUNCTION financeiro.gravado_nesta_transacao(p_id uuid) RETURNS boolean LANGUAGE sql STABLE AS $$
-  SELECT coalesce(current_setting('cdd.lancamento_' || replace(p_id::text, '-', ''), true), '') = 'gravado'
-$$;
+                      AND competencia = p_competencia), false);
+END $$;
 
 CREATE FUNCTION financeiro.guarda_lancamento() RETURNS trigger LANGUAGE plpgsql AS $$
 BEGIN
@@ -877,7 +918,7 @@ BEGIN
        OR NOT (NEW.status = OLD.status OR (OLD.status = 'CONFIRMADO' AND NEW.status = 'ESTORNADO')) THEN
       RAISE EXCEPTION 'LANCAMENTO_IMUTAVEL: lançamento % já foi confirmado', OLD.id USING ERRCODE = 'P0001';
     END IF;
-    RETURN NEW;                                -- sem marca: estornar não reabre as etiquetas
+    RETURN NEW;                                -- estornar não reabre as etiquetas
   END IF;
 
   IF NEW.unidade_id IS NOT NULL AND NEW.competencia IS NOT NULL
@@ -885,7 +926,9 @@ BEGIN
     RAISE EXCEPTION 'PERIODO_FECHADO: competência % da unidade % está fechada', NEW.competencia, NEW.unidade_id
       USING ERRCODE = 'P0001';
   END IF;
-  PERFORM financeiro.marca_escrita(NEW.id);
+  -- É o que deixa a própria unidade de trabalho que confirma (ou a integração
+  -- que já nasce CONFIRMADO) gravar as etiquetas, e nenhuma transação depois.
+  NEW.gravado_na_transacao := pg_current_xact_id();
   RETURN NEW;
 END $$;
 
@@ -897,12 +940,16 @@ CREATE TRIGGER lancamento_guarda
 -- a partir da transação seguinte à que o gravou.
 CREATE FUNCTION financeiro.guarda_etiqueta() RETURNS trigger LANGUAGE plpgsql AS $$
 DECLARE
-  v_id     uuid := coalesce(NEW.lancamento_id, OLD.lancamento_id);
-  v_status text;
+  v_id       uuid := coalesce(NEW.lancamento_id, OLD.lancamento_id);
+  v_status   text;
+  v_gravacao xid8;
 BEGIN
-  SELECT status INTO v_status FROM financeiro.lancamento WHERE id = v_id;
+  IF TG_OP = 'UPDATE' AND NEW.lancamento_id IS DISTINCT FROM OLD.lancamento_id THEN
+    RAISE EXCEPTION 'LANCAMENTO_IMUTAVEL: etiqueta não muda de lançamento' USING ERRCODE = 'P0001';
+  END IF;
+  SELECT status, gravado_na_transacao INTO v_status, v_gravacao FROM financeiro.lancamento WHERE id = v_id;
   IF v_status = 'ESTORNADO'
-     OR (v_status = 'CONFIRMADO' AND NOT financeiro.gravado_nesta_transacao(v_id)) THEN
+     OR (v_status = 'CONFIRMADO' AND v_gravacao IS DISTINCT FROM pg_current_xact_id()) THEN
     RAISE EXCEPTION 'LANCAMENTO_IMUTAVEL: etiquetas de lançamento confirmado ou estornado não mudam' USING ERRCODE = 'P0001';
   END IF;
   RETURN coalesce(NEW, OLD);
@@ -1111,7 +1158,10 @@ CREATE TABLE eventos.link_de_inscricao (
 );
 
 -- O link público chega sem instituição: é o token que diz de quem ele é.
--- SECURITY DEFINER, e devolve só o necessário para montar o contexto.
+-- SECURITY DEFINER, e devolve só o necessário para montar o contexto. Com
+-- FORCE, nem o dono dos objetos leria a tabela sem contexto; por isso o dono
+-- da função é um papel próprio, sem BYPASSRLS, que lê quatro colunas por uma
+-- política só dele (Documento 7 §8).
 CREATE FUNCTION eventos.resolver_link(p_token text)
   RETURNS TABLE (instituicao_id uuid, evento_id uuid)
   LANGUAGE sql STABLE SECURITY DEFINER SET search_path = pg_catalog AS $$
@@ -1120,6 +1170,13 @@ CREATE FUNCTION eventos.resolver_link(p_token text)
    WHERE l.token = p_token AND l.revogado_em IS NULL
 $$;
 REVOKE ALL ON FUNCTION eventos.resolver_link(text) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION eventos.resolver_link(text) TO cdd_app;
+GRANT USAGE ON SCHEMA eventos TO cdd_resolvedor_link;
+GRANT SELECT (token, revogado_em, instituicao_id, evento_id) ON eventos.link_de_inscricao TO cdd_resolvedor_link;
+GRANT CREATE ON SCHEMA eventos TO cdd_resolvedor_link;
+ALTER FUNCTION eventos.resolver_link(text) OWNER TO cdd_resolvedor_link;
+REVOKE CREATE ON SCHEMA eventos FROM cdd_resolvedor_link;
+CREATE POLICY resolucao_do_link ON eventos.link_de_inscricao FOR SELECT TO cdd_resolvedor_link USING (true);
 
 -- Sessão do link: CPF declarado + fator de conferência (Documento 7 §7.3).
 CREATE TABLE eventos.sessao_de_inscricao (
@@ -1206,7 +1263,8 @@ CREATE TABLE eventos.devolucao_devida (
   evento_id            uuid NOT NULL,
   inscricao_id         uuid,
   pessoa_id            uuid NOT NULL,
-  pagamento_id         uuid NOT NULL,         -- a receita que será estornada
+  pagamento_id         uuid,                  -- a receita de contribuição que será estornada
+  contratacao_evento_id uuid,                 -- CN4: o cachê recebido de uma contratação cancelada
   valor                bigint NOT NULL CHECK (valor > 0),
   motivo               text NOT NULL,
   solicitada_por       uuid NOT NULL,
@@ -1221,6 +1279,9 @@ CREATE TABLE eventos.devolucao_devida (
   FOREIGN KEY (instituicao_id, evento_id)    REFERENCES eventos.evento (instituicao_id, id),
   FOREIGN KEY (instituicao_id, inscricao_id) REFERENCES eventos.inscricao (instituicao_id, id),
   FOREIGN KEY (instituicao_id, pagamento_id) REFERENCES eventos.pagamento_de_inscricao (instituicao_id, id),
+  CONSTRAINT dv_origem_unica CHECK (num_nonnulls(pagamento_id, contratacao_evento_id) = 1),
+  CONSTRAINT cn4_contratacao_do_proprio_evento CHECK (contratacao_evento_id IS NULL
+         OR (contratacao_evento_id = evento_id AND inscricao_id IS NULL)),
   CHECK ((status = 'PAGA') = (paga_em IS NOT NULL AND conta_id IS NOT NULL AND efetivada_por IS NOT NULL)),
   CONSTRAINT dv3_quem_pede_nao_paga CHECK (efetivada_por IS NULL OR efetivada_por <> solicitada_por)
 );
@@ -1236,8 +1297,12 @@ CREATE TABLE eventos.contratacao (
   lancamento_receita_id   uuid UNIQUE,        -- CACHE_RECEBIDO; o CACHE_PAGO são lançamentos do evento
   observacoes             text NOT NULL DEFAULT '',
   versao                  integer NOT NULL DEFAULT 1,
+  UNIQUE (instituicao_id, evento_id),
   FOREIGN KEY (instituicao_id, evento_id) REFERENCES eventos.evento (instituicao_id, id)
 );
+
+ALTER TABLE eventos.devolucao_devida ADD CONSTRAINT cn4_devolucao_da_contratacao
+  FOREIGN KEY (instituicao_id, contratacao_evento_id) REFERENCES eventos.contratacao (instituicao_id, evento_id);
 
 -- Cadastro fixo (fora do evento). São dois dormitórios hoje: um com cama de
 -- casal, outro com três beliches — sem divisão por gênero.
@@ -1247,6 +1312,7 @@ CREATE TABLE eventos.dormitorio (
   unidade_id      uuid NOT NULL,
   nome            text NOT NULL,
   ativo           boolean NOT NULL DEFAULT true,
+  versao          integer NOT NULL DEFAULT 1,
   UNIQUE (instituicao_id, id),
   UNIQUE (instituicao_id, unidade_id, nome)
 );
@@ -1260,13 +1326,18 @@ CREATE TABLE eventos.leito (
   capacidade      smallint NOT NULL CHECK (capacidade BETWEEN 1 AND 4),
   ativo           boolean NOT NULL DEFAULT true,
   UNIQUE (instituicao_id, id),
+  CONSTRAINT leito_com_capacidade UNIQUE (instituicao_id, id, capacidade),
   UNIQUE (dormitorio_id, identificacao),
   FOREIGN KEY (instituicao_id, dormitorio_id) REFERENCES eventos.dormitorio (instituicao_id, id),
-  CONSTRAINT leito_capacidade_do_tipo CHECK (tipo IN ('CAMA_CASAL','QUARTO_PRIVATIVO') OR capacidade = 1)
+  CONSTRAINT leito_capacidade_do_tipo CHECK (CASE tipo WHEN 'CAMA_CASAL' THEN capacidade = 2
+                                                       WHEN 'QUARTO_PRIVATIVO' THEN true
+                                                       ELSE capacidade = 1 END)
 );
 
--- Mapa de leitos: uma linha por pessoa por noite. `vaga` numera os lugares de
--- um leito com capacidade > 1 (a cama de casal tem vagas 1 e 2).
+-- Mapa de leitos: uma linha por pessoa por noite. `vaga` numera os lugares do
+-- leito, até a capacidade dele — o beliche tem a vaga 1; a cama de casal, 1 e 2.
+-- A capacidade vem do leito pela FK composta: não se declara maior do que é, e
+-- o leito alocado não muda de capacidade.
 CREATE TABLE eventos.alocacao_de_leito (
   instituicao_id  uuid NOT NULL,
   evento_id       uuid NOT NULL,
@@ -1274,11 +1345,14 @@ CREATE TABLE eventos.alocacao_de_leito (
   leito_id        uuid NOT NULL,
   noite           date NOT NULL,
   vaga            smallint NOT NULL CHECK (vaga BETWEEN 1 AND 4),
+  capacidade_do_leito smallint NOT NULL,
+  CONSTRAINT vaga_dentro_da_capacidade CHECK (vaga <= capacidade_do_leito),
   CONSTRAINT uma_cama_por_pessoa_por_noite PRIMARY KEY (evento_id, inscricao_id, noite),
   CONSTRAINT ml1_vaga_livre_no_evento UNIQUE (evento_id, leito_id, noite, vaga),
   FOREIGN KEY (instituicao_id, evento_id)    REFERENCES eventos.evento (instituicao_id, id),
   FOREIGN KEY (instituicao_id, inscricao_id) REFERENCES eventos.inscricao (instituicao_id, id) ON DELETE CASCADE,
-  FOREIGN KEY (instituicao_id, leito_id)     REFERENCES eventos.leito (instituicao_id, id)
+  CONSTRAINT alocacao_na_capacidade_do_leito FOREIGN KEY (instituicao_id, leito_id, capacidade_do_leito)
+    REFERENCES eventos.leito (instituicao_id, id, capacidade)
 );
 -- Conflito entre eventos simultâneos é aviso, não invariante: índice para achá-lo.
 CREATE INDEX alocacao_por_leito_noite ON eventos.alocacao_de_leito (instituicao_id, leito_id, noite);
@@ -1311,6 +1385,7 @@ CREATE TABLE estoque.item (
   unidade_medida  text NOT NULL CHECK (unidade_medida IN ('L','ML','KG','G','UN')),
   estoque_minimo  numeric(12,3) CHECK (estoque_minimo >= 0),
   ativo           boolean NOT NULL DEFAULT true,
+  versao          integer NOT NULL DEFAULT 1,
   UNIQUE (instituicao_id, id),
   UNIQUE (instituicao_id, nome)
 );
@@ -1504,7 +1579,6 @@ END $$;
 GRANT USAGE ON SCHEMA shared, identidade, pessoas, financeiro, eventos, estoque TO cdd_app;
 GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA shared, identidade, pessoas, financeiro, eventos, estoque TO cdd_app;
 GRANT USAGE ON ALL SEQUENCES IN SCHEMA shared TO cdd_app;
-GRANT EXECUTE ON FUNCTION eventos.resolver_link(text) TO cdd_app;
 
 -- O catálogo de permissões é do código: a aplicação lê, a migration escreve.
 REVOKE INSERT, UPDATE, DELETE ON identidade.permissao FROM cdd_app;

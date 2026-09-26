@@ -84,6 +84,12 @@ SELECT verif.espera_erro('nem por CASCADE a partir de outra tabela', $$
   TRUNCATE financeiro.conta CASCADE
 $$, 'REGISTRO_IMUTAVEL');
 
+-- O link público só funciona em produção se o dono do resolvedor não depender
+-- de ser superusuário: é como superusuário que este arquivo costuma rodar.
+SELECT verif.confere('link público · o dono do resolvedor não é superusuário nem ignora RLS',
+  (SELECT r.rolsuper OR r.rolbypassrls FROM pg_proc p JOIN pg_roles r ON r.oid = p.proowner
+    WHERE p.oid = 'eventos.resolver_link(text)'::regprocedure), false);
+
 -- -----------------------------------------------------------------------------
 -- Daqui em diante, como a aplicação
 -- -----------------------------------------------------------------------------
@@ -250,6 +256,31 @@ $$);
 SELECT verif.espera_erro('L2 · e na transação seguinte, não mais', $$
   UPDATE financeiro.lancamento_categoria SET valor = 4500 WHERE lancamento_id = 'a6000000-0000-0000-0000-000000000002'
 $$, 'LANCAMENTO_IMUTAVEL');
+SELECT verif.espera_erro('L2 · nem trocando a categoria, mesmo valor, forjando a marca com set_config', $$
+  SELECT set_config('cdd.lancamento_a6000000000000000000000000000002', 'gravado', true);
+  UPDATE financeiro.lancamento_categoria SET categoria_id = 'a3000000-0000-0000-0000-000000000003'
+   WHERE lancamento_id = 'a6000000-0000-0000-0000-000000000002'
+$$, 'LANCAMENTO_IMUTAVEL');
+SELECT verif.espera_erro('L2 · nem com um INSERT que não acontece (ON CONFLICT DO NOTHING)', $$
+  INSERT INTO financeiro.lancamento (id, instituicao_id, status, origem, natureza, valor, motivo, registrado_por)
+    VALUES ('a6000000-0000-0000-0000-000000000002', 'a0000000-0000-0000-0000-000000000000', 'A_CONFERIR', 'MANUAL',
+            'DESPESA', 4590, 'x', gen_random_uuid())
+    ON CONFLICT (id) DO NOTHING;
+  UPDATE financeiro.lancamento_categoria SET categoria_id = 'a3000000-0000-0000-0000-000000000003'
+   WHERE lancamento_id = 'a6000000-0000-0000-0000-000000000002'
+$$, 'LANCAMENTO_IMUTAVEL');
+SELECT verif.espera_erro('L2 · nem movendo a etiqueta para outro lançamento', $$
+  INSERT INTO financeiro.lancamento (id, instituicao_id, status, origem, natureza, valor, motivo, registrado_por)
+    VALUES ('a6000000-0000-0000-0000-000000000097', 'a0000000-0000-0000-0000-000000000000', 'A_CONFERIR', 'MANUAL',
+            'DESPESA', 7000, 'x', gen_random_uuid());
+  UPDATE financeiro.lancamento_categoria SET lancamento_id = 'a6000000-0000-0000-0000-000000000097'
+   WHERE lancamento_id = 'a6000000-0000-0000-0000-000000000001' AND categoria_id = 'a3000000-0000-0000-0000-000000000002'
+$$, 'LANCAMENTO_IMUTAVEL');
+SELECT verif.espera_erro('L2 · nem subindo a versão do lançamento', $$
+  UPDATE financeiro.lancamento SET versao = versao + 1 WHERE id = 'a6000000-0000-0000-0000-000000000002';
+  UPDATE financeiro.lancamento_categoria SET categoria_id = 'a3000000-0000-0000-0000-000000000003'
+   WHERE lancamento_id = 'a6000000-0000-0000-0000-000000000002'
+$$, 'LANCAMENTO_IMUTAVEL');
 
 -- Receita de contribuição de 210, depois devolvida (Doc 6 §2.5.1).
 SELECT verif.espera_ok('receita de contribuição de 210', $$
@@ -375,6 +406,50 @@ $$);
 UPDATE financeiro.periodo_contabil SET fechado = true, fechado_por = gen_random_uuid(), fechado_em = now(), hash_sha256 = sha256('julho')
  WHERE competencia = '2026-07-01';
 
+-- Fechar e gravar na mesma competência disputam a mesma trava; a corrida em
+-- si é caso da suíte de concorrência (Documento 7 §26), com duas conexões.
+SET datestyle = 'German';
+SELECT set_config('verif.chave', financeiro.chave_do_periodo('a0000000-0000-0000-0000-000000000000',
+  'a1000000-0000-0000-0000-000000000001', '2026-10-01')::text, false);
+SET datestyle = 'ISO, MDY';
+SELECT verif.confere('P2 · a chave da trava não depende do formato de data da sessão',
+  financeiro.chave_do_periodo('a0000000-0000-0000-0000-000000000000', 'a1000000-0000-0000-0000-000000000001',
+                              '2026-10-01')::text, current_setting('verif.chave'));
+RESET datestyle;
+
+BEGIN ISOLATION LEVEL REPEATABLE READ;
+SELECT verif.espera_erro('P2 · gravar na competência fora de READ COMMITTED é recusado', $$
+  INSERT INTO financeiro.lancamento (instituicao_id, status, origem, natureza, valor, motivo, unidade_id, competencia,
+                                     data_competencia, registrado_por)
+    VALUES ('a0000000-0000-0000-0000-000000000000', 'A_CONFERIR', 'MANUAL', 'DESPESA', 300, 'x',
+            'a1000000-0000-0000-0000-000000000001', '2026-10-01', '2026-10-06', gen_random_uuid())
+$$, 'READ COMMITTED');
+ROLLBACK;
+SELECT verif.espera_ok('P2 · gravar na competência toma a trava do período, compartilhada', $$
+  INSERT INTO financeiro.lancamento (instituicao_id, status, origem, natureza, valor, motivo, unidade_id, competencia,
+                                     data_competencia, registrado_por)
+    VALUES ('a0000000-0000-0000-0000-000000000000', 'A_CONFERIR', 'MANUAL', 'DESPESA', 1200, 'gás de outubro',
+            'a1000000-0000-0000-0000-000000000001', '2026-10-01', '2026-10-05', gen_random_uuid());
+  DO $x$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_locks WHERE locktype = 'advisory' AND mode = 'ShareLock' AND granted
+                      AND pid = pg_backend_pid()) THEN
+      RAISE EXCEPTION 'sem a trava compartilhada do período';
+    END IF;
+  END $x$
+$$);
+SELECT verif.espera_ok('P2 · fechar a competência toma a mesma trava, exclusiva', $$
+  INSERT INTO financeiro.periodo_contabil (instituicao_id, unidade_id, competencia)
+    VALUES ('a0000000-0000-0000-0000-000000000000', 'a1000000-0000-0000-0000-000000000001', '2026-04-01');
+  UPDATE financeiro.periodo_contabil SET fechado = true, fechado_por = gen_random_uuid(), fechado_em = now(), hash_sha256 = sha256('abril')
+   WHERE competencia = '2026-04-01';
+  DO $x$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_locks WHERE locktype = 'advisory' AND mode = 'ExclusiveLock' AND granted
+                      AND pid = pg_backend_pid()) THEN
+      RAISE EXCEPTION 'sem a trava exclusiva do período';
+    END IF;
+  END $x$
+$$);
+
 -- -----------------------------------------------------------------------------
 -- Transferência, fatura, adiantamento
 -- -----------------------------------------------------------------------------
@@ -421,6 +496,13 @@ SELECT verif.espera_ok('transferência A_CONFERIR ainda se descarta', $$
             'a1000000-0000-0000-0000-000000000001', 'registrada em dobro', gen_random_uuid());
   DELETE FROM financeiro.transferencia WHERE id = 'a9800000-0000-0000-0000-000000000002'
 $$);
+SELECT verif.espera_erro('transferência confirmada registra quem conferiu', $$
+  INSERT INTO financeiro.transferencia (instituicao_id, finalidade, status, valor, data, conta_origem_id, conta_destino_id,
+                                        unidade_id, motivo, registrado_por)
+    VALUES ('a0000000-0000-0000-0000-000000000000', 'MOVIMENTACAO_SIMPLES', 'CONFIRMADO', 500, '2026-09-20',
+            'a2000000-0000-0000-0000-000000000001', 'a2000000-0000-0000-0000-000000000002',
+            'a1000000-0000-0000-0000-000000000001', 'sem conferente', gen_random_uuid())
+$$, 't_confirmada_tem_conferente');
 SELECT verif.confere('e some de fato, não é descartada em silêncio pela guarda',
   (SELECT count(*) FROM financeiro.transferencia WHERE id = 'a9800000-0000-0000-0000-000000000002'), 0::bigint);
 
@@ -489,10 +571,10 @@ SELECT verif.espera_erro('V · o mesmo papel não se sobrepõe a si mesmo', $$
     VALUES ('a0000000-0000-0000-0000-000000000000', 'a5000000-0000-0000-0000-000000000001', 'MADRINHA', '[2024-01-01,2025-01-01)', gen_random_uuid())
 $$, 'v_papel_sem_sobreposicao');
 
-INSERT INTO pessoas.formulario_de_anamnese (id, instituicao_id, versao, status, validade_meses, publicada_em, publicada_por)
+INSERT INTO pessoas.formulario_de_anamnese (id, instituicao_id, numero, status, validade_meses, publicada_em, publicada_por)
   VALUES ('aa000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000000', 3, 'PUBLICADA', 12, now(), gen_random_uuid());
 SELECT verif.espera_erro('FA · uma versão publicada por vez', $$
-  INSERT INTO pessoas.formulario_de_anamnese (instituicao_id, versao, status, validade_meses, publicada_em, publicada_por)
+  INSERT INTO pessoas.formulario_de_anamnese (instituicao_id, numero, status, validade_meses, publicada_em, publicada_por)
     VALUES ('a0000000-0000-0000-0000-000000000000', 4, 'PUBLICADA', 12, now(), gen_random_uuid())
 $$, 'formulario_um_publicado');
 
@@ -694,20 +776,34 @@ SELECT verif.espera_erro('leito · beliche tem um lugar', $$
 $$, 'leito_capacidade_do_tipo');
 
 SELECT verif.espera_ok('leito · a cama de casal recebe duas pessoas na mesma noite', $$
-  INSERT INTO eventos.alocacao_de_leito (instituicao_id, evento_id, inscricao_id, leito_id, noite, vaga) VALUES
+  INSERT INTO eventos.alocacao_de_leito (instituicao_id, evento_id, inscricao_id, leito_id, noite, vaga, capacidade_do_leito) VALUES
     ('a0000000-0000-0000-0000-000000000000', 'a4000000-0000-0000-0000-000000000001', 'ae000000-0000-0000-0000-000000000001',
-     'b0100000-0000-0000-0000-000000000001', '2026-10-17', 1),
+     'b0100000-0000-0000-0000-000000000001', '2026-10-17', 1, 2),
     ('a0000000-0000-0000-0000-000000000000', 'a4000000-0000-0000-0000-000000000001', 'ae000000-0000-0000-0000-000000000002',
-     'b0100000-0000-0000-0000-000000000001', '2026-10-17', 2)
+     'b0100000-0000-0000-0000-000000000001', '2026-10-17', 2, 2)
 $$);
 SELECT verif.espera_erro('ML1 · mas a mesma vaga não, no mesmo evento', $$
   UPDATE eventos.alocacao_de_leito SET vaga = 1 WHERE inscricao_id = 'ae000000-0000-0000-0000-000000000002'
 $$, 'ml1_vaga_livre_no_evento');
 SELECT verif.espera_erro('uma pessoa, uma cama por noite', $$
-  INSERT INTO eventos.alocacao_de_leito (instituicao_id, evento_id, inscricao_id, leito_id, noite, vaga)
+  INSERT INTO eventos.alocacao_de_leito (instituicao_id, evento_id, inscricao_id, leito_id, noite, vaga, capacidade_do_leito)
     VALUES ('a0000000-0000-0000-0000-000000000000', 'a4000000-0000-0000-0000-000000000001', 'ae000000-0000-0000-0000-000000000001',
-            'b0100000-0000-0000-0000-000000000002', '2026-10-17', 1)
+            'b0100000-0000-0000-0000-000000000002', '2026-10-17', 1, 1)
 $$, 'uma_cama_por_pessoa_por_noite');
+SELECT verif.espera_erro('leito · o beliche não recebe uma segunda pessoa', $$
+  INSERT INTO eventos.alocacao_de_leito (instituicao_id, evento_id, inscricao_id, leito_id, noite, vaga, capacidade_do_leito)
+    VALUES ('a0000000-0000-0000-0000-000000000000', 'a4000000-0000-0000-0000-000000000001', 'ae000000-0000-0000-0000-000000000001',
+            'b0100000-0000-0000-0000-000000000002', '2026-10-18', 2, 1)
+$$, 'vaga_dentro_da_capacidade');
+SELECT verif.espera_erro('leito · nem declarando capacidade maior que a do leito', $$
+  INSERT INTO eventos.alocacao_de_leito (instituicao_id, evento_id, inscricao_id, leito_id, noite, vaga, capacidade_do_leito)
+    VALUES ('a0000000-0000-0000-0000-000000000000', 'a4000000-0000-0000-0000-000000000001', 'ae000000-0000-0000-0000-000000000001',
+            'b0100000-0000-0000-0000-000000000002', '2026-10-18', 2, 2)
+$$, 'alocacao_na_capacidade_do_leito');
+SELECT verif.espera_erro('leito · a cama de casal tem dois lugares, nem mais nem menos', $$
+  INSERT INTO eventos.leito (instituicao_id, dormitorio_id, identificacao, tipo, capacidade)
+    VALUES ('a0000000-0000-0000-0000-000000000000', 'af000000-0000-0000-0000-000000000001', 'Outra cama de casal', 'CAMA_CASAL', 4)
+$$, 'leito_capacidade_do_tipo');
 
 INSERT INTO eventos.pagamento_de_inscricao (id, instituicao_id, inscricao_id, valor, recebido_em, conta_id, forma, registrado_por)
   VALUES ('b0200000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000000', 'ae000000-0000-0000-0000-000000000001',
@@ -720,6 +816,46 @@ SELECT verif.espera_erro('DV3 · quem pediu a devolução não é quem paga', $$
             'a7000000-0000-0000-0000-000000000002', 'PAGA', '2026-10-20', 'a2000000-0000-0000-0000-000000000001',
             'a7000000-0000-0000-0000-000000000002')
 $$, 'dv3_quem_pede_nao_paga');
+
+-- CN4: contratação cancelada com cachê já recebido gera devolução ao contratante.
+INSERT INTO pessoas.pessoa (id, instituicao_id, tipo, nome, documento)
+  VALUES ('a5000000-0000-0000-0000-000000000003', 'a0000000-0000-0000-0000-000000000000', 'JURIDICA', 'Espaço Lua Cheia',
+          '12345678000190');
+INSERT INTO eventos.evento (id, instituicao_id, unidade_id, nome, tipo, regime_de_receita, status,
+                            data_inicio, data_fim, hora_inicio, local, consagra, cancelado_motivo)
+  VALUES ('a4000000-0000-0000-0000-000000000002', 'a0000000-0000-0000-0000-000000000000',
+          'a1000000-0000-0000-0000-000000000002', 'Show da Munay no Lua Cheia', 'SHOW', 'CONTRATADO', 'CANCELADO',
+          '2026-11-07', '2026-11-07', '21:00', 'Espaço Lua Cheia', false, 'o espaço fechou');
+INSERT INTO eventos.contratacao (evento_id, instituicao_id, contratante_id, valor_acordado, forma_pagamento, status)
+  VALUES ('a4000000-0000-0000-0000-000000000002', 'a0000000-0000-0000-0000-000000000000',
+          'a5000000-0000-0000-0000-000000000003', 180000, 'ANTECIPADO', 'CANCELADA');
+
+SELECT verif.espera_ok('CN4 · a contratação cancelada gera devolução ao contratante', $$
+  INSERT INTO eventos.devolucao_devida (instituicao_id, evento_id, pessoa_id, contratacao_evento_id, valor, motivo,
+                                        solicitada_por, status)
+    VALUES ('a0000000-0000-0000-0000-000000000000', 'a4000000-0000-0000-0000-000000000002',
+            'a5000000-0000-0000-0000-000000000003', 'a4000000-0000-0000-0000-000000000002', 180000, 'show cancelado',
+            gen_random_uuid(), 'PENDENTE')
+$$);
+SELECT verif.espera_erro('devolução sem saber que receita estorna não existe', $$
+  INSERT INTO eventos.devolucao_devida (instituicao_id, evento_id, pessoa_id, valor, motivo, solicitada_por, status)
+    VALUES ('a0000000-0000-0000-0000-000000000000', 'a4000000-0000-0000-0000-000000000002',
+            'a5000000-0000-0000-0000-000000000003', 180000, 'x', gen_random_uuid(), 'PENDENTE')
+$$, 'dv_origem_unica');
+SELECT verif.espera_erro('nem estornando contribuição e cachê de uma vez', $$
+  INSERT INTO eventos.devolucao_devida (instituicao_id, evento_id, pessoa_id, pagamento_id, contratacao_evento_id, valor,
+                                        motivo, solicitada_por, status)
+    VALUES ('a0000000-0000-0000-0000-000000000000', 'a4000000-0000-0000-0000-000000000002',
+            'a5000000-0000-0000-0000-000000000003', 'b0200000-0000-0000-0000-000000000001',
+            'a4000000-0000-0000-0000-000000000002', 180000, 'x', gen_random_uuid(), 'PENDENTE')
+$$, 'dv_origem_unica');
+SELECT verif.espera_erro('CN4 · a devolução é da contratação do próprio evento', $$
+  INSERT INTO eventos.devolucao_devida (instituicao_id, evento_id, pessoa_id, contratacao_evento_id, valor, motivo,
+                                        solicitada_por, status)
+    VALUES ('a0000000-0000-0000-0000-000000000000', 'a4000000-0000-0000-0000-000000000001',
+            'a5000000-0000-0000-0000-000000000003', 'a4000000-0000-0000-0000-000000000002', 180000, 'x',
+            gen_random_uuid(), 'PENDENTE')
+$$, 'cn4_contratacao_do_proprio_evento');
 
 -- -----------------------------------------------------------------------------
 -- Estoque
