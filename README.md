@@ -24,6 +24,26 @@ pnpm typecheck
 O que ainda não existe: backend (NestJS + MikroORM + PostgreSQL), Keycloak e
 os testes. A sessão do usuário e as permissões são fixtures.
 
+## Ambiente local
+
+Postgres 16 (com os papéis de cluster do Doc 7 §8), MinIO/SeaweedFS e Mailpit
+via Docker Compose:
+
+```bash
+cp .env.example .env
+pnpm infra:subir    # sobe tudo e espera ficar saudável
+pnpm db:verificar   # aplica o esquema de referência e roda os 113 casos
+pnpm infra:descer   # para os containers, mantém os dados
+pnpm infra:zerar    # para e apaga os volumes
+```
+
+| Serviço | Porta | Uso |
+|---|---|---|
+| Postgres | `${POSTGRES_PORTA:-5432}` | `BANCO_URL` (papel `cdd_app`) e `BANCO_URL_MIGRACAO` (papel `cdd_owner`) |
+| MinIO/SeaweedFS (S3) | `9000` | `S3_ENDPOINT`, bucket `cdd-anexos` |
+| SeaweedFS, filer | `8888` | navegador de arquivos do filer — não é um console S3 |
+| Mailpit | `8025` (UI), `1025` (SMTP) | e-mails de convite/redefinição de senha do Keycloak |
+
 ---
 
 ## Handoff original do Claude Design
