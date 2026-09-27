@@ -10,4 +10,9 @@ describe('erroDeDominio — contrato de tipos', () => {
     // @ts-expect-error CODIGO_INEXISTENTE não pertence a CodigoDeErro
     erroDeDominio('CODIGO_INEXISTENTE');
   });
+
+  it('recusa em tempo de compilação ISOLAMENTO_INVALIDO, removido do catálogo', () => {
+    // @ts-expect-error ISOLAMENTO_INVALIDO saiu do catálogo — a borda transacional garante o isolamento
+    erroDeDominio('ISOLAMENTO_INVALIDO');
+  });
 });

@@ -60,7 +60,9 @@ export type OperacaoAuditada =
   | 'ADIANTAMENTO_AUTORIZADO'
   | 'GRUPO_ALTERADO'
   | 'USUARIO_CONVIDADO'
+  | 'USUARIO_ATIVADO'
   | 'USUARIO_SUSPENSO'
+  | 'USUARIO_REATIVADO'
   | 'FORMULARIO_PUBLICADO'
   | 'PESSOA_ANONIMIZADA'
   | 'ANAMNESE_LIDA'
@@ -72,10 +74,13 @@ export interface DetalheDeAuditoria {
   readonly anterior?: string;
 }
 
-export interface RegistroDeAuditoria {
+export type AutorDeAuditoria =
+  | { readonly autorTipo: 'USUARIO'; readonly autorId: UsuarioId }
+  | { readonly autorTipo: 'SISTEMA' | 'LINK_PUBLICO'; readonly autorId: null };
+
+export type RegistroDeAuditoria = AutorDeAuditoria & {
   readonly id: RegistroAuditoriaId;
   readonly em: DataHora;
-  readonly autorId: UsuarioId;
   readonly autorNome: string;
   readonly autorGrupo: string;
   readonly operacao: OperacaoAuditada;
@@ -83,7 +88,7 @@ export interface RegistroDeAuditoria {
   readonly referencia: string | null;
   readonly detalhes: readonly DetalheDeAuditoria[];
   readonly sensivel: boolean;
-}
+};
 
 export interface ContextoDeLeitura {
   readonly tipo: 'INSCRICAO' | 'REVISAO' | 'ATENDIMENTO';
