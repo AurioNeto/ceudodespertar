@@ -92,10 +92,15 @@ CREATE TABLE shared.outbox (
   ultimo_erro           text,
   proxima_tentativa_em  timestamptz                 -- backoff; nulo = pronto desde a gravação
 );
--- Serve exatamente a consulta do despachante (Documento 7 §9): pendente, sob
--- o teto de tentativas, já na ordem por agregado (`id`) que ele exige. O
--- backoff (`coalesce(proxima_tentativa_em,'-infinity') <= now()`) é filtro
--- de execução, não predicado do índice — depende do relógio, não é imutável.
+-- Serve a consulta do despachante (Documento 7 §9): pendente, sob o teto de
+-- tentativas, ordenado por `id`. `id` é ordem global de inserção, não ordem
+-- por agregado — manter os eventos de um mesmo agregado em ordem é dever do
+-- despachante (§9), não deste índice. O backoff
+-- (`coalesce(proxima_tentativa_em,'-infinity') <= now()`) é filtro de
+-- execução, não predicado do índice — depende do relógio, não é imutável. O
+-- teto (10) tem que ir literal na consulta do despachante, não como
+-- parâmetro: com plano genérico o planner deixa de enxergar que o índice
+-- parcial cobre o predicado e cai para full scan.
 CREATE INDEX outbox_pendentes ON shared.outbox (id) WHERE publicado_em IS NULL AND tentativas < 10;
 
 -- Idempotência dos consumidores: cada handler registra o que já processou.
@@ -1578,18 +1583,25 @@ SELECT l.instituicao_id, l.id AS lote_id, l.item_id, l.nome, l.situacao,
 -- shared.proibir_truncate() é o que cada migration chama (Documento 7 §22)
 -- com a lista de tabelas que guarda até a sua etapa: idempotente, porque uma
 -- migration posterior repete a chamada com a lista maior, e a tabela que já
--- tinha o gatilho não o recebe de novo.
+-- tinha o gatilho não o recebe de novo. Religa o gatilho que alguém tenha
+-- desabilitado (`ALTER TABLE ... DISABLE TRIGGER`) entre uma etapa e outra —
+-- do contrário, a varredura seguinte o encontraria e concluiria, errado, que
+-- a tabela já está guardada.
 -- -----------------------------------------------------------------------------
 
 CREATE FUNCTION shared.proibir_truncate(p_tabelas regclass[]) RETURNS void LANGUAGE plpgsql AS $$
 DECLARE
   t regclass;
+  v_gatilho pg_trigger;
 BEGIN
   FOREACH t IN ARRAY p_tabelas
   LOOP
-    IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgrelid = t AND tgname = 'sem_truncate') THEN
+    SELECT * INTO v_gatilho FROM pg_trigger WHERE tgrelid = t AND tgname = 'sem_truncate';
+    IF NOT FOUND THEN
       EXECUTE format('CREATE TRIGGER sem_truncate BEFORE TRUNCATE ON %s
                         FOR EACH STATEMENT EXECUTE FUNCTION shared.somente_insercao()', t);
+    ELSIF v_gatilho.tgenabled = 'D' THEN
+      EXECUTE format('ALTER TABLE %s ENABLE TRIGGER sem_truncate', t);
     END IF;
   END LOOP;
 END $$;
