@@ -1,3 +1,4 @@
+-- verificacoes: 11
 -- B0 · guardas mínimas de forma em identidade.usuario, identidade.convite e
 -- identidade.registro_de_auditoria (Documento 7 §15): US2, convite de uso
 -- único (com reenvio), convite não usado-e-revogado ao mesmo tempo, e ator

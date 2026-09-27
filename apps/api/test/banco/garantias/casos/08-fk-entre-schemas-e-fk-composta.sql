@@ -1,3 +1,4 @@
+-- verificacoes: 3
 -- B0 · restrições de FK (Documento 7 §15): nenhuma FK cruza schema — cada
 -- módulo referencia dentro do próprio schema, nunca direto para outro — e
 -- toda FK entre duas tabelas que têm `instituicao_id` é composta com

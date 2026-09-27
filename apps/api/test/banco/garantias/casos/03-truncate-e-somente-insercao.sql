@@ -1,3 +1,4 @@
+-- verificacoes: 7
 -- B0 · a trilha de auditoria (identidade.registro_de_auditoria) é
 -- só-inserção (Documento 7 §15, §22): nem TRUNCATE, nem UPDATE, nem DELETE —
 -- provado como cdd_app e como dono (quem roda migration, de quem o
@@ -45,6 +46,19 @@ BEGIN;
 ALTER TABLE identidade.registro_de_auditoria DISABLE TRIGGER sem_truncate;
 SELECT shared.proibir_truncate(ARRAY['identidade.registro_de_auditoria']::regclass[]);
 SELECT verif.confere('proibir_truncate · religa o gatilho sem_truncate que estava desligado',
+  (SELECT tgenabled::text FROM pg_trigger WHERE tgrelid = 'identidade.registro_de_auditoria'::regclass AND tgname = 'sem_truncate'),
+  'O');
+ROLLBACK;
+
+-- A outra metade da mesma promessa (Documento 7 §22): um gatilho restrito à
+-- réplica (`ENABLE REPLICA TRIGGER`, tgenabled 'R' — não dispara em sessão
+-- normal) também volta a 'O'. Uma função estreitada para só religar 'D'
+-- deixaria a tabela "guardada" na aparência, sem o gatilho disparar de
+-- verdade em sessão comum.
+BEGIN;
+ALTER TABLE identidade.registro_de_auditoria ENABLE REPLICA TRIGGER sem_truncate;
+SELECT shared.proibir_truncate(ARRAY['identidade.registro_de_auditoria']::regclass[]);
+SELECT verif.confere('proibir_truncate · religa o gatilho sem_truncate que estava restrito à réplica',
   (SELECT tgenabled::text FROM pg_trigger WHERE tgrelid = 'identidade.registro_de_auditoria'::regclass AND tgname = 'sem_truncate'),
   'O');
 ROLLBACK;

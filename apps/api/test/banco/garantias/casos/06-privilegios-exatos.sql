@@ -1,3 +1,4 @@
+-- verificacoes: 21
 -- B0 · privilégios EXATOS de cdd_app (Documento 7 §15): nem a mais, nem a
 -- menos, tabela por tabela e função por função. Roda como dono, porque lê a
 -- ACL de cdd_app (o dono não precisa dos privilégios dele para consultá-los).
@@ -81,3 +82,16 @@ SELECT verif.confere('privilégios · cdd_app sem CREATE no schema shared',
 
 SELECT verif.confere('privilégios · cdd_app sem CREATE no schema identidade',
   has_schema_privilege('cdd_app', 'identidade', 'CREATE'), false);
+
+-- Varredura pelo catálogo, não só nos dois schemas do B0: um GRANT CREATE
+-- concedido em qualquer outro schema (ex.: public, que o Postgres cria por
+-- padrão) também abriria a mesma porta, e as duas conferências acima não o
+-- enxergariam. Fora pg_* (schemas internos), information_schema e verif
+-- (schema desta própria suíte de verificação, sem relação com o B0).
+SELECT verif.confere('privilégios · cdd_app sem CREATE em nenhum outro schema do catálogo (varredura de pg_namespace)',
+  (SELECT count(*) FROM pg_namespace n
+    WHERE n.nspname !~ '^pg_'
+      AND n.nspname <> 'information_schema'
+      AND n.nspname <> 'verif'
+      AND has_schema_privilege('cdd_app', n.nspname, 'CREATE')),
+  0::bigint);

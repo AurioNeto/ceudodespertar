@@ -1,3 +1,4 @@
+-- verificacoes: 22
 -- B0 · isolamento entre instituições (Documento 7 §15, T23) e fail-closed
 -- sem contexto, nas cinco tabelas de shared/identidade que já existem no B0:
 -- usuario, grupo, convite, registro_de_auditoria (trilha) e chave_de_idempotencia.
@@ -116,9 +117,13 @@ SELECT verif.espera_erro('isolamento · A não grava grupo_permissao em nome de 
     VALUES ('b0000000-0000-0000-0000-000000000000', 'b2000000-0000-0000-0000-000000000000', 'sistema.grupo.gerenciar')
 $$, '42501');
 
+-- Usa o segundo usuário de B (sem linha de usuario_grupo no setup): com o
+-- primeiro, a tupla (usuario_id, grupo_id) repetiria a PK do setup (linhas
+-- 35-37), e a violação de 23505 apareceria antes da RLS entrar em jogo — o
+-- ataque reprovaria por PK duplicada, não pela política.
 SELECT verif.espera_erro('isolamento · A não grava usuario_grupo em nome de B', $$
   INSERT INTO identidade.usuario_grupo (instituicao_id, usuario_id, grupo_id, atribuido_por)
-    VALUES ('b0000000-0000-0000-0000-000000000000', 'b1000000-0000-0000-0000-000000000000',
+    VALUES ('b0000000-0000-0000-0000-000000000000', 'b1000000-0000-0000-0000-000000000002',
             'b2000000-0000-0000-0000-000000000000', 'b1000000-0000-0000-0000-000000000000')
 $$, '42501');
 

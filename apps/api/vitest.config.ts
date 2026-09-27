@@ -13,7 +13,7 @@ export default defineConfig({
   test: {
     setupFiles: ['reflect-metadata'],
     include: ['src/**/*.spec.ts', 'test/**/*.spec.ts', 'test/**/*.test.ts'],
-    exclude: [...configDefaults.exclude, 'test/banco/garantias/**'],
+    exclude: [...configDefaults.exclude, '**/*.integracao.test.ts'],
     coverage: {
       provider: 'v8',
       include: ['src/**/*.ts'],

@@ -1,3 +1,4 @@
+-- verificacoes: 8
 -- B0 · CHECKs de enumeração e de formato (Documento 7 §15): valor fora da
 -- lista declarada não entra — identidade.usuario.situacao,
 -- identidade.registro_de_auditoria.autor_tipo e .operacao — e o formato de
@@ -37,3 +38,30 @@ SELECT verif.espera_erro('permissao.codigo · fora do formato modulo.entidade.ac
   INSERT INTO identidade.permissao (codigo, modulo, descricao)
     VALUES ('CodigoInvalido', 'sistema', 'Só para o teste de formato')
 $$, '23514');
+
+-- Os quatro espera_erro acima só provam que UM valor de fora não entra —
+-- alargar a lista com outro valor (ex.: situacao + 'BLOQUEADO', autor_tipo +
+-- 'ANONIMO', operacao + 'USUARIO_EXCLUIDO', ou a regex de código aceitando
+-- maiúsculas) continuaria rejeitando o valor testado, e passaria batido.
+-- Fixa pg_get_constraintdef contra o Documento 7 §15 — qualquer mudança na
+-- lista ou no padrão reprova aqui, e não só quando coincide com o valor
+-- escolhido acima.
+SELECT verif.confere('CHECK · identidade.usuario.situacao não foi alargado', (
+  SELECT pg_get_constraintdef(oid) FROM pg_constraint
+   WHERE conrelid = 'identidade.usuario'::regclass AND conname = 'usuario_situacao_check'
+), $chk$CHECK ((situacao = ANY (ARRAY['CONVITE_PENDENTE'::text, 'ATIVO'::text, 'SUSPENSO'::text, 'REVOGADO'::text])))$chk$);
+
+SELECT verif.confere('CHECK · identidade.registro_de_auditoria.autor_tipo não foi alargado', (
+  SELECT pg_get_constraintdef(oid) FROM pg_constraint
+   WHERE conrelid = 'identidade.registro_de_auditoria'::regclass AND conname = 'registro_de_auditoria_autor_tipo_check'
+), $chk$CHECK ((autor_tipo = ANY (ARRAY['USUARIO'::text, 'SISTEMA'::text, 'LINK_PUBLICO'::text])))$chk$);
+
+SELECT verif.confere('CHECK · identidade.registro_de_auditoria.operacao não foi alargado', (
+  SELECT pg_get_constraintdef(oid) FROM pg_constraint
+   WHERE conrelid = 'identidade.registro_de_auditoria'::regclass AND conname = 'registro_de_auditoria_operacao_check'
+), $chk$CHECK ((operacao = ANY (ARRAY['LANCAMENTO_CONFIRMADO'::text, 'LANCAMENTO_ESTORNADO'::text, 'PENDENCIA_ABERTA'::text, 'PERIODO_FECHADO'::text, 'PERIODO_REABERTO'::text, 'PRESTACAO_GERADA'::text, 'EXTRATO_IMPORTADO'::text, 'ADIANTAMENTO_AUTORIZADO'::text, 'GRUPO_ALTERADO'::text, 'USUARIO_CONVIDADO'::text, 'USUARIO_ATIVADO'::text, 'USUARIO_SUSPENSO'::text, 'USUARIO_REATIVADO'::text, 'FORMULARIO_PUBLICADO'::text, 'PESSOA_ANONIMIZADA'::text, 'ANAMNESE_LIDA'::text, 'AUDITORIA_CONSULTADA'::text])))$chk$);
+
+SELECT verif.confere('CHECK · identidade.permissao.codigo não teve o formato alargado', (
+  SELECT pg_get_constraintdef(oid) FROM pg_constraint
+   WHERE conrelid = 'identidade.permissao'::regclass AND conname = 'permissao_codigo_check'
+), $chk$CHECK ((codigo ~ '^[a-z]+\.[a-z_]+\.[a-z_]+$'::text))$chk$);

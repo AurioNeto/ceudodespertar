@@ -1,3 +1,4 @@
+-- verificacoes: 10
 -- T23 (Doc 3 §11.4, Documento 7 §15/§22): toda tabela com `instituicao_id`
 -- em `shared` e `identidade` tem RLS habilitada e FORÇADA, e a política
 -- `isolamento_por_instituicao` com a expressão certa — exceto `shared.outbox`,
@@ -28,20 +29,31 @@ SELECT verif.confere('T23 · a varredura de tabelas-alvo não está vazia',
   (SELECT count(*) FROM verif.tabelas_com_instituicao_id()), 7::bigint);
 
 -- Cada tabela-alvo tem a política isolamento_por_instituicao com a expressão
--- certa não só no USING, mas também no WITH CHECK (senão a leitura fica
--- isolada e a escrita em nome de outra instituição passa), o comando certo
--- (ALL) e os papéis certos (PUBLIC — sem TO, então polroles = {0}).
-SELECT verif.confere('T23 · toda tabela-alvo tem a política isolamento_por_instituicao com USING, WITH CHECK, comando e papéis corretos',
+-- certa no USING, o comando certo (ALL) e os papéis certos (PUBLIC — sem TO,
+-- então polroles = {0}).
+SELECT verif.confere('T23 · toda tabela-alvo tem a política isolamento_por_instituicao com USING, comando e papéis corretos',
   (SELECT count(*) FROM verif.tabelas_com_instituicao_id() t
     WHERE NOT EXISTS (
       SELECT 1 FROM pg_policy p
        WHERE p.polrelid = t.relid
          AND p.polname = 'isolamento_por_instituicao'
          AND pg_get_expr(p.polqual, p.polrelid) = '(instituicao_id = shared.instituicao_atual())'
-         AND pg_get_expr(p.polwithcheck, p.polrelid) = '(instituicao_id = shared.instituicao_atual())'
          AND p.polcmd = '*'
          AND p.polpermissive
          AND p.polroles = ARRAY[0]::oid[]
+    )), 0::bigint);
+
+-- A mesma política também precisa do WITH CHECK — assertiva à parte, para
+-- que apagar só esta condição derrube a contagem de OKs do arquivo (e não
+-- fique escondida dentro do AND de uma verificação maior): senão a leitura
+-- fica isolada, mas a escrita em nome de outra instituição passa.
+SELECT verif.confere('T23 · toda tabela-alvo tem WITH CHECK da política isolamento_por_instituicao com a expressão certa',
+  (SELECT count(*) FROM verif.tabelas_com_instituicao_id() t
+    WHERE NOT EXISTS (
+      SELECT 1 FROM pg_policy p
+       WHERE p.polrelid = t.relid
+         AND p.polname = 'isolamento_por_instituicao'
+         AND pg_get_expr(p.polwithcheck, p.polrelid) = '(instituicao_id = shared.instituicao_atual())'
     )), 0::bigint);
 
 -- Nenhuma tabela-alvo tem política a mais que abra uma fresta — em

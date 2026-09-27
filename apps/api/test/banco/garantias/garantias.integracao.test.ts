@@ -9,7 +9,7 @@ const DIRETORIO_DESTE_ARQUIVO = dirname(fileURLToPath(import.meta.url));
 const DIRETORIO_DOS_CASOS = join(DIRETORIO_DESTE_ARQUIVO, 'casos');
 const HELPERS_VERIF = readFileSync(join(DIRETORIO_DESTE_ARQUIVO, 'instalar-helpers.sql'), 'utf8');
 
-const PADRAO_DE_CHAMADA_VERIF = /verif\.(confere|espera_ok|espera_erro)\s*\(/g;
+const PADRAO_DO_CABECALHO_DE_VERIFICACOES = /^--\s*verificacoes:\s*(\d+)\s*$/m;
 
 function nomesDosArquivosDeCaso(): string[] {
   return readdirSync(DIRETORIO_DOS_CASOS)
@@ -17,8 +17,9 @@ function nomesDosArquivosDeCaso(): string[] {
     .toSorted();
 }
 
-function quantidadeDeChamadasVerifNoArquivo(sqlDoCaso: string): number {
-  return sqlDoCaso.match(PADRAO_DE_CHAMADA_VERIF)?.length ?? 0;
+function verificacoesDeclaradasNoCabecalho(sqlDoCaso: string): number | undefined {
+  const cabecalho = sqlDoCaso.match(PADRAO_DO_CABECALHO_DE_VERIFICACOES);
+  return cabecalho === null ? undefined : Number(cabecalho[1]);
 }
 
 describe('verificação de garantias do banco (Documento 7 §15, §22, §26)', () => {
@@ -35,6 +36,14 @@ describe('verificação de garantias do banco (Documento 7 §15, §22, §26)', (
 
   it.each(nomesDosArquivosDeCaso())('%s', async (nomeDoArquivo) => {
     const sqlDoCaso = readFileSync(join(DIRETORIO_DOS_CASOS, nomeDoArquivo), 'utf8');
+    const verificacoesDeclaradas = verificacoesDeclaradasNoCabecalho(sqlDoCaso);
+
+    expect(
+      verificacoesDeclaradas,
+      `${nomeDoArquivo} precisa declarar "-- verificacoes: N" no cabeçalho`,
+    ).toBeDefined();
+    expect(verificacoesDeclaradas).toBeGreaterThan(0);
+
     const noticesOk: string[] = [];
     const capturarNoticeOk = (aviso: { message?: string }): void => {
       if (aviso.message !== undefined) {
@@ -49,11 +58,9 @@ describe('verificação de garantias do banco (Documento 7 §15, §22, §26)', (
       banco.owner.off('notice', capturarNoticeOk);
     }
 
-    const chamadasNoArquivo = quantidadeDeChamadasVerifNoArquivo(sqlDoCaso);
     const todasAsNoticesComecamComOk = noticesOk.every((mensagem) => mensagem.startsWith('OK'));
 
-    expect(chamadasNoArquivo).toBeGreaterThan(0);
-    expect(noticesOk).toHaveLength(chamadasNoArquivo);
+    expect(noticesOk).toHaveLength(verificacoesDeclaradas as number);
     expect(todasAsNoticesComecamComOk).toBe(true);
   });
 });
