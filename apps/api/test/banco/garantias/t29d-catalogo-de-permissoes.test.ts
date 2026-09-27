@@ -33,7 +33,11 @@ describe('T29(d) · identidade.permissao no banco espelha @cdd/contracts', () =>
 
     const doBanco = catalogoPorCodigo(resultado.rows);
     const doContrato = catalogoPorCodigo(
-      Object.entries(CATALOGO_DE_PERMISSOES).map(([codigo, valor]) => ({ codigo, ...valor })),
+      Object.entries(CATALOGO_DE_PERMISSOES).map(([codigo, { modulo, descricao }]) => ({
+        codigo,
+        modulo,
+        descricao,
+      })),
     );
 
     expect(doBanco).toEqual(doContrato);

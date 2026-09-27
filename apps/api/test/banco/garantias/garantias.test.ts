@@ -14,7 +14,7 @@ const PADRAO_DE_CHAMADA_VERIF = /verif\.(confere|espera_ok|espera_erro)\s*\(/g;
 function nomesDosArquivosDeCaso(): string[] {
   return readdirSync(DIRETORIO_DOS_CASOS)
     .filter((nome) => nome.endsWith('.sql'))
-    .sort();
+    .toSorted();
 }
 
 function quantidadeDeChamadasVerifNoArquivo(sqlDoCaso: string): number {
