@@ -75,10 +75,21 @@ partir do próprio bootstrap, e declará-los no JSON para restringir o escopo
 substitui essa configuração embutida (URLs de redirecionamento, PKCE do
 console, papéis) por uma quase vazia, quebrando o Account Console e o
 Security Admin Console — testado ao vivo. Risco aceito para esses cinco:
-nenhum carrega o mapeador de audiência `cdd-api`, então um eventual token
-offline emitido por eles é recusado pela API (`aud` não bate); `fumaca.sh`
-prova isso rodando o password grant do `admin-cli` (continua funcionando,
-sem `aud=cdd-api`) e a recusa de `offline_access` nele. Os clients da
+nenhum carrega o mapeador de audiência `cdd-api`. Confirmado ao vivo com um
+usuário real (não o seed de import, que não recebe `default-roles-<realm>` e
+por isso mascararia o teste com `not_allowed`): `account`, `account-console`
+e `security-admin-console` aceitam o fluxo authorization code + PKCE com
+`scope=openid offline_access` e devolvem um refresh token genuíno
+(`typ: "Offline"`), com `refresh_expires_in` limitado a 28800 s pelo
+`offlineSessionMaxLifespanEnabled` do realm — mas o access token que vem
+junto nunca carrega `aud=cdd-api` (`aud` sai ausente ou `"account"`,
+conforme o client), então a API o recusa por audiência de qualquer forma.
+Nenhum dos cinco aceita password grant nem device flow (`directAccessGrantsEnabled`
+e o device grant continuam desligados neles por padrão) — confirmado ao vivo
+com `error=unauthorized_client` nos dois. `fumaca.sh` só prova isso para o
+`admin-cli` (password grant continua funcionando, sem `aud=cdd-api`, e
+`offline_access` é recusado nele); os outros quatro dependem do fluxo por
+navegador e ficam fora do escopo do smoke test atual. Os clients da
 aplicação (`cdd-web`, `cdd-teste`, `cdd-api-admin`) e o `admin-cli` declaram
 `optionalClientScopes` explícito sem `offline_access`; os três primeiros
 ficam com o escopo opcional vazio (nada além do que o app usa).
