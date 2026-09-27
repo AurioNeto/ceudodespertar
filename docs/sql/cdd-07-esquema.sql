@@ -1553,9 +1553,11 @@ SELECT l.instituicao_id, l.id AS lote_id, l.item_id, l.nome, l.situacao,
 -- com a lista de tabelas que guarda até a sua etapa: idempotente, porque uma
 -- migration posterior repete a chamada com a lista maior, e a tabela que já
 -- tinha o gatilho não o recebe de novo. Religa o gatilho que alguém tenha
--- desabilitado (`ALTER TABLE ... DISABLE TRIGGER`) entre uma etapa e outra —
--- do contrário, a varredura seguinte o encontraria e concluiria, errado, que
--- a tabela já está guardada.
+-- desabilitado (`DISABLE TRIGGER`, tgenabled 'D') ou restringido à réplica
+-- (`ENABLE REPLICA TRIGGER`, 'R' — não dispara nas sessões normais) entre
+-- uma etapa e outra — do contrário, a varredura seguinte o encontraria e
+-- concluiria, errado, que a tabela já está guardada. 'A' (ALWAYS) dispara
+-- em qualquer sessão e fica como está.
 -- -----------------------------------------------------------------------------
 
 CREATE FUNCTION shared.proibir_truncate(p_tabelas regclass[]) RETURNS void LANGUAGE plpgsql AS $$
@@ -1569,7 +1571,7 @@ BEGIN
     IF NOT FOUND THEN
       EXECUTE format('CREATE TRIGGER sem_truncate BEFORE TRUNCATE ON %s
                         FOR EACH STATEMENT EXECUTE FUNCTION shared.somente_insercao()', t);
-    ELSIF v_gatilho.tgenabled = 'D' THEN
+    ELSIF v_gatilho.tgenabled IN ('D', 'R') THEN
       EXECUTE format('ALTER TABLE %s ENABLE TRIGGER sem_truncate', t);
     END IF;
   END LOOP;
