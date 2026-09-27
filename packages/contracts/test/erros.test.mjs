@@ -9,10 +9,34 @@ import { CODIGOS_DE_ERRO } from '../dist/index.js';
 const aquiDir = dirname(fileURLToPath(import.meta.url));
 const caminhoDoEsquema = resolve(aquiDir, '../../../docs/sql/cdd-07-esquema.sql');
 
-function prefixosDeRaiseExceptionDoEsquema(caminho) {
+const PADRAO_DE_RAISE_EXCEPTION = /raise\s+exception/gi;
+const PADRAO_DE_CODIGO_CANONICO = /^\s*'([A-Z]+(?:_[A-Z]+)*): /;
+const TAMANHO_DA_JANELA_APOS_O_RAISE = 200;
+
+function numeroDaLinha(sql, indice) {
+  return sql.slice(0, indice).split('\n').length;
+}
+
+function analisarRaiseExceptionDoEsquema(caminho) {
   const sql = readFileSync(caminho, 'utf8');
-  const casamentos = [...sql.matchAll(/RAISE EXCEPTION '([A-Z_]+):/g)];
-  return new Set(casamentos.map((casamento) => casamento[1]));
+  const ocorrencias = [...sql.matchAll(PADRAO_DE_RAISE_EXCEPTION)];
+
+  const codigos = new Set();
+  const naoConformes = [];
+
+  for (const ocorrencia of ocorrencias) {
+    const inicioDoResto = ocorrencia.index + ocorrencia[0].length;
+    const resto = sql.slice(inicioDoResto, inicioDoResto + TAMANHO_DA_JANELA_APOS_O_RAISE);
+    const casamentoDoCodigo = resto.match(PADRAO_DE_CODIGO_CANONICO);
+
+    if (casamentoDoCodigo) {
+      codigos.add(casamentoDoCodigo[1]);
+    } else {
+      naoConformes.push(`linha ${numeroDaLinha(sql, ocorrencia.index)}: ${resto.slice(0, 40).replace(/\n/g, '\\n')}`);
+    }
+  }
+
+  return { total: ocorrencias.length, codigos, naoConformes };
 }
 
 test('códigos de erro são únicos', () => {
@@ -25,12 +49,18 @@ test('códigos de erro seguem o formato MAIUSCULAS_COM_SUBLINHADO', () => {
   }
 });
 
-test('todo prefixo de RAISE EXCEPTION do esquema de referência está no catálogo', () => {
-  const prefixos = prefixosDeRaiseExceptionDoEsquema(caminhoDoEsquema);
-  assert.ok(prefixos.size > 0, 'nenhum RAISE EXCEPTION com prefixo encontrado no esquema de referência');
+test('todo RAISE EXCEPTION do esquema de referência segue o formato canônico com código do catálogo', () => {
+  const { total, codigos, naoConformes } = analisarRaiseExceptionDoEsquema(caminhoDoEsquema);
+
+  assert.ok(total > 0, 'nenhum RAISE EXCEPTION encontrado no esquema de referência');
+  assert.deepEqual(
+    naoConformes,
+    [],
+    `RAISE EXCEPTION fora do formato canônico 'CODIGO: mensagem': ${naoConformes.join('; ')}`,
+  );
 
   const catalogo = new Set(CODIGOS_DE_ERRO);
-  for (const prefixo of prefixos) {
-    assert.ok(catalogo.has(prefixo), `${prefixo} não está no catálogo`);
+  for (const codigo of codigos) {
+    assert.ok(catalogo.has(codigo), `${codigo} não está no catálogo`);
   }
 });

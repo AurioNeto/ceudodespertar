@@ -39,7 +39,7 @@ describe('mapear', () => {
       throw new Error('não deveria ser chamada');
     });
 
-    expect(ehErr(resultado)).toBe(true);
+    expect(ehErr(resultado) && resultado.erro).toBe('falhou');
   });
 });
 
@@ -71,7 +71,7 @@ describe('encadear', () => {
       throw new Error('não deveria ser chamada');
     });
 
-    expect(ehErr(resultado)).toBe(true);
+    expect(ehErr(resultado) && resultado.erro).toBe('falhou');
   });
 });
 
