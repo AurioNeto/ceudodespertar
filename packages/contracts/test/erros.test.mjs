@@ -9,18 +9,23 @@ import { CODIGOS_DE_ERRO } from '../dist/index.js';
 const aquiDir = dirname(fileURLToPath(import.meta.url));
 const diretorioDasMigracoes = resolve(aquiDir, '../../../apps/api/src/banco/migracoes');
 
-const PADRAO_DE_RAISE_EXCEPTION = /raise\s+exception/gi;
-const PADRAO_DE_CODIGO_CANONICO = /^\s*'([A-Z]+(?:_[A-Z]+)*): /;
-const TAMANHO_DA_JANELA_APOS_O_RAISE = 200;
+const PADRAO_DE_ARQUIVO_ELEGIVEL = /\.(sql|ts)$/i;
+const NIVEIS_SEM_EXCECAO = new Set(['debug', 'log', 'info', 'notice', 'warning']);
+const PADRAO_DE_PALAVRA_RAISE = /\braise\b/gi;
+const PADRAO_DE_PALAVRA_ASSERT = /\bassert\b/gi;
+const PADRAO_DE_PROXIMA_PALAVRA = /^\s*([a-zA-Z]+)\b/;
+const PADRAO_DA_FORMA_CANONICA =
+  /^\s*'([A-Z]+(?:_[A-Z]+)*): [^']*'(?:\s*,[^;]*?)?\s*USING\s+ERRCODE\s*=\s*'P0001'\s*;/;
+const TAMANHO_DA_JANELA_DE_DIAGNOSTICO = 80;
 
-function arquivosSqlDasMigracoes(diretorio) {
+function arquivosDasMigracoes(diretorio) {
   const entradas = readdirSync(diretorio, { withFileTypes: true });
   const arquivos = [];
   for (const entrada of entradas) {
     const caminho = join(diretorio, entrada.name);
     if (entrada.isDirectory()) {
-      arquivos.push(...arquivosSqlDasMigracoes(caminho));
-    } else if (entrada.name.endsWith('.sql')) {
+      arquivos.push(...arquivosDasMigracoes(caminho));
+    } else if (PADRAO_DE_ARQUIVO_ELEGIVEL.test(entrada.name)) {
       arquivos.push(caminho);
     }
   }
@@ -31,44 +36,61 @@ function numeroDaLinha(sql, indice) {
   return sql.slice(0, indice).split('\n').length;
 }
 
-function analisarRaiseExceptionDoArquivo(caminho) {
-  const sql = readFileSync(caminho, 'utf8');
-  const ocorrencias = [...sql.matchAll(PADRAO_DE_RAISE_EXCEPTION)];
+function trechoDeDiagnostico(sql, indice) {
+  return sql.slice(indice, indice + TAMANHO_DA_JANELA_DE_DIAGNOSTICO).replace(/\n/g, '\\n');
+}
 
+function analisarArquivo(caminho) {
+  const sql = readFileSync(caminho, 'utf8');
   const codigos = new Set();
   const naoConformes = [];
+  let totalDeExcecoes = 0;
 
-  for (const ocorrencia of ocorrencias) {
-    const inicioDoResto = ocorrencia.index + ocorrencia[0].length;
-    const resto = sql.slice(inicioDoResto, inicioDoResto + TAMANHO_DA_JANELA_APOS_O_RAISE);
-    const casamentoDoCodigo = resto.match(PADRAO_DE_CODIGO_CANONICO);
-
-    if (casamentoDoCodigo) {
-      codigos.add(casamentoDoCodigo[1]);
-    } else {
-      naoConformes.push(
-        `${caminho}:${numeroDaLinha(sql, ocorrencia.index)}: ${resto.slice(0, 40).replace(/\n/g, '\\n')}`,
-      );
-    }
+  for (const ocorrencia of sql.matchAll(PADRAO_DE_PALAVRA_ASSERT)) {
+    naoConformes.push(`${caminho}:${numeroDaLinha(sql, ocorrencia.index)}: ASSERT não é uma forma aceita de erro`);
   }
 
-  return { total: ocorrencias.length, codigos, naoConformes };
+  for (const ocorrencia of sql.matchAll(PADRAO_DE_PALAVRA_RAISE)) {
+    let cursor = ocorrencia.index + ocorrencia[0].length;
+    const proximaPalavra = sql.slice(cursor).match(PADRAO_DE_PROXIMA_PALAVRA);
+    const nivel = proximaPalavra?.[1]?.toLowerCase();
+
+    if (nivel && NIVEIS_SEM_EXCECAO.has(nivel)) {
+      continue;
+    }
+    if (nivel === 'exception') {
+      cursor += proximaPalavra[0].length;
+    }
+
+    totalDeExcecoes += 1;
+    const resto = sql.slice(cursor);
+    const casamento = resto.match(PADRAO_DA_FORMA_CANONICA);
+
+    if (!casamento) {
+      naoConformes.push(
+        `${caminho}:${numeroDaLinha(sql, ocorrencia.index)}: ${trechoDeDiagnostico(sql, ocorrencia.index)}`,
+      );
+      continue;
+    }
+    codigos.add(casamento[1]);
+  }
+
+  return { totalDeExcecoes, codigos, naoConformes };
 }
 
 function analisarRaiseExceptionDasMigracoes() {
-  const arquivos = arquivosSqlDasMigracoes(diretorioDasMigracoes);
-  let total = 0;
+  let totalDeExcecoes = 0;
   const codigos = new Set();
   const naoConformes = [];
 
-  for (const arquivo of arquivos) {
-    const analise = analisarRaiseExceptionDoArquivo(arquivo);
-    total += analise.total;
+  for (const arquivo of arquivosDasMigracoes(diretorioDasMigracoes)) {
+    const analise = analisarArquivo(arquivo);
+    totalDeExcecoes += analise.totalDeExcecoes;
     for (const codigo of analise.codigos) codigos.add(codigo);
     naoConformes.push(...analise.naoConformes);
   }
 
-  return { total, codigos, naoConformes };
+  return { totalDeExcecoes, codigos, naoConformes };
 }
 
 test('códigos de erro são únicos', () => {
@@ -81,14 +103,14 @@ test('códigos de erro seguem o formato MAIUSCULAS_COM_SUBLINHADO', () => {
   }
 });
 
-test('todo RAISE EXCEPTION das migrations segue o formato canônico com código do catálogo', () => {
-  const { total, codigos, naoConformes } = analisarRaiseExceptionDasMigracoes();
+test('toda RAISE de nível EXCEPTION (implícito ou explícito) das migrations segue a forma canônica', () => {
+  const { totalDeExcecoes, codigos, naoConformes } = analisarRaiseExceptionDasMigracoes();
 
-  assert.ok(total > 0, 'nenhum RAISE EXCEPTION encontrado nas migrations');
+  assert.ok(totalDeExcecoes > 0, 'nenhuma RAISE de nível EXCEPTION encontrada nas migrations');
   assert.deepEqual(
     naoConformes,
     [],
-    `RAISE EXCEPTION fora do formato canônico 'CODIGO: mensagem': ${naoConformes.join('; ')}`,
+    `RAISE fora da forma canônica "CODIGO: mensagem" ... USING ERRCODE = 'P0001': ${naoConformes.join('; ')}`,
   );
 
   const catalogo = new Set(CODIGOS_DE_ERRO);

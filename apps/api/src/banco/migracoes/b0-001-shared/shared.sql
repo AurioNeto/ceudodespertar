@@ -14,7 +14,7 @@ CREATE FUNCTION shared.instituicao_atual() RETURNS uuid
   LANGUAGE sql STABLE AS
 $$ SELECT nullif(current_setting('app.instituicao_id', true), '')::uuid $$;
 
-CREATE TABLE IF NOT EXISTS shared.instituicao (
+CREATE TABLE shared.instituicao (
   id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   nome        text NOT NULL,
   criada_em   timestamptz NOT NULL DEFAULT now()
@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS shared.instituicao (
 -- Outbox: gravado na mesma transação do agregado. Sem RLS de propósito — o
 -- despachante lê de todas as instituições e restabelece o contexto de cada
 -- evento antes de entregá-lo (Documento 7 §9).
-CREATE TABLE IF NOT EXISTS shared.outbox (
+CREATE TABLE shared.outbox (
   id                    bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   evento_id             uuid NOT NULL UNIQUE,
   instituicao_id        uuid NOT NULL,
@@ -46,10 +46,10 @@ CREATE TABLE IF NOT EXISTS shared.outbox (
 -- teto (10) tem que ir literal na consulta do despachante, não como
 -- parâmetro: com plano genérico o planner deixa de enxergar que o índice
 -- parcial cobre o predicado e cai para full scan.
-CREATE INDEX IF NOT EXISTS outbox_pendentes ON shared.outbox (id) WHERE publicado_em IS NULL AND tentativas < 10;
+CREATE INDEX outbox_pendentes ON shared.outbox (id) WHERE publicado_em IS NULL AND tentativas < 10;
 
 -- Idempotência dos consumidores: cada handler registra o que já processou.
-CREATE TABLE IF NOT EXISTS shared.evento_processado (
+CREATE TABLE shared.evento_processado (
   consumidor    text NOT NULL,
   evento_id     uuid NOT NULL,
   processado_em timestamptz NOT NULL DEFAULT now(),
@@ -57,7 +57,7 @@ CREATE TABLE IF NOT EXISTS shared.evento_processado (
 );
 
 -- Idempotência de comando HTTP (cabeçalho Idempotency-Key).
-CREATE TABLE IF NOT EXISTS shared.chave_de_idempotencia (
+CREATE TABLE shared.chave_de_idempotencia (
   instituicao_id  uuid NOT NULL,
   chave           text NOT NULL,
   usuario_id      uuid,
@@ -160,7 +160,29 @@ BEGIN
   END LOOP;
 END $$;
 
-GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA shared TO cdd_app;
-GRANT USAGE ON ALL SEQUENCES IN SCHEMA shared TO cdd_app;
+-- -----------------------------------------------------------------------------
+-- Privilégios do papel de execução
+--
+-- Por tabela, nunca `ON ALL TABLES IN SCHEMA`: uma etapa futura que crie
+-- outra tabela em `shared` (ex.: `shared.anexo`, B1) faz o próprio GRANT da
+-- sua tabela nova — nunca precisa (nem pode) repetir um GRANT amplo aqui,
+-- que devolveria a cdd_app privilégios que uma tabela já existente teve
+-- explicitamente revogados.
+-- -----------------------------------------------------------------------------
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON shared.instituicao TO cdd_app;
+GRANT SELECT, INSERT, UPDATE, DELETE ON shared.outbox TO cdd_app;
+GRANT USAGE ON SEQUENCE shared.outbox_id_seq TO cdd_app;
+GRANT SELECT, INSERT, UPDATE, DELETE ON shared.evento_processado TO cdd_app;
+GRANT SELECT, INSERT, UPDATE, DELETE ON shared.chave_de_idempotencia TO cdd_app;
+
+-- As três só são chamadas por uma migration (como cdd_owner, dono delas) ou
+-- pelo gatilho que instalam — nenhum outro papel precisa executá-las.
+-- shared.instituicao_atual() fica de fora: a política de isolamento a chama
+-- como o papel da própria consulta (cdd_app), então PUBLIC continua podendo
+-- executá-la.
+REVOKE EXECUTE ON FUNCTION shared.somente_insercao() FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION shared.proibir_truncate(regclass[]) FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION shared.aplicar_isolamento_por_instituicao() FROM PUBLIC;
 
 SELECT shared.aplicar_isolamento_por_instituicao();

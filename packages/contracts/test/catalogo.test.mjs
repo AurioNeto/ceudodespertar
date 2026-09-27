@@ -18,45 +18,106 @@ import {
 const aquiDir = dirname(fileURLToPath(import.meta.url));
 const diretorioDasMigracoes = resolve(aquiDir, '../../../apps/api/src/banco/migracoes');
 
-function arquivosSqlDasMigracoes(diretorio) {
+const PADRAO_DE_ARQUIVO_ELEGIVEL = /\.(sql|ts)$/i;
+const NOME_DA_TABELA = String.raw`"?identidade"?\s*\.\s*"?permissao"?`;
+const PADRAO_DE_ESCRITA_NA_TABELA = new RegExp(
+  String.raw`\b(insert\s+into|update|delete\s+from|copy)\s+${NOME_DA_TABELA}\b`,
+  'gi',
+);
+const PADRAO_DE_ABERTURA_DE_TUPLA = /\(\s*'/g;
+const PADRAO_DE_TUPLA = /\(\s*'([^']*)'\s*,\s*'([^']*)'\s*,\s*'([^']*)'\s*\)/g;
+
+function arquivosDasMigracoes(diretorio) {
   const entradas = readdirSync(diretorio, { withFileTypes: true });
   const arquivos = [];
   for (const entrada of entradas) {
     const caminho = join(diretorio, entrada.name);
     if (entrada.isDirectory()) {
-      arquivos.push(...arquivosSqlDasMigracoes(caminho));
-    } else if (entrada.name.endsWith('.sql')) {
+      arquivos.push(...arquivosDasMigracoes(caminho));
+    } else if (PADRAO_DE_ARQUIVO_ELEGIVEL.test(entrada.name)) {
       arquivos.push(caminho);
     }
   }
   return arquivos;
 }
 
-function blocosDeInsertDasMigracoes() {
-  const blocos = [];
-  for (const arquivo of arquivosSqlDasMigracoes(diretorioDasMigracoes)) {
-    const sql = readFileSync(arquivo, 'utf8');
-    const casamentos = sql.matchAll(/INSERT INTO identidade\.permissao[^;]*;/gs);
-    blocos.push(...[...casamentos].map((casamento) => casamento[0]));
-  }
-  assert.ok(blocos.length > 0, 'INSERT INTO identidade.permissao não encontrado nas migrations');
-  return blocos;
+function numeroDaLinha(sql, indice) {
+  return sql.slice(0, indice).split('\n').length;
 }
 
-function codigosDoInsertDasMigracoes() {
-  const blocos = blocosDeInsertDasMigracoes();
-  const codigos = [];
-  for (const bloco of blocos) {
-    const ocorrenciasDeAberturaDeTupla = bloco.split("('").length - 1;
-    const casamentos = [...bloco.matchAll(/\(\s*'([^']+)'/g)];
-    assert.equal(
-      casamentos.length,
-      ocorrenciasDeAberturaDeTupla,
-      'tupla do INSERT com formatação divergente do padrão esperado',
-    );
-    for (const casamento of casamentos) codigos.push(casamento[1]);
+function corpoDoStatement(sql, indiceAposMatch) {
+  const fimDoStatement = sql.indexOf(';', indiceAposMatch);
+  return fimDoStatement === -1 ? sql.slice(indiceAposMatch) : sql.slice(indiceAposMatch, fimDoStatement);
+}
+
+function analisarInsert(caminho, linha, corpo, naoConformes, linhasInseridas) {
+  if (/\bselect\b/i.test(corpo)) {
+    naoConformes.push(`${caminho}:${linha}: INSERT ... SELECT não é um INSERT literal em identidade.permissao`);
+    return;
   }
-  return codigos;
+
+  const indiceDeValues = corpo.search(/\bvalues\b/i);
+  if (indiceDeValues === -1) {
+    naoConformes.push(`${caminho}:${linha}: INSERT em identidade.permissao sem VALUES literal`);
+    return;
+  }
+
+  const secaoDeValores = corpo.slice(indiceDeValues);
+  const aberturas = secaoDeValores.match(PADRAO_DE_ABERTURA_DE_TUPLA) ?? [];
+  const tuplas = [...secaoDeValores.matchAll(PADRAO_DE_TUPLA)];
+  if (tuplas.length !== aberturas.length) {
+    naoConformes.push(
+      `${caminho}:${linha}: tupla do INSERT em identidade.permissao com formatação divergente do padrão esperado`,
+    );
+    return;
+  }
+
+  for (const tupla of tuplas) {
+    linhasInseridas.push({ codigo: tupla[1], modulo: tupla[2], descricao: tupla[3] });
+  }
+}
+
+function analisarArquivo(caminho) {
+  const ehDesfazer = caminho.endsWith('desfazer.sql');
+  const sql = readFileSync(caminho, 'utf8');
+  const naoConformes = [];
+  const linhasInseridas = [];
+
+  for (const ocorrencia of sql.matchAll(PADRAO_DE_ESCRITA_NA_TABELA)) {
+    const verbo = ocorrencia[1].toLowerCase().replace(/\s+/g, ' ');
+    const linha = numeroDaLinha(sql, ocorrencia.index);
+    const corpo = corpoDoStatement(sql, ocorrencia.index + ocorrencia[0].length);
+
+    if (verbo === 'insert into') {
+      analisarInsert(caminho, linha, corpo, naoConformes, linhasInseridas);
+      continue;
+    }
+
+    if (verbo === 'delete from' && ehDesfazer) {
+      if (!/\bwhere\b/i.test(corpo)) {
+        naoConformes.push(
+          `${caminho}:${linha}: DELETE em identidade.permissao no desfazer sem WHERE apagaria seeds futuros`,
+        );
+      }
+      continue;
+    }
+
+    naoConformes.push(`${caminho}:${linha}: ${verbo.toUpperCase()} em identidade.permissao fora de um INSERT literal ou do desfazer`);
+  }
+
+  return { naoConformes, linhasInseridas };
+}
+
+function escritasNaTabelaDasMigracoes() {
+  const naoConformes = [];
+  const linhasInseridas = [];
+  for (const arquivo of arquivosDasMigracoes(diretorioDasMigracoes)) {
+    const analise = analisarArquivo(arquivo);
+    naoConformes.push(...analise.naoConformes);
+    linhasInseridas.push(...analise.linhasInseridas);
+  }
+  assert.ok(linhasInseridas.length > 0, 'INSERT INTO identidade.permissao não encontrado nas migrations');
+  return { naoConformes, linhasInseridas };
 }
 
 test('catálogo tem 64 códigos únicos no formato modulo.recurso.acao', () => {
@@ -80,11 +141,25 @@ test('PERMISSOES tem exatamente as chaves do catálogo', () => {
   }
 });
 
-test('T29(c) — o INSERT das migrations é igual ao catálogo', () => {
-  const codigosDoSql = codigosDoInsertDasMigracoes();
+test('T29(c) — o INSERT das migrations é igual ao catálogo, em código, módulo e descrição', () => {
+  const { naoConformes, linhasInseridas } = escritasNaTabelaDasMigracoes();
+  assert.deepEqual(naoConformes, [], naoConformes.join('; '));
+
+  const codigosDoSql = linhasInseridas.map((linha) => linha.codigo);
+  assert.equal(new Set(codigosDoSql).size, codigosDoSql.length, 'código duplicado no INSERT das migrations');
+
   const codigosDoCatalogo = Object.keys(CATALOGO_DE_PERMISSOES);
   assert.equal(codigosDoSql.length, codigosDoCatalogo.length);
   assert.deepEqual(new Set(codigosDoSql), new Set(codigosDoCatalogo));
+
+  for (const linha of linhasInseridas) {
+    const doContrato = CATALOGO_DE_PERMISSOES[linha.codigo];
+    assert.ok(doContrato, `${linha.codigo} não está no catálogo do contracts`);
+    assert.ok(linha.descricao.trim().length > 0, `${linha.codigo}: descrição vazia`);
+    assert.equal(linha.modulo, linha.codigo.split('.')[0], `${linha.codigo}: módulo "${linha.modulo}" não é o prefixo do código`);
+    assert.equal(linha.modulo, doContrato.modulo, `${linha.codigo}: módulo diverge do contracts`);
+    assert.equal(linha.descricao, doContrato.descricao, `${linha.codigo}: descrição diverge do contracts`);
+  }
 });
 
 test('os seis grupos de sistema não incluem GUARDIAO', () => {

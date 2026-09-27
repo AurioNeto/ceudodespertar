@@ -11,16 +11,19 @@
 -- Catálogo global, espelho do código (T29). Sem instituição: o vocabulário é
 -- do sistema, não da casa. Grupos configuráveis combinam, não inventam. O
 -- INSERT das 64 permissões é a migration seguinte (b0-003).
-CREATE TABLE IF NOT EXISTS identidade.permissao (
+CREATE TABLE identidade.permissao (
   codigo     text PRIMARY KEY CHECK (codigo ~ '^[a-z]+\.[a-z_]+\.[a-z_]+$'),
   modulo     text NOT NULL,
   descricao  text NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS identidade.usuario (
+CREATE TABLE identidade.usuario (
   id                uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   instituicao_id    uuid NOT NULL,
-  subject_id        text UNIQUE,              -- `sub` do Keycloak; NULL até aceitar o convite
+  subject_id        text UNIQUE,              -- `sub` do Keycloak; NULL até aceitar o convite.
+                                                -- (situacao = 'CONVITE_PENDENTE') = (subject_id IS NULL)
+                                                -- é regra do agregado Usuario (ativar grava o sub),
+                                                -- não uma CHECK do banco — decisão do B0.
   pessoa_id         uuid,                     -- pessoas.pessoa — base do eixo de vínculo (Doc 3 §8)
   nome              text NOT NULL,
   email             text NOT NULL,
@@ -30,12 +33,11 @@ CREATE TABLE IF NOT EXISTS identidade.usuario (
   ultimo_acesso_em  timestamptz,
   versao            integer NOT NULL DEFAULT 1,
   criado_em         timestamptz NOT NULL DEFAULT now(),
-  UNIQUE (instituicao_id, id),
-  CHECK (situacao = 'CONVITE_PENDENTE' OR subject_id IS NOT NULL)
+  UNIQUE (instituicao_id, id)
 );
-CREATE UNIQUE INDEX IF NOT EXISTS usuario_email_unico ON identidade.usuario (instituicao_id, lower(email));
+CREATE UNIQUE INDEX usuario_email_unico ON identidade.usuario (instituicao_id, lower(email));
 -- US2: a mesma pessoa não é duas contas na mesma casa.
-CREATE UNIQUE INDEX IF NOT EXISTS usuario_pessoa_unica ON identidade.usuario (instituicao_id, pessoa_id) WHERE pessoa_id IS NOT NULL;
+CREATE UNIQUE INDEX usuario_pessoa_unica ON identidade.usuario (instituicao_id, pessoa_id) WHERE pessoa_id IS NOT NULL;
 
 -- O `sub` do Keycloak chega sem instituição, e `identidade.usuario` tem RLS
 -- FORCE: sem contexto, nem o dono dos objetos leria a linha para descobri-la.
@@ -58,7 +60,7 @@ ALTER FUNCTION identidade.resolver_sujeito(text) OWNER TO cdd_resolvedor_identid
 REVOKE CREATE ON SCHEMA identidade FROM cdd_resolvedor_identidade;
 CREATE POLICY resolucao_do_sujeito ON identidade.usuario FOR SELECT TO cdd_resolvedor_identidade USING (true);
 
-CREATE TABLE IF NOT EXISTS identidade.grupo (
+CREATE TABLE identidade.grupo (
   id              uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   instituicao_id  uuid NOT NULL,
   codigo_sistema  text,                       -- ADMINISTRADOR, TESOURARIA…; NULL em grupo criado pela casa
@@ -70,9 +72,9 @@ CREATE TABLE IF NOT EXISTS identidade.grupo (
   UNIQUE (instituicao_id, id),
   UNIQUE (instituicao_id, codigo_sistema)
 );
-CREATE UNIQUE INDEX IF NOT EXISTS grupo_nome_unico ON identidade.grupo (instituicao_id, lower(nome));
+CREATE UNIQUE INDEX grupo_nome_unico ON identidade.grupo (instituicao_id, lower(nome));
 
-CREATE TABLE IF NOT EXISTS identidade.grupo_permissao (
+CREATE TABLE identidade.grupo_permissao (
   instituicao_id  uuid NOT NULL,
   grupo_id        uuid NOT NULL,
   permissao       text NOT NULL REFERENCES identidade.permissao (codigo),
@@ -80,7 +82,7 @@ CREATE TABLE IF NOT EXISTS identidade.grupo_permissao (
   FOREIGN KEY (instituicao_id, grupo_id) REFERENCES identidade.grupo (instituicao_id, id) ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS identidade.usuario_grupo (
+CREATE TABLE identidade.usuario_grupo (
   instituicao_id  uuid NOT NULL,
   usuario_id      uuid NOT NULL,
   grupo_id        uuid NOT NULL,
@@ -91,7 +93,7 @@ CREATE TABLE IF NOT EXISTS identidade.usuario_grupo (
   FOREIGN KEY (instituicao_id, grupo_id)   REFERENCES identidade.grupo (instituicao_id, id)
 );
 
-CREATE TABLE IF NOT EXISTS identidade.convite (
+CREATE TABLE identidade.convite (
   id              uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   instituicao_id  uuid NOT NULL,
   usuario_id      uuid NOT NULL,
@@ -105,13 +107,13 @@ CREATE TABLE IF NOT EXISTS identidade.convite (
   CONSTRAINT convite_nao_usado_e_revogado CHECK (usado_em IS NULL OR revogado_em IS NULL)
 );
 -- No máximo um convite vigente (nem usado, nem revogado) por usuário.
-CREATE UNIQUE INDEX IF NOT EXISTS convite_vigente_unico ON identidade.convite (instituicao_id, usuario_id)
+CREATE UNIQUE INDEX convite_vigente_unico ON identidade.convite (instituicao_id, usuario_id)
   WHERE usado_em IS NULL AND revogado_em IS NULL;
 
 -- Trilha de auditoria (Doc 3 §10.4). Só INSERT — ver gatilho abaixo.
 -- O alvo é guardado por referência, e o texto humano é montado na leitura:
 -- anonimizar uma pessoa (LGPD) não pode exigir reescrever a trilha.
-CREATE TABLE IF NOT EXISTS identidade.registro_de_auditoria (
+CREATE TABLE identidade.registro_de_auditoria (
   id               uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   instituicao_id   uuid NOT NULL,
   em               timestamptz NOT NULL DEFAULT now(),
@@ -134,8 +136,8 @@ CREATE TABLE IF NOT EXISTS identidade.registro_de_auditoria (
   correlacao_id    uuid,                      -- liga a trilha ao trace da requisição
   CONSTRAINT autor_coerente CHECK ((autor_tipo = 'USUARIO') = (autor_usuario_id IS NOT NULL))
 );
-CREATE INDEX IF NOT EXISTS auditoria_por_data     ON identidade.registro_de_auditoria (instituicao_id, em DESC);
-CREATE INDEX IF NOT EXISTS auditoria_por_agregado ON identidade.registro_de_auditoria (agregado_tipo, agregado_id);
+CREATE INDEX auditoria_por_data     ON identidade.registro_de_auditoria (instituicao_id, em DESC);
+CREATE INDEX auditoria_por_agregado ON identidade.registro_de_auditoria (agregado_tipo, agregado_id);
 
 CREATE TRIGGER auditoria_somente_insercao
   BEFORE UPDATE OR DELETE ON identidade.registro_de_auditoria
@@ -145,12 +147,19 @@ CREATE TRIGGER auditoria_somente_insercao
 -- Privilégios do papel de execução
 -- -----------------------------------------------------------------------------
 
-GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA identidade TO cdd_app;
+-- Por tabela, nunca `ON ALL TABLES IN SCHEMA` (mesmo raciocínio de
+-- b0-001-shared): uma etapa futura que crie outra tabela em `identidade`
+-- faz o próprio GRANT da sua tabela nova, sem repetir um GRANT amplo aqui.
 
--- O catálogo de permissões é do código: a aplicação lê, a migration escreve.
-REVOKE INSERT, UPDATE, DELETE ON identidade.permissao FROM cdd_app;
--- Tabela só-inserção: além do gatilho, o papel nem tem o privilégio.
-REVOKE UPDATE, DELETE ON identidade.registro_de_auditoria FROM cdd_app;
+-- O catálogo de permissões é do código: a aplicação só lê, a migration escreve.
+GRANT SELECT ON identidade.permissao TO cdd_app;
+GRANT SELECT, INSERT, UPDATE, DELETE ON identidade.usuario TO cdd_app;
+GRANT SELECT, INSERT, UPDATE, DELETE ON identidade.grupo TO cdd_app;
+GRANT SELECT, INSERT, UPDATE, DELETE ON identidade.grupo_permissao TO cdd_app;
+GRANT SELECT, INSERT, UPDATE, DELETE ON identidade.usuario_grupo TO cdd_app;
+GRANT SELECT, INSERT, UPDATE, DELETE ON identidade.convite TO cdd_app;
+-- Tabela só-inserção: além do gatilho, o papel nem recebe UPDATE/DELETE.
+GRANT SELECT, INSERT ON identidade.registro_de_auditoria TO cdd_app;
 
 SELECT shared.aplicar_isolamento_por_instituicao();
 SELECT shared.proibir_truncate(ARRAY['identidade.registro_de_auditoria']::regclass[]);
