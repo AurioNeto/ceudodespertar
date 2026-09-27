@@ -164,7 +164,7 @@ test('T29(c) — o INSERT das migrations é igual ao catálogo, em código, mód
 
 test('os seis grupos de sistema não incluem GUARDIAO', () => {
   assert.deepEqual(
-    [...CODIGOS_DE_GRUPO_DE_SISTEMA].sort(),
+    CODIGOS_DE_GRUPO_DE_SISTEMA.toSorted(),
     ['ACOLHIMENTO', 'ADMINISTRADOR', 'GOVERNANCA', 'LEITURA', 'REGISTRO', 'TESOURARIA'],
   );
   assert.ok(!CODIGOS_DE_GRUPO_DE_SISTEMA.includes('GUARDIAO'));

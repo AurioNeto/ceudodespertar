@@ -9,7 +9,7 @@ const DIRETORIO_DE_MIGRACOES = dirname(fileURLToPath(import.meta.url));
 function pastasDeMigracaoNoDisco(): string[] {
   return readdirSync(DIRETORIO_DE_MIGRACOES)
     .filter((nome) => statSync(join(DIRETORIO_DE_MIGRACOES, nome)).isDirectory())
-    .sort();
+    .toSorted();
 }
 
 describe('MIGRACOES_DO_CDD', () => {

@@ -1,0 +1,15 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["typescript", "unicorn", "oxc"],
+  "categories": {
+    "correctness": "error",
+    "perf": "error"
+  },
+  "rules": {
+    "unicorn/no-array-sort": "error"
+  },
+  "ignorePatterns": ["apps/api/test/estrutural/fixtures/**"],
+  "env": {
+    "builtin": true
+  }
+}

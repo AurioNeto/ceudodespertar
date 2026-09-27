@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  qualidade:
+    name: qualidade
+    runs-on: ubuntu-latest
+    # meta é <6min; a folga acima disso é para runners mais lentos, não para acomodar regressão de tempo
+    timeout-minutes: 10
+    steps:
+      - name: checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: instalar pnpm
+        uses: pnpm/action-setup@a15d269cd4658e1107c09f1fabf4cbd7bd1f308a # v4.4.0
+
+      - name: instalar node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '24'
+          cache: pnpm
+
+      - name: instalar dependencias
+        run: pnpm install --frozen-lockfile
+
+      - name: typecheck
+        run: pnpm -r typecheck
+
+      - name: lint
+        run: pnpm lint
+
+      - name: fronteiras
+        run: pnpm fronteiras
+
+      - name: testes unitarios de contracts
+        run: pnpm --filter @cdd/contracts test
+
+      - name: testes unitarios da api
+        run: pnpm --filter @cdd/api test
+
+      - name: build do web
+        run: pnpm --filter @cdd/web build
