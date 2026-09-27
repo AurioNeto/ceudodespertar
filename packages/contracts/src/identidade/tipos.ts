@@ -101,7 +101,7 @@ export interface RegistroDeAcesso {
   readonly contexto: ContextoDeLeitura | null;
 }
 
-export type SituacaoDoUsuario = 'CONVITE_PENDENTE' | 'ATIVO' | 'SUSPENSO' | 'REVOGADO';
+export type SituacaoDoUsuario = SituacaoUsuario;
 
 export interface GrupoResumido {
   readonly id: GrupoId;

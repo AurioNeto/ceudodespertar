@@ -121,3 +121,8 @@ test('AtivarConvite exige token não vazio', () => {
   assert.equal(AtivarConvite.safeParse({ token: 'a1b2c3' }).success, true);
   assert.equal(AtivarConvite.safeParse({ token: '' }).success, false);
 });
+
+test('AtivarConvite recusa token acima de 512 caracteres', () => {
+  assert.equal(AtivarConvite.safeParse({ token: 'a'.repeat(512) }).success, true);
+  assert.equal(AtivarConvite.safeParse({ token: 'a'.repeat(513) }).success, false);
+});
