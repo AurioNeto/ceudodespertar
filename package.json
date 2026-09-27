@@ -11,7 +11,7 @@
     "build": "pnpm --filter @cdd/web build",
     "preview": "pnpm --filter @cdd/web preview",
     "typecheck": "pnpm -r typecheck",
-    "infra:subir": "docker compose up -d --wait; infra/verificar-subida.sh",
+    "infra:subir": "docker compose up -d; infra/verificar-subida.sh",
     "infra:descer": "docker compose down",
     "infra:zerar": "docker compose down -v",
     "db:verificar": "infra/postgres/verificar-referencia.sh"
