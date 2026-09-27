@@ -90,6 +90,30 @@ SELECT verif.confere('link público · o dono do resolvedor não é superusuári
   (SELECT r.rolsuper OR r.rolbypassrls FROM pg_proc p JOIN pg_roles r ON r.oid = p.proowner
     WHERE p.oid = 'eventos.resolver_link(text)'::regprocedure), false);
 
+-- F07 · as duas funções que toda migration chama (Documento 7 §22) são
+-- idempotentes: uma etapa que repete a chamada sobre o esquema inteiro não
+-- falha nem duplica o que a etapa anterior já tinha feito.
+SELECT shared.aplicar_isolamento_por_instituicao();
+SELECT verif.confere('varredura de RLS é idempotente · nenhuma tabela ganha política duplicada',
+  (SELECT count(*) FROM (
+     SELECT polrelid FROM pg_policy WHERE polname = 'isolamento_por_instituicao'
+     GROUP BY polrelid HAVING count(*) > 1
+   ) duplicadas), 0::bigint);
+SELECT verif.confere('T23 · continua com RLS forçada depois da segunda varredura',
+  (SELECT count(*) FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
+    WHERE c.relkind = 'r'
+      AND n.nspname IN ('shared','identidade','pessoas','financeiro','eventos','estoque')
+      AND EXISTS (SELECT 1 FROM pg_attribute a WHERE a.attrelid = c.oid AND a.attname = 'instituicao_id')
+      AND NOT (c.relrowsecurity AND c.relforcerowsecurity)
+      AND (n.nspname, c.relname) <> ('shared','outbox')), 0::bigint);
+
+SELECT shared.proibir_truncate(ARRAY['financeiro.lancamento', 'financeiro.lancamento_categoria', 'financeiro.transferencia',
+                                     'financeiro.periodo_contabil', 'financeiro.reabertura_de_periodo',
+                                     'financeiro.prestacao_de_contas', 'identidade.registro_de_auditoria',
+                                     'pessoas.registro_de_acesso', 'estoque.movimento_de_estoque', 'estoque.feitio']::regclass[]);
+SELECT verif.confere('bloqueio de TRUNCATE é idempotente · um só gatilho sem_truncate por tabela',
+  (SELECT count(*) FROM pg_trigger WHERE tgname = 'sem_truncate'), 10::bigint);
+
 -- -----------------------------------------------------------------------------
 -- Daqui em diante, como a aplicação
 -- -----------------------------------------------------------------------------
@@ -644,6 +668,45 @@ $$, '42501|REGISTRO_IMUTAVEL');
 SELECT verif.espera_erro('catálogo de permissões · a aplicação não inventa permissão', $$
   INSERT INTO identidade.permissao VALUES ('financeiro.tudo.fazer', 'financeiro', 'x')
 $$, '42501');
+
+-- -----------------------------------------------------------------------------
+-- Ator da trilha e do anexo — o despachante (SISTEMA) e o link público
+-- (LINK_PUBLICO) também auditam e também enviam anexo, e nenhum dos dois
+-- tem um identidade.usuario por trás.
+-- -----------------------------------------------------------------------------
+
+SELECT verif.espera_ok('ator da trilha · SISTEMA sem usuário é aceito', $$
+  INSERT INTO identidade.registro_de_auditoria (instituicao_id, autor_tipo, autor_grupos, operacao, agregado_tipo, agregado_id)
+    VALUES ('a0000000-0000-0000-0000-000000000000', 'SISTEMA', '{}', 'LANCAMENTO_CONFIRMADO', 'Lancamento',
+            'a6000000-0000-0000-0000-000000000001')
+$$);
+SELECT verif.espera_erro('ator da trilha · USUARIO sem usuário é recusado', $$
+  INSERT INTO identidade.registro_de_auditoria (instituicao_id, autor_tipo, autor_grupos, operacao, agregado_tipo, agregado_id)
+    VALUES ('a0000000-0000-0000-0000-000000000000', 'USUARIO', '{}', 'LANCAMENTO_CONFIRMADO', 'Lancamento',
+            'a6000000-0000-0000-0000-000000000001')
+$$, 'autor_coerente');
+SELECT verif.espera_erro('ator da trilha · SISTEMA com usuário é recusado', $$
+  INSERT INTO identidade.registro_de_auditoria (instituicao_id, autor_tipo, autor_usuario_id, autor_grupos, operacao,
+                                                 agregado_tipo, agregado_id)
+    VALUES ('a0000000-0000-0000-0000-000000000000', 'SISTEMA', gen_random_uuid(), '{}', 'LANCAMENTO_CONFIRMADO',
+            'Lancamento', 'a6000000-0000-0000-0000-000000000001')
+$$, 'autor_coerente');
+
+SELECT verif.espera_ok('ator do anexo · SISTEMA sem usuário é aceito', $$
+  INSERT INTO shared.anexo (instituicao_id, chave, nome_original, mime, tamanho_bytes, sha256, enviado_por_tipo)
+    VALUES ('a0000000-0000-0000-0000-000000000000', 'a000/financeiro/despachante-01.txt', 'x', 'text/plain', 10,
+            sha256('sistema'), 'SISTEMA')
+$$);
+SELECT verif.espera_erro('ator do anexo · USUARIO sem usuário é recusado', $$
+  INSERT INTO shared.anexo (instituicao_id, chave, nome_original, mime, tamanho_bytes, sha256, enviado_por_tipo)
+    VALUES ('a0000000-0000-0000-0000-000000000000', 'a000/financeiro/despachante-02.txt', 'x', 'text/plain', 10,
+            sha256('usuario-sem-id'), 'USUARIO')
+$$, 'enviado_coerente');
+SELECT verif.espera_erro('ator do anexo · SISTEMA com usuário é recusado', $$
+  INSERT INTO shared.anexo (instituicao_id, chave, nome_original, mime, tamanho_bytes, sha256, enviado_por_tipo, enviado_por)
+    VALUES ('a0000000-0000-0000-0000-000000000000', 'a000/financeiro/despachante-03.txt', 'x', 'text/plain', 10,
+            sha256('sistema-com-id'), 'SISTEMA', gen_random_uuid())
+$$, 'enviado_coerente');
 
 -- -----------------------------------------------------------------------------
 -- Eventos

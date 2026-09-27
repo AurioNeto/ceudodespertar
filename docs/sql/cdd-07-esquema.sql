@@ -53,37 +53,47 @@ CREATE TABLE shared.instituicao (
 );
 
 CREATE TABLE shared.anexo (
-  id              uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  instituicao_id  uuid NOT NULL,
-  chave           text NOT NULL,              -- caminho no bucket: {instituicao}/{modulo}/{uuid}
-  nome_original   text NOT NULL,
-  mime            text NOT NULL,
-  tamanho_bytes   bigint NOT NULL CHECK (tamanho_bytes > 0),
-  sha256          bytea NOT NULL,
-  sensivel        boolean NOT NULL DEFAULT false,
-  enviado_por     uuid NOT NULL,              -- identidade.usuario, ou NULL-equivalente do link público
-  enviado_em      timestamptz NOT NULL DEFAULT now(),
+  id                uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  instituicao_id    uuid NOT NULL,
+  chave             text NOT NULL,              -- caminho no bucket: {instituicao}/{modulo}/{uuid}
+  nome_original     text NOT NULL,
+  mime              text NOT NULL,
+  tamanho_bytes     bigint NOT NULL CHECK (tamanho_bytes > 0),
+  sha256            bytea NOT NULL,
+  sensivel          boolean NOT NULL DEFAULT false,
+  -- Ator de quem enviou (mesmo padrão de identidade.registro_de_auditoria):
+  -- fora de USUARIO não há usuário — o despachante e o link público também
+  -- enviam anexo (comprovante recebido por integração, upload sem login).
+  enviado_por_tipo  text NOT NULL DEFAULT 'USUARIO' CHECK (enviado_por_tipo IN ('USUARIO','SISTEMA','LINK_PUBLICO')),
+  enviado_por       uuid,                       -- identidade.usuario; nulo fora de USUARIO
+  enviado_em        timestamptz NOT NULL DEFAULT now(),
   UNIQUE (instituicao_id, id),
-  UNIQUE (chave)
+  UNIQUE (chave),
+  CONSTRAINT enviado_coerente CHECK ((enviado_por_tipo = 'USUARIO') = (enviado_por IS NOT NULL))
 );
 
 -- Outbox: gravado na mesma transação do agregado. Sem RLS de propósito — o
 -- despachante lê de todas as instituições e restabelece o contexto de cada
 -- evento antes de entregá-lo (Documento 7 §9).
 CREATE TABLE shared.outbox (
-  id              bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-  evento_id       uuid NOT NULL UNIQUE,
-  instituicao_id  uuid NOT NULL,
-  tipo            text NOT NULL,              -- 'financeiro.LancamentoConfirmado'
-  agregado_tipo   text NOT NULL,
-  agregado_id     uuid NOT NULL,
-  payload         jsonb NOT NULL,
-  ocorrido_em     timestamptz NOT NULL DEFAULT now(),
-  publicado_em    timestamptz,
-  tentativas      integer NOT NULL DEFAULT 0,
-  ultimo_erro     text
+  id                    bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  evento_id             uuid NOT NULL UNIQUE,
+  instituicao_id        uuid NOT NULL,
+  tipo                  text NOT NULL,              -- 'financeiro.LancamentoConfirmado'
+  agregado_tipo         text NOT NULL,
+  agregado_id           uuid NOT NULL,
+  payload               jsonb NOT NULL,
+  ocorrido_em           timestamptz NOT NULL DEFAULT now(),
+  publicado_em          timestamptz,
+  tentativas            integer NOT NULL DEFAULT 0,
+  ultimo_erro           text,
+  proxima_tentativa_em  timestamptz                 -- backoff; nulo = pronto desde a gravação
 );
-CREATE INDEX outbox_pendentes ON shared.outbox (id) WHERE publicado_em IS NULL;
+-- Serve exatamente a consulta do despachante (Documento 7 §9): pendente, sob
+-- o teto de tentativas, já na ordem por agregado (`id`) que ele exige. O
+-- backoff (`coalesce(proxima_tentativa_em,'-infinity') <= now()`) é filtro
+-- de execução, não predicado do índice — depende do relógio, não é imutável.
+CREATE INDEX outbox_pendentes ON shared.outbox (id) WHERE publicado_em IS NULL AND tentativas < 10;
 
 -- Idempotência dos consumidores: cada handler registra o que já processou.
 CREATE TABLE shared.evento_processado (
@@ -187,7 +197,10 @@ CREATE TABLE identidade.registro_de_auditoria (
   id               uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   instituicao_id   uuid NOT NULL,
   em               timestamptz NOT NULL DEFAULT now(),
-  autor_usuario_id uuid NOT NULL,
+  -- Ator do ato: o despachante (consumidor de evento) e o link público
+  -- também precisam auditar, e nenhum dos dois é um identidade.usuario.
+  autor_tipo       text NOT NULL DEFAULT 'USUARIO' CHECK (autor_tipo IN ('USUARIO','SISTEMA','LINK_PUBLICO')),
+  autor_usuario_id uuid,                      -- nulo fora de USUARIO
   autor_grupos     text[] NOT NULL,           -- fotografia dos grupos no instante do ato
   operacao         text NOT NULL CHECK (operacao IN (
                      'LANCAMENTO_CONFIRMADO','LANCAMENTO_ESTORNADO','PENDENCIA_ABERTA',
@@ -199,7 +212,8 @@ CREATE TABLE identidade.registro_de_auditoria (
   pessoa_alvo_id   uuid,                      -- quando o alvo é (ou envolve) uma pessoa
   detalhes         jsonb NOT NULL DEFAULT '[]'::jsonb,   -- [{rotulo, valor, anterior?}]
   sensivel         boolean NOT NULL DEFAULT false,
-  correlacao_id    uuid                       -- liga a trilha ao trace da requisição
+  correlacao_id    uuid,                      -- liga a trilha ao trace da requisição
+  CONSTRAINT autor_coerente CHECK ((autor_tipo = 'USUARIO') = (autor_usuario_id IS NOT NULL))
 );
 CREATE INDEX auditoria_por_data     ON identidade.registro_de_auditoria (instituicao_id, em DESC);
 CREATE INDEX auditoria_por_agregado ON identidade.registro_de_auditoria (agregado_tipo, agregado_id);
@@ -877,11 +891,14 @@ CREATE FUNCTION financeiro.chave_do_periodo(p_instituicao uuid, p_unidade uuid, 
 $$;
 
 -- A trava só serve em READ COMMITTED: em REPEATABLE READ o snapshot é anterior
--- à espera, e quem esperou leria o período como estava antes.
+-- à espera, e quem esperou leria o período como estava antes. Chegar aqui em
+-- outro nível não é "período fechado" — é erro de programação (a borda
+-- transacional abriu a transação no nível errado); código próprio para não
+-- ser confundido com a regra de negócio.
 CREATE FUNCTION financeiro.exigir_read_committed() RETURNS void LANGUAGE plpgsql AS $$
 BEGIN
   IF current_setting('transaction_isolation') <> 'read committed' THEN
-    RAISE EXCEPTION 'PERIODO_FECHADO: fechar ou gravar na competência exige READ COMMITTED (a transação está em %)',
+    RAISE EXCEPTION 'ISOLAMENTO_INVALIDO: fechar ou gravar na competência exige READ COMMITTED (a transação está em %)',
       current_setting('transaction_isolation') USING ERRCODE = 'P0001';
   END IF;
 END $$;
@@ -1526,31 +1543,44 @@ SELECT l.instituicao_id, l.id AS lote_id, l.item_id, l.nome, l.situacao,
 -- TRUNCATE passa por fora dos gatilhos de linha. Nas tabelas que guardam o
 -- histórico, nem o dono do banco — que é quem roda migration — as esvazia,
 -- nem por CASCADE a partir de outra tabela.
+--
+-- shared.proibir_truncate() é o que cada migration chama (Documento 7 §22)
+-- com a lista de tabelas que guarda até a sua etapa: idempotente, porque uma
+-- migration posterior repete a chamada com a lista maior, e a tabela que já
+-- tinha o gatilho não o recebe de novo.
 -- -----------------------------------------------------------------------------
 
-DO $$
+CREATE FUNCTION shared.proibir_truncate(p_tabelas regclass[]) RETURNS void LANGUAGE plpgsql AS $$
 DECLARE
-  t text;
+  t regclass;
 BEGIN
-  FOREACH t IN ARRAY ARRAY['financeiro.lancamento', 'financeiro.lancamento_categoria', 'financeiro.transferencia',
-                           'financeiro.periodo_contabil', 'financeiro.reabertura_de_periodo',
-                           'financeiro.prestacao_de_contas', 'identidade.registro_de_auditoria',
-                           'pessoas.registro_de_acesso', 'estoque.movimento_de_estoque', 'estoque.feitio']
+  FOREACH t IN ARRAY p_tabelas
   LOOP
-    EXECUTE format('CREATE TRIGGER sem_truncate BEFORE TRUNCATE ON %s
-                      FOR EACH STATEMENT EXECUTE FUNCTION shared.somente_insercao()', t);
+    IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgrelid = t AND tgname = 'sem_truncate') THEN
+      EXECUTE format('CREATE TRIGGER sem_truncate BEFORE TRUNCATE ON %s
+                        FOR EACH STATEMENT EXECUTE FUNCTION shared.somente_insercao()', t);
+    END IF;
   END LOOP;
 END $$;
+
+SELECT shared.proibir_truncate(ARRAY['financeiro.lancamento', 'financeiro.lancamento_categoria', 'financeiro.transferencia',
+                                     'financeiro.periodo_contabil', 'financeiro.reabertura_de_periodo',
+                                     'financeiro.prestacao_de_contas', 'identidade.registro_de_auditoria',
+                                     'pessoas.registro_de_acesso', 'estoque.movimento_de_estoque', 'estoque.feitio']::regclass[]);
 
 -- -----------------------------------------------------------------------------
 -- RLS — aplicada por varredura, não à mão
 --
 -- Toda tabela com `instituicao_id`, em todos os schemas de domínio, ganha RLS
--- com FORCE e a mesma política. A varredura é o que impede a tabela nova
--- esquecida; o teste T23 confere que ela rodou (cdd-07-verificacao.sql).
+-- com FORCE e a mesma política. shared.aplicar_isolamento_por_instituicao()
+-- é o que cada migration chama (Documento 7 §22) depois de criar suas
+-- tabelas — é o que impede a tabela nova esquecida; o teste T23 confere que
+-- ela rodou (cdd-07-verificacao.sql). Idempotente: a tabela que já tem a
+-- política não a recebe de novo, então uma etapa posterior pode chamá-la de
+-- novo sobre o esquema inteiro sem duplicar nem falhar.
 -- -----------------------------------------------------------------------------
 
-DO $$
+CREATE FUNCTION shared.aplicar_isolamento_por_instituicao() RETURNS void LANGUAGE plpgsql AS $$
 DECLARE
   t record;
 BEGIN
@@ -1565,12 +1595,22 @@ BEGIN
   LOOP
     EXECUTE format('ALTER TABLE %I.%I ENABLE ROW LEVEL SECURITY', t.table_schema, t.table_name);
     EXECUTE format('ALTER TABLE %I.%I FORCE ROW LEVEL SECURITY', t.table_schema, t.table_name);
-    EXECUTE format($p$CREATE POLICY isolamento_por_instituicao ON %I.%I
-                      USING (instituicao_id = shared.instituicao_atual())
-                      WITH CHECK (instituicao_id = shared.instituicao_atual())$p$,
-                   t.table_schema, t.table_name);
+    IF NOT EXISTS (
+      SELECT 1 FROM pg_policy p
+        JOIN pg_class c     ON c.oid = p.polrelid
+        JOIN pg_namespace n ON n.oid = c.relnamespace
+       WHERE n.nspname = t.table_schema AND c.relname = t.table_name
+         AND p.polname = 'isolamento_por_instituicao'
+    ) THEN
+      EXECUTE format($p$CREATE POLICY isolamento_por_instituicao ON %I.%I
+                        USING (instituicao_id = shared.instituicao_atual())
+                        WITH CHECK (instituicao_id = shared.instituicao_atual())$p$,
+                     t.table_schema, t.table_name);
+    END IF;
   END LOOP;
 END $$;
+
+SELECT shared.aplicar_isolamento_por_instituicao();
 
 -- -----------------------------------------------------------------------------
 -- Privilégios do papel de execução
