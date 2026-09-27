@@ -1,10 +1,15 @@
 -- =============================================================================
--- CDD — esquema de referência do banco (Documento 7)
+-- CDD — esquema de referência do banco (Documento 7) — DOCUMENTAÇÃO CONGELADA
 --
--- PostgreSQL 16. Este arquivo é a fonte da verdade das colunas citadas no
--- Documento 7 e é executado na íntegra por `cdd-07-verificacao.sql`. Não é a
--- migration de produção: as migrations nascem do MikroORM (Documento 7 §22),
--- e cada uma delas deve manter este arquivo coerente.
+-- PostgreSQL 16. Este arquivo é a documentação do desenho aprovado em set/2026
+-- (Documento 7 v1.1, issue #11). NÃO é a migração de produção: as migrations
+-- nascem do MikroORM (Documento 7 §22), em `apps/api/src/banco/migracoes/`.
+--
+-- A verificação de garantias é em `apps/api/test/banco/garantias/`, rodando
+-- contra o banco migrado (Documento 7 §26). Este arquivo é referência histórica
+-- do desenho e roda manualmente, não em CI.
+--
+-- Ver issue #11: https://github.com/AurioNeto/ceudodespertar/issues/11
 --
 -- Convenções (Documento 7 §14):
 --   · um schema por módulo; nenhuma FK cruza schema — referência entre módulos

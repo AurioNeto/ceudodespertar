@@ -1,13 +1,18 @@
 -- =============================================================================
--- CDD — verificação do esquema de referência (Documento 7 §15)
+-- CDD — verificação do esquema de referência (Documento 7) — DOCUMENTAÇÃO
+--
+-- Este arquivo verifica o desenho aprovado em set/2026 contra Postgres real.
+-- NÃO substitui a suíte de garantias em CI (`apps/api/test/banco/garantias/`,
+-- Documento 7 §26): aquela testa o banco migrado, este é referência congelada.
 --
 -- Uso, num banco vazio:
 --   psql -v ON_ERROR_STOP=1 -f cdd-07-esquema.sql -f cdd-07-verificacao.sql
 --
 -- Tudo roda como `cdd_app`, o papel da aplicação — superusuário ignora RLS e
 -- tornaria metade destes testes inúteis. Cada caso imprime OK ou aborta.
--- Não substitui a suíte de integração (Testcontainers): prova que as guardas
--- de banco que o documento promete existem e fazem o que ele diz.
+--
+-- Ver issue #11 e Documento 7 §22 e anexo: migrations como fonte, esta
+-- documentação como referência do desenho aprovado.
 -- =============================================================================
 
 \set QUIET on
