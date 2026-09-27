@@ -4,7 +4,7 @@
 
 **Versão 1.1** · setembro/2026 · Status: proposta
 
-Alterações em relação à v1.0: corte "lógica de negócio sai do banco" (issue #11) — migrations como fonte de verdade, guardas mínimas no banco, domínio como escudo de integridade.
+Alterações em relação à v1.0: corte "lógica de negócio sai do banco" (issue #11). Toda regra de negócio fica no domínio; no banco ficam estrutura, isolamento, segurança e as guardas mínimas de histórico. As migrations passam a ser a fonte do banco, e o esquema de referência vira documentação congelada. O que fica e o que sai, objeto a objeto, está no anexo.
 
 > Pressupõe os Documentos 1 (Arquitetura), 2 (Modelo de Domínio v2.2), 3 (Identidade e Acesso v2.2), 4 (Mapa de Telas v2.2) e 6 (Plano do Backend).
 > O Documento 6 diz **o que** construir e **em que ordem**, e registra as decisões da coordenação. Este documento diz **como**: a forma do servidor, o desenho do banco e o que cada etapa entrega em tabela, endpoint e teste. Onde os dois se tocam, o Documento 6 decide e este detalha.
@@ -13,8 +13,8 @@ Alterações em relação à v1.0: corte "lógica de negócio sai do banco" (iss
 
 | Arquivo | O que é |
 |---|---|
-| [`sql/cdd-07-esquema.sql`](sql/cdd-07-esquema.sql) | **Documentação do desenho, congelada em set/2026.** O esquema de referência completo — 6 schemas, 58 tabelas, RLS, gatilhos de guarda mínima, read models (como SQL histórico) e o catálogo de permissões. Não é a migração de produção (§22). |
-| [`sql/cdd-07-verificacao.sql`](sql/cdd-07-verificacao.sql) | **Documentação da verificação do desenho.** 155 verificações que provam o que §15 promete: isolamento entre instituições, imutabilidade, período fechado, o caso Aline, a devolução como estorno, leitos, saldo de estoque. Não substitui o teste de garantias em CI (§22). |
+| [`sql/cdd-07-esquema.sql`](sql/cdd-07-esquema.sql) | **Documentação do desenho, congelada em set/2026** (issue #11). O esquema de referência como foi desenhado — 6 schemas, 58 tabelas, RLS, gatilhos de guarda, views e o catálogo de permissões —, com mais lógica no banco do que a produção terá: o que fica no banco está no §15 e no anexo. Não é a fonte das migrations (§22). |
+| [`sql/cdd-07-verificacao.sql`](sql/cdd-07-verificacao.sql) | **Documentação executável do desenho congelado.** 155 verificações do esquema de referência, rodadas à mão. Não é o teste de CI: a CI roda a verificação de garantias contra o banco migrado (§22, §26). |
 
 ```bash
 createdb cdd_ref
@@ -22,7 +22,7 @@ psql -d cdd_ref -v ON_ERROR_STOP=1 -f docs/sql/cdd-07-esquema.sql -f docs/sql/cd
 # … 155 linhas "OK" e: Verificação concluída
 ```
 
-Os dois arquivos foram executados contra PostgreSQL 16 — 16.13 na primeira versão, com 71 verificações; 16.15 na atual, com as guardas de transferência, período e feitio, o bloqueio de `TRUNCATE`, o resolvedor do link e o resolvedor de identidade com dono próprio, a varredura de RLS e o bloqueio de `TRUNCATE` como funções idempotentes, o ator da trilha/anexo, a US2 e o convite revogável, com 155 verificações. **A fonte de verdade das migrations é o MikroORM** (§22). As migrations de CI verificam as garantias em `apps/api/test/banco/garantias/`, rodando contra o banco migrado (§26).
+Os dois arquivos foram executados contra PostgreSQL 16 — 16.13 na primeira versão, com 71 verificações; 16.15 na atual, com as guardas de transferência, período e feitio, o bloqueio de `TRUNCATE`, o resolvedor do link e o resolvedor de identidade com dono próprio, a varredura de RLS e o bloqueio de `TRUNCATE` como funções idempotentes, o ator da trilha/anexo, a US2 e o convite revogável, com 155 verificações. As migrations são a fonte do banco (§22), e a CI verifica as garantias contra o banco migrado (§26).
 
 ---
 
@@ -62,7 +62,7 @@ Um processo, um banco, um bucket, um provedor de identidade. Nada de fila extern
 | Linguagem | TypeScript estrito, Node 22 LTS | O mesmo `packages/contracts` serve front e back; tipos de domínio não se duplicam |
 | Framework HTTP | NestJS 11 | Módulos, injeção e guards casam com a fronteira por módulo e com `@RequerPermissao`; o domínio não depende dele |
 | ORM | MikroORM 6 (Data Mapper + Unit of Work) | Agregado sem anotação de ORM na camada de domínio; UoW é o que permite gravar agregado + outbox + auditoria numa transação |
-| Leitura | SQL direto (Kysely) sobre views e tabelas | Read model é consulta, não agregado; passar por ORM para ler é custo sem ganho |
+| Leitura | SQL direto (Kysely) sobre as tabelas | Read model é consulta, não agregado; passar por ORM para ler é custo sem ganho |
 | Banco | PostgreSQL 16 | RLS, `EXCLUDE` com `btree_gist`, `daterange`, `jsonb` |
 | Validação | Zod, nos comandos, compartilhado com o front | A mesma regra de forma nos dois lados; a regra de negócio fica no domínio |
 | Identidade | Keycloak 26 (OIDC) | Só autenticação. Autorização é domínio (Doc 3 §10.1) |
@@ -87,7 +87,7 @@ Um processo, um banco, um bucket, um provedor de identidade. Nada de fila extern
 
 1. Um módulo só importa de outro o arquivo `public-api.ts` dele — nunca `domain/`, nunca `infrastructure/`.
 2. Nenhuma FK cruza schema (verificado também no banco — §15). Referência entre módulos é por id, e a consistência é garantida por comando síncrono via porta pública **ou** por evento assíncrono via outbox — nunca por JOIN entre schemas em código de escrita.
-3. Read models podem ler de mais de um schema **só** na camada `interface/queries` de quem monta a tela, e só por views que o módulo dono publica. O painel de um evento lê a view de custos do Financeiro; não lê `financeiro.lancamento`.
+3. Read models podem ler de mais de um schema **só** na camada `interface/queries` de quem monta a tela, e só pela porta de leitura que o módulo dono publica. O painel de um evento lê o read model de custos que o Financeiro publica; não lê `financeiro.lancamento`.
 
 ## 4. Dentro do módulo
 
@@ -132,7 +132,7 @@ A regra que vale a pena repetir: **o domínio não sabe que existe banco.** As i
 | 7 | Agregado | Aplica L7, L8, L10…; devolve `Result<void, DomainError>` e acumula `LancamentoConfirmado` |
 | 8 | Handler | Se `Result` é erro, a transação é desfeita e o erro sobe com seu código (§12) |
 | 9 | UoW `flush` | Grava o agregado (com `versao + 1`, falha se outra escrita chegou antes), as linhas de `shared.outbox` com os eventos acumulados, e a linha de `identidade.registro_de_auditoria` |
-| 10 | `COMMIT` | O agregado já conferiu a soma das etiquetas e o fechamento do período antes de flush. Se falharem, nada foi gravado |
+| 10 | `COMMIT` | Não há gatilho adiável: a soma das etiquetas e a competência aberta já foram conferidas pelo agregado e pelo comando antes do flush. Se o `COMMIT` falhar, nada foi gravado |
 | 11 | Controller | Devolve 200 com o read model atualizado do item — o front não precisa recarregar a fila |
 
 ```ts
@@ -301,9 +301,9 @@ Os códigos vivem em `packages/contracts/erros.ts` e vêm de três fontes, todas
 
 | Fonte | Exemplo | Como vira código |
 |---|---|---|
-| Agregado (`Result.err`) | `SEM_VINCULO_PARA_AUTORIZAR_ADIANTAMENTO` (A1) | Direto |
-| Guardas de banco (§15) | `LANCAMENTO_IMUTAVEL`, `TRANSFERENCIA_IMUTAVEL`, `FEITIO_IMUTAVEL`, `REGISTRO_IMUTAVEL` | Prefixo da mensagem antes de `:`. Se chegam na API, é erro de programação (alguém escribeu código que contorna o agregado): 500 com alerta ao Sentry. O domínio recusa antes. |
-| Restrição nomeada | `l7_confirmado_completo`, `i1_fitid_unico`, `ml1_vaga_livre_no_evento` | Tabela `nome da restrição → código` — é por isso que as restrições que o domínio mapeia **têm nome** no esquema |
+| Agregado ou comando (`Result.err`) | `SEM_VINCULO_PARA_AUTORIZAR_ADIANTAMENTO` (A1), `PERIODO_FECHADO`, `ETIQUETAS_NAO_FECHAM`, `CATEGORIA_OBRIGATORIA`, `SALDO_INSUFICIENTE` | Direto |
+| Guardas mínimas de banco (§15) | `LANCAMENTO_IMUTAVEL`, `TRANSFERENCIA_IMUTAVEL`, `FEITIO_IMUTAVEL`, `REGISTRO_IMUTAVEL` | Prefixo da mensagem antes de `:`. O domínio recusa antes; se um desses chega à API, alguém escreveu código que contorna o agregado — é erro de programação: 500 com alerta ao Sentry |
+| Restrição nomeada | `i1_fitid_unico`, `ml1_vaga_livre_no_evento`, `uma_declaracao_por_cerimonia` | Tabela `nome da restrição → código` — é por isso que as restrições que o domínio mapeia **têm nome** no esquema |
 
 Erro de banco que chega à API **sem** mapeamento é bug: vira 500, vai ao Sentry, e o teste de contrato (§26) falha. Se o domínio está certo, a trava do banco nunca dispara em uso normal — quando dispara, alguém escreveu código que contorna o agregado.
 
@@ -343,7 +343,7 @@ Erro de banco que chega à API **sem** mapeamento é bug: vira 500, vai ao Sentr
 
 ## 15. O que o banco garante
 
-O domínio aplica as regras. O banco repete as que, se quebradas, **corrompem histórico** — para que um bug, um script de suporte ou uma migration descuidada não consiga fazer o que o agregado proíbe. Cada linha abaixo é um caso de `cdd-07-verificacao.sql`:
+O domínio aplica todas as regras de negócio. O banco garante só estrutura, isolamento, segurança e o mínimo que impede falsificar o histórico — de forma simples, sem transição de estado nem cálculo em gatilho (issue #11). É o que um bug, um script de suporte ou uma migration descuidada não consegue desfazer. Cada linha abaixo vira caso da verificação de garantias (`apps/api/test/banco/garantias/`) na etapa em que a tabela nasce; o `cdd-07-verificacao.sql` verifica o desenho congelado, que tinha mais guardas no banco.
 
 | Garantia | Mecanismo | Regra |
 |---|---|---|
@@ -351,45 +351,35 @@ O domínio aplica as regras. O banco repete as que, se quebradas, **corrompem hi
 | Sem contexto, nada | `instituicao_atual()` devolve NULL | *fail-closed* |
 | Não se aponta para linha de outra casa | FK composta | — |
 | Nenhuma FK cruza schema | verificação sobre `pg_constraint` | Doc 1 §4.7 |
-| Lançamento e transferência confirmados não mudam nem somem | gatilhos `guarda_lancamento` e `guarda_transferencia` (imutabilidade simples) | L2, e a mesma regra na transferência (§18.4) |
-| Etiquetas de lançamento confirmado não mudam depois da transação que o gravou | gatilho `guarda_etiqueta` + coluna `gravado_na_transacao`, escrita só pela guarda | L2, D4 |
-| Etiqueta tem a natureza da categoria | FK `(categoria_id, natureza)` | L3 |
-| Estorno tem a natureza do original, e só um por lançamento | FK `(estorno_de_id, natureza)` + `UNIQUE` | D1, L9 |
-| Confirmado sem lacuna; a transferência confirmada diz quem conferiu | `l7_confirmado_completo`, `t_confirmada_tem_conferente` | L7 |
-| Caixa não antecede competência | `l6_caixa_depois_da_competencia` | L6 |
-| Feitio concluído não muda nem some depois da conclusão | gatilho `guarda_feitio` | D4, S-04 |
-| Uma pendência aberta por vez, nunca para si mesmo | índice parcial + `CHECK` | L10 |
-| Fatura só em cartão | FK `(conta_id, 'CARTAO_CREDITO')` | F1 |
-| Cada finalidade de transferência carrega sua referência | `CHECK`s nomeados: `fd3_aporte_tem_fundo`, `f3_pagamento_tem_fatura`, `e1_emprestimo_tem_emprestimo`, `a4_ressarcimento_tem_adiantamento`, `i2_um_so_par` | FD3, F3, E1, A4 |
-| Adiantamento sai de conta pessoal | FK `(conta_id, 'PESSOAL_DE_TERCEIRO')` | A2 |
-| FITID não se repete na conta; linha concilia com um só | `UNIQUE` + `CHECK` + índices parciais | I1, I2 |
-| Um CPF por casa | índice único parcial | link público |
-| Papel não se sobrepõe a si mesmo no tempo | `EXCLUDE USING gist` sobre `daterange` | V |
-| Uma versão de formulário publicada; uma resposta vigente por pessoa | índices únicos parciais | FA, RA |
-| Item de resposta: herdado **ou** com motivo | `CHECK` | anamnese incremental |
-| Uma declaração por pessoa por cerimônia | `UNIQUE` | Doc 6 §2.6 |
-| Leitura de anamnese registrada não se apaga | só-inserção | RA3 |
-| Trilha de auditoria não se edita nem se apaga | só-inserção | Doc 3 §10.4 |
-| Trilha e anexo têm ator coerente: usuário sempre que `autor_tipo`/`enviado_por_tipo` é USUARIO, nunca fora disso | `CHECK`s `autor_coerente`, `enviado_coerente` | despachante (SISTEMA) e link público (LINK_PUBLICO) auditam e anexam sem `identidade.usuario` |
-| A aplicação não inventa permissão | catálogo sem privilégio de escrita | T29 |
-| Cerimônia de contribuição tem três níveis, em ordem | `CHECK`s nomeados | Decisão 6 |
-| Colchonete é gratuito e não ocupa leito | `CHECK` `colchonete_gratis_e_sem_leito` | Decisão 6 |
-| Zero não é isenção; isenção tem motivo | `CHECK`s | E-06 |
-| Contato de emergência e restrições alimentares sempre — *"nenhuma"* é resposta, branco não | `NOT NULL` + `CHECK` | IN4, decisão 9 |
-| Uma inscrição viva por pessoa por evento | índice único parcial | IN |
-| Beliche tem um lugar; a cama de casal, dois; a vaga cabe no leito | `CHECK` por tipo + `vaga` limitada pela capacidade, trazida do leito por FK composta | Leitos |
-| Mesma vaga, mesma noite, mesmo evento: uma pessoa. Uma pessoa, uma cama por noite | `UNIQUE` + PK | ML1 |
-| Quem pede a devolução não é quem paga | `CHECK` `dv3_quem_pede_nao_paga` | DV3 |
-| A devolução estorna uma receita só: a contribuição paga ou o cachê da contratação cancelada do mesmo evento | `CHECK` `dv_origem_unica` + FK | CN4 |
 | O link público resolve o token sem contexto, e só isso, por um papel sem `BYPASSRLS` | função `SECURITY DEFINER` de dono próprio + política só dele | link público |
 | O sujeito autenticado (`sub` do Keycloak) resolve sem instituição, e só isso, por um papel sem `BYPASSRLS` | função `SECURITY DEFINER` de dono próprio + política só dele | resolvedor de identidade |
-| A mesma pessoa não é duas contas na mesma casa | índice único parcial `usuario_pessoa_unica` | US2 |
-| No máximo um convite vigente (nem usado, nem revogado) por usuário | índice único parcial `convite_vigente_unico` | convite revogável |
-| Convite não é usado e revogado ao mesmo tempo | `CHECK` `convite_nao_usado_e_revogado` | convite revogável |
-| Período não troca de unidade nem de competência; fechado, não muda nem some; reabertura só com hash e na mesma transação | imutabilidade simples do fechado + só-inserção | P2, P3, D4 |
+| A aplicação não inventa permissão | catálogo sem privilégio de escrita | T29 |
+| Lançamento e transferência confirmados não mudam nem somem | gatilhos `guarda_lancamento` e `guarda_transferencia` (imutabilidade simples) | L2, e a mesma regra na transferência (§18.4) |
+| Etiquetas de lançamento confirmado não mudam depois da transação que o gravou | gatilho `guarda_etiqueta` + coluna `gravado_na_transacao`, escrita só pela guarda | L2 |
+| Feitio concluído não muda nem some | gatilho `guarda_feitio` | S-04 |
+| O período não troca de unidade nem de competência; fechado, não muda nem some — o único `UPDATE` admitido é reabrir | gatilho de imutabilidade simples do período | P2 |
+| Trilha de auditoria, leitura de anamnese, reabertura de período, prestação de contas e movimento de estoque não se editam nem se apagam | `shared.somente_insercao()` + `REVOKE UPDATE, DELETE` | Doc 3 §10.4, RA3, P3 |
 | Nem o dono esvazia o histórico com `TRUNCATE`, nem por `CASCADE` a partir de outra tabela | gatilho `BEFORE TRUNCATE` nas tabelas guardadas | — |
+| Etiqueta tem a natureza da categoria | FK `l3_natureza_da_categoria` | L3 |
+| Estorno tem a natureza do original, e só um por lançamento | FK `estorno_mesma_natureza` + `UNIQUE (estorno_de_id)` | L9 |
+| Fatura só em cartão; adiantamento sai de conta pessoal | FKs `f1_fatura_so_em_cartao`, `a2_origem_e_conta_pessoal` | F1, A2 |
+| Cada finalidade de transferência carrega sua referência | `CHECK`s `fd3_aporte_tem_fundo`, `f3_pagamento_tem_fatura`, `e1_emprestimo_tem_emprestimo`, `a4_ressarcimento_tem_adiantamento` | FD3, F3, E1, A4 |
+| FITID não se repete na conta; a linha concilia com um só | `i1_fitid_unico` + `i2_um_so_par` + índices únicos parciais | I1, I2 |
+| A devolução nasce de uma origem só: o pagamento ou a contratação | `CHECK` `dv_origem_unica` + FK | CN4 (a forma) |
+| Trilha e anexo têm ator coerente: usuário sempre que o tipo é `USUARIO`, nunca fora disso | `CHECK`s `autor_coerente`, `enviado_coerente` | despachante e link público auditam e anexam sem usuário |
+| Convite não é usado e revogado ao mesmo tempo; no máximo um vigente por usuário | `CHECK` `convite_nao_usado_e_revogado` + índice único parcial `convite_vigente_unico` | convite revogável |
+| A mesma pessoa não é duas contas na mesma casa; um CPF por casa | índices únicos parciais `usuario_pessoa_unica`, `pessoa_documento_unico` | US2, link público |
+| Uma pendência aberta por vez | índice único parcial `pendencia_uma_aberta` | L10 (a unicidade) |
+| Uma versão de formulário publicada; uma resposta vigente por pessoa | índices únicos parciais | FA, RA |
+| Papel não se sobrepõe a si mesmo no tempo | `EXCLUDE USING gist` sobre `daterange` | V |
+| Uma declaração por pessoa por cerimônia; uma inscrição viva por pessoa por evento | `UNIQUE` + índice único parcial | Doc 6 §2.6, IN |
+| Mesma vaga, mesma noite, mesmo evento: uma pessoa. Uma pessoa, uma cama por noite | `UNIQUE` + PK | ML1 |
+| Estimativa não mexe em saldo | tabela sem ligação com movimento | EC1 |
+| Valor fora da lista ou fora da faixa | `NOT NULL`, tipos, `CHECK`s de enumeração e de sanidade (`status IN (…)`, `> 0`) | — |
 
-**O que o banco deliberadamente não garante** — porque exige consultar outro módulo, depende de data corrente ou é regra de fluxo — está em §21.
+Unicidade fica no banco mesmo quando codifica regra: sob concorrência, o domínio sozinho não a garante.
+
+**O que o banco deliberadamente não garante** — transição de estado, cálculo, permissão, consulta a outro módulo, data corrente, concorrência de regra — está em §21, com o agregado responsável.
 
 ## 16. `shared` e `identidade`
 
@@ -495,15 +485,15 @@ O contrato atual tem `categoriaIds[]` e um único `valor`, e não representa o c
 | etiqueta · Contribuição de cerimônia | RECEITA | 100,00 |
 | **Soma com sinal** (despesa +, receita −, do ponto de vista do lançamento) | | **20,00** ✓ |
 
-Três consequências de modelo, todas no esquema:
+Três consequências de modelo:
 
 1. **L3 muda de lugar.** A natureza *do lançamento* passa a ser a do valor líquido — o dinheiro que efetivamente saiu ou entrou. É **a etiqueta** que tem sempre a natureza da categoria, garantida por FK `(categoria_id, natureza)`.
 2. **A DRE lê etiquetas, nunca lançamentos.** O caso Aline aparece como 120 de despesa (flores + ervas) e 100 de receita de contribuição — que é o que aconteceu. Ler `lancamento.valor` diria 20 de despesa e perderia os três fatos.
-3. **O saldo da conta lê lançamentos.** Da conta saíram 20. As duas leituras são verdadeiras sobre coisas diferentes, e é por isso que existem duas views.
+3. **O saldo da conta lê lançamentos.** Da conta saíram 20. As duas leituras são verdadeiras sobre coisas diferentes, e é por isso que existem dois read models (§18.6).
 
-A soma é verificada pelo agregado antes de persistir: lançamento e etiquetas são gravados por comandos separados da mesma unidade de trabalho, e o agregado confere que fecham no fim. Lançamento `A_CONFERIR` pode não ter etiqueta (registro rápido, L7); confirmado precisa de pelo menos uma.
+A soma é regra do agregado `Lancamento`: as etiquetas fazem parte dele, e ele recusa confirmar — ou nascer confirmado — com etiquetas que não fecham (`ETIQUETAS_NAO_FECHAM`) ou sem nenhuma (`CATEGORIA_OBRIGATORIA`). Lançamento `A_CONFERIR` pode não ter etiqueta (registro rápido, L7); confirmado precisa de pelo menos uma.
 
-**Imutabilidade das etiquetas.** Uma integração cria o lançamento já `CONFIRMADO`, e a conferência pode ajustar etiquetas no mesmo ato em que confirma. A regra do banco é portanto *"etiquetas só mudam enquanto `A_CONFERIR`, ou dentro da transação que gravou o lançamento"* — a guarda do lançamento grava em `gravado_na_transacao` o id da transação que o inseriu ou confirmou, e a das etiquetas compara com a transação corrente. A coluna só é escrita pela guarda, e confirmado não muda mais; na transação seguinte, o id já é outro. Estornar não reescreve a coluna: um estorno nunca reabre as etiquetas do original. (Uma marca por `set_config`, que era o desenho anterior, qualquer script da aplicação forjaria.)
+**Imutabilidade das etiquetas.** Uma integração cria o lançamento já `CONFIRMADO`, e a conferência pode ajustar etiquetas no mesmo ato em que confirma. Esta é uma das guardas mínimas que ficam no banco (§15, D4 do issue #11): a regra é *"etiquetas só mudam enquanto `A_CONFERIR`, ou dentro da transação que gravou o lançamento"* — a guarda do lançamento grava em `gravado_na_transacao` o id da transação que o inseriu ou confirmou, e a das etiquetas compara com a transação corrente. A coluna só é escrita pela guarda, e confirmado não muda mais; na transação seguinte, o id já é outro. Estornar não toca no original nem nas etiquetas dele (§18.3). (Uma marca por `set_config`, que era o desenho anterior, qualquer script da aplicação forjaria.)
 
 **Colunas que mudaram em relação ao contrato do front**, a refletir em `packages/contracts` em B1:
 
@@ -518,37 +508,37 @@ A soma é verificada pelo agregado antes de persistir: lançamento e etiquetas s
 
 ### 18.3 Estorno — a convenção que sustenta §2.5.1
 
-O estorno é um lançamento novo com `estorno_de_id`, **a mesma natureza e as mesmas etiquetas do original**, e efeito com sinal invertido. O original passa a `ESTORNADO` e continua contando; os dois se anulam.
+O estorno é um lançamento novo com `estorno_de_id`, **a mesma natureza e as mesmas etiquetas do original**, e efeito com sinal invertido. O original **não muda**: continua `CONFIRMADO` e contando, e os dois se anulam. "Estornado" é derivado — existe um lançamento com `estorno_de_id` apontando para ele (a coluna é `UNIQUE`: um estorno por lançamento) —, não um status gravado no original (D1 do issue #11).
 
-É essa convenção que faz a devolução de contribuição (Doc 6 §2.5.1) derrubar a receita em vez de inflar a despesa — e ela vale para qualquer estorno, não só devolução. A verificação reproduz o caso: receita de 210, estornada; a DRE de setembro mostra contribuição líquida de 100 (os 100 da Aline), e a despesa continua sendo só o que a casa gastou — flores, ervas e a padaria —, **sem** os 210.
+É essa convenção que faz a devolução de contribuição (Doc 6 §2.5.1) derrubar a receita em vez de inflar a despesa — e ela vale para qualquer estorno, não só devolução. A verificação do desenho (`cdd-07-verificacao.sql`) reproduz o caso, e em B1 ele vira teste do read model da DRE: receita de 210, estornada; a DRE de setembro mostra contribuição líquida de 100 (os 100 da Aline), e a despesa continua sendo só o que a casa gastou — flores, ervas e a padaria —, **sem** os 210.
 
-Estorno em competência fechada: o domínio permite estornar um lançamento fechado sem reabrí-lo. O lançamento original passa a `ESTORNADO` — nenhuma coluna muda, nem etiqueta nem transação. O estorno em si nasce na competência corrente (L9). A guarda do banco impede mudança do original uma vez confirmado, e o `ESTORNADO` é uma mudança ao status; o domínio recusa. Se a coordenação rejeitar e exigir reabertura, o domínio muda.
+Estorno em competência fechada: nenhuma escrita no original, nem de status nem de etiqueta, e o mês fechado continua com o mesmo hash. O estorno em si nasce na competência corrente (L9, com o motivo registrado). Se a coordenação rejeitar §2.5.1 e exigir reabertura, a regra fica mais estrita no domínio sem mudar o banco.
 
 ### 18.4 Transferência, fatura, empréstimo, adiantamento, fundo
 
-`transferencia` é o agregado das sete finalidades do Doc 2 §1.4. Cada finalidade exige a referência que a justifica, por `CHECK` nomeado: aporte tem fundo (FD3), pagamento tem fatura (F3), concessão e devolução têm empréstimo (E1), ressarcimento tem adiantamento (A4), repasse tem duas unidades diferentes. **Conta nula de um dos lados** significa dinheiro que entra ou sai do sistema — só admitido para empréstimo, porque a contraparte não tem conta cadastrada.
+`transferencia` é o agregado das sete finalidades do Doc 2 §1.4. Cada finalidade carrega a referência que a justifica, por `CHECK` nomeado de forma do dado (D3 do issue #11): aporte tem fundo (FD3), pagamento tem fatura (F3), concessão e devolução têm empréstimo (E1), ressarcimento tem adiantamento (A4). Que o repasse seja entre duas unidades diferentes é invariante do agregado. **Conta nula de um dos lados** significa dinheiro que entra ou sai do sistema — só admitido para empréstimo, porque a contraparte não tem conta cadastrada.
 
-**Uma adição ao Doc 2: o ciclo da transferência.** O Doc 2 §1.4 desenha `Transferencia` sem estado. O esquema dá a ela o ciclo do lançamento — `A_CONFERIR` → `CONFIRMADO` → `ESTORNADO`, com `confirmado_por` obrigatório fora de `A_CONFERIR` e `estorno_de_id` —, porque a transferência importada do extrato ou registrada às pressas também passa pela conferência. Com o ciclo vem a regra de L2: confirmada, a transferência não muda nem some, e a correção é por estorno; `A_CONFERIR` ainda se edita e se descarta. A guarda `guarda_transferencia` aplica as duas coisas (§15).
+**Uma adição ao Doc 2: o ciclo da transferência.** O Doc 2 §1.4 desenha `Transferencia` sem estado. O esquema dá a ela o ciclo do lançamento — `A_CONFERIR` → `CONFIRMADO`, com `estorno_de_id` para o estorno (estornada é derivado, como no lançamento) —, porque a transferência importada do extrato ou registrada às pressas também passa pela conferência. Com o ciclo vem a regra de L2: confirmada, a transferência não muda nem some, e a correção é por estorno; `A_CONFERIR` ainda se edita e se descarta. No banco fica só a imutabilidade simples da confirmada (`guarda_transferencia`, §15); quem conferiu (obrigatório ao confirmar), a competência pela data e o estorno são do agregado.
 
 A fatura agrupa as compras no cartão (`lancamento.fatura_id`) e é paga por transferência — nunca por uma segunda despesa, o que resolve os ~R$ 3,5 mil de dupla contagem que a migração achou (Doc 1 §7.2). O adiantamento guarda **quem era a pessoa** que autorizou (`autorizado_por_pessoa`), não só o usuário: A1 é sobre vínculo, e o vínculo é da pessoa.
 
 ### 18.5 Período, extrato, prestação
 
-`periodo_contabil` é por unidade e competência, com hash no fechamento (P2); `reabertura_de_periodo` é só-inserção, com motivo de pelo menos dez caracteres e o hash anterior (P3). O período nunca troca de unidade nem de competência. Fechada, a competência não muda nem some: a guarda `guarda_periodo` só a deixa reabrir quando a reabertura do hash corrente foi gravada na mesma transação — o comando grava as duas coisas juntas, e uma reabertura antiga não serve para reabrir de novo. O hash é calculado pelo domínio, com a ordem canônica dos lançamentos. P1 (zero `A_CONFERIR` na competência) e P4 (anterior fechada) são verificados pelo comando de fechamento — dependem de consulta a várias linhas no instante do ato e não cabem num `CHECK`. O repositório toma trava consultiva (`advisory lock`) por período: quem grava lançamento ou transferência nela toma a mesma trava, compartilhada, e ninguém grava entre a conferência de P1, o hash e o fechamento. A guarda do período também impede escrita num período fechado — imutabilidade simples do fechado. A trava só serve em `READ COMMITTED` — em `REPEATABLE READ`, quem esperou leria o período como estava antes.
+`periodo_contabil` é por unidade e competência, com hash no fechamento (P2); `reabertura_de_periodo` é só-inserção e guarda o hash anterior (P3). No banco fica a imutabilidade simples do período (D4 do issue #11): unidade e competência nunca mudam, e o fechado não muda nem some — o único `UPDATE` admitido num fechado é reabrir. O resto é do agregado `PeriodoContabil`: a reabertura exige motivo de pelo menos dez caracteres e o registro com o hash corrente gravado na mesma transação (uma reabertura antiga não serve para reabrir de novo); o hash é calculado pelo domínio, na ordem canônica dos lançamentos; P1 (zero `A_CONFERIR` na competência) e P4 (anterior fechada) são verificados pelo comando de fechamento. Para a corrida entre fechar e gravar, o repositório toma uma trava consultiva (`advisory lock`) por período: exclusiva ao fechar, compartilhada em quem grava lançamento ou transferência na competência — ninguém grava entre a conferência de P1, o hash e o fechamento. A trava só serve em `READ COMMITTED` (em `REPEATABLE READ`, quem esperou leria o período como estava antes); a borda transacional abre as escritas nesse nível (§5), e um teste prova isso.
 
 `importacao_de_extrato` guarda o arquivo (anexo), período e contagens; `linha_extrato` tem `UNIQUE (conta, FITID)` (I1) — reimportar é seguro por construção — e concilia com **um** lançamento **ou** **uma** transferência (I2), nunca os dois.
 
 ### 18.6 Read models de leitura
 
-O esquema de referência documenta o SQL histórico das consultas. O Financeiro implementa em Kysely:
+Read models do backend, em Kysely sobre as tabelas. O esquema de referência guarda o SQL das views do desenho original, que documenta o cálculo:
 
-| Read model | SQL histórico (§21 referência) | Serve |
+| Read model | Lê | Serve |
 |---|---|---|
-| `v_efeito_por_categoria` | etiquetas de lançamentos confirmados ou estornados, com o estorno negativo | base de todas as outras |
-| `v_dre` | efeito por categoria, agrupado por unidade, competência e linha do relatório | Relatórios, Prestação de contas |
-| `v_saldo_da_conta` | lançamentos pelo líquido + transferências dos dois lados | Contas e fundo, Painel |
+| Efeito por categoria (`v_efeito_por_categoria` no desenho) | etiquetas de lançamentos confirmados, com o estorno negativo | base de todas as outras |
+| DRE (`v_dre` no desenho) | efeito por categoria, agrupado por unidade, competência e linha do relatório | Relatórios, Prestação de contas |
+| Saldo da conta (`v_saldo_da_conta` no desenho) | lançamentos pelo líquido + transferências dos dois lados | Contas e fundo, Painel |
 
-Resultado por cerimônia e por grupo de custo são a mesma `v_efeito_por_categoria` filtrada por `evento_id` e `grupo_de_custo_id`, publicadas pelo Financeiro como porta de leitura para o painel do evento.
+Resultado por cerimônia e por grupo de custo são o mesmo efeito por categoria filtrado por `evento_id` e `grupo_de_custo_id`, publicado pelo Financeiro como porta de leitura para o painel do evento. A RLS vale igual: o read model roda na transação da requisição, com o contexto da instituição.
 
 ## 19. `eventos`
 
@@ -571,13 +561,13 @@ erDiagram
 
 **Evento.** Os cinco estados do Doc 2 (decisão 5), `consagra` explícito (define anamnese e estimativa de daime) e **três colunas de valor sugerido** — `valor_social ≤ valor_sustentavel ≤ valor_prospero`, obrigatórias exatamente quando o regime é de contribuição (decisão 6). Não existe `permite_valor_livre`: no regime de contribuição ele é sempre verdadeiro, nos dois sentidos, e uma coluna que só pode ter um valor é uma coluna que alguém um dia vai pôr no outro.
 
-**Hospedagem à parte.** `opcao_de_hospedagem` por evento, com valor por noite e se ocupa leito. `COLCHONETE` existe com valor zero e sem leito, por `CHECK`, enquanto a coordenação não decidir o ponto em aberto do Doc 6 §2.5 — se a decisão for *"não registrar"*, é uma linha de `CHECK` a mudar. Refeição é tabela própria, e só tem linha em ocasião especial.
+**Hospedagem à parte.** `opcao_de_hospedagem` por evento, com valor por noite e se ocupa leito. `COLCHONETE` existe com valor zero e sem leito, por invariante do agregado (issue #11), enquanto a coordenação não decidir o ponto em aberto do Doc 6 §2.5 — se a decisão for *"não registrar"*, é uma regra do domínio a mudar. Refeição é tabela própria, e só tem linha em ocasião especial.
 
-**Inscrição.** Os campos de IN4 são `NOT NULL` (decisão 9); nas restrições alimentares, *"nenhuma"* é resposta explícita, e em branco não vale. A contribuição tem três colunas e uma regra: `nivel_escolhido` é o que a pessoa marcou (sugestão), `valor_combinado` é o que vale, **nulo significa "a combinar"**, e `isento` é explícito — zero não é isenção (`in_zero_nao_e_isencao`), e isenção tem motivo. `canal` distingue recepção de link; pelo link, `registrada_por` é nulo. `declaracao_id` aponta a declaração de veracidade daquela cerimônia.
+**Inscrição.** Os campos de IN4 são `NOT NULL` (decisão 9); nas restrições alimentares, *"nenhuma"* é resposta explícita, e em branco não vale (regra do agregado). A contribuição tem três colunas e uma regra: `nivel_escolhido` é o que a pessoa marcou (sugestão), `valor_combinado` é o que vale, **nulo significa "a combinar"**, e `isento` é explícito — zero não é isenção, e isenção tem motivo — invariantes do agregado `Inscricao` (os `CHECK`s do desenho saíram, issue #11). `canal` distingue recepção de link; pelo link, `registrada_por` é nulo. `declaracao_id` aponta a declaração de veracidade daquela cerimônia.
 
-**Pagamento e devolução.** O pagamento guarda conta e forma e recebe `lancamento_id` quando a integração cria a receita. A devolução nasce de um pagamento de inscrição ou, pelo CN4, do cachê de uma contratação cancelada do mesmo evento — é essa receita que será estornada, e `dv_origem_unica` exige exatamente uma das duas. É pedida pelo Acolhimento e paga pela Tesouraria — `dv3_quem_pede_nao_paga` impede que a mesma pessoa faça os dois atos.
+**Pagamento e devolução.** O pagamento guarda conta e forma e recebe `lancamento_id` quando a integração cria a receita. A devolução nasce de um pagamento de inscrição ou, pelo CN4, do cachê de uma contratação cancelada do mesmo evento — é essa receita que será estornada, e `dv_origem_unica` exige exatamente uma das duas (forma do dado, fica no banco). É pedida pelo Acolhimento e paga pela Tesouraria, e quem pede não paga — invariante do agregado (DV3; o `CHECK` do desenho saiu, issue #11).
 
-**Leitos.** `dormitorio` e `leito` são cadastro fixo; o mapa (`alocacao_de_leito`) é por evento, **uma linha por pessoa por noite**, com `vaga` numerando os lugares até a capacidade do leito — que a alocação traz do próprio leito por FK composta, então não se declara maior do que é, e o leito alocado não muda de capacidade. É o que representa a casa como ela é: Dormitório 1 com uma cama de casal (vagas 1 e 2), Dormitório 2 com três beliches (seis leitos de um lugar), sem divisão por gênero. `ml1_vaga_livre_no_evento` impede duas pessoas na mesma vaga na mesma noite do mesmo evento; a PK impede uma pessoa em duas camas. Conflito entre **eventos simultâneos** não é invariante (Doc 2 §2.6) — é o índice `alocacao_por_leito_noite` que a tela usa para avisar.
+**Leitos.** `dormitorio` e `leito` são cadastro fixo; o mapa (`alocacao_de_leito`) é por evento, **uma linha por pessoa por noite**, com `vaga` numerando os lugares até a capacidade do leito. A capacidade por tipo e a vaga dentro dela passam a ser invariantes do agregado (issue #11); a etapa B5 decide se a FK composta que traz a capacidade do leito para a alocação continua. É o que representa a casa como ela é: Dormitório 1 com uma cama de casal (vagas 1 e 2), Dormitório 2 com três beliches (seis leitos de um lugar), sem divisão por gênero. `ml1_vaga_livre_no_evento` impede duas pessoas na mesma vaga na mesma noite do mesmo evento; a PK impede uma pessoa em duas camas. Conflito entre **eventos simultâneos** não é invariante (Doc 2 §2.6) — é o índice `alocacao_por_leito_noite` que a tela usa para avisar.
 
 **Link e sessão.** `link_de_inscricao` (um por evento, token com pelo menos 128 bits) e `sessao_de_inscricao` (§7.3) — CPF declarado, pessoa conferida, tentativas, expiração máxima de 2 h por `CHECK`.
 
@@ -608,43 +598,38 @@ erDiagram
 
 ## 21. Banco × domínio: onde cada regra mora
 
-**No banco — o que falsifica histórico se quebrado:**
+A regra geral (issue #11): **toda regra de negócio mora no domínio**. O banco guarda estrutura, isolamento, segurança e, de forma simples, o que se quebrado falsifica o histórico — o §15, linha a linha. O que saiu do banco, objeto a objeto, está no anexo.
 
-- Isolamento entre instituições (RLS + FK composta)
-- Nenhuma FK cruza schema
-- Imutabilidade simples: lançamento confirmado, transferência confirmada, feitio concluído, período fechado, etiquetas do lançamento confirmado
-- Unicidades de forma e concorrência: FITID, inscrição viva, resposta vigente, convite vigente, pessoa com duas contas, uma declaração por cerimônia, uma versão publicada
-- `CHECK`s de enumeração (formato): natureza em lista, tipo de movimento em lista, canal, direção, etc.
-- `CHECK`s de coerência de formato (D3): "X presente ⇔ tipo Y" ou exclusividade de colunas — `fd3_aporte_tem_fundo`, `f3_pagamento_tem_fatura`, `e1_emprestimo_tem_emprestimo`, `a4_ressarcimento_tem_adiantamento`, `i2_um_so_par`, `dv_origem_unica`, `enviado_coerente`, `autor_coerente`, `convite_nao_usado_e_revogado`
-- FKs de coerência: `estorno_mesma_natureza`, `categoria_id` + natureza das etiquetas, categorias de fundo
-- Só-inserção: trilha, leitura de anamnese, reabertura de período, anexos
-- Nem o dono esvazia com `TRUNCATE`
+| Regra | Mora em | Etapa |
+|---|---|---|
+| Fechar e reabrir período (P1–P4): reabertura com motivo e com o hash corrente na mesma transação; hash P2 | agregado `PeriodoContabil` | B1 |
+| Nada nasce em competência fechada (L5, T4), inclusive na corrida com o fechamento | comandos de lançamento e transferência + trava consultiva tomada pelo repositório (exclusiva ao fechar, compartilhada ao gravar) | B1 |
+| Etiquetas fecham no valor, com sinal; confirmado tem categoria (Decisão 1) | agregado `Lancamento` | B1 |
+| Confirmado completo (L7), caixa depois da competência (L6), pendência nunca para quem registrou (L10) | agregado `Lancamento` | B1 |
+| Estorno: o original não muda; "estornado" é derivado de `estorno_de_id` | agregados `Lancamento` e `Transferencia`, read models | B1 |
+| Transferência confirmada diz quem conferiu; repasse entre unidades diferentes; competência pela data | agregado `Transferencia` | B1 |
+| Saldo de lote nunca negativo, mesmo com saídas simultâneas; perda e ajuste justificados | agregado `Lote` + repositório com `SELECT … FOR UPDATE` no lote | B6 |
+| Custo por litro congelado na conclusão do feitio; litros estimados | agregados `Feitio` e `EstimativaDeConsumo` | B6 |
+| Item de resposta herdado ou com motivo | agregado `RespostaDeAnamnese` | B4 |
+| Três níveis de contribuição, em ordem; colchonete gratuito e sem leito; capacidade do leito por tipo e vaga dentro dela; zero não é isenção, e isenção tem motivo; restrições respondidas (IN4); recepção com autor; quem pede a devolução não paga (DV3); devolução de contratação do próprio evento (CN4) | agregados do módulo Eventos | B5 |
+| Convite de uso único | agregado `Convite` | B0 |
+| Categoria compatível com o regime (L4), integração não editável por comando manual (L8), só o destinatário responde (L11), vínculo de padrinho na data (A1), saldo de fundo (FD2), confirmar inscrição exige anamnese em dia e declaração (IN5), ML2, ML4, EV1–EV11, CN1–CN4, EC4, AR1–AR4 | domínio, como já era | cada etapa |
+| DRE, saldo da conta, efeito por categoria, saldo por lote | read models do backend (§18.6) | B1, B6 |
 
-**No domínio — tudo mais:**
-
-- Transição de estado e ciclo de agregado (lançamento: `A_CONFERIR` → `CONFIRMADO` → `ESTORNADO`)
-- Permissão (quem pode o quê)
-- Cálculo: soma de etiquetas, hash de período, custo de feitio, saldo de fundo, `litros_estimados`
-- Validação de negócio que cruza tabelas ou módulos: L4 (categoria × regime), A1 (vínculo padrinho), IN5 (anamnese em dia), FD2 (saldo ≥ 0), L8 (integração não editável)
-- Verificação de prereq­uisitos do ato: P1 (zero pendente), P4 (anterior fechado), L11 (só destinatário responde)
-- Regras de fluxo e mensagem da tela: ML2, ML4, EV1–EV11, CN1–CN4, EC4, AR1–AR4
-- Fechamento do período com trava consultiva (advisory lock)
-- Tratamento de concorrência: `FOR UPDATE` do lote ao registrar saída
-
-A regra geral: **o banco guarda o que, se quebrado, falsifica o histórico**. Tudo mais é do domínio, que bloqueia antes de chegar ao banco.
+As travas de concorrência que saíram do banco — o período e o saldo do lote — ganham teste de integração obrigatório na etapa do módulo (§26).
 
 ## 22. Migrações, seed e evolução
 
 - **As migrations em SQL do MikroORM são a fonte de verdade.** Escritas à mão, por etapa (F09 em diante), pelo desenho mínimo do corte. RLS, gatilhos, `EXCLUDE` e FKs compostas são codificadas nas migrations, não geradas. O esquema de referência (`cdd-07-esquema.sql`) é documentação congelada em set/2026 do desenho aprovado — não roda em CI.
-- **Verificação de garantias em CI** (§26): `apps/api/test/banco/garantias/` testa as invariantes contra o banco migrado, crescendo por etapa com a estrutura. Não é a verificação de referência — é o teste de integração do domínio contra o banco.
+- **Verificação de garantias em CI** (§26): `apps/api/test/banco/garantias/` prova, contra o banco migrado, o que o §15 diz que o banco garante — isolamento, resolvedores, só-inserção, `TRUNCATE`, imutabilidade simples e as restrições de forma. Cresce por etapa, com as tabelas. As regras de negócio têm os seus testes no domínio.
 - **Duas funções que toda migration chama, no fim, depois de criar suas tabelas** — ambas idempotentes, então uma migration de etapa posterior pode chamá-las de novo sobre o esquema inteiro sem duplicar nem falhar:
   - `shared.aplicar_isolamento_por_instituicao()` — a política de RLS não é escrita tabela a tabela; a função varre `information_schema` atrás de `instituicao_id` e aplica `ENABLE`+`FORCE`+a política a quem ainda não tem. O teste T23 falha se alguma tabela ficar de fora.
   - `shared.proibir_truncate(regclass[])` — recebe a lista de tabelas que a etapa quer guardar contra `TRUNCATE` (histórico, trilha, saldo) e cria o gatilho `sem_truncate` só em quem ainda não o tem, e religa quem um `ALTER TABLE ... DISABLE TRIGGER` tenha desligado, ou um `ENABLE REPLICA TRIGGER` tenha restringido à réplica (não dispara nas sessões normais), entre uma etapa e outra.
-  - As duas conferem só a **existência** de política/gatilho pelo nome — não a expressão. Uma política `isolamento_por_instituicao` recriada com outro `USING` (por exemplo `USING (true)`, por erro de copy-paste numa migration futura) sobrevive à varredura sem ser corrigida nem detectada por ela: verificar que a expressão bate com a esperada é o teste de impressão digital do catálogo planejado para F11, não responsabilidade destas funções.
+  - As duas conferem só a **existência** de política/gatilho pelo nome — não a expressão. Uma política `isolamento_por_instituicao` recriada com outro `USING` (por exemplo `USING (true)`, por erro de copy-paste numa migration futura) sobrevive à varredura sem ser corrigida nem detectada por ela: conferir que a expressão bate com a esperada é um caso da verificação de garantias, não responsabilidade destas funções.
 - **Duas fases para mudança destrutiva:** expandir (coluna nova, preenchida em paralelo) → migrar leitura e escrita → contrair (remover a antiga) numa versão seguinte.
 - **Seed de sistema** (versionado, idempotente, roda em toda migração): catálogo de permissões, os seis grupos com suas permissões (Doc 3 §12), unidades e categorias do plano de contas aprovado.
 - **Seed de homologação**: dados sintéticos gerados a partir dos mocks do front — os mesmos personagens das telas (Clarice, Helena, Eduardo, Aline) —, o que faz a demonstração do protótipo e a de homologação contarem a mesma história.
-- **Migração da planilha** (Doc 6, transversal): módulo `migracao` com CLI que carrega os 1.760 lançamentos com `origem = 'MIGRACAO'`, cria as competências históricas **fechadas** com hash, e emite o relatório de conciliação. Como a guarda do banco impede lançamento em competência fechada, a carga é feita com os períodos abertos e o fechamento é o último passo — se o relatório não bater, nada é fechado.
+- **Migração da planilha** (Doc 6, transversal): módulo `migracao` com CLI que carrega os 1.760 lançamentos com `origem = 'MIGRACAO'`, cria as competências históricas **fechadas** com hash, e emite o relatório de conciliação. Como o domínio impede lançamento em competência fechada, a carga é feita com os períodos abertos e o fechamento é o último passo — se o relatório não bater, nada é fechado.
 
 ## 23. Dados pessoais e LGPD no banco
 
@@ -688,7 +673,7 @@ As etapas são as do Doc 6 §6, na mesma ordem e com as mesmas estimativas. O qu
 | Etapa | Banco | API e infraestrutura | Aceite |
 |---|---|---|---|
 | **B0 · Fundação** · ~3 sem | `shared` e `identidade` inteiros; varredura de RLS; papéis; seed de permissões e grupos | NestJS, UoW com `SET LOCAL`, guards, catálogo de erros, outbox + despachante, storage, Keycloak com tema do CDD, CI com `dependency-cruiser`, T23, T28–T30 e **`cdd-07-verificacao.sql` como teste** | Login real; os seis grupos; um endpoint de escrita qualquer com decorator e trilha; teste de vazamento entre instituições verde |
-| **B1 · Financeiro núcleo** · ~6 sem | `unidade`, `grupo_de_custo`, `categoria`, `conta`, `lancamento` + etiquetas + pendência, `transferencia` (simples), `periodo_contabil`, `reabertura`, `fundo`; views; `pessoas.pessoa` **mínima** (nome, tipo, documento) | Registrar, confirmar, estornar, pendência (abrir, responder), fechar, reabrir; read models de fila, meus registros, lançamentos, contas, DRE, fluxo de caixa | **O fechamento do sistema bate com o da planilha por dois meses consecutivos** |
+| **B1 · Financeiro núcleo** · ~6 sem | `unidade`, `grupo_de_custo`, `categoria`, `conta`, `lancamento` + etiquetas + pendência, `transferencia` (simples), `periodo_contabil`, `reabertura`, `fundo`; read models; `pessoas.pessoa` **mínima** (nome, tipo, documento) | Registrar, confirmar, estornar, pendência (abrir, responder), fechar, reabrir; read models de fila, meus registros, lançamentos, contas, DRE, fluxo de caixa | **O fechamento do sistema bate com o da planilha por dois meses consecutivos** |
 | **B2 · Financeiro, o resto** · ~3 sem | `fatura`, `emprestimo`, `adiantamento`, `prestacao_de_contas`; `pessoas.vinculo` | Porta `VinculoAtivoNaData` (A1); PDF com hash | Percurso 4 do Doc 4 §11: um administrador sem vínculo tenta autorizar adiantamento e o domínio recusa |
 | **B3 · Importação e conciliação** · ~3 sem | `importacao_de_extrato`, `linha_extrato` | Parser OFX/CSV, motor de sugestão, fila de conciliação, faturamento contra o teto | Reimportar o mesmo extrato não cria nenhuma linha; o lançamento esquecido aparece |
 | **B4 · Pessoas e anamnese** · ~4 sem | `pessoas` inteiro | Formulário versionado com `simularImpacto()` (FA5), resposta incremental, declaração, registro de acesso, consentimento, autorização de responsável, anonimização | Publicar versão nova gera pendência só para quem a pergunta afeta; toda leitura de anamnese aparece no registro |
@@ -744,10 +729,10 @@ Os roteiros Playwright que verificaram as telas construídas (25 a 56 verificaç
 | Risco | Por que é real aqui | Mitigação |
 |---|---|---|
 | **Vazamento de anamnese pelo link** | O link circula em grupo; CPF não é segredo | §7.3: fator de conferência, sessão curta, tentativas limitadas, nenhum dado antes da conferência |
-| **Código contornando o agregado** | É o atalho natural para "só corrigir esse dado" | Guardas mínimas de banco (§15): o atalho falha com o mesmo código de erro que o domínio daria; T28 proíbe escrita fora do repositório; hash do período detecta alteração |
+| **Código contornando o agregado** | É o atalho natural para "só corrigir esse dado" | As guardas mínimas (§15) barram a falsificação do histórico — imutabilidade simples, só-inserção, `TRUNCATE`; o T28 proíbe escrita fora do repositório; o hash do período acusa alteração num mês fechado. Regra de negócio contornada por SQL direto o banco não barra (issue #11) |
 | **RLS esquecida em tabela nova** | Uma tabela basta | Varredura na migration + T23 na CI |
 | **Contexto de instituição vazando entre requisições** | Pool de conexões | `SET LOCAL` dentro de transação; *fail-closed* sem contexto |
-| **Soma de etiquetas quebrando fluxo legítimo** | Integração cria confirmado; conferência ajusta ao confirmar | Agregado confere antes de flush; coluna `gravado_na_transacao` prova que não era etiqueta anterior; os dois casos estão na verificação de garantias |
+| **Soma de etiquetas quebrando fluxo legítimo** | Integração cria confirmado; conferência ajusta ao confirmar | A soma é do agregado, que vê as etiquetas junto com o lançamento; `gravado_na_transacao` deixa a transação que confirma gravar as etiquetas, e nenhuma depois. Os dois fluxos viram teste de domínio e caso de garantia em B1 |
 | **Despachante parado sem ninguém ver** | Processo único, sem fila externa | `/saude/pronta` falha com outbox atrasado > 5 min; Sentry após 10 tentativas |
 | **Backup que não restaura** | Ninguém testa até precisar | Restauração mensal automática com a verificação |
 | **Mantenedor único** | Tempo parcial, uma pessoa | Esquema de referência executável, este documento, e nenhuma peça de infraestrutura além de Postgres, Keycloak e um bucket |
@@ -756,7 +741,7 @@ Os roteiros Playwright que verificaram as telas construídas (25 a 56 verificaç
 
 O servidor é **um monólito modular em NestJS sobre um PostgreSQL**, com cinco módulos de domínio que se falam por porta pública e por eventos em outbox, sem fila, sem cache e sem serviço separado — porque o CDD tem seis logins, e quem mantém o sistema é uma pessoa.
 
-O banco tem **58 tabelas em seis schemas**, com três travas de isolamento (RLS forçada, FK composta, filtro do ORM) e um conjunto mínimo de guardas que existem para uma coisa só: **impedir que o histórico seja falsificado**, mesmo por quem contorna o domínio. A lógica de negócio — transição de estado, cálculo, autorização — fica no domínio, que bloqueia antes de chegar ao banco. As decisões da coordenação estão todas no esquema — as etiquetas com valor do caso Aline, a devolução como estorno, os três níveis de contribuição, o colchonete gratuito, os dois dormitórios como são, a declaração de veracidade por cerimônia. A verificação de garantias cresce com a estrutura, etapa por etapa.
+O banco tem **58 tabelas em seis schemas**, com três travas de isolamento (RLS forçada, FK composta, filtro do ORM) e um conjunto mínimo de guardas que existem para uma coisa só: **impedir que o histórico seja falsificado**, mesmo por quem contorna o domínio. Toda regra de negócio — transição de estado, cálculo, permissão, concorrência de regra — mora no domínio (issue #11). As decisões da coordenação estão todas no desenho: as que protegem o histórico no banco, as demais como invariantes do domínio com teste — as etiquetas com valor do caso Aline, a devolução como estorno, os três níveis de contribuição, o colchonete gratuito, os dois dormitórios como são, a declaração de veracidade por cerimônia. A verificação de garantias cresce com a estrutura, etapa por etapa.
 
 O desenho encontrou uma coisa que precisa de decisão antes de B5: **o link público, como está, deixa ler a anamnese de alguém com o CPF dela.** A correção é pequena — um campo a mais na tela e uma sessão conferida no servidor —, mas é da coordenação.
 
@@ -766,77 +751,83 @@ A ordem de construção é a do Documento 6, com o critério de aceite de cada e
 
 ## Anexo — Inventário do corte (issue #11)
 
-O corte "lógica de negócio sai do banco" move cada função, gatilho, view e lógica de esquema para o domínio ou para o repositório, etapa por etapa. Este anexo é o checklist.
+O corte "lógica de negócio sai do banco" decide, objeto a objeto, o que o esquema de referência mantém nas migrations e o que passa para o domínio, o repositório ou um read model. É o checklist da etapa de cada módulo: a migration só leva o que está marcado como "fica", e cada "sai" vira invariante do agregado com teste (ou read model, ou trava no repositório).
 
-### Funções (19 totais)
+### Funções (19)
 
-| Função | Status | Quando | Por quê |
-|---|---|---|---|
-| `shared.instituicao_atual()` | Fica | B0 | Isolamento, fail-closed |
-| `identidade.resolver_sujeito(sub)` | Fica | B0 | Link de identidade, sem contexto |
-| `eventos.resolver_link(token)` | Fica | B0 | Link público, sem contexto |
-| `shared.somente_insercao()` | Fica | B0 | Gatilho de auditoria |
-| `shared.proibir_truncate()` | Fica | B0 | Proteção do histórico |
-| `shared.aplicar_isolamento_por_instituicao()` | Fica | B0 | Varredura de RLS |
-| `financeiro.guarda_lancamento` | Simplificada | B1 | Imutabilidade simples, sem transição para ESTORNADO e sem consulta de período |
-| `financeiro.guarda_transferencia` | Simplificada | B1 | Imutabilidade simples do confirmado |
-| `estoque.guarda_feitio` | Simplificada | B6 | Concluído não muda nem some |
-| `financeiro.guarda_etiqueta` | Simplificada | B1 | Imutabilidade simples, sem caso ESTORNADO |
-| `financeiro.guarda_periodo` | Sai → agregado `PeriodoContabil` | B1 | Reabertura com motivo e carimbo, agregado |
-| `financeiro.carimba_reabertura` | Sai → agregado | B1 | Carimbo na reabertura |
-| `financeiro.chave_do_periodo` | Sai → repositório | B1 | Advisory lock pela aplicação |
-| `financeiro.exigir_read_committed` | Sai | R2 | Não é regra de negócio; READ COMMITTED é trava de aplicação |
-| `financeiro.travar_periodo_para_fechar` | Sai → repositório | B1 | Advisory lock exclusivo ao fechar |
-| `financeiro.periodo_esta_fechado` | Sai → repositório | B1 | Consulta antes de lançar/transferir |
-| `financeiro.confere_etiquetas` | Sai → agregado | B1 | Soma no domínio |
-| `estoque.saldo_do_lote` | Sai → repositório | B6 | Consulta com `FOR UPDATE` no lote |
-| `estoque.guarda_saldo` | Sai → repositório | B6 | Validação no domínio com lock |
-
-### Gatilhos (15 totais)
-
-| Gatilho | Status | Quando |
+| Função | Destino | Etapa |
 |---|---|---|
-| `*_somente_insercao` (5: auditoria, acesso, reabertura, prestação, movimento) | Fica | cada etapa |
-| `lancamento_guarda` | Fica (simplificado) | B1 |
-| `transferencia_guarda` | Fica (simplificado) | B1 |
-| `feitio_guarda` | Fica (simplificado) | B6 |
-| `etiqueta_guarda` | Fica (simplificado) | B1 |
-| `sem_truncate` | Fica | B0 |
+| `shared.instituicao_atual()` | Fica | B0 |
+| `identidade.resolver_sujeito(text)` | Fica | B0 |
+| `shared.somente_insercao()` | Fica | B0 |
+| `shared.proibir_truncate(regclass[])` | Fica | B0 |
+| `shared.aplicar_isolamento_por_instituicao()` | Fica | B0 |
+| `eventos.resolver_link(text)` | Fica | B5 |
+| `financeiro.guarda_lancamento()` | Simplificada: confirmado não muda nem some; sem a transição para `ESTORNADO` e sem consulta de período | B1 |
+| `financeiro.guarda_transferencia()` | Simplificada, como a do lançamento | B1 |
+| `financeiro.guarda_etiqueta()` | Simplificada: etiqueta de confirmado não muda depois da transação que o gravou; sem o caso `ESTORNADO` | B1 |
+| `estoque.guarda_feitio()` | Fica como está (já é imutabilidade simples) | B6 |
+| `financeiro.guarda_periodo()` | Sai → agregado `PeriodoContabil`; no banco, só a imutabilidade simples do período | B1 |
+| `financeiro.carimba_reabertura()` | Sai → agregado `PeriodoContabil` | B1 |
+| `financeiro.chave_do_periodo()`, `travar_periodo_para_fechar()`, `periodo_esta_fechado()` | Saem → repositório do Financeiro (trava consultiva tomada pela aplicação) | B1 |
+| `financeiro.exigir_read_committed()` | Sai: a borda transacional abre as escritas em `READ COMMITTED`, e um teste prova (peça F12); o código `ISOLAMENTO_INVALIDO` sai do catálogo (peça R2) | B1 |
+| `financeiro.confere_etiquetas()` | Sai → agregado `Lancamento` | B1 |
+| `estoque.saldo_do_lote()`, `guarda_saldo()` | Saem → agregado `Lote` + repositório com `SELECT … FOR UPDATE` no lote | B6 |
+
+### Gatilhos (15)
+
+| Gatilho | Destino | Etapa |
+|---|---|---|
+| `auditoria_somente_insercao` | Fica | B0 |
+| `acesso_somente_insercao` | Fica | B4 |
+| `reabertura_somente_insercao` | Fica | B1 |
+| `prestacao_somente_insercao` | Fica | B2 |
+| `movimento_somente_insercao` | Fica | B6 |
+| `sem_truncate` | Fica (criado por `proibir_truncate` em cada tabela guardada, na etapa dela) | cada etapa |
+| `lancamento_guarda`, `transferencia_guarda`, `etiqueta_guarda` | Ficam, com a função simplificada | B1 |
+| `feitio_guarda` | Fica | B6 |
+| `periodo_guarda` | Substituído pelo gatilho de imutabilidade simples do período | B1 |
 | `reabertura_carimbo` | Sai | B1 |
-| `periodo_guarda` | Sai → simplificado no banco (D4) | B1 |
-| `lancamento_confere_etiquetas` | Sai → agregado | B1 |
-| `etiqueta_confere_etiquetas` | Sai → agregado | B1 |
-| `movimento_guarda_saldo` | Sai → repositório | B6 |
+| `lancamento_confere_etiquetas`, `etiqueta_confere_etiquetas` | Saem → agregado `Lancamento` | B1 |
+| `movimento_guarda_saldo` | Sai → agregado `Lote` + repositório | B6 |
 
-### Views (4 totais → read models em Kysely)
+### Views (4) e coluna gerada (1)
 
-| View | Status | Quando | Referência histórica em |
-|---|---|---|---|
-| `financeiro.v_efeito_por_categoria` | Sai → read model | B1 | `docs/sql/cdd-07-esquema.sql` |
-| `financeiro.v_dre` | Sai → read model | B1 | `docs/sql/cdd-07-esquema.sql` |
-| `financeiro.v_saldo_da_conta` | Sai → read model | B1 | `docs/sql/cdd-07-esquema.sql` |
-| `estoque.v_saldo_por_lote` | Sai → read model | B6 | `docs/sql/cdd-07-esquema.sql` |
+| Objeto | Destino | Etapa |
+|---|---|---|
+| `financeiro.v_efeito_por_categoria`, `v_dre`, `v_saldo_da_conta` | Saem → read models do Financeiro (o SQL fica no esquema de referência como documentação do cálculo) | B1 |
+| `estoque.v_saldo_por_lote` | Sai → read model do Estoque | B6 |
+| `estoque.estimativa_de_consumo.litros_estimados` (`GENERATED`) | Sai → cálculo do agregado `EstimativaDeConsumo` | B6 |
 
-### Coluna gerada (1 total)
+### `CHECK`s nomeados (29)
 
-| Coluna | Status | Quando | Cálculo passa para |
-|---|---|---|---|
-| `estimativa_de_consumo.litros_estimados` | Sai → cálculo no domínio | B6 | Agregado `Estimativa` |
+Saem 20, e cada um vira invariante do agregado com teste de domínio:
 
-### CHECK nomeados (29 totais)
+| Etapa | `CHECK`s |
+|---|---|
+| B1 | `l6_caixa_depois_da_competencia`, `l7_confirmado_completo`, `l10_pergunta_a_quem_registrou`, `t_confirmada_tem_conferente`, `t_repasse_entre_unidades`, `p3_reabertura_tem_motivo` |
+| B4 | `item_herdado_ou_com_motivo` |
+| B5 | `ev_contribuicao_tem_tres_niveis`, `ev_niveis_em_ordem`, `colchonete_gratis_e_sem_leito`, `leito_capacidade_do_tipo`, `vaga_dentro_da_capacidade`, `in_zero_nao_e_isencao`, `in4_restricoes_respondidas`, `in_isencao_tem_motivo`, `in_recepcao_tem_autor`, `dv3_quem_pede_nao_paga`, `cn4_contratacao_do_proprio_evento` |
+| B6 | `feitio_concluido_tem_custo`, `mov_perda_e_ajuste_justificados` |
 
-**Saem (20) e viram invariantes do agregado com teste de domínio:**
+Ficam 9, de coerência de formato: `fd3_aporte_tem_fundo`, `f3_pagamento_tem_fatura`, `e1_emprestimo_tem_emprestimo`, `a4_ressarcimento_tem_adiantamento`, `i2_um_so_par`, `dv_origem_unica`, `enviado_coerente`, `autor_coerente`, `convite_nao_usado_e_revogado`. O critério: um `CHECK` fica se é "X presente ⇔ tipo Y" ou exclusividade de colunas, e alguma consulta depende dessa forma para não dar número errado.
 
-`ev_contribuicao_tem_tres_niveis`, `ev_niveis_em_ordem`, `colchonete_gratis_e_sem_leito`, `p3_reabertura_tem_motivo`, `dv3_quem_pede_nao_paga` (e `dv_origem_unica` fica), `cn4_contratacao_do_proprio_evento`, `l6_caixa_depois_da_competencia`, `l7_confirmado_completo`, `l10_pergunta_a_quem_registrou`, `t_confirmada_tem_conferente`, `t_repasse_entre_unidades`, `leito_capacidade_do_tipo`, `vaga_dentro_da_capacidade`, `in_zero_nao_e_isencao`, `in4_restricoes_respondidas`, `in_isencao_tem_motivo`, `in_recepcao_tem_autor`, `item_herdado_ou_com_motivo`, `feitio_concluido_tem_custo`, `mov_perda_e_ajuste_justificados`.
+### Outros objetos
 
-**Ficam (9 de formato e coerência, D3):**
+| Objeto | Destino | Etapa |
+|---|---|---|
+| FKs de coerência: `estorno_mesma_natureza`, `l3_natureza_da_categoria`, `f1_fatura_so_em_cartao`, `a2_origem_e_conta_pessoal` | Ficam | B1, B2 |
+| Índices únicos parciais: `inscricao_uma_por_pessoa`, `resposta_uma_vigente`, `pendencia_uma_aberta`, `formulario_um_publicado`, `convite_vigente_unico`, `usuario_pessoa_unica`, `linha_um_lancamento`, `linha_uma_transferencia`, `pessoa_documento_unico`, `conta_identificador_unico` | Ficam: o domínio não garante unicidade sob concorrência | na etapa da tabela |
+| Valor `ESTORNADO` no `status` de `lancamento` e de `transferencia` | Sai: estornado é derivado de `estorno_de_id` | B1 |
+| Coluna `lancamento.gravado_na_transacao` | Fica (é o mecanismo da imutabilidade das etiquetas) | B1 |
+| `UNIQUE leito_com_capacidade` e FK `alocacao_na_capacidade_do_leito` | Existem só para alimentar `vaga_dentro_da_capacidade`, que sai; a etapa decide se continuam | B5 |
+| `CHECK`s sem nome | Classificados na etapa de cada módulo: enumeração e sanidade de valor ficam; regra de política sai (entre eles, os de `linha_extrato`, `lote` e `movimento_de_estoque`) | cada etapa |
+| Invariante "convite de uso único" | Agregado `Convite` | B0 |
 
-`fd3_aporte_tem_fundo`, `f3_pagamento_tem_fatura`, `e1_emprestimo_tem_emprestimo`, `a4_ressarcimento_tem_adiantamento`, `i2_um_so_par`, `dv_origem_unica`, `enviado_coerente`, `autor_coerente`, `convite_nao_usado_e_revogado`.
+### Códigos de erro
 
-Também fica a FK `estorno_mesma_natureza`.
-
-### Índices únicos parciais que codificam regra (10 totais)
-
-**Todos ficam — domínio não garante unicidade sob concorrência:**
-
-`inscricao_uma_por_pessoa`, `resposta_uma_vigente`, `pendencia_uma_aberta`, `formulario_um_publicado`, `convite_vigente_unico`, `usuario_pessoa_unica`, `linha_um_lancamento`, `linha_uma_transferencia`, `pessoa_documento_unico`, `conta_identificador_unico`.
+| Código | Origem depois do corte |
+|---|---|
+| `PERIODO_FECHADO`, `ETIQUETAS_NAO_FECHAM`, `CATEGORIA_OBRIGATORIA`, `SALDO_INSUFICIENTE` | Domínio (`Result.err`) |
+| `LANCAMENTO_IMUTAVEL`, `TRANSFERENCIA_IMUTAVEL`, `FEITIO_IMUTAVEL`, `REGISTRO_IMUTAVEL` | Guardas mínimas do banco; chegando à API, erro de programação (500) |
+| `ISOLAMENTO_INVALIDO` | Sai do catálogo |
