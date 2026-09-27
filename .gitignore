@@ -5,6 +5,7 @@ coverage/
 .DS_Store
 .env
 .env.local
+.vite/
 
 # scratch de verificação visual
 apps/web/shot.mjs
@@ -13,3 +14,10 @@ apps/web/shot.mjs
 # encontrar um node_modules/<pacote> sem precisar dele como dependência real
 !/apps/api/test/estrutural/fixtures/**/node_modules/
 !/apps/api/test/estrutural/fixtures/**/node_modules/**
+
+# a negação acima reinclui tudo dentro desses node_modules de mentira; repete os
+# padrões do topo para não reincluir lixo real que caia ali (macOS, segredo, build)
+/apps/api/test/estrutural/fixtures/**/node_modules/**/.DS_Store
+/apps/api/test/estrutural/fixtures/**/node_modules/**/.env
+/apps/api/test/estrutural/fixtures/**/node_modules/**/dist/
+/apps/api/test/estrutural/fixtures/**/node_modules/**/.vite/
