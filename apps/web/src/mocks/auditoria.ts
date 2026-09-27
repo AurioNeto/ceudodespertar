@@ -54,6 +54,8 @@ export const FEICAO: Record<OperacaoAuditada, FeicaoDaOperacao> = {
   GRUPO_ALTERADO: { rotulo: 'Grupo de usuário alterado', verbo: 'mudou o grupo de', icone: 'key-round', tom: 'atencao' },
   USUARIO_CONVIDADO: { rotulo: 'Usuário convidado', verbo: 'convidou', icone: 'user-plus', tom: 'neutro' },
   USUARIO_SUSPENSO: { rotulo: 'Usuário suspenso', verbo: 'suspendeu', icone: 'user-x', tom: 'atencao' },
+  USUARIO_ATIVADO: { rotulo: 'Acesso ativado', verbo: 'ativou o acesso de', icone: 'circle-check', tom: 'neutro' },
+  USUARIO_REATIVADO: { rotulo: 'Usuário reativado', verbo: 'reativou', icone: 'lock-open', tom: 'atencao' },
   FORMULARIO_PUBLICADO: { rotulo: 'Formulário publicado', verbo: 'publicou', icone: 'clipboard-list', tom: 'neutro' },
   PESSOA_ANONIMIZADA: { rotulo: 'Pessoa anonimizada', verbo: 'anonimizou', icone: 'user-x', tom: 'atencao' },
   ANAMNESE_LIDA: { rotulo: 'Anamnese lida', verbo: 'abriu a anamnese de', icone: 'eye', tom: 'sensivel' },
