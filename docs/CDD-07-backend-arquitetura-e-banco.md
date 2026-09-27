@@ -12,15 +12,15 @@
 | Arquivo | O que é |
 |---|---|
 | [`sql/cdd-07-esquema.sql`](sql/cdd-07-esquema.sql) | O esquema de referência completo — 6 schemas, 58 tabelas, RLS, gatilhos de guarda, views de leitura e o catálogo de permissões. **É a fonte da verdade das colunas**; as tabelas deste documento resumem, o arquivo decide. |
-| [`sql/cdd-07-verificacao.sql`](sql/cdd-07-verificacao.sql) | 126 verificações executáveis que provam o que §15 promete: isolamento entre instituições, imutabilidade, período fechado, o caso Aline, a devolução como estorno, leitos, saldo de estoque. Roda como o papel da aplicação, não como superusuário. |
+| [`sql/cdd-07-verificacao.sql`](sql/cdd-07-verificacao.sql) | 143 verificações executáveis que provam o que §15 promete: isolamento entre instituições, imutabilidade, período fechado, o caso Aline, a devolução como estorno, leitos, saldo de estoque. Roda como o papel da aplicação, não como superusuário. |
 
 ```bash
 createdb cdd_ref
 psql -d cdd_ref -v ON_ERROR_STOP=1 -f docs/sql/cdd-07-esquema.sql -f docs/sql/cdd-07-verificacao.sql
-# … 122 linhas "OK" e: Verificação concluída
+# … 143 linhas "OK" e: Verificação concluída
 ```
 
-Os dois arquivos foram executados contra PostgreSQL 16 — 16.13 na primeira versão, com 71 verificações; 16.15 na atual, com as guardas de transferência, período e feitio, o bloqueio de `TRUNCATE`, o resolvedor do link com dono próprio, a varredura de RLS e o bloqueio de `TRUNCATE` como funções idempotentes (`shared.aplicar_isolamento_por_instituicao()`, `shared.proibir_truncate()`) e o ator da trilha/anexo (`autor_tipo`, `enviado_por_tipo`), com 126 verificações. O esquema não é a migration de produção — as migrations nascem do MikroORM (§22) —, mas toda migration deve deixá-lo coerente, e a verificação vira teste de CI em B0.
+Os dois arquivos foram executados contra PostgreSQL 16 — 16.13 na primeira versão, com 71 verificações; 16.15 na atual, com as guardas de transferência, período e feitio, o bloqueio de `TRUNCATE`, o resolvedor do link e o resolvedor de identidade com dono próprio, a varredura de RLS e o bloqueio de `TRUNCATE` como funções idempotentes (`shared.aplicar_isolamento_por_instituicao()`, `shared.proibir_truncate()`), o ator da trilha/anexo (`autor_tipo`, `enviado_por_tipo`), a US2 (`usuario_pessoa_unica`) e o convite revogável (`convite_vigente_unico`, com o reenvio depois de revogar ou usar), com 143 verificações. O esquema não é a migration de produção — as migrations nascem do MikroORM (§22) —, mas toda migration deve deixá-lo coerente, e a verificação vira teste de CI em B0.
 
 ---
 
@@ -684,7 +684,7 @@ As etapas são as do Doc 6 §6, na mesma ordem e com as mesmas estimativas. O qu
 |---|---|---|---|
 | Domínio | Vitest, sem I/O | Toda invariante do Doc 2 como teste, antes do código de infraestrutura | Com cada agregado |
 | Autorização | Vitest + fixtures de grupo | Os 30 casos do Doc 3 §11 — **escritos em B0, falhando**, como critério de aceite das etapas seguintes | B0 |
-| Guardas de banco | `cdd-07-verificacao.sql` em Postgres real (Testcontainers) | As 126 verificações de §15; cresce a cada tabela nova | B0 |
+| Guardas de banco | `cdd-07-verificacao.sql` em Postgres real (Testcontainers) | As 143 verificações de §15; cresce a cada tabela nova | B0 |
 | Integração | Testcontainers | Handler → banco → outbox → consumidor; idempotência; `If-Match`; contagem de consultas por read model (N+1) | Com cada comando |
 | Concorrência | Testcontainers, duas conexões | Saídas simultâneas do mesmo lote; duas confirmações do mesmo lançamento; duas inscrições da mesma pessoa pelo link; fechamento e lançamento na mesma competência, com o comando travando antes de P1 e do hash | B1, B5, B6 |
 | Contrato | Vitest | Todo código de erro que a API pode devolver existe em `contracts/erros.ts`; toda restrição nomeada tem mapeamento | B0 |
@@ -735,7 +735,7 @@ Os roteiros Playwright que verificaram as telas construídas (25 a 56 verificaç
 
 O servidor é **um monólito modular em NestJS sobre um PostgreSQL**, com cinco módulos de domínio que se falam por porta pública e por eventos em outbox, sem fila, sem cache e sem serviço separado — porque o CDD tem seis logins, e quem mantém o sistema é uma pessoa.
 
-O banco tem **58 tabelas em seis schemas**, com três travas de isolamento (RLS forçada, FK composta, filtro do ORM) e um conjunto pequeno de guardas que existem para uma coisa só: **impedir que o histórico seja falsificado**, mesmo por quem contorna o domínio. As decisões da coordenação estão todas no esquema — as etiquetas com valor do caso Aline, a devolução como estorno, os três níveis de contribuição, o colchonete gratuito, os dois dormitórios como são, a declaração de veracidade por cerimônia. E está tudo **verificado**: 139 casos que rodam contra Postgres real, como o papel da aplicação.
+O banco tem **58 tabelas em seis schemas**, com três travas de isolamento (RLS forçada, FK composta, filtro do ORM) e um conjunto pequeno de guardas que existem para uma coisa só: **impedir que o histórico seja falsificado**, mesmo por quem contorna o domínio. As decisões da coordenação estão todas no esquema — as etiquetas com valor do caso Aline, a devolução como estorno, os três níveis de contribuição, o colchonete gratuito, os dois dormitórios como são, a declaração de veracidade por cerimônia. E está tudo **verificado**: 143 casos que rodam contra Postgres real, como o papel da aplicação.
 
 O desenho encontrou uma coisa que precisa de decisão antes de B5: **o link público, como está, deixa ler a anamnese de alguém com o CPF dela.** A correção é pequena — um campo a mais na tela e uma sessão conferida no servidor —, mas é da coordenação.
 

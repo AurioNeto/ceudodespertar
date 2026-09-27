@@ -110,6 +110,19 @@ SELECT verif.confere('resolvedor de identidade · cdd_app não é membro do pape
     WHERE papel.rolname = 'cdd_resolvedor_identidade' AND membro.rolname = 'cdd_app'),
   0::bigint);
 
+-- Fato de catálogo, vale nas duas rodadas (superusuário e dono comum): quem
+-- roda a migration precisa poder assumir os dois resolvedores (§8), mas só
+-- por SET, nunca por INHERIT — com INHERIT, o dono passaria a herdar a
+-- política `USING (true)` do resolvedor e leria sem contexto as linhas de
+-- todas as instituições. Diferente do teste acima, este não depende de quem
+-- está rodando o script: é o `GRANT ... TO cdd_owner` de produção que erra
+-- ou acerta, não a sessão do arquivo.
+SELECT verif.confere('resolvedores · ninguém herda a política deles (só SET, nunca INHERIT)',
+  (SELECT count(*) FROM pg_auth_members
+    WHERE roleid IN ('cdd_resolvedor_link'::regrole, 'cdd_resolvedor_identidade'::regrole)
+      AND inherit_option),
+  0::bigint);
+
 -- F07 · as duas funções que toda migration chama (Documento 7 §22) são
 -- idempotentes: uma etapa que repete a chamada sobre o esquema inteiro não
 -- falha nem duplica o que a etapa anterior já tinha feito.
@@ -725,6 +738,17 @@ SELECT verif.espera_erro('US2 · a mesma pessoa não tem um segundo usuário na 
             'Aline (de novo)', 'aline2@example.org', 'ATIVO', now())
 $$, 'usuario_pessoa_unica');
 
+-- `subject_id` é UNIQUE global (não por instituição, §7.1): é isso que torna
+-- `identidade.resolver_sujeito` seguro devolvendo uma linha só — sem essa
+-- unicidade, o mesmo `sub` do Keycloak em duas casas confundiria em qual
+-- instituição montar o contexto (§7.1, §8).
+SELECT set_config('app.instituicao_id', 'b0000000-0000-0000-0000-000000000000', false);
+SELECT verif.espera_erro('identidade.usuario · o mesmo sub não existe em duas casas', $$
+  INSERT INTO identidade.usuario (instituicao_id, subject_id, nome, email, situacao, ativado_em)
+    VALUES ('b0000000-0000-0000-0000-000000000000', 'kc-sub-aline', 'Sombra de Aline', 'sombra@example.org', 'ATIVO', now())
+$$, 'usuario_subject_id_key');
+SELECT set_config('app.instituicao_id', 'a0000000-0000-0000-0000-000000000000', false);
+
 INSERT INTO identidade.usuario (id, instituicao_id, nome, email, situacao)
   VALUES ('a9000000-0000-0000-0000-000000000002', 'a0000000-0000-0000-0000-000000000000',
           'Eduardo', 'eduardo@example.org', 'CONVITE_PENDENTE');
@@ -742,6 +766,26 @@ SELECT verif.espera_erro('convite · usado e revogado ao mesmo tempo é recusado
   UPDATE identidade.convite SET usado_em = now(), revogado_em = now()
    WHERE usuario_id = 'a9000000-0000-0000-0000-000000000002'
 $$, 'convite_nao_usado_e_revogado');
+
+-- O índice único parcial precisa das DUAS colunas no predicado, não só uma:
+-- é o `revogado_em` que existe para permitir o reenvio (motivo de a coluna
+-- existir), e é o `usado_em` que continua fechando a vaga de quem já entrou.
+-- Um índice que só olhasse `usado_em IS NULL` prenderia o convite revogado na
+-- vaga; um que só olhasse `revogado_em IS NULL` prenderia o convite usado.
+SELECT verif.espera_ok('convite · revogado o convite, o reenvio entra', $$
+  UPDATE identidade.convite SET revogado_em = now()
+   WHERE usuario_id = 'a9000000-0000-0000-0000-000000000002' AND usado_em IS NULL AND revogado_em IS NULL;
+  INSERT INTO identidade.convite (instituicao_id, usuario_id, token_sha256, expira_em, criado_por)
+    VALUES ('a0000000-0000-0000-0000-000000000000', 'a9000000-0000-0000-0000-000000000002',
+            sha256('convite-eduardo-3'), now() + interval '72 hours', gen_random_uuid())
+$$);
+SELECT verif.espera_ok('convite · usado o convite, um novo reenvio também entra', $$
+  UPDATE identidade.convite SET usado_em = now()
+   WHERE usuario_id = 'a9000000-0000-0000-0000-000000000002' AND usado_em IS NULL AND revogado_em IS NULL;
+  INSERT INTO identidade.convite (instituicao_id, usuario_id, token_sha256, expira_em, criado_por)
+    VALUES ('a0000000-0000-0000-0000-000000000000', 'a9000000-0000-0000-0000-000000000002',
+            sha256('convite-eduardo-4'), now() + interval '72 hours', gen_random_uuid())
+$$);
 
 -- Resolvedor de identidade (§7.1, §8): mesmo raciocínio do link público, mas
 -- para o `sub` de quem já é da equipe.
