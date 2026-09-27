@@ -52,16 +52,33 @@ Keycloak (9000, `/health/*`) também não é publicada — nesta máquina a 9000
 já é do SeaweedFS; o healthcheck do Keycloak fala com ela de dentro do
 próprio container.
 
-O realm `cdd` (`infra/keycloak/realm-cdd.json`) é versionado e importado a
-cada subida (`--import-realm`); nenhum segredo fica em claro nele — o
+O realm `cdd` (`infra/keycloak/realm-cdd.json`) é versionado e importado quando
+o container é criado (`--import-realm`); depois de editar o JSON, rode
+`pnpm infra:descer && pnpm infra:subir`. Nenhum segredo fica em claro nele — o
 segredo do client de serviço `cdd-api-admin` e a senha do usuário de
 desenvolvimento (`dev@cdd.local`) chegam por placeholder de variável de
 ambiente (`CDD_KC_ADMIN_SEGREDO`, `CDD_KC_DEV_SENHA`), substituído pelo
 próprio Keycloak no import.
 
+O `cdd-web` usa redirect por origem fixa com caminho em curinga
+(`http://localhost:5173/*`), não um redirect exato — a origem
+(`localhost:5173`) é travada, só o caminho depois dela é livre.
+
+Os seis clients embutidos do Keycloak (`account`, `account-console`,
+`admin-cli`, `broker`, `realm-management`, `security-admin-console`) mantêm
+`offline_access` como escopo opcional. O Keycloak os recria a cada import a
+partir do próprio bootstrap; declará-los no JSON para restringir o escopo
+substitui essa configuração embutida (URLs de redirecionamento, PKCE do
+console, papéis) por uma quase vazia, quebrando o Account Console e o
+Security Admin Console — testado ao vivo. Risco aceito: nenhum desses
+clients carrega o mapeador de audiência `cdd-api`, então um eventual token
+offline emitido por eles é recusado pela API (`aud` não bate). Os clients da
+aplicação (`cdd-web`, `cdd-teste`, `cdd-api-admin`) declaram
+`optionalClientScopes` explícito sem `offline_access`.
+
 ```bash
 node infra/keycloak/verificar-realm.mjs   # falha se alguma regra de segurança do realm regredir
-bash infra/keycloak/fumaca.sh             # com o compose de pé: discovery, token do cdd-teste, cdd-web recusa password grant
+bash infra/keycloak/fumaca.sh             # com o compose de pé: discovery, tokens, PKCE obrigatório, recusas
 ```
 
 ---

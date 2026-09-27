@@ -16,6 +16,18 @@ function ehPlaceholderDeAmbiente(valor) {
   return typeof valor === 'string' && /^\$\{[A-Z][A-Z0-9_]*\}$/.test(valor);
 }
 
+const CLIENT_IDS_ESPERADOS = ['cdd-web', 'cdd-api-admin', 'cdd-teste'];
+const USERNAMES_ESPERADOS = ['dev@cdd.local', 'service-account-cdd-api-admin'];
+
+const CLAIMS_DE_IDENTIDADE_PESSOAL = [
+  'email',
+  'email_verified',
+  'name',
+  'preferred_username',
+  'given_name',
+  'family_name',
+];
+
 function encontrarClient(realm, clientId) {
   return (realm.clients ?? []).find((cliente) => cliente.clientId === clientId);
 }
@@ -74,6 +86,113 @@ function verificarPapeisDeContaDeServico(usuario, papeisEsperadosPorClient) {
   );
 }
 
+function verificarConjuntoFechadoDeClientsEUsuarios(realm) {
+  const clientIds = (realm.clients ?? []).map((client) => client.clientId).sort();
+  const esperados = [...CLIENT_IDS_ESPERADOS].sort();
+  exigir(
+    clientIds.length === esperados.length && clientIds.every((id, indice) => id === esperados[indice]),
+    `clients[].clientId precisa ser exatamente ${JSON.stringify(esperados)}, encontrado ${JSON.stringify(clientIds)}`,
+  );
+
+  const usernames = (realm.users ?? []).map((usuario) => usuario.username).sort();
+  const usernamesEsperados = [...USERNAMES_ESPERADOS].sort();
+  exigir(
+    usernames.length === usernamesEsperados.length &&
+      usernames.every((username, indice) => username === usernamesEsperados[indice]),
+    `users[].username precisa ser exatamente ${JSON.stringify(usernamesEsperados)}, encontrado ${JSON.stringify(usernames)}`,
+  );
+}
+
+function verificarAusenciaDeGruposEPapeisSoltos(realm) {
+  exigir(realm.groups === undefined, 'realm.groups não pode existir (nenhum grupo no realm cdd)');
+  exigir(realm.defaultGroups === undefined, 'realm.defaultGroups não pode existir');
+  exigir(realm.roles === undefined, 'realm.roles não pode existir (nenhum papel de negócio no realm cdd)');
+  exigir(realm.defaultRole === undefined, 'realm.defaultRole não pode existir');
+
+  for (const usuario of realm.users ?? []) {
+    exigir(
+      !(usuario.groups ?? []).length,
+      `${usuario.username ?? '(usuário)'} não pode pertencer a nenhum grupo`,
+    );
+  }
+}
+
+function verificarCredenciaisDeTodosOsUsuarios(realm) {
+  for (const usuario of realm.users ?? []) {
+    for (const credencial of usuario.credentials ?? []) {
+      exigir(
+        ehPlaceholderDeAmbiente(credencial.value),
+        `${usuario.username ?? '(usuário)'} tem uma credencial (${credencial.type ?? '?'}) que não é placeholder de variável de ambiente`,
+      );
+    }
+  }
+}
+
+function verificarEscoposPadraoDoRealm(realm) {
+  const escoposDefaultDefault = realm.defaultDefaultClientScopes;
+  if (escoposDefaultDefault !== undefined) {
+    exigir(
+      !escoposDefaultDefault.includes('offline_access'),
+      'defaultDefaultClientScopes não pode incluir offline_access',
+    );
+  }
+}
+
+function verificarGrantsProibidosEmTodoClient(client) {
+  const atributos = client?.attributes ?? {};
+  exigir(
+    atributos['oauth2.device.authorization.grant.enabled'] !== 'true',
+    `${client?.clientId ?? '(client)'} não pode ter oauth2.device.authorization.grant.enabled`,
+  );
+  exigir(
+    atributos['oidc.ciba.grant.enabled'] !== 'true',
+    `${client?.clientId ?? '(client)'} não pode ter oidc.ciba.grant.enabled (CIBA)`,
+  );
+  exigir(
+    atributos['standard.token.exchange.enabled'] !== 'true',
+    `${client?.clientId ?? '(client)'} não pode ter standard.token.exchange.enabled (token exchange)`,
+  );
+}
+
+function verificarSemIdentidadePessoalNoAccessToken(client) {
+  if (!client) return;
+
+  const escopos = [...(client.defaultClientScopes ?? []), ...(client.optionalClientScopes ?? [])];
+  exigir(
+    !escopos.includes('profile'),
+    `${client.clientId} não pode usar o client scope "profile" (carrega nome no access token)`,
+  );
+  exigir(
+    !escopos.includes('email'),
+    `${client.clientId} não pode usar o client scope "email" (carrega e-mail no access token)`,
+  );
+
+  for (const mapeador of client.protocolMappers ?? []) {
+    const claim = mapeador.config?.['claim.name'];
+    const ehMapeadorDeNomeCompleto = mapeador.protocolMapper === 'oidc-full-name-mapper';
+    const ehClaimDeIdentidadePessoal = CLAIMS_DE_IDENTIDADE_PESSOAL.includes(claim);
+    if (!ehMapeadorDeNomeCompleto && !ehClaimDeIdentidadePessoal) continue;
+
+    exigir(
+      mapeador.config?.['access.token.claim'] !== 'true',
+      `${client.clientId}.protocolMappers["${mapeador.name}"] não pode ter access.token.claim=true (e-mail/nome não podem ir para o access token)`,
+    );
+  }
+
+  for (const claim of ['given_name', 'family_name', 'preferred_username', 'email']) {
+    const temMapeadorSoParaIdToken = (client.protocolMappers ?? []).some(
+      (mapeador) =>
+        mapeador.config?.['claim.name'] === claim &&
+        mapeador.config?.['id.token.claim'] === 'true' &&
+        mapeador.config?.['access.token.claim'] === 'false',
+    );
+    exigir(
+      temMapeadorSoParaIdToken,
+      `${client.clientId} precisa de um mapeador para "${claim}" com id.token.claim=true e access.token.claim=false`,
+    );
+  }
+}
+
 function verificarRealm(realm) {
   exigir(realm.registrationAllowed === false, 'registrationAllowed deve ser false');
   exigir(realm.resetPasswordAllowed === true, 'resetPasswordAllowed deve ser true');
@@ -95,9 +214,11 @@ function verificarRealm(realm) {
   exigir(politicaDeSenha.includes('digits(1)'), 'passwordPolicy precisa de digits(1)');
   exigir(politicaDeSenha.includes('notEmail'), 'passwordPolicy precisa de notEmail');
   exigir(politicaDeSenha.includes('notUsername'), 'passwordPolicy precisa de notUsername');
+
+  const exigenciaDeLetra = politicaDeSenha.match(/(?:lowerCase|upperCase)\((\d+)\)/);
   exigir(
-    /lowerCase\(|upperCase\(|regexPattern\(/.test(politicaDeSenha),
-    'passwordPolicy precisa de exigência de letra (lowerCase/upperCase/regexPattern)',
+    exigenciaDeLetra !== null && Number(exigenciaDeLetra[1]) >= 1,
+    'passwordPolicy precisa de lowerCase(n) ou upperCase(n) com n >= 1',
   );
 
   exigir(realm.accessTokenLifespan === 300, 'accessTokenLifespan deve ser 300');
@@ -116,12 +237,6 @@ function verificarRealm(realm) {
       realm.offlineSessionMaxLifespan > 0 &&
       realm.offlineSessionMaxLifespan <= 28800,
     'offlineSessionMaxLifespan deve ser > 0 e <= 28800 (não pode ultrapassar ssoSessionMaxLifespan)',
-  );
-
-  const escoposOpcionaisPadrao = realm.defaultOptionalClientScopes ?? [];
-  exigir(
-    !escoposOpcionaisPadrao.includes('offline_access'),
-    'defaultOptionalClientScopes não pode incluir offline_access (sessão sobreviveria ao logout do SSO)',
   );
 
   exigir(realm.internationalizationEnabled === true, 'internationalizationEnabled deve ser true');
@@ -145,6 +260,15 @@ function verificarRealm(realm) {
       existsSync(caminhoDoTema),
       `loginTheme "${realm.loginTheme}" não existe em infra/keycloak/themes`,
     );
+  }
+
+  verificarConjuntoFechadoDeClientsEUsuarios(realm);
+  verificarAusenciaDeGruposEPapeisSoltos(realm);
+  verificarCredenciaisDeTodosOsUsuarios(realm);
+  verificarEscoposPadraoDoRealm(realm);
+
+  for (const client of realm.clients ?? []) {
+    verificarGrantsProibidosEmTodoClient(client);
   }
 }
 
@@ -202,6 +326,7 @@ function verificarCddWeb(realm) {
   );
 
   verificarAtributosDeSessaoDoCliente(cddWeb);
+  verificarSemIdentidadePessoalNoAccessToken(cddWeb);
 }
 
 function verificarCddApiAdmin(realm) {
@@ -229,6 +354,14 @@ function verificarCddApiAdmin(realm) {
   exigir(
     ehPlaceholderDeAmbiente(cddApiAdmin.secret),
     'cdd-api-admin.secret precisa ser um placeholder de variável de ambiente, nunca um segredo em claro',
+  );
+  exigir(
+    !(cddApiAdmin.optionalClientScopes ?? []).includes('offline_access'),
+    'cdd-api-admin não pode ter offline_access como escopo opcional',
+  );
+  exigir(
+    !(cddApiAdmin.defaultClientScopes ?? []).includes('offline_access'),
+    'cdd-api-admin não pode ter offline_access como escopo padrão',
   );
 
   const contaDeServico = encontrarUsuario(realm, 'service-account-cdd-api-admin');
@@ -278,6 +411,7 @@ function verificarCddTeste(realm) {
   );
 
   verificarAtributosDeSessaoDoCliente(cddTeste);
+  verificarSemIdentidadePessoalNoAccessToken(cddTeste);
 }
 
 function verificarUsuarioDev(realm) {
