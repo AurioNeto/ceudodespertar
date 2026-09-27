@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { dirname, resolve } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import test from 'node:test';
 
 import {
@@ -16,18 +16,35 @@ import {
 } from '../dist/index.js';
 
 const aquiDir = dirname(fileURLToPath(import.meta.url));
-const caminhoDoEsquema = resolve(aquiDir, '../../../docs/sql/cdd-07-esquema.sql');
+const diretorioDasMigracoes = resolve(aquiDir, '../../../apps/api/src/banco/migracoes');
 
-function blocosDeInsertDeReferencia() {
-  const sql = readFileSync(caminhoDoEsquema, 'utf8');
-  const casamentos = sql.matchAll(/INSERT INTO identidade\.permissao[^;]*;/gs);
-  const blocos = [...casamentos].map((casamento) => casamento[0]);
-  assert.ok(blocos.length > 0, 'INSERT INTO identidade.permissao não encontrado no esquema de referência');
+function arquivosSqlDasMigracoes(diretorio) {
+  const entradas = readdirSync(diretorio, { withFileTypes: true });
+  const arquivos = [];
+  for (const entrada of entradas) {
+    const caminho = join(diretorio, entrada.name);
+    if (entrada.isDirectory()) {
+      arquivos.push(...arquivosSqlDasMigracoes(caminho));
+    } else if (entrada.name.endsWith('.sql')) {
+      arquivos.push(caminho);
+    }
+  }
+  return arquivos;
+}
+
+function blocosDeInsertDasMigracoes() {
+  const blocos = [];
+  for (const arquivo of arquivosSqlDasMigracoes(diretorioDasMigracoes)) {
+    const sql = readFileSync(arquivo, 'utf8');
+    const casamentos = sql.matchAll(/INSERT INTO identidade\.permissao[^;]*;/gs);
+    blocos.push(...[...casamentos].map((casamento) => casamento[0]));
+  }
+  assert.ok(blocos.length > 0, 'INSERT INTO identidade.permissao não encontrado nas migrations');
   return blocos;
 }
 
-function codigosDoInsertDeReferencia() {
-  const blocos = blocosDeInsertDeReferencia();
+function codigosDoInsertDasMigracoes() {
+  const blocos = blocosDeInsertDasMigracoes();
   const codigos = [];
   for (const bloco of blocos) {
     const ocorrenciasDeAberturaDeTupla = bloco.split("('").length - 1;
@@ -63,8 +80,8 @@ test('PERMISSOES tem exatamente as chaves do catálogo', () => {
   }
 });
 
-test('T29(c) — o INSERT do esquema de referência é igual ao catálogo', () => {
-  const codigosDoSql = codigosDoInsertDeReferencia();
+test('T29(c) — o INSERT das migrations é igual ao catálogo', () => {
+  const codigosDoSql = codigosDoInsertDasMigracoes();
   const codigosDoCatalogo = Object.keys(CATALOGO_DE_PERMISSOES);
   assert.equal(codigosDoSql.length, codigosDoCatalogo.length);
   assert.deepEqual(new Set(codigosDoSql), new Set(codigosDoCatalogo));
