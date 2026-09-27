@@ -25,7 +25,7 @@ describe('analisarAmbiente', () => {
       PORTA: 3000,
       ORIGENS_CORS: [],
       LOG_NIVEL: 'info',
-      TZ: 'America/Sao_Paulo',
+      TZ: 'UTC',
     });
   });
 
@@ -40,6 +40,19 @@ describe('analisarAmbiente', () => {
       expect(problemas).toHaveLength(2);
       expect(problemas.some((problema) => problema.startsWith('PORTA'))).toBe(true);
       expect(problemas.some((problema) => problema.startsWith('LOG_NIVEL'))).toBe(true);
+    }
+  });
+
+  it('recusa PORTA acima do limite de portas TCP', () => {
+    expect.assertions(3);
+
+    try {
+      analisarAmbiente({ PORTA: '70000' });
+    } catch (erro) {
+      expect(erro).toBeInstanceOf(ErroDeAmbienteInvalido);
+      const problemas = (erro as ErroDeAmbienteInvalido).problemas;
+      expect(problemas).toHaveLength(1);
+      expect(problemas[0]?.startsWith('PORTA')).toBe(true);
     }
   });
 });

@@ -5,12 +5,9 @@ const CONDICAO_FONTE = '@cdd/fonte';
 
 export default defineConfig({
   plugins: [swc.vite()],
-  resolve: {
-    conditions: [CONDICAO_FONTE],
-  },
   ssr: {
     resolve: {
-      conditions: [CONDICAO_FONTE],
+      conditions: [CONDICAO_FONTE, 'module', 'node', 'development|production'],
     },
   },
   test: {

@@ -13,10 +13,10 @@ const listaDeOrigens = z
   );
 
 export const EsquemaDeAmbiente = z.object({
-  PORTA: z.coerce.number().int().positive().default(3000),
+  PORTA: z.coerce.number().int().min(1).max(65535).default(3000),
   ORIGENS_CORS: listaDeOrigens,
   LOG_NIVEL: z.enum(NIVEIS_DE_LOG).default('info'),
-  TZ: z.string().min(1).default('America/Sao_Paulo'),
+  TZ: z.string().min(1).default('UTC'),
 });
 
 export type Ambiente = z.infer<typeof EsquemaDeAmbiente>;
