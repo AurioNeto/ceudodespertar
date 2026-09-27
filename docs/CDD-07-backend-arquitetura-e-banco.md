@@ -627,7 +627,8 @@ As travas de concorrência que saíram do banco — o período e o saldo do lote
   - `shared.proibir_truncate(regclass[])` — recebe a lista de tabelas que a etapa quer guardar contra `TRUNCATE` (histórico, trilha, saldo) e cria o gatilho `sem_truncate` só em quem ainda não o tem, e religa quem um `ALTER TABLE ... DISABLE TRIGGER` tenha desligado, ou um `ENABLE REPLICA TRIGGER` tenha restringido à réplica (não dispara nas sessões normais), entre uma etapa e outra.
   - As duas conferem só a **existência** de política/gatilho pelo nome — não a expressão. Uma política `isolamento_por_instituicao` recriada com outro `USING` (por exemplo `USING (true)`, por erro de copy-paste numa migration futura) sobrevive à varredura sem ser corrigida nem detectada por ela: conferir que a expressão bate com a esperada é um caso da verificação de garantias, não responsabilidade destas funções.
 - **Duas fases para mudança destrutiva:** expandir (coluna nova, preenchida em paralelo) → migrar leitura e escrita → contrair (remover a antiga) numa versão seguinte.
-- **Seed de sistema** (versionado, idempotente, roda em toda migração): catálogo de permissões, os seis grupos com suas permissões (Doc 3 §12), unidades e categorias do plano de contas aprovado.
+- **Catálogo de permissões:** é uma migration, não um seed. Cada permissão nova ou alterada entra por uma migration nova, que aparece no diff do PR, e o T29 confere o conjunto contra o contrato.
+- **Seed por instituição** (`semear`, idempotente, a partir da I04): os seis grupos com suas permissões (Doc 3 §12) nascem uma vez por instituição — editar um grupo protegido depois não é revertido (G5). Unidades e categorias do plano de contas aprovado entram pelo mesmo caminho no B1.
 - **Seed de homologação**: dados sintéticos gerados a partir dos mocks do front — os mesmos personagens das telas (Clarice, Helena, Eduardo, Aline) —, o que faz a demonstração do protótipo e a de homologação contarem a mesma história.
 - **Migração da planilha** (Doc 6, transversal): módulo `migracao` com CLI que carrega os 1.760 lançamentos com `origem = 'MIGRACAO'`, cria as competências históricas **fechadas** com hash, e emite o relatório de conciliação. Como o domínio impede lançamento em competência fechada, a carga é feita com os períodos abertos e o fechamento é o último passo — se o relatório não bater, nada é fechado.
 
@@ -823,6 +824,7 @@ Ficam 9, de coerência de formato: `fd3_aporte_tem_fundo`, `f3_pagamento_tem_fat
 | `UNIQUE leito_com_capacidade` e FK `alocacao_na_capacidade_do_leito` | Existem só para alimentar `vaga_dentro_da_capacidade`, que sai; a etapa decide se continuam | B5 |
 | `CHECK`s sem nome | Classificados na etapa de cada módulo: enumeração e sanidade de valor ficam; regra de política sai (entre eles, os de `linha_extrato`, `lote` e `movimento_de_estoque`) | cada etapa |
 | Invariante "convite de uso único" | Agregado `Convite` | B0 |
+| `CHECK` sem nome de `identidade.usuario`: fora de `CONVITE_PENDENTE`, tem `subject_id` | Sai → agregado `Usuario` (ativar grava o `sub`) | B0 |
 
 ### Códigos de erro
 
