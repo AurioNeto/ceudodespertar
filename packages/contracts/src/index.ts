@@ -1,4 +1,5 @@
 export * from './kernel.js';
+export * from './erros.js';
 export * from './financeiro.js';
 export * from './eventos.js';
 export * from './pessoas.js';

@@ -13,5 +13,16 @@ export default defineConfig({
   test: {
     setupFiles: ['reflect-metadata'],
     include: ['src/**/*.spec.ts', 'test/**/*.spec.ts'],
+    coverage: {
+      provider: 'v8',
+      include: ['src/shared/kernel/**/*.ts'],
+      exclude: ['src/shared/kernel/**/*.spec.ts'],
+      thresholds: {
+        branches: 100,
+        functions: 100,
+        lines: 100,
+        statements: 100,
+      },
+    },
   },
 });

@@ -1,0 +1,47 @@
+export interface ResultadoOk<T> {
+  readonly tipo: 'ok';
+  readonly valor: T;
+}
+
+export interface ResultadoErro<E> {
+  readonly tipo: 'erro';
+  readonly erro: E;
+}
+
+export type Result<T, E> = ResultadoOk<T> | ResultadoErro<E>;
+
+export function ok<T>(valor: T): Result<T, never> {
+  return { tipo: 'ok', valor };
+}
+
+export function err<E>(erro: E): Result<never, E> {
+  return { tipo: 'erro', erro };
+}
+
+export function ehOk<T, E>(resultado: Result<T, E>): resultado is ResultadoOk<T> {
+  return resultado.tipo === 'ok';
+}
+
+export function ehErr<T, E>(resultado: Result<T, E>): resultado is ResultadoErro<E> {
+  return resultado.tipo === 'erro';
+}
+
+export function mapear<T, E, U>(resultado: Result<T, E>, transformar: (valor: T) => U): Result<U, E> {
+  return ehOk(resultado) ? ok(transformar(resultado.valor)) : resultado;
+}
+
+export function mapearErro<T, E, F>(resultado: Result<T, E>, transformar: (erro: E) => F): Result<T, F> {
+  return ehErr(resultado) ? err(transformar(resultado.erro)) : resultado;
+}
+
+export function encadear<T, E, U>(
+  resultado: Result<T, E>,
+  continuar: (valor: T) => Result<U, E>,
+): Result<U, E> {
+  return ehOk(resultado) ? continuar(resultado.valor) : resultado;
+}
+
+export function desembrulharOuLancar<T, E>(resultado: Result<T, E>, criarErro: (erro: E) => Error): T {
+  if (ehErr(resultado)) throw criarErro(resultado.erro);
+  return resultado.valor;
+}
