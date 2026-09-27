@@ -27,6 +27,9 @@ DO $$ BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'cdd_resolvedor_link') THEN
     CREATE ROLE cdd_resolvedor_link NOLOGIN NOBYPASSRLS;
   END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'cdd_resolvedor_identidade') THEN
+    CREATE ROLE cdd_resolvedor_identidade NOLOGIN NOBYPASSRLS;
+  END IF;
 END $$;
 
 CREATE SCHEMA shared;
@@ -144,6 +147,28 @@ CREATE TABLE identidade.usuario (
   CHECK (situacao = 'CONVITE_PENDENTE' OR subject_id IS NOT NULL)
 );
 CREATE UNIQUE INDEX usuario_email_unico ON identidade.usuario (instituicao_id, lower(email));
+-- US2: a mesma pessoa não é duas contas na mesma casa.
+CREATE UNIQUE INDEX usuario_pessoa_unica ON identidade.usuario (instituicao_id, pessoa_id) WHERE pessoa_id IS NOT NULL;
+
+-- O `sub` do Keycloak chega sem instituição, e `identidade.usuario` tem RLS
+-- FORCE: sem contexto, nem o dono dos objetos leria a linha para descobri-la.
+-- Molde de `eventos.resolver_link` (Documento 7 §7.3, §8): SECURITY DEFINER,
+-- dono próprio sem BYPASSRLS, devolve só o necessário para montar o contexto.
+CREATE FUNCTION identidade.resolver_sujeito(p_subject_id text)
+  RETURNS TABLE (instituicao_id uuid, usuario_id uuid)
+  LANGUAGE sql STABLE SECURITY DEFINER SET search_path = pg_catalog AS $$
+  SELECT u.instituicao_id, u.id
+    FROM identidade.usuario u
+   WHERE u.subject_id = p_subject_id
+$$;
+REVOKE ALL ON FUNCTION identidade.resolver_sujeito(text) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION identidade.resolver_sujeito(text) TO cdd_app;
+GRANT USAGE ON SCHEMA identidade TO cdd_resolvedor_identidade;
+GRANT SELECT (subject_id, instituicao_id, id) ON identidade.usuario TO cdd_resolvedor_identidade;
+GRANT CREATE ON SCHEMA identidade TO cdd_resolvedor_identidade;
+ALTER FUNCTION identidade.resolver_sujeito(text) OWNER TO cdd_resolvedor_identidade;
+REVOKE CREATE ON SCHEMA identidade FROM cdd_resolvedor_identidade;
+CREATE POLICY resolucao_do_sujeito ON identidade.usuario FOR SELECT TO cdd_resolvedor_identidade USING (true);
 
 CREATE TABLE identidade.grupo (
   id              uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -185,10 +210,15 @@ CREATE TABLE identidade.convite (
   token_sha256    bytea NOT NULL UNIQUE,      -- o token em si só existe no e-mail
   expira_em       timestamptz NOT NULL,
   usado_em        timestamptz,
+  revogado_em     timestamptz,                -- convite cancelado antes do uso (reenvio, engano)
   criado_por      uuid NOT NULL,
   criado_em       timestamptz NOT NULL DEFAULT now(),
-  FOREIGN KEY (instituicao_id, usuario_id) REFERENCES identidade.usuario (instituicao_id, id)
+  FOREIGN KEY (instituicao_id, usuario_id) REFERENCES identidade.usuario (instituicao_id, id),
+  CONSTRAINT convite_nao_usado_e_revogado CHECK (usado_em IS NULL OR revogado_em IS NULL)
 );
+-- No máximo um convite vigente (nem usado, nem revogado) por usuário.
+CREATE UNIQUE INDEX convite_vigente_unico ON identidade.convite (instituicao_id, usuario_id)
+  WHERE usado_em IS NULL AND revogado_em IS NULL;
 
 -- Trilha de auditoria (Doc 3 §10.4). Só INSERT — ver gatilho abaixo.
 -- O alvo é guardado por referência, e o texto humano é montado na leitura:
@@ -205,7 +235,8 @@ CREATE TABLE identidade.registro_de_auditoria (
   operacao         text NOT NULL CHECK (operacao IN (
                      'LANCAMENTO_CONFIRMADO','LANCAMENTO_ESTORNADO','PENDENCIA_ABERTA',
                      'PERIODO_FECHADO','PERIODO_REABERTO','PRESTACAO_GERADA','EXTRATO_IMPORTADO',
-                     'ADIANTAMENTO_AUTORIZADO','GRUPO_ALTERADO','USUARIO_CONVIDADO','USUARIO_SUSPENSO',
+                     'ADIANTAMENTO_AUTORIZADO','GRUPO_ALTERADO','USUARIO_CONVIDADO','USUARIO_ATIVADO',
+                     'USUARIO_SUSPENSO','USUARIO_REATIVADO',
                      'FORMULARIO_PUBLICADO','PESSOA_ANONIMIZADA','ANAMNESE_LIDA','AUDITORIA_CONSULTADA')),
   agregado_tipo    text NOT NULL,
   agregado_id      uuid NOT NULL,

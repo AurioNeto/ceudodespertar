@@ -90,6 +90,26 @@ SELECT verif.confere('link público · o dono do resolvedor não é superusuári
   (SELECT r.rolsuper OR r.rolbypassrls FROM pg_proc p JOIN pg_roles r ON r.oid = p.proowner
     WHERE p.oid = 'eventos.resolver_link(text)'::regprocedure), false);
 
+-- F08 · mesmo raciocínio para o resolvedor do sujeito autenticado (§7.1, §8):
+-- o `sub` chega sem instituição, e o dono da função não pode depender de ser
+-- superusuário nem de ignorar RLS para funcionar em produção.
+SELECT verif.confere('resolvedor de identidade · o dono do resolvedor não é superusuário nem ignora RLS',
+  (SELECT r.rolsuper OR r.rolbypassrls FROM pg_proc p JOIN pg_roles r ON r.oid = p.proowner
+    WHERE p.oid = 'identidade.resolver_sujeito(text)'::regprocedure), false);
+
+-- Checagem de catálogo, não comportamental: `SET ROLE` é liberado para
+-- qualquer papel quando o `session_user` é superusuário, mesmo depois de um
+-- `SET ROLE cdd_app` — testar com um `SET ROLE cdd_resolvedor_identidade`
+-- daria falso negativo justamente na rodada que este arquivo roda como
+-- superusuário. O que importa é que ninguém concedeu a `cdd_app` a
+-- pertinência ao papel do resolvedor.
+SELECT verif.confere('resolvedor de identidade · cdd_app não é membro do papel do resolvedor',
+  (SELECT count(*) FROM pg_auth_members m
+     JOIN pg_roles papel   ON papel.oid = m.roleid
+     JOIN pg_roles membro  ON membro.oid = m.member
+    WHERE papel.rolname = 'cdd_resolvedor_identidade' AND membro.rolname = 'cdd_app'),
+  0::bigint);
+
 -- F07 · as duas funções que toda migration chama (Documento 7 §22) são
 -- idempotentes: uma etapa que repete a chamada sobre o esquema inteiro não
 -- falha nem duplica o que a etapa anterior já tinha feito.
@@ -692,6 +712,63 @@ SELECT verif.espera_erro('§23 · o cabeçalho da resposta lida não se apaga: o
 $$, 'registro_de_acesso_instituicao_id_resposta_id_fkey');
 
 -- -----------------------------------------------------------------------------
+-- Identidade
+-- -----------------------------------------------------------------------------
+
+INSERT INTO identidade.usuario (id, instituicao_id, subject_id, pessoa_id, nome, email, situacao, ativado_em)
+  VALUES ('a9000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000000',
+          'kc-sub-aline', 'a5000000-0000-0000-0000-000000000001', 'Aline', 'aline@example.org', 'ATIVO', now());
+
+SELECT verif.espera_erro('US2 · a mesma pessoa não tem um segundo usuário na casa', $$
+  INSERT INTO identidade.usuario (instituicao_id, subject_id, pessoa_id, nome, email, situacao, ativado_em)
+    VALUES ('a0000000-0000-0000-0000-000000000000', 'kc-sub-aline-2', 'a5000000-0000-0000-0000-000000000001',
+            'Aline (de novo)', 'aline2@example.org', 'ATIVO', now())
+$$, 'usuario_pessoa_unica');
+
+INSERT INTO identidade.usuario (id, instituicao_id, nome, email, situacao)
+  VALUES ('a9000000-0000-0000-0000-000000000002', 'a0000000-0000-0000-0000-000000000000',
+          'Eduardo', 'eduardo@example.org', 'CONVITE_PENDENTE');
+INSERT INTO identidade.convite (instituicao_id, usuario_id, token_sha256, expira_em, criado_por)
+  VALUES ('a0000000-0000-0000-0000-000000000000', 'a9000000-0000-0000-0000-000000000002',
+          sha256('convite-eduardo-1'), now() + interval '72 hours', gen_random_uuid());
+
+SELECT verif.espera_erro('convite · não há dois convites vigentes para o mesmo usuário', $$
+  INSERT INTO identidade.convite (instituicao_id, usuario_id, token_sha256, expira_em, criado_por)
+    VALUES ('a0000000-0000-0000-0000-000000000000', 'a9000000-0000-0000-0000-000000000002',
+            sha256('convite-eduardo-2'), now() + interval '72 hours', gen_random_uuid())
+$$, 'convite_vigente_unico');
+
+SELECT verif.espera_erro('convite · usado e revogado ao mesmo tempo é recusado', $$
+  UPDATE identidade.convite SET usado_em = now(), revogado_em = now()
+   WHERE usuario_id = 'a9000000-0000-0000-0000-000000000002'
+$$, 'convite_nao_usado_e_revogado');
+
+-- Resolvedor de identidade (§7.1, §8): mesmo raciocínio do link público, mas
+-- para o `sub` de quem já é da equipe.
+-- `RETURNS TABLE` marca as colunas de saída com o modo 't' em `proargmodes`
+-- (não 'o' — esse é o modo de um `OUT` avulso), então é isso que se conta.
+SELECT verif.confere('resolvedor de identidade · devolve só as duas colunas prometidas',
+  (SELECT count(*) FROM unnest(
+     (SELECT proargmodes FROM pg_proc WHERE oid = 'identidade.resolver_sujeito(text)'::regprocedure)
+   ) m WHERE m = 't'),
+  2::bigint);
+
+SELECT set_config('app.instituicao_id', '', false);
+SELECT verif.confere('resolvedor de identidade · sem contexto, identidade.usuario continua fechada',
+  (SELECT count(*) FROM identidade.usuario), 0::bigint);
+SELECT verif.confere('resolvedor de identidade · sub conhecido resolve exatamente uma linha',
+  (SELECT count(*) FROM identidade.resolver_sujeito('kc-sub-aline')), 1::bigint);
+SELECT verif.confere('resolvedor de identidade · devolve a instituição certa',
+  (SELECT instituicao_id FROM identidade.resolver_sujeito('kc-sub-aline')),
+  'a0000000-0000-0000-0000-000000000000'::uuid);
+SELECT verif.confere('resolvedor de identidade · devolve o usuário certo',
+  (SELECT usuario_id FROM identidade.resolver_sujeito('kc-sub-aline')),
+  'a9000000-0000-0000-0000-000000000001'::uuid);
+SELECT verif.confere('resolvedor de identidade · sub desconhecido não resolve',
+  (SELECT count(*) FROM identidade.resolver_sujeito('sub-que-nao-existe')), 0::bigint);
+SELECT set_config('app.instituicao_id', 'a0000000-0000-0000-0000-000000000000', false);
+
+-- -----------------------------------------------------------------------------
 -- Auditoria
 -- -----------------------------------------------------------------------------
 
@@ -707,6 +784,18 @@ $$, '42501|REGISTRO_IMUTAVEL');
 SELECT verif.espera_erro('catálogo de permissões · a aplicação não inventa permissão', $$
   INSERT INTO identidade.permissao VALUES ('financeiro.tudo.fazer', 'financeiro', 'x')
 $$, '42501');
+
+-- F08 · ativação e reativação de usuário entram no catálogo de operações.
+SELECT verif.espera_ok('trilha · USUARIO_ATIVADO é operação válida', $$
+  INSERT INTO identidade.registro_de_auditoria (instituicao_id, autor_usuario_id, autor_grupos, operacao, agregado_tipo, agregado_id)
+    VALUES ('a0000000-0000-0000-0000-000000000000', gen_random_uuid(), '{}', 'USUARIO_ATIVADO', 'Usuario',
+            'a9000000-0000-0000-0000-000000000002')
+$$);
+SELECT verif.espera_ok('trilha · USUARIO_REATIVADO é operação válida', $$
+  INSERT INTO identidade.registro_de_auditoria (instituicao_id, autor_usuario_id, autor_grupos, operacao, agregado_tipo, agregado_id)
+    VALUES ('a0000000-0000-0000-0000-000000000000', gen_random_uuid(), '{}', 'USUARIO_REATIVADO', 'Usuario',
+            'a9000000-0000-0000-0000-000000000002')
+$$);
 
 -- -----------------------------------------------------------------------------
 -- Ator da trilha e do anexo — o despachante (SISTEMA) e o link público
