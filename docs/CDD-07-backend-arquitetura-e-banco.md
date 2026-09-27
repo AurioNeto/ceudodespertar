@@ -12,15 +12,15 @@
 | Arquivo | O que é |
 |---|---|
 | [`sql/cdd-07-esquema.sql`](sql/cdd-07-esquema.sql) | O esquema de referência completo — 6 schemas, 58 tabelas, RLS, gatilhos de guarda, views de leitura e o catálogo de permissões. **É a fonte da verdade das colunas**; as tabelas deste documento resumem, o arquivo decide. |
-| [`sql/cdd-07-verificacao.sql`](sql/cdd-07-verificacao.sql) | 126 verificações executáveis que provam o que §15 promete: isolamento entre instituições, imutabilidade, período fechado, o caso Aline, a devolução como estorno, leitos, saldo de estoque. Roda como o papel da aplicação, não como superusuário. |
+| [`sql/cdd-07-verificacao.sql`](sql/cdd-07-verificacao.sql) | 132 verificações executáveis que provam o que §15 promete: isolamento entre instituições, imutabilidade, período fechado, o caso Aline, a devolução como estorno, leitos, saldo de estoque. Roda como o papel da aplicação, não como superusuário. |
 
 ```bash
 createdb cdd_ref
 psql -d cdd_ref -v ON_ERROR_STOP=1 -f docs/sql/cdd-07-esquema.sql -f docs/sql/cdd-07-verificacao.sql
-# … 122 linhas "OK" e: Verificação concluída
+# … 132 linhas "OK" e: Verificação concluída
 ```
 
-Os dois arquivos foram executados contra PostgreSQL 16 — 16.13 na primeira versão, com 71 verificações; 16.15 na atual, com as guardas de transferência, período e feitio, o bloqueio de `TRUNCATE`, o resolvedor do link com dono próprio, a varredura de RLS e o bloqueio de `TRUNCATE` como funções idempotentes (`shared.aplicar_isolamento_por_instituicao()`, `shared.proibir_truncate()`) e o ator da trilha/anexo (`autor_tipo`, `enviado_por_tipo`), com 126 verificações. O esquema não é a migration de produção — as migrations nascem do MikroORM (§22) —, mas toda migration deve deixá-lo coerente, e a verificação vira teste de CI em B0.
+Os dois arquivos foram executados contra PostgreSQL 16 — 16.13 na primeira versão, com 71 verificações; 16.15 na atual, com as guardas de transferência, período e feitio, o bloqueio de `TRUNCATE`, o resolvedor do link com dono próprio, a varredura de RLS e o bloqueio de `TRUNCATE` como funções idempotentes (`shared.aplicar_isolamento_por_instituicao()`, `shared.proibir_truncate()`) e o ator da trilha/anexo (`autor_tipo`, `enviado_por_tipo`), com 132 verificações. O esquema não é a migration de produção — as migrations nascem do MikroORM (§22) —, mas toda migration deve deixá-lo coerente, e a verificação vira teste de CI em B0.
 
 ---
 
@@ -230,7 +230,9 @@ Há duas exceções desenhadas. O despachante do outbox: `shared.outbox` não te
 
 ## 9. Eventos de domínio e integração entre módulos
 
-**Outbox transacional, despacho no mesmo processo.** O agregado acumula eventos; o UoW grava-os em `shared.outbox` na mesma transação. Um laço no processo (a cada 1 s, e imediatamente após cada commit que gravou evento) lê o lote pendente com `FOR UPDATE SKIP LOCKED`, entrega a cada assinante e marca `publicado_em`. Falha incrementa `tentativas` e grava o próximo instante de tentativa em `proxima_tentativa_em` (backoff exponencial); após 10, o evento vai para o painel de saúde e o Sentry. A consulta do laço — `publicado_em IS NULL AND tentativas < 10 AND coalesce(proxima_tentativa_em, '-infinity') <= now() ORDER BY id` — é servida pelo índice parcial `outbox_pendentes (id) WHERE publicado_em IS NULL AND tentativas < 10`: o backoff entra como filtro de execução, não como predicado do índice, porque depende do relógio e não pode ser fixado na hora de criar o índice.
+**Outbox transacional, despacho no mesmo processo.** O agregado acumula eventos; o UoW grava-os em `shared.outbox` na mesma transação. Um laço no processo (a cada 1 s, e imediatamente após cada commit que gravou evento) lê o lote pendente com `FOR UPDATE SKIP LOCKED`, entrega a cada assinante e marca `publicado_em`. Falha incrementa `tentativas` e grava o próximo instante de tentativa em `proxima_tentativa_em` (backoff exponencial); após 10, o evento vai para o painel de saúde e o Sentry. A consulta do laço — `publicado_em IS NULL AND tentativas < 10 AND coalesce(proxima_tentativa_em, '-infinity') <= now() ORDER BY id` — é servida pelo índice parcial `outbox_pendentes (id) WHERE publicado_em IS NULL AND tentativas < 10`: o backoff entra como filtro de execução, não como predicado do índice, porque depende do relógio e não pode ser fixado na hora de criar o índice. O teto (10) vai **literal** nessa consulta — como parâmetro de uma rotina preparada, o planner passa a usar plano genérico e deixa de enxergar que o índice parcial cobre o predicado, caindo para full scan.
+
+`id` é ordem global de inserção, não ordem por agregado: com o filtro de backoff, o evento n+1 de um agregado pode ficar livre para sair enquanto o n ainda espera (o estorno antes da confirmação, por exemplo). Manter a ordem por agregado é dever do **despachante** (peça F15), não do índice: antes de entregar um evento, ele confere que não há evento anterior do mesmo agregado ainda pendente — `NOT EXISTS (SELECT 1 FROM shared.outbox anterior WHERE anterior.agregado_tipo = e.agregado_tipo AND anterior.agregado_id = e.agregado_id AND anterior.id < e.id AND anterior.publicado_em IS NULL)`. Um evento que estourou o teto de tentativas trava o agregado inteiro atrás dele — é para isso que ele vai ao painel de saúde: destravar exige uma decisão humana, não uma nova tentativa automática.
 
 **Todo assinante é idempotente.** Antes de agir, grava `(consumidor, evento_id)` em `shared.evento_processado` na mesma transação do efeito; se a linha já existe, não faz nada. Entrega "pelo menos uma vez" + consumidor idempotente = efeito exatamente uma vez.
 
@@ -618,7 +620,8 @@ A regra geral: **o banco guarda o que, se quebrado, falsifica o histórico**. Tr
 - **MikroORM Migrations**, geradas e **revisadas à mão** — RLS, gatilhos, `EXCLUDE` e FKs compostas não saem do gerador; ficam em migrations escritas em SQL.
 - **Duas funções que toda migration chama, no fim, depois de criar suas tabelas** — ambas idempotentes, então uma migration de etapa posterior pode chamá-las de novo sobre o esquema inteiro sem duplicar nem falhar:
   - `shared.aplicar_isolamento_por_instituicao()` — a política de RLS não é escrita tabela a tabela; a função varre `information_schema` atrás de `instituicao_id` e aplica `ENABLE`+`FORCE`+a política a quem ainda não tem. O teste T23 falha se alguma tabela ficar de fora.
-  - `shared.proibir_truncate(regclass[])` — recebe a lista de tabelas que a etapa quer guardar contra `TRUNCATE` (histórico, trilha, saldo) e cria o gatilho `sem_truncate` só em quem ainda não o tem.
+  - `shared.proibir_truncate(regclass[])` — recebe a lista de tabelas que a etapa quer guardar contra `TRUNCATE` (histórico, trilha, saldo) e cria o gatilho `sem_truncate` só em quem ainda não o tem, e religa quem um `ALTER TABLE ... DISABLE TRIGGER` tenha desligado entre uma etapa e outra.
+  - As duas conferem só a **existência** de política/gatilho pelo nome — não a expressão. Uma política `isolamento_por_instituicao` recriada com outro `USING` (por exemplo `USING (true)`, por erro de copy-paste numa migration futura) sobrevive à varredura sem ser corrigida nem detectada por ela: verificar que a expressão bate com a esperada é o teste de impressão digital do catálogo planejado para F11, não responsabilidade destas funções.
 - **Duas fases para mudança destrutiva:** expandir (coluna nova, preenchida em paralelo) → migrar leitura e escrita → contrair (remover a antiga) numa versão seguinte.
 - **Seed de sistema** (versionado, idempotente, roda em toda migração): catálogo de permissões, os seis grupos com suas permissões (Doc 3 §12), unidades e categorias do plano de contas aprovado.
 - **Seed de homologação**: dados sintéticos gerados a partir dos mocks do front — os mesmos personagens das telas (Clarice, Helena, Eduardo, Aline) —, o que faz a demonstração do protótipo e a de homologação contarem a mesma história.
@@ -682,7 +685,7 @@ As etapas são as do Doc 6 §6, na mesma ordem e com as mesmas estimativas. O qu
 |---|---|---|---|
 | Domínio | Vitest, sem I/O | Toda invariante do Doc 2 como teste, antes do código de infraestrutura | Com cada agregado |
 | Autorização | Vitest + fixtures de grupo | Os 30 casos do Doc 3 §11 — **escritos em B0, falhando**, como critério de aceite das etapas seguintes | B0 |
-| Guardas de banco | `cdd-07-verificacao.sql` em Postgres real (Testcontainers) | As 126 verificações de §15; cresce a cada tabela nova | B0 |
+| Guardas de banco | `cdd-07-verificacao.sql` em Postgres real (Testcontainers) | As 132 verificações de §15; cresce a cada tabela nova | B0 |
 | Integração | Testcontainers | Handler → banco → outbox → consumidor; idempotência; `If-Match`; contagem de consultas por read model (N+1) | Com cada comando |
 | Concorrência | Testcontainers, duas conexões | Saídas simultâneas do mesmo lote; duas confirmações do mesmo lançamento; duas inscrições da mesma pessoa pelo link; fechamento e lançamento na mesma competência, com o comando travando antes de P1 e do hash | B1, B5, B6 |
 | Contrato | Vitest | Todo código de erro que a API pode devolver existe em `contracts/erros.ts`; toda restrição nomeada tem mapeamento | B0 |
@@ -733,7 +736,7 @@ Os roteiros Playwright que verificaram as telas construídas (25 a 56 verificaç
 
 O servidor é **um monólito modular em NestJS sobre um PostgreSQL**, com cinco módulos de domínio que se falam por porta pública e por eventos em outbox, sem fila, sem cache e sem serviço separado — porque o CDD tem seis logins, e quem mantém o sistema é uma pessoa.
 
-O banco tem **58 tabelas em seis schemas**, com três travas de isolamento (RLS forçada, FK composta, filtro do ORM) e um conjunto pequeno de guardas que existem para uma coisa só: **impedir que o histórico seja falsificado**, mesmo por quem contorna o domínio. As decisões da coordenação estão todas no esquema — as etiquetas com valor do caso Aline, a devolução como estorno, os três níveis de contribuição, o colchonete gratuito, os dois dormitórios como são, a declaração de veracidade por cerimônia. E está tudo **verificado**: 122 casos que rodam contra Postgres real, como o papel da aplicação.
+O banco tem **58 tabelas em seis schemas**, com três travas de isolamento (RLS forçada, FK composta, filtro do ORM) e um conjunto pequeno de guardas que existem para uma coisa só: **impedir que o histórico seja falsificado**, mesmo por quem contorna o domínio. As decisões da coordenação estão todas no esquema — as etiquetas com valor do caso Aline, a devolução como estorno, os três níveis de contribuição, o colchonete gratuito, os dois dormitórios como são, a declaração de veracidade por cerimônia. E está tudo **verificado**: 132 casos que rodam contra Postgres real, como o papel da aplicação.
 
 O desenho encontrou uma coisa que precisa de decisão antes de B5: **o link público, como está, deixa ler a anamnese de alguém com o CPF dela.** A correção é pequena — um campo a mais na tela e uma sessão conferida no servidor —, mas é da coordenação.
 

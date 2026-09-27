@@ -94,12 +94,11 @@ SELECT verif.confere('link público · o dono do resolvedor não é superusuári
 -- idempotentes: uma etapa que repete a chamada sobre o esquema inteiro não
 -- falha nem duplica o que a etapa anterior já tinha feito.
 BEGIN;
-SELECT shared.aplicar_isolamento_por_instituicao();
-SELECT verif.confere('varredura de RLS é idempotente · nenhuma tabela ganha política duplicada',
-  (SELECT count(*) FROM (
-     SELECT polrelid FROM pg_policy WHERE polname = 'isolamento_por_instituicao'
-     GROUP BY polrelid HAVING count(*) > 1
-   ) duplicadas), 0::bigint);
+-- `pg_policy_polrelid_polname_index` é único: uma segunda chamada que
+-- tentasse criar a política de novo não duplicaria nada, abortaria com
+-- ERROR cru. É a própria chamada não falhar que prova a idempotência.
+SELECT verif.espera_ok('varredura de RLS é idempotente · segunda chamada não falha',
+  'SELECT shared.aplicar_isolamento_por_instituicao()');
 -- Chamada sem nada para varrer (a primeira, dentro do próprio esquema, já
 -- passou por tudo): não pode pegar ACCESS EXCLUSIVE em tabela nenhuma, senão
 -- uma migration de etapa posterior trava o esquema inteiro à toa (§22).
@@ -134,11 +133,17 @@ SELECT verif.confere('varredura de RLS alcança tabela criada entre etapas · po
   1::bigint);
 ROLLBACK;
 
-SELECT shared.proibir_truncate(ARRAY['financeiro.lancamento', 'financeiro.lancamento_categoria', 'financeiro.transferencia',
-                                     'financeiro.periodo_contabil', 'financeiro.reabertura_de_periodo',
-                                     'financeiro.prestacao_de_contas', 'identidade.registro_de_auditoria',
-                                     'pessoas.registro_de_acesso', 'estoque.movimento_de_estoque', 'estoque.feitio']::regclass[]);
-SELECT verif.confere('bloqueio de TRUNCATE é idempotente · um só gatilho sem_truncate por tabela',
+-- `pg_trigger_tgrelid_tgname_index` é único: uma segunda chamada que
+-- tentasse recriar o gatilho não duplicaria nada, abortaria com ERROR cru.
+-- É a própria chamada não falhar que prova a idempotência (mesma lista da
+-- primeira chamada, em cdd-07-esquema.sql).
+SELECT verif.espera_ok('bloqueio de TRUNCATE é idempotente · segunda chamada não falha', $$
+  SELECT shared.proibir_truncate(ARRAY['financeiro.lancamento', 'financeiro.lancamento_categoria', 'financeiro.transferencia',
+                                       'financeiro.periodo_contabil', 'financeiro.reabertura_de_periodo',
+                                       'financeiro.prestacao_de_contas', 'identidade.registro_de_auditoria',
+                                       'pessoas.registro_de_acesso', 'estoque.movimento_de_estoque', 'estoque.feitio']::regclass[])
+$$);
+SELECT verif.confere('bloqueio de TRUNCATE · as dez tabelas guardadas têm o gatilho sem_truncate',
   (SELECT count(*) FROM pg_trigger WHERE tgname = 'sem_truncate'), 10::bigint);
 
 -- Mesmo raciocínio para o gatilho: uma lista que inclua uma tabela nova
@@ -151,6 +156,18 @@ SELECT shared.proibir_truncate(ARRAY['pessoas.tabela_da_proxima_etapa']::regclas
 SELECT verif.confere('bloqueio de TRUNCATE alcança tabela criada entre etapas · gatilho criado',
   (SELECT count(*) FROM pg_trigger WHERE tgrelid = 'pessoas.tabela_da_proxima_etapa'::regclass AND tgname = 'sem_truncate'),
   1::bigint);
+ROLLBACK;
+
+-- Um gatilho sem_truncate desabilitado à mão (script de suporte, migration
+-- de emergência) precisa ser religado pela próxima chamada — senão a tabela
+-- fica sem a guarda até alguém notar, e a função julga (pelo IF NOT EXISTS)
+-- que ela já está protegida.
+BEGIN;
+ALTER TABLE financeiro.lancamento DISABLE TRIGGER sem_truncate;
+SELECT shared.proibir_truncate(ARRAY['financeiro.lancamento']::regclass[]);
+SELECT verif.confere('bloqueio de TRUNCATE religa o gatilho que alguém desabilitou',
+  (SELECT tgenabled FROM pg_trigger WHERE tgrelid = 'financeiro.lancamento'::regclass AND tgname = 'sem_truncate'),
+  'O');
 ROLLBACK;
 
 -- -----------------------------------------------------------------------------
@@ -730,6 +747,11 @@ SELECT verif.espera_erro('ator da trilha · SISTEMA com usuário é recusado', $
     VALUES ('a0000000-0000-0000-0000-000000000000', 'SISTEMA', gen_random_uuid(), '{}', 'LANCAMENTO_CONFIRMADO',
             'Lancamento', 'a6000000-0000-0000-0000-000000000001')
 $$, 'autor_coerente');
+SELECT verif.espera_erro('ator da trilha · autor_tipo fora do vocabulário é recusado', $$
+  INSERT INTO identidade.registro_de_auditoria (instituicao_id, autor_tipo, autor_grupos, operacao, agregado_tipo, agregado_id)
+    VALUES ('a0000000-0000-0000-0000-000000000000', 'BOT', '{}', 'LANCAMENTO_CONFIRMADO', 'Lancamento',
+            'a6000000-0000-0000-0000-000000000001')
+$$, 'registro_de_auditoria_autor_tipo_check');
 
 SELECT verif.espera_ok('ator do anexo · SISTEMA sem usuário é aceito', $$
   INSERT INTO shared.anexo (instituicao_id, chave, nome_original, mime, tamanho_bytes, sha256, enviado_por_tipo)
@@ -746,6 +768,23 @@ SELECT verif.espera_erro('ator do anexo · SISTEMA com usuário é recusado', $$
     VALUES ('a0000000-0000-0000-0000-000000000000', 'a000/financeiro/despachante-03.txt', 'x', 'text/plain', 10,
             sha256('sistema-com-id'), 'SISTEMA', gen_random_uuid())
 $$, 'enviado_coerente');
+SELECT verif.espera_erro('ator do anexo · enviado_por_tipo fora do vocabulário é recusado', $$
+  INSERT INTO shared.anexo (instituicao_id, chave, nome_original, mime, tamanho_bytes, sha256, enviado_por_tipo)
+    VALUES ('a0000000-0000-0000-0000-000000000000', 'a000/financeiro/despachante-04.txt', 'x', 'text/plain', 10,
+            sha256('bot'), 'BOT')
+$$, 'anexo_enviado_por_tipo_check');
+
+-- -----------------------------------------------------------------------------
+-- Outbox — teto de tentativas no predicado do índice, e o campo de backoff
+-- -----------------------------------------------------------------------------
+
+SELECT verif.confere('outbox · outbox_pendentes exige publicado_em nulo e tentativas sob o teto',
+  (SELECT pg_get_expr(indpred, indrelid) FROM pg_index WHERE indexrelid = 'shared.outbox_pendentes'::regclass),
+  '((publicado_em IS NULL) AND (tentativas < 10))');
+SELECT verif.confere('outbox · proxima_tentativa_em existe, timestamptz, aceita nulo',
+  (SELECT format('%s,%s', data_type, is_nullable) FROM information_schema.columns
+    WHERE table_schema = 'shared' AND table_name = 'outbox' AND column_name = 'proxima_tentativa_em'),
+  'timestamp with time zone,YES');
 
 -- -----------------------------------------------------------------------------
 -- Eventos
