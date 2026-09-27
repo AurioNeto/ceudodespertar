@@ -90,6 +90,18 @@ else
     else
       echo "    OK (exp - iat = 300)"
     fi
+
+    sem_pii_cdd_teste_ok="$(node -e "
+      const claims = JSON.parse(process.argv[1]);
+      const temPii = 'email' in claims || 'name' in claims || 'given_name' in claims || 'family_name' in claims || 'preferred_username' in claims || 'upn' in claims;
+      process.stdout.write(temPii ? 'nao' : 'sim');
+    " "$claims")"
+
+    if [ "$sem_pii_cdd_teste_ok" != "sim" ]; then
+      falhar "access token do cdd-teste carrega e-mail/nome/upn: ${claims}"
+    else
+      echo "    OK (access token sem e-mail, sem nome e sem upn)"
+    fi
   fi
 fi
 
@@ -194,10 +206,80 @@ else
   falhar "cdd-web deveria recusar password grant com error=unauthorized_client: ${resposta_cdd_web}"
 fi
 
-echo "==> clients embutidos do Keycloak com offline_access (risco aceito, ver README)"
-echo "    account, account-console, admin-cli, broker, realm-management e security-admin-console"
-echo "    seguem com offline_access disponível — nenhum deles tem aud=cdd-api, então a API recusa"
-echo "    qualquer token emitido por eles independentemente de terem sessão offline."
+echo "==> cdd-teste precisa recusar oferta de sessão offline (offline_access)"
+if ! resposta_offline_cdd_teste="$(curl -s -X POST "${emissor}/protocol/openid-connect/token" \
+  -d grant_type=password \
+  -d client_id=cdd-teste \
+  -d scope="openid offline_access" \
+  -d username=dev@cdd.local \
+  --data-urlencode "password=${CDD_KC_DEV_SENHA}")"; then
+  falhar "não conseguiu contatar o endpoint de token para testar offline_access no cdd-teste"
+elif printf '%s' "$resposta_offline_cdd_teste" | grep -q '"error":"invalid_scope"'; then
+  echo "    OK (recusado: invalid_scope)"
+else
+  falhar "cdd-teste aceitou offline_access no password grant: ${resposta_offline_cdd_teste}"
+fi
+
+echo "==> admin-cli precisa recusar oferta de sessão offline (offline_access)"
+if ! resposta_offline_admin_cli="$(curl -s -X POST "${emissor}/protocol/openid-connect/token" \
+  -d grant_type=password \
+  -d client_id=admin-cli \
+  -d scope="openid offline_access" \
+  -d username=dev@cdd.local \
+  --data-urlencode "password=${CDD_KC_DEV_SENHA}")"; then
+  falhar "não conseguiu contatar o endpoint de token para testar offline_access no admin-cli"
+elif printf '%s' "$resposta_offline_admin_cli" | grep -q '"error":"invalid_scope"'; then
+  echo "    OK (recusado: invalid_scope)"
+else
+  falhar "admin-cli aceitou offline_access no password grant: ${resposta_offline_admin_cli}"
+fi
+
+echo "==> admin-cli precisa continuar autenticando por password grant, sem aud=cdd-api"
+if ! resposta_admin_cli="$(curl -s -X POST "${emissor}/protocol/openid-connect/token" \
+  -d grant_type=password \
+  -d client_id=admin-cli \
+  -d username=dev@cdd.local \
+  --data-urlencode "password=${CDD_KC_DEV_SENHA}")"; then
+  falhar "não conseguiu contatar o endpoint de token para o admin-cli"
+else
+  access_token_admin_cli="$(printf '%s' "$resposta_admin_cli" | node -e "
+    let entrada = '';
+    process.stdin.on('data', (pedaco) => { entrada += pedaco; });
+    process.stdin.on('end', () => {
+      const corpo = JSON.parse(entrada);
+      process.stdout.write(corpo.access_token ?? '');
+    });
+  ")"
+
+  if [ -z "$access_token_admin_cli" ]; then
+    falhar "admin-cli deveria continuar autenticando por password grant: ${resposta_admin_cli}"
+  else
+    audiencia_admin_cli_ok="$(node -e "
+      const token = process.argv[1];
+      const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64url').toString('utf8'));
+      const aud = Array.isArray(payload.aud) ? payload.aud : [payload.aud].filter(Boolean);
+      process.stdout.write(aud.includes('cdd-api') ? 'nao' : 'sim');
+    " "$access_token_admin_cli")"
+
+    if [ "$audiencia_admin_cli_ok" != "sim" ]; then
+      falhar "token do admin-cli não deveria ter cdd-api no aud"
+    else
+      echo "    OK (password grant funciona, sem aud=cdd-api)"
+    fi
+  fi
+fi
+
+echo "==> device flow do cdd-web precisa ser recusado (device grant desligado)"
+if ! resposta_device_cdd_web="$(curl -s -X POST "${emissor}/protocol/openid-connect/auth/device" \
+  -d client_id=cdd-web \
+  -d code_challenge=ZS_Cv2oAD2R7s1ebkXIup64X6LXidDUT2yF4RFGVC3Y \
+  -d code_challenge_method=S256)"; then
+  falhar "não conseguiu contatar o endpoint de device authorization"
+elif printf '%s' "$resposta_device_cdd_web" | grep -q '"error":"unauthorized_client"'; then
+  echo "    OK (recusado, error=unauthorized_client)"
+else
+  falhar "cdd-web deveria recusar o device flow com error=unauthorized_client: ${resposta_device_cdd_web}"
+fi
 
 if [ "$falhou" != "0" ]; then
   exit 1

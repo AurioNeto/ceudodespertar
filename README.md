@@ -64,17 +64,24 @@ O `cdd-web` usa redirect por origem fixa com caminho em curinga
 (`http://localhost:5173/*`), não um redirect exato — a origem
 (`localhost:5173`) é travada, só o caminho depois dela é livre.
 
-Os seis clients embutidos do Keycloak (`account`, `account-console`,
-`admin-cli`, `broker`, `realm-management`, `security-admin-console`) mantêm
-`offline_access` como escopo opcional. O Keycloak os recria a cada import a
-partir do próprio bootstrap; declará-los no JSON para restringir o escopo
+`admin-cli` é declarado por completo no realm (representação real, obtida ao
+vivo num Keycloak 26.4.7 descartável) sem `offline_access` no escopo
+opcional — é o único dos clients embutidos do Keycloak com `fullScopeAllowed`
+e password grant (ROPC) ligados por padrão, então é o que mais importava
+fechar. Os outros cinco clients embutidos (`account`, `account-console`,
+`broker`, `realm-management`, `security-admin-console`) mantêm
+`offline_access` como escopo opcional: o Keycloak os recria a cada import a
+partir do próprio bootstrap, e declará-los no JSON para restringir o escopo
 substitui essa configuração embutida (URLs de redirecionamento, PKCE do
 console, papéis) por uma quase vazia, quebrando o Account Console e o
-Security Admin Console — testado ao vivo. Risco aceito: nenhum desses
-clients carrega o mapeador de audiência `cdd-api`, então um eventual token
-offline emitido por eles é recusado pela API (`aud` não bate). Os clients da
-aplicação (`cdd-web`, `cdd-teste`, `cdd-api-admin`) declaram
-`optionalClientScopes` explícito sem `offline_access`.
+Security Admin Console — testado ao vivo. Risco aceito para esses cinco:
+nenhum carrega o mapeador de audiência `cdd-api`, então um eventual token
+offline emitido por eles é recusado pela API (`aud` não bate); `fumaca.sh`
+prova isso rodando o password grant do `admin-cli` (continua funcionando,
+sem `aud=cdd-api`) e a recusa de `offline_access` nele. Os clients da
+aplicação (`cdd-web`, `cdd-teste`, `cdd-api-admin`) e o `admin-cli` declaram
+`optionalClientScopes` explícito sem `offline_access`; os três primeiros
+ficam com o escopo opcional vazio (nada além do que o app usa).
 
 ```bash
 node infra/keycloak/verificar-realm.mjs   # falha se alguma regra de segurança do realm regredir

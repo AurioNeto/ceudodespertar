@@ -16,17 +16,278 @@ function ehPlaceholderDeAmbiente(valor) {
   return typeof valor === 'string' && /^\$\{[A-Z][A-Z0-9_]*\}$/.test(valor);
 }
 
-const CLIENT_IDS_ESPERADOS = ['cdd-web', 'cdd-api-admin', 'cdd-teste'];
+function exigirChavesFechadas(objeto, chavesEsperadas, rotulo) {
+  const chavesAtuais = Object.keys(objeto ?? {}).sort();
+  const esperadas = [...chavesEsperadas].sort();
+  exigir(
+    chavesAtuais.length === esperadas.length && chavesAtuais.every((chave, indice) => chave === esperadas[indice]),
+    `${rotulo} precisa ter exatamente as chaves ${JSON.stringify(esperadas)}, encontrado ${JSON.stringify(chavesAtuais)}`,
+  );
+}
+
+function exigirObjetoFechado(objeto, esperado, rotulo) {
+  exigirChavesFechadas(objeto, Object.keys(esperado), rotulo);
+  for (const [chave, valorEsperado] of Object.entries(esperado)) {
+    exigir(
+      (objeto ?? {})[chave] === valorEsperado,
+      `${rotulo}["${chave}"] precisa ser exatamente ${JSON.stringify(valorEsperado)}, encontrado ${JSON.stringify((objeto ?? {})[chave])}`,
+    );
+  }
+}
+
+function exigirArrayFechado(valorAtual, valoresEsperados, rotulo) {
+  exigir(Array.isArray(valorAtual), `${rotulo} precisa ser um array (Array.isArray)`);
+  const atual = [...(Array.isArray(valorAtual) ? valorAtual : [])].sort();
+  const esperado = [...valoresEsperados].sort();
+  exigir(
+    atual.length === esperado.length && atual.every((valor, indice) => valor === esperado[indice]),
+    `${rotulo} precisa ser exatamente ${JSON.stringify(valoresEsperados)}, encontrado ${JSON.stringify(valorAtual)}`,
+  );
+}
+
+function exigirMapeadoresFechados(client, mapeadoresEsperados) {
+  const atuais = client?.protocolMappers ?? [];
+  const nomesEsperadosOrdenados = [...mapeadoresEsperados.map((mapeador) => mapeador.name)].sort();
+  const nomesAtuaisOrdenados = atuais.map((mapeador) => mapeador.name).sort();
+  exigir(
+    nomesAtuaisOrdenados.length === nomesEsperadosOrdenados.length &&
+      nomesAtuaisOrdenados.every((nome, indice) => nome === nomesEsperadosOrdenados[indice]),
+    `${client.clientId}.protocolMappers precisa ter exatamente os nomes ${JSON.stringify(nomesEsperadosOrdenados)}, encontrado ${JSON.stringify(atuais.map((mapeador) => mapeador.name))}`,
+  );
+
+  for (const esperado of mapeadoresEsperados) {
+    const atual = atuais.find((mapeador) => mapeador.name === esperado.name);
+    if (!atual) continue;
+    exigir(
+      atual.protocol === 'openid-connect',
+      `${client.clientId}.protocolMappers["${esperado.name}"].protocol precisa ser "openid-connect"`,
+    );
+    exigir(
+      atual.protocolMapper === esperado.protocolMapper,
+      `${client.clientId}.protocolMappers["${esperado.name}"].protocolMapper precisa ser "${esperado.protocolMapper}"`,
+    );
+    exigir(
+      atual.consentRequired === false,
+      `${client.clientId}.protocolMappers["${esperado.name}"].consentRequired precisa ser false`,
+    );
+    exigirObjetoFechado(
+      atual.config,
+      esperado.config,
+      `${client.clientId}.protocolMappers["${esperado.name}"].config`,
+    );
+  }
+}
+
+const CLIENT_IDS_ESPERADOS = ['cdd-web', 'cdd-api-admin', 'cdd-teste', 'admin-cli'];
 const USERNAMES_ESPERADOS = ['dev@cdd.local', 'service-account-cdd-api-admin'];
 
-const CLAIMS_DE_IDENTIDADE_PESSOAL = [
-  'email',
-  'email_verified',
-  'name',
-  'preferred_username',
-  'given_name',
-  'family_name',
+const REALM_CHAVES_OBRIGATORIAS = [
+  'realm',
+  'enabled',
+  'registrationAllowed',
+  'resetPasswordAllowed',
+  'loginWithEmailAllowed',
+  'duplicateEmailsAllowed',
+  'editUsernameAllowed',
+  'bruteForceProtected',
+  'permanentLockout',
+  'failureFactor',
+  'waitIncrementSeconds',
+  'quickLoginCheckMilliSeconds',
+  'minimumQuickLoginWaitSeconds',
+  'maxFailureWaitSeconds',
+  'maxDeltaTimeSeconds',
+  'passwordPolicy',
+  'accessTokenLifespan',
+  'ssoSessionIdleTimeout',
+  'ssoSessionMaxLifespan',
+  'revokeRefreshToken',
+  'refreshTokenMaxReuse',
+  'rememberMe',
+  'offlineSessionMaxLifespanEnabled',
+  'offlineSessionMaxLifespan',
+  'internationalizationEnabled',
+  'supportedLocales',
+  'defaultLocale',
+  'smtpServer',
+  'clients',
+  'users',
 ];
+const REALM_CHAVES_OPCIONAIS = ['loginTheme'];
+const REALM_CHAVES_PERMITIDAS = [...REALM_CHAVES_OBRIGATORIAS, ...REALM_CHAVES_OPCIONAIS];
+
+const MAPEADOR_AUDIENCIA_CDD_API = {
+  name: 'audiencia-cdd-api',
+  protocolMapper: 'oidc-audience-mapper',
+  config: {
+    'included.client.audience': 'cdd-api',
+    'id.token.claim': 'false',
+    'access.token.claim': 'true',
+  },
+};
+
+const MAPEADORES_SO_ID_TOKEN = [
+  {
+    name: 'nome-completo-so-id-token',
+    protocolMapper: 'oidc-full-name-mapper',
+    config: { 'id.token.claim': 'true', 'access.token.claim': 'false', 'userinfo.token.claim': 'true' },
+  },
+  {
+    name: 'nome-preferido-so-id-token',
+    protocolMapper: 'oidc-usermodel-attribute-mapper',
+    config: {
+      'user.attribute': 'username',
+      'claim.name': 'preferred_username',
+      'jsonType.label': 'String',
+      'id.token.claim': 'true',
+      'access.token.claim': 'false',
+      'userinfo.token.claim': 'true',
+    },
+  },
+  {
+    name: 'primeiro-nome-so-id-token',
+    protocolMapper: 'oidc-usermodel-attribute-mapper',
+    config: {
+      'user.attribute': 'firstName',
+      'claim.name': 'given_name',
+      'jsonType.label': 'String',
+      'id.token.claim': 'true',
+      'access.token.claim': 'false',
+      'userinfo.token.claim': 'true',
+    },
+  },
+  {
+    name: 'sobrenome-so-id-token',
+    protocolMapper: 'oidc-usermodel-attribute-mapper',
+    config: {
+      'user.attribute': 'lastName',
+      'claim.name': 'family_name',
+      'jsonType.label': 'String',
+      'id.token.claim': 'true',
+      'access.token.claim': 'false',
+      'userinfo.token.claim': 'true',
+    },
+  },
+  {
+    name: 'e-mail-so-id-token',
+    protocolMapper: 'oidc-usermodel-attribute-mapper',
+    config: {
+      'user.attribute': 'email',
+      'claim.name': 'email',
+      'jsonType.label': 'String',
+      'id.token.claim': 'true',
+      'access.token.claim': 'false',
+      'userinfo.token.claim': 'true',
+    },
+  },
+  {
+    name: 'e-mail-verificado-so-id-token',
+    protocolMapper: 'oidc-usermodel-property-mapper',
+    config: {
+      'user.attribute': 'emailVerified',
+      'claim.name': 'email_verified',
+      'jsonType.label': 'boolean',
+      'id.token.claim': 'true',
+      'access.token.claim': 'false',
+      'userinfo.token.claim': 'true',
+    },
+  },
+];
+
+const CLIENTES_ESPERADOS = {
+  'cdd-web': {
+    chaves: [
+      'clientId',
+      'enabled',
+      'protocol',
+      'publicClient',
+      'standardFlowEnabled',
+      'directAccessGrantsEnabled',
+      'implicitFlowEnabled',
+      'serviceAccountsEnabled',
+      'redirectUris',
+      'webOrigins',
+      'defaultClientScopes',
+      'optionalClientScopes',
+      'attributes',
+      'protocolMappers',
+    ],
+    defaultClientScopes: ['web-origins', 'acr', 'roles', 'basic'],
+    optionalClientScopes: [],
+    protocolMappers: [MAPEADOR_AUDIENCIA_CDD_API, ...MAPEADORES_SO_ID_TOKEN],
+  },
+  'cdd-api-admin': {
+    chaves: [
+      'clientId',
+      'enabled',
+      'protocol',
+      'publicClient',
+      'clientAuthenticatorType',
+      'secret',
+      'standardFlowEnabled',
+      'directAccessGrantsEnabled',
+      'implicitFlowEnabled',
+      'serviceAccountsEnabled',
+      'defaultClientScopes',
+      'optionalClientScopes',
+      'description',
+    ],
+    defaultClientScopes: ['web-origins', 'acr', 'roles', 'basic'],
+    optionalClientScopes: [],
+    protocolMappers: [],
+  },
+  'cdd-teste': {
+    chaves: [
+      'clientId',
+      'enabled',
+      'protocol',
+      'publicClient',
+      'standardFlowEnabled',
+      'directAccessGrantsEnabled',
+      'implicitFlowEnabled',
+      'serviceAccountsEnabled',
+      'redirectUris',
+      'defaultClientScopes',
+      'optionalClientScopes',
+      'description',
+      'protocolMappers',
+    ],
+    defaultClientScopes: ['web-origins', 'acr', 'roles', 'basic'],
+    optionalClientScopes: [],
+    protocolMappers: [MAPEADOR_AUDIENCIA_CDD_API, ...MAPEADORES_SO_ID_TOKEN],
+  },
+  'admin-cli': {
+    chaves: [
+      'clientId',
+      'name',
+      'surrogateAuthRequired',
+      'enabled',
+      'alwaysDisplayInConsole',
+      'clientAuthenticatorType',
+      'redirectUris',
+      'webOrigins',
+      'notBefore',
+      'bearerOnly',
+      'consentRequired',
+      'standardFlowEnabled',
+      'implicitFlowEnabled',
+      'directAccessGrantsEnabled',
+      'serviceAccountsEnabled',
+      'publicClient',
+      'frontchannelLogout',
+      'protocol',
+      'attributes',
+      'authenticationFlowBindingOverrides',
+      'fullScopeAllowed',
+      'nodeReRegistrationTimeout',
+      'defaultClientScopes',
+      'optionalClientScopes',
+    ],
+    defaultClientScopes: ['web-origins', 'acr', 'profile', 'roles', 'basic', 'email'],
+    optionalClientScopes: ['address', 'phone', 'organization', 'microprofile-jwt'],
+    protocolMappers: [],
+  },
+};
 
 function encontrarClient(realm, clientId) {
   return (realm.clients ?? []).find((cliente) => cliente.clientId === clientId);
@@ -34,35 +295,6 @@ function encontrarClient(realm, clientId) {
 
 function encontrarUsuario(realm, username) {
   return (realm.users ?? []).find((usuario) => usuario.username === username);
-}
-
-function contemMapeadorDeAudiencia(client, audienciaEsperada) {
-  return (client?.protocolMappers ?? []).some(
-    (mapeador) =>
-      mapeador.protocolMapper === 'oidc-audience-mapper' &&
-      mapeador.config?.['included.client.audience'] === audienciaEsperada &&
-      mapeador.config?.['access.token.claim'] === 'true',
-  );
-}
-
-const ATRIBUTOS_DE_SESSAO_PROIBIDOS_POR_CLIENTE = {
-  'access.token.lifespan': 300,
-  'client.session.idle.timeout': 1800,
-  'client.session.max.lifespan': 28800,
-  'client.offline.session.idle.timeout': 1800,
-  'client.offline.session.max.lifespan': 28800,
-};
-
-function verificarAtributosDeSessaoDoCliente(client) {
-  const atributos = client?.attributes ?? {};
-  for (const [chave, limite] of Object.entries(ATRIBUTOS_DE_SESSAO_PROIBIDOS_POR_CLIENTE)) {
-    const valor = atributos[chave];
-    if (valor === undefined) continue;
-    exigir(
-      Number(valor) > 0 && Number(valor) <= limite,
-      `${client.clientId}.attributes["${chave}"] não pode passar de ${limite} segundos`,
-    );
-  }
 }
 
 function verificarPapeisDeContaDeServico(usuario, papeisEsperadosPorClient) {
@@ -128,86 +360,42 @@ function verificarCredenciaisDeTodosOsUsuarios(realm) {
   }
 }
 
-function verificarEscoposPadraoDoRealm(realm) {
-  const escoposDefaultDefault = realm.defaultDefaultClientScopes;
-  if (escoposDefaultDefault !== undefined) {
-    exigir(
-      !escoposDefaultDefault.includes('offline_access'),
-      'defaultDefaultClientScopes não pode incluir offline_access',
-    );
-  }
-}
-
-function verificarGrantsProibidosEmTodoClient(client) {
-  const atributos = client?.attributes ?? {};
-  exigir(
-    atributos['oauth2.device.authorization.grant.enabled'] !== 'true',
-    `${client?.clientId ?? '(client)'} não pode ter oauth2.device.authorization.grant.enabled`,
-  );
-  exigir(
-    atributos['oidc.ciba.grant.enabled'] !== 'true',
-    `${client?.clientId ?? '(client)'} não pode ter oidc.ciba.grant.enabled (CIBA)`,
-  );
-  exigir(
-    atributos['standard.token.exchange.enabled'] !== 'true',
-    `${client?.clientId ?? '(client)'} não pode ter standard.token.exchange.enabled (token exchange)`,
-  );
-}
-
-function verificarSemIdentidadePessoalNoAccessToken(client) {
+function verificarClienteFechado(client) {
   if (!client) return;
+  const esperado = CLIENTES_ESPERADOS[client.clientId];
+  if (!esperado) return;
 
-  const escopos = [...(client.defaultClientScopes ?? []), ...(client.optionalClientScopes ?? [])];
-  exigir(
-    !escopos.includes('profile'),
-    `${client.clientId} não pode usar o client scope "profile" (carrega nome no access token)`,
-  );
-  exigir(
-    !escopos.includes('email'),
-    `${client.clientId} não pode usar o client scope "email" (carrega e-mail no access token)`,
-  );
-
-  for (const mapeador of client.protocolMappers ?? []) {
-    const claim = mapeador.config?.['claim.name'];
-    const ehMapeadorDeNomeCompleto = mapeador.protocolMapper === 'oidc-full-name-mapper';
-    const ehClaimDeIdentidadePessoal = CLAIMS_DE_IDENTIDADE_PESSOAL.includes(claim);
-    if (!ehMapeadorDeNomeCompleto && !ehClaimDeIdentidadePessoal) continue;
-
-    exigir(
-      mapeador.config?.['access.token.claim'] !== 'true',
-      `${client.clientId}.protocolMappers["${mapeador.name}"] não pode ter access.token.claim=true (e-mail/nome não podem ir para o access token)`,
-    );
-  }
-
-  for (const claim of ['given_name', 'family_name', 'preferred_username', 'email']) {
-    const temMapeadorSoParaIdToken = (client.protocolMappers ?? []).some(
-      (mapeador) =>
-        mapeador.config?.['claim.name'] === claim &&
-        mapeador.config?.['id.token.claim'] === 'true' &&
-        mapeador.config?.['access.token.claim'] === 'false',
-    );
-    exigir(
-      temMapeadorSoParaIdToken,
-      `${client.clientId} precisa de um mapeador para "${claim}" com id.token.claim=true e access.token.claim=false`,
-    );
-  }
+  exigirChavesFechadas(client, esperado.chaves, client.clientId);
+  exigirArrayFechado(client.defaultClientScopes, esperado.defaultClientScopes, `${client.clientId}.defaultClientScopes`);
+  exigirArrayFechado(client.optionalClientScopes, esperado.optionalClientScopes, `${client.clientId}.optionalClientScopes`);
+  exigirMapeadoresFechados(client, esperado.protocolMappers);
 }
 
 function verificarRealm(realm) {
+  for (const chave of REALM_CHAVES_OBRIGATORIAS) {
+    exigir(chave in realm, `realm precisa ter a chave "${chave}"`);
+  }
+  for (const chave of Object.keys(realm)) {
+    exigir(
+      REALM_CHAVES_PERMITIDAS.includes(chave),
+      `realm não pode ter a chave desconhecida "${chave}" (inclui defaultDefaultClientScopes/defaultOptionalClientScopes, ignoradas pelo import do Keycloak)`,
+    );
+  }
+
   exigir(realm.registrationAllowed === false, 'registrationAllowed deve ser false');
   exigir(realm.resetPasswordAllowed === true, 'resetPasswordAllowed deve ser true');
   exigir(realm.loginWithEmailAllowed === true, 'loginWithEmailAllowed deve ser true');
   exigir(realm.duplicateEmailsAllowed === false, 'duplicateEmailsAllowed deve ser false');
   exigir(realm.editUsernameAllowed === false, 'editUsernameAllowed deve ser false');
 
-  exigir(realm.bruteForceProtected === true, 'bruteForceProtected deve ser true');
-  exigir(realm.permanentLockout !== true, 'permanentLockout não pode travar a conta para sempre');
-  exigir(realm.failureFactor === 5, 'failureFactor deve ser 5');
+  exigir(realm.bruteForceProtected === true, 'bruteForceProtected deve ser true (boolean)');
+  exigir(realm.permanentLockout === false, 'permanentLockout deve ser false (boolean), nunca travar a conta para sempre');
+  exigir(realm.failureFactor === 5, 'failureFactor deve ser 5 (number)');
   exigir(
     typeof realm.waitIncrementSeconds === 'number' && realm.waitIncrementSeconds > 0,
-    'waitIncrementSeconds precisa ser > 0 (espera crescente)',
+    'waitIncrementSeconds precisa ser number > 0 (espera crescente)',
   );
-  exigir(realm.maxFailureWaitSeconds === 900, 'maxFailureWaitSeconds deve ser 900 (15 min)');
+  exigir(realm.maxFailureWaitSeconds === 900, 'maxFailureWaitSeconds deve ser 900 (number, 15 min)');
 
   const politicaDeSenha = realm.passwordPolicy ?? '';
   exigir(politicaDeSenha.includes('length(10)'), 'passwordPolicy precisa de length(10)');
@@ -221,25 +409,25 @@ function verificarRealm(realm) {
     'passwordPolicy precisa de lowerCase(n) ou upperCase(n) com n >= 1',
   );
 
-  exigir(realm.accessTokenLifespan === 300, 'accessTokenLifespan deve ser 300');
-  exigir(realm.ssoSessionIdleTimeout === 1800, 'ssoSessionIdleTimeout deve ser 1800');
-  exigir(realm.ssoSessionMaxLifespan === 28800, 'ssoSessionMaxLifespan deve ser 28800');
-  exigir(realm.revokeRefreshToken === true, 'revokeRefreshToken deve ser true');
-  exigir(realm.refreshTokenMaxReuse === 0, 'refreshTokenMaxReuse deve ser 0');
-  exigir(realm.rememberMe !== true, 'rememberMe não pode estender sessão além do SSO');
+  exigir(realm.accessTokenLifespan === 300, 'accessTokenLifespan deve ser 300 (number)');
+  exigir(realm.ssoSessionIdleTimeout === 1800, 'ssoSessionIdleTimeout deve ser 1800 (number)');
+  exigir(realm.ssoSessionMaxLifespan === 28800, 'ssoSessionMaxLifespan deve ser 28800 (number)');
+  exigir(realm.revokeRefreshToken === true, 'revokeRefreshToken deve ser true (boolean)');
+  exigir(realm.refreshTokenMaxReuse === 0, 'refreshTokenMaxReuse deve ser 0 (number)');
+  exigir(realm.rememberMe === false, 'rememberMe deve ser false (boolean), nunca estender sessão além do SSO');
 
   exigir(
     realm.offlineSessionMaxLifespanEnabled === true,
-    'offlineSessionMaxLifespanEnabled deve ser true (token offline não pode viver para sempre)',
+    'offlineSessionMaxLifespanEnabled deve ser true (boolean) — token offline não pode viver para sempre',
   );
   exigir(
     typeof realm.offlineSessionMaxLifespan === 'number' &&
       realm.offlineSessionMaxLifespan > 0 &&
       realm.offlineSessionMaxLifespan <= 28800,
-    'offlineSessionMaxLifespan deve ser > 0 e <= 28800 (não pode ultrapassar ssoSessionMaxLifespan)',
+    'offlineSessionMaxLifespan deve ser number > 0 e <= 28800 (não pode ultrapassar ssoSessionMaxLifespan)',
   );
 
-  exigir(realm.internationalizationEnabled === true, 'internationalizationEnabled deve ser true');
+  exigir(realm.internationalizationEnabled === true, 'internationalizationEnabled deve ser true (boolean)');
   exigir(realm.defaultLocale === 'pt-BR', 'defaultLocale deve ser pt-BR');
   exigir(
     Array.isArray(realm.supportedLocales) && realm.supportedLocales.includes('pt-BR'),
@@ -265,10 +453,9 @@ function verificarRealm(realm) {
   verificarConjuntoFechadoDeClientsEUsuarios(realm);
   verificarAusenciaDeGruposEPapeisSoltos(realm);
   verificarCredenciaisDeTodosOsUsuarios(realm);
-  verificarEscoposPadraoDoRealm(realm);
 
   for (const client of realm.clients ?? []) {
-    verificarGrantsProibidosEmTodoClient(client);
+    verificarClienteFechado(client);
   }
 }
 
@@ -277,6 +464,8 @@ function verificarCddWeb(realm) {
   exigir(!!cddWeb, 'client cdd-web não encontrado');
   if (!cddWeb) return;
 
+  exigir(cddWeb.enabled === true, 'cdd-web precisa de enabled=true');
+  exigir(cddWeb.protocol === 'openid-connect', 'cdd-web.protocol deve ser openid-connect');
   exigir(cddWeb.publicClient === true, 'cdd-web deve ser publicClient');
   exigir(cddWeb.standardFlowEnabled === true, 'cdd-web precisa de standardFlowEnabled');
   exigir(
@@ -285,48 +474,17 @@ function verificarCddWeb(realm) {
   );
   exigir(cddWeb.implicitFlowEnabled === false, 'cdd-web não pode ter implicitFlowEnabled ligado');
   exigir(cddWeb.serviceAccountsEnabled === false, 'cdd-web não pode ter serviceAccountsEnabled');
-  exigir(
-    cddWeb.attributes?.['pkce.code.challenge.method'] === 'S256',
-    'cdd-web precisa de PKCE com S256',
+  exigirObjetoFechado(
+    cddWeb.attributes,
+    {
+      'pkce.code.challenge.method': 'S256',
+      'post.logout.redirect.uris': 'http://localhost:5173/*',
+    },
+    'cdd-web.attributes',
   );
 
-  const redirectUris = cddWeb.redirectUris ?? [];
-  exigir(
-    redirectUris.length === 1 && redirectUris[0] === 'http://localhost:5173/*',
-    'cdd-web.redirectUris deve ser exatamente ["http://localhost:5173/*"]',
-  );
-  exigir(
-    redirectUris.every((uri) => uri !== '*' && uri.startsWith('http://localhost:5173')),
-    'cdd-web.redirectUris não pode ter curinga solto nem sair de localhost:5173',
-  );
-
-  const webOrigins = cddWeb.webOrigins ?? [];
-  exigir(
-    webOrigins.length === 1 && webOrigins[0] === 'http://localhost:5173',
-    'cdd-web.webOrigins deve ser exatamente ["http://localhost:5173"]',
-  );
-
-  exigir(
-    cddWeb.attributes?.['post.logout.redirect.uris'] === 'http://localhost:5173/*',
-    'cdd-web precisa de post.logout.redirect.uris',
-  );
-
-  exigir(
-    contemMapeadorDeAudiencia(cddWeb, 'cdd-api'),
-    'cdd-web precisa do audience cdd-api no access token',
-  );
-
-  exigir(
-    !(cddWeb.optionalClientScopes ?? []).includes('offline_access'),
-    'cdd-web não pode ter offline_access como escopo opcional',
-  );
-  exigir(
-    !(cddWeb.defaultClientScopes ?? []).includes('offline_access'),
-    'cdd-web não pode ter offline_access como escopo padrão',
-  );
-
-  verificarAtributosDeSessaoDoCliente(cddWeb);
-  verificarSemIdentidadePessoalNoAccessToken(cddWeb);
+  exigirArrayFechado(cddWeb.redirectUris, ['http://localhost:5173/*'], 'cdd-web.redirectUris');
+  exigirArrayFechado(cddWeb.webOrigins, ['http://localhost:5173'], 'cdd-web.webOrigins');
 }
 
 function verificarCddApiAdmin(realm) {
@@ -334,7 +492,13 @@ function verificarCddApiAdmin(realm) {
   exigir(!!cddApiAdmin, 'client cdd-api-admin não encontrado');
   if (!cddApiAdmin) return;
 
+  exigir(cddApiAdmin.enabled === true, 'cdd-api-admin precisa de enabled=true');
+  exigir(cddApiAdmin.protocol === 'openid-connect', 'cdd-api-admin.protocol deve ser openid-connect');
   exigir(cddApiAdmin.publicClient === false, 'cdd-api-admin deve ser confidencial');
+  exigir(
+    cddApiAdmin.clientAuthenticatorType === 'client-secret',
+    'cdd-api-admin.clientAuthenticatorType deve ser client-secret',
+  );
   exigir(
     cddApiAdmin.serviceAccountsEnabled === true,
     'cdd-api-admin precisa de serviceAccountsEnabled',
@@ -355,22 +519,12 @@ function verificarCddApiAdmin(realm) {
     ehPlaceholderDeAmbiente(cddApiAdmin.secret),
     'cdd-api-admin.secret precisa ser um placeholder de variável de ambiente, nunca um segredo em claro',
   );
-  exigir(
-    !(cddApiAdmin.optionalClientScopes ?? []).includes('offline_access'),
-    'cdd-api-admin não pode ter offline_access como escopo opcional',
-  );
-  exigir(
-    !(cddApiAdmin.defaultClientScopes ?? []).includes('offline_access'),
-    'cdd-api-admin não pode ter offline_access como escopo padrão',
-  );
 
   const contaDeServico = encontrarUsuario(realm, 'service-account-cdd-api-admin');
   exigir(!!contaDeServico, 'usuário de conta de serviço do cdd-api-admin não encontrado');
   if (!contaDeServico) return;
 
   verificarPapeisDeContaDeServico(contaDeServico, { 'realm-management': ['manage-users'] });
-
-  verificarAtributosDeSessaoDoCliente(cddApiAdmin);
 }
 
 function verificarCddTeste(realm) {
@@ -378,6 +532,8 @@ function verificarCddTeste(realm) {
   exigir(!!cddTeste, 'client cdd-teste não encontrado');
   if (!cddTeste) return;
 
+  exigir(cddTeste.enabled === true, 'cdd-teste precisa de enabled=true');
+  exigir(cddTeste.protocol === 'openid-connect', 'cdd-teste.protocol deve ser openid-connect');
   exigir(cddTeste.publicClient === true, 'cdd-teste deve ser publicClient');
   exigir(
     cddTeste.directAccessGrantsEnabled === true,
@@ -387,6 +543,7 @@ function verificarCddTeste(realm) {
   exigir(cddTeste.implicitFlowEnabled === false, 'cdd-teste não pode ter implicitFlowEnabled ligado');
   exigir(cddTeste.serviceAccountsEnabled === false, 'cdd-teste não pode ter serviceAccountsEnabled');
 
+  exigir(Array.isArray(cddTeste.redirectUris), 'cdd-teste.redirectUris precisa ser um array');
   const redirectUrisDoTeste = cddTeste.redirectUris ?? [];
   exigir(
     redirectUrisDoTeste.every((uri) => uri !== '*' && uri.startsWith('http://localhost')),
@@ -394,24 +551,59 @@ function verificarCddTeste(realm) {
   );
 
   exigir(
-    contemMapeadorDeAudiencia(cddTeste, 'cdd-api'),
-    'cdd-teste precisa do audience cdd-api no access token',
-  );
-  exigir(
-    !(cddTeste.optionalClientScopes ?? []).includes('offline_access'),
-    'cdd-teste não pode ter offline_access como escopo opcional',
-  );
-  exigir(
-    !(cddTeste.defaultClientScopes ?? []).includes('offline_access'),
-    'cdd-teste não pode ter offline_access como escopo padrão',
-  );
-  exigir(
     /desenvolvimento|local/i.test(cddTeste.description ?? ''),
     'cdd-teste precisa descrever no realm que é só de desenvolvimento',
   );
+}
 
-  verificarAtributosDeSessaoDoCliente(cddTeste);
-  verificarSemIdentidadePessoalNoAccessToken(cddTeste);
+function verificarAdminCli(realm) {
+  const adminCli = encontrarClient(realm, 'admin-cli');
+  exigir(!!adminCli, 'client admin-cli não encontrado — precisa ser declarado por completo, sem offline_access');
+  if (!adminCli) return;
+
+  const camposEscalaresEsperados = {
+    clientId: 'admin-cli',
+    name: '${client_admin-cli}',
+    surrogateAuthRequired: false,
+    enabled: true,
+    alwaysDisplayInConsole: false,
+    clientAuthenticatorType: 'client-secret',
+    notBefore: 0,
+    bearerOnly: false,
+    consentRequired: false,
+    standardFlowEnabled: false,
+    implicitFlowEnabled: false,
+    directAccessGrantsEnabled: true,
+    serviceAccountsEnabled: false,
+    publicClient: true,
+    frontchannelLogout: false,
+    protocol: 'openid-connect',
+    fullScopeAllowed: true,
+    nodeReRegistrationTimeout: 0,
+  };
+  for (const [chave, valorEsperado] of Object.entries(camposEscalaresEsperados)) {
+    exigir(
+      adminCli[chave] === valorEsperado,
+      `admin-cli["${chave}"] precisa ser exatamente ${JSON.stringify(valorEsperado)}, encontrado ${JSON.stringify(adminCli[chave])}`,
+    );
+  }
+
+  exigirArrayFechado(adminCli.redirectUris, [], 'admin-cli.redirectUris');
+  exigirArrayFechado(adminCli.webOrigins, [], 'admin-cli.webOrigins');
+  exigirObjetoFechado(adminCli.authenticationFlowBindingOverrides, {}, 'admin-cli.authenticationFlowBindingOverrides');
+  exigirObjetoFechado(
+    adminCli.attributes,
+    {
+      realm_client: 'false',
+      'client.use.lightweight.access.token.enabled': 'true',
+    },
+    'admin-cli.attributes',
+  );
+
+  exigir(
+    !(adminCli.optionalClientScopes ?? []).includes('offline_access'),
+    'admin-cli não pode ter offline_access como escopo opcional (sessão offline sem limite de escopo de negócio)',
+  );
 }
 
 function verificarUsuarioDev(realm) {
@@ -440,6 +632,7 @@ verificarRealm(realm);
 verificarCddWeb(realm);
 verificarCddApiAdmin(realm);
 verificarCddTeste(realm);
+verificarAdminCli(realm);
 verificarUsuarioDev(realm);
 
 if (falhas.length > 0) {
