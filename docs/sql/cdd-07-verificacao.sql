@@ -229,10 +229,13 @@ ROLLBACK;
 -- que ela já está protegida.
 BEGIN;
 ALTER TABLE financeiro.lancamento DISABLE TRIGGER sem_truncate;
-SELECT shared.proibir_truncate(ARRAY['financeiro.lancamento']::regclass[]);
-SELECT verif.confere('bloqueio de TRUNCATE religa o gatilho que alguém desabilitou',
-  (SELECT tgenabled FROM pg_trigger WHERE tgrelid = 'financeiro.lancamento'::regclass AND tgname = 'sem_truncate'),
-  'O');
+ALTER TABLE financeiro.transferencia ENABLE REPLICA TRIGGER sem_truncate;
+SELECT shared.proibir_truncate(ARRAY['financeiro.lancamento', 'financeiro.transferencia']::regclass[]);
+SELECT verif.confere('bloqueio de TRUNCATE religa o gatilho desabilitado ou restrito à réplica',
+  (SELECT string_agg(tgenabled::text, ',' ORDER BY tgrelid::regclass::text) FROM pg_trigger
+    WHERE tgrelid IN ('financeiro.lancamento'::regclass, 'financeiro.transferencia'::regclass)
+      AND tgname = 'sem_truncate'),
+  'O,O');
 ROLLBACK;
 
 -- -----------------------------------------------------------------------------
