@@ -93,12 +93,20 @@ SELECT verif.confere('link público · o dono do resolvedor não é superusuári
 -- F07 · as duas funções que toda migration chama (Documento 7 §22) são
 -- idempotentes: uma etapa que repete a chamada sobre o esquema inteiro não
 -- falha nem duplica o que a etapa anterior já tinha feito.
+BEGIN;
 SELECT shared.aplicar_isolamento_por_instituicao();
 SELECT verif.confere('varredura de RLS é idempotente · nenhuma tabela ganha política duplicada',
   (SELECT count(*) FROM (
      SELECT polrelid FROM pg_policy WHERE polname = 'isolamento_por_instituicao'
      GROUP BY polrelid HAVING count(*) > 1
    ) duplicadas), 0::bigint);
+-- Chamada sem nada para varrer (a primeira, dentro do próprio esquema, já
+-- passou por tudo): não pode pegar ACCESS EXCLUSIVE em tabela nenhuma, senão
+-- uma migration de etapa posterior trava o esquema inteiro à toa (§22).
+SELECT verif.confere('varredura de RLS é idempotente · segunda chamada sem nada a mudar não pega ACCESS EXCLUSIVE',
+  (SELECT count(*) FROM pg_locks WHERE pid = pg_backend_pid() AND locktype = 'relation' AND mode = 'AccessExclusiveLock'),
+  0::bigint);
+COMMIT;
 SELECT verif.confere('T23 · continua com RLS forçada depois da segunda varredura',
   (SELECT count(*) FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
     WHERE c.relkind = 'r'
@@ -107,12 +115,43 @@ SELECT verif.confere('T23 · continua com RLS forçada depois da segunda varredu
       AND NOT (c.relrowsecurity AND c.relforcerowsecurity)
       AND (n.nspname, c.relname) <> ('shared','outbox')), 0::bigint);
 
+-- A varredura precisa pegar a tabela que só existe a partir da etapa
+-- seguinte, não só repetir sem falhar sobre o que já viu — senão uma
+-- varredura que sai cedo ao encontrar QUALQUER política já criada (em vez de
+-- checar tabela a tabela) passaria despercebida pelos casos acima.
+BEGIN;
+CREATE TABLE pessoas.tabela_da_etapa_seguinte (
+  id             uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  instituicao_id uuid NOT NULL
+);
+SELECT shared.aplicar_isolamento_por_instituicao();
+SELECT verif.confere('varredura de RLS alcança tabela criada entre etapas · RLS forçada',
+  (SELECT c.relrowsecurity AND c.relforcerowsecurity FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
+    WHERE n.nspname = 'pessoas' AND c.relname = 'tabela_da_etapa_seguinte'), true);
+SELECT verif.confere('varredura de RLS alcança tabela criada entre etapas · política criada',
+  (SELECT count(*) FROM pg_policy p JOIN pg_class c ON c.oid = p.polrelid JOIN pg_namespace n ON n.oid = c.relnamespace
+    WHERE n.nspname = 'pessoas' AND c.relname = 'tabela_da_etapa_seguinte' AND p.polname = 'isolamento_por_instituicao'),
+  1::bigint);
+ROLLBACK;
+
 SELECT shared.proibir_truncate(ARRAY['financeiro.lancamento', 'financeiro.lancamento_categoria', 'financeiro.transferencia',
                                      'financeiro.periodo_contabil', 'financeiro.reabertura_de_periodo',
                                      'financeiro.prestacao_de_contas', 'identidade.registro_de_auditoria',
                                      'pessoas.registro_de_acesso', 'estoque.movimento_de_estoque', 'estoque.feitio']::regclass[]);
 SELECT verif.confere('bloqueio de TRUNCATE é idempotente · um só gatilho sem_truncate por tabela',
   (SELECT count(*) FROM pg_trigger WHERE tgname = 'sem_truncate'), 10::bigint);
+
+-- Mesmo raciocínio para o gatilho: uma lista que inclua uma tabela nova
+-- (sem sem_truncate ainda) tem que recebê-lo, não só deixar as antigas como
+-- estavam — senão uma função que sai cedo ao ver QUALQUER sem_truncate no
+-- catálogo passaria despercebida.
+BEGIN;
+CREATE TABLE pessoas.tabela_da_proxima_etapa (id uuid PRIMARY KEY DEFAULT gen_random_uuid());
+SELECT shared.proibir_truncate(ARRAY['pessoas.tabela_da_proxima_etapa']::regclass[]);
+SELECT verif.confere('bloqueio de TRUNCATE alcança tabela criada entre etapas · gatilho criado',
+  (SELECT count(*) FROM pg_trigger WHERE tgrelid = 'pessoas.tabela_da_proxima_etapa'::regclass AND tgname = 'sem_truncate'),
+  1::bigint);
+ROLLBACK;
 
 -- -----------------------------------------------------------------------------
 -- Daqui em diante, como a aplicação
@@ -447,7 +486,7 @@ SELECT verif.espera_erro('P2 · gravar na competência fora de READ COMMITTED é
                                      data_competencia, registrado_por)
     VALUES ('a0000000-0000-0000-0000-000000000000', 'A_CONFERIR', 'MANUAL', 'DESPESA', 300, 'x',
             'a1000000-0000-0000-0000-000000000001', '2026-10-01', '2026-10-06', gen_random_uuid())
-$$, 'READ COMMITTED');
+$$, '^ISOLAMENTO_INVALIDO: .*READ COMMITTED');
 ROLLBACK;
 SELECT verif.espera_ok('P2 · gravar na competência toma a trava do período, compartilhada', $$
   INSERT INTO financeiro.lancamento (instituicao_id, status, origem, natureza, valor, motivo, unidade_id, competencia,

@@ -1575,9 +1575,11 @@ SELECT shared.proibir_truncate(ARRAY['financeiro.lancamento', 'financeiro.lancam
 -- com FORCE e a mesma política. shared.aplicar_isolamento_por_instituicao()
 -- é o que cada migration chama (Documento 7 §22) depois de criar suas
 -- tabelas — é o que impede a tabela nova esquecida; o teste T23 confere que
--- ela rodou (cdd-07-verificacao.sql). Idempotente: a tabela que já tem a
--- política não a recebe de novo, então uma etapa posterior pode chamá-la de
--- novo sobre o esquema inteiro sem duplicar nem falhar.
+-- ela rodou (cdd-07-verificacao.sql). Idempotente: a tabela que já tem
+-- ENABLE+FORCE não repete o ALTER TABLE (evita ACCESS EXCLUSIVE sem
+-- necessidade numa migration que só varre o que outra etapa já tratou), e a
+-- que já tem a política não a recebe de novo, então uma etapa posterior pode
+-- chamá-la de novo sobre o esquema inteiro sem duplicar nem travar à toa.
 -- -----------------------------------------------------------------------------
 
 CREATE FUNCTION shared.aplicar_isolamento_por_instituicao() RETURNS void LANGUAGE plpgsql AS $$
@@ -1585,16 +1587,20 @@ DECLARE
   t record;
 BEGIN
   FOR t IN
-    SELECT c.table_schema, c.table_name
+    SELECT c.table_schema, c.table_name, pc.relrowsecurity, pc.relforcerowsecurity
       FROM information_schema.columns c
       JOIN information_schema.tables tb
         ON tb.table_schema = c.table_schema AND tb.table_name = c.table_name AND tb.table_type = 'BASE TABLE'
+      JOIN pg_namespace pn ON pn.nspname = c.table_schema
+      JOIN pg_class pc     ON pc.relnamespace = pn.oid AND pc.relname = c.table_name
      WHERE c.column_name = 'instituicao_id'
        AND c.table_schema IN ('shared','identidade','pessoas','financeiro','eventos','estoque')
        AND (c.table_schema, c.table_name) <> ('shared','outbox')
   LOOP
-    EXECUTE format('ALTER TABLE %I.%I ENABLE ROW LEVEL SECURITY', t.table_schema, t.table_name);
-    EXECUTE format('ALTER TABLE %I.%I FORCE ROW LEVEL SECURITY', t.table_schema, t.table_name);
+    IF NOT (t.relrowsecurity AND t.relforcerowsecurity) THEN
+      EXECUTE format('ALTER TABLE %I.%I ENABLE ROW LEVEL SECURITY', t.table_schema, t.table_name);
+      EXECUTE format('ALTER TABLE %I.%I FORCE ROW LEVEL SECURITY', t.table_schema, t.table_name);
+    END IF;
     IF NOT EXISTS (
       SELECT 1 FROM pg_policy p
         JOIN pg_class c     ON c.oid = p.polrelid
