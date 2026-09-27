@@ -10,7 +10,9 @@ export interface ResultadoErro<E> {
 
 export type Result<T, E> = ResultadoOk<T> | ResultadoErro<E>;
 
-export function ok<T>(valor: T): Result<T, never> {
+export function ok(): Result<void, never>;
+export function ok<T>(valor: T): Result<T, never>;
+export function ok<T>(valor?: T): Result<T | undefined, never> {
   return { tipo: 'ok', valor };
 }
 
@@ -34,10 +36,10 @@ export function mapearErro<T, E, F>(resultado: Result<T, E>, transformar: (erro:
   return ehErr(resultado) ? err(transformar(resultado.erro)) : resultado;
 }
 
-export function encadear<T, E, U>(
+export function encadear<T, E, U, F>(
   resultado: Result<T, E>,
-  continuar: (valor: T) => Result<U, E>,
-): Result<U, E> {
+  continuar: (valor: T) => Result<U, F>,
+): Result<U, E | F> {
   return ehOk(resultado) ? continuar(resultado.valor) : resultado;
 }
 

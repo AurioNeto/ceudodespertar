@@ -32,6 +32,10 @@ describe('RaizDeAgregado', () => {
     expect(new AgregadoDeTeste('id-1', 5).versao).toBe(5);
   });
 
+  it.each([0, -3, 1.5, Number.NaN, Number.POSITIVE_INFINITY])('recusa a versão %s vinda da persistência', (versao) => {
+    expect(() => new AgregadoDeTeste('id-1', versao)).toThrow(RangeError);
+  });
+
   it('acumula eventos registrados', () => {
     const agregado = new AgregadoDeTeste('id-1');
 

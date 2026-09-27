@@ -18,6 +18,10 @@ describe('ok e err', () => {
     expect(ehErr(resultado)).toBe(false);
   });
 
+  it('ok sem argumento representa sucesso sem valor', () => {
+    expect(ok()).toStrictEqual({ tipo: 'ok', valor: undefined });
+  });
+
   it('err carrega o erro e ehErr reconhece', () => {
     const resultado = err('falhou');
 

@@ -15,13 +15,10 @@ export default defineConfig({
     include: ['src/**/*.spec.ts', 'test/**/*.spec.ts'],
     coverage: {
       provider: 'v8',
-      include: ['src/shared/kernel/**/*.ts'],
-      exclude: ['src/shared/kernel/**/*.spec.ts'],
+      include: ['src/**/*.ts'],
+      exclude: ['src/**/*.spec.ts'],
       thresholds: {
-        branches: 100,
-        functions: 100,
-        lines: 100,
-        statements: 100,
+        'src/shared/kernel/**': { 100: true },
       },
     },
   },
