@@ -1,7 +1,15 @@
 import { createHash, randomBytes } from 'node:crypto';
 
-const [, , clientId, redirectUri, username, password] = process.argv;
+const [, , clientId, redirectUri, username] = process.argv;
 const emissor = process.env.OIDC_EMISSOR ?? 'http://localhost:8080/realms/cdd';
+
+async function lerSenhaDoStdin() {
+  const pedacos = [];
+  for await (const pedaco of process.stdin) pedacos.push(pedaco);
+  return Buffer.concat(pedacos).toString('utf8').replace(/\r?\n$/, '');
+}
+
+const password = await lerSenhaDoStdin();
 
 function base64url(buffer) {
   return buffer.toString('base64url');

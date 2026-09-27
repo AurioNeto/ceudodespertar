@@ -1,19 +1,26 @@
-import { existsSync, readFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   ATRIBUTOS_VIVOS_POR_CLIENTE,
   CLIENTES_EMBUTIDOS_E_ADMIN_CLI,
+  CLIENTES_SEM_OVERRIDE_DE_FLUXO_DECLARADO,
+  COMPOSITES_ESPERADOS_DE_DEFAULT_ROLES,
   ESCOPOS_ATRIBUIDOS_POR_CLIENTE,
   ESCOPOS_PADRAO_DO_REALM,
+  FLUXOS_VIVOS_ESPERADOS,
   MAPEADORES_POR_ESCOPO_PADRAO,
   MODELO_CLIENTES,
   MODELO_REALM_VIVO,
+  MODELO_USUARIOS,
   PAPEIS_EFETIVOS_ESPERADOS,
   PROTOCOL_MAPPERS_VIVOS_POR_CLIENTE,
+  REQUIRED_ACTIONS_ESPERADAS,
+  SCOPE_MAPPINGS_DE_REALM_MANAGEMENT_ESPERADOS,
   compararComEspecificacao,
   conjunto,
   extrairCampos,
+  normalizarBooleanoTexto,
   objeto,
   objetoComApenas,
 } from './modelo-esperado.mjs';
@@ -24,23 +31,36 @@ const NOME_DO_REALM = 'cdd';
 const diretorioDoScript = dirname(fileURLToPath(import.meta.url));
 const raizDoRepositorio = join(diretorioDoScript, '..', '..');
 
-function carregarEnvExample() {
-  const caminhoDoEnv = join(raizDoRepositorio, '.env');
-  if (!existsSync(caminhoDoEnv)) return;
-  for (const linha of readFileSync(caminhoDoEnv, 'utf8').split('\n')) {
-    const semComentario = linha.trim();
-    if (semComentario === '' || semComentario.startsWith('#')) continue;
-    const indiceDoIgual = semComentario.indexOf('=');
-    if (indiceDoIgual === -1) continue;
-    const chave = semComentario.slice(0, indiceDoIgual);
-    const valorBruto = semComentario.slice(indiceDoIgual + 1);
-    if (process.env[chave] === undefined) {
-      process.env[chave] = valorBruto;
+function carregarVariaveisResolvidasDoCompose() {
+  let saida;
+  try {
+    saida = execFileSync('docker', ['compose', 'config', '--format', 'json'], {
+      cwd: raizDoRepositorio,
+      encoding: 'utf8',
+      timeout: TEMPO_LIMITE_MS,
+      stdio: ['ignore', 'pipe', 'ignore'],
+    });
+  } catch {
+    return;
+  }
+  let configuracao;
+  try {
+    configuracao = JSON.parse(saida);
+  } catch {
+    return;
+  }
+  const ambienteDoKeycloak = configuracao.services?.keycloak?.environment ?? {};
+  for (const [chave, valorResolvido] of Object.entries(ambienteDoKeycloak)) {
+    if (process.env[chave] === undefined && valorResolvido !== undefined && valorResolvido !== null) {
+      process.env[chave] = String(valorResolvido);
     }
+  }
+  if (process.env.KEYCLOAK_ADMIN_SENHA === undefined && process.env.KC_BOOTSTRAP_ADMIN_PASSWORD !== undefined) {
+    process.env.KEYCLOAK_ADMIN_SENHA = process.env.KC_BOOTSTRAP_ADMIN_PASSWORD;
   }
 }
 
-carregarEnvExample();
+carregarVariaveisResolvidasDoCompose();
 
 function exigirVariavel(nomeDaVariavel) {
   const valorAtual = process.env[nomeDaVariavel];
@@ -157,11 +177,24 @@ compararComEspecificacao(
   falhas,
 );
 
-const todosOsClientes = (await chamarAdminApi(token, '/clients')) ?? [];
+for (const [alias, especificacaoDeExecucoes] of Object.entries(FLUXOS_VIVOS_ESPERADOS)) {
+  const execucoes = (await chamarAdminApi(token, `/authentication/flows/${encodeURIComponent(alias)}/executions`)) ?? [];
+  compararComEspecificacao(execucoes, especificacaoDeExecucoes, `realm.fluxos[${alias}]`, falhas);
+}
+
+const acoesObrigatoriasVivas = (await chamarAdminApi(token, '/authentication/required-actions')) ?? [];
+const acoesObrigatoriasProjetadas = acoesObrigatoriasVivas.map((acao) => extrairCampos(acao, ['alias', 'enabled', 'defaultAction']));
+compararComEspecificacao(acoesObrigatoriasProjetadas, REQUIRED_ACTIONS_ESPERADAS, 'realm.required-actions', falhas);
+
+const todosOsClientes = (await chamarAdminApi(token, '/clients?max=1000')) ?? [];
 
 function encontrarCliente(clientId) {
   return todosOsClientes.find((cliente) => cliente.clientId === clientId);
 }
+
+const clientIdsEsperados = new Set([...Object.keys(MODELO_CLIENTES), ...Object.keys(CLIENTES_EMBUTIDOS_E_ADMIN_CLI)]);
+const clientIdsVivos = new Set(todosOsClientes.map((cliente) => cliente.clientId));
+compararComEspecificacao([...clientIdsVivos], conjunto([...clientIdsEsperados]), 'realm.clients[].clientId', falhas);
 
 for (const clientId of Object.keys(MODELO_CLIENTES)) {
   const clienteVivo = encontrarCliente(clientId);
@@ -172,9 +205,10 @@ for (const clientId of Object.keys(MODELO_CLIENTES)) {
   }
 
   const modeloDoCliente = MODELO_CLIENTES[clientId];
-  const chavesEscalares = Object.keys(modeloDoCliente.obrigatorias).filter(
-    (chave) => !['attributes', 'protocolMappers', 'secret'].includes(chave),
-  );
+  const chavesEscalares = [
+    ...Object.keys(modeloDoCliente.obrigatorias),
+    ...Object.keys(modeloDoCliente.opcionais ?? {}),
+  ].filter((chave) => !['attributes', 'protocolMappers', 'secret'].includes(chave));
   compararComEspecificacao(
     extrairCampos(clienteVivo, chavesEscalares),
     objetoComApenas(modeloDoCliente, chavesEscalares),
@@ -202,14 +236,31 @@ for (const clientId of Object.keys(MODELO_CLIENTES)) {
   }
 }
 
+for (const clientId of CLIENTES_SEM_OVERRIDE_DE_FLUXO_DECLARADO) {
+  const clienteVivo = encontrarCliente(clientId);
+  if (!clienteVivo) continue;
+  const overrides = clienteVivo.authenticationFlowBindingOverrides ?? {};
+  if (Object.keys(overrides).length > 0) {
+    falhas.push(`clientes[${clientId}].authenticationFlowBindingOverrides precisa estar vazio, encontrado ${JSON.stringify(overrides)}`);
+  }
+}
+
+for (const [clientId, especificacaoDeMapeadores] of Object.entries(PROTOCOL_MAPPERS_VIVOS_POR_CLIENTE)) {
+  if (MODELO_CLIENTES[clientId]) continue;
+  const clienteVivo = encontrarCliente(clientId);
+  if (!clienteVivo) continue;
+  const mapeadoresSemId = (clienteVivo.protocolMappers ?? []).map(({ id, ...resto }) => resto);
+  compararComEspecificacao(mapeadoresSemId, especificacaoDeMapeadores, `clientesEmbutidos[${clientId}].protocolMappers`, falhas);
+}
+
 const escoposConsultados = new Map();
 
 async function obterMapeadoresDoEscopo(escopoId, nomeDoEscopo) {
   if (escoposConsultados.has(nomeDoEscopo)) return escoposConsultados.get(nomeDoEscopo);
   const detalhe = await chamarAdminApi(token, `/client-scopes/${escopoId}`);
-  const nomes = (detalhe?.protocolMappers ?? []).map((mapeador) => mapeador.name);
-  escoposConsultados.set(nomeDoEscopo, nomes);
-  return nomes;
+  const mapeadores = (detalhe?.protocolMappers ?? []).map(({ id, ...resto }) => resto);
+  escoposConsultados.set(nomeDoEscopo, mapeadores);
+  return mapeadores;
 }
 
 for (const [clientId, escopos] of Object.entries(ESCOPOS_ATRIBUIDOS_POR_CLIENTE)) {
@@ -234,21 +285,38 @@ for (const [clientId, escopos] of Object.entries(ESCOPOS_ATRIBUIDOS_POR_CLIENTE)
   );
 
   for (const escopoVivo of [...escoposPadraoVivos, ...escoposOpcionaisVivos]) {
-    const nomesEsperados = MAPEADORES_POR_ESCOPO_PADRAO[escopoVivo.name];
-    if (!nomesEsperados) continue;
-    const nomesVivos = await obterMapeadoresDoEscopo(escopoVivo.id, escopoVivo.name);
-    compararComEspecificacao(
-      nomesVivos,
-      conjunto(nomesEsperados),
-      `escopos[${escopoVivo.name}].protocolMappers`,
-      falhas,
-    );
+    const especificacaoEsperada = MAPEADORES_POR_ESCOPO_PADRAO[escopoVivo.name];
+    if (!especificacaoEsperada) continue;
+    const mapeadoresVivos = await obterMapeadoresDoEscopo(escopoVivo.id, escopoVivo.name);
+    compararComEspecificacao(mapeadoresVivos, especificacaoEsperada, `escopos[${escopoVivo.name}].protocolMappers`, falhas);
   }
 }
+
+function ehUsuarioDeContaDeServico(nomeDeUsuario) {
+  return 'serviceAccountClientId' in MODELO_USUARIOS[nomeDeUsuario].obrigatorias;
+}
+
+const usernamesRegularesEsperados = Object.keys(MODELO_USUARIOS).filter((nome) => !ehUsuarioDeContaDeServico(nome));
+const usernamesDeContaDeServicoEsperados = Object.keys(MODELO_USUARIOS).filter(ehUsuarioDeContaDeServico);
+
+const usuariosRegularesVivos = (await chamarAdminApi(token, '/users?max=1000')) ?? [];
+compararComEspecificacao(
+  usuariosRegularesVivos.map((usuario) => usuario.username),
+  conjunto(usernamesRegularesEsperados),
+  'realm.users[].username (excluindo contas de serviço, que o Keycloak esconde dessa listagem)',
+  falhas,
+);
 
 async function obterIdDoUsuario(nomeDeUsuario) {
   const usuarios = (await chamarAdminApi(token, `/users?username=${encodeURIComponent(nomeDeUsuario)}&exact=true`)) ?? [];
   return usuarios[0]?.id ?? null;
+}
+
+for (const nomeDeUsuario of usernamesDeContaDeServicoEsperados) {
+  const encontrado = await obterIdDoUsuario(nomeDeUsuario);
+  if (!encontrado) {
+    falhas.push(`realm.users[] não encontrou o usuário de conta de serviço "${nomeDeUsuario}"`);
+  }
 }
 
 async function obterPapeisRealmCompostos(usuarioId) {
@@ -288,6 +356,55 @@ for (const [nomeDeUsuario, esperado] of Object.entries(PAPEIS_EFETIVOS_ESPERADOS
   compararComEspecificacao(papeisDeClientesVivos, especificacaoDeClientes, `${caminho}.clientes`, falhas);
 }
 
+const compositesDeDefaultRoles = (await chamarAdminApi(token, '/roles/default-roles-cdd/composites')) ?? [];
+const compositesDeRealm = compositesDeDefaultRoles.filter((composite) => !composite.clientRole).map((composite) => composite.name);
+compararComEspecificacao(
+  compositesDeRealm,
+  conjunto(COMPOSITES_ESPERADOS_DE_DEFAULT_ROLES.realm),
+  'realm.default-roles-cdd.composites.realm',
+  falhas,
+);
+
+const compositesDeClientesPorNome = {};
+for (const composite of compositesDeDefaultRoles.filter((item) => item.clientRole)) {
+  const clienteContainer = todosOsClientes.find((cliente) => cliente.id === composite.containerId);
+  const nomeDoCliente = clienteContainer?.clientId ?? composite.containerId;
+  (compositesDeClientesPorNome[nomeDoCliente] ??= []).push(composite.name);
+}
+const especificacaoDeCompositesDeClientes = objeto({
+  obrigatorias: Object.fromEntries(
+    Object.entries(COMPOSITES_ESPERADOS_DE_DEFAULT_ROLES.clientes).map(([clientId, papeis]) => [clientId, conjunto(papeis)]),
+  ),
+});
+compararComEspecificacao(
+  compositesDeClientesPorNome,
+  especificacaoDeCompositesDeClientes,
+  'realm.default-roles-cdd.composites.clientes',
+  falhas,
+);
+
+const realmManagement = encontrarCliente('realm-management');
+if (realmManagement) {
+  const todosOsClientIdsConhecidos = new Set([...Object.keys(MODELO_CLIENTES), ...Object.keys(CLIENTES_EMBUTIDOS_E_ADMIN_CLI)]);
+  for (const clientId of todosOsClientIdsConhecidos) {
+    const clienteVivo = encontrarCliente(clientId);
+    if (!clienteVivo) continue;
+    const caminho = `clientes[${clientId}].scope-mappings`;
+
+    const papeisDeRealmNoEscopo = (await chamarAdminApi(token, `/clients/${clienteVivo.id}/scope-mappings/realm`)) ?? [];
+    compararComEspecificacao(papeisDeRealmNoEscopo.map((papel) => papel.name), conjunto([]), `${caminho}.realm`, falhas);
+
+    const papeisDeRealmManagementNoEscopo =
+      (await chamarAdminApi(token, `/clients/${clienteVivo.id}/scope-mappings/clients/${realmManagement.id}`)) ?? [];
+    compararComEspecificacao(
+      papeisDeRealmManagementNoEscopo.map((papel) => papel.name),
+      conjunto(SCOPE_MAPPINGS_DE_REALM_MANAGEMENT_ESPERADOS[clientId] ?? []),
+      `${caminho}['realm-management']`,
+      falhas,
+    );
+  }
+}
+
 for (const [clientId, esperado] of Object.entries(CLIENTES_EMBUTIDOS_E_ADMIN_CLI)) {
   const clienteVivo = encontrarCliente(clientId);
   const caminho = `clientesEmbutidos[${clientId}]`;
@@ -302,13 +419,21 @@ for (const [clientId, esperado] of Object.entries(CLIENTES_EMBUTIDOS_E_ADMIN_CLI
     );
   }
 
-  const dispositivoLigado = (clienteVivo.attributes ?? {})['oauth2.device.authorization.grant.enabled'] === 'true';
+  if (clienteVivo.serviceAccountsEnabled !== esperado.serviceAccountsEnabled) {
+    falhas.push(
+      `${caminho}.serviceAccountsEnabled precisa ser ${esperado.serviceAccountsEnabled}, encontrado ${clienteVivo.serviceAccountsEnabled}`,
+    );
+  }
+
+  const dispositivoLigado = normalizarBooleanoTexto((clienteVivo.attributes ?? {})['oauth2.device.authorization.grant.enabled']) === 'true';
   if (dispositivoLigado) {
     falhas.push(`${caminho} precisa ter o device flow desligado, encontrado ligado`);
   }
 
   const mapeadorDeAudienciaCddApi = (clienteVivo.protocolMappers ?? []).some(
-    (mapeador) => mapeador.protocolMapper === 'oidc-audience-mapper' && mapeador.config?.['included.client.audience'] === 'cdd-api',
+    (mapeador) =>
+      mapeador.protocolMapper === 'oidc-audience-mapper' &&
+      (mapeador.config?.['included.client.audience'] === 'cdd-api' || mapeador.config?.['included.custom.audience'] === 'cdd-api'),
   );
   if (mapeadorDeAudienciaCddApi) {
     falhas.push(`${caminho} não pode ter mapeador de audiência para cdd-api`);

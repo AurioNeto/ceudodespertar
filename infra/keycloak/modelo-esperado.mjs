@@ -156,6 +156,16 @@ export function extrairPlaceholdersDeAmbiente(valorQualquer, encontrados = new S
   return encontrados;
 }
 
+export function normalizarBooleanoTexto(valorAtual) {
+  return typeof valorAtual === 'string' ? valorAtual.toLowerCase() : valorAtual;
+}
+
+function validarCampoQueDeveFicarVazio(atual, caminho, falhas) {
+  if (atual !== '' && atual !== null && atual !== undefined) {
+    falhas.push(`${caminho} precisa ficar vazio (sem rootUrl), encontrado ${JSON.stringify(atual)}`);
+  }
+}
+
 const MAPEADOR_AUDIENCIA_CDD_API = objeto({
   obrigatorias: {
     name: valor('audiencia-cdd-api'),
@@ -172,11 +182,11 @@ const MAPEADOR_AUDIENCIA_CDD_API = objeto({
   },
 });
 
-function mapeadorSoIdToken({ name, protocolMapper, config }) {
+function mapeadorPadrao({ name, protocol = 'openid-connect', protocolMapper, config }) {
   return objeto({
     obrigatorias: {
       name: valor(name),
-      protocol: valor('openid-connect'),
+      protocol: valor(protocol),
       protocolMapper: valor(protocolMapper),
       consentRequired: valor(false),
       config: objeto({
@@ -185,6 +195,8 @@ function mapeadorSoIdToken({ name, protocolMapper, config }) {
     },
   });
 }
+
+const mapeadorSoIdToken = mapeadorPadrao;
 
 const MAPEADORES_SO_ID_TOKEN_ITENS = {
   'nome-completo-so-id-token': mapeadorSoIdToken({
@@ -280,6 +292,7 @@ export const MODELO_CLIENTES = {
       directAccessGrantsEnabled: valor(false),
       implicitFlowEnabled: valor(false),
       serviceAccountsEnabled: valor(false),
+      fullScopeAllowed: valor(false),
       redirectUris: conjunto(['http://localhost:5173/*']),
       webOrigins: conjunto(['http://localhost:5173']),
       defaultClientScopes: conjunto(['web-origins', 'acr', 'roles', 'basic']),
@@ -291,6 +304,9 @@ export const MODELO_CLIENTES = {
         },
       }),
       protocolMappers: listaDeObjetos({ chavePrimaria: 'name', itens: MAPEADORES_DE_IDENTIDADE_ITENS }),
+    },
+    opcionais: {
+      rootUrl: customizado(validarCampoQueDeveFicarVazio),
     },
   }),
 
@@ -306,11 +322,16 @@ export const MODELO_CLIENTES = {
       directAccessGrantsEnabled: valor(false),
       implicitFlowEnabled: valor(false),
       serviceAccountsEnabled: valor(true),
-      defaultClientScopes: conjunto(['web-origins', 'acr', 'roles', 'basic']),
+      fullScopeAllowed: valor(false),
+      webOrigins: conjunto([]),
+      defaultClientScopes: conjunto(['web-origins', 'service_account', 'acr', 'roles', 'basic']),
       optionalClientScopes: conjunto([]),
       description: valor(
         'Confidencial, só conta de serviço; usado pela API para gerenciar usuários do Keycloak (papel manage-users).',
       ),
+    },
+    opcionais: {
+      rootUrl: customizado(validarCampoQueDeveFicarVazio),
     },
   }),
 
@@ -324,13 +345,18 @@ export const MODELO_CLIENTES = {
       directAccessGrantsEnabled: valor(true),
       implicitFlowEnabled: valor(false),
       serviceAccountsEnabled: valor(false),
+      fullScopeAllowed: valor(false),
       redirectUris: conjunto([]),
+      webOrigins: conjunto([]),
       defaultClientScopes: conjunto(['web-origins', 'acr', 'roles', 'basic']),
       optionalClientScopes: conjunto([]),
       description: valor(
         'Somente ambiente local/CI de desenvolvimento — obtém token sem navegador para o e2e. Não usar fora de desenvolvimento.',
       ),
       protocolMappers: listaDeObjetos({ chavePrimaria: 'name', itens: MAPEADORES_DE_IDENTIDADE_ITENS }),
+    },
+    opcionais: {
+      rootUrl: customizado(validarCampoQueDeveFicarVazio),
     },
   }),
 
@@ -454,6 +480,19 @@ export const MODELO_REALM = objeto({
       },
     }),
 
+    clientScopeMappings: objeto({
+      obrigatorias: {
+        'realm-management': listaDeObjetos({
+          chavePrimaria: 'client',
+          itens: {
+            'cdd-api-admin': objeto({
+              obrigatorias: { client: valor('cdd-api-admin'), roles: conjunto(['manage-users']) },
+            }),
+          },
+        }),
+      },
+    }),
+
     clients: listaDeObjetos({ chavePrimaria: 'clientId', itens: MODELO_CLIENTES }),
     users: listaDeObjetos({ chavePrimaria: 'username', itens: MODELO_USUARIOS }),
   },
@@ -476,16 +515,17 @@ export const VARIAVEIS_DE_AMBIENTE = {
 
 export function objetoComApenas(especificacaoObjeto, chaves) {
   const obrigatorias = {};
+  const opcionais = {};
   for (const chave of chaves) {
     if (chave in especificacaoObjeto.obrigatorias) {
       obrigatorias[chave] = especificacaoObjeto.obrigatorias[chave];
     } else if (especificacaoObjeto.opcionais && chave in especificacaoObjeto.opcionais) {
-      obrigatorias[chave] = especificacaoObjeto.opcionais[chave];
+      opcionais[chave] = especificacaoObjeto.opcionais[chave];
     } else {
       throw new Error(`objetoComApenas: especificação não conhece a chave "${chave}"`);
     }
   }
-  return objeto({ obrigatorias });
+  return objeto({ obrigatorias, opcionais });
 }
 
 export function extrairCampos(objetoQualquer, chaves) {
@@ -543,6 +583,23 @@ export const MODELO_REALM_VIVO = objeto({
     browserFlow: valor('browser'),
     directGrantFlow: valor('direct grant'),
     resetCredentialsFlow: valor('reset credentials'),
+
+    accessCodeLifespan: valor(60),
+    actionTokenGeneratedByUserLifespan: valor(300),
+    sslRequired: valor('external'),
+
+    otpPolicyType: valor('totp'),
+    otpPolicyAlgorithm: valor('HmacSHA1'),
+    otpPolicyInitialCounter: valor(0),
+    otpPolicyDigits: valor(6),
+    otpPolicyLookAheadWindow: valor(1),
+    otpPolicyPeriod: valor(30),
+    otpPolicyCodeReusable: valor(false),
+
+    eventsEnabled: valor(false),
+    adminEventsEnabled: valor(false),
+    adminEventsDetailsEnabled: valor(false),
+    eventsListeners: conjunto(['jboss-logging']),
   },
 });
 
@@ -555,6 +612,7 @@ export const CAMPOS_ESCALARES_DE_CLIENTE_VIVO = [
   'directAccessGrantsEnabled',
   'implicitFlowEnabled',
   'serviceAccountsEnabled',
+  'fullScopeAllowed',
   'defaultClientScopes',
   'optionalClientScopes',
 ];
@@ -584,6 +642,35 @@ const MAPEADORES_DE_IDENTIDADE_ITENS_VIVOS = {
 export const PROTOCOL_MAPPERS_VIVOS_POR_CLIENTE = {
   'cdd-web': listaDeObjetos({ chavePrimaria: 'name', itens: MAPEADORES_DE_IDENTIDADE_ITENS_VIVOS }),
   'cdd-teste': listaDeObjetos({ chavePrimaria: 'name', itens: MAPEADORES_DE_IDENTIDADE_ITENS_VIVOS }),
+  'cdd-api-admin': listaDeObjetos({ chavePrimaria: 'name', itens: {} }),
+  'admin-cli': listaDeObjetos({ chavePrimaria: 'name', itens: {} }),
+  account: listaDeObjetos({ chavePrimaria: 'name', itens: {} }),
+  broker: listaDeObjetos({ chavePrimaria: 'name', itens: {} }),
+  'realm-management': listaDeObjetos({ chavePrimaria: 'name', itens: {} }),
+  'account-console': listaDeObjetos({
+    chavePrimaria: 'name',
+    itens: {
+      'audience resolve': mapeadorPadrao({ name: 'audience resolve', protocolMapper: 'oidc-audience-resolve-mapper', config: {} }),
+    },
+  }),
+  'security-admin-console': listaDeObjetos({
+    chavePrimaria: 'name',
+    itens: {
+      locale: mapeadorPadrao({
+        name: 'locale',
+        protocolMapper: 'oidc-usermodel-attribute-mapper',
+        config: {
+          'introspection.token.claim': 'true',
+          'userinfo.token.claim': 'true',
+          'user.attribute': 'locale',
+          'id.token.claim': 'true',
+          'access.token.claim': 'true',
+          'claim.name': 'locale',
+          'jsonType.label': 'String',
+        },
+      }),
+    },
+  }),
 };
 
 export const ATRIBUTOS_VIVOS_POR_CLIENTE = {
@@ -616,40 +703,463 @@ export const ATRIBUTOS_VIVOS_POR_CLIENTE = {
 };
 
 export const MAPEADORES_POR_ESCOPO_PADRAO = {
-  'web-origins': ['allowed web origins'],
-  acr: ['acr loa level'],
-  roles: ['audience resolve', 'client roles', 'realm roles'],
-  basic: ['auth_time', 'sub'],
-  profile: [
-    'full name',
-    'family name',
-    'given name',
-    'middle name',
-    'nickname',
-    'username',
-    'profile',
-    'picture',
-    'website',
-    'gender',
-    'birthdate',
-    'zoneinfo',
-    'locale',
-    'updated at',
-  ],
-  email: ['email', 'email verified'],
-  address: ['address'],
-  phone: ['phone number', 'phone number verified'],
-  organization: ['organization'],
-  'microprofile-jwt': ['upn', 'groups'],
+  'web-origins': listaDeObjetos({
+    chavePrimaria: 'name',
+    itens: {
+      'allowed web origins': mapeadorPadrao({
+        name: 'allowed web origins',
+        protocolMapper: 'oidc-allowed-origins-mapper',
+        config: { 'introspection.token.claim': 'true', 'access.token.claim': 'true' },
+      }),
+    },
+  }),
+  acr: listaDeObjetos({
+    chavePrimaria: 'name',
+    itens: {
+      'acr loa level': mapeadorPadrao({
+        name: 'acr loa level',
+        protocolMapper: 'oidc-acr-mapper',
+        config: { 'id.token.claim': 'true', 'introspection.token.claim': 'true', 'access.token.claim': 'true' },
+      }),
+    },
+  }),
+  roles: listaDeObjetos({
+    chavePrimaria: 'name',
+    itens: {
+      'realm roles': mapeadorPadrao({
+        name: 'realm roles',
+        protocolMapper: 'oidc-usermodel-realm-role-mapper',
+        config: {
+          'user.attribute': 'foo',
+          'introspection.token.claim': 'true',
+          'access.token.claim': 'true',
+          'claim.name': 'realm_access.roles',
+          'jsonType.label': 'String',
+          multivalued: 'true',
+        },
+      }),
+      'audience resolve': mapeadorPadrao({
+        name: 'audience resolve',
+        protocolMapper: 'oidc-audience-resolve-mapper',
+        config: { 'introspection.token.claim': 'true', 'access.token.claim': 'true' },
+      }),
+      'client roles': mapeadorPadrao({
+        name: 'client roles',
+        protocolMapper: 'oidc-usermodel-client-role-mapper',
+        config: {
+          'user.attribute': 'foo',
+          'introspection.token.claim': 'true',
+          'access.token.claim': 'true',
+          'claim.name': 'resource_access.${client_id}.roles',
+          'jsonType.label': 'String',
+          multivalued: 'true',
+        },
+      }),
+    },
+  }),
+  basic: listaDeObjetos({
+    chavePrimaria: 'name',
+    itens: {
+      auth_time: mapeadorPadrao({
+        name: 'auth_time',
+        protocolMapper: 'oidc-usersessionmodel-note-mapper',
+        config: {
+          'user.session.note': 'AUTH_TIME',
+          'id.token.claim': 'true',
+          'introspection.token.claim': 'true',
+          'access.token.claim': 'true',
+          'claim.name': 'auth_time',
+          'jsonType.label': 'long',
+        },
+      }),
+      sub: mapeadorPadrao({
+        name: 'sub',
+        protocolMapper: 'oidc-sub-mapper',
+        config: { 'introspection.token.claim': 'true', 'access.token.claim': 'true' },
+      }),
+    },
+  }),
+  profile: listaDeObjetos({
+    chavePrimaria: 'name',
+    itens: {
+      'full name': mapeadorPadrao({
+        name: 'full name',
+        protocolMapper: 'oidc-full-name-mapper',
+        config: { 'id.token.claim': 'true', 'introspection.token.claim': 'true', 'access.token.claim': 'true', 'userinfo.token.claim': 'true' },
+      }),
+      'family name': mapeadorPadrao({
+        name: 'family name',
+        protocolMapper: 'oidc-usermodel-attribute-mapper',
+        config: {
+          'introspection.token.claim': 'true',
+          'userinfo.token.claim': 'true',
+          'user.attribute': 'lastName',
+          'id.token.claim': 'true',
+          'access.token.claim': 'true',
+          'claim.name': 'family_name',
+          'jsonType.label': 'String',
+        },
+      }),
+      'given name': mapeadorPadrao({
+        name: 'given name',
+        protocolMapper: 'oidc-usermodel-attribute-mapper',
+        config: {
+          'introspection.token.claim': 'true',
+          'userinfo.token.claim': 'true',
+          'user.attribute': 'firstName',
+          'id.token.claim': 'true',
+          'access.token.claim': 'true',
+          'claim.name': 'given_name',
+          'jsonType.label': 'String',
+        },
+      }),
+      'middle name': mapeadorPadrao({
+        name: 'middle name',
+        protocolMapper: 'oidc-usermodel-attribute-mapper',
+        config: {
+          'introspection.token.claim': 'true',
+          'userinfo.token.claim': 'true',
+          'user.attribute': 'middleName',
+          'id.token.claim': 'true',
+          'access.token.claim': 'true',
+          'claim.name': 'middle_name',
+          'jsonType.label': 'String',
+        },
+      }),
+      nickname: mapeadorPadrao({
+        name: 'nickname',
+        protocolMapper: 'oidc-usermodel-attribute-mapper',
+        config: {
+          'introspection.token.claim': 'true',
+          'userinfo.token.claim': 'true',
+          'user.attribute': 'nickname',
+          'id.token.claim': 'true',
+          'access.token.claim': 'true',
+          'claim.name': 'nickname',
+          'jsonType.label': 'String',
+        },
+      }),
+      username: mapeadorPadrao({
+        name: 'username',
+        protocolMapper: 'oidc-usermodel-attribute-mapper',
+        config: {
+          'introspection.token.claim': 'true',
+          'userinfo.token.claim': 'true',
+          'user.attribute': 'username',
+          'id.token.claim': 'true',
+          'access.token.claim': 'true',
+          'claim.name': 'preferred_username',
+          'jsonType.label': 'String',
+        },
+      }),
+      profile: mapeadorPadrao({
+        name: 'profile',
+        protocolMapper: 'oidc-usermodel-attribute-mapper',
+        config: {
+          'introspection.token.claim': 'true',
+          'userinfo.token.claim': 'true',
+          'user.attribute': 'profile',
+          'id.token.claim': 'true',
+          'access.token.claim': 'true',
+          'claim.name': 'profile',
+          'jsonType.label': 'String',
+        },
+      }),
+      picture: mapeadorPadrao({
+        name: 'picture',
+        protocolMapper: 'oidc-usermodel-attribute-mapper',
+        config: {
+          'introspection.token.claim': 'true',
+          'userinfo.token.claim': 'true',
+          'user.attribute': 'picture',
+          'id.token.claim': 'true',
+          'access.token.claim': 'true',
+          'claim.name': 'picture',
+          'jsonType.label': 'String',
+        },
+      }),
+      website: mapeadorPadrao({
+        name: 'website',
+        protocolMapper: 'oidc-usermodel-attribute-mapper',
+        config: {
+          'introspection.token.claim': 'true',
+          'userinfo.token.claim': 'true',
+          'user.attribute': 'website',
+          'id.token.claim': 'true',
+          'access.token.claim': 'true',
+          'claim.name': 'website',
+          'jsonType.label': 'String',
+        },
+      }),
+      gender: mapeadorPadrao({
+        name: 'gender',
+        protocolMapper: 'oidc-usermodel-attribute-mapper',
+        config: {
+          'introspection.token.claim': 'true',
+          'userinfo.token.claim': 'true',
+          'user.attribute': 'gender',
+          'id.token.claim': 'true',
+          'access.token.claim': 'true',
+          'claim.name': 'gender',
+          'jsonType.label': 'String',
+        },
+      }),
+      birthdate: mapeadorPadrao({
+        name: 'birthdate',
+        protocolMapper: 'oidc-usermodel-attribute-mapper',
+        config: {
+          'introspection.token.claim': 'true',
+          'userinfo.token.claim': 'true',
+          'user.attribute': 'birthdate',
+          'id.token.claim': 'true',
+          'access.token.claim': 'true',
+          'claim.name': 'birthdate',
+          'jsonType.label': 'String',
+        },
+      }),
+      zoneinfo: mapeadorPadrao({
+        name: 'zoneinfo',
+        protocolMapper: 'oidc-usermodel-attribute-mapper',
+        config: {
+          'introspection.token.claim': 'true',
+          'userinfo.token.claim': 'true',
+          'user.attribute': 'zoneinfo',
+          'id.token.claim': 'true',
+          'access.token.claim': 'true',
+          'claim.name': 'zoneinfo',
+          'jsonType.label': 'String',
+        },
+      }),
+      locale: mapeadorPadrao({
+        name: 'locale',
+        protocolMapper: 'oidc-usermodel-attribute-mapper',
+        config: {
+          'introspection.token.claim': 'true',
+          'userinfo.token.claim': 'true',
+          'user.attribute': 'locale',
+          'id.token.claim': 'true',
+          'access.token.claim': 'true',
+          'claim.name': 'locale',
+          'jsonType.label': 'String',
+        },
+      }),
+      'updated at': mapeadorPadrao({
+        name: 'updated at',
+        protocolMapper: 'oidc-usermodel-attribute-mapper',
+        config: {
+          'introspection.token.claim': 'true',
+          'userinfo.token.claim': 'true',
+          'user.attribute': 'updatedAt',
+          'id.token.claim': 'true',
+          'access.token.claim': 'true',
+          'claim.name': 'updated_at',
+          'jsonType.label': 'long',
+        },
+      }),
+    },
+  }),
+  email: listaDeObjetos({
+    chavePrimaria: 'name',
+    itens: {
+      email: mapeadorPadrao({
+        name: 'email',
+        protocolMapper: 'oidc-usermodel-attribute-mapper',
+        config: {
+          'introspection.token.claim': 'true',
+          'userinfo.token.claim': 'true',
+          'user.attribute': 'email',
+          'id.token.claim': 'true',
+          'access.token.claim': 'true',
+          'claim.name': 'email',
+          'jsonType.label': 'String',
+        },
+      }),
+      'email verified': mapeadorPadrao({
+        name: 'email verified',
+        protocolMapper: 'oidc-usermodel-property-mapper',
+        config: {
+          'introspection.token.claim': 'true',
+          'userinfo.token.claim': 'true',
+          'user.attribute': 'emailVerified',
+          'id.token.claim': 'true',
+          'access.token.claim': 'true',
+          'claim.name': 'email_verified',
+          'jsonType.label': 'boolean',
+        },
+      }),
+    },
+  }),
+  address: listaDeObjetos({
+    chavePrimaria: 'name',
+    itens: {
+      address: mapeadorPadrao({
+        name: 'address',
+        protocolMapper: 'oidc-address-mapper',
+        config: {
+          'user.attribute.formatted': 'formatted',
+          'user.attribute.country': 'country',
+          'introspection.token.claim': 'true',
+          'user.attribute.postal_code': 'postal_code',
+          'userinfo.token.claim': 'true',
+          'user.attribute.street': 'street',
+          'id.token.claim': 'true',
+          'user.attribute.region': 'region',
+          'access.token.claim': 'true',
+          'user.attribute.locality': 'locality',
+        },
+      }),
+    },
+  }),
+  phone: listaDeObjetos({
+    chavePrimaria: 'name',
+    itens: {
+      'phone number': mapeadorPadrao({
+        name: 'phone number',
+        protocolMapper: 'oidc-usermodel-attribute-mapper',
+        config: {
+          'introspection.token.claim': 'true',
+          'userinfo.token.claim': 'true',
+          'user.attribute': 'phoneNumber',
+          'id.token.claim': 'true',
+          'access.token.claim': 'true',
+          'claim.name': 'phone_number',
+          'jsonType.label': 'String',
+        },
+      }),
+      'phone number verified': mapeadorPadrao({
+        name: 'phone number verified',
+        protocolMapper: 'oidc-usermodel-attribute-mapper',
+        config: {
+          'introspection.token.claim': 'true',
+          'userinfo.token.claim': 'true',
+          'user.attribute': 'phoneNumberVerified',
+          'id.token.claim': 'true',
+          'access.token.claim': 'true',
+          'claim.name': 'phone_number_verified',
+          'jsonType.label': 'boolean',
+        },
+      }),
+    },
+  }),
+  organization: listaDeObjetos({
+    chavePrimaria: 'name',
+    itens: {
+      organization: mapeadorPadrao({
+        name: 'organization',
+        protocolMapper: 'oidc-organization-membership-mapper',
+        config: {
+          'id.token.claim': 'true',
+          'introspection.token.claim': 'true',
+          'access.token.claim': 'true',
+          'claim.name': 'organization',
+          'jsonType.label': 'String',
+          multivalued: 'true',
+        },
+      }),
+    },
+  }),
+  'microprofile-jwt': listaDeObjetos({
+    chavePrimaria: 'name',
+    itens: {
+      upn: mapeadorPadrao({
+        name: 'upn',
+        protocolMapper: 'oidc-usermodel-attribute-mapper',
+        config: {
+          'introspection.token.claim': 'true',
+          'userinfo.token.claim': 'true',
+          'user.attribute': 'username',
+          'id.token.claim': 'true',
+          'access.token.claim': 'true',
+          'claim.name': 'upn',
+          'jsonType.label': 'String',
+        },
+      }),
+      groups: mapeadorPadrao({
+        name: 'groups',
+        protocolMapper: 'oidc-usermodel-realm-role-mapper',
+        config: {
+          'introspection.token.claim': 'true',
+          multivalued: 'true',
+          'user.attribute': 'foo',
+          'id.token.claim': 'true',
+          'access.token.claim': 'true',
+          'claim.name': 'groups',
+          'jsonType.label': 'String',
+        },
+      }),
+    },
+  }),
+  offline_access: listaDeObjetos({ chavePrimaria: 'name', itens: {} }),
+  service_account: listaDeObjetos({
+    chavePrimaria: 'name',
+    itens: {
+      'Client ID': mapeadorPadrao({
+        name: 'Client ID',
+        protocolMapper: 'oidc-usersessionmodel-note-mapper',
+        config: {
+          'user.session.note': 'client_id',
+          'id.token.claim': 'true',
+          'introspection.token.claim': 'true',
+          'access.token.claim': 'true',
+          'claim.name': 'client_id',
+          'jsonType.label': 'String',
+        },
+      }),
+      'Client IP Address': mapeadorPadrao({
+        name: 'Client IP Address',
+        protocolMapper: 'oidc-usersessionmodel-note-mapper',
+        config: {
+          'user.session.note': 'clientAddress',
+          'id.token.claim': 'true',
+          'introspection.token.claim': 'true',
+          'access.token.claim': 'true',
+          'claim.name': 'clientAddress',
+          'jsonType.label': 'String',
+        },
+      }),
+      'Client Host': mapeadorPadrao({
+        name: 'Client Host',
+        protocolMapper: 'oidc-usersessionmodel-note-mapper',
+        config: {
+          'user.session.note': 'clientHost',
+          'id.token.claim': 'true',
+          'introspection.token.claim': 'true',
+          'access.token.claim': 'true',
+          'claim.name': 'clientHost',
+          'jsonType.label': 'String',
+        },
+      }),
+    },
+  }),
 };
 
 export const ESCOPOS_ATRIBUIDOS_POR_CLIENTE = {
   'cdd-web': { padrao: ['web-origins', 'acr', 'roles', 'basic'], opcionais: [] },
   'cdd-teste': { padrao: ['web-origins', 'acr', 'roles', 'basic'], opcionais: [] },
-  'cdd-api-admin': { padrao: ['web-origins', 'acr', 'roles', 'basic'], opcionais: [] },
+  'cdd-api-admin': { padrao: ['web-origins', 'service_account', 'acr', 'roles', 'basic'], opcionais: [] },
   'admin-cli': {
     padrao: ['web-origins', 'acr', 'profile', 'roles', 'basic', 'email'],
     opcionais: ['address', 'phone', 'organization', 'microprofile-jwt'],
+  },
+  account: {
+    padrao: ['web-origins', 'acr', 'profile', 'roles', 'basic', 'email'],
+    opcionais: ['address', 'phone', 'offline_access', 'organization', 'microprofile-jwt'],
+  },
+  'account-console': {
+    padrao: ['web-origins', 'acr', 'profile', 'roles', 'basic', 'email'],
+    opcionais: ['address', 'phone', 'offline_access', 'organization', 'microprofile-jwt'],
+  },
+  broker: {
+    padrao: ['web-origins', 'acr', 'profile', 'roles', 'basic', 'email'],
+    opcionais: ['address', 'phone', 'offline_access', 'organization', 'microprofile-jwt'],
+  },
+  'realm-management': {
+    padrao: ['web-origins', 'acr', 'profile', 'roles', 'basic', 'email'],
+    opcionais: ['address', 'phone', 'offline_access', 'organization', 'microprofile-jwt'],
+  },
+  'security-admin-console': {
+    padrao: ['web-origins', 'acr', 'profile', 'roles', 'basic', 'email'],
+    opcionais: ['address', 'phone', 'offline_access', 'organization', 'microprofile-jwt'],
   },
 };
 
@@ -664,10 +1174,129 @@ export const PAPEIS_EFETIVOS_ESPERADOS = {
 };
 
 export const CLIENTES_EMBUTIDOS_E_ADMIN_CLI = {
-  account: { directAccessGrantsEnabled: false },
-  'account-console': { directAccessGrantsEnabled: false },
-  broker: { directAccessGrantsEnabled: false },
-  'realm-management': { directAccessGrantsEnabled: false },
-  'security-admin-console': { directAccessGrantsEnabled: false },
-  'admin-cli': { directAccessGrantsEnabled: true },
+  account: { directAccessGrantsEnabled: false, serviceAccountsEnabled: false },
+  'account-console': { directAccessGrantsEnabled: false, serviceAccountsEnabled: false },
+  broker: { directAccessGrantsEnabled: false, serviceAccountsEnabled: false },
+  'realm-management': { directAccessGrantsEnabled: false, serviceAccountsEnabled: false },
+  'security-admin-console': { directAccessGrantsEnabled: false, serviceAccountsEnabled: false },
+  'admin-cli': { directAccessGrantsEnabled: true, serviceAccountsEnabled: false },
+};
+
+export const CLIENTES_SEM_OVERRIDE_DE_FLUXO_DECLARADO = [
+  'cdd-web',
+  'cdd-teste',
+  'cdd-api-admin',
+  'account',
+  'account-console',
+  'broker',
+  'realm-management',
+  'security-admin-console',
+];
+
+export const SCOPE_MAPPINGS_DE_REALM_MANAGEMENT_ESPERADOS = {
+  'cdd-api-admin': ['manage-users'],
+};
+
+export const COMPOSITES_ESPERADOS_DE_DEFAULT_ROLES = {
+  realm: ['offline_access', 'uma_authorization'],
+  clientes: { account: ['view-profile', 'manage-account'] },
+};
+
+export const REQUIRED_ACTIONS_ESPERADAS = listaDeObjetos({
+  chavePrimaria: 'alias',
+  itens: Object.fromEntries(
+    [
+      { alias: 'CONFIGURE_TOTP', enabled: true, defaultAction: false },
+      { alias: 'TERMS_AND_CONDITIONS', enabled: false, defaultAction: false },
+      { alias: 'UPDATE_PASSWORD', enabled: true, defaultAction: false },
+      { alias: 'UPDATE_PROFILE', enabled: true, defaultAction: false },
+      { alias: 'VERIFY_EMAIL', enabled: true, defaultAction: false },
+      { alias: 'delete_account', enabled: false, defaultAction: false },
+      { alias: 'UPDATE_EMAIL', enabled: false, defaultAction: false },
+      { alias: 'webauthn-register', enabled: true, defaultAction: false },
+      { alias: 'webauthn-register-passwordless', enabled: true, defaultAction: false },
+      { alias: 'VERIFY_PROFILE', enabled: true, defaultAction: false },
+      { alias: 'delete_credential', enabled: true, defaultAction: false },
+      { alias: 'idp_link', enabled: true, defaultAction: false },
+      { alias: 'CONFIGURE_RECOVERY_AUTHN_CODES', enabled: true, defaultAction: false },
+      { alias: 'update_user_locale', enabled: true, defaultAction: false },
+    ].map(({ alias, enabled, defaultAction }) => [
+      alias,
+      objeto({ obrigatorias: { alias: valor(alias), enabled: valor(enabled), defaultAction: valor(defaultAction) } }),
+    ]),
+  ),
+});
+
+function execucao({ level, index, providerId = null, displayName = null, requirement }) {
+  return { level, index, providerId, displayName, requirement };
+}
+
+export function execucoesDeFluxo(execucoesEsperadas) {
+  return customizado((atual, caminho, falhas) => {
+    if (!Array.isArray(atual)) {
+      falhas.push(`${caminho} precisa ser um array de execuções`);
+      return;
+    }
+    const atualNormalizado = atual.map((execucaoAtual) =>
+      execucao({
+        level: execucaoAtual.level,
+        index: execucaoAtual.index,
+        providerId: execucaoAtual.authenticationFlow ? null : (execucaoAtual.providerId ?? null),
+        displayName: execucaoAtual.authenticationFlow ? execucaoAtual.displayName : null,
+        requirement: execucaoAtual.requirement,
+      }),
+    );
+    const igual =
+      atualNormalizado.length === execucoesEsperadas.length &&
+      atualNormalizado.every((execucaoAtual, indice) => {
+        const esperada = execucoesEsperadas[indice];
+        return (
+          execucaoAtual.level === esperada.level &&
+          execucaoAtual.index === esperada.index &&
+          execucaoAtual.providerId === esperada.providerId &&
+          execucaoAtual.displayName === esperada.displayName &&
+          execucaoAtual.requirement === esperada.requirement
+        );
+      });
+    if (!igual) {
+      falhas.push(
+        `${caminho} precisa ser exatamente ${JSON.stringify(execucoesEsperadas)}, encontrado ${JSON.stringify(atualNormalizado)}`,
+      );
+    }
+  });
+}
+
+export const FLUXOS_VIVOS_ESPERADOS = {
+  browser: execucoesDeFluxo([
+    execucao({ level: 0, index: 0, providerId: 'auth-cookie', requirement: 'ALTERNATIVE' }),
+    execucao({ level: 0, index: 1, providerId: 'auth-spnego', requirement: 'DISABLED' }),
+    execucao({ level: 0, index: 2, providerId: 'identity-provider-redirector', requirement: 'ALTERNATIVE' }),
+    execucao({ level: 0, index: 3, displayName: 'Organization', requirement: 'ALTERNATIVE' }),
+    execucao({ level: 1, index: 0, displayName: 'Browser - Conditional Organization', requirement: 'CONDITIONAL' }),
+    execucao({ level: 2, index: 0, providerId: 'conditional-user-configured', requirement: 'REQUIRED' }),
+    execucao({ level: 2, index: 1, providerId: 'organization', requirement: 'ALTERNATIVE' }),
+    execucao({ level: 0, index: 4, displayName: 'forms', requirement: 'ALTERNATIVE' }),
+    execucao({ level: 1, index: 0, providerId: 'auth-username-password-form', requirement: 'REQUIRED' }),
+    execucao({ level: 1, index: 1, displayName: 'Browser - Conditional 2FA', requirement: 'CONDITIONAL' }),
+    execucao({ level: 2, index: 0, providerId: 'conditional-user-configured', requirement: 'REQUIRED' }),
+    execucao({ level: 2, index: 1, providerId: 'conditional-credential', requirement: 'REQUIRED' }),
+    execucao({ level: 2, index: 2, providerId: 'auth-otp-form', requirement: 'ALTERNATIVE' }),
+    execucao({ level: 2, index: 3, providerId: 'webauthn-authenticator', requirement: 'DISABLED' }),
+    execucao({ level: 2, index: 4, providerId: 'auth-recovery-authn-code-form', requirement: 'DISABLED' }),
+  ]),
+  'direct grant': execucoesDeFluxo([
+    execucao({ level: 0, index: 0, providerId: 'direct-grant-validate-username', requirement: 'REQUIRED' }),
+    execucao({ level: 0, index: 1, providerId: 'direct-grant-validate-password', requirement: 'REQUIRED' }),
+    execucao({ level: 0, index: 2, displayName: 'Direct Grant - Conditional OTP', requirement: 'CONDITIONAL' }),
+    execucao({ level: 1, index: 0, providerId: 'conditional-user-configured', requirement: 'REQUIRED' }),
+    execucao({ level: 1, index: 1, providerId: 'direct-grant-validate-otp', requirement: 'REQUIRED' }),
+  ]),
+  'reset credentials': execucoesDeFluxo([
+    execucao({ level: 0, index: 0, providerId: 'reset-credentials-choose-user', requirement: 'REQUIRED' }),
+    execucao({ level: 0, index: 1, providerId: 'reset-credential-email', requirement: 'REQUIRED' }),
+    execucao({ level: 0, index: 2, providerId: 'reset-password', requirement: 'REQUIRED' }),
+    execucao({ level: 0, index: 3, displayName: 'Reset - Conditional OTP', requirement: 'CONDITIONAL' }),
+    execucao({ level: 1, index: 0, providerId: 'conditional-user-configured', requirement: 'REQUIRED' }),
+    execucao({ level: 1, index: 1, providerId: 'reset-otp', requirement: 'REQUIRED' }),
+  ]),
 };

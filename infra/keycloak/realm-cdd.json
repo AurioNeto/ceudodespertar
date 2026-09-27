@@ -52,6 +52,7 @@
       "directAccessGrantsEnabled": false,
       "implicitFlowEnabled": false,
       "serviceAccountsEnabled": false,
+      "fullScopeAllowed": false,
       "redirectUris": ["http://localhost:5173/*"],
       "webOrigins": ["http://localhost:5173"],
       "defaultClientScopes": ["web-origins", "acr", "roles", "basic"],
@@ -166,7 +167,9 @@
       "directAccessGrantsEnabled": false,
       "implicitFlowEnabled": false,
       "serviceAccountsEnabled": true,
-      "defaultClientScopes": ["web-origins", "acr", "roles", "basic"],
+      "fullScopeAllowed": false,
+      "webOrigins": [],
+      "defaultClientScopes": ["web-origins", "service_account", "acr", "roles", "basic"],
       "optionalClientScopes": [],
       "description": "Confidencial, só conta de serviço; usado pela API para gerenciar usuários do Keycloak (papel manage-users)."
     },
@@ -179,7 +182,9 @@
       "directAccessGrantsEnabled": true,
       "implicitFlowEnabled": false,
       "serviceAccountsEnabled": false,
+      "fullScopeAllowed": false,
       "redirectUris": [],
+      "webOrigins": [],
       "defaultClientScopes": ["web-origins", "acr", "roles", "basic"],
       "optionalClientScopes": [],
       "description": "Somente ambiente local/CI de desenvolvimento — obtém token sem navegador para o e2e. Não usar fora de desenvolvimento.",
@@ -329,5 +334,11 @@
         "realm-management": ["manage-users"]
       }
     }
-  ]
+  ],
+
+  "clientScopeMappings": {
+    "realm-management": [
+      { "client": "cdd-api-admin", "roles": ["manage-users"] }
+    ]
+  }
 }
