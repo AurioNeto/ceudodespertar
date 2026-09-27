@@ -7,7 +7,7 @@ const grupoIdSchema = z.uuid().transform((valor) => valor as GrupoId);
 
 export const ConvidarUsuario = z.object({
   nome: z.string().trim().min(1).max(200),
-  email: z.string().trim().toLowerCase().email().max(320),
+  email: z.string().trim().toLowerCase().max(320).pipe(z.email()),
 });
 
 export type ConvidarUsuario = z.infer<typeof ConvidarUsuario>;
@@ -38,7 +38,7 @@ export const ReativarUsuario = z.object({
 export type ReativarUsuario = z.infer<typeof ReativarUsuario>;
 
 export const AtivarConvite = z.object({
-  token: z.string().trim().min(1),
+  token: z.string().trim().min(1).max(512),
 });
 
 export type AtivarConvite = z.infer<typeof AtivarConvite>;
