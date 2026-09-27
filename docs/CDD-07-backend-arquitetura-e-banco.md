@@ -12,15 +12,15 @@
 | Arquivo | O que é |
 |---|---|
 | [`sql/cdd-07-esquema.sql`](sql/cdd-07-esquema.sql) | O esquema de referência completo — 6 schemas, 58 tabelas, RLS, gatilhos de guarda, views de leitura e o catálogo de permissões. **É a fonte da verdade das colunas**; as tabelas deste documento resumem, o arquivo decide. |
-| [`sql/cdd-07-verificacao.sql`](sql/cdd-07-verificacao.sql) | 《CONTAGEM》 verificações executáveis que provam o que §15 promete: isolamento entre instituições, imutabilidade, período fechado, o caso Aline, a devolução como estorno, leitos, saldo de estoque. Roda como o papel da aplicação, não como superusuário. |
+| [`sql/cdd-07-verificacao.sql`](sql/cdd-07-verificacao.sql) | 155 verificações executáveis que provam o que §15 promete: isolamento entre instituições, imutabilidade, período fechado, o caso Aline, a devolução como estorno, leitos, saldo de estoque. Roda como o papel da aplicação, não como superusuário. |
 
 ```bash
 createdb cdd_ref
 psql -d cdd_ref -v ON_ERROR_STOP=1 -f docs/sql/cdd-07-esquema.sql -f docs/sql/cdd-07-verificacao.sql
-# … 《CONTAGEM》 linhas "OK" e: Verificação concluída
+# … 155 linhas "OK" e: Verificação concluída
 ```
 
-Os dois arquivos foram executados contra PostgreSQL 16 — 16.13 na primeira versão, com 71 verificações; 16.15 na atual, com as guardas de transferência, período e feitio, o bloqueio de `TRUNCATE` (e a religada de um `sem_truncate` desabilitado à mão), o resolvedor do link e o resolvedor de identidade com dono próprio, a varredura de RLS e o bloqueio de `TRUNCATE` como funções idempotentes (`shared.aplicar_isolamento_por_instituicao()`, `shared.proibir_truncate()`), o ator da trilha/anexo (`autor_tipo`, `enviado_por_tipo`), a US2 (`usuario_pessoa_unica`) e o convite revogável (`convite_vigente_unico`, com o reenvio depois de revogar ou usar), com 《CONTAGEM》 verificações. O esquema não é a migration de produção — as migrations nascem do MikroORM (§22) —, mas toda migration deve deixá-lo coerente, e a verificação vira teste de CI em B0.
+Os dois arquivos foram executados contra PostgreSQL 16 — 16.13 na primeira versão, com 71 verificações; 16.15 na atual, com as guardas de transferência, período e feitio, o bloqueio de `TRUNCATE` (e a religada de um `sem_truncate` desabilitado à mão), o resolvedor do link e o resolvedor de identidade com dono próprio, a varredura de RLS e o bloqueio de `TRUNCATE` como funções idempotentes (`shared.aplicar_isolamento_por_instituicao()`, `shared.proibir_truncate()`), o ator da trilha/anexo (`autor_tipo`, `enviado_por_tipo`), a US2 (`usuario_pessoa_unica`) e o convite revogável (`convite_vigente_unico`, com o reenvio depois de revogar ou usar), com 155 verificações. O esquema não é a migration de produção — as migrations nascem do MikroORM (§22) —, mas toda migration deve deixá-lo coerente, e a verificação vira teste de CI em B0.
 
 ---
 
@@ -185,6 +185,8 @@ O bloco sem permissão **não é consultado e não aparece na resposta** — a c
 ### 7.2 Convite
 
 `sistema.usuario.gerenciar` cria o `Usuario` em `CONVITE_PENDENTE` e um convite com token aleatório; o banco guarda só o SHA-256 dele. Ao aceitar, a pessoa cria a credencial no Keycloak (tela do tema do CDD), o `sub` é gravado e a situação vira `ATIVO`. Convite vale 72 h e é de uso único.
+
+**Convite vencido e não revogado continua vigente para o índice.** `convite_vigente_unico` (§15) só sai do caminho de um usuário quando `usado_em` ou `revogado_em` deixam de ser nulos — a expiração por si só não grava nada. O reenvio de convite, então, precisa **revogar o anterior na mesma transação** antes de criar o novo; sem isso, o `INSERT` do novo convite esbarra no índice único mesmo com o velho havendo expirado horas atrás.
 
 ### 7.3 O link público de inscrição
 
@@ -380,6 +382,10 @@ O domínio aplica as regras. O banco repete as que, se quebradas, **corrompem hi
 | Quem pede a devolução não é quem paga | `CHECK` | DV3 |
 | A devolução estorna uma receita só: a contribuição paga ou o cachê da contratação cancelada do mesmo evento | `CHECK` + FK | CN4 |
 | O link público resolve o token sem contexto, e só isso, por um papel sem `BYPASSRLS` | função `SECURITY DEFINER` de dono próprio + política só dele | link público |
+| O sujeito autenticado (`sub` do Keycloak) resolve sem instituição, e só isso, por um papel sem `BYPASSRLS` | função `SECURITY DEFINER` de dono próprio + política só dele | resolvedor de identidade |
+| A mesma pessoa não é duas contas na mesma casa | índice único parcial | US2 |
+| No máximo um convite vigente (nem usado, nem revogado) por usuário | índice único parcial | `convite_vigente_unico` |
+| Convite não é usado e revogado ao mesmo tempo | `CHECK` | `convite_nao_usado_e_revogado` |
 | Saldo de lote nunca negativo, mesmo com saídas simultâneas | gatilho com `FOR UPDATE` no lote | Estoque |
 | Perda e ajuste têm justificativa | `CHECK` | Estoque |
 | Estimativa não mexe em saldo | tabela sem ligação com movimento | EC1 |
@@ -687,7 +693,7 @@ As etapas são as do Doc 6 §6, na mesma ordem e com as mesmas estimativas. O qu
 |---|---|---|---|
 | Domínio | Vitest, sem I/O | Toda invariante do Doc 2 como teste, antes do código de infraestrutura | Com cada agregado |
 | Autorização | Vitest + fixtures de grupo | Os 30 casos do Doc 3 §11 — **escritos em B0, falhando**, como critério de aceite das etapas seguintes | B0 |
-| Guardas de banco | `cdd-07-verificacao.sql` em Postgres real (Testcontainers) | As 《CONTAGEM》 verificações de §15; cresce a cada tabela nova | B0 |
+| Guardas de banco | `cdd-07-verificacao.sql` em Postgres real (Testcontainers) | As 155 verificações de §15; cresce a cada tabela nova | B0 |
 | Integração | Testcontainers | Handler → banco → outbox → consumidor; idempotência; `If-Match`; contagem de consultas por read model (N+1) | Com cada comando |
 | Concorrência | Testcontainers, duas conexões | Saídas simultâneas do mesmo lote; duas confirmações do mesmo lançamento; duas inscrições da mesma pessoa pelo link; fechamento e lançamento na mesma competência, com o comando travando antes de P1 e do hash | B1, B5, B6 |
 | Contrato | Vitest | Todo código de erro que a API pode devolver existe em `contracts/erros.ts`; toda restrição nomeada tem mapeamento | B0 |
@@ -738,7 +744,7 @@ Os roteiros Playwright que verificaram as telas construídas (25 a 56 verificaç
 
 O servidor é **um monólito modular em NestJS sobre um PostgreSQL**, com cinco módulos de domínio que se falam por porta pública e por eventos em outbox, sem fila, sem cache e sem serviço separado — porque o CDD tem seis logins, e quem mantém o sistema é uma pessoa.
 
-O banco tem **58 tabelas em seis schemas**, com três travas de isolamento (RLS forçada, FK composta, filtro do ORM) e um conjunto pequeno de guardas que existem para uma coisa só: **impedir que o histórico seja falsificado**, mesmo por quem contorna o domínio. As decisões da coordenação estão todas no esquema — as etiquetas com valor do caso Aline, a devolução como estorno, os três níveis de contribuição, o colchonete gratuito, os dois dormitórios como são, a declaração de veracidade por cerimônia. E está tudo **verificado**: 《CONTAGEM》 casos que rodam contra Postgres real, como o papel da aplicação.
+O banco tem **58 tabelas em seis schemas**, com três travas de isolamento (RLS forçada, FK composta, filtro do ORM) e um conjunto pequeno de guardas que existem para uma coisa só: **impedir que o histórico seja falsificado**, mesmo por quem contorna o domínio. As decisões da coordenação estão todas no esquema — as etiquetas com valor do caso Aline, a devolução como estorno, os três níveis de contribuição, o colchonete gratuito, os dois dormitórios como são, a declaração de veracidade por cerimônia. E está tudo **verificado**: 155 casos que rodam contra Postgres real, como o papel da aplicação.
 
 O desenho encontrou uma coisa que precisa de decisão antes de B5: **o link público, como está, deixa ler a anamnese de alguém com o CPF dela.** A correção é pequena — um campo a mais na tela e uma sessão conferida no servidor —, mas é da coordenação.
 

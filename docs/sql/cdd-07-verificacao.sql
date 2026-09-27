@@ -102,12 +102,15 @@ SELECT verif.confere('resolvedor de identidade · o dono do resolvedor não é s
 -- `SET ROLE cdd_app` — testar com um `SET ROLE cdd_resolvedor_identidade`
 -- daria falso negativo justamente na rodada que este arquivo roda como
 -- superusuário. O que importa é que ninguém concedeu a `cdd_app` a
--- pertinência ao papel do resolvedor.
-SELECT verif.confere('resolvedor de identidade · cdd_app não é membro do papel do resolvedor',
-  (SELECT count(*) FROM pg_auth_members m
-     JOIN pg_roles papel   ON papel.oid = m.roleid
-     JOIN pg_roles membro  ON membro.oid = m.member
-    WHERE papel.rolname = 'cdd_resolvedor_identidade' AND membro.rolname = 'cdd_app'),
+-- pertinência a nenhum dos dois papéis de resolvedor — nem direto, nem por
+-- uma ponte (`GRANT cdd_resolvedor_x TO ponte WITH INHERIT FALSE; GRANT
+-- ponte TO cdd_app`), que passaria batido por uma junção direta em
+-- `pg_auth_members`. `pg_has_role(..., 'MEMBER')` segue a cadeia inteira de
+-- pertinência, com ou sem INHERIT em cada elo — é o que decide se `SET
+-- ROLE` chegaria lá.
+SELECT verif.confere('resolvedores · cdd_app não é membro de nenhum dos dois papéis de resolvedor, nem por ponte',
+  (SELECT count(*) FROM unnest(ARRAY['cdd_resolvedor_link', 'cdd_resolvedor_identidade']) papel
+    WHERE pg_has_role('cdd_app', papel, 'MEMBER')),
   0::bigint);
 
 -- Fato de catálogo, vale nas duas rodadas (superusuário e dono comum): quem
@@ -121,6 +124,35 @@ SELECT verif.confere('resolvedores · ninguém herda a política deles (só SET,
   (SELECT count(*) FROM pg_auth_members
     WHERE roleid IN ('cdd_resolvedor_link'::regrole, 'cdd_resolvedor_identidade'::regrole)
       AND inherit_option),
+  0::bigint);
+
+-- As quatro defesas do molde SECURITY DEFINER (§8) fixadas por caso, para os
+-- dois resolvedores — sem isso, um mutante que tirasse qualquer uma delas
+-- passaria despercebido pelos testes acima, que só olham papel e política.
+SELECT verif.confere('resolvedor de identidade · roda com search_path fixo (sem sequestro por schema hostil)',
+  (SELECT proconfig FROM pg_proc WHERE oid = 'identidade.resolver_sujeito(text)'::regprocedure),
+  ARRAY['search_path=pg_catalog']);
+SELECT verif.confere('resolvedor de identidade · função sem EXECUTE para PUBLIC',
+  has_function_privilege('public', 'identidade.resolver_sujeito(text)', 'EXECUTE'), false);
+SELECT verif.confere('resolvedor de identidade · só lê as três colunas liberadas de identidade.usuario',
+  (SELECT count(*) FROM pg_attribute a
+    WHERE a.attrelid = 'identidade.usuario'::regclass
+      AND a.attnum > 0 AND NOT a.attisdropped
+      AND a.attname NOT IN ('id', 'instituicao_id', 'subject_id')
+      AND has_column_privilege('cdd_resolvedor_identidade', 'identidade.usuario', a.attname, 'SELECT')),
+  0::bigint);
+
+SELECT verif.confere('resolvedor do link · roda com search_path fixo (sem sequestro por schema hostil)',
+  (SELECT proconfig FROM pg_proc WHERE oid = 'eventos.resolver_link(text)'::regprocedure),
+  ARRAY['search_path=pg_catalog']);
+SELECT verif.confere('resolvedor do link · função sem EXECUTE para PUBLIC',
+  has_function_privilege('public', 'eventos.resolver_link(text)', 'EXECUTE'), false);
+SELECT verif.confere('resolvedor do link · só lê as quatro colunas liberadas de eventos.link_de_inscricao',
+  (SELECT count(*) FROM pg_attribute a
+    WHERE a.attrelid = 'eventos.link_de_inscricao'::regclass
+      AND a.attnum > 0 AND NOT a.attisdropped
+      AND a.attname NOT IN ('token', 'revogado_em', 'instituicao_id', 'evento_id')
+      AND has_column_privilege('cdd_resolvedor_link', 'eventos.link_de_inscricao', a.attname, 'SELECT')),
   0::bigint);
 
 -- F07 · as duas funções que toda migration chama (Documento 7 §22) são
