@@ -1,31 +1,46 @@
 import { MikroORM } from '@mikro-orm/postgresql';
 import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { analisarComandoDoMigrador } from './comando-cli.js';
-import { construirOpcoesDoMigrador } from './opcoes-do-migrador.js';
+import {
+  construirOpcoesDoMigrador,
+  SCHEMA_DA_TABELA_DE_HISTORICO,
+  TABELA_DE_HISTORICO_DO_MIGRADOR,
+} from './opcoes-do-migrador.js';
+import { papelConectadoEhSeguroParaMigrar } from './papel-seguro-para-migrar.js';
+import type { AtributosDoPapelConectado } from './papel-seguro-para-migrar.js';
+import { MIGRACOES_DO_CDD } from './migracoes/lista.js';
 
 type OrmDoMigrador = Awaited<ReturnType<typeof MikroORM.init<PostgreSqlDriver>>>;
-
-interface AtributosDoPapelConectado {
-  rolsuper: boolean;
-  rolbypassrls: boolean;
-}
 
 class ErroDePapelInseguroParaMigrar extends Error {
   constructor() {
     super(
-      'O papel conectado por BANCO_URL_MIGRACAO tem SUPERUSER ou BYPASSRLS ligado. ' +
-        'O migrador exige um dono comum (NOSUPERUSER, NOBYPASSRLS) para que RLS e as guardas do banco valham também durante a migration.',
+      'O papel conectado por BANCO_URL_MIGRACAO não é seguro para migrar. O migrador exige ' +
+        'session_user = current_user (nenhum SET ROLE/PGOPTIONS em vigor), current_user igual ao ' +
+        'dono do banco corrente, e nem SUPERUSER nem BYPASSRLS — para que RLS e as guardas do ' +
+        'banco valham também durante a migration.',
     );
     this.name = 'ErroDePapelInseguroParaMigrar';
   }
 }
 
-async function recusarSeSuperusuarioOuBypassRls(orm: OrmDoMigrador): Promise<void> {
+async function buscarAtributosDoPapelConectado(
+  orm: OrmDoMigrador,
+): Promise<AtributosDoPapelConectado | undefined> {
   const linhas = await orm.em.execute<AtributosDoPapelConectado[]>(
-    'SELECT rolsuper, rolbypassrls FROM pg_roles WHERE rolname = current_user',
+    `SELECT
+       session_user AS "sessionUser",
+       current_user AS "currentUser",
+       (SELECT pg_get_userbyid(datdba) FROM pg_database WHERE datname = current_database()) AS "donoDoBanco",
+       (SELECT rolsuper FROM pg_roles WHERE rolname = current_user) AS "rolsuper",
+       (SELECT rolbypassrls FROM pg_roles WHERE rolname = current_user) AS "rolbypassrls"`,
   );
-  const atributos = linhas[0];
-  if (!atributos || atributos.rolsuper || atributos.rolbypassrls) {
+  return linhas[0];
+}
+
+async function recusarSeInseguroParaMigrar(orm: OrmDoMigrador): Promise<void> {
+  const atributos = await buscarAtributosDoPapelConectado(orm);
+  if (!atributos || !papelConectadoEhSeguroParaMigrar(atributos)) {
     throw new ErroDePapelInseguroParaMigrar();
   }
 }
@@ -43,7 +58,27 @@ async function migrar(orm: OrmDoMigrador): Promise<void> {
   }
 }
 
+async function tabelaDeHistoricoExiste(orm: OrmDoMigrador): Promise<boolean> {
+  const linhas = await orm.em.execute<{ existe: boolean }[]>('SELECT to_regclass(?) IS NOT NULL AS existe', [
+    `${SCHEMA_DA_TABELA_DE_HISTORICO}.${TABELA_DE_HISTORICO_DO_MIGRADOR}`,
+  ]);
+  return linhas[0]?.existe ?? false;
+}
+
+function relatarSituacaoSemHistorico(): void {
+  console.log('Aplicadas: nenhuma');
+  console.log('Pendentes:');
+  for (const migracao of MIGRACOES_DO_CDD) {
+    console.log(`  ${migracao.name}`);
+  }
+}
+
 async function relatarSituacao(orm: OrmDoMigrador): Promise<void> {
+  if (!(await tabelaDeHistoricoExiste(orm))) {
+    relatarSituacaoSemHistorico();
+    return;
+  }
+
   const aplicadas = await orm.migrator.getExecuted();
   const pendentes = await orm.migrator.getPending();
 
@@ -63,7 +98,7 @@ async function executar(): Promise<void> {
   const orm = await MikroORM.init<PostgreSqlDriver>(construirOpcoesDoMigrador());
 
   try {
-    await recusarSeSuperusuarioOuBypassRls(orm);
+    await recusarSeInseguroParaMigrar(orm);
 
     if (comando.subcomando === 'migrar') {
       await migrar(orm);

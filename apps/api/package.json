@@ -10,8 +10,8 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
     "test:cobertura": "vitest run --coverage",
-    "db:migrar": "node --enable-source-maps --env-file-if-exists=../../.env dist/banco/cli.js migrar",
-    "db:situacao": "node --enable-source-maps --env-file-if-exists=../../.env dist/banco/cli.js situacao"
+    "db:migrar": "pnpm build && node --enable-source-maps --env-file-if-exists=../../.env dist/banco/cli.js migrar",
+    "db:situacao": "pnpm build && node --enable-source-maps --env-file-if-exists=../../.env dist/banco/cli.js situacao"
   },
   "dependencies": {
     "@cdd/contracts": "workspace:*",

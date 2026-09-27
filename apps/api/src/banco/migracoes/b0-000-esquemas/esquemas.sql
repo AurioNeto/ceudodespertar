@@ -9,12 +9,15 @@
 -- (cdd_owner, cdd_app) já existem, porque quem os cria é a infra
 -- (infra/postgres/papeis.sql), não uma migration.
 --
--- IF NOT EXISTS: DDL idempotente por construção, não só por o migrador
--- garantir execução única — sobrevive a um retomar depois de uma falha
--- a meio da transação.
+-- Sem IF NOT EXISTS: a migration inteira roda numa única transação
+-- (allOrNothing/transactional), então não existe um "retomar depois de
+-- falha a meio do arquivo" a proteger — uma falha aqui sempre desfaz tudo.
+-- Um schema com este nome já existindo é uma divergência real (nome
+-- colidindo com outra coisa, ou a migration rodando duas vezes por engano)
+-- e precisa derrubar a migration, não passar em silêncio.
 
-CREATE SCHEMA IF NOT EXISTS shared AUTHORIZATION cdd_owner;
-CREATE SCHEMA IF NOT EXISTS identidade AUTHORIZATION cdd_owner;
+CREATE SCHEMA shared AUTHORIZATION cdd_owner;
+CREATE SCHEMA identidade AUTHORIZATION cdd_owner;
 
 GRANT USAGE ON SCHEMA shared TO cdd_app;
 GRANT USAGE ON SCHEMA identidade TO cdd_app;
