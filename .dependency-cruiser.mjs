@@ -1,6 +1,12 @@
 const RAIZ_DE_MODULO = '(?:^|/)apps/api/src/modules/([^/]+)/';
 const CAMADA_DE_DOMINIO = '(?:^|/)apps/api/src/(?:shared/kernel|modules/[^/]+/domain)/';
-const CAMADAS_EXTERNAS = '(?:^|/)apps/api/src/(?:shared/|modules/[^/]+/)(?:infrastructure|interface|application)/';
+const CAMADAS_EXTERNAS =
+  '(?:^|/)apps/api/src/(?:' +
+  'banco/|' +
+  'composicao/|' +
+  'main\\.ts$|' +
+  '(?:shared/|modules/[^/]+/)(?:infrastructure|interface|application)/' +
+  ')';
 
 export default {
   forbidden: [
@@ -24,6 +30,8 @@ export default {
           'node_modules/@mikro-orm/',
           'node_modules/pg/',
           'node_modules/zod/',
+          'node_modules/kysely/',
+          'node_modules/express/',
           '^https?$',
         ],
       },
@@ -33,7 +41,8 @@ export default {
       severity: 'error',
       comment:
         'Documento 7 §4: "o domínio não sabe que existe banco" — domain/ e shared/kernel ' +
-        'não importam infrastructure/, interface/ ou application/ de nenhum módulo.',
+        'não importam infrastructure/, interface/ ou application/ de nenhum módulo, ' +
+        'nem o migrador (banco/), a composição raiz (composicao/) ou o bootstrap (main.ts).',
       from: { path: CAMADA_DE_DOMINIO },
       to: { path: CAMADAS_EXTERNAS },
     },
@@ -60,5 +69,6 @@ export default {
   options: {
     doNotFollow: { path: 'node_modules' },
     tsConfig: { fileName: 'tsconfig.base.json' },
+    tsPreCompilationDeps: true,
   },
 };

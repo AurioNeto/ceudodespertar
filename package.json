@@ -15,7 +15,7 @@
     "infra:descer": "docker compose down",
     "infra:zerar": "docker compose down -v",
     "db:verificar": "infra/postgres/verificar-referencia.sh",
-    "lint": "oxlint -c .oxlintrc.json apps/api/src apps/api/test packages/contracts/src packages/contracts/test",
+    "lint": "oxlint -c .oxlintrc.json apps/api/src apps/api/test apps/api/scripts apps/api/vitest.config.ts packages/contracts/src packages/contracts/test .dependency-cruiser.mjs",
     "fronteiras": "depcruise --config .dependency-cruiser.mjs apps/api/src packages/contracts/src",
     "db:migrar": "pnpm --filter @cdd/api db:migrar",
     "db:situacao": "pnpm --filter @cdd/api db:situacao"

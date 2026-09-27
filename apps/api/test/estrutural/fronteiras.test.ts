@@ -1,57 +1,72 @@
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { cruise } from 'dependency-cruiser';
-import extractDepcruiseOptions from 'dependency-cruiser/config-utl/extract-depcruise-options';
+import { spawnSync } from 'node:child_process';
 import { describe, expect, it } from 'vitest';
-import type { ICruiseOptions, ICruiseResult } from 'dependency-cruiser';
+import type { ICruiseResult } from 'dependency-cruiser';
 
 const DIRETORIO_DO_TESTE = dirname(fileURLToPath(import.meta.url));
 const RAIZ_DO_REPOSITORIO = join(DIRETORIO_DO_TESTE, '..', '..', '..', '..');
-const CAMINHO_DA_CONFIGURACAO_REAL = join(RAIZ_DO_REPOSITORIO, '.dependency-cruiser.mjs');
+const BINARIO_DEPCRUISE = join(RAIZ_DO_REPOSITORIO, 'node_modules', '.bin', 'depcruise');
 
-async function opcoesDeCruzamento(): Promise<ICruiseOptions> {
-  const opcoesDoArquivo = await extractDepcruiseOptions(CAMINHO_DA_CONFIGURACAO_REAL);
+function cruzar(caminhosRelativosARaiz: string[]): ICruiseResult {
+  const resultado = spawnSync(
+    BINARIO_DEPCRUISE,
+    ['--config', '.dependency-cruiser.mjs', '--output-type', 'json', ...caminhosRelativosARaiz],
+    { cwd: RAIZ_DO_REPOSITORIO, encoding: 'utf8' },
+  );
 
-  return {
-    ...opcoesDoArquivo,
-    baseDir: RAIZ_DO_REPOSITORIO,
-    tsConfig: { fileName: join(RAIZ_DO_REPOSITORIO, 'tsconfig.base.json') },
-    outputType: 'json',
-  };
-}
-
-function resultadoComoJson(saida: ICruiseResult | string): ICruiseResult {
-  if (typeof saida !== 'string') {
-    throw new TypeError('dependency-cruiser não devolveu a saída em json');
+  if (resultado.error) {
+    throw resultado.error;
   }
 
-  return JSON.parse(saida) as ICruiseResult;
+  return JSON.parse(resultado.stdout) as ICruiseResult;
 }
 
-async function cruzar(caminhosRelativosARaiz: string[]): Promise<ICruiseResult> {
-  const resultado = await cruise(caminhosRelativosARaiz, await opcoesDeCruzamento());
+function nomesDasRegrasVioladas(pasta: string): string[] {
+  const resultado = cruzar([`apps/api/test/estrutural/${pasta}`]);
 
-  return resultadoComoJson(resultado.output);
+  return resultado.summary.violations.map((violacao) => violacao.rule.name);
 }
 
-const REGRAS_DE_FRONTEIRA = [
-  'sem-dependencia-circular',
-  'dominio-sem-framework',
-  'dominio-sem-camadas-externas',
-  'modulo-so-por-public-api',
-  'contracts-nao-importa-apps',
+const CASOS_POSITIVOS = [
+  ['sem-dependencia-circular', 'fixtures/sem-dependencia-circular'],
+  ['sem-dependencia-circular', 'fixtures/sem-dependencia-circular-tipo'],
+  ['dominio-sem-framework', 'fixtures/dominio-sem-framework/nestjs'],
+  ['dominio-sem-framework', 'fixtures/dominio-sem-framework/mikro-orm'],
+  ['dominio-sem-framework', 'fixtures/dominio-sem-framework/mikro-orm-tipo'],
+  ['dominio-sem-framework', 'fixtures/dominio-sem-framework/zod'],
+  ['dominio-sem-framework', 'fixtures/dominio-sem-framework/pg'],
+  ['dominio-sem-framework', 'fixtures/dominio-sem-framework/http'],
+  ['dominio-sem-framework', 'fixtures/dominio-sem-framework/kysely'],
+  ['dominio-sem-framework', 'fixtures/dominio-sem-framework/express'],
+  ['dominio-sem-camadas-externas', 'fixtures/dominio-sem-camadas-externas/infrastructure'],
+  ['dominio-sem-camadas-externas', 'fixtures/dominio-sem-camadas-externas/interface'],
+  ['dominio-sem-camadas-externas', 'fixtures/dominio-sem-camadas-externas/application'],
+  ['dominio-sem-camadas-externas', 'fixtures/dominio-sem-camadas-externas/tipo'],
+  ['dominio-sem-camadas-externas', 'fixtures/dominio-sem-camadas-externas/banco'],
+  ['dominio-sem-camadas-externas', 'fixtures/dominio-sem-camadas-externas/composicao'],
+  ['modulo-so-por-public-api', 'fixtures/modulo-so-por-public-api/valor'],
+  ['modulo-so-por-public-api', 'fixtures/modulo-so-por-public-api/tipo'],
+  ['contracts-nao-importa-apps', 'fixtures/contracts-nao-importa-apps'],
+  ['contracts-nao-importa-apps', 'fixtures/contracts-nao-importa-apps-tipo'],
+] as const;
+
+const CASOS_NEGATIVOS = [
+  'fixtures-negativas/modulo-so-por-public-api/public-api-de-outro-modulo',
+  'fixtures-negativas/modulo-so-por-public-api/mesmo-modulo',
 ] as const;
 
 describe('fronteiras de arquitetura (Documento 7, §3 e §4)', () => {
-  it.each(REGRAS_DE_FRONTEIRA)('a fixture de %s viola exatamente essa regra', async (regra) => {
-    const resultado = await cruzar([`apps/api/test/estrutural/fixtures/${regra}`]);
-    const nomesDasRegrasVioladas = resultado.summary.violations.map((violacao) => violacao.rule.name);
-
-    expect(nomesDasRegrasVioladas).toEqual([regra]);
+  it.each(CASOS_POSITIVOS)('%s: a fixture de %s viola exatamente essa regra', (regra, pasta) => {
+    expect(nomesDasRegrasVioladas(pasta)).toEqual([regra]);
   });
 
-  it('apps/api/src e packages/contracts/src não violam nenhuma fronteira', async () => {
-    const resultado = await cruzar(['apps/api/src', 'packages/contracts/src']);
+  it.each(CASOS_NEGATIVOS)('%s não viola nenhuma fronteira', (pasta) => {
+    expect(nomesDasRegrasVioladas(pasta)).toEqual([]);
+  });
+
+  it('apps/api/src e packages/contracts/src não violam nenhuma fronteira', () => {
+    const resultado = cruzar(['apps/api/src', 'packages/contracts/src']);
 
     expect(resultado.summary.violations).toEqual([]);
   });
