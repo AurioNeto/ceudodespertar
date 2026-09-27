@@ -37,3 +37,14 @@ $$, 'REGISTRO_IMUTAVEL');
 
 SELECT verif.confere('trilha · a linha inserida continua lá depois das tentativas',
   (SELECT count(*) FROM identidade.registro_de_auditoria), 1::bigint);
+
+-- shared.proibir_truncate religa o gatilho que uma etapa anterior tenha
+-- desligado (Documento 7 §22) — senão a varredura seguinte o encontraria
+-- desabilitado e concluiria, errado, que a tabela já está guardada.
+BEGIN;
+ALTER TABLE identidade.registro_de_auditoria DISABLE TRIGGER sem_truncate;
+SELECT shared.proibir_truncate(ARRAY['identidade.registro_de_auditoria']::regclass[]);
+SELECT verif.confere('proibir_truncate · religa o gatilho sem_truncate que estava desligado',
+  (SELECT tgenabled::text FROM pg_trigger WHERE tgrelid = 'identidade.registro_de_auditoria'::regclass AND tgname = 'sem_truncate'),
+  'O');
+ROLLBACK;

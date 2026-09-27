@@ -30,6 +30,20 @@ SELECT verif.confere('resolvedor de identidade · só lê as três colunas liber
 SELECT verif.confere('resolvedor de identidade · cdd_app não é membro do papel, nem por ponte',
   pg_has_role('cdd_app', 'cdd_resolvedor_identidade', 'MEMBER'), false);
 
+-- cdd_owner é membro dos três papéis (para rodar migration, inclusive o
+-- ALTER FUNCTION ... OWNER TO), mas com INHERIT FALSE (infra/postgres/
+-- papeis.sql): sem SET ROLE explícito, cdd_owner não herda o privilégio de
+-- ler o `sub`/o link de qualquer instituição. pg_has_role(...,'USAGE') dá
+-- true se a herança valeria automaticamente — é o que INHERIT TRUE ligaria.
+SELECT verif.confere('resolvedor de identidade · cdd_owner não herda automaticamente cdd_resolvedor_identidade (INHERIT FALSE)',
+  pg_has_role('cdd_owner', 'cdd_resolvedor_identidade', 'USAGE'), false);
+
+SELECT verif.confere('resolvedor de identidade · cdd_owner não herda automaticamente cdd_resolvedor_link (INHERIT FALSE)',
+  pg_has_role('cdd_owner', 'cdd_resolvedor_link', 'USAGE'), false);
+
+SELECT verif.confere('resolvedor de identidade · cdd_owner não herda automaticamente cdd_app (INHERIT FALSE)',
+  pg_has_role('cdd_owner', 'cdd_app', 'USAGE'), false);
+
 -- -----------------------------------------------------------------------------
 -- Comportamental — como cdd_app, sem contexto de instituição nenhum.
 -- -----------------------------------------------------------------------------

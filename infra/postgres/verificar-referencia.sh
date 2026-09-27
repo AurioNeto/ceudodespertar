@@ -108,4 +108,4 @@ verificar_papeis_de_cluster
 rodar_rodada postgres cdd_verificacao_superusuario "" nao
 rodar_rodada cdd_owner cdd_verificacao_owner "OWNER cdd_owner" sim
 
-echo "db:verificar — as duas rodadas passaram"
+echo "db:referencia — as duas rodadas passaram"

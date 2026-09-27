@@ -61,3 +61,23 @@ SELECT verif.confere('privilégios · PUBLIC sem EXECUTE em shared.proibir_trunc
 
 SELECT verif.confere('privilégios · PUBLIC sem EXECUTE em shared.somente_insercao',
   has_function_privilege('public', 'shared.somente_insercao()', 'EXECUTE'), false);
+
+-- has_function_privilege('public', ...) não pega um GRANT direto a cdd_app
+-- (que não é PUBLIC): as três continuam de uso exclusivo de migration.
+SELECT verif.confere('privilégios · cdd_app sem EXECUTE em shared.aplicar_isolamento_por_instituicao',
+  has_function_privilege('cdd_app', 'shared.aplicar_isolamento_por_instituicao()', 'EXECUTE'), false);
+
+SELECT verif.confere('privilégios · cdd_app sem EXECUTE em shared.proibir_truncate',
+  has_function_privilege('cdd_app', 'shared.proibir_truncate(regclass[])', 'EXECUTE'), false);
+
+SELECT verif.confere('privilégios · cdd_app sem EXECUTE em shared.somente_insercao',
+  has_function_privilege('cdd_app', 'shared.somente_insercao()', 'EXECUTE'), false);
+
+-- cdd_app não ganha CREATE em nenhum schema do B0 (só USAGE implícito pelos
+-- GRANTs de tabela/função) — CREATE abriria a porta para o papel de execução
+-- criar objetos por fora de migration.
+SELECT verif.confere('privilégios · cdd_app sem CREATE no schema shared',
+  has_schema_privilege('cdd_app', 'shared', 'CREATE'), false);
+
+SELECT verif.confere('privilégios · cdd_app sem CREATE no schema identidade',
+  has_schema_privilege('cdd_app', 'identidade', 'CREATE'), false);

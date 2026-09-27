@@ -71,31 +71,47 @@ async function fecharConexoesEMarcarComoModelo(superusuario: Client): Promise<vo
   await superusuario.query(`ALTER DATABASE ${BANCO_MODELO} WITH IS_TEMPLATE true`);
 }
 
+async function subirContainerDePostgres(): Promise<StartedPostgreSqlContainer> {
+  try {
+    return await new PostgreSqlContainer(IMAGEM_POSTGRES)
+      .withUsername(USUARIO_SUPERUSUARIO)
+      .withPassword(SENHA_SUPERUSUARIO)
+      .withDatabase(BANCO_DE_ADMINISTRACAO)
+      .start();
+  } catch (erroAoSubirContainer) {
+    throw new Error(
+      'Não foi possível iniciar o container de Postgres (Testcontainers) para os testes de integração — verifique se o Docker está em execução. Os testes unitários não dependem de Docker: rode `pnpm test`.',
+      { cause: erroAoSubirContainer },
+    );
+  }
+}
+
 export async function setup(projeto: ProjetoDoVitest): Promise<() => Promise<void>> {
-  const container: StartedPostgreSqlContainer = await new PostgreSqlContainer(IMAGEM_POSTGRES)
-    .withUsername(USUARIO_SUPERUSUARIO)
-    .withPassword(SENHA_SUPERUSUARIO)
-    .withDatabase(BANCO_DE_ADMINISTRACAO)
-    .start();
+  const container = await subirContainerDePostgres();
 
   const host = container.getHost();
   const porta = container.getPort();
 
-  const superusuario = new Client({
-    host,
-    port: porta,
-    user: USUARIO_SUPERUSUARIO,
-    password: SENHA_SUPERUSUARIO,
-    database: BANCO_DE_ADMINISTRACAO,
-  });
-  await superusuario.connect();
   try {
-    await aplicarPapeisDeCluster(superusuario);
-    await criarBancoModelo(superusuario);
-    await migrarBancoModelo(host, porta);
-    await fecharConexoesEMarcarComoModelo(superusuario);
-  } finally {
-    await superusuario.end();
+    const superusuario = new Client({
+      host,
+      port: porta,
+      user: USUARIO_SUPERUSUARIO,
+      password: SENHA_SUPERUSUARIO,
+      database: BANCO_DE_ADMINISTRACAO,
+    });
+    await superusuario.connect();
+    try {
+      await aplicarPapeisDeCluster(superusuario);
+      await criarBancoModelo(superusuario);
+      await migrarBancoModelo(host, porta);
+      await fecharConexoesEMarcarComoModelo(superusuario);
+    } finally {
+      await superusuario.end();
+    }
+  } catch (erroNaPreparacao) {
+    await container.stop();
+    throw erroNaPreparacao;
   }
 
   projeto.provide('hostDoBanco', host);

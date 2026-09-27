@@ -15,32 +15,47 @@ SELECT verif.confere('T23 · shared.outbox é a única tabela com instituicao_id
   (SELECT c.relrowsecurity OR c.relforcerowsecurity FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
     WHERE n.nspname = 'shared' AND c.relname = 'outbox'), false);
 
--- Cada tabela do B0, nomeada, com RLS+FORCE e a política certa (não só a
--- existência dela pelo nome — a expressão do USING/WITH CHECK também).
-SELECT verif.confere('T23 · identidade.usuario tem RLS forçada e a política de isolamento',
-  (SELECT count(*) FROM pg_policy p JOIN pg_class c ON c.oid = p.polrelid JOIN pg_namespace n ON n.oid = c.relnamespace
-    WHERE n.nspname = 'identidade' AND c.relname = 'usuario' AND p.polname = 'isolamento_por_instituicao'
-      AND pg_get_expr(p.polqual, p.polrelid) = '(instituicao_id = shared.instituicao_atual())'), 1::bigint);
+-- A partir daqui, a lista de tabelas-alvo vem do catálogo
+-- (verif.tabelas_com_instituicao_id(), que lê pg_class/pg_attribute), não de
+-- nomes escritos à mão — senão uma tabela nova que ganhasse `instituicao_id`
+-- e ficasse fora da varredura, ou uma tabela do B0 que o caso simplesmente
+-- não citasse, passaria batida.
 
-SELECT verif.confere('T23 · identidade.grupo tem RLS forçada e a política de isolamento',
-  (SELECT count(*) FROM pg_policy p JOIN pg_class c ON c.oid = p.polrelid JOIN pg_namespace n ON n.oid = c.relnamespace
-    WHERE n.nspname = 'identidade' AND c.relname = 'grupo' AND p.polname = 'isolamento_por_instituicao'
-      AND pg_get_expr(p.polqual, p.polrelid) = '(instituicao_id = shared.instituicao_atual())'), 1::bigint);
+-- Evita vácuo silencioso: a varredura tem que achar as sete tabelas do B0
+-- que têm `instituicao_id` (usuario, grupo, grupo_permissao, usuario_grupo,
+-- convite, registro_de_auditoria e shared.chave_de_idempotencia) — não zero.
+SELECT verif.confere('T23 · a varredura de tabelas-alvo não está vazia',
+  (SELECT count(*) FROM verif.tabelas_com_instituicao_id()), 7::bigint);
 
-SELECT verif.confere('T23 · identidade.convite tem RLS forçada e a política de isolamento',
-  (SELECT count(*) FROM pg_policy p JOIN pg_class c ON c.oid = p.polrelid JOIN pg_namespace n ON n.oid = c.relnamespace
-    WHERE n.nspname = 'identidade' AND c.relname = 'convite' AND p.polname = 'isolamento_por_instituicao'
-      AND pg_get_expr(p.polqual, p.polrelid) = '(instituicao_id = shared.instituicao_atual())'), 1::bigint);
+-- Cada tabela-alvo tem a política isolamento_por_instituicao com a expressão
+-- certa não só no USING, mas também no WITH CHECK (senão a leitura fica
+-- isolada e a escrita em nome de outra instituição passa), o comando certo
+-- (ALL) e os papéis certos (PUBLIC — sem TO, então polroles = {0}).
+SELECT verif.confere('T23 · toda tabela-alvo tem a política isolamento_por_instituicao com USING, WITH CHECK, comando e papéis corretos',
+  (SELECT count(*) FROM verif.tabelas_com_instituicao_id() t
+    WHERE NOT EXISTS (
+      SELECT 1 FROM pg_policy p
+       WHERE p.polrelid = t.relid
+         AND p.polname = 'isolamento_por_instituicao'
+         AND pg_get_expr(p.polqual, p.polrelid) = '(instituicao_id = shared.instituicao_atual())'
+         AND pg_get_expr(p.polwithcheck, p.polrelid) = '(instituicao_id = shared.instituicao_atual())'
+         AND p.polcmd = '*'
+         AND p.polpermissive
+         AND p.polroles = ARRAY[0]::oid[]
+    )), 0::bigint);
 
-SELECT verif.confere('T23 · identidade.registro_de_auditoria tem RLS forçada e a política de isolamento',
-  (SELECT count(*) FROM pg_policy p JOIN pg_class c ON c.oid = p.polrelid JOIN pg_namespace n ON n.oid = c.relnamespace
-    WHERE n.nspname = 'identidade' AND c.relname = 'registro_de_auditoria' AND p.polname = 'isolamento_por_instituicao'
-      AND pg_get_expr(p.polqual, p.polrelid) = '(instituicao_id = shared.instituicao_atual())'), 1::bigint);
-
-SELECT verif.confere('T23 · shared.chave_de_idempotencia tem RLS forçada e a política de isolamento',
-  (SELECT count(*) FROM pg_policy p JOIN pg_class c ON c.oid = p.polrelid JOIN pg_namespace n ON n.oid = c.relnamespace
-    WHERE n.nspname = 'shared' AND c.relname = 'chave_de_idempotencia' AND p.polname = 'isolamento_por_instituicao'
-      AND pg_get_expr(p.polqual, p.polrelid) = '(instituicao_id = shared.instituicao_atual())'), 1::bigint);
+-- Nenhuma tabela-alvo tem política a mais que abra uma fresta — em
+-- identidade.usuario, a única exceção documentada é resolucao_do_sujeito
+-- (F08: o resolvedor de identidade lê antes de haver instituição no
+-- contexto).
+SELECT verif.confere('T23 · nenhuma tabela-alvo tem política além da esperada (isolamento_por_instituicao; em usuario, também resolucao_do_sujeito)',
+  (SELECT count(*) FROM verif.tabelas_com_instituicao_id() t
+    WHERE EXISTS (
+      SELECT 1 FROM pg_policy p
+       WHERE p.polrelid = t.relid
+         AND p.polname <> 'isolamento_por_instituicao'
+         AND NOT (t.nspname = 'identidade' AND t.relname = 'usuario' AND p.polname = 'resolucao_do_sujeito')
+    )), 0::bigint);
 
 -- Idempotência da varredura (Documento 7 §22): uma segunda chamada, sobre o
 -- esquema inteiro, não falha, não duplica a política e não pega

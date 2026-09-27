@@ -52,6 +52,7 @@ describe('verificação de garantias do banco (Documento 7 §15, §22, §26)', (
     const chamadasNoArquivo = quantidadeDeChamadasVerifNoArquivo(sqlDoCaso);
     const todasAsNoticesComecamComOk = noticesOk.every((mensagem) => mensagem.startsWith('OK'));
 
+    expect(chamadasNoArquivo).toBeGreaterThan(0);
     expect(noticesOk).toHaveLength(chamadasNoArquivo);
     expect(todasAsNoticesComecamComOk).toBe(true);
   });
