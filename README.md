@@ -95,9 +95,33 @@ aplicação (`cdd-web`, `cdd-teste`, `cdd-api-admin`) e o `admin-cli` declaram
 ficam com o escopo opcional vazio (nada além do que o app usa).
 
 ```bash
-node infra/keycloak/verificar-realm.mjs   # falha se alguma regra de segurança do realm regredir
-bash infra/keycloak/fumaca.sh             # com o compose de pé: discovery, tokens, PKCE obrigatório, recusas
+node infra/keycloak/verificar-realm.mjs             # falha se alguma regra de segurança do ARQUIVO regredir
+node infra/keycloak/verificar-realm-importado.mjs   # com o compose de pé: confere o Keycloak IMPORTADO (Admin API) contra o mesmo modelo
+bash infra/keycloak/fumaca.sh                       # com o compose de pé: discovery, tokens, PKCE obrigatório, recusas
 ```
+
+O verificador do arquivo confere o `realm-cdd.json` versionado; o do importado confere o que o
+Keycloak efetivamente carregou, pela Admin API — os dois são necessários porque o import do
+Keycloak aceita nomes de campo alternativos e legados (`applicationRoles` além de `clientRoles`),
+preenche padrões, resolve placeholders, e um restart com o realm já existente pula o import
+inteiro (`Realm 'cdd' already exists. Import skipped`, sem CI que trave nisso). O importado lê,
+pela Admin API: representação do realm (política de senha, força bruta, bindings de fluxo,
+sessões), clientes e escopos por padrão/opcionais efetivos (`default-client-scopes`,
+`optional-client-scopes`), os mapeadores de cada escopo atribuído (um mapeador de e-mail
+enfiado em `basic` ou `roles` reprova), os defaults do realm para clientes futuros
+(`default-default-client-scopes`, `default-optional-client-scopes`), os papéis efetivos
+(compostos, realm e por cliente) do usuário de desenvolvimento e da conta de serviço do
+`cdd-api-admin`, ausência de identity providers e de user federation, e nos cinco clientes
+embutidos do Keycloak (`account`, `account-console`, `broker`, `realm-management`,
+`security-admin-console`) mais o `admin-cli`: sem device flow, sem mapeador de audiência para
+`cdd-api`, e password grant só onde o modelo espera (`admin-cli`). O segredo do `cdd-api-admin`
+é comparado com o valor real do ambiente, nunca com o texto do placeholder.
+
+`pnpm infra:subir` roda o verificador do arquivo antes de subir os containers (falhou, não sobe),
+sobe o compose, confere a saúde, e só então roda o verificador do importado e a fumaça — qualquer
+falha nessa cadeia sai com código diferente de zero. Se o Keycloak importado divergir do modelo
+(por exemplo, um restart que reaproveitou um realm antigo e derivado), a mensagem de erro sugere
+`pnpm infra:zerar` antes de subir de novo.
 
 ---
 

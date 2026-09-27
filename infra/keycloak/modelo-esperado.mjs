@@ -473,3 +473,201 @@ export const VARIAVEIS_DE_AMBIENTE = {
     'CDD_KC_DEV_SENHA',
   ],
 };
+
+export function objetoComApenas(especificacaoObjeto, chaves) {
+  const obrigatorias = {};
+  for (const chave of chaves) {
+    if (chave in especificacaoObjeto.obrigatorias) {
+      obrigatorias[chave] = especificacaoObjeto.obrigatorias[chave];
+    } else if (especificacaoObjeto.opcionais && chave in especificacaoObjeto.opcionais) {
+      obrigatorias[chave] = especificacaoObjeto.opcionais[chave];
+    } else {
+      throw new Error(`objetoComApenas: especificação não conhece a chave "${chave}"`);
+    }
+  }
+  return objeto({ obrigatorias });
+}
+
+export function extrairCampos(objetoQualquer, chaves) {
+  const projetado = {};
+  for (const chave of chaves) {
+    if (objetoQualquer !== null && typeof objetoQualquer === 'object' && chave in objetoQualquer) {
+      projetado[chave] = objetoQualquer[chave];
+    }
+  }
+  return projetado;
+}
+
+const CAMPOS_ESCALARES_DO_REALM_VIVO = [
+  'realm',
+  'enabled',
+  'registrationAllowed',
+  'resetPasswordAllowed',
+  'loginWithEmailAllowed',
+  'duplicateEmailsAllowed',
+  'editUsernameAllowed',
+  'bruteForceProtected',
+  'permanentLockout',
+  'failureFactor',
+  'waitIncrementSeconds',
+  'quickLoginCheckMilliSeconds',
+  'minimumQuickLoginWaitSeconds',
+  'maxFailureWaitSeconds',
+  'maxDeltaTimeSeconds',
+  'passwordPolicy',
+  'accessTokenLifespan',
+  'ssoSessionIdleTimeout',
+  'ssoSessionMaxLifespan',
+  'revokeRefreshToken',
+  'refreshTokenMaxReuse',
+  'rememberMe',
+  'offlineSessionMaxLifespanEnabled',
+  'offlineSessionMaxLifespan',
+  'internationalizationEnabled',
+  'supportedLocales',
+  'defaultLocale',
+];
+
+export const MODELO_REALM_VIVO = objeto({
+  obrigatorias: {
+    ...objetoComApenas(MODELO_REALM, CAMPOS_ESCALARES_DO_REALM_VIVO).obrigatorias,
+    smtpServer: objetoComApenas(MODELO_REALM.obrigatorias.smtpServer, [
+      'host',
+      'port',
+      'from',
+      'fromDisplayName',
+      'ssl',
+      'starttls',
+      'auth',
+    ]),
+    browserFlow: valor('browser'),
+    directGrantFlow: valor('direct grant'),
+    resetCredentialsFlow: valor('reset credentials'),
+  },
+});
+
+export const CAMPOS_ESCALARES_DE_CLIENTE_VIVO = [
+  'clientId',
+  'enabled',
+  'protocol',
+  'publicClient',
+  'standardFlowEnabled',
+  'directAccessGrantsEnabled',
+  'implicitFlowEnabled',
+  'serviceAccountsEnabled',
+  'defaultClientScopes',
+  'optionalClientScopes',
+];
+
+const mapeadorAudienciaCddApiVivo = objeto({
+  obrigatorias: {
+    name: valor('audiencia-cdd-api'),
+    protocol: valor('openid-connect'),
+    protocolMapper: valor('oidc-audience-mapper'),
+    consentRequired: valor(false),
+    config: objeto({
+      obrigatorias: {
+        'included.client.audience': valor('cdd-api'),
+        'id.token.claim': valor('false'),
+        'access.token.claim': valor('true'),
+        'userinfo.token.claim': valor('false'),
+      },
+    }),
+  },
+});
+
+const MAPEADORES_DE_IDENTIDADE_ITENS_VIVOS = {
+  ...MAPEADORES_SO_ID_TOKEN_ITENS,
+  'audiencia-cdd-api': mapeadorAudienciaCddApiVivo,
+};
+
+export const PROTOCOL_MAPPERS_VIVOS_POR_CLIENTE = {
+  'cdd-web': listaDeObjetos({ chavePrimaria: 'name', itens: MAPEADORES_DE_IDENTIDADE_ITENS_VIVOS }),
+  'cdd-teste': listaDeObjetos({ chavePrimaria: 'name', itens: MAPEADORES_DE_IDENTIDADE_ITENS_VIVOS }),
+};
+
+export const ATRIBUTOS_VIVOS_POR_CLIENTE = {
+  'cdd-web': objeto({
+    obrigatorias: {
+      realm_client: valor('false'),
+      'post.logout.redirect.uris': valor('http://localhost:5173/*'),
+      'pkce.code.challenge.method': valor('S256'),
+    },
+  }),
+  'cdd-teste': objeto({
+    obrigatorias: {
+      realm_client: valor('false'),
+      'post.logout.redirect.uris': valor('+'),
+    },
+  }),
+  'cdd-api-admin': objeto({
+    obrigatorias: {
+      realm_client: valor('false'),
+      'post.logout.redirect.uris': valor('+'),
+    },
+  }),
+  'admin-cli': objeto({
+    obrigatorias: {
+      realm_client: valor('false'),
+      'client.use.lightweight.access.token.enabled': valor('true'),
+      'post.logout.redirect.uris': valor('+'),
+    },
+  }),
+};
+
+export const MAPEADORES_POR_ESCOPO_PADRAO = {
+  'web-origins': ['allowed web origins'],
+  acr: ['acr loa level'],
+  roles: ['audience resolve', 'client roles', 'realm roles'],
+  basic: ['auth_time', 'sub'],
+  profile: [
+    'full name',
+    'family name',
+    'given name',
+    'middle name',
+    'nickname',
+    'username',
+    'profile',
+    'picture',
+    'website',
+    'gender',
+    'birthdate',
+    'zoneinfo',
+    'locale',
+    'updated at',
+  ],
+  email: ['email', 'email verified'],
+  address: ['address'],
+  phone: ['phone number', 'phone number verified'],
+  organization: ['organization'],
+  'microprofile-jwt': ['upn', 'groups'],
+};
+
+export const ESCOPOS_ATRIBUIDOS_POR_CLIENTE = {
+  'cdd-web': { padrao: ['web-origins', 'acr', 'roles', 'basic'], opcionais: [] },
+  'cdd-teste': { padrao: ['web-origins', 'acr', 'roles', 'basic'], opcionais: [] },
+  'cdd-api-admin': { padrao: ['web-origins', 'acr', 'roles', 'basic'], opcionais: [] },
+  'admin-cli': {
+    padrao: ['web-origins', 'acr', 'profile', 'roles', 'basic', 'email'],
+    opcionais: ['address', 'phone', 'organization', 'microprofile-jwt'],
+  },
+};
+
+export const ESCOPOS_PADRAO_DO_REALM = {
+  defaultDefaultClientScopes: conjunto(['acr', 'basic', 'email', 'profile', 'role_list', 'roles', 'saml_organization', 'web-origins']),
+  defaultOptionalClientScopes: conjunto(['address', 'microprofile-jwt', 'offline_access', 'organization', 'phone']),
+};
+
+export const PAPEIS_EFETIVOS_ESPERADOS = {
+  'dev@cdd.local': { realm: [], clientes: {} },
+  'service-account-cdd-api-admin': { realm: [], clientes: { 'realm-management': ['manage-users'] } },
+};
+
+export const CLIENTES_EMBUTIDOS_E_ADMIN_CLI = {
+  account: { directAccessGrantsEnabled: false },
+  'account-console': { directAccessGrantsEnabled: false },
+  broker: { directAccessGrantsEnabled: false },
+  'realm-management': { directAccessGrantsEnabled: false },
+  'security-admin-console': { directAccessGrantsEnabled: false },
+  'admin-cli': { directAccessGrantsEnabled: true },
+};
