@@ -1,4 +1,4 @@
--- verificacoes: 11
+-- verificacoes: 18
 -- B0 · guardas mínimas de forma em identidade.usuario, identidade.convite e
 -- identidade.registro_de_auditoria (Documento 7 §15): US2, convite de uso
 -- único (com reenvio), convite não usado-e-revogado ao mesmo tempo, e ator
@@ -43,6 +43,32 @@ SELECT verif.espera_ok('US2 · dois usuários com pessoa_id NULL não colidem (�
 $$);
 
 -- ---------------------------------------------------------------------------
+-- grupo_nome_unico: nome de grupo é único por instituição, sem diferenciar
+-- caixa (mesmo padrão de usuario_email_unico).
+-- ---------------------------------------------------------------------------
+
+INSERT INTO identidade.grupo (id, instituicao_id, nome)
+  VALUES ('a3000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000000', 'Tesouraria');
+
+SELECT verif.espera_erro('grupo_nome_unico · mesmo nome, outra caixa, mesma instituição', $$
+  INSERT INTO identidade.grupo (instituicao_id, nome)
+    VALUES ('a0000000-0000-0000-0000-000000000000', 'TESOURARIA')
+$$, 'grupo_nome_unico');
+
+-- ---------------------------------------------------------------------------
+-- chave_de_idempotencia (PK): a chave (Idempotency-Key) é única por
+-- instituição.
+-- ---------------------------------------------------------------------------
+
+INSERT INTO shared.chave_de_idempotencia (instituicao_id, chave, rota, status_http, resposta)
+  VALUES ('a0000000-0000-0000-0000-000000000000', 'chave-repetida', '/x', 200, '{}'::jsonb);
+
+SELECT verif.espera_erro('chave_de_idempotencia (PK) · mesma chave, mesma instituição, não duplica', $$
+  INSERT INTO shared.chave_de_idempotencia (instituicao_id, chave, rota, status_http, resposta)
+    VALUES ('a0000000-0000-0000-0000-000000000000', 'chave-repetida', '/y', 200, '{}'::jsonb)
+$$, 'chave_de_idempotencia_pkey|duplicate key');
+
+-- ---------------------------------------------------------------------------
 -- Convite de uso único: no máximo um convite vigente por usuário; reenvio é
 -- revogar o antigo e criar outro — nunca os dois vigentes ao mesmo tempo.
 -- ---------------------------------------------------------------------------
@@ -77,6 +103,15 @@ SELECT verif.espera_ok('convite usado (sem revogado_em) é uma escrita válida',
   UPDATE identidade.convite SET usado_em = now() WHERE id = 'c1000000-0000-0000-0000-000000000002'
 $$);
 
+-- convite_vigente_unico exclui usado_em, não só revogado_em: um convite já
+-- usado (mas não revogado) não é "vigente", e não bloqueia um novo convite
+-- para o mesmo usuário — sem precisar revogar o que já foi usado.
+SELECT verif.espera_ok('convite_vigente_unico · convite usado (não revogado) não bloqueia um novo convite para o mesmo usuário', $$
+  INSERT INTO identidade.convite (instituicao_id, usuario_id, token_sha256, expira_em, criado_por)
+    VALUES ('a0000000-0000-0000-0000-000000000000', 'a1000000-0000-0000-0000-000000000002',
+            '\xc00004', now() + interval '2 days', gen_random_uuid())
+$$);
+
 -- Convite revogado (sem uso) — outro convite, para não colidir com o já usado.
 INSERT INTO identidade.convite (id, instituicao_id, usuario_id, token_sha256, expira_em, criado_por)
   VALUES ('c1000000-0000-0000-0000-000000000003', 'a0000000-0000-0000-0000-000000000000',
@@ -105,6 +140,36 @@ SELECT verif.espera_ok('autor_coerente · SISTEMA sem autor_usuario_id é coeren
   INSERT INTO identidade.registro_de_auditoria (instituicao_id, autor_tipo, autor_grupos, operacao, agregado_tipo, agregado_id)
     VALUES ('a0000000-0000-0000-0000-000000000000', 'SISTEMA',
             ARRAY[]::text[], 'PERIODO_FECHADO', 'PeriodoContabil', gen_random_uuid())
+$$);
+
+-- ---------------------------------------------------------------------------
+-- Unicidade é por casa, não global: o MESMO valor, em outra instituição, não
+-- colide — senão a chave estaria faltando instituicao_id (não teria índice
+-- de sobra para examinar, teria índice de menos).
+-- ---------------------------------------------------------------------------
+
+INSERT INTO shared.instituicao (id, nome) VALUES ('b0000000-0000-0000-0000-000000000000', 'Casa B');
+SELECT set_config('app.instituicao_id', 'b0000000-0000-0000-0000-000000000000', false);
+
+SELECT verif.espera_ok('usuario_email_unico · o mesmo e-mail em outra instituição não colide', $$
+  INSERT INTO identidade.usuario (instituicao_id, nome, email, situacao)
+    VALUES ('b0000000-0000-0000-0000-000000000000', 'Aline (Casa B)', 'aline@casaa.example', 'ATIVO')
+$$);
+
+SELECT verif.espera_ok('usuario_pessoa_unica · a mesma pessoa em outra instituição não colide', $$
+  INSERT INTO identidade.usuario (instituicao_id, pessoa_id, nome, email, situacao)
+    VALUES ('b0000000-0000-0000-0000-000000000000', 'd1000000-0000-0000-0000-000000000001',
+            'Bruno (Casa B)', 'bruno@casab.example', 'ATIVO')
+$$);
+
+SELECT verif.espera_ok('grupo_nome_unico · o mesmo nome em outra instituição não colide', $$
+  INSERT INTO identidade.grupo (instituicao_id, nome)
+    VALUES ('b0000000-0000-0000-0000-000000000000', 'Tesouraria')
+$$);
+
+SELECT verif.espera_ok('chave_de_idempotencia (PK) · a mesma chave em outra instituição não colide', $$
+  INSERT INTO shared.chave_de_idempotencia (instituicao_id, chave, rota, status_http, resposta)
+    VALUES ('b0000000-0000-0000-0000-000000000000', 'chave-repetida', '/z', 200, '{}'::jsonb)
 $$);
 
 RESET ROLE;
