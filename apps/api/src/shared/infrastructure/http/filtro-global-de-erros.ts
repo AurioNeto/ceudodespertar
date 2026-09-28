@@ -1,9 +1,11 @@
 import { randomUUID } from 'node:crypto';
 import { Catch, HttpException, Logger } from '@nestjs/common';
 import type { ArgumentsHost, ExceptionFilter } from '@nestjs/common';
-import { OptimisticLockError } from '@mikro-orm/core';
+import { DriverException, OptimisticLockError } from '@mikro-orm/core';
+import { DatabaseError } from 'pg';
 import type { CodigoDeErro, CorpoDeErro } from '@cdd/contracts';
 import { ContextoDaRequisicao } from '../contexto-da-requisicao.js';
+import { lerCorrelacaoDaRequisicao } from './correlacao-da-requisicao.js';
 import { ErroDeDominioException } from '../../kernel/erro-de-dominio.js';
 import { STATUS_POR_CODIGO } from './status-por-codigo.js';
 import { RESTRICAO_PARA_CODIGO } from './restricao-para-codigo.js';
@@ -27,6 +29,7 @@ interface RespostaDeErro {
 
 const CODIGO_ERRO_INTERNO: CodigoDeErro = 'ERRO_INTERNO';
 const CODIGO_VERSAO_DESATUALIZADA: CodigoDeErro = 'VERSAO_DESATUALIZADA';
+const CODIGO_CORPO_GRANDE_DEMAIS: CodigoDeErro = 'CORPO_GRANDE_DEMAIS';
 const CODIGO_POR_STATUS_HTTP_CONHECIDO: Readonly<Partial<Record<number, CodigoDeErro>>> = {
   400: 'CORPO_INVALIDO',
   401: 'NAO_AUTENTICADO',
@@ -35,14 +38,18 @@ const CODIGO_POR_STATUS_HTTP_CONHECIDO: Readonly<Partial<Record<number, CodigoDe
 };
 const SQLSTATE_GUARDA_MINIMA = 'P0001';
 const SQLSTATES_DE_RESTRICAO_NOMEADA: ReadonlySet<string> = new Set(['23505', '23503', '23514']);
+const PADRAO_SQLSTATE = /^[0-9A-Z]{5}$/;
+const TIPO_DE_ERRO_CORPO_GRANDE_DEMAIS = 'entity.too.large';
 
 function ehErroDeBanco(valor: unknown): valor is ErroDeBanco {
-  return (
-    typeof valor === 'object' &&
-    valor !== null &&
-    typeof (valor as { code?: unknown }).code === 'string' &&
-    typeof (valor as { message?: unknown }).message === 'string'
-  );
+  if (!(valor instanceof DatabaseError) && !(valor instanceof DriverException)) return false;
+
+  const codigo = (valor as { code?: unknown }).code;
+  return typeof codigo === 'string' && PADRAO_SQLSTATE.test(codigo);
+}
+
+function ehCorpoGrandeDemais(valor: unknown): boolean {
+  return typeof valor === 'object' && valor !== null && (valor as { type?: unknown }).type === TIPO_DE_ERRO_CORPO_GRANDE_DEMAIS;
 }
 
 function respostaParaCodigo(
@@ -65,8 +72,11 @@ export class FiltroGlobalDeErros implements ExceptionFilter {
   private readonly logger = new Logger(FiltroGlobalDeErros.name);
 
   catch(excecao: unknown, host: ArgumentsHost): void {
-    const resposta = host.switchToHttp().getResponse<RespostaHttp>();
-    const correlacaoId = ContextoDaRequisicao.atual()?.correlacaoId ?? randomUUID();
+    const contextoHttp = host.switchToHttp();
+    const resposta = contextoHttp.getResponse<RespostaHttp>();
+    const requisicao = typeof contextoHttp.getRequest === 'function' ? contextoHttp.getRequest<object>() : undefined;
+    const correlacaoId =
+      lerCorrelacaoDaRequisicao(requisicao) ?? ContextoDaRequisicao.atual()?.correlacaoId ?? randomUUID();
 
     const { status, corpo } = this.resolver(excecao, correlacaoId);
     resposta.status(status).json(corpo);
@@ -81,6 +91,11 @@ export class FiltroGlobalDeErros implements ExceptionFilter {
       return respostaParaCodigo(CODIGO_VERSAO_DESATUALIZADA, correlacaoId);
     }
 
+    if (ehCorpoGrandeDemais(excecao)) {
+      this.logger.warn(`corpo da requisição excede o limite [correlacaoId=${correlacaoId}]`);
+      return respostaParaCodigo(CODIGO_CORPO_GRANDE_DEMAIS, correlacaoId);
+    }
+
     if (excecao instanceof HttpException) {
       return this.resolverHttpException(excecao, correlacaoId);
     }
@@ -89,7 +104,7 @@ export class FiltroGlobalDeErros implements ExceptionFilter {
       return this.resolverErroDeBanco(excecao, correlacaoId);
     }
 
-    this.logger.error('erro não mapeado chegou ao filtro global de erros', excecao instanceof Error ? excecao.stack : String(excecao));
+    this.logarErroInterno('erro não mapeado chegou ao filtro global de erros', excecao, correlacaoId);
     return respostaParaErroInterno(correlacaoId);
   }
 
@@ -101,14 +116,14 @@ export class FiltroGlobalDeErros implements ExceptionFilter {
       return respostaParaCodigo(codigo, correlacaoId);
     }
 
-    this.logger.error(`HttpException sem código de domínio conhecido: ${status} ${excecao.message}`);
-    return { status, corpo: { erro: CODIGO_ERRO_INTERNO, correlacaoId } };
+    this.logarErroInterno(`HttpException sem código de domínio conhecido: ${status} ${excecao.message}`, excecao, correlacaoId);
+    return respostaParaErroInterno(correlacaoId);
   }
 
   private resolverErroDeBanco(erro: ErroDeBanco, correlacaoId: string): RespostaDeErro {
     if (erro.code === SQLSTATE_GUARDA_MINIMA) {
       const codigoDeGuarda = codigoDaGuardaMinima(erro.message);
-      this.logger.error(`guarda mínima do banco chegou à API — contorno do agregado: ${erro.message}`);
+      this.logarErroInterno(`guarda mínima do banco chegou à API — contorno do agregado: ${erro.message}`, erro, correlacaoId);
       return codigoDeGuarda === undefined
         ? respostaParaErroInterno(correlacaoId)
         : respostaParaCodigo(codigoDeGuarda, correlacaoId);
@@ -121,7 +136,12 @@ export class FiltroGlobalDeErros implements ExceptionFilter {
       }
     }
 
-    this.logger.error(`erro de banco sem mapeamento chegou à API: ${erro.code} ${erro.constraint ?? ''}`);
+    this.logarErroInterno(`erro de banco sem mapeamento chegou à API: ${erro.code} ${erro.constraint ?? ''}`, erro, correlacaoId);
     return respostaParaErroInterno(correlacaoId);
+  }
+
+  private logarErroInterno(mensagem: string, excecao: unknown, correlacaoId: string): void {
+    const stack = excecao instanceof Error ? excecao.stack : undefined;
+    this.logger.error(`${mensagem} [correlacaoId=${correlacaoId}]`, stack);
   }
 }

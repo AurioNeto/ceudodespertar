@@ -10,28 +10,42 @@ import { CODIGOS_DE_GUARDA_MINIMA } from '../../src/shared/infrastructure/http/g
 const DIRETORIO_DO_TESTE = dirname(fileURLToPath(import.meta.url));
 const DIRETORIO_DAS_MIGRACOES = join(DIRETORIO_DO_TESTE, '..', '..', 'src', 'banco', 'migracoes');
 
-const RESTRICOES_QUE_O_DOMINIO_MAPEIA_NO_B0: readonly string[] = ['usuario_email_unico', 'usuario_pessoa_unica'];
+const RESTRICOES_QUE_O_DOMINIO_MAPEIA_NO_B0: readonly string[] = [
+  'usuario_email_unico',
+  'usuario_pessoa_unica',
+  'grupo_nome_unico',
+  'convite_vigente_unico',
+];
 
-function arquivosSqlRecursivos(diretorio: string): string[] {
+const RESTRICOES_SEM_CODIGO_POR_SEREM_GUARDA_INTERNA_DO_BANCO: readonly string[] = [
+  'convite_nao_usado_e_revogado',
+  'autor_coerente',
+];
+
+function arquivosSqlDeMigracaoRecursivos(diretorio: string): string[] {
   return readdirSync(diretorio, { withFileTypes: true }).flatMap((entrada) => {
     const caminho = join(diretorio, entrada.name);
     return entrada.isDirectory()
-      ? arquivosSqlRecursivos(caminho)
-      : entrada.name.endsWith('.sql')
+      ? arquivosSqlDeMigracaoRecursivos(caminho)
+      : entrada.name.endsWith('.sql') && entrada.name !== 'desfazer.sql'
         ? [caminho]
         : [];
   });
 }
 
-function conteudoDasMigracoes(): string {
-  return arquivosSqlRecursivos(DIRETORIO_DAS_MIGRACOES)
-    .map((caminho) => readFileSync(caminho, 'utf8'))
+function semComentarios(sql: string): string {
+  return sql.replace(/--.*$/gm, '');
+}
+
+function conteudoDasMigracoesDeSubida(): string {
+  return arquivosSqlDeMigracaoRecursivos(DIRETORIO_DAS_MIGRACOES)
+    .map((caminho) => semComentarios(readFileSync(caminho, 'utf8')))
     .join('\n');
 }
 
 function restricoesNomeadas(sql: string): Set<string> {
   const nomes = new Set<string>();
-  for (const casamento of sql.matchAll(/\bCREATE\s+(?:UNIQUE\s+)?INDEX\s+(\w+)/gi)) {
+  for (const casamento of sql.matchAll(/\bCREATE\s+UNIQUE\s+INDEX\s+(\w+)/gi)) {
     nomes.add(casamento[1] as string);
   }
   for (const casamento of sql.matchAll(/\bCONSTRAINT\s+(\w+)/gi)) {
@@ -42,15 +56,18 @@ function restricoesNomeadas(sql: string): Set<string> {
 
 function prefixosDeGuardaMinima(sql: string): Set<string> {
   const prefixos = new Set<string>();
-  for (const casamento of sql.matchAll(/RAISE EXCEPTION '([A-Z_]+):/g)) {
+  for (const casamento of sql.matchAll(/\bRAISE\s+EXCEPTION\s+'([A-Z_]+):/gi)) {
+    prefixos.add(casamento[1] as string);
+  }
+  for (const casamento of sql.matchAll(/\bUSING\s+MESSAGE\s*=\s*'([A-Z_]+):/gi)) {
     prefixos.add(casamento[1] as string);
   }
   return prefixos;
 }
 
 describe('catálogo de erros — contrato (Documento 7 §12)', () => {
-  const sqlDasMigracoes = conteudoDasMigracoes();
-  const restricoesDasMigracoes = restricoesNomeadas(sqlDasMigracoes);
+  const sqlDasMigracoesDeSubida = conteudoDasMigracoesDeSubida();
+  const restricoesDasMigracoes = restricoesNomeadas(sqlDasMigracoesDeSubida);
 
   it('todo código do catálogo tem um status HTTP inteiro no mapa', () => {
     for (const codigo of CODIGOS_DE_ERRO) {
@@ -69,7 +86,7 @@ describe('catálogo de erros — contrato (Documento 7 §12)', () => {
     }
   });
 
-  it('as restrições do mapa existem, com esse nome exato, nas migrations', () => {
+  it('as restrições do mapa existem, com esse nome exato, nas migrations de subida (fora comentário e desfazer.sql)', () => {
     for (const restricao of Object.keys(RESTRICAO_PARA_CODIGO)) {
       expect(restricoesDasMigracoes.has(restricao)).toBe(true);
     }
@@ -81,8 +98,27 @@ describe('catálogo de erros — contrato (Documento 7 §12)', () => {
     }
   });
 
-  it('todo prefixo de guarda mínima usado nas migrations está na lista de guardas mínimas', () => {
-    const prefixosUsados = prefixosDeGuardaMinima(sqlDasMigracoes);
+  it('toda restrição nomeada das migrations tem código no mapa ou está na lista explícita de sem-código', () => {
+    const semCodigo = new Set(RESTRICOES_SEM_CODIGO_POR_SEREM_GUARDA_INTERNA_DO_BANCO);
+
+    for (const restricao of restricoesDasMigracoes) {
+      const temCodigo = RESTRICAO_PARA_CODIGO[restricao] !== undefined;
+      const eSemCodigoDocumentado = semCodigo.has(restricao);
+
+      expect(temCodigo || eSemCodigoDocumentado, `${restricao} não está no mapa nem na lista de sem-código`).toBe(
+        true,
+      );
+    }
+  });
+
+  it('a lista de restrições sem código é exatamente a das migrations que não estão no mapa', () => {
+    const semMapa = [...restricoesDasMigracoes].filter((restricao) => RESTRICAO_PARA_CODIGO[restricao] === undefined);
+
+    expect(semMapa.toSorted()).toStrictEqual([...RESTRICOES_SEM_CODIGO_POR_SEREM_GUARDA_INTERNA_DO_BANCO].toSorted());
+  });
+
+  it('todo prefixo de guarda mínima usado nas migrations (RAISE EXCEPTION ou USING MESSAGE) está na lista de guardas mínimas', () => {
+    const prefixosUsados = prefixosDeGuardaMinima(sqlDasMigracoesDeSubida);
 
     expect(prefixosUsados.size).toBeGreaterThan(0);
     for (const prefixo of prefixosUsados) {

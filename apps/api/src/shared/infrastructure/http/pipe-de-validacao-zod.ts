@@ -5,6 +5,8 @@ import { erroDeDominio, ErroDeDominioException } from '../../kernel/erro-de-domi
 type FabricaDeExcecaoPadrao = NonNullable<StandardSchemaValidationPipeOptions['exceptionFactory']>;
 type ProblemaDeValidacao = Parameters<FabricaDeExcecaoPadrao>[0][number];
 
+const LIMITE_DE_PROBLEMAS_REPORTADOS = 20;
+
 function caminhoDoProblema(problema: ProblemaDeValidacao): string {
   if (problema.path === undefined || problema.path.length === 0) return '';
   return problema.path
@@ -14,10 +16,11 @@ function caminhoDoProblema(problema: ProblemaDeValidacao): string {
 
 function detalhesDosProblemas(problemas: readonly ProblemaDeValidacao[]): Record<string, unknown> {
   return {
-    problemas: problemas.map((problema) => ({
+    problemas: problemas.slice(0, LIMITE_DE_PROBLEMAS_REPORTADOS).map((problema) => ({
       caminho: caminhoDoProblema(problema),
       mensagem: problema.message,
     })),
+    total: problemas.length,
   };
 }
 

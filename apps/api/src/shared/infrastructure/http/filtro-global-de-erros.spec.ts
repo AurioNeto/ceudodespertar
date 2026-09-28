@@ -2,11 +2,17 @@ import { randomUUID } from 'node:crypto';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { HttpException, HttpStatus, Logger, NotFoundException } from '@nestjs/common';
 import type { ArgumentsHost } from '@nestjs/common';
-import { OptimisticLockError } from '@mikro-orm/core';
+import { DriverException, OptimisticLockError } from '@mikro-orm/core';
+import { DatabaseError } from 'pg';
 import type { CorpoDeErro } from '@cdd/contracts';
 import { ContextoDaRequisicao } from '../contexto-da-requisicao.js';
 import { erroDeDominio, ErroDeDominioException } from '../../kernel/erro-de-dominio.js';
+import { gravarCorrelacaoNaRequisicao } from './correlacao-da-requisicao.js';
 import { FiltroGlobalDeErros } from './filtro-global-de-erros.js';
+
+function violacaoDeRestricao(mensagem: string, constraint: string): DatabaseError {
+  return Object.assign(new DatabaseError(mensagem, 0, 'error'), { code: '23505', constraint });
+}
 
 interface RespostaCapturada {
   status?: number;
@@ -68,10 +74,27 @@ describe('FiltroGlobalDeErros', () => {
 
   it('restrição nomeada do banco (unique, com constraint) vira o código mapeado', () => {
     const correlacaoId = randomUUID();
-    const violacao = Object.assign(new Error('duplicate key value violates unique constraint "usuario_email_unico"'), {
-      code: '23505',
-      constraint: 'usuario_email_unico',
+    const violacao = violacaoDeRestricao(
+      'duplicate key value violates unique constraint "usuario_email_unico"',
+      'usuario_email_unico',
+    );
+
+    comCorrelacaoId(correlacaoId, () => {
+      filtro.catch(violacao, hostFalso(capturada));
     });
+
+    expect(capturada.status).toBe(409);
+    expect(capturada.corpo).toStrictEqual({ erro: 'EMAIL_JA_CADASTRADO', correlacaoId });
+  });
+
+  it('a mesma violação, vinda de uma DriverException do MikroORM, também vira o código mapeado', () => {
+    const correlacaoId = randomUUID();
+    const violacao = new DriverException(
+      Object.assign(new Error('duplicate key value violates unique constraint "usuario_email_unico"'), {
+        code: '23505',
+        constraint: 'usuario_email_unico',
+      }),
+    );
 
     comCorrelacaoId(correlacaoId, () => {
       filtro.catch(violacao, hostFalso(capturada));
@@ -83,10 +106,10 @@ describe('FiltroGlobalDeErros', () => {
 
   it('restrição nomeada sem entrada no mapa é bug — 500 ERRO_INTERNO', () => {
     const correlacaoId = randomUUID();
-    const violacao = Object.assign(new Error('duplicate key value violates unique constraint "grupo_nome_unico"'), {
-      code: '23505',
-      constraint: 'grupo_nome_unico',
-    });
+    const violacao = violacaoDeRestricao(
+      'duplicate key value violates unique constraint "grupo_nome_unico_inexistente"',
+      'grupo_nome_unico_inexistente',
+    );
 
     comCorrelacaoId(correlacaoId, () => {
       filtro.catch(violacao, hostFalso(capturada));
@@ -98,7 +121,7 @@ describe('FiltroGlobalDeErros', () => {
 
   it('P0001 com prefixo de guarda mínima é erro de programação — 500, com log de alerta', () => {
     const correlacaoId = randomUUID();
-    const violacao = Object.assign(new Error('REGISTRO_IMUTAVEL: identidade.usuario não aceita UPDATE'), {
+    const violacao = Object.assign(new DatabaseError('REGISTRO_IMUTAVEL: identidade.usuario não aceita UPDATE', 0, 'error'), {
       code: 'P0001',
     });
 
@@ -113,7 +136,7 @@ describe('FiltroGlobalDeErros', () => {
 
   it('erro de banco sem mapeamento é bug — 500 ERRO_INTERNO', () => {
     const correlacaoId = randomUUID();
-    const desconhecido = Object.assign(new Error('falha inesperada no banco'), { code: '55000' });
+    const desconhecido = Object.assign(new DatabaseError('falha inesperada no banco', 0, 'error'), { code: '55000' });
 
     comCorrelacaoId(correlacaoId, () => {
       filtro.catch(desconhecido, hostFalso(capturada));
@@ -121,6 +144,55 @@ describe('FiltroGlobalDeErros', () => {
 
     expect(capturada.status).toBe(500);
     expect(capturada.corpo).toStrictEqual({ erro: 'ERRO_INTERNO', correlacaoId });
+  });
+
+  it('um erro que só imita o formato de erro de banco (não é instância do pg nem do MikroORM) não é tratado como restrição — cai no ramo genérico', () => {
+    const correlacaoId = randomUUID();
+    const imitacao = Object.assign(new Error('duplicate key value violates unique constraint "usuario_email_unico"'), {
+      code: '23505',
+      constraint: 'usuario_email_unico',
+    });
+
+    comCorrelacaoId(correlacaoId, () => {
+      filtro.catch(imitacao, hostFalso(capturada));
+    });
+
+    expect(capturada.status).toBe(500);
+    expect(capturada.corpo).toStrictEqual({ erro: 'ERRO_INTERNO', correlacaoId });
+    expect(logErro).toHaveBeenCalled();
+  });
+
+  it('ECONNREFUSED e afins (sem SQLSTATE de 5 caracteres) vão para o ramo genérico, nunca para o de restrição', () => {
+    const correlacaoId = randomUUID();
+    const semConexao = Object.assign(new Error('connect ECONNREFUSED 10.0.0.5:5432'), { code: 'ECONNREFUSED' });
+
+    comCorrelacaoId(correlacaoId, () => {
+      filtro.catch(semConexao, hostFalso(capturada));
+    });
+
+    expect(capturada.status).toBe(500);
+    expect(capturada.corpo).toStrictEqual({ erro: 'ERRO_INTERNO', correlacaoId });
+    expect(logErro).toHaveBeenCalledWith(expect.stringContaining(correlacaoId), semConexao.stack);
+  });
+
+  it('corpo maior que o limite (PayloadTooLargeError do body-parser) vira 413 CORPO_GRANDE_DEMAIS, logado como aviso e sem stack', () => {
+    const correlacaoId = randomUUID();
+    const logAviso = vi.spyOn(Logger.prototype, 'warn').mockImplementation(() => undefined);
+    const corpoGrande = Object.assign(new Error('request entity too large'), {
+      status: 413,
+      expose: true,
+      type: 'entity.too.large',
+    });
+
+    comCorrelacaoId(correlacaoId, () => {
+      filtro.catch(corpoGrande, hostFalso(capturada));
+    });
+
+    expect(capturada.status).toBe(413);
+    expect(capturada.corpo).toStrictEqual({ erro: 'CORPO_GRANDE_DEMAIS', correlacaoId });
+    expect(logAviso).toHaveBeenCalledWith(expect.stringContaining(correlacaoId));
+    expect(logErro).not.toHaveBeenCalled();
+    logAviso.mockRestore();
   });
 
   it('OptimisticLockError do MikroORM vira 409 VERSAO_DESATUALIZADA', () => {
@@ -168,14 +240,14 @@ describe('FiltroGlobalDeErros', () => {
     expect(capturada.corpo).toStrictEqual({ erro: 'RECURSO_NAO_ENCONTRADO', correlacaoId });
   });
 
-  it('HttpException nativa sem código de domínio conhecido preserva o status original com corpo genérico', () => {
+  it('HttpException nativa sem código de domínio conhecido nunca mistura status alheio com ERRO_INTERNO — vira 500', () => {
     const correlacaoId = randomUUID();
 
     comCorrelacaoId(correlacaoId, () => {
       filtro.catch(new HttpException('limite excedido', HttpStatus.TOO_MANY_REQUESTS), hostFalso(capturada));
     });
 
-    expect(capturada.status).toBe(429);
+    expect(capturada.status).toBe(500);
     expect(capturada.corpo).toStrictEqual({ erro: 'ERRO_INTERNO', correlacaoId });
     expect(logErro).toHaveBeenCalled();
   });
@@ -190,6 +262,32 @@ describe('FiltroGlobalDeErros', () => {
     expect(capturada.status).toBe(500);
     expect(capturada.corpo).toStrictEqual({ erro: 'ERRO_INTERNO', correlacaoId });
     expect(logErro).toHaveBeenCalled();
+  });
+
+  it('a correlacaoId vem da requisição, não do ContextoDaRequisicao — o corpo do erro tem que bater com o que a borda gravou', () => {
+    const correlacaoIdDaRequisicao = randomUUID();
+    const correlacaoIdDoContextoAtivo = randomUUID();
+    const requisicao = {};
+    gravarCorrelacaoNaRequisicao(requisicao, correlacaoIdDaRequisicao);
+    const resposta = {
+      status(codigo: number) {
+        capturada.status = codigo;
+        return resposta;
+      },
+      json(corpo: CorpoDeErro) {
+        capturada.corpo = corpo;
+      },
+    };
+    const host = {
+      switchToHttp: () => ({ getResponse: () => resposta, getRequest: () => requisicao }),
+    } as unknown as ArgumentsHost;
+
+    comCorrelacaoId(correlacaoIdDoContextoAtivo, () => {
+      filtro.catch(new Error('algo quebrou'), host);
+    });
+
+    expect(capturada.corpo?.correlacaoId).toBe(correlacaoIdDaRequisicao);
+    expect(capturada.corpo?.correlacaoId).not.toBe(correlacaoIdDoContextoAtivo);
   });
 
   it('sem ContextoDaRequisicao ativo, gera uma correlacaoId própria em vez de quebrar', () => {
