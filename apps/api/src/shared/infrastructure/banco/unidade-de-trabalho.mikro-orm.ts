@@ -5,6 +5,7 @@ import type { TransactionOptions } from '@mikro-orm/postgresql';
 import { ContextoDaRequisicao } from '../contexto-da-requisicao.js';
 import { UnidadeDeTrabalho } from './unidade-de-trabalho.js';
 import type { ContextoDaTransacao, ModoDeTransacao } from './unidade-de-trabalho.js';
+import type { DB } from './banco-cdd.gerado.js';
 
 export const VARIAVEL_DE_SESSAO_DA_INSTITUICAO = 'app.instituicao_id';
 
@@ -66,7 +67,10 @@ export class UnidadeDeTrabalhoMikroOrm extends UnidadeDeTrabalho {
           instituicaoId,
         ]);
       }
-      const contexto: ContextoDaTransacao = { em: emDaTransacao, kysely: emDaTransacao.getKysely() };
+      const contexto: ContextoDaTransacao = {
+        em: emDaTransacao,
+        kysely: emDaTransacao.getKysely<DB>(),
+      };
       return transacaoAtiva.run({ modo, contexto }, () => fn(contexto));
     }, OPCOES_DE_TRANSACAO_POR_MODO[modo]);
   }
