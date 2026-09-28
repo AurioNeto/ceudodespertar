@@ -8,7 +8,7 @@ export default {
     {
       name: 'sem-dependencia-circular',
       severity: 'error',
-      comment: 'item (a) da peça F06: nenhuma dependência circular no grafo de import.',
+      comment: 'Nenhuma dependência circular no grafo de import.',
       from: {},
       to: { circular: true },
     },
@@ -20,7 +20,7 @@ export default {
         'vale também para shared/kernel, a base do domínio (§3, linha "shared").',
       from: { path: CAMADA_DE_DOMINIO },
       to: {
-        path: [CAMINHO_DE_FRAMEWORK, '^https?$'],
+        path: [CAMINHO_DE_FRAMEWORK, '^(?:http|https|http2)$'],
       },
     },
     {
@@ -56,7 +56,7 @@ export default {
     {
       name: 'contracts-nao-importa-apps',
       severity: 'error',
-      comment: 'item (d) da peça F06: packages/contracts é a base do workspace — não depende de apps/.',
+      comment: 'packages/contracts é a base do workspace — não depende de apps/.',
       from: { path: '(?:^|/)packages/contracts/src/' },
       to: { path: '(?:^|/)apps/' },
     },

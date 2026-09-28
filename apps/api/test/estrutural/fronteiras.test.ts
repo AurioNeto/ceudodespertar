@@ -37,6 +37,7 @@ const CASOS_POSITIVOS = [
   ['dominio-sem-framework', 'fixtures/dominio-sem-framework/zod'],
   ['dominio-sem-framework', 'fixtures/dominio-sem-framework/pg'],
   ['dominio-sem-framework', 'fixtures/dominio-sem-framework/http'],
+  ['dominio-sem-framework', 'fixtures/dominio-sem-framework/http2'],
   ['dominio-sem-framework', 'fixtures/dominio-sem-framework/kysely'],
   ['dominio-sem-framework', 'fixtures/dominio-sem-framework/express'],
   ['dominio-sem-framework', 'fixtures/dominio-sem-framework/express-tipo'],
