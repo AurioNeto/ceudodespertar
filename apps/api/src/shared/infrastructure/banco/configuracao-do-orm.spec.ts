@@ -40,4 +40,13 @@ describe('construirOpcoesDoOrm', () => {
   it('lança quando BANCO_URL é inválida', () => {
     expect(() => construirOpcoesDoOrm({ BANCO_URL: 'mysql://x', BANCO_POOL_MAXIMO: '1' })).toThrow();
   });
+
+  it('lança quando BANCO_URL tem query string, em vez de descartá-la silenciosamente', () => {
+    expect(() =>
+      construirOpcoesDoOrm({
+        BANCO_URL: 'postgres://cdd_app:segredo@localhost:5432/cdd?sslmode=require',
+        BANCO_POOL_MAXIMO: '1',
+      }),
+    ).toThrow();
+  });
 });

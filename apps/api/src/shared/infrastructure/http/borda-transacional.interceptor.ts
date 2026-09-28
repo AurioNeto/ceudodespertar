@@ -3,9 +3,9 @@ import { Injectable } from '@nestjs/common';
 import type { CallHandler, ExecutionContext, NestInterceptor } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import type { Observable } from 'rxjs';
-import { firstValueFrom, of } from 'rxjs';
-import { ContextoDaRequisicao } from '../../kernel/contexto-da-requisicao.js';
-import type { ContextoDaRequisicaoValor } from '../../kernel/contexto-da-requisicao.js';
+import { lastValueFrom, of } from 'rxjs';
+import { ContextoDaRequisicao } from '../contexto-da-requisicao.js';
+import type { ContextoDaRequisicaoValor } from '../contexto-da-requisicao.js';
 import { UnidadeDeTrabalho } from '../banco/unidade-de-trabalho.js';
 import type { ModoDeTransacao } from '../banco/unidade-de-trabalho.js';
 import { CHAVE_DO_MODO_DE_TRANSACAO } from './modo-de-transacao.decorator.js';
@@ -28,7 +28,7 @@ export class BordaTransacionalInterceptor implements NestInterceptor {
         contexto.getClass(),
       ]) ?? MODO_PADRAO_SEM_MARCA;
 
-    const identidade = this.provedorDeContexto.identidadeAtual();
+    const identidade = this.provedorDeContexto.identidadeAtual(contexto);
     const valorDoContexto: ContextoDaRequisicaoValor = {
       correlacaoId: randomUUID(),
       instituicaoId: identidade.instituicaoId,
@@ -37,7 +37,7 @@ export class BordaTransacionalInterceptor implements NestInterceptor {
 
     const resposta = await ContextoDaRequisicao.executar(valorDoContexto, () =>
       this.unidadeDeTrabalho.transacao(modo, () =>
-        firstValueFrom(proximo.handle(), { defaultValue: undefined }),
+        lastValueFrom(proximo.handle(), { defaultValue: undefined }),
       ),
     );
 

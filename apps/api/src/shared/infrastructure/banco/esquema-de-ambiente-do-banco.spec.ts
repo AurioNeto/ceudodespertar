@@ -52,6 +52,38 @@ describe('analisarAmbienteDoBanco', () => {
     }
   });
 
+  it('recusa BANCO_URL com query string (ex.: ?sslmode=)', () => {
+    expect.assertions(3);
+
+    try {
+      analisarAmbienteDoBanco({
+        BANCO_URL: 'postgres://cdd_app:segredo@localhost:5432/cdd?sslmode=require',
+        BANCO_POOL_MAXIMO: '10',
+      });
+    } catch (erro) {
+      expect(erro).toBeInstanceOf(ErroDeAmbienteDoBancoInvalido);
+      const problemas = (erro as ErroDeAmbienteDoBancoInvalido).problemas;
+      expect(problemas).toHaveLength(1);
+      expect(problemas[0]).toContain('query string');
+    }
+  });
+
+  it('recusa BANCO_URL com fragmento', () => {
+    expect.assertions(3);
+
+    try {
+      analisarAmbienteDoBanco({
+        BANCO_URL: 'postgres://cdd_app:segredo@localhost:5432/cdd#fragmento',
+        BANCO_POOL_MAXIMO: '10',
+      });
+    } catch (erro) {
+      expect(erro).toBeInstanceOf(ErroDeAmbienteDoBancoInvalido);
+      const problemas = (erro as ErroDeAmbienteDoBancoInvalido).problemas;
+      expect(problemas).toHaveLength(1);
+      expect(problemas[0]).toContain('fragmento');
+    }
+  });
+
   it('lança ErroDeAmbienteDoBancoInvalido quando BANCO_POOL_MAXIMO está ausente ou zerado', () => {
     expect.assertions(3);
 

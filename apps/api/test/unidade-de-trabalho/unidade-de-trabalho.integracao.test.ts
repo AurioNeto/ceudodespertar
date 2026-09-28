@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { criarBancoDeTeste, derrubarBancoDeTeste } from '../integracao/banco-de-teste.js';
 import type { BancoDeTeste } from '../integracao/banco-de-teste.js';
-import { ContextoDaRequisicao } from '../../src/shared/kernel/contexto-da-requisicao.js';
+import { ContextoDaRequisicao } from '../../src/shared/infrastructure/contexto-da-requisicao.js';
 import { UnidadeDeTrabalho } from '../../src/shared/infrastructure/banco/unidade-de-trabalho.js';
 import { UnidadeDeTrabalhoMikroOrm } from '../../src/shared/infrastructure/banco/unidade-de-trabalho.mikro-orm.js';
 import { abrirOrmDeTeste } from './orm-de-teste.js';
@@ -180,5 +180,89 @@ describe('UnidadeDeTrabalho · borda transacional (Documento 7 §5, §8, §22)',
       ),
     );
     expect(daSegunda).toHaveLength(0);
+  });
+
+  it('escrita continua gravável quando o banco muda o padrão para read only', async () => {
+    await banco.owner.query(`alter database ${banco.nomeDoBanco} set default_transaction_read_only = on`);
+    await orm.close(true);
+    orm = await abrirOrmDeTeste(banco);
+    unidade = new UnidadeDeTrabalhoMikroOrm(orm);
+    const chave = randomUUID();
+
+    await comContexto(INSTITUICAO_A, () =>
+      unidade.transacao('escrita', ({ em }) =>
+        em.execute(
+          "insert into shared.chave_de_idempotencia (instituicao_id, chave, rota, status_http, resposta) values (?, ?, '/x', 200, '{}'::jsonb)",
+          [INSTITUICAO_A, chave],
+        ),
+      ),
+    );
+
+    const linhas = await comContexto(INSTITUICAO_A, () =>
+      unidade.transacao('leitura', ({ em }) =>
+        em.execute<{ chave: string }[]>('select chave from shared.chave_de_idempotencia where chave = ?', [
+          chave,
+        ]),
+      ),
+    );
+    expect(linhas).toHaveLength(1);
+  });
+
+  describe('transação aninhada', () => {
+    it('reusa a transação ativa em vez de abrir uma segunda, e o rollback externo desfaz a escrita interna', async () => {
+      const chave = randomUUID();
+
+      await expect(
+        comContexto(INSTITUICAO_A, () =>
+          unidade.transacao('escrita', async ({ em: emExterno }) => {
+            await unidade.transacao('escrita', async ({ em: emInterno }) => {
+              expect(emInterno).toBe(emExterno);
+              await emInterno.execute(
+                "insert into shared.chave_de_idempotencia (instituicao_id, chave, rota, status_http, resposta) values (?, ?, '/x', 200, '{}'::jsonb)",
+                [INSTITUICAO_A, chave],
+              );
+            });
+            throw new Error('falha proposital na transação externa');
+          }),
+        ),
+      ).rejects.toThrow('falha proposital na transação externa');
+
+      const linhas = await comContexto(INSTITUICAO_A, () =>
+        unidade.transacao('leitura', ({ em }) =>
+          em.execute<{ chave: string }[]>('select chave from shared.chave_de_idempotencia where chave = ?', [
+            chave,
+          ]),
+        ),
+      );
+      expect(linhas).toHaveLength(0);
+    });
+
+    it('com pool de tamanho 1, a chamada aninhada não trava esperando uma segunda conexão', async () => {
+      await orm.close(true);
+      orm = await abrirOrmDeTeste(banco, 1);
+      unidade = new UnidadeDeTrabalhoMikroOrm(orm);
+
+      const resultado = await Promise.race([
+        unidade.transacao('escrita', ({ em: emExterno }) =>
+          unidade.transacao('leitura', ({ em: emInterno }) => {
+            expect(emInterno).toBe(emExterno);
+            return emInterno.execute<{ um: number }[]>('select 1 as um');
+          }),
+        ),
+        new Promise<never>((_resolver, rejeitar) =>
+          setTimeout(() => rejeitar(new Error('travou esperando uma segunda conexão')), 5000),
+        ),
+      ]);
+
+      expect(resultado).toStrictEqual([{ um: 1 }]);
+    });
+
+    it('escrita pedida dentro de uma leitura já aberta lança, sem travar', async () => {
+      await expect(
+        unidade.transacao('leitura', () =>
+          unidade.transacao('escrita', ({ em }) => em.execute('select 1')),
+        ),
+      ).rejects.toThrow();
+    });
   });
 });

@@ -20,6 +20,14 @@ export const EsquemaDoAmbienteDoBanco = z.object({
       const url = analisarUrl(valor);
       if (!url || !ehProtocoloDePostgres(url)) {
         ctx.addIssue({ code: 'custom', message: 'precisa ser uma URL postgres:// ou postgresql://' });
+        return;
+      }
+      if (url.search !== '' || url.hash !== '') {
+        ctx.addIssue({
+          code: 'custom',
+          message:
+            'não pode ter query string nem fragmento — parâmetros implícitos na URL (ex.: ?sslmode=) não são aceitos',
+        });
       }
     }),
   BANCO_POOL_MAXIMO: z.coerce.number().int().min(1),

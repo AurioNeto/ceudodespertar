@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { IsolationLevel } from '@mikro-orm/postgresql';
 import type { MikroORM, TransactionOptions } from '@mikro-orm/postgresql';
-import { ContextoDaRequisicao } from '../../kernel/contexto-da-requisicao.js';
+import { ContextoDaRequisicao } from '../contexto-da-requisicao.js';
 import {
+  ErroDeModoDeTransacaoIncompativel,
   OPCOES_DE_TRANSACAO_POR_MODO,
   UnidadeDeTrabalhoMikroOrm,
   VARIAVEL_DE_SESSAO_DA_INSTITUICAO,
@@ -13,12 +14,14 @@ const KYSELY_FALSO = { marcador: 'kysely' };
 class EntityManagerFalso {
   opcoesRecebidas: TransactionOptions | undefined;
   execucoes: Array<{ sql: string; parametros: unknown[] }> = [];
+  vezesQueAbriuTransacao = 0;
 
   fork(): this {
     return this;
   }
 
   async transactional<T>(cb: (em: this) => Promise<T>, opcoes: TransactionOptions): Promise<T> {
+    this.vezesQueAbriuTransacao += 1;
     this.opcoesRecebidas = opcoes;
     return cb(this);
   }
@@ -89,13 +92,73 @@ describe('UnidadeDeTrabalhoMikroOrm', () => {
 
     await ContextoDaRequisicao.executar({ correlacaoId: 'c-1', instituicaoId: 'inst-a' }, () =>
       unidade.transacao('escrita', async () => {
-        expect(em.execucoes).toStrictEqual([
-          { sql: expect.stringContaining('set_config'), parametros: [VARIAVEL_DE_SESSAO_DA_INSTITUICAO, 'inst-a'] },
-        ]);
+        const gravacaoDaInstituicao = em.execucoes.find((execucao) => execucao.sql.includes('set_config'));
+        expect(gravacaoDaInstituicao).toStrictEqual({
+          sql: expect.stringContaining('set_config'),
+          parametros: [VARIAVEL_DE_SESSAO_DA_INSTITUICAO, 'inst-a'],
+        });
       }),
     );
 
-    expect(em.execucoes[0]?.sql).toContain('true');
-    expect(em.execucoes[0]?.sql).not.toContain('false');
+    const gravacaoDaInstituicao = em.execucoes.find((execucao) => execucao.sql.includes('set_config'));
+    expect(gravacaoDaInstituicao?.sql).toContain('true');
+    expect(gravacaoDaInstituicao?.sql).not.toContain('false');
+  });
+
+  it.each(['escrita', 'leitura-que-grava'] as const)(
+    'declara READ WRITE explicitamente no modo %s, antes de qualquer outra instrução',
+    async (modo) => {
+      const em = new EntityManagerFalso();
+      const unidade = new UnidadeDeTrabalhoMikroOrm(ormFalsoCom(em));
+
+      await unidade.transacao(modo, async () => undefined);
+
+      expect(em.execucoes[0]?.sql).toContain('read write');
+    },
+  );
+
+  it('não declara READ WRITE no modo leitura', async () => {
+    const em = new EntityManagerFalso();
+    const unidade = new UnidadeDeTrabalhoMikroOrm(ormFalsoCom(em));
+
+    await unidade.transacao('leitura', async () => undefined);
+
+    expect(em.execucoes.some((execucao) => execucao.sql.includes('read write'))).toBe(false);
+  });
+
+  it('uma transação aninhada reusa a mesma em/kysely e não abre uma segunda transação', async () => {
+    const em = new EntityManagerFalso();
+    const unidade = new UnidadeDeTrabalhoMikroOrm(ormFalsoCom(em));
+
+    const resultado = await unidade.transacao('escrita', (contextoExterno) =>
+      unidade.transacao('escrita', (contextoInterno) => {
+        expect(contextoInterno.em).toBe(contextoExterno.em);
+        expect(contextoInterno.kysely).toBe(contextoExterno.kysely);
+        return Promise.resolve('ok');
+      }),
+    );
+
+    expect(resultado).toBe('ok');
+    expect(em.vezesQueAbriuTransacao).toBe(1);
+  });
+
+  it('leitura aninhada dentro de escrita reusa a transação aberta', async () => {
+    const em = new EntityManagerFalso();
+    const unidade = new UnidadeDeTrabalhoMikroOrm(ormFalsoCom(em));
+
+    await unidade.transacao('escrita', () => unidade.transacao('leitura', () => Promise.resolve(undefined)));
+
+    expect(em.vezesQueAbriuTransacao).toBe(1);
+  });
+
+  it('pedir escrita dentro de uma leitura já aberta lança, sem abrir nova transação', async () => {
+    const em = new EntityManagerFalso();
+    const unidade = new UnidadeDeTrabalhoMikroOrm(ormFalsoCom(em));
+
+    await expect(
+      unidade.transacao('leitura', () => unidade.transacao('escrita', () => Promise.resolve(undefined))),
+    ).rejects.toBeInstanceOf(ErroDeModoDeTransacaoIncompativel);
+
+    expect(em.vezesQueAbriuTransacao).toBe(1);
   });
 });
