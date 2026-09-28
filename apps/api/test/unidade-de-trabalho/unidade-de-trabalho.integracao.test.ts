@@ -11,6 +11,19 @@ import type { OrmDeTeste } from './orm-de-teste.js';
 const INSTITUICAO_A = 'a0000000-0000-0000-0000-000000000000';
 const INSTITUICAO_B = 'b0000000-0000-0000-0000-000000000000';
 
+async function semearUsuarioDaInstituicao(
+  banco: BancoDeTeste,
+  instituicaoId: string,
+  nome: string,
+  email: string,
+): Promise<void> {
+  await banco.app.query("select set_config('app.instituicao_id', $1, false)", [instituicaoId]);
+  await banco.app.query(
+    'insert into identidade.usuario (instituicao_id, nome, email, situacao) values ($1, $2, $3, $4)',
+    [instituicaoId, nome, email, 'ATIVO'],
+  );
+}
+
 async function semearDuasInstituicoes(banco: BancoDeTeste): Promise<void> {
   await banco.owner.query('insert into shared.instituicao (id, nome) values ($1, $2), ($3, $4)', [
     INSTITUICAO_A,
@@ -19,16 +32,8 @@ async function semearDuasInstituicoes(banco: BancoDeTeste): Promise<void> {
     'Casa B',
   ]);
 
-  for (const [instituicaoId, nome, email] of [
-    [INSTITUICAO_A, 'Usuário A', 'usuario@casaa.example'],
-    [INSTITUICAO_B, 'Usuário B', 'usuario@casab.example'],
-  ] as const) {
-    await banco.app.query("select set_config('app.instituicao_id', $1, false)", [instituicaoId]);
-    await banco.app.query(
-      'insert into identidade.usuario (instituicao_id, nome, email, situacao) values ($1, $2, $3, $4)',
-      [instituicaoId, nome, email, 'ATIVO'],
-    );
-  }
+  await semearUsuarioDaInstituicao(banco, INSTITUICAO_A, 'Usuário A', 'usuario@casaa.example');
+  await semearUsuarioDaInstituicao(banco, INSTITUICAO_B, 'Usuário B', 'usuario@casab.example');
 
   await banco.app.query("select set_config('app.instituicao_id', '', false)");
 }
