@@ -1,4 +1,4 @@
--- verificacoes: 18
+-- verificacoes: 23
 -- B0 · guardas mínimas de forma em identidade.usuario, identidade.convite e
 -- identidade.registro_de_auditoria (Documento 7 §15): US2, convite de uso
 -- único (com reenvio), convite não usado-e-revogado ao mesmo tempo, e ator
@@ -173,3 +173,31 @@ SELECT verif.espera_ok('chave_de_idempotencia (PK) · a mesma chave em outra ins
 $$);
 
 RESET ROLE;
+
+-- ---------------------------------------------------------------------------
+-- Definição exata das chaves únicas: as sondas acima provam colisão na mesma
+-- casa e não colisão na outra, mas uma coluna ou um predicado a mais na
+-- chave (ex.: expira_em no convite, WHERE situacao <> 'REVOGADO' no e-mail)
+-- passaria nas duas — as linhas das sondas concordam na coluna acrescentada.
+-- ---------------------------------------------------------------------------
+
+SELECT verif.confere('usuario_email_unico · definição exata (instituicao_id, lower(email)), sem predicado',
+  pg_get_indexdef('identidade.usuario_email_unico'::regclass),
+  'CREATE UNIQUE INDEX usuario_email_unico ON identidade.usuario USING btree (instituicao_id, lower(email))');
+
+SELECT verif.confere('usuario_pessoa_unica · definição exata (instituicao_id, pessoa_id) WHERE pessoa_id IS NOT NULL',
+  pg_get_indexdef('identidade.usuario_pessoa_unica'::regclass),
+  'CREATE UNIQUE INDEX usuario_pessoa_unica ON identidade.usuario USING btree (instituicao_id, pessoa_id) WHERE (pessoa_id IS NOT NULL)');
+
+SELECT verif.confere('grupo_nome_unico · definição exata (instituicao_id, lower(nome)), sem predicado',
+  pg_get_indexdef('identidade.grupo_nome_unico'::regclass),
+  'CREATE UNIQUE INDEX grupo_nome_unico ON identidade.grupo USING btree (instituicao_id, lower(nome))');
+
+SELECT verif.confere('convite_vigente_unico · definição exata (instituicao_id, usuario_id) WHERE nem usado nem revogado',
+  pg_get_indexdef('identidade.convite_vigente_unico'::regclass),
+  'CREATE UNIQUE INDEX convite_vigente_unico ON identidade.convite USING btree (instituicao_id, usuario_id) WHERE ((usado_em IS NULL) AND (revogado_em IS NULL))');
+
+SELECT verif.confere('chave_de_idempotencia · a PK é exatamente (instituicao_id, chave) (Documento 7 §16)',
+  (SELECT pg_get_constraintdef(oid) FROM pg_constraint
+    WHERE conrelid = 'shared.chave_de_idempotencia'::regclass AND contype = 'p'),
+  'PRIMARY KEY (instituicao_id, chave)');

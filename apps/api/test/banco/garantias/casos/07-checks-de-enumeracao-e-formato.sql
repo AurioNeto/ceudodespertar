@@ -38,7 +38,7 @@ INSERT INTO identidade.grupo (id, instituicao_id, nome)
 SELECT verif.espera_erro('grupo_permissao.permissao · código inventado, fora do catálogo, não entra', $$
   INSERT INTO identidade.grupo_permissao (instituicao_id, grupo_id, permissao)
     VALUES ('a0000000-0000-0000-0000-000000000000', '07000000-0000-0000-0000-000000000001', 'inventada.qualquer.coisa')
-$$, 'grupo_permissao_permissao_fkey|violates foreign key constraint');
+$$, 'grupo_permissao_permissao_fkey');
 
 RESET ROLE;
 
