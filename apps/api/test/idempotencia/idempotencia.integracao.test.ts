@@ -12,7 +12,10 @@ import {
   UnidadeDeTrabalhoMikroOrm,
 } from '../../src/shared/infrastructure/banco/unidade-de-trabalho.mikro-orm.js';
 import { IdempotenciaInterceptor } from '../../src/shared/infrastructure/idempotencia/idempotencia.interceptor.js';
+import { ErroDeConfiguracaoDeIdempotencia } from '../../src/shared/infrastructure/idempotencia/erro-de-configuracao-de-idempotencia.js';
 import { calcularHashDoCorpo } from '../../src/shared/infrastructure/idempotencia/hash-do-corpo.js';
+import { reclamarChaveVencida } from '../../src/shared/infrastructure/idempotencia/chave-de-idempotencia.repositorio.js';
+import type { DadosDaChaveDeIdempotencia } from '../../src/shared/infrastructure/idempotencia/chave-de-idempotencia.repositorio.js';
 import { abrirOrmDeTeste } from '../unidade-de-trabalho/orm-de-teste.js';
 import type { OrmDeTeste } from '../unidade-de-trabalho/orm-de-teste.js';
 
@@ -24,12 +27,14 @@ const HASH_DO_CORPO_PADRAO = calcularHashDoCorpo({ valor: 10 });
 interface RequisicaoFake {
   readonly method: string;
   readonly path: string;
+  readonly query: Record<string, unknown>;
   readonly body: unknown;
   header(nome: string): string | undefined;
 }
 
 interface RespostaFake {
   statusCode: number;
+  headersSent: boolean;
   getHeader(nome: string): string | undefined;
   setHeader(nome: string, valor: string): void;
 }
@@ -38,6 +43,7 @@ function respostaFake(statusCodeInicial = HttpStatus.CREATED): RespostaFake {
   const cabecalhos: Record<string, string> = {};
   return {
     statusCode: statusCodeInicial,
+    headersSent: false,
     getHeader: (nome: string) => cabecalhos[nome],
     setHeader: (nome: string, valor: string) => {
       cabecalhos[nome] = valor;
@@ -49,6 +55,7 @@ function requisicaoFake(opcoes: {
   chave?: string;
   corpo?: unknown;
   caminho?: string;
+  query?: Record<string, unknown>;
 }): RequisicaoFake {
   const cabecalhos: Record<string, string> = {};
   if (opcoes.chave !== undefined) {
@@ -57,6 +64,7 @@ function requisicaoFake(opcoes: {
   return {
     method: 'POST',
     path: opcoes.caminho ?? '/doacoes',
+    query: opcoes.query ?? {},
     body: opcoes.corpo ?? { valor: 10 },
     header: (nome: string) => cabecalhos[nome.toLowerCase()],
   };
@@ -88,6 +96,54 @@ async function semearInstituicoes(banco: BancoDeTeste): Promise<void> {
     INSTITUICAO_B,
     'Casa B',
   ]);
+}
+
+interface Barreira {
+  readonly promessa: Promise<void>;
+  liberar(): void;
+}
+
+function criarBarreira(): Barreira {
+  let liberar: () => void = () => {};
+  const promessa = new Promise<void>((resolver) => {
+    liberar = resolver;
+  });
+  return { promessa, liberar };
+}
+
+function criarSinal(): { promessa: Promise<void>; emitir(): void } {
+  let emitir: () => void = () => {};
+  const promessa = new Promise<void>((resolver) => {
+    emitir = resolver;
+  });
+  return { promessa, emitir };
+}
+
+const LIMITE_DE_TENTATIVAS_DE_BLOQUEIO = 300;
+const INTERVALO_ENTRE_TENTATIVAS_DE_BLOQUEIO_EM_MS = 10;
+
+async function haAlgumBackendBloqueado(owner: BancoDeTeste['owner']): Promise<boolean> {
+  const { rows } = await owner.query<{ total: number }>(
+    `select count(*)::int as total
+       from pg_stat_activity
+      where datname = current_database()
+        and pg_blocking_pids(pid) != '{}'`,
+  );
+  return (rows[0]?.total ?? 0) > 0;
+}
+
+async function esperarBloqueioNaLinhaDaChave(
+  owner: BancoDeTeste['owner'],
+  tentativasRestantes = LIMITE_DE_TENTATIVAS_DE_BLOQUEIO,
+): Promise<void> {
+  if (await haAlgumBackendBloqueado(owner)) {
+    return;
+  }
+  if (tentativasRestantes <= 0) {
+    throw new Error('a segunda reclamação nunca ficou bloqueada esperando o lock da linha da chave');
+  }
+  await new Promise((resolver) => setTimeout(resolver, INTERVALO_ENTRE_TENTATIVAS_DE_BLOQUEIO_EM_MS));
+  return esperarBloqueioNaLinhaDaChave(owner, tentativasRestantes - 1);
 }
 
 describe('IdempotenciaInterceptor · Idempotency-Key (Documento 7 §12)', () => {
@@ -226,6 +282,43 @@ describe('IdempotenciaInterceptor · Idempotency-Key (Documento 7 §12)', () => 
     });
   });
 
+  it('a mesma chave com query string diferente dá 422 (rota inclui a query normalizada)', async () => {
+    const chave = randomUUID();
+    await executarComando(
+      INSTITUICAO_A,
+      requisicaoFake({ chave, caminho: '/q', query: { v: '1' } }),
+      () => ({ ok: true }),
+    );
+
+    await expect(
+      executarComando(
+        INSTITUICAO_A,
+        requisicaoFake({ chave, caminho: '/q', query: { v: '2' } }),
+        () => ({ ok: true }),
+      ),
+    ).rejects.toMatchObject({
+      status: 422,
+      response: { erro: 'CHAVE_DE_IDEMPOTENCIA_REUTILIZADA' },
+    });
+  });
+
+  it('a mesma chave com os mesmos parâmetros de query em ordem diferente dá replay (rota normaliza a ordem)', async () => {
+    const chave = randomUUID();
+    let chamadas = 0;
+    const rodar = (query: Record<string, unknown>) =>
+      executarComando(INSTITUICAO_A, requisicaoFake({ chave, caminho: '/q', query }), () => {
+        chamadas += 1;
+        return { id: chamadas };
+      });
+
+    const primeira = await rodar({ a: '1', b: '2' });
+    const segunda = await rodar({ b: '2', a: '1' });
+
+    expect(primeira).toStrictEqual({ id: 1 });
+    expect(segunda).toStrictEqual({ id: 1 });
+    expect(chamadas).toBe(1);
+  });
+
   it('a mesma chave com corpo diferente dá 422 CHAVE_DE_IDEMPOTENCIA_REUTILIZADA', async () => {
     const chave = randomUUID();
     await executarComando(INSTITUICAO_A, requisicaoFake({ chave, corpo: { valor: 10 } }), () => ({ ok: true }));
@@ -272,6 +365,56 @@ describe('IdempotenciaInterceptor · Idempotency-Key (Documento 7 §12)', () => 
       ),
     );
     expect(linhas).toHaveLength(0);
+  });
+
+  it('handler que responde por conta própria (@Res sem passthrough) falha fechado e não grava a chave', async () => {
+    const chave = randomUUID();
+    const resposta = respostaFake();
+
+    await expect(
+      executarComando(
+        INSTITUICAO_A,
+        requisicaoFake({ chave }),
+        () => {
+          resposta.headersSent = true;
+          return undefined;
+        },
+        resposta,
+      ),
+    ).rejects.toThrow(ErroDeConfiguracaoDeIdempotencia);
+
+    const linhas = await comIdentidade(INSTITUICAO_A, () =>
+      unidade.transacao('leitura', ({ em }) =>
+        em.execute<{ chave: string }[]>('select chave from shared.chave_de_idempotencia where chave = ?', [chave]),
+      ),
+    );
+    expect(linhas).toHaveLength(0);
+  });
+
+  it('depois da falha fechada por @Res, uma nova tentativa com a mesma chave roda o handler de novo (o replay não fica pendurado)', async () => {
+    const chave = randomUUID();
+    const respostaQueResponde = respostaFake();
+
+    await expect(
+      executarComando(
+        INSTITUICAO_A,
+        requisicaoFake({ chave }),
+        () => {
+          respostaQueResponde.headersSent = true;
+          return undefined;
+        },
+        respostaQueResponde,
+      ),
+    ).rejects.toThrow(ErroDeConfiguracaoDeIdempotencia);
+
+    let chamadas = 0;
+    const resposta = await executarComando(INSTITUICAO_A, requisicaoFake({ chave }), () => {
+      chamadas += 1;
+      return { ok: true };
+    });
+
+    expect(chamadas).toBe(1);
+    expect(resposta).toStrictEqual({ ok: true });
   });
 
   it('a instituição A não vê a chave de B: a mesma chave literal em B roda de novo', async () => {
@@ -322,6 +465,35 @@ describe('IdempotenciaInterceptor · Idempotency-Key (Documento 7 §12)', () => 
 
     const linha = await selecionarLinha(INSTITUICAO_A, chave);
     expect(linha.status_http).toBe(HttpStatus.OK);
+  });
+
+  it('replay fiel: repete o status HTTP definido dinamicamente pelo handler (@Res passthrough)', async () => {
+    const chave = randomUUID();
+    const respostaOriginal = respostaFake(HttpStatus.CREATED);
+    const respostaDoReplay = respostaFake(HttpStatus.CREATED);
+
+    const primeira = await executarInterceptor(
+      INSTITUICAO_A,
+      requisicaoFake({ chave }),
+      {
+        handle: () => {
+          respostaOriginal.statusCode = HttpStatus.ACCEPTED;
+          return of({ aceito: true });
+        },
+      },
+      respostaOriginal,
+    );
+
+    const segunda = await executarInterceptor(
+      INSTITUICAO_A,
+      requisicaoFake({ chave }),
+      { handle: () => of({ aceito: 'nao deveria rodar' }) },
+      respostaDoReplay,
+    );
+
+    expect(primeira).toStrictEqual({ aceito: true });
+    expect(segunda).toStrictEqual({ aceito: true });
+    expect(respostaDoReplay.statusCode).toBe(HttpStatus.ACCEPTED);
   });
 
   it('replay fiel: repete o cabeçalho Location gravado na primeira chamada', async () => {
@@ -453,20 +625,39 @@ describe('IdempotenciaInterceptor · Idempotency-Key (Documento 7 §12)', () => 
       ),
     );
 
-    let chamadas = 0;
-    const executarHandlerLento = () => {
-      chamadas += 1;
-      const numeroDaChamada = chamadas;
-      return new Promise((resolver) => setTimeout(() => resolver({ numeroDaChamada }), 50));
+    const dados: DadosDaChaveDeIdempotencia = {
+      instituicaoId: INSTITUICAO_A,
+      usuarioId: USUARIO_A,
+      chave,
+      rota: 'POST /doacoes',
+      corpoHash: HASH_DO_CORPO_PADRAO,
     };
 
-    const [primeira, segunda] = await Promise.all([
-      executarComando(INSTITUICAO_A, requisicaoFake({ chave }), executarHandlerLento),
-      executarComando(INSTITUICAO_A, requisicaoFake({ chave }), executarHandlerLento),
-    ]);
+    const barreiraDaPrimeira = criarBarreira();
+    const sinalDaPrimeiraPronta = criarSinal();
 
-    expect(chamadas).toBe(1);
-    expect(primeira).toStrictEqual(segunda);
+    const primeira = comIdentidade(INSTITUICAO_A, () =>
+      unidade.transacao('escrita', async ({ em }) => {
+        const reclamou = await reclamarChaveVencida(em, dados);
+        sinalDaPrimeiraPronta.emitir();
+        await barreiraDaPrimeira.promessa;
+        return reclamou;
+      }),
+    );
+
+    await sinalDaPrimeiraPronta.promessa;
+
+    const segunda = comIdentidade(INSTITUICAO_A, () =>
+      unidade.transacao('escrita', ({ em }) => reclamarChaveVencida(em, dados)),
+    );
+
+    await esperarBloqueioNaLinhaDaChave(banco.owner);
+    barreiraDaPrimeira.liberar();
+
+    const [reclamouPrimeira, reclamouSegunda] = await Promise.all([primeira, segunda]);
+
+    expect(reclamouPrimeira).toBe(true);
+    expect(reclamouSegunda).toBe(false);
   });
 
   it('depois de reclamar a chave vencida, uma terceira chamada repete a resposta nova (não a antiga)', async () => {

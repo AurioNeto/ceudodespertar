@@ -18,22 +18,38 @@ const NOME_DO_CABECALHO_DE_LOCALIZACAO = 'Location';
 const MENSAGEM_DE_CONTEXTO_AUSENTE =
   'Idempotency-Key recebida sem instituição no contexto da requisição — a ordem dos interceptors globais ' +
   'está errada (a borda transacional precisa rodar antes da idempotência) ou a requisição chegou sem identidade';
+const MENSAGEM_DE_RESPOSTA_PROPRIA_DO_HANDLER =
+  'Idempotency-Key recebida numa rota cujo handler respondeu por conta própria (@Res sem passthrough) — ' +
+  'a idempotência não sabe capturar corpo/status desse tipo de resposta e não gravou a chave';
 
 interface RequisicaoDeIdempotencia {
   readonly method: string;
   readonly path: string;
+  readonly query: Record<string, unknown>;
   readonly body: unknown;
   header(nome: string): string | undefined;
 }
 
 interface RespostaDeIdempotencia {
   statusCode: number;
+  readonly headersSent: boolean;
   getHeader(nome: string): string | undefined;
   setHeader(nome: string, valor: string): void;
 }
 
+function normalizarQueryString(query: Record<string, unknown>): string {
+  const partes: string[] = [];
+  for (const chave of Object.keys(query).toSorted()) {
+    const valores = Array.isArray(query[chave]) ? (query[chave] as unknown[]) : [query[chave]];
+    for (const valor of valores) {
+      partes.push(`${encodeURIComponent(chave)}=${encodeURIComponent(String(valor))}`);
+    }
+  }
+  return partes.length > 0 ? `?${partes.join('&')}` : '';
+}
+
 function construirRotaDaRequisicao(requisicao: RequisicaoDeIdempotencia): string {
-  return `${requisicao.method} ${requisicao.path}`;
+  return `${requisicao.method} ${requisicao.path}${normalizarQueryString(requisicao.query)}`;
 }
 
 @Injectable()
@@ -101,6 +117,12 @@ export class IdempotenciaInterceptor implements NestInterceptor {
     }
 
     const corpo = await executarComando();
+
+    if (resposta.headersSent) {
+      this.logger.error(MENSAGEM_DE_RESPOSTA_PROPRIA_DO_HANDLER);
+      throw new ErroDeConfiguracaoDeIdempotencia(MENSAGEM_DE_RESPOSTA_PROPRIA_DO_HANDLER);
+    }
+
     const location = resposta.getHeader(NOME_DO_CABECALHO_DE_LOCALIZACAO) ?? null;
     await gravarResposta(em, dados.instituicaoId, dados.chave, resposta.statusCode, corpo, location);
     return corpo;

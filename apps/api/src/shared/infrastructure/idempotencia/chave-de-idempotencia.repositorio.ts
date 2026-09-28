@@ -80,7 +80,7 @@ async function buscarLinhaExistente(
   return linha;
 }
 
-async function reclamarChaveVencida(em: EntityManager, dados: DadosDaChaveDeIdempotencia): Promise<boolean> {
+export async function reclamarChaveVencida(em: EntityManager, dados: DadosDaChaveDeIdempotencia): Promise<boolean> {
   const resultado = await em.execute<QueryResult>(
     `update shared.chave_de_idempotencia
         set usuario_id = ?, rota = ?, corpo_hash = ?, status_http = ${STATUS_HTTP_PLACEHOLDER},

@@ -10,6 +10,7 @@ import { ErroDeConfiguracaoDeIdempotencia } from './erro-de-configuracao-de-idem
 interface RequisicaoFake {
   readonly method: string;
   readonly path: string;
+  readonly query: Record<string, unknown>;
   readonly body: unknown;
   header(nome: string): string | undefined;
 }
@@ -28,6 +29,7 @@ function requisicaoFake(opcoes: { metodo?: string; chave?: string }): Requisicao
   return {
     method: opcoes.metodo ?? 'POST',
     path: '/doacoes',
+    query: {},
     body: {},
     header: (nome: string) => cabecalhos[nome.toLowerCase()],
   };
