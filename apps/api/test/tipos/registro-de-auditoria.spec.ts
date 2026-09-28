@@ -47,4 +47,15 @@ describe('RegistroDeAuditoria — contrato de tipos do ator', () => {
 
     expect(registro.autorTipo).toBe('SISTEMA');
   });
+
+  it('recusa em tempo de compilação autorId nulo quando autorTipo é USUARIO', () => {
+    // @ts-expect-error autorId é UsuarioId obrigatório quando autorTipo é USUARIO
+    const registro: RegistroDeAuditoria = {
+      ...CAMPOS_COMUNS,
+      autorTipo: 'USUARIO',
+      autorId: null,
+    };
+
+    expect(registro.autorTipo).toBe('USUARIO');
+  });
 });
