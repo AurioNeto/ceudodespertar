@@ -14,6 +14,8 @@
     "infra:subir": "node infra/keycloak/verificar-realm.mjs && (docker compose up -d; infra/verificar-subida.sh) && node infra/keycloak/verificar-realm-importado.mjs && bash infra/keycloak/fumaca.sh",
     "infra:descer": "docker compose down",
     "infra:zerar": "docker compose down -v",
-    "db:verificar": "infra/postgres/verificar-referencia.sh"
+    "db:verificar": "infra/postgres/verificar-referencia.sh",
+    "db:migrar": "pnpm --filter @cdd/api db:migrar",
+    "db:situacao": "pnpm --filter @cdd/api db:situacao"
   }
 }
