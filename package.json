@@ -4,12 +4,16 @@
   "type": "module",
   "packageManager": "pnpm@10.33.0",
   "engines": {
-    "node": ">=22"
+    "node": ">=22.17"
   },
   "scripts": {
     "dev": "pnpm --filter @cdd/web dev",
     "build": "pnpm --filter @cdd/web build",
     "preview": "pnpm --filter @cdd/web preview",
-    "typecheck": "pnpm -r typecheck"
+    "typecheck": "pnpm -r typecheck",
+    "infra:subir": "docker compose up -d; infra/verificar-subida.sh",
+    "infra:descer": "docker compose down",
+    "infra:zerar": "docker compose down -v",
+    "db:verificar": "infra/postgres/verificar-referencia.sh"
   }
 }
