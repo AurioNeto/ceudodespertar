@@ -31,7 +31,7 @@ jobs:
       - name: instalar node
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
-          node-version: '24'
+          node-version-file: .nvmrc
           cache: pnpm
 
       - name: instalar dependencias
@@ -54,3 +54,29 @@ jobs:
 
       - name: build do web
         run: pnpm --filter @cdd/web build
+
+  integracao:
+    name: integracao
+    runs-on: ubuntu-latest
+    # sobe Postgres via Testcontainers (Docker); a folga cobre o pull da imagem no runner
+    timeout-minutes: 15
+    steps:
+      - name: checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: instalar pnpm
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+
+      - name: instalar node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: instalar dependencias
+        run: pnpm install --frozen-lockfile
+
+      - name: testes de integracao da api
+        run: pnpm --filter @cdd/api test:integracao

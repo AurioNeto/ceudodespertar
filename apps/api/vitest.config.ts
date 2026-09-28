@@ -1,5 +1,5 @@
 import swc from 'unplugin-swc';
-import { defineConfig } from 'vitest/config';
+import { configDefaults, defineConfig } from 'vitest/config';
 
 const CONDICAO_FONTE = '@cdd/fonte';
 
@@ -13,6 +13,7 @@ export default defineConfig({
   test: {
     setupFiles: ['reflect-metadata'],
     include: ['src/**/*.spec.ts', 'test/**/*.spec.ts', 'test/**/*.test.ts'],
+    exclude: [...configDefaults.exclude, '**/*.integracao.test.ts'],
     coverage: {
       provider: 'v8',
       include: ['src/**/*.ts'],
