@@ -41,7 +41,7 @@ CREATE UNIQUE INDEX usuario_pessoa_unica ON identidade.usuario (instituicao_id, 
 
 -- O `sub` do Keycloak chega sem instituição, e `identidade.usuario` tem RLS
 -- FORCE: sem contexto, nem o dono dos objetos leria a linha para descobri-la.
--- Molde de `eventos.resolver_link` (Documento 7 §7.3, §8, F07/B5): SECURITY
+-- Molde de `eventos.resolver_link` (Documento 7 §7.3, §8; B5): SECURITY
 -- DEFINER, dono próprio sem BYPASSRLS, devolve só o necessário para montar
 -- o contexto.
 CREATE FUNCTION identidade.resolver_sujeito(p_subject_id text)

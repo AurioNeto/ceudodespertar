@@ -2,8 +2,8 @@
 --
 -- Só as 64 linhas que este seed inseriu, por código — não um DELETE FROM
 -- sem WHERE (a tabela em si sai no down() de b0-002-identidade), para que
--- uma migration futura que semeie mais permissões (I04 em diante) não
--- perca as suas ao desfazer só esta etapa.
+-- uma migration futura que semeie mais permissões não perca as suas ao
+-- desfazer só esta etapa.
 
 DELETE FROM identidade.permissao WHERE codigo IN (
   'financeiro.lancamento.registrar', 'financeiro.lancamento.confirmar', 'financeiro.lancamento.estornar', 'financeiro.lancamento.ler',

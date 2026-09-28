@@ -6,7 +6,7 @@
 -- exige que os dois conjuntos de códigos sejam iguais, nos dois sentidos.
 -- Sem `pessoas.anamnese.responder_por_terceiro` (Doc 6 §2.6: sem caso de
 -- uso). Os grupos por instituição e as permissões deles NÃO entram aqui —
--- são da I04.
+-- nascem por instituição, pelo `semear` (Documento 7 §22).
 
 INSERT INTO identidade.permissao (codigo, modulo, descricao) VALUES
   ('financeiro.lancamento.registrar',        'financeiro', 'Registrar lançamento'),
