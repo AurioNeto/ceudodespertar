@@ -38,6 +38,9 @@ importers:
       '@nestjs/platform-express':
         specifier: ^12.1.0
         version: 12.1.0(@nestjs/common@12.1.0(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@12.1.0)
+      postgres-array:
+        specifier: ^3.0.4
+        version: 3.0.4
       reflect-metadata:
         specifier: ^0.2.2
         version: 0.2.2
