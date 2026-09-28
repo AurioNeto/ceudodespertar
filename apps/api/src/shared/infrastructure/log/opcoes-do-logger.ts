@@ -2,14 +2,16 @@ import { hostname } from 'node:os';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { stdTimeFunctions } from 'pino';
 import type { DestinationStream, LoggerOptions } from 'pino';
-import type { Options as OpcoesDoPinoHttp } from 'pino-http';
+import { pinoHttp } from 'pino-http';
+import type { HttpLogger, Options as OpcoesDoPinoHttp } from 'pino-http';
 import type { Params } from 'nestjs-pino';
 import type { Ambiente } from '../configuracao/esquema-de-ambiente.js';
-import { correlacaoDaRequisicao } from './correlacao.js';
+import { correlacaoDaRequisicao, correlacaoIdDoCliente } from './correlacao.js';
 import { redigirLinhaDeLog } from './redacao.js';
 
 export const NOME_DO_SERVICO = 'cdd-api';
 export const CHAVE_DA_CORRELACAO_NO_LOG = 'correlacaoId';
+export const CHAVE_DA_CORRELACAO_DO_CLIENTE_NO_LOG = 'correlacaoIdDoCliente';
 export const PREFIXO_DAS_SONDAS_DE_SAUDE = '/saude/';
 
 type NivelDeLog = Ambiente['LOG_NIVEL'];
@@ -64,6 +66,11 @@ function ehSondaDeSaude(requisicao: IncomingMessage): boolean {
   return requisicao.url?.startsWith(PREFIXO_DAS_SONDAS_DE_SAUDE) ?? false;
 }
 
+function correlacaoDoClienteNoLog(requisicao: IncomingMessage): Record<string, string> {
+  const doCliente = correlacaoIdDoCliente(requisicao);
+  return doCliente === undefined ? {} : { [CHAVE_DA_CORRELACAO_DO_CLIENTE_NO_LOG]: doCliente };
+}
+
 function nivelDaRequisicaoConcluida(
   _requisicao: IncomingMessage,
   resposta: ServerResponse,
@@ -80,13 +87,18 @@ export function construirOpcoesDoPinoHttp(nivel: NivelDeLog): OpcoesDoPinoHttp {
     ...construirOpcoesDoPino(nivel),
     genReqId: correlacaoDaRequisicao,
     customAttributeKeys: { reqId: CHAVE_DA_CORRELACAO_NO_LOG },
+    customProps: correlacaoDoClienteNoLog,
     quietReqLogger: true,
     customLogLevel: nivelDaRequisicaoConcluida,
     autoLogging: { ignore: ehSondaDeSaude },
   };
 }
 
-export function construirParametrosDoLogger(nivel: NivelDeLog, destino?: DestinationStream): Params {
+export function construirMiddlewareDeLogHttp(nivel: NivelDeLog, destino?: DestinationStream): HttpLogger {
   const opcoes = construirOpcoesDoPinoHttp(nivel);
-  return { pinoHttp: destino === undefined ? opcoes : [opcoes, destino] };
+  return destino === undefined ? pinoHttp(opcoes) : pinoHttp(opcoes, destino);
+}
+
+export function construirParametrosDoLogger(middleware: HttpLogger): Params {
+  return { pinoHttp: { logger: middleware.logger }, useExisting: true };
 }

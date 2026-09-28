@@ -16,7 +16,12 @@ export const FRAGMENTOS_DE_CHAVE_PROIBIDA = [
   'password',
   'passwd',
   'pwd',
+  'pass',
   'token',
+  'jwt',
+  'bearer',
+  'sessionid',
+  'sessao',
   'segredo',
   'secret',
   'apikey',
@@ -25,12 +30,23 @@ export const FRAGMENTOS_DE_CHAVE_PROIBIDA = [
   'cpf',
   'documento',
   'anamnese',
+  'saude',
+  'diagnostico',
+  'medicamento',
+  'queixa',
+  'alergia',
+  'restric',
 ] as const;
 
-const FORMATO_DE_CPF = /(?<!\d)\d{3}\.?\d{3}\.?\d{3}-?\d{2}(?!\d)/g;
+const FORMATO_DE_CPF = /(?<!\d)\d{3}[.\s]?\d{3}[.\s]?\d{3}[-\s]?\d{2}(?!\d)/g;
+const MENOR_NUMERO_DE_ONZE_DIGITOS = 10_000_000_000;
+const MAIOR_NUMERO_DE_ONZE_DIGITOS = 99_999_999_999;
 
 function normalizarChave(chave: string): string {
-  return chave.toLowerCase().replace(/[^a-z0-9]/g, '');
+  return chave
+    .normalize('NFD')
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, '');
 }
 
 export function ehChaveProibida(chave: string): boolean {
@@ -42,9 +58,17 @@ export function mascararCpf(texto: string): string {
   return texto.replace(FORMATO_DE_CPF, CPF_REDIGIDO);
 }
 
+function podeSerCpf(numero: number): boolean {
+  const absoluto = Math.abs(numero);
+  return Number.isInteger(numero) && absoluto >= MENOR_NUMERO_DE_ONZE_DIGITOS && absoluto <= MAIOR_NUMERO_DE_ONZE_DIGITOS;
+}
+
 function redigirComVistos(valor: unknown, vistos: WeakSet<object>, profundidade: number): unknown {
   if (typeof valor === 'string') {
     return mascararCpf(valor);
+  }
+  if (typeof valor === 'number' && podeSerCpf(valor)) {
+    return CPF_REDIGIDO;
   }
   if (valor === null || typeof valor !== 'object') {
     return valor;

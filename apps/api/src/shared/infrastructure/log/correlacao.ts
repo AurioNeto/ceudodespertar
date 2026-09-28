@@ -9,7 +9,7 @@ const CABECALHO_DE_CORRELACAO_RECEBIDO = CABECALHO_DE_CORRELACAO.toLowerCase();
 const CorrelacaoRecebidaValida = z.uuid();
 const correlacaoPorRequisicao = new WeakMap<IncomingMessage, string>();
 
-function correlacaoRecebida(requisicao: IncomingMessage): string | undefined {
+export function correlacaoIdDoCliente(requisicao: IncomingMessage): string | undefined {
   const bruto = requisicao.headers[CABECALHO_DE_CORRELACAO_RECEBIDO];
   const resultado = CorrelacaoRecebidaValida.safeParse(bruto);
   return resultado.success ? resultado.data.toLowerCase() : undefined;
@@ -20,7 +20,7 @@ export function correlacaoDaRequisicao(requisicao: IncomingMessage, resposta: Se
   if (jaResolvida !== undefined) {
     return jaResolvida;
   }
-  const correlacaoId = correlacaoRecebida(requisicao) ?? randomUUID();
+  const correlacaoId = randomUUID();
   correlacaoPorRequisicao.set(requisicao, correlacaoId);
   resposta.setHeader(CABECALHO_DE_CORRELACAO, correlacaoId);
   return correlacaoId;

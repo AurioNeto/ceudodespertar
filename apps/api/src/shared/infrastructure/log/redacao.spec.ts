@@ -54,6 +54,31 @@ const CHAVES_PROIBIDAS = [
   'anamnese',
   'Anamnese',
   'respostasDaAnamnese',
+  'pass',
+  'Pass',
+  'jwt',
+  'JWT',
+  'idJwt',
+  'bearer',
+  'Bearer',
+  'sessionId',
+  'session_id',
+  'sessao',
+  'sessaoAtual',
+  'saude',
+  'dadosDeSaude',
+  'saúde',
+  'diagnostico',
+  'diagnósticos',
+  'medicamento',
+  'medicamentosEmUso',
+  'queixa',
+  'queixaPrincipal',
+  'alergia',
+  'alergias',
+  'restricao',
+  'restrição',
+  'restricoesAlimentares',
 ] as const;
 
 function textoSerializado(valor: unknown): string {
@@ -110,6 +135,24 @@ describe('redação de log', () => {
   it('não mascara números de outro tamanho', () => {
     expect(mascararCpf('pedido 1234567890 e 123456789012')).toBe('pedido 1234567890 e 123456789012');
   });
+
+  it('mascara um CPF escrito com espaços', () => {
+    expect(mascararCpf('cpf 123 456 789 09 recusado')).toBe(`cpf ${CPF_REDIGIDO} recusado`);
+  });
+
+  it.each([12345678909, 98765432100, 10_000_000_000, 99_999_999_999])(
+    'mascara o número inteiro de 11 dígitos %d',
+    (numero) => {
+      expect(redigir({ valor: numero })).toStrictEqual({ valor: CPF_REDIGIDO });
+    },
+  );
+
+  it.each([9_999_999_999, 100_000_000_000, 12345678909.5, 1_234, 200])(
+    'mantém o número %d, que não tem 11 dígitos inteiros',
+    (numero) => {
+      expect(redigir({ valor: numero })).toStrictEqual({ valor: numero });
+    },
+  );
 
   it('serializa um Error e redige os campos dele', () => {
     const erro = Object.assign(new Error('cpf 123.456.789-09 rejeitado'), { token: SEGREDO });

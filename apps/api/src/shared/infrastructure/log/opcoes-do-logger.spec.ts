@@ -82,9 +82,9 @@ describe('opções do pino', () => {
   it('redige campos proibidos nos bindings de um logger filho', () => {
     const { logger, linhas, bruto } = loggerQueCaptura();
 
-    logger.child({ sessao: { refreshToken: SEGREDO, id: 's-1' } }).info('filho');
+    logger.child({ conta: { refreshToken: SEGREDO, id: 's-1' } }).info('filho');
 
-    expect(linhas()[0]).toMatchObject({ sessao: { refreshToken: VALOR_REDIGIDO, id: 's-1' }, msg: 'filho' });
+    expect(linhas()[0]).toMatchObject({ conta: { refreshToken: VALOR_REDIGIDO, id: 's-1' }, msg: 'filho' });
     expect(bruto()).not.toContain(SEGREDO);
   });
 });
