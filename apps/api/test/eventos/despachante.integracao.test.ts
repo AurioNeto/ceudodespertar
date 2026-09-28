@@ -382,6 +382,7 @@ describe('Despachante · entrega do outbox (Documento 7 §9)', () => {
     @Injectable()
     class ConsumidorEncadeia {
       contextoVisto: unknown;
+      instituicaoNoBanco: string | null = null;
 
       constructor(
         private readonly unidadeDeTrabalho: UnidadeDeTrabalho,
@@ -391,11 +392,15 @@ describe('Despachante · entrega do outbox (Documento 7 §9)', () => {
       @ReageA('teste.EventoOrigem', 'ConsumidorEncadeia.reagir')
       async reagir(evento: EventoDeDominio): Promise<void> {
         this.contextoVisto = ContextoDaRequisicao.atual();
-        await this.unidadeDeTrabalho.transacao('escrita', (contexto) =>
-          this.repositorio.gravar(contexto, [
+        await this.unidadeDeTrabalho.transacao('escrita', async (contexto) => {
+          const [linha] = await contexto.em.execute<{ instituicao: string | null }[]>(
+            "select current_setting('app.instituicao_id', true) as instituicao",
+          );
+          this.instituicaoNoBanco = linha?.instituicao ?? null;
+          await this.repositorio.gravar(contexto, [
             criarEvento({ tipo: 'teste.EventoDerivado', agregadoId: evento.agregadoId }),
-          ]),
-        );
+          ]);
+        });
       }
     }
 
@@ -419,7 +424,28 @@ describe('Despachante · entrega do outbox (Documento 7 §9)', () => {
       await despachante.executarCiclo();
 
       expect(app.get(ConsumidorEncadeia).contextoVisto).toMatchObject({ instituicaoId: INSTITUICAO_A });
+      expect(app.get(ConsumidorEncadeia).instituicaoNoBanco).toBe(INSTITUICAO_A);
       expect(app.get(ConsumidorDoDerivado).eventos.map((e) => e.agregadoId)).toEqual([origem.agregadoId]);
+    } finally {
+      await encerrarContextoDeEventos(app);
+    }
+  });
+
+  it('o ciclo acordado pelo sinal de quem gravou não herda o ContextoDaRequisicao dessa requisição', async () => {
+    const app = await subirContextoDeEventos(banco, [ConsumidorRegistraChamadas]);
+    try {
+      const despachante = app.get(Despachante);
+      const executarCicloOriginal = despachante.executarCiclo.bind(despachante);
+      const contextosAoIniciarCiclo: unknown[] = [];
+      vi.spyOn(despachante, 'executarCiclo').mockImplementation(() => {
+        contextosAoIniciarCiclo.push(ContextoDaRequisicao.atual());
+        return executarCicloOriginal();
+      });
+
+      await gravarEvento(app, criarEvento({ tipo: 'teste.EventoFeliz' }), INSTITUICAO_B);
+
+      await vi.waitFor(() => expect(contextosAoIniciarCiclo.length).toBeGreaterThan(0), { timeout: 2000 });
+      expect(contextosAoIniciarCiclo).toStrictEqual(contextosAoIniciarCiclo.map(() => undefined));
     } finally {
       await encerrarContextoDeEventos(app);
     }

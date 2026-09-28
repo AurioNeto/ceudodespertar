@@ -131,7 +131,7 @@ export class Despachante implements OnModuleInit, OnModuleDestroy {
   }
 
   private agendarCiclo(): void {
-    this.executarCiclo().catch((motivo: unknown) => {
+    ContextoDaRequisicao.foraDeQualquerContexto(() => this.executarCiclo()).catch((motivo: unknown) => {
       this.logger.error('falha no ciclo do despachante', paraErro(motivo).stack);
     });
   }

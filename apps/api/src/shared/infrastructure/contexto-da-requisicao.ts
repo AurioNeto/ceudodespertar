@@ -13,6 +13,10 @@ export class ContextoDaRequisicao {
     return armazenamento.run(valor, fn);
   }
 
+  static foraDeQualquerContexto<T>(fn: () => T): T {
+    return armazenamento.exit(fn);
+  }
+
   static atual(): ContextoDaRequisicaoValor | undefined {
     return armazenamento.getStore();
   }
