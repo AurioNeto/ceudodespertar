@@ -2,8 +2,8 @@
 --
 -- Só os dois schemas que o B0 usa (shared, identidade) e o USAGE mínimo para
 -- a aplicação enxergar o que as migrations seguintes forem criar dentro
--- deles. Nenhuma tabela, função, RLS ou guarda nasce aqui — isso é do
--- restante do B0 (F09b em diante), que herda estes schemas já existindo.
+-- deles. Nenhuma tabela, função, RLS ou guarda nasce aqui — isso é das
+-- migrations seguintes do B0, que herdam estes schemas já existindo.
 --
 -- Roda como cdd_owner (dono de ambos): pressupõe que os papéis de cluster
 -- (cdd_owner, cdd_app) já existem, porque quem os cria é a infra

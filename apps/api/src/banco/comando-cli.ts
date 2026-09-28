@@ -6,11 +6,17 @@ export interface ComandoDoMigrador {
   readonly subcomando: SubcomandoDoMigrador;
 }
 
+function mensagemDeComandoInvalido(argumentos: readonly string[]): string {
+  const subcomandosValidos = `Use um destes: ${SUBCOMANDOS_DO_MIGRADOR.join(', ')}.`;
+  if (argumentos.length === 1) {
+    return `Subcomando inválido: '${argumentos[0]}'. ${subcomandosValidos}`;
+  }
+  return `Esperado exatamente um subcomando (recebidos ${argumentos.length}). ${subcomandosValidos}`;
+}
+
 export class ErroDeComandoInvalido extends Error {
-  constructor(readonly recebido: string | undefined) {
-    super(
-      `Subcomando inválido: '${recebido ?? ''}'. Use um destes: ${SUBCOMANDOS_DO_MIGRADOR.join(', ')}.`,
-    );
+  constructor(argumentos: readonly string[]) {
+    super(mensagemDeComandoInvalido(argumentos));
     this.name = 'ErroDeComandoInvalido';
   }
 }
@@ -21,8 +27,8 @@ function ehSubcomandoValido(valor: string | undefined): valor is SubcomandoDoMig
 
 export function analisarComandoDoMigrador(argumentos: readonly string[]): ComandoDoMigrador {
   const [subcomando] = argumentos;
-  if (!ehSubcomandoValido(subcomando)) {
-    throw new ErroDeComandoInvalido(subcomando);
+  if (argumentos.length !== 1 || !ehSubcomandoValido(subcomando)) {
+    throw new ErroDeComandoInvalido(argumentos);
   }
   return { subcomando };
 }

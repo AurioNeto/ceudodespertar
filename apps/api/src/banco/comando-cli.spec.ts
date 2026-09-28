@@ -10,8 +10,15 @@ describe('analisarComandoDoMigrador', () => {
     expect(analisarComandoDoMigrador(['situacao'])).toEqual({ subcomando: 'situacao' });
   });
 
-  it('ignora argumentos extras depois do subcomando', () => {
-    expect(analisarComandoDoMigrador(['migrar', '--forcar'])).toEqual({ subcomando: 'migrar' });
+  it('lança ErroDeComandoInvalido para argumentos extras depois do subcomando', () => {
+    expect.assertions(2);
+
+    try {
+      analisarComandoDoMigrador(['migrar', '--forcar']);
+    } catch (erro) {
+      expect(erro).toBeInstanceOf(ErroDeComandoInvalido);
+      expect((erro as Error).message).toContain('recebidos 2');
+    }
   });
 
   it('lança ErroDeComandoInvalido listando os subcomandos válidos quando nenhum argumento é passado', () => {
