@@ -216,4 +216,28 @@ describe('BordaTransacionalInterceptor', () => {
 
     expect(uow.eventos.indexOf('emitiu-segundo-valor')).toBeLessThan(uow.eventos.indexOf('commit'));
   });
+  it('reusa o correlacaoId já publicado pela correlação da requisição', async () => {
+    const interceptor = new BordaTransacionalInterceptor(
+      new Reflector(),
+      new UnidadeDeTrabalhoFake(),
+      new ProvedorDeContextoDeInstituicaoFixo({ instituicaoId: 'inst-a' }),
+    );
+    let contextoObservado: ContextoDaRequisicaoValor | undefined;
+    const proximo: CallHandler = {
+      handle: () => {
+        contextoObservado = ContextoDaRequisicao.atual();
+        return of('resposta');
+      },
+    };
+
+    await ContextoDaRequisicao.executar({ correlacaoId: 'correlacao-da-borda' }, () =>
+      interceptor.intercept(contextoDeExecucaoQualquer(), proximo),
+    );
+
+    expect(contextoObservado).toStrictEqual({
+      correlacaoId: 'correlacao-da-borda',
+      instituicaoId: 'inst-a',
+      usuarioId: undefined,
+    });
+  });
 });

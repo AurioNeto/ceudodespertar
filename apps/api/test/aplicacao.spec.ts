@@ -1,7 +1,7 @@
 import type { AddressInfo } from 'node:net';
 import { Controller, Get, Module } from '@nestjs/common';
 import type { INestApplication } from '@nestjs/common';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { criarAplicacao } from '../src/composicao/aplicacao.js';
 import { AppModule } from '../src/composicao/app.module.js';
 
@@ -28,6 +28,9 @@ describe('esqueleto da API', () => {
   let origem: string;
 
   beforeAll(async () => {
+    vi.stubEnv('BANCO_URL', 'postgres://cdd_app:sem-banco@127.0.0.1:1/cdd');
+    vi.stubEnv('BANCO_POOL_MAXIMO', '1');
+    vi.stubEnv('LOG_NIVEL', 'fatal');
     app = await criarAplicacao(AppModuloComSonda);
     await app.listen(0);
     const endereco = app.getHttpServer().address() as AddressInfo;
@@ -36,6 +39,7 @@ describe('esqueleto da API', () => {
 
   afterAll(async () => {
     await app.close();
+    vi.unstubAllEnvs();
   });
 
   it('GET /saude/viva responde 200 fora do prefixo /api/v1', async () => {
