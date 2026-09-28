@@ -39,6 +39,17 @@ class ControladorComIfMatch {
 }
 
 describe('versaoDoIfMatch', () => {
+  it('recusa aspas desbalanceadas', () => {
+    expect(versaoDoIfMatch('"5')).toBeUndefined();
+    expect(versaoDoIfMatch('5"')).toBeUndefined();
+  });
+
+  it('aceita até o maior inteiro da coluna versao e recusa acima dele', () => {
+    expect(versaoDoIfMatch('2147483647')).toBe(2_147_483_647);
+    expect(versaoDoIfMatch('"2147483648"')).toBeUndefined();
+    expect(versaoDoIfMatch('9999999999')).toBeUndefined();
+  });
+
   it('lê um inteiro simples, com ou sem aspas', () => {
     expect(versaoDoIfMatch('3')).toBe(3);
     expect(versaoDoIfMatch('"9"')).toBe(9);

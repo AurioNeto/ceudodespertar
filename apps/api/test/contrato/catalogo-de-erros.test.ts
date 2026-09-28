@@ -75,6 +75,25 @@ describe('catálogo de erros — contrato (Documento 7 §12)', () => {
     }
   });
 
+  it('fixa os status decididos para identidade e para o corpo da requisição', () => {
+    const decididos = {
+      USUARIO_CONVITE_PENDENTE: 401,
+      USUARIO_SUSPENSO: 401,
+      USUARIO_REVOGADO: 401,
+      USUARIO_DESCONHECIDO: 403,
+      GRUPO_PROTEGIDO: 409,
+      GRUPO_JA_EXISTE: 409,
+      CONVITE_JA_PENDENTE: 409,
+      CORPO_GRANDE_DEMAIS: 413,
+      VERSAO_DESATUALIZADA: 409,
+      VERSAO_OBRIGATORIA: 428,
+      ERRO_INTERNO: 500,
+    } as const;
+    for (const [codigo, status] of Object.entries(decididos)) {
+      expect(STATUS_POR_CODIGO[codigo as keyof typeof decididos], codigo).toBe(status);
+    }
+  });
+
   it('o mapa de status não tem código a mais nem a menos que o catálogo', () => {
     expect(Object.keys(STATUS_POR_CODIGO).toSorted()).toStrictEqual([...CODIGOS_DE_ERRO].toSorted());
   });
@@ -98,7 +117,7 @@ describe('catálogo de erros — contrato (Documento 7 §12)', () => {
     }
   });
 
-  it('toda restrição nomeada das migrations tem código no mapa ou está na lista explícita de sem-código', () => {
+  it('toda restrição com nome explícito nas migrations (CONSTRAINT ou CREATE UNIQUE INDEX; as de nome automático, como _pkey e _fkey, ficam de fora) tem código no mapa ou está na lista explícita de sem-código', () => {
     const semCodigo = new Set(RESTRICOES_SEM_CODIGO_POR_SEREM_GUARDA_INTERNA_DO_BANCO);
 
     for (const restricao of restricoesDasMigracoes) {
@@ -111,7 +130,7 @@ describe('catálogo de erros — contrato (Documento 7 §12)', () => {
     }
   });
 
-  it('a lista de restrições sem código é exatamente a das migrations que não estão no mapa', () => {
+  it('a lista de restrições sem código é exatamente a das restrições com nome explícito que não estão no mapa', () => {
     const semMapa = [...restricoesDasMigracoes].filter((restricao) => RESTRICAO_PARA_CODIGO[restricao] === undefined);
 
     expect(semMapa.toSorted()).toStrictEqual([...RESTRICOES_SEM_CODIGO_POR_SEREM_GUARDA_INTERNA_DO_BANCO].toSorted());
