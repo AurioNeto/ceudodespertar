@@ -87,6 +87,41 @@ services:
       retries: 15
       start_period: 3s
 
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.4.7
+    command: ["start-dev", "--import-realm"]
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_SENHA:?defina KEYCLOAK_ADMIN_SENHA}
+      # Emissor estável: o mesmo valor precisa resolver tanto do navegador
+      # (SPA em localhost:5173) quanto da API rodando no host — os dois
+      # falam com o Keycloak por 'localhost:8080', nunca pelo nome do
+      # serviço no Compose.
+      KC_HOSTNAME: http://localhost:8080
+      KC_HEALTH_ENABLED: "true"
+      # Consumidas só pela substituição de placeholder do próprio Keycloak
+      # no import do realm (infra/keycloak/realm-cdd.json) — nunca em claro
+      # no JSON versionado.
+      CDD_KC_ADMIN_SEGREDO: ${CDD_KC_ADMIN_SEGREDO:?defina CDD_KC_ADMIN_SEGREDO}
+      CDD_KC_DEV_SENHA: ${CDD_KC_DEV_SENHA:?defina CDD_KC_DEV_SENHA}
+    ports:
+      # A porta de gestão (9000, /health/*) NÃO é publicada: a 9000 do host
+      # já é do SeaweedFS (S3). O healthcheck fala com ela de dentro do
+      # próprio container.
+      - "127.0.0.1:8080:8080"
+    volumes:
+      - ./infra/keycloak/realm-cdd.json:/opt/keycloak/data/import/realm-cdd.json:ro
+      - ./infra/keycloak/saude.sh:/cdd/saude.sh:ro
+    depends_on:
+      mailpit:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "bash", "/cdd/saude.sh"]
+      interval: 3s
+      timeout: 6s
+      retries: 30
+      start_period: 15s
+
 volumes:
   cdd_postgres_dados:
   cdd_storage_dados:
