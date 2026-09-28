@@ -54,6 +54,8 @@ export const FEICAO: Record<OperacaoAuditada, FeicaoDaOperacao> = {
   GRUPO_ALTERADO: { rotulo: 'Grupo de usuário alterado', verbo: 'mudou o grupo de', icone: 'key-round', tom: 'atencao' },
   USUARIO_CONVIDADO: { rotulo: 'Usuário convidado', verbo: 'convidou', icone: 'user-plus', tom: 'neutro' },
   USUARIO_SUSPENSO: { rotulo: 'Usuário suspenso', verbo: 'suspendeu', icone: 'user-x', tom: 'atencao' },
+  USUARIO_ATIVADO: { rotulo: 'Acesso ativado', verbo: 'ativou o acesso de', icone: 'circle-check', tom: 'neutro' },
+  USUARIO_REATIVADO: { rotulo: 'Usuário reativado', verbo: 'reativou', icone: 'lock-open', tom: 'atencao' },
   FORMULARIO_PUBLICADO: { rotulo: 'Formulário publicado', verbo: 'publicou', icone: 'clipboard-list', tom: 'neutro' },
   PESSOA_ANONIMIZADA: { rotulo: 'Pessoa anonimizada', verbo: 'anonimizou', icone: 'user-x', tom: 'atencao' },
   ANAMNESE_LIDA: { rotulo: 'Anamnese lida', verbo: 'abriu a anamnese de', icone: 'eye', tom: 'sensivel' },
@@ -78,6 +80,7 @@ export const trilha: readonly RegistroDeAuditoria[] = [
   {
     id: aud('a-31'),
     em: dataHora('2026-09-02T11:40:00-03:00'),
+    autorTipo: 'USUARIO',
     autorId: usr('u-teresa'),
     autorNome: 'Teresa Andrade',
     autorGrupo: 'Governança',
@@ -90,6 +93,7 @@ export const trilha: readonly RegistroDeAuditoria[] = [
   {
     id: aud('a-30'),
     em: dataHora('2026-09-02T10:22:00-03:00'),
+    autorTipo: 'USUARIO',
     autorId: usr('u-aurio'),
     autorNome: 'Aurio Neto',
     autorGrupo: 'Tesouraria',
@@ -105,6 +109,7 @@ export const trilha: readonly RegistroDeAuditoria[] = [
   {
     id: aud('a-29'),
     em: dataHora('2026-09-02T09:58:00-03:00'),
+    autorTipo: 'USUARIO',
     autorId: usr('u-marcia'),
     autorNome: 'Márcia Lemos',
     autorGrupo: 'Acolhimento',
@@ -117,6 +122,7 @@ export const trilha: readonly RegistroDeAuditoria[] = [
   {
     id: aud('a-28'),
     em: dataHora('2026-09-02T09:41:00-03:00'),
+    autorTipo: 'USUARIO',
     autorId: usr('u-marcia'),
     autorNome: 'Márcia Lemos',
     autorGrupo: 'Acolhimento',
@@ -129,6 +135,7 @@ export const trilha: readonly RegistroDeAuditoria[] = [
   {
     id: aud('a-27'),
     em: dataHora('2026-09-01T18:05:00-03:00'),
+    autorTipo: 'USUARIO',
     autorId: usr('u-aurio'),
     autorNome: 'Aurio Neto',
     autorGrupo: 'Tesouraria',
@@ -147,6 +154,7 @@ export const trilha: readonly RegistroDeAuditoria[] = [
   {
     id: aud('a-26'),
     em: dataHora('2026-09-01T16:30:00-03:00'),
+    autorTipo: 'USUARIO',
     autorId: usr('u-teresa'),
     autorNome: 'Teresa Andrade',
     autorGrupo: 'Governança',
@@ -159,6 +167,7 @@ export const trilha: readonly RegistroDeAuditoria[] = [
   {
     id: aud('a-25'),
     em: dataHora('2026-09-01T14:12:00-03:00'),
+    autorTipo: 'USUARIO',
     autorId: usr('u-teresa'),
     autorNome: 'Teresa Andrade',
     autorGrupo: 'Governança',
@@ -171,6 +180,7 @@ export const trilha: readonly RegistroDeAuditoria[] = [
   {
     id: aud('a-24'),
     em: dataHora('2026-09-01T11:03:00-03:00'),
+    autorTipo: 'USUARIO',
     autorId: usr('u-aurio'),
     autorNome: 'Aurio Neto',
     autorGrupo: 'Tesouraria',
@@ -186,6 +196,7 @@ export const trilha: readonly RegistroDeAuditoria[] = [
   {
     id: aud('a-23'),
     em: dataHora('2026-08-31T17:47:00-03:00'),
+    autorTipo: 'USUARIO',
     autorId: usr('u-marcia'),
     autorNome: 'Márcia Lemos',
     autorGrupo: 'Acolhimento',
@@ -198,6 +209,7 @@ export const trilha: readonly RegistroDeAuditoria[] = [
   {
     id: aud('a-22'),
     em: dataHora('2026-08-31T15:20:00-03:00'),
+    autorTipo: 'USUARIO',
     autorId: usr('u-teresa'),
     autorNome: 'Teresa Andrade',
     autorGrupo: 'Governança',
@@ -213,6 +225,7 @@ export const trilha: readonly RegistroDeAuditoria[] = [
   {
     id: aud('a-21'),
     em: dataHora('2026-08-31T10:08:00-03:00'),
+    autorTipo: 'USUARIO',
     autorId: usr('u-aurio'),
     autorNome: 'Aurio Neto',
     autorGrupo: 'Tesouraria',
@@ -231,6 +244,7 @@ export const trilha: readonly RegistroDeAuditoria[] = [
   {
     id: aud('a-20'),
     em: dataHora('2026-08-30T19:11:00-03:00'),
+    autorTipo: 'USUARIO',
     autorId: usr('u-rita'),
     autorNome: 'Rita Belmonte',
     autorGrupo: 'Registro',
@@ -243,6 +257,7 @@ export const trilha: readonly RegistroDeAuditoria[] = [
   {
     id: aud('a-19'),
     em: dataHora('2026-08-29T21:40:00-03:00'),
+    autorTipo: 'USUARIO',
     autorId: usr('u-marcia'),
     autorNome: 'Márcia Lemos',
     autorGrupo: 'Acolhimento',
@@ -255,6 +270,7 @@ export const trilha: readonly RegistroDeAuditoria[] = [
   {
     id: aud('a-18'),
     em: dataHora('2026-08-28T13:26:00-03:00'),
+    autorTipo: 'USUARIO',
     autorId: usr('u-teresa'),
     autorNome: 'Teresa Andrade',
     autorGrupo: 'Governança',
@@ -270,6 +286,7 @@ export const trilha: readonly RegistroDeAuditoria[] = [
   {
     id: aud('a-17'),
     em: dataHora('2026-08-27T09:15:00-03:00'),
+    autorTipo: 'USUARIO',
     autorId: usr('u-teresa'),
     autorNome: 'Teresa Andrade',
     autorGrupo: 'Governança',
@@ -282,6 +299,7 @@ export const trilha: readonly RegistroDeAuditoria[] = [
   {
     id: aud('a-16'),
     em: dataHora('2026-08-26T16:52:00-03:00'),
+    autorTipo: 'USUARIO',
     autorId: usr('u-teresa'),
     autorNome: 'Teresa Andrade',
     autorGrupo: 'Governança',
@@ -294,6 +312,7 @@ export const trilha: readonly RegistroDeAuditoria[] = [
   {
     id: aud('a-15'),
     em: dataHora('2026-08-25T11:30:00-03:00'),
+    autorTipo: 'USUARIO',
     autorId: usr('u-teresa'),
     autorNome: 'Teresa Andrade',
     autorGrupo: 'Governança',
@@ -309,6 +328,7 @@ export const trilha: readonly RegistroDeAuditoria[] = [
   {
     id: aud('a-14'),
     em: dataHora('2026-08-10T18:00:00-03:00'),
+    autorTipo: 'USUARIO',
     autorId: usr('u-aurio'),
     autorNome: 'Aurio Neto',
     autorGrupo: 'Tesouraria',
