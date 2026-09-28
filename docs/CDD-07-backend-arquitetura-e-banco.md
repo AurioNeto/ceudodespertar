@@ -317,7 +317,7 @@ Erro de banco que chega à API **sem** mapeamento é bug: vira 500, vai ao Sentr
 | Saúde | `/saude/viva` (processo) e `/saude/pronta` (banco + Keycloak + bucket + outbox sem atraso > 5 min) |
 | Logs | Pino JSON; **nunca** corpo de requisição nem resposta de anamnese; CPF mascarado |
 | Backup | `pg_dump` diário cifrado para bucket de outra conta, retenção de 35 dias + 12 mensais; PITR do provedor quando disponível. RPO/RTO de 24 h (Doc 1 §5) |
-| Restauração | **Testada todo mês**, por rotina que restaura o último backup num banco descartável e roda `cdd-07-verificacao.sql` e a contagem de linhas. Backup que nunca foi restaurado é hipótese |
+| Restauração | **Testada todo mês**, por rotina que restaura o último backup num banco descartável e roda a verificação de garantias (`apps/api/test/banco/garantias/`) e a contagem de linhas. Backup que nunca foi restaurado é hipótese |
 | Custos | Um Postgres gerenciado pequeno, um processo de 512 MB, R2 no plano gratuito, Keycloak no mesmo host. Ordem de grandeza: dezenas de reais por mês |
 
 ---
@@ -628,7 +628,7 @@ As travas de concorrência que saíram do banco — o período e o saldo do lote
   - As duas conferem só a **existência** de política/gatilho pelo nome — não a expressão. Uma política `isolamento_por_instituicao` recriada com outro `USING` (por exemplo `USING (true)`, por erro de copy-paste numa migration futura) sobrevive à varredura sem ser corrigida nem detectada por ela: conferir que a expressão bate com a esperada é um caso da verificação de garantias, não responsabilidade destas funções.
 - **Duas fases para mudança destrutiva:** expandir (coluna nova, preenchida em paralelo) → migrar leitura e escrita → contrair (remover a antiga) numa versão seguinte.
 - **Catálogo de permissões:** é uma migration, não um seed. Cada permissão nova ou alterada entra por uma migration nova, que aparece no diff do PR, e o T29 confere o conjunto contra o contrato.
-- **Seed por instituição** (`semear`, idempotente, a partir da I04): os seis grupos com suas permissões (Doc 3 §12) nascem uma vez por instituição — editar um grupo protegido depois não é revertido (G5). Unidades e categorias do plano de contas aprovado entram pelo mesmo caminho no B1.
+- **Seed por instituição** (`semear`, idempotente, desde o B0): os seis grupos com suas permissões (Doc 3 §12) nascem uma vez por instituição, com `ON CONFLICT DO NOTHING` — editar um grupo protegido depois não é revertido por uma nova execução. Unidades e categorias do plano de contas aprovado entram pelo mesmo caminho no B1.
 - **Seed de homologação**: dados sintéticos gerados a partir dos mocks do front — os mesmos personagens das telas (Clarice, Helena, Eduardo, Aline) —, o que faz a demonstração do protótipo e a de homologação contarem a mesma história.
 - **Migração da planilha** (Doc 6, transversal): módulo `migracao` com CLI que carrega os 1.760 lançamentos com `origem = 'MIGRACAO'`, cria as competências históricas **fechadas** com hash, e emite o relatório de conciliação. Como o domínio impede lançamento em competência fechada, a carga é feita com os períodos abertos e o fechamento é o último passo — se o relatório não bater, nada é fechado.
 
@@ -673,7 +673,7 @@ As etapas são as do Doc 6 §6, na mesma ordem e com as mesmas estimativas. O qu
 
 | Etapa | Banco | API e infraestrutura | Aceite |
 |---|---|---|---|
-| **B0 · Fundação** · ~3 sem | `shared` e `identidade` inteiros; varredura de RLS; papéis; seed de permissões e grupos | NestJS, UoW com `SET LOCAL`, guards, catálogo de erros, outbox + despachante, storage, Keycloak com tema do CDD, CI com `dependency-cruiser`, T23, T28–T30 e **`cdd-07-verificacao.sql` como teste** | Login real; os seis grupos; um endpoint de escrita qualquer com decorator e trilha; teste de vazamento entre instituições verde |
+| **B0 · Fundação** · ~3 sem | `shared` e `identidade` inteiros; varredura de RLS; papéis; catálogo de permissões (migration) e grupos semeados por instituição | NestJS, UoW com `SET LOCAL`, guards, catálogo de erros, outbox + despachante, storage, Keycloak com tema do CDD, CI com `dependency-cruiser`, T23, T28–T30 e **a verificação de garantias na CI** | Login real; os seis grupos; um endpoint de escrita qualquer com decorator e trilha; teste de vazamento entre instituições verde |
 | **B1 · Financeiro núcleo** · ~6 sem | `unidade`, `grupo_de_custo`, `categoria`, `conta`, `lancamento` + etiquetas + pendência, `transferencia` (simples), `periodo_contabil`, `reabertura`, `fundo`; read models; `pessoas.pessoa` **mínima** (nome, tipo, documento) | Registrar, confirmar, estornar, pendência (abrir, responder), fechar, reabrir; read models de fila, meus registros, lançamentos, contas, DRE, fluxo de caixa | **O fechamento do sistema bate com o da planilha por dois meses consecutivos** |
 | **B2 · Financeiro, o resto** · ~3 sem | `fatura`, `emprestimo`, `adiantamento`, `prestacao_de_contas`; `pessoas.vinculo` | Porta `VinculoAtivoNaData` (A1); PDF com hash | Percurso 4 do Doc 4 §11: um administrador sem vínculo tenta autorizar adiantamento e o domínio recusa |
 | **B3 · Importação e conciliação** · ~3 sem | `importacao_de_extrato`, `linha_extrato` | Parser OFX/CSV, motor de sugestão, fila de conciliação, faturamento contra o teto | Reimportar o mesmo extrato não cria nenhuma linha; o lançamento esquecido aparece |
