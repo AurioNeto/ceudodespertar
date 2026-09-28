@@ -46,6 +46,6 @@ export class RepositorioDoOutboxPostgres extends RepositorioDoOutbox {
       );
     }
 
-    this.sinalizador.notificar();
+    contexto.aoConfirmar(() => this.sinalizador.notificar());
   }
 }

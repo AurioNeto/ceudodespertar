@@ -7,9 +7,9 @@ export interface MetadadosReageA {
   readonly consumidor: string;
 }
 
-export function ReageA(tipo: string): MethodDecorator {
+export function ReageA(tipo: string, consumidor: string): MethodDecorator {
   return (alvo, chave) => {
-    const metadados: MetadadosReageA = { tipo, consumidor: `${alvo.constructor.name}.${String(chave)}` };
+    const metadados: MetadadosReageA = { tipo, consumidor };
     Reflect.defineMetadata(METADADOS_REAGE_A, metadados, alvo, chave);
   };
 }

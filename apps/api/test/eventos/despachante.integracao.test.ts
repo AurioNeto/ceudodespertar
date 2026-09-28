@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { Injectable } from '@nestjs/common';
 import type { INestApplicationContext } from '@nestjs/common';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { criarBancoDeTeste, derrubarBancoDeTeste } from '../integracao/banco-de-teste.js';
 import type { BancoDeTeste } from '../integracao/banco-de-teste.js';
 import { ContextoDaRequisicao } from '../../src/shared/infrastructure/contexto-da-requisicao.js';
@@ -9,17 +9,29 @@ import { UnidadeDeTrabalho } from '../../src/shared/infrastructure/banco/unidade
 import { Despachante } from '../../src/shared/infrastructure/eventos/despachante.js';
 import { ReageA } from '../../src/shared/infrastructure/eventos/reage-a.decorator.js';
 import { RepositorioDoOutbox } from '../../src/shared/infrastructure/eventos/repositorio-do-outbox.js';
+import { SinalizadorDeEventos } from '../../src/shared/infrastructure/eventos/sinalizador-de-eventos.js';
 import type { EventoDeDominio } from '../../src/shared/kernel/evento-de-dominio.js';
-import { INSTITUICAO_A, criarEvento, encerrarContextoDeEventos, semearInstituicoes, subirContextoDeEventos } from './apoio.js';
+import {
+  INSTITUICAO_A,
+  INSTITUICAO_B,
+  criarEvento,
+  encerrarContextoDeEventos,
+  semearInstituicoes,
+  subirContextoDeEventos,
+} from './apoio.js';
 
 function comContexto<T>(instituicaoId: string, fn: () => Promise<T>): Promise<T> {
   return ContextoDaRequisicao.executar({ correlacaoId: randomUUID(), instituicaoId }, fn);
 }
 
-async function gravarEvento(app: INestApplicationContext, evento: EventoDeDominio): Promise<void> {
+async function gravarEvento(
+  app: INestApplicationContext,
+  evento: EventoDeDominio,
+  instituicaoId: string = INSTITUICAO_A,
+): Promise<void> {
   const unidade = app.get(UnidadeDeTrabalho);
   const repositorio = app.get(RepositorioDoOutbox);
-  await comContexto(INSTITUICAO_A, () =>
+  await comContexto(instituicaoId, () =>
     unidade.transacao('escrita', (contexto) => repositorio.gravar(contexto, [evento])),
   );
 }
@@ -46,7 +58,7 @@ async function linhasDeEventoProcessado(banco: BancoDeTeste, eventoId: string): 
 class ConsumidorRegistraChamadas {
   readonly eventos: EventoDeDominio[] = [];
 
-  @ReageA('teste.EventoFeliz')
+  @ReageA('teste.EventoFeliz', 'ConsumidorRegistraChamadas.reagir')
   async reagir(evento: EventoDeDominio): Promise<void> {
     this.eventos.push(evento);
   }
@@ -56,7 +68,7 @@ class ConsumidorRegistraChamadas {
 class ConsumidorSempreFalha {
   contagem = 0;
 
-  @ReageA('teste.EventoQueFalha')
+  @ReageA('teste.EventoQueFalha', 'ConsumidorSempreFalha.reagir')
   async reagir(): Promise<void> {
     this.contagem += 1;
     throw new Error('falha proposital do consumidor');
@@ -69,7 +81,7 @@ class ConsumidorLeContextoDaInstituicao {
 
   constructor(private readonly unidadeDeTrabalho: UnidadeDeTrabalho) {}
 
-  @ReageA('teste.EventoComContexto')
+  @ReageA('teste.EventoComContexto', 'ConsumidorLeContextoDaInstituicao.reagir')
   async reagir(): Promise<void> {
     const linhas = await this.unidadeDeTrabalho.transacao('escrita', ({ em }) =>
       em.execute<{ instituicaoId: string | null }[]>(
@@ -148,7 +160,7 @@ describe('Despachante · entrega do outbox (Documento 7 §9)', () => {
       const primeiraLinha = await linhaDoOutbox(banco, evento.eventoId);
       expect(primeiraLinha?.publicado_em).toBeNull();
       expect(primeiraLinha?.tentativas).toBe(1);
-      expect(primeiraLinha?.ultimo_erro).toBe('falha proposital do consumidor');
+      expect(primeiraLinha?.ultimo_erro).toBe('Error: Error - falha proposital do consumidor');
       const primeiroAtraso =
         (primeiraLinha?.proxima_tentativa_em?.getTime() ?? 0) - antesDaPrimeiraTentativa;
       expect(primeiroAtraso).toBeGreaterThanOrEqual(900);
@@ -179,7 +191,7 @@ describe('Despachante · entrega do outbox (Documento 7 §9)', () => {
     class ConsumidorGrava {
       constructor(private readonly unidadeDeTrabalho: UnidadeDeTrabalho) {}
 
-      @ReageA('teste.EventoComDoisConsumidores')
+      @ReageA('teste.EventoComDoisConsumidores', 'ConsumidorGrava.reagir')
       async reagir(): Promise<void> {
         await this.unidadeDeTrabalho.transacao('escrita', ({ em }) =>
           em.execute(
@@ -192,7 +204,7 @@ describe('Despachante · entrega do outbox (Documento 7 §9)', () => {
 
     @Injectable()
     class ConsumidorFalha {
-      @ReageA('teste.EventoComDoisConsumidores')
+      @ReageA('teste.EventoComDoisConsumidores', 'ConsumidorFalha.reagir')
       async reagir(): Promise<void> {
         throw new Error('falha proposital do segundo consumidor');
       }
@@ -234,7 +246,7 @@ describe('Despachante · entrega do outbox (Documento 7 §9)', () => {
     class ConsumidorViolaConstraintAdiavel {
       constructor(private readonly unidadeDeTrabalho: UnidadeDeTrabalho) {}
 
-      @ReageA('teste.EventoComConstraintAdiavel')
+      @ReageA('teste.EventoComConstraintAdiavel', 'ConsumidorViolaConstraintAdiavel.reagir')
       async reagir(): Promise<void> {
         await this.unidadeDeTrabalho.transacao('escrita', ({ em }) =>
           em.execute('insert into teste_filho_deferravel (id, pai_id) values (1, 999)'),
@@ -314,7 +326,7 @@ describe('Despachante · entrega do outbox (Documento 7 §9)', () => {
 
     @Injectable()
     class ConsumidorLento {
-      @ReageA('teste.EventoLento')
+      @ReageA('teste.EventoLento', 'ConsumidorLento.reagir')
       async reagir(): Promise<void> {
         avisarQueComecou();
         await liberado;
@@ -363,6 +375,300 @@ describe('Despachante · entrega do outbox (Documento 7 §9)', () => {
       expect(app.get(ConsumidorLeContextoDaInstituicao).instituicoesVistas).toEqual([INSTITUICAO_A]);
     } finally {
       await encerrarContextoDeEventos(app);
+    }
+  });
+
+  it('consumidor que grava um evento derivado tem instituição no ContextoDaRequisicao e o derivado é despachado', async () => {
+    @Injectable()
+    class ConsumidorEncadeia {
+      contextoVisto: unknown;
+
+      constructor(
+        private readonly unidadeDeTrabalho: UnidadeDeTrabalho,
+        private readonly repositorio: RepositorioDoOutbox,
+      ) {}
+
+      @ReageA('teste.EventoOrigem', 'ConsumidorEncadeia.reagir')
+      async reagir(evento: EventoDeDominio): Promise<void> {
+        this.contextoVisto = ContextoDaRequisicao.atual();
+        await this.unidadeDeTrabalho.transacao('escrita', (contexto) =>
+          this.repositorio.gravar(contexto, [
+            criarEvento({ tipo: 'teste.EventoDerivado', agregadoId: evento.agregadoId }),
+          ]),
+        );
+      }
+    }
+
+    @Injectable()
+    class ConsumidorDoDerivado {
+      eventos: EventoDeDominio[] = [];
+
+      @ReageA('teste.EventoDerivado', 'ConsumidorDoDerivado.reagir')
+      async reagir(evento: EventoDeDominio): Promise<void> {
+        this.eventos.push(evento);
+      }
+    }
+
+    const app = await subirContextoDeEventos(banco, [ConsumidorEncadeia, ConsumidorDoDerivado]);
+    try {
+      const origem = criarEvento({ tipo: 'teste.EventoOrigem' });
+      await gravarEvento(app, origem);
+
+      const despachante = app.get(Despachante);
+      await despachante.executarCiclo();
+      await despachante.executarCiclo();
+
+      expect(app.get(ConsumidorEncadeia).contextoVisto).toMatchObject({ instituicaoId: INSTITUICAO_A });
+      expect(app.get(ConsumidorDoDerivado).eventos.map((e) => e.agregadoId)).toEqual([origem.agregadoId]);
+    } finally {
+      await encerrarContextoDeEventos(app);
+    }
+  });
+
+  it('respeita o teto de tentativas: 9 ainda é elegível, 10 não é mais entregue', async () => {
+    const app = await subirContextoDeEventos(banco, [ConsumidorRegistraChamadas]);
+    try {
+      const noLimite = criarEvento({ tipo: 'teste.EventoFeliz' });
+      await gravarEvento(app, noLimite);
+      await banco.owner.query('update shared.outbox set tentativas = 9 where evento_id = $1', [
+        noLimite.eventoId,
+      ]);
+
+      const esgotado = criarEvento({ tipo: 'teste.EventoFeliz' });
+      await gravarEvento(app, esgotado);
+      await banco.owner.query('update shared.outbox set tentativas = 10 where evento_id = $1', [
+        esgotado.eventoId,
+      ]);
+
+      await app.get(Despachante).executarCiclo();
+
+      const entreguesIds = app.get(ConsumidorRegistraChamadas).eventos.map((e) => e.eventoId);
+      expect(entreguesIds).toContain(noLimite.eventoId);
+      expect(entreguesIds).not.toContain(esgotado.eventoId);
+    } finally {
+      await encerrarContextoDeEventos(app);
+    }
+  });
+
+  it('sem FOR UPDATE, um segundo despachante processaria o mesmo evento que o primeiro ainda segura (M17)', async () => {
+    let avisarQueComecou: () => void = () => {};
+    const comecou = new Promise<void>((resolver) => {
+      avisarQueComecou = resolver;
+    });
+    let liberar: () => void = () => {};
+    const liberado = new Promise<void>((resolver) => {
+      liberar = resolver;
+    });
+
+    const chamadas: string[] = [];
+    const criarConsumidorLentoNomeado = (nome: string) => {
+      @Injectable()
+      class ConsumidorLentoNomeado {
+        @ReageA('teste.EventoUnicoLento', nome)
+        async reagir(): Promise<void> {
+          chamadas.push(nome);
+          avisarQueComecou();
+          await liberado;
+        }
+      }
+      return ConsumidorLentoNomeado;
+    };
+
+    const appA = await subirContextoDeEventos(banco, [criarConsumidorLentoNomeado('ConsumidorLentoA')]);
+    const appB = await subirContextoDeEventos(banco, [criarConsumidorLentoNomeado('ConsumidorLentoB')]);
+    try {
+      const evento = criarEvento({ tipo: 'teste.EventoUnicoLento' });
+      await gravarEvento(appA, evento);
+
+      const cicloA = appA.get(Despachante).executarCiclo();
+      await comecou;
+
+      const cicloB = appB.get(Despachante).executarCiclo();
+      const resultado = await Promise.race([
+        cicloB.then(() => 'concluiu' as const),
+        new Promise<'nao-concluiu'>((resolver) => setTimeout(() => resolver('nao-concluiu'), 300)),
+      ]);
+
+      expect(resultado).toBe('concluiu');
+      expect(chamadas).toEqual(['ConsumidorLentoA']);
+
+      liberar();
+      await cicloA;
+      await cicloB;
+
+      expect(chamadas).toEqual(['ConsumidorLentoA']);
+      expect(await linhasDeEventoProcessado(banco, evento.eventoId)).toEqual(['ConsumidorLentoA']);
+    } finally {
+      await encerrarContextoDeEventos(appA);
+      await encerrarContextoDeEventos(appB);
+    }
+  }, 10000);
+
+  it('set_config local ao commit: não vaza para a conexão reaproveitada no pool (M5, pool = 1)', async () => {
+    const app = await subirContextoDeEventos(banco, [ConsumidorRegistraChamadas], 1);
+    try {
+      const eventoDeB = criarEvento({ tipo: 'teste.EventoFeliz' });
+      await gravarEvento(app, eventoDeB, INSTITUICAO_B);
+
+      await app.get(Despachante).executarCiclo();
+
+      const unidade = app.get(UnidadeDeTrabalho);
+      const linhas = await unidade.transacao('leitura', ({ em }) =>
+        em.execute<{ i: string | null }[]>('select shared.instituicao_atual() as i'),
+      );
+
+      expect(linhas[0]?.i ?? null).toBeNull();
+    } finally {
+      await encerrarContextoDeEventos(app);
+    }
+  });
+
+  it('entrega eventos por polling periódico mesmo sem nenhum sinal de gravação (M11)', async () => {
+    const app = await subirContextoDeEventos(banco, [ConsumidorRegistraChamadas]);
+    try {
+      const evento = criarEvento({ tipo: 'teste.EventoFeliz' });
+      await banco.owner.query(
+        `insert into shared.outbox
+           (evento_id, instituicao_id, tipo, agregado_tipo, agregado_id, payload, ocorrido_em)
+         values ($1, $2, $3, $4, $5, $6::jsonb, $7)`,
+        [
+          evento.eventoId,
+          INSTITUICAO_A,
+          evento.tipo,
+          evento.agregadoTipo,
+          evento.agregadoId,
+          JSON.stringify(evento.dados),
+          evento.ocorridoEm,
+        ],
+      );
+
+      await vi.waitFor(
+        () => {
+          expect(app.get(ConsumidorRegistraChamadas).eventos.map((e) => e.eventoId)).toEqual([evento.eventoId]);
+        },
+        { timeout: 3000, interval: 100 },
+      );
+    } finally {
+      await encerrarContextoDeEventos(app);
+    }
+  }, 6000);
+
+  it('sinaliza depois do commit: latência commit -> entrega bem abaixo de 1s, e rollback não sinaliza (M8/M15)', async () => {
+    let chegou: (t: number) => void = () => {};
+    @Injectable()
+    class ConsumidorDeLatencia {
+      @ReageA('teste.EventoDeLatencia', 'ConsumidorDeLatencia.reagir')
+      async reagir(): Promise<void> {
+        chegou(Date.now());
+      }
+    }
+
+    const app = await subirContextoDeEventos(banco, [ConsumidorDeLatencia]);
+    try {
+      const unidade = app.get(UnidadeDeTrabalho);
+      const repositorio = app.get(RepositorioDoOutbox);
+
+      const eventoDoRollback = criarEvento({ tipo: 'teste.EventoDeLatencia' });
+      let sinalizouNoRollback = false;
+      const pararDeOuvir = app.get(SinalizadorDeEventos).aoNotificar(() => {
+        sinalizouNoRollback = true;
+      });
+      await expect(
+        comContexto(INSTITUICAO_A, () =>
+          unidade.transacao('escrita', async (contexto) => {
+            await repositorio.gravar(contexto, [eventoDoRollback]);
+            throw new Error('rollback proposital');
+          }),
+        ),
+      ).rejects.toThrow('rollback proposital');
+      pararDeOuvir();
+      expect(sinalizouNoRollback).toBe(false);
+
+      const p = new Promise<number>((resolver) => {
+        chegou = resolver;
+      });
+      const t0 = Date.now();
+      await gravarEvento(app, criarEvento({ tipo: 'teste.EventoDeLatencia' }));
+      const latencia = (await p) - t0;
+
+      expect(latencia).toBeLessThan(200);
+    } finally {
+      await encerrarContextoDeEventos(app);
+    }
+  }, 10000);
+
+  it('onModuleDestroy espera o ciclo em andamento e, depois disso, mais nenhum evento é processado (M9/M16)', async () => {
+    let comecou: () => void = () => {};
+    const pComecou = new Promise<void>((resolver) => {
+      comecou = resolver;
+    });
+    let liberar: () => void = () => {};
+    const liberado = new Promise<void>((resolver) => {
+      liberar = resolver;
+    });
+
+    @Injectable()
+    class ConsumidorLentoParaFechamento {
+      @ReageA('teste.EventoLentoFechamento', 'ConsumidorLentoParaFechamento.reagir')
+      async reagir(): Promise<void> {
+        comecou();
+        await liberado;
+      }
+    }
+
+    const app = await subirContextoDeEventos(banco, [ConsumidorLentoParaFechamento]);
+    const despachante = app.get(Despachante);
+    try {
+      const primeiro = criarEvento({ tipo: 'teste.EventoLentoFechamento' });
+      await gravarEvento(app, primeiro);
+      await pComecou;
+
+      const segundo = criarEvento({ tipo: 'teste.EventoLentoFechamento' });
+      await gravarEvento(app, segundo);
+
+      let destruiuAntesDeLiberar = false;
+      const destruicao = despachante.onModuleDestroy().then(() => {
+        destruiuAntesDeLiberar = true;
+      });
+
+      await new Promise((resolver) => setTimeout(resolver, 200));
+      expect(destruiuAntesDeLiberar).toBe(false);
+
+      liberar();
+      await destruicao;
+      expect(destruiuAntesDeLiberar).toBe(true);
+
+      const linhaDoSegundo = await linhaDoOutbox(banco, segundo.eventoId);
+      expect(linhaDoSegundo?.publicado_em).toBeNull();
+    } finally {
+      await encerrarContextoDeEventos(app);
+    }
+  }, 10000);
+
+  it('timeout do consumidor: um consumidor que nunca resolve não trava o despachante', async () => {
+    process.env.TIMEOUT_DO_CONSUMIDOR_EM_MS = '50';
+    @Injectable()
+    class ConsumidorQueNuncaResolve {
+      @ReageA('teste.EventoSemFim', 'ConsumidorQueNuncaResolve.reagir')
+      async reagir(): Promise<void> {
+        await new Promise(() => {});
+      }
+    }
+
+    const app = await subirContextoDeEventos(banco, [ConsumidorQueNuncaResolve]);
+    try {
+      const evento = criarEvento({ tipo: 'teste.EventoSemFim' });
+      await gravarEvento(app, evento);
+
+      await expect(app.get(Despachante).executarCiclo()).resolves.toBeUndefined();
+
+      const linha = await linhaDoOutbox(banco, evento.eventoId);
+      expect(linha?.publicado_em).toBeNull();
+      expect(linha?.tentativas).toBe(1);
+      expect(linha?.ultimo_erro).toContain('ErroDeTimeoutDoConsumidor');
+    } finally {
+      await encerrarContextoDeEventos(app);
+      delete process.env.TIMEOUT_DO_CONSUMIDOR_EM_MS;
     }
   });
 });

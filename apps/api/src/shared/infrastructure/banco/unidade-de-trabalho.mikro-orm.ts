@@ -55,8 +55,9 @@ export class UnidadeDeTrabalhoMikroOrm extends UnidadeDeTrabalho {
 
     const instituicaoId = ContextoDaRequisicao.atual()?.instituicaoId;
     const em = this.orm.em.fork();
+    const ganchosDeConfirmacao: Array<() => void> = [];
 
-    return em.transactional(async (emDaTransacao) => {
+    const resultado = await em.transactional(async (emDaTransacao) => {
       if (ehGravavel(modo)) {
         await emDaTransacao.execute('set transaction read write');
       }
@@ -66,8 +67,18 @@ export class UnidadeDeTrabalhoMikroOrm extends UnidadeDeTrabalho {
           instituicaoId,
         ]);
       }
-      const contexto: ContextoDaTransacao = { em: emDaTransacao, kysely: emDaTransacao.getKysely() };
+      const contexto: ContextoDaTransacao = {
+        em: emDaTransacao,
+        kysely: emDaTransacao.getKysely(),
+        aoConfirmar: (gancho) => ganchosDeConfirmacao.push(gancho),
+      };
       return transacaoAtiva.run({ modo, contexto }, () => fn(contexto));
     }, OPCOES_DE_TRANSACAO_POR_MODO[modo]);
+
+    for (const gancho of ganchosDeConfirmacao) {
+      gancho();
+    }
+
+    return resultado;
   }
 }

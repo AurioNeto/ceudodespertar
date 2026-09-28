@@ -36,9 +36,10 @@ export function criarEvento(sobrescritas: Partial<EventoDeDominio> = {}): Evento
 export async function subirContextoDeEventos(
   banco: BancoDeTeste,
   providers: Provider[] = [],
+  poolMaximo = 5,
 ): Promise<INestApplicationContext> {
   process.env.BANCO_URL = urlDoAppPara(banco);
-  process.env.BANCO_POOL_MAXIMO = '5';
+  process.env.BANCO_POOL_MAXIMO = String(poolMaximo);
 
   @Module({ imports: [EventosModule, BancoModule], providers })
   class ModuloDeTeste {}

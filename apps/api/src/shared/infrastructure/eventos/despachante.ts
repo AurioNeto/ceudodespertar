@@ -1,15 +1,19 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import type { OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import type { EventoDeDominio } from '../../kernel/evento-de-dominio.js';
+import { ContextoDaRequisicao } from '../contexto-da-requisicao.js';
 import { UnidadeDeTrabalho } from '../banco/unidade-de-trabalho.js';
 import type { ContextoDaTransacao } from '../banco/unidade-de-trabalho.js';
 import { VARIAVEL_DE_SESSAO_DA_INSTITUICAO } from '../banco/unidade-de-trabalho.mikro-orm.js';
 import { calcularProximaTentativa } from './backoff.js';
+import { formatarUltimoErro } from './formatador-de-erro.js';
 import type { ConsumidorRegistrado } from './registro-de-consumidores.js';
 import { RegistroDeConsumidores } from './registro-de-consumidores.js';
 import { SinalizadorDeEventos } from './sinalizador-de-eventos.js';
 
 export const TETO_DE_TENTATIVAS = 10;
+export const TIMEOUT_DO_CONSUMIDOR_EM_MS = Symbol('TIMEOUT_DO_CONSUMIDOR_EM_MS');
+export const TIMEOUT_PADRAO_DO_CONSUMIDOR_EM_MS = 30_000;
 const TAMANHO_MAXIMO_DO_CICLO = 100;
 const INTERVALO_DE_POLLING_EM_MS = 1000;
 const SAVEPOINT_DO_CONSUMIDOR = 'evento_consumidor';
@@ -25,7 +29,8 @@ const CONSULTA_DO_PROXIMO_EVENTO = `
     and not exists (
       select 1
       from shared.outbox anterior
-      where anterior.agregado_id = o.agregado_id
+      where anterior.agregado_tipo = o.agregado_tipo
+        and anterior.agregado_id = o.agregado_id
         and anterior.id < o.id
         and anterior.publicado_em is null
     )
@@ -46,6 +51,19 @@ interface LinhaDoOutbox {
   readonly tentativas: number;
 }
 
+export function lerTimeoutDoConsumidorEmMs(ambiente: NodeJS.ProcessEnv = process.env): number {
+  const bruto = ambiente.TIMEOUT_DO_CONSUMIDOR_EM_MS;
+  const valor = bruto !== undefined ? Number(bruto) : Number.NaN;
+  return Number.isFinite(valor) && valor > 0 ? valor : TIMEOUT_PADRAO_DO_CONSUMIDOR_EM_MS;
+}
+
+export class ErroDeTimeoutDoConsumidor extends Error {
+  constructor(consumidor: string, timeoutEmMs: number) {
+    super(`consumidor "${consumidor}" não respondeu em ${timeoutEmMs}ms`);
+    this.name = 'ErroDeTimeoutDoConsumidor';
+  }
+}
+
 function paraEventoDeDominio(linha: LinhaDoOutbox): EventoDeDominio {
   return {
     eventoId: linha.eventoId,
@@ -63,6 +81,7 @@ function paraErro(motivo: unknown): Error {
 
 @Injectable()
 export class Despachante implements OnModuleInit, OnModuleDestroy {
+  private readonly logger = new Logger(Despachante.name);
   private temporizador: NodeJS.Timeout | undefined;
   private pararDeOuvirSinal: (() => void) | undefined;
   private cicloAtual: Promise<void> = Promise.resolve();
@@ -72,6 +91,7 @@ export class Despachante implements OnModuleInit, OnModuleDestroy {
     private readonly unidadeDeTrabalho: UnidadeDeTrabalho,
     private readonly registro: RegistroDeConsumidores,
     private readonly sinalizador: SinalizadorDeEventos,
+    @Inject(TIMEOUT_DO_CONSUMIDOR_EM_MS) private readonly timeoutDoConsumidorEmMs: number,
   ) {}
 
   onModuleInit(): void {
@@ -88,7 +108,16 @@ export class Despachante implements OnModuleInit, OnModuleDestroy {
     await this.cicloAtual;
   }
 
-  async executarCiclo(): Promise<void> {
+  executarCiclo(): Promise<void> {
+    const estaChamada = this.cicloAtual.then(
+      () => this.executarUmCiclo(),
+      () => this.executarUmCiclo(),
+    );
+    this.cicloAtual = estaChamada.catch(() => undefined);
+    return estaChamada;
+  }
+
+  private async executarUmCiclo(): Promise<void> {
     for (let processados = 0; processados < TAMANHO_MAXIMO_DO_CICLO; processados += 1) {
       if (this.encerrando) {
         return;
@@ -102,7 +131,9 @@ export class Despachante implements OnModuleInit, OnModuleDestroy {
   }
 
   private agendarCiclo(): void {
-    this.cicloAtual = this.cicloAtual.then(() => this.executarCiclo()).catch(() => undefined);
+    this.executarCiclo().catch((motivo: unknown) => {
+      this.logger.error('falha no ciclo do despachante', paraErro(motivo).stack);
+    });
   }
 
   private async processarProximoEvento(): Promise<boolean> {
@@ -114,7 +145,10 @@ export class Despachante implements OnModuleInit, OnModuleDestroy {
 
       await this.restabelecerContextoDaInstituicao(contexto, linha.instituicaoId);
       const evento = paraEventoDeDominio(linha);
-      const erro = await this.entregarAosConsumidores(contexto, evento);
+      const erro = await ContextoDaRequisicao.executar(
+        { correlacaoId: evento.eventoId, instituicaoId: linha.instituicaoId },
+        () => this.entregarAosConsumidores(contexto, evento, linha.tentativas),
+      );
       await this.registrarResultado(contexto, linha, erro);
 
       return true;
@@ -139,6 +173,7 @@ export class Despachante implements OnModuleInit, OnModuleDestroy {
   private async entregarAosConsumidores(
     contexto: ContextoDaTransacao,
     evento: EventoDeDominio,
+    tentativasAntesDesteCiclo: number,
   ): Promise<Error | undefined> {
     let primeiroErro: Error | undefined;
 
@@ -150,8 +185,12 @@ export class Despachante implements OnModuleInit, OnModuleDestroy {
 
       // eslint-disable-next-line no-await-in-loop -- consumidores da mesma conexão rodam um savepoint por vez
       const erro = await this.executarComSavepoint(contexto, consumidor, evento);
-      if (erro !== undefined && primeiroErro === undefined) {
-        primeiroErro = erro;
+      if (erro !== undefined) {
+        this.logger.warn(
+          `consumidor falhou: evento=${evento.eventoId} tipo=${evento.tipo} ` +
+            `consumidor=${consumidor.consumidor} tentativas=${tentativasAntesDesteCiclo + 1} motivo=${erro.message}`,
+        );
+        primeiroErro ??= erro;
       }
     }
 
@@ -167,7 +206,7 @@ export class Despachante implements OnModuleInit, OnModuleDestroy {
 
     try {
       await contexto.em.execute('set constraints all immediate');
-      await consumidor.reagir(evento);
+      await this.executarComTimeout(consumidor, evento);
       await this.marcarComoProcessado(contexto, consumidor.consumidor, evento.eventoId);
       await contexto.em.execute(`release savepoint ${SAVEPOINT_DO_CONSUMIDOR}`);
       return undefined;
@@ -175,6 +214,21 @@ export class Despachante implements OnModuleInit, OnModuleDestroy {
       await contexto.em.execute(`rollback to savepoint ${SAVEPOINT_DO_CONSUMIDOR}`);
       await contexto.em.execute(`release savepoint ${SAVEPOINT_DO_CONSUMIDOR}`);
       return paraErro(motivo);
+    }
+  }
+
+  private async executarComTimeout(consumidor: ConsumidorRegistrado, evento: EventoDeDominio): Promise<void> {
+    let temporizadorDoTimeout: NodeJS.Timeout;
+    const estouroDoTimeout = new Promise<never>((_resolver, rejeitar) => {
+      temporizadorDoTimeout = setTimeout(() => {
+        rejeitar(new ErroDeTimeoutDoConsumidor(consumidor.consumidor, this.timeoutDoConsumidorEmMs));
+      }, this.timeoutDoConsumidorEmMs);
+    });
+
+    try {
+      await Promise.race([consumidor.reagir(evento), estouroDoTimeout]);
+    } finally {
+      clearTimeout(temporizadorDoTimeout!);
     }
   }
 
@@ -214,9 +268,15 @@ export class Despachante implements OnModuleInit, OnModuleDestroy {
     const tentativas = linha.tentativas + 1;
     const proximaTentativaEm = calcularProximaTentativa(tentativas, new Date());
 
+    if (tentativas >= TETO_DE_TENTATIVAS) {
+      this.logger.error(
+        `evento esgotou o teto de tentativas: evento=${linha.eventoId} tipo=${linha.tipo} tentativas=${tentativas}`,
+      );
+    }
+
     await contexto.em.execute(
       'update shared.outbox set tentativas = ?, ultimo_erro = ?, proxima_tentativa_em = ? where id = ?',
-      [tentativas, erro.message, proximaTentativaEm, linha.id],
+      [tentativas, formatarUltimoErro(erro), proximaTentativaEm, linha.id],
     );
   }
 }

@@ -5,6 +5,7 @@ export type ModoDeTransacao = 'escrita' | 'leitura' | 'leitura-que-grava';
 export interface ContextoDaTransacao {
   readonly em: EntityManager;
   readonly kysely: Kysely<unknown>;
+  aoConfirmar(gancho: () => void): void;
 }
 
 export abstract class UnidadeDeTrabalho {
