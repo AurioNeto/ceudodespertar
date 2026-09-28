@@ -26,4 +26,11 @@ describe('calcularHashDoCorpo', () => {
   it('trata corpo ausente e corpo nulo como o mesmo hash', () => {
     expect(calcularHashDoCorpo(undefined)).toBe(calcularHashDoCorpo(null));
   });
+
+  it('não deixa __proto__ contaminar a canonicalização: hash muda com a chave', () => {
+    const corpoComPoluicao = JSON.parse('{"a":1,"__proto__":{"b":2}}') as unknown;
+    const corpoSemPoluicao = { a: 1 };
+
+    expect(calcularHashDoCorpo(corpoComPoluicao)).not.toBe(calcularHashDoCorpo(corpoSemPoluicao));
+  });
 });

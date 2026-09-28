@@ -1,28 +1,48 @@
 import { randomUUID } from 'node:crypto';
-import { HttpCode, HttpStatus, Post } from '@nestjs/common';
+import { HttpStatus } from '@nestjs/common';
 import type { CallHandler, ExecutionContext } from '@nestjs/common';
-import { Reflector } from '@nestjs/core';
-import { of } from 'rxjs';
+import { firstValueFrom, of } from 'rxjs';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { criarBancoDeTeste, derrubarBancoDeTeste } from '../integracao/banco-de-teste.js';
 import type { BancoDeTeste } from '../integracao/banco-de-teste.js';
 import { ContextoDaRequisicao } from '../../src/shared/infrastructure/contexto-da-requisicao.js';
 import { UnidadeDeTrabalho } from '../../src/shared/infrastructure/banco/unidade-de-trabalho.js';
-import { UnidadeDeTrabalhoMikroOrm } from '../../src/shared/infrastructure/banco/unidade-de-trabalho.mikro-orm.js';
+import {
+  ErroDeModoDeTransacaoIncompativel,
+  UnidadeDeTrabalhoMikroOrm,
+} from '../../src/shared/infrastructure/banco/unidade-de-trabalho.mikro-orm.js';
 import { IdempotenciaInterceptor } from '../../src/shared/infrastructure/idempotencia/idempotencia.interceptor.js';
+import { calcularHashDoCorpo } from '../../src/shared/infrastructure/idempotencia/hash-do-corpo.js';
 import { abrirOrmDeTeste } from '../unidade-de-trabalho/orm-de-teste.js';
 import type { OrmDeTeste } from '../unidade-de-trabalho/orm-de-teste.js';
 
 const INSTITUICAO_A = 'a0000000-0000-0000-0000-000000000000';
 const INSTITUICAO_B = 'b0000000-0000-0000-0000-000000000000';
 const USUARIO_A = randomUUID();
+const HASH_DO_CORPO_PADRAO = calcularHashDoCorpo({ valor: 10 });
 
 interface RequisicaoFake {
   readonly method: string;
   readonly path: string;
   readonly body: unknown;
-  readonly route?: { readonly path?: string };
   header(nome: string): string | undefined;
+}
+
+interface RespostaFake {
+  statusCode: number;
+  getHeader(nome: string): string | undefined;
+  setHeader(nome: string, valor: string): void;
+}
+
+function respostaFake(statusCodeInicial = HttpStatus.CREATED): RespostaFake {
+  const cabecalhos: Record<string, string> = {};
+  return {
+    statusCode: statusCodeInicial,
+    getHeader: (nome: string) => cabecalhos[nome],
+    setHeader: (nome: string, valor: string) => {
+      cabecalhos[nome] = valor;
+    },
+  };
 }
 
 function requisicaoFake(opcoes: {
@@ -38,28 +58,25 @@ function requisicaoFake(opcoes: {
     method: 'POST',
     path: opcoes.caminho ?? '/doacoes',
     body: opcoes.corpo ?? { valor: 10 },
-    route: { path: opcoes.caminho ?? '/doacoes' },
     header: (nome: string) => cabecalhos[nome.toLowerCase()],
   };
 }
 
-class ControladorComHttpCodeExplicito {
-  @Post()
-  @HttpCode(HttpStatus.OK)
-  criar(): void {}
-}
-
-function contextoDeExecucao(requisicao: RequisicaoFake, handler: () => void = function handler() {}): ExecutionContext {
+function contextoDeExecucao(requisicao: RequisicaoFake, resposta: RespostaFake = respostaFake()): ExecutionContext {
   return {
-    getHandler: () => handler,
+    getHandler: () => function handlerQualquer() {},
     getClass: () => class ControladorQualquer {},
-    switchToHttp: () => ({ getRequest: () => requisicao }),
+    switchToHttp: () => ({ getRequest: () => requisicao, getResponse: () => resposta }),
   } as unknown as ExecutionContext;
 }
 
-function comIdentidade<T>(instituicaoId: string, fn: () => Promise<T>): Promise<T> {
+function comIdentidade<T>(
+  instituicaoId: string,
+  fn: () => Promise<T>,
+  usuarioId: string | undefined = USUARIO_A,
+): Promise<T> {
   return ContextoDaRequisicao.executar(
-    { correlacaoId: randomUUID(), instituicaoId, usuarioId: USUARIO_A },
+    { correlacaoId: randomUUID(), instituicaoId, usuarioId },
     fn,
   );
 }
@@ -84,7 +101,7 @@ describe('IdempotenciaInterceptor · Idempotency-Key (Documento 7 §12)', () => 
     await semearInstituicoes(banco);
     orm = await abrirOrmDeTeste(banco, 5);
     unidade = new UnidadeDeTrabalhoMikroOrm(orm);
-    interceptor = new IdempotenciaInterceptor(new Reflector(), unidade);
+    interceptor = new IdempotenciaInterceptor(unidade);
   });
 
   afterEach(async () => {
@@ -92,22 +109,63 @@ describe('IdempotenciaInterceptor · Idempotency-Key (Documento 7 §12)', () => 
     await derrubarBancoDeTeste(banco);
   });
 
+  function executarInterceptor(
+    instituicaoId: string,
+    requisicao: RequisicaoFake,
+    callHandler: CallHandler,
+    resposta: RespostaFake = respostaFake(),
+    usuarioId: string | undefined = USUARIO_A,
+  ): Promise<unknown> {
+    return comIdentidade(
+      instituicaoId,
+      () =>
+        unidade.transacao('escrita', async () => {
+          const observavel = await interceptor.intercept(contextoDeExecucao(requisicao, resposta), callHandler);
+          return firstValueFrom(observavel);
+        }),
+      usuarioId,
+    );
+  }
+
   function executarComando(
     instituicaoId: string,
     requisicao: RequisicaoFake,
     executarHandler: () => unknown,
-    handlerMetodo?: () => void,
+    resposta: RespostaFake = respostaFake(),
   ): Promise<unknown> {
-    return comIdentidade(instituicaoId, () =>
-      unidade.transacao('escrita', async () => {
-        const observavel = await interceptor.intercept(
-          contextoDeExecucao(requisicao, handlerMetodo),
-          { handle: () => of(executarHandler()) } as CallHandler,
-        );
-        const { firstValueFrom } = await import('rxjs');
-        return firstValueFrom(observavel);
-      }),
+    return executarInterceptor(instituicaoId, requisicao, { handle: () => of(executarHandler()) }, resposta);
+  }
+
+  async function selecionarLinha(instituicaoId: string, chave: string): Promise<{
+    rota: string;
+    corpo_hash: string | null;
+    status_http: number;
+    usuario_id: string | null;
+    criada_em: Date;
+    resposta: { corpo: unknown; location: string | null };
+  }> {
+    const linhas = await comIdentidade(instituicaoId, () =>
+      unidade.transacao('leitura', ({ em }) =>
+        em.execute<
+          {
+            rota: string;
+            corpo_hash: string | null;
+            status_http: number;
+            usuario_id: string | null;
+            criada_em: Date;
+            resposta: { corpo: unknown; location: string | null };
+          }[]
+        >(
+          'select rota, corpo_hash, status_http, usuario_id, criada_em, resposta from shared.chave_de_idempotencia where instituicao_id = ? and chave = ?',
+          [instituicaoId, chave],
+        ),
+      ),
     );
+    const linha = linhas[0];
+    if (linha === undefined) {
+      throw new Error('linha esperada não encontrada em shared.chave_de_idempotencia');
+    }
+    return linha;
   }
 
   it('a mesma chave repetida devolve a mesma resposta sem reexecutar o comando', async () => {
@@ -156,12 +214,43 @@ describe('IdempotenciaInterceptor · Idempotency-Key (Documento 7 §12)', () => 
     });
   });
 
+  it('a mesma chave em dois recursos do mesmo padrão de rota dá 422 (usa o caminho concreto, não o padrão)', async () => {
+    const chave = randomUUID();
+    await executarComando(INSTITUICAO_A, requisicaoFake({ chave, caminho: '/g/1/membros' }), () => ({ ok: true }));
+
+    await expect(
+      executarComando(INSTITUICAO_A, requisicaoFake({ chave, caminho: '/g/2/membros' }), () => ({ ok: true })),
+    ).rejects.toMatchObject({
+      status: 422,
+      response: { erro: 'CHAVE_DE_IDEMPOTENCIA_REUTILIZADA' },
+    });
+  });
+
   it('a mesma chave com corpo diferente dá 422 CHAVE_DE_IDEMPOTENCIA_REUTILIZADA', async () => {
     const chave = randomUUID();
     await executarComando(INSTITUICAO_A, requisicaoFake({ chave, corpo: { valor: 10 } }), () => ({ ok: true }));
 
     await expect(
       executarComando(INSTITUICAO_A, requisicaoFake({ chave, corpo: { valor: 20 } }), () => ({ ok: true })),
+    ).rejects.toMatchObject({
+      status: 422,
+      response: { erro: 'CHAVE_DE_IDEMPOTENCIA_REUTILIZADA' },
+    });
+  });
+
+  it('outro usuário na mesma instituição com a mesma chave dá 422, não replay', async () => {
+    const chave = randomUUID();
+    const outroUsuario = randomUUID();
+    await executarComando(INSTITUICAO_A, requisicaoFake({ chave }), () => ({ ok: true }));
+
+    await expect(
+      executarInterceptor(
+        INSTITUICAO_A,
+        requisicaoFake({ chave }),
+        { handle: () => of({ ok: true }) },
+        respostaFake(),
+        outroUsuario,
+      ),
     ).rejects.toMatchObject({
       status: 422,
       response: { erro: 'CHAVE_DE_IDEMPOTENCIA_REUTILIZADA' },
@@ -200,24 +289,84 @@ describe('IdempotenciaInterceptor · Idempotency-Key (Documento 7 §12)', () => 
     expect(respostaDeA).not.toStrictEqual(respostaDeB);
   });
 
-  it('grava o status HTTP declarado por @HttpCode em vez do padrão de POST', async () => {
+  it('grava a resposta de uma chave sem afetar outra chave da mesma instituição', async () => {
+    const chaveX = randomUUID();
+    const chaveY = randomUUID();
+
+    await executarComando(INSTITUICAO_A, requisicaoFake({ chave: chaveX }), () => ({ quem: 'x' }));
+    await executarComando(INSTITUICAO_A, requisicaoFake({ chave: chaveY }), () => ({ quem: 'y' }));
+
+    const linhaX = await selecionarLinha(INSTITUICAO_A, chaveX);
+    const linhaY = await selecionarLinha(INSTITUICAO_A, chaveY);
+
+    expect(linhaX.resposta.corpo).toStrictEqual({ quem: 'x' });
+    expect(linhaY.resposta.corpo).toStrictEqual({ quem: 'y' });
+  });
+
+  it('grava o usuario_id de quem reivindicou a chave', async () => {
+    const chave = randomUUID();
+    await executarComando(INSTITUICAO_A, requisicaoFake({ chave }), () => ({ ok: true }));
+
+    const linha = await selecionarLinha(INSTITUICAO_A, chave);
+    expect(linha.usuario_id).toBe(USUARIO_A);
+  });
+
+  it('grava o status HTTP real observado no objeto de resposta', async () => {
     const chave = randomUUID();
     await executarComando(
       INSTITUICAO_A,
       requisicaoFake({ chave }),
       () => ({ ok: true }),
-      ControladorComHttpCodeExplicito.prototype.criar,
+      respostaFake(HttpStatus.OK),
     );
 
-    const linhas = await comIdentidade(INSTITUICAO_A, () =>
-      unidade.transacao('leitura', ({ em }) =>
-        em.execute<{ status_http: number }[]>(
-          'select status_http from shared.chave_de_idempotencia where chave = ?',
-          [chave],
-        ),
-      ),
+    const linha = await selecionarLinha(INSTITUICAO_A, chave);
+    expect(linha.status_http).toBe(HttpStatus.OK);
+  });
+
+  it('replay fiel: repete o cabeçalho Location gravado na primeira chamada', async () => {
+    const chave = randomUUID();
+    const respostaOriginal = respostaFake(HttpStatus.CREATED);
+    const respostaDoReplay = respostaFake(HttpStatus.CREATED);
+
+    const primeira = await executarInterceptor(
+      INSTITUICAO_A,
+      requisicaoFake({ chave }),
+      {
+        handle: () => {
+          respostaOriginal.setHeader('Location', '/doacoes/1');
+          return of({ id: '1' });
+        },
+      },
+      respostaOriginal,
     );
-    expect(linhas[0]?.status_http).toBe(HttpStatus.OK);
+
+    const segunda = await executarInterceptor(
+      INSTITUICAO_A,
+      requisicaoFake({ chave }),
+      { handle: () => of({ id: 'nao-deveria-rodar' }) },
+      respostaDoReplay,
+    );
+
+    expect(primeira).toStrictEqual({ id: '1' });
+    expect(segunda).toStrictEqual({ id: '1' });
+    expect(respostaDoReplay.getHeader('Location')).toBe('/doacoes/1');
+  });
+
+  it('borda em modo leitura mais idempotência (que pede escrita) dá ErroDeModoDeTransacaoIncompativel', async () => {
+    const chave = randomUUID();
+
+    await expect(
+      comIdentidade(INSTITUICAO_A, () =>
+        unidade.transacao('leitura', async () => {
+          const observavel = await interceptor.intercept(
+            contextoDeExecucao(requisicaoFake({ chave })),
+            { handle: () => of({ ok: true }) },
+          );
+          return firstValueFrom(observavel);
+        }),
+      ),
+    ).rejects.toThrow(ErroDeModoDeTransacaoIncompativel);
   });
 
   it('reclama uma chave vencida havia mais de 24h e roda o comando de novo', async () => {
@@ -227,7 +376,7 @@ describe('IdempotenciaInterceptor · Idempotency-Key (Documento 7 §12)', () => 
         em.execute(
           `insert into shared.chave_de_idempotencia
              (instituicao_id, chave, rota, corpo_hash, status_http, resposta, criada_em)
-           values (?, ?, '/doacoes', 'hash-antigo', 200, '{"velho":true}'::jsonb, now() - interval '25 hours')`,
+           values (?, ?, '/doacoes', 'hash-antigo', 200, '{"corpo":{"velho":true},"location":null}'::jsonb, now() - interval '25 hours')`,
           [INSTITUICAO_A, chave],
         ),
       ),
@@ -241,5 +390,115 @@ describe('IdempotenciaInterceptor · Idempotency-Key (Documento 7 §12)', () => 
 
     expect(chamadas).toBe(1);
     expect(resposta).toStrictEqual({ novo: true });
+  });
+
+  it('chave com menos de 24h (23h59m59s) ainda não vencida: repete a resposta gravada', async () => {
+    const chave = randomUUID();
+    await comIdentidade(INSTITUICAO_A, () =>
+      unidade.transacao('escrita', ({ em }) =>
+        em.execute(
+          `insert into shared.chave_de_idempotencia
+             (instituicao_id, chave, usuario_id, rota, corpo_hash, status_http, resposta, criada_em)
+           values (?, ?, ?, 'POST /doacoes', ?, 200, '{"corpo":{"velho":true},"location":null}'::jsonb,
+                   now() - interval '23 hours 59 minutes 59 seconds')`,
+          [INSTITUICAO_A, chave, USUARIO_A, HASH_DO_CORPO_PADRAO],
+        ),
+      ),
+    );
+
+    let chamadas = 0;
+    const resposta = await executarComando(INSTITUICAO_A, requisicaoFake({ chave }), () => {
+      chamadas += 1;
+      return { novo: true };
+    });
+
+    expect(chamadas).toBe(0);
+    expect(resposta).toStrictEqual({ velho: true });
+  });
+
+  it('chave vencida há pouco mais de 24h (24h e 1s) reclama e roda de novo', async () => {
+    const chave = randomUUID();
+    await comIdentidade(INSTITUICAO_A, () =>
+      unidade.transacao('escrita', ({ em }) =>
+        em.execute(
+          `insert into shared.chave_de_idempotencia
+             (instituicao_id, chave, rota, corpo_hash, status_http, resposta, criada_em)
+           values (?, ?, 'POST /doacoes', ?, 200, '{"corpo":{"velho":true},"location":null}'::jsonb,
+                   now() - interval '24 hours 1 second')`,
+          [INSTITUICAO_A, chave, HASH_DO_CORPO_PADRAO],
+        ),
+      ),
+    );
+
+    let chamadas = 0;
+    const resposta = await executarComando(INSTITUICAO_A, requisicaoFake({ chave }), () => {
+      chamadas += 1;
+      return { novo: true };
+    });
+
+    expect(chamadas).toBe(1);
+    expect(resposta).toStrictEqual({ novo: true });
+  });
+
+  it('reclamação concorrente da mesma chave vencida dá um efeito só', async () => {
+    const chave = randomUUID();
+    await comIdentidade(INSTITUICAO_A, () =>
+      unidade.transacao('escrita', ({ em }) =>
+        em.execute(
+          `insert into shared.chave_de_idempotencia
+             (instituicao_id, chave, rota, corpo_hash, status_http, resposta, criada_em)
+           values (?, ?, 'POST /doacoes', ?, 200, '{"corpo":{"velho":true},"location":null}'::jsonb, now() - interval '25 hours')`,
+          [INSTITUICAO_A, chave, HASH_DO_CORPO_PADRAO],
+        ),
+      ),
+    );
+
+    let chamadas = 0;
+    const executarHandlerLento = () => {
+      chamadas += 1;
+      const numeroDaChamada = chamadas;
+      return new Promise((resolver) => setTimeout(() => resolver({ numeroDaChamada }), 50));
+    };
+
+    const [primeira, segunda] = await Promise.all([
+      executarComando(INSTITUICAO_A, requisicaoFake({ chave }), executarHandlerLento),
+      executarComando(INSTITUICAO_A, requisicaoFake({ chave }), executarHandlerLento),
+    ]);
+
+    expect(chamadas).toBe(1);
+    expect(primeira).toStrictEqual(segunda);
+  });
+
+  it('depois de reclamar a chave vencida, uma terceira chamada repete a resposta nova (não a antiga)', async () => {
+    const chave = randomUUID();
+    await comIdentidade(INSTITUICAO_A, () =>
+      unidade.transacao('escrita', ({ em }) =>
+        em.execute(
+          `insert into shared.chave_de_idempotencia
+             (instituicao_id, chave, rota, corpo_hash, status_http, resposta, criada_em)
+           values (?, ?, 'POST /rota-velha', 'hash-velho', 200, '{"corpo":{"velho":true},"location":null}'::jsonb, now() - interval '25 hours')`,
+          [INSTITUICAO_A, chave],
+        ),
+      ),
+    );
+
+    let chamadas = 0;
+    const primeira = await executarComando(INSTITUICAO_A, requisicaoFake({ chave }), () => {
+      chamadas += 1;
+      return { novo: true };
+    });
+    const segunda = await executarComando(INSTITUICAO_A, requisicaoFake({ chave }), () => {
+      chamadas += 1;
+      return { deveria: 'nao rodar' };
+    });
+
+    const linha = await selecionarLinha(INSTITUICAO_A, chave);
+
+    expect(chamadas).toBe(1);
+    expect(primeira).toStrictEqual({ novo: true });
+    expect(segunda).toStrictEqual({ novo: true });
+    expect(linha.rota).toBe('POST /doacoes');
+    expect(linha.corpo_hash).not.toBe('hash-velho');
+    expect(Date.now() - new Date(linha.criada_em).getTime()).toBeLessThan(60_000);
   });
 });

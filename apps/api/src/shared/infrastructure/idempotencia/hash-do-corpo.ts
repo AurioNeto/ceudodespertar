@@ -11,7 +11,7 @@ function ordenarChavesRecursivamente(valor: unknown): unknown {
       .reduce<Record<string, unknown>>((acumulado, chave) => {
         acumulado[chave] = ordenarChavesRecursivamente(objeto[chave]);
         return acumulado;
-      }, {});
+      }, Object.create(null) as Record<string, unknown>);
   }
   return valor;
 }

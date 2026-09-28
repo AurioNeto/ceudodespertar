@@ -1,17 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import type { CallHandler, ExecutionContext } from '@nestjs/common';
-import { Reflector } from '@nestjs/core';
 import { of } from 'rxjs';
 import { ContextoDaRequisicao } from '../contexto-da-requisicao.js';
 import { UnidadeDeTrabalho } from '../banco/unidade-de-trabalho.js';
 import type { ContextoDaTransacao, ModoDeTransacao } from '../banco/unidade-de-trabalho.js';
 import { IdempotenciaInterceptor } from './idempotencia.interceptor.js';
+import { ErroDeConfiguracaoDeIdempotencia } from './erro-de-configuracao-de-idempotencia.js';
 
 interface RequisicaoFake {
   readonly method: string;
   readonly path: string;
   readonly body: unknown;
-  readonly route?: { readonly path?: string };
   header(nome: string): string | undefined;
 }
 
@@ -30,7 +29,6 @@ function requisicaoFake(opcoes: { metodo?: string; chave?: string }): Requisicao
     method: opcoes.metodo ?? 'POST',
     path: '/doacoes',
     body: {},
-    route: { path: '/doacoes' },
     header: (nome: string) => cabecalhos[nome.toLowerCase()],
   };
 }
@@ -45,7 +43,7 @@ function contextoDeExecucao(requisicao: RequisicaoFake): ExecutionContext {
 
 describe('IdempotenciaInterceptor · casos em que a idempotência não se aplica', () => {
   it('passa direto quando não há cabeçalho Idempotency-Key', async () => {
-    const interceptor = new IdempotenciaInterceptor(new Reflector(), new UnidadeDeTrabalhoQueNuncaDeveSerChamada());
+    const interceptor = new IdempotenciaInterceptor(new UnidadeDeTrabalhoQueNuncaDeveSerChamada());
     const proximo: CallHandler = { handle: () => of('resposta') };
 
     const observavel = await ContextoDaRequisicao.executar(
@@ -57,27 +55,58 @@ describe('IdempotenciaInterceptor · casos em que a idempotência não se aplica
   });
 
   it('passa direto quando o método não é POST', async () => {
-    const interceptor = new IdempotenciaInterceptor(new Reflector(), new UnidadeDeTrabalhoQueNuncaDeveSerChamada());
+    const interceptor = new IdempotenciaInterceptor(new UnidadeDeTrabalhoQueNuncaDeveSerChamada());
     const proximo: CallHandler = { handle: () => of('resposta') };
 
     await ContextoDaRequisicao.executar({ correlacaoId: 'c1', instituicaoId: 'inst-a' }, () =>
       interceptor.intercept(contextoDeExecucao(requisicaoFake({ metodo: 'GET', chave: 'k1' })), proximo),
     );
   });
+});
 
-  it('passa direto quando não há instituição no contexto da requisição', async () => {
-    const interceptor = new IdempotenciaInterceptor(new Reflector(), new UnidadeDeTrabalhoQueNuncaDeveSerChamada());
+describe('IdempotenciaInterceptor · falha fechada quando a borda não rodou antes', () => {
+  it('lança erro de configuração quando não há instituição no contexto da requisição', async () => {
+    const interceptor = new IdempotenciaInterceptor(new UnidadeDeTrabalhoQueNuncaDeveSerChamada());
     const proximo: CallHandler = { handle: () => of('resposta') };
 
-    await ContextoDaRequisicao.executar({ correlacaoId: 'c1' }, () =>
-      interceptor.intercept(contextoDeExecucao(requisicaoFake({ chave: 'k1' })), proximo),
-    );
+    await expect(
+      ContextoDaRequisicao.executar({ correlacaoId: 'c1' }, () =>
+        interceptor.intercept(contextoDeExecucao(requisicaoFake({ chave: 'k1' })), proximo),
+      ),
+    ).rejects.toThrow(ErroDeConfiguracaoDeIdempotencia);
   });
 
-  it('passa direto quando não há ContextoDaRequisicao nenhum', async () => {
-    const interceptor = new IdempotenciaInterceptor(new Reflector(), new UnidadeDeTrabalhoQueNuncaDeveSerChamada());
+  it('lança erro de configuração quando não há ContextoDaRequisicao nenhum', async () => {
+    const interceptor = new IdempotenciaInterceptor(new UnidadeDeTrabalhoQueNuncaDeveSerChamada());
     const proximo: CallHandler = { handle: () => of('resposta') };
 
-    await interceptor.intercept(contextoDeExecucao(requisicaoFake({ chave: 'k1' })), proximo);
+    await expect(
+      interceptor.intercept(contextoDeExecucao(requisicaoFake({ chave: 'k1' })), proximo),
+    ).rejects.toThrow(ErroDeConfiguracaoDeIdempotencia);
+  });
+});
+
+describe('IdempotenciaInterceptor · validação do cabeçalho', () => {
+  it('rejeita chave vazia com 400', async () => {
+    const interceptor = new IdempotenciaInterceptor(new UnidadeDeTrabalhoQueNuncaDeveSerChamada());
+    const proximo: CallHandler = { handle: () => of('resposta') };
+
+    await expect(
+      ContextoDaRequisicao.executar({ correlacaoId: 'c1', instituicaoId: 'inst-a' }, () =>
+        interceptor.intercept(contextoDeExecucao(requisicaoFake({ chave: '' })), proximo),
+      ),
+    ).rejects.toMatchObject({ status: 400, response: { erro: 'CORPO_INVALIDO' } });
+  });
+
+  it('rejeita chave com 9000 caracteres com 400', async () => {
+    const interceptor = new IdempotenciaInterceptor(new UnidadeDeTrabalhoQueNuncaDeveSerChamada());
+    const proximo: CallHandler = { handle: () => of('resposta') };
+    const chaveGigante = 'k'.repeat(9000);
+
+    await expect(
+      ContextoDaRequisicao.executar({ correlacaoId: 'c1', instituicaoId: 'inst-a' }, () =>
+        interceptor.intercept(contextoDeExecucao(requisicaoFake({ chave: chaveGigante })), proximo),
+      ),
+    ).rejects.toMatchObject({ status: 400, response: { erro: 'CORPO_INVALIDO' } });
   });
 });
