@@ -1,7 +1,6 @@
 -- Helpers da verificação de garantias (Documento 7 §15/§22, §26), copiados de
--- docs/sql/cdd-07-verificacao.sql (branch feat/b0-f08-resolvedor-identidade) e
--- adaptados para instalar no schema `verif` de um banco de teste, e não no
--- esquema de referência congelado.
+-- docs/sql/cdd-07-verificacao.sql (PR #8) e adaptados para instalar no schema
+-- `verif` de um banco de teste, e não no esquema de referência congelado.
 
 SET client_min_messages = notice;
 
@@ -43,7 +42,7 @@ BEGIN
   RAISE NOTICE 'OK    %', p_nome;
 END $$;
 
--- Privilégios EXATOS (Documento 7 §15, item f do plano da F10): não usa
+-- Privilégios EXATOS (Documento 7 §15): não usa
 -- information_schema.role_table_grants (só mostra o que o papel corrente
 -- concedeu ou de que é membro) — has_table_privilege/has_sequence_privilege
 -- avalia a ACL de verdade, então qualquer GRANT a mais ou a menos aparece.

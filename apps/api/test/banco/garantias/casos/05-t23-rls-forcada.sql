@@ -58,8 +58,8 @@ SELECT verif.confere('T23 · toda tabela-alvo tem WITH CHECK da política isolam
 
 -- Nenhuma tabela-alvo tem política a mais que abra uma fresta — em
 -- identidade.usuario, a única exceção documentada é resolucao_do_sujeito
--- (F08: o resolvedor de identidade lê antes de haver instituição no
--- contexto).
+-- (Documento 7 §7.1/§8: o resolvedor de identidade lê antes de haver
+-- instituição no contexto).
 SELECT verif.confere('T23 · nenhuma tabela-alvo tem política além da esperada (isolamento_por_instituicao; em usuario, também resolucao_do_sujeito)',
   (SELECT count(*) FROM verif.tabelas_com_instituicao_id() t
     WHERE EXISTS (

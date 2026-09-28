@@ -1,5 +1,5 @@
 -- verificacoes: 14
--- B0 · resolvedor do sujeito autenticado (Documento 7 §7.1, §8, F08):
+-- B0 · resolvedor do sujeito autenticado (Documento 7 §7.1, §8):
 -- identidade.resolver_sujeito(subject_id) resolve o `sub` do Keycloak sem
 -- instituição no contexto ainda, e só isso.
 
