@@ -1,4 +1,4 @@
--- verificacoes: 10
+-- verificacoes: 11
 -- T23 (Doc 3 §11.4, Documento 7 §15/§22): toda tabela com `instituicao_id`
 -- em `shared` e `identidade` tem RLS habilitada e FORÇADA, e a política
 -- `isolamento_por_instituicao` com a expressão certa — exceto `shared.outbox`,
@@ -68,6 +68,19 @@ SELECT verif.confere('T23 · nenhuma tabela-alvo tem política além da esperada
          AND p.polname <> 'isolamento_por_instituicao'
          AND NOT (t.nspname = 'identidade' AND t.relname = 'usuario' AND p.polname = 'resolucao_do_sujeito')
     )), 0::bigint);
+
+-- A exceção anterior só confere o NOME da política — recriar
+-- resolucao_do_sujeito com um papel a mais (ex.: cdd_owner) continua
+-- casando pelo nome e passaria batido, abrindo identidade.usuario para quem
+-- não devia ler sem contexto. Conferência à parte, pela definição exata.
+SELECT verif.confere('T23 · resolucao_do_sujeito é exatamente FOR SELECT TO cdd_resolvedor_identidade USING (true) — sem papel, comando ou expressão a mais',
+  (SELECT p.polroles = ARRAY['cdd_resolvedor_identidade'::regrole]::oid[]
+      AND p.polcmd = 'r'
+      AND p.polpermissive
+      AND pg_get_expr(p.polqual, p.polrelid) = 'true'
+     FROM pg_policy p
+    WHERE p.polrelid = 'identidade.usuario'::regclass AND p.polname = 'resolucao_do_sujeito'),
+  true);
 
 -- Idempotência da varredura (Documento 7 §22): uma segunda chamada, sobre o
 -- esquema inteiro, não falha, não duplica a política e não pega
