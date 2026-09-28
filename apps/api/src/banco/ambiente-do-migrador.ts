@@ -46,7 +46,7 @@ export class ErroDeAmbienteDoMigradorInvalido extends Error {
 function variaveisMikroOrmNoAmbiente(bruto: NodeJS.ProcessEnv): string[] {
   return Object.keys(bruto)
     .filter((chave) => chave.startsWith(PREFIXO_VARIAVEL_MIKRO_ORM) && bruto[chave] !== undefined)
-    .sort();
+    .toSorted();
 }
 
 export function analisarAmbienteDoMigrador(bruto: NodeJS.ProcessEnv): AmbienteDoMigrador {

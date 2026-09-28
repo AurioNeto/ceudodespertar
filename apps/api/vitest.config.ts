@@ -12,7 +12,7 @@ export default defineConfig({
   },
   test: {
     setupFiles: ['reflect-metadata'],
-    include: ['src/**/*.spec.ts', 'test/**/*.spec.ts'],
+    include: ['src/**/*.spec.ts', 'test/**/*.spec.ts', 'test/**/*.test.ts'],
     coverage: {
       provider: 'v8',
       include: ['src/**/*.ts'],
