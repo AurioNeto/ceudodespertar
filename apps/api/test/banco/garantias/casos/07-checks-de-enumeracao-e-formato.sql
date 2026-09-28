@@ -1,4 +1,4 @@
--- verificacoes: 8
+-- verificacoes: 9
 -- B0 · CHECKs de enumeração e de formato (Documento 7 §15): valor fora da
 -- lista declarada não entra — identidade.usuario.situacao,
 -- identidade.registro_de_auditoria.autor_tipo e .operacao — e o formato de
@@ -29,6 +29,16 @@ SELECT verif.espera_erro('registro_de_auditoria.operacao · valor fora da lista'
   INSERT INTO identidade.registro_de_auditoria (instituicao_id, autor_tipo, autor_grupos, operacao, agregado_tipo, agregado_id)
     VALUES ('a0000000-0000-0000-0000-000000000000', 'SISTEMA', ARRAY[]::text[], 'OPERACAO_INEXISTENTE', 'PeriodoContabil', gen_random_uuid())
 $$, '23514');
+
+-- T29 · a aplicação não inventa permissão: grupo_permissao.permissao só
+-- aceita um código presente no catálogo (FK a identidade.permissao).
+INSERT INTO identidade.grupo (id, instituicao_id, nome)
+  VALUES ('07000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000000', 'Grupo do teste de catálogo');
+
+SELECT verif.espera_erro('grupo_permissao.permissao · código inventado, fora do catálogo, não entra', $$
+  INSERT INTO identidade.grupo_permissao (instituicao_id, grupo_id, permissao)
+    VALUES ('a0000000-0000-0000-0000-000000000000', '07000000-0000-0000-0000-000000000001', 'inventada.qualquer.coisa')
+$$, 'grupo_permissao_permissao_fkey|violates foreign key constraint');
 
 RESET ROLE;
 
