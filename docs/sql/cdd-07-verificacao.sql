@@ -1,13 +1,18 @@
 -- =============================================================================
--- CDD — verificação do esquema de referência (Documento 7 §15)
+-- CDD — verificação do esquema de referência (Documento 7) — DOCUMENTAÇÃO
+--
+-- Este arquivo verifica o desenho aprovado em set/2026 contra Postgres real.
+-- NÃO substitui a suíte de garantias em CI (`apps/api/test/banco/garantias/`,
+-- Documento 7 §26): aquela testa o banco migrado, este é referência congelada.
 --
 -- Uso, num banco vazio:
 --   psql -v ON_ERROR_STOP=1 -f cdd-07-esquema.sql -f cdd-07-verificacao.sql
 --
 -- Tudo roda como `cdd_app`, o papel da aplicação — superusuário ignora RLS e
 -- tornaria metade destes testes inúteis. Cada caso imprime OK ou aborta.
--- Não substitui a suíte de integração (Testcontainers): prova que as guardas
--- de banco que o documento promete existem e fazem o que ele diz.
+--
+-- Ver issue #11 e Documento 7 §22 e anexo: migrations como fonte, esta
+-- documentação como referência do desenho aprovado.
 -- =============================================================================
 
 \set QUIET on
@@ -89,6 +94,154 @@ $$, 'REGISTRO_IMUTAVEL');
 SELECT verif.confere('link público · o dono do resolvedor não é superusuário nem ignora RLS',
   (SELECT r.rolsuper OR r.rolbypassrls FROM pg_proc p JOIN pg_roles r ON r.oid = p.proowner
     WHERE p.oid = 'eventos.resolver_link(text)'::regprocedure), false);
+
+-- F08 · mesmo raciocínio para o resolvedor do sujeito autenticado (§7.1, §8):
+-- o `sub` chega sem instituição, e o dono da função não pode depender de ser
+-- superusuário nem de ignorar RLS para funcionar em produção.
+SELECT verif.confere('resolvedor de identidade · o dono do resolvedor não é superusuário nem ignora RLS',
+  (SELECT r.rolsuper OR r.rolbypassrls FROM pg_proc p JOIN pg_roles r ON r.oid = p.proowner
+    WHERE p.oid = 'identidade.resolver_sujeito(text)'::regprocedure), false);
+
+-- Checagem de catálogo, não comportamental: `SET ROLE` é liberado para
+-- qualquer papel quando o `session_user` é superusuário, mesmo depois de um
+-- `SET ROLE cdd_app` — testar com um `SET ROLE cdd_resolvedor_identidade`
+-- daria falso negativo justamente na rodada que este arquivo roda como
+-- superusuário. O que importa é que ninguém concedeu a `cdd_app` a
+-- pertinência a nenhum dos dois papéis de resolvedor — nem direto, nem por
+-- uma ponte (`GRANT cdd_resolvedor_x TO ponte WITH INHERIT FALSE; GRANT
+-- ponte TO cdd_app`), que passaria batido por uma junção direta em
+-- `pg_auth_members`. `pg_has_role(..., 'MEMBER')` segue a cadeia inteira de
+-- pertinência, com ou sem INHERIT em cada elo — é o que decide se `SET
+-- ROLE` chegaria lá.
+SELECT verif.confere('resolvedores · cdd_app não é membro de nenhum dos dois papéis de resolvedor, nem por ponte',
+  (SELECT count(*) FROM unnest(ARRAY['cdd_resolvedor_link', 'cdd_resolvedor_identidade']) papel
+    WHERE pg_has_role('cdd_app', papel, 'MEMBER')),
+  0::bigint);
+
+-- Fato de catálogo, vale nas duas rodadas (superusuário e dono comum): quem
+-- roda a migration precisa poder assumir os dois resolvedores (§8), mas só
+-- por SET, nunca por INHERIT — com INHERIT, o dono passaria a herdar a
+-- política `USING (true)` do resolvedor e leria sem contexto as linhas de
+-- todas as instituições. Diferente do teste acima, este não depende de quem
+-- está rodando o script: é o `GRANT ... TO cdd_owner` de produção que erra
+-- ou acerta, não a sessão do arquivo.
+SELECT verif.confere('resolvedores · ninguém herda a política deles (só SET, nunca INHERIT)',
+  (SELECT count(*) FROM pg_auth_members
+    WHERE roleid IN ('cdd_resolvedor_link'::regrole, 'cdd_resolvedor_identidade'::regrole)
+      AND inherit_option),
+  0::bigint);
+
+-- As quatro defesas do molde SECURITY DEFINER (§8) fixadas por caso, para os
+-- dois resolvedores — sem isso, um mutante que tirasse qualquer uma delas
+-- passaria despercebido pelos testes acima, que só olham papel e política.
+SELECT verif.confere('resolvedor de identidade · roda com search_path fixo (sem sequestro por schema hostil)',
+  (SELECT proconfig FROM pg_proc WHERE oid = 'identidade.resolver_sujeito(text)'::regprocedure),
+  ARRAY['search_path=pg_catalog']);
+SELECT verif.confere('resolvedor de identidade · função sem EXECUTE para PUBLIC',
+  has_function_privilege('public', 'identidade.resolver_sujeito(text)', 'EXECUTE'), false);
+SELECT verif.confere('resolvedor de identidade · só lê as três colunas liberadas de identidade.usuario',
+  (SELECT count(*) FROM pg_attribute a
+    WHERE a.attrelid = 'identidade.usuario'::regclass
+      AND a.attnum > 0 AND NOT a.attisdropped
+      AND a.attname NOT IN ('id', 'instituicao_id', 'subject_id')
+      AND has_column_privilege('cdd_resolvedor_identidade', 'identidade.usuario', a.attname, 'SELECT')),
+  0::bigint);
+
+SELECT verif.confere('resolvedor do link · roda com search_path fixo (sem sequestro por schema hostil)',
+  (SELECT proconfig FROM pg_proc WHERE oid = 'eventos.resolver_link(text)'::regprocedure),
+  ARRAY['search_path=pg_catalog']);
+SELECT verif.confere('resolvedor do link · função sem EXECUTE para PUBLIC',
+  has_function_privilege('public', 'eventos.resolver_link(text)', 'EXECUTE'), false);
+SELECT verif.confere('resolvedor do link · só lê as quatro colunas liberadas de eventos.link_de_inscricao',
+  (SELECT count(*) FROM pg_attribute a
+    WHERE a.attrelid = 'eventos.link_de_inscricao'::regclass
+      AND a.attnum > 0 AND NOT a.attisdropped
+      AND a.attname NOT IN ('token', 'revogado_em', 'instituicao_id', 'evento_id')
+      AND has_column_privilege('cdd_resolvedor_link', 'eventos.link_de_inscricao', a.attname, 'SELECT')),
+  0::bigint);
+
+-- F07 · as duas funções que toda migration chama (Documento 7 §22) são
+-- idempotentes: uma etapa que repete a chamada sobre o esquema inteiro não
+-- falha nem duplica o que a etapa anterior já tinha feito.
+BEGIN;
+-- `pg_policy_polrelid_polname_index` é único: uma segunda chamada que
+-- tentasse criar a política de novo não duplicaria nada, abortaria com
+-- ERROR cru. É a própria chamada não falhar que prova a idempotência.
+SELECT verif.espera_ok('varredura de RLS é idempotente · segunda chamada não falha',
+  'SELECT shared.aplicar_isolamento_por_instituicao()');
+-- Chamada sem nada para varrer (a primeira, dentro do próprio esquema, já
+-- passou por tudo): não pode pegar ACCESS EXCLUSIVE em tabela nenhuma, senão
+-- uma migration de etapa posterior trava o esquema inteiro à toa (§22).
+SELECT verif.confere('varredura de RLS é idempotente · segunda chamada sem nada a mudar não pega ACCESS EXCLUSIVE',
+  (SELECT count(*) FROM pg_locks WHERE pid = pg_backend_pid() AND locktype = 'relation' AND mode = 'AccessExclusiveLock'),
+  0::bigint);
+COMMIT;
+SELECT verif.confere('T23 · continua com RLS forçada depois da segunda varredura',
+  (SELECT count(*) FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
+    WHERE c.relkind = 'r'
+      AND n.nspname IN ('shared','identidade','pessoas','financeiro','eventos','estoque')
+      AND EXISTS (SELECT 1 FROM pg_attribute a WHERE a.attrelid = c.oid AND a.attname = 'instituicao_id')
+      AND NOT (c.relrowsecurity AND c.relforcerowsecurity)
+      AND (n.nspname, c.relname) <> ('shared','outbox')), 0::bigint);
+
+-- A varredura precisa pegar a tabela que só existe a partir da etapa
+-- seguinte, não só repetir sem falhar sobre o que já viu — senão uma
+-- varredura que sai cedo ao encontrar QUALQUER política já criada (em vez de
+-- checar tabela a tabela) passaria despercebida pelos casos acima.
+BEGIN;
+CREATE TABLE pessoas.tabela_da_etapa_seguinte (
+  id             uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  instituicao_id uuid NOT NULL
+);
+SELECT shared.aplicar_isolamento_por_instituicao();
+SELECT verif.confere('varredura de RLS alcança tabela criada entre etapas · RLS forçada',
+  (SELECT c.relrowsecurity AND c.relforcerowsecurity FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
+    WHERE n.nspname = 'pessoas' AND c.relname = 'tabela_da_etapa_seguinte'), true);
+SELECT verif.confere('varredura de RLS alcança tabela criada entre etapas · política criada',
+  (SELECT count(*) FROM pg_policy p JOIN pg_class c ON c.oid = p.polrelid JOIN pg_namespace n ON n.oid = c.relnamespace
+    WHERE n.nspname = 'pessoas' AND c.relname = 'tabela_da_etapa_seguinte' AND p.polname = 'isolamento_por_instituicao'),
+  1::bigint);
+ROLLBACK;
+
+-- `pg_trigger_tgrelid_tgname_index` é único: uma segunda chamada que
+-- tentasse recriar o gatilho não duplicaria nada, abortaria com ERROR cru.
+-- É a própria chamada não falhar que prova a idempotência (mesma lista da
+-- primeira chamada, em cdd-07-esquema.sql).
+SELECT verif.espera_ok('bloqueio de TRUNCATE é idempotente · segunda chamada não falha', $$
+  SELECT shared.proibir_truncate(ARRAY['financeiro.lancamento', 'financeiro.lancamento_categoria', 'financeiro.transferencia',
+                                       'financeiro.periodo_contabil', 'financeiro.reabertura_de_periodo',
+                                       'financeiro.prestacao_de_contas', 'identidade.registro_de_auditoria',
+                                       'pessoas.registro_de_acesso', 'estoque.movimento_de_estoque', 'estoque.feitio']::regclass[])
+$$);
+SELECT verif.confere('bloqueio de TRUNCATE · as dez tabelas guardadas têm o gatilho sem_truncate',
+  (SELECT count(*) FROM pg_trigger WHERE tgname = 'sem_truncate'), 10::bigint);
+
+-- Mesmo raciocínio para o gatilho: uma lista que inclua uma tabela nova
+-- (sem sem_truncate ainda) tem que recebê-lo, não só deixar as antigas como
+-- estavam — senão uma função que sai cedo ao ver QUALQUER sem_truncate no
+-- catálogo passaria despercebida.
+BEGIN;
+CREATE TABLE pessoas.tabela_da_proxima_etapa (id uuid PRIMARY KEY DEFAULT gen_random_uuid());
+SELECT shared.proibir_truncate(ARRAY['pessoas.tabela_da_proxima_etapa']::regclass[]);
+SELECT verif.confere('bloqueio de TRUNCATE alcança tabela criada entre etapas · gatilho criado',
+  (SELECT count(*) FROM pg_trigger WHERE tgrelid = 'pessoas.tabela_da_proxima_etapa'::regclass AND tgname = 'sem_truncate'),
+  1::bigint);
+ROLLBACK;
+
+-- Um gatilho sem_truncate desabilitado à mão (script de suporte, migration
+-- de emergência) precisa ser religado pela próxima chamada — senão a tabela
+-- fica sem a guarda até alguém notar, e a função julga (pelo IF NOT EXISTS)
+-- que ela já está protegida.
+BEGIN;
+ALTER TABLE financeiro.lancamento DISABLE TRIGGER sem_truncate;
+ALTER TABLE financeiro.transferencia ENABLE REPLICA TRIGGER sem_truncate;
+SELECT shared.proibir_truncate(ARRAY['financeiro.lancamento', 'financeiro.transferencia']::regclass[]);
+SELECT verif.confere('bloqueio de TRUNCATE religa o gatilho desabilitado ou restrito à réplica',
+  (SELECT string_agg(tgenabled::text, ',' ORDER BY tgrelid::regclass::text) FROM pg_trigger
+    WHERE tgrelid IN ('financeiro.lancamento'::regclass, 'financeiro.transferencia'::regclass)
+      AND tgname = 'sem_truncate'),
+  'O,O');
+ROLLBACK;
 
 -- -----------------------------------------------------------------------------
 -- Daqui em diante, como a aplicação
@@ -423,7 +576,7 @@ SELECT verif.espera_erro('P2 · gravar na competência fora de READ COMMITTED é
                                      data_competencia, registrado_por)
     VALUES ('a0000000-0000-0000-0000-000000000000', 'A_CONFERIR', 'MANUAL', 'DESPESA', 300, 'x',
             'a1000000-0000-0000-0000-000000000001', '2026-10-01', '2026-10-06', gen_random_uuid())
-$$, 'READ COMMITTED');
+$$, '^ISOLAMENTO_INVALIDO: .*READ COMMITTED');
 ROLLBACK;
 SELECT verif.espera_ok('P2 · gravar na competência toma a trava do período, compartilhada', $$
   INSERT INTO financeiro.lancamento (instituicao_id, status, origem, natureza, valor, motivo, unidade_id, competencia,
@@ -629,6 +782,94 @@ SELECT verif.espera_erro('§23 · o cabeçalho da resposta lida não se apaga: o
 $$, 'registro_de_acesso_instituicao_id_resposta_id_fkey');
 
 -- -----------------------------------------------------------------------------
+-- Identidade
+-- -----------------------------------------------------------------------------
+
+INSERT INTO identidade.usuario (id, instituicao_id, subject_id, pessoa_id, nome, email, situacao, ativado_em)
+  VALUES ('a9000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000000',
+          'kc-sub-aline', 'a5000000-0000-0000-0000-000000000001', 'Aline', 'aline@example.org', 'ATIVO', now());
+
+SELECT verif.espera_erro('US2 · a mesma pessoa não tem um segundo usuário na casa', $$
+  INSERT INTO identidade.usuario (instituicao_id, subject_id, pessoa_id, nome, email, situacao, ativado_em)
+    VALUES ('a0000000-0000-0000-0000-000000000000', 'kc-sub-aline-2', 'a5000000-0000-0000-0000-000000000001',
+            'Aline (de novo)', 'aline2@example.org', 'ATIVO', now())
+$$, 'usuario_pessoa_unica');
+
+-- `subject_id` é UNIQUE global (não por instituição, §7.1): é isso que torna
+-- `identidade.resolver_sujeito` seguro devolvendo uma linha só — sem essa
+-- unicidade, o mesmo `sub` do Keycloak em duas casas confundiria em qual
+-- instituição montar o contexto (§7.1, §8).
+SELECT set_config('app.instituicao_id', 'b0000000-0000-0000-0000-000000000000', false);
+SELECT verif.espera_erro('identidade.usuario · o mesmo sub não existe em duas casas', $$
+  INSERT INTO identidade.usuario (instituicao_id, subject_id, nome, email, situacao, ativado_em)
+    VALUES ('b0000000-0000-0000-0000-000000000000', 'kc-sub-aline', 'Sombra de Aline', 'sombra@example.org', 'ATIVO', now())
+$$, 'usuario_subject_id_key');
+SELECT set_config('app.instituicao_id', 'a0000000-0000-0000-0000-000000000000', false);
+
+INSERT INTO identidade.usuario (id, instituicao_id, nome, email, situacao)
+  VALUES ('a9000000-0000-0000-0000-000000000002', 'a0000000-0000-0000-0000-000000000000',
+          'Eduardo', 'eduardo@example.org', 'CONVITE_PENDENTE');
+INSERT INTO identidade.convite (instituicao_id, usuario_id, token_sha256, expira_em, criado_por)
+  VALUES ('a0000000-0000-0000-0000-000000000000', 'a9000000-0000-0000-0000-000000000002',
+          sha256('convite-eduardo-1'), now() + interval '72 hours', gen_random_uuid());
+
+SELECT verif.espera_erro('convite · não há dois convites vigentes para o mesmo usuário', $$
+  INSERT INTO identidade.convite (instituicao_id, usuario_id, token_sha256, expira_em, criado_por)
+    VALUES ('a0000000-0000-0000-0000-000000000000', 'a9000000-0000-0000-0000-000000000002',
+            sha256('convite-eduardo-2'), now() + interval '72 hours', gen_random_uuid())
+$$, 'convite_vigente_unico');
+
+SELECT verif.espera_erro('convite · usado e revogado ao mesmo tempo é recusado', $$
+  UPDATE identidade.convite SET usado_em = now(), revogado_em = now()
+   WHERE usuario_id = 'a9000000-0000-0000-0000-000000000002'
+$$, 'convite_nao_usado_e_revogado');
+
+-- O índice único parcial precisa das DUAS colunas no predicado, não só uma:
+-- é o `revogado_em` que existe para permitir o reenvio (motivo de a coluna
+-- existir), e é o `usado_em` que continua fechando a vaga de quem já entrou.
+-- Um índice que só olhasse `usado_em IS NULL` prenderia o convite revogado na
+-- vaga; um que só olhasse `revogado_em IS NULL` prenderia o convite usado.
+SELECT verif.espera_ok('convite · revogado o convite, o reenvio entra', $$
+  UPDATE identidade.convite SET revogado_em = now()
+   WHERE usuario_id = 'a9000000-0000-0000-0000-000000000002' AND usado_em IS NULL AND revogado_em IS NULL;
+  INSERT INTO identidade.convite (instituicao_id, usuario_id, token_sha256, expira_em, criado_por)
+    VALUES ('a0000000-0000-0000-0000-000000000000', 'a9000000-0000-0000-0000-000000000002',
+            sha256('convite-eduardo-3'), now() + interval '72 hours', gen_random_uuid())
+$$);
+SELECT verif.espera_ok('convite · usado o convite, um novo reenvio também entra', $$
+  UPDATE identidade.convite SET usado_em = now()
+   WHERE usuario_id = 'a9000000-0000-0000-0000-000000000002' AND usado_em IS NULL AND revogado_em IS NULL;
+  INSERT INTO identidade.convite (instituicao_id, usuario_id, token_sha256, expira_em, criado_por)
+    VALUES ('a0000000-0000-0000-0000-000000000000', 'a9000000-0000-0000-0000-000000000002',
+            sha256('convite-eduardo-4'), now() + interval '72 hours', gen_random_uuid())
+$$);
+
+-- Resolvedor de identidade (§7.1, §8): mesmo raciocínio do link público, mas
+-- para o `sub` de quem já é da equipe.
+-- `RETURNS TABLE` marca as colunas de saída com o modo 't' em `proargmodes`
+-- (não 'o' — esse é o modo de um `OUT` avulso), então é isso que se conta.
+SELECT verif.confere('resolvedor de identidade · devolve só as duas colunas prometidas',
+  (SELECT count(*) FROM unnest(
+     (SELECT proargmodes FROM pg_proc WHERE oid = 'identidade.resolver_sujeito(text)'::regprocedure)
+   ) m WHERE m = 't'),
+  2::bigint);
+
+SELECT set_config('app.instituicao_id', '', false);
+SELECT verif.confere('resolvedor de identidade · sem contexto, identidade.usuario continua fechada',
+  (SELECT count(*) FROM identidade.usuario), 0::bigint);
+SELECT verif.confere('resolvedor de identidade · sub conhecido resolve exatamente uma linha',
+  (SELECT count(*) FROM identidade.resolver_sujeito('kc-sub-aline')), 1::bigint);
+SELECT verif.confere('resolvedor de identidade · devolve a instituição certa',
+  (SELECT instituicao_id FROM identidade.resolver_sujeito('kc-sub-aline')),
+  'a0000000-0000-0000-0000-000000000000'::uuid);
+SELECT verif.confere('resolvedor de identidade · devolve o usuário certo',
+  (SELECT usuario_id FROM identidade.resolver_sujeito('kc-sub-aline')),
+  'a9000000-0000-0000-0000-000000000001'::uuid);
+SELECT verif.confere('resolvedor de identidade · sub desconhecido não resolve',
+  (SELECT count(*) FROM identidade.resolver_sujeito('sub-que-nao-existe')), 0::bigint);
+SELECT set_config('app.instituicao_id', 'a0000000-0000-0000-0000-000000000000', false);
+
+-- -----------------------------------------------------------------------------
 -- Auditoria
 -- -----------------------------------------------------------------------------
 
@@ -644,6 +885,79 @@ $$, '42501|REGISTRO_IMUTAVEL');
 SELECT verif.espera_erro('catálogo de permissões · a aplicação não inventa permissão', $$
   INSERT INTO identidade.permissao VALUES ('financeiro.tudo.fazer', 'financeiro', 'x')
 $$, '42501');
+
+-- F08 · ativação e reativação de usuário entram no catálogo de operações.
+SELECT verif.espera_ok('trilha · USUARIO_ATIVADO é operação válida', $$
+  INSERT INTO identidade.registro_de_auditoria (instituicao_id, autor_usuario_id, autor_grupos, operacao, agregado_tipo, agregado_id)
+    VALUES ('a0000000-0000-0000-0000-000000000000', gen_random_uuid(), '{}', 'USUARIO_ATIVADO', 'Usuario',
+            'a9000000-0000-0000-0000-000000000002')
+$$);
+SELECT verif.espera_ok('trilha · USUARIO_REATIVADO é operação válida', $$
+  INSERT INTO identidade.registro_de_auditoria (instituicao_id, autor_usuario_id, autor_grupos, operacao, agregado_tipo, agregado_id)
+    VALUES ('a0000000-0000-0000-0000-000000000000', gen_random_uuid(), '{}', 'USUARIO_REATIVADO', 'Usuario',
+            'a9000000-0000-0000-0000-000000000002')
+$$);
+
+-- -----------------------------------------------------------------------------
+-- Ator da trilha e do anexo — o despachante (SISTEMA) e o link público
+-- (LINK_PUBLICO) também auditam e também enviam anexo, e nenhum dos dois
+-- tem um identidade.usuario por trás.
+-- -----------------------------------------------------------------------------
+
+SELECT verif.espera_ok('ator da trilha · SISTEMA sem usuário é aceito', $$
+  INSERT INTO identidade.registro_de_auditoria (instituicao_id, autor_tipo, autor_grupos, operacao, agregado_tipo, agregado_id)
+    VALUES ('a0000000-0000-0000-0000-000000000000', 'SISTEMA', '{}', 'LANCAMENTO_CONFIRMADO', 'Lancamento',
+            'a6000000-0000-0000-0000-000000000001')
+$$);
+SELECT verif.espera_erro('ator da trilha · USUARIO sem usuário é recusado', $$
+  INSERT INTO identidade.registro_de_auditoria (instituicao_id, autor_tipo, autor_grupos, operacao, agregado_tipo, agregado_id)
+    VALUES ('a0000000-0000-0000-0000-000000000000', 'USUARIO', '{}', 'LANCAMENTO_CONFIRMADO', 'Lancamento',
+            'a6000000-0000-0000-0000-000000000001')
+$$, 'autor_coerente');
+SELECT verif.espera_erro('ator da trilha · SISTEMA com usuário é recusado', $$
+  INSERT INTO identidade.registro_de_auditoria (instituicao_id, autor_tipo, autor_usuario_id, autor_grupos, operacao,
+                                                 agregado_tipo, agregado_id)
+    VALUES ('a0000000-0000-0000-0000-000000000000', 'SISTEMA', gen_random_uuid(), '{}', 'LANCAMENTO_CONFIRMADO',
+            'Lancamento', 'a6000000-0000-0000-0000-000000000001')
+$$, 'autor_coerente');
+SELECT verif.espera_erro('ator da trilha · autor_tipo fora do vocabulário é recusado', $$
+  INSERT INTO identidade.registro_de_auditoria (instituicao_id, autor_tipo, autor_grupos, operacao, agregado_tipo, agregado_id)
+    VALUES ('a0000000-0000-0000-0000-000000000000', 'BOT', '{}', 'LANCAMENTO_CONFIRMADO', 'Lancamento',
+            'a6000000-0000-0000-0000-000000000001')
+$$, 'registro_de_auditoria_autor_tipo_check');
+
+SELECT verif.espera_ok('ator do anexo · SISTEMA sem usuário é aceito', $$
+  INSERT INTO shared.anexo (instituicao_id, chave, nome_original, mime, tamanho_bytes, sha256, enviado_por_tipo)
+    VALUES ('a0000000-0000-0000-0000-000000000000', 'a000/financeiro/despachante-01.txt', 'x', 'text/plain', 10,
+            sha256('sistema'), 'SISTEMA')
+$$);
+SELECT verif.espera_erro('ator do anexo · USUARIO sem usuário é recusado', $$
+  INSERT INTO shared.anexo (instituicao_id, chave, nome_original, mime, tamanho_bytes, sha256, enviado_por_tipo)
+    VALUES ('a0000000-0000-0000-0000-000000000000', 'a000/financeiro/despachante-02.txt', 'x', 'text/plain', 10,
+            sha256('usuario-sem-id'), 'USUARIO')
+$$, 'enviado_coerente');
+SELECT verif.espera_erro('ator do anexo · SISTEMA com usuário é recusado', $$
+  INSERT INTO shared.anexo (instituicao_id, chave, nome_original, mime, tamanho_bytes, sha256, enviado_por_tipo, enviado_por)
+    VALUES ('a0000000-0000-0000-0000-000000000000', 'a000/financeiro/despachante-03.txt', 'x', 'text/plain', 10,
+            sha256('sistema-com-id'), 'SISTEMA', gen_random_uuid())
+$$, 'enviado_coerente');
+SELECT verif.espera_erro('ator do anexo · enviado_por_tipo fora do vocabulário é recusado', $$
+  INSERT INTO shared.anexo (instituicao_id, chave, nome_original, mime, tamanho_bytes, sha256, enviado_por_tipo)
+    VALUES ('a0000000-0000-0000-0000-000000000000', 'a000/financeiro/despachante-04.txt', 'x', 'text/plain', 10,
+            sha256('bot'), 'BOT')
+$$, 'anexo_enviado_por_tipo_check');
+
+-- -----------------------------------------------------------------------------
+-- Outbox — teto de tentativas no predicado do índice, e o campo de backoff
+-- -----------------------------------------------------------------------------
+
+SELECT verif.confere('outbox · outbox_pendentes exige publicado_em nulo e tentativas sob o teto',
+  (SELECT pg_get_expr(indpred, indrelid) FROM pg_index WHERE indexrelid = 'shared.outbox_pendentes'::regclass),
+  '((publicado_em IS NULL) AND (tentativas < 10))');
+SELECT verif.confere('outbox · proxima_tentativa_em existe, timestamptz, aceita nulo',
+  (SELECT format('%s,%s', data_type, is_nullable) FROM information_schema.columns
+    WHERE table_schema = 'shared' AND table_name = 'outbox' AND column_name = 'proxima_tentativa_em'),
+  'timestamp with time zone,YES');
 
 -- -----------------------------------------------------------------------------
 -- Eventos

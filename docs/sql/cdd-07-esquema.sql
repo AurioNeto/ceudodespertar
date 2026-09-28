@@ -1,10 +1,15 @@
 -- =============================================================================
--- CDD — esquema de referência do banco (Documento 7)
+-- CDD — esquema de referência do banco (Documento 7) — DOCUMENTAÇÃO CONGELADA
 --
--- PostgreSQL 16. Este arquivo é a fonte da verdade das colunas citadas no
--- Documento 7 e é executado na íntegra por `cdd-07-verificacao.sql`. Não é a
--- migration de produção: as migrations nascem do MikroORM (Documento 7 §22),
--- e cada uma delas deve manter este arquivo coerente.
+-- PostgreSQL 16. Este arquivo é a documentação do desenho aprovado em set/2026
+-- (Documento 7 v1.1, issue #11). NÃO é a migração de produção: as migrations
+-- nascem do MikroORM (Documento 7 §22), em `apps/api/src/banco/migracoes/`.
+--
+-- A verificação de garantias é em `apps/api/test/banco/garantias/`, rodando
+-- contra o banco migrado (Documento 7 §26). Este arquivo é referência histórica
+-- do desenho e roda manualmente, não em CI.
+--
+-- Ver issue #11: https://github.com/AurioNeto/ceudodespertar/issues/11
 --
 -- Convenções (Documento 7 §14):
 --   · um schema por módulo; nenhuma FK cruza schema — referência entre módulos
@@ -26,6 +31,9 @@ DO $$ BEGIN
   END IF;
   IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'cdd_resolvedor_link') THEN
     CREATE ROLE cdd_resolvedor_link NOLOGIN NOBYPASSRLS;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'cdd_resolvedor_identidade') THEN
+    CREATE ROLE cdd_resolvedor_identidade NOLOGIN NOBYPASSRLS;
   END IF;
 END $$;
 
@@ -53,37 +61,52 @@ CREATE TABLE shared.instituicao (
 );
 
 CREATE TABLE shared.anexo (
-  id              uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  instituicao_id  uuid NOT NULL,
-  chave           text NOT NULL,              -- caminho no bucket: {instituicao}/{modulo}/{uuid}
-  nome_original   text NOT NULL,
-  mime            text NOT NULL,
-  tamanho_bytes   bigint NOT NULL CHECK (tamanho_bytes > 0),
-  sha256          bytea NOT NULL,
-  sensivel        boolean NOT NULL DEFAULT false,
-  enviado_por     uuid NOT NULL,              -- identidade.usuario, ou NULL-equivalente do link público
-  enviado_em      timestamptz NOT NULL DEFAULT now(),
+  id                uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  instituicao_id    uuid NOT NULL,
+  chave             text NOT NULL,              -- caminho no bucket: {instituicao}/{modulo}/{uuid}
+  nome_original     text NOT NULL,
+  mime              text NOT NULL,
+  tamanho_bytes     bigint NOT NULL CHECK (tamanho_bytes > 0),
+  sha256            bytea NOT NULL,
+  sensivel          boolean NOT NULL DEFAULT false,
+  -- Ator de quem enviou (mesmo padrão de identidade.registro_de_auditoria):
+  -- fora de USUARIO não há usuário — o despachante e o link público também
+  -- enviam anexo (comprovante recebido por integração, upload sem login).
+  enviado_por_tipo  text NOT NULL DEFAULT 'USUARIO' CHECK (enviado_por_tipo IN ('USUARIO','SISTEMA','LINK_PUBLICO')),
+  enviado_por       uuid,                       -- identidade.usuario; nulo fora de USUARIO
+  enviado_em        timestamptz NOT NULL DEFAULT now(),
   UNIQUE (instituicao_id, id),
-  UNIQUE (chave)
+  UNIQUE (chave),
+  CONSTRAINT enviado_coerente CHECK ((enviado_por_tipo = 'USUARIO') = (enviado_por IS NOT NULL))
 );
 
 -- Outbox: gravado na mesma transação do agregado. Sem RLS de propósito — o
 -- despachante lê de todas as instituições e restabelece o contexto de cada
 -- evento antes de entregá-lo (Documento 7 §9).
 CREATE TABLE shared.outbox (
-  id              bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-  evento_id       uuid NOT NULL UNIQUE,
-  instituicao_id  uuid NOT NULL,
-  tipo            text NOT NULL,              -- 'financeiro.LancamentoConfirmado'
-  agregado_tipo   text NOT NULL,
-  agregado_id     uuid NOT NULL,
-  payload         jsonb NOT NULL,
-  ocorrido_em     timestamptz NOT NULL DEFAULT now(),
-  publicado_em    timestamptz,
-  tentativas      integer NOT NULL DEFAULT 0,
-  ultimo_erro     text
+  id                    bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  evento_id             uuid NOT NULL UNIQUE,
+  instituicao_id        uuid NOT NULL,
+  tipo                  text NOT NULL,              -- 'financeiro.LancamentoConfirmado'
+  agregado_tipo         text NOT NULL,
+  agregado_id           uuid NOT NULL,
+  payload               jsonb NOT NULL,
+  ocorrido_em           timestamptz NOT NULL DEFAULT now(),
+  publicado_em          timestamptz,
+  tentativas            integer NOT NULL DEFAULT 0,
+  ultimo_erro           text,
+  proxima_tentativa_em  timestamptz                 -- backoff; nulo = pronto desde a gravação
 );
-CREATE INDEX outbox_pendentes ON shared.outbox (id) WHERE publicado_em IS NULL;
+-- Serve a consulta do despachante (Documento 7 §9): pendente, sob o teto de
+-- tentativas, ordenado por `id`. `id` é ordem global de inserção, não ordem
+-- por agregado — manter os eventos de um mesmo agregado em ordem é dever do
+-- despachante (§9), não deste índice. O backoff
+-- (`coalesce(proxima_tentativa_em,'-infinity') <= now()`) é filtro de
+-- execução, não predicado do índice — depende do relógio, não é imutável. O
+-- teto (10) tem que ir literal na consulta do despachante, não como
+-- parâmetro: com plano genérico o planner deixa de enxergar que o índice
+-- parcial cobre o predicado e cai para full scan.
+CREATE INDEX outbox_pendentes ON shared.outbox (id) WHERE publicado_em IS NULL AND tentativas < 10;
 
 -- Idempotência dos consumidores: cada handler registra o que já processou.
 CREATE TABLE shared.evento_processado (
@@ -134,6 +157,28 @@ CREATE TABLE identidade.usuario (
   CHECK (situacao = 'CONVITE_PENDENTE' OR subject_id IS NOT NULL)
 );
 CREATE UNIQUE INDEX usuario_email_unico ON identidade.usuario (instituicao_id, lower(email));
+-- US2: a mesma pessoa não é duas contas na mesma casa.
+CREATE UNIQUE INDEX usuario_pessoa_unica ON identidade.usuario (instituicao_id, pessoa_id) WHERE pessoa_id IS NOT NULL;
+
+-- O `sub` do Keycloak chega sem instituição, e `identidade.usuario` tem RLS
+-- FORCE: sem contexto, nem o dono dos objetos leria a linha para descobri-la.
+-- Molde de `eventos.resolver_link` (Documento 7 §7.3, §8): SECURITY DEFINER,
+-- dono próprio sem BYPASSRLS, devolve só o necessário para montar o contexto.
+CREATE FUNCTION identidade.resolver_sujeito(p_subject_id text)
+  RETURNS TABLE (instituicao_id uuid, usuario_id uuid)
+  LANGUAGE sql STABLE SECURITY DEFINER SET search_path = pg_catalog AS $$
+  SELECT u.instituicao_id, u.id
+    FROM identidade.usuario u
+   WHERE u.subject_id = p_subject_id
+$$;
+REVOKE ALL ON FUNCTION identidade.resolver_sujeito(text) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION identidade.resolver_sujeito(text) TO cdd_app;
+GRANT USAGE ON SCHEMA identidade TO cdd_resolvedor_identidade;
+GRANT SELECT (subject_id, instituicao_id, id) ON identidade.usuario TO cdd_resolvedor_identidade;
+GRANT CREATE ON SCHEMA identidade TO cdd_resolvedor_identidade;
+ALTER FUNCTION identidade.resolver_sujeito(text) OWNER TO cdd_resolvedor_identidade;
+REVOKE CREATE ON SCHEMA identidade FROM cdd_resolvedor_identidade;
+CREATE POLICY resolucao_do_sujeito ON identidade.usuario FOR SELECT TO cdd_resolvedor_identidade USING (true);
 
 CREATE TABLE identidade.grupo (
   id              uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -175,10 +220,15 @@ CREATE TABLE identidade.convite (
   token_sha256    bytea NOT NULL UNIQUE,      -- o token em si só existe no e-mail
   expira_em       timestamptz NOT NULL,
   usado_em        timestamptz,
+  revogado_em     timestamptz,                -- convite cancelado antes do uso (reenvio, engano)
   criado_por      uuid NOT NULL,
   criado_em       timestamptz NOT NULL DEFAULT now(),
-  FOREIGN KEY (instituicao_id, usuario_id) REFERENCES identidade.usuario (instituicao_id, id)
+  FOREIGN KEY (instituicao_id, usuario_id) REFERENCES identidade.usuario (instituicao_id, id),
+  CONSTRAINT convite_nao_usado_e_revogado CHECK (usado_em IS NULL OR revogado_em IS NULL)
 );
+-- No máximo um convite vigente (nem usado, nem revogado) por usuário.
+CREATE UNIQUE INDEX convite_vigente_unico ON identidade.convite (instituicao_id, usuario_id)
+  WHERE usado_em IS NULL AND revogado_em IS NULL;
 
 -- Trilha de auditoria (Doc 3 §10.4). Só INSERT — ver gatilho abaixo.
 -- O alvo é guardado por referência, e o texto humano é montado na leitura:
@@ -187,19 +237,24 @@ CREATE TABLE identidade.registro_de_auditoria (
   id               uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   instituicao_id   uuid NOT NULL,
   em               timestamptz NOT NULL DEFAULT now(),
-  autor_usuario_id uuid NOT NULL,
+  -- Ator do ato: o despachante (consumidor de evento) e o link público
+  -- também precisam auditar, e nenhum dos dois é um identidade.usuario.
+  autor_tipo       text NOT NULL DEFAULT 'USUARIO' CHECK (autor_tipo IN ('USUARIO','SISTEMA','LINK_PUBLICO')),
+  autor_usuario_id uuid,                      -- nulo fora de USUARIO
   autor_grupos     text[] NOT NULL,           -- fotografia dos grupos no instante do ato
   operacao         text NOT NULL CHECK (operacao IN (
                      'LANCAMENTO_CONFIRMADO','LANCAMENTO_ESTORNADO','PENDENCIA_ABERTA',
                      'PERIODO_FECHADO','PERIODO_REABERTO','PRESTACAO_GERADA','EXTRATO_IMPORTADO',
-                     'ADIANTAMENTO_AUTORIZADO','GRUPO_ALTERADO','USUARIO_CONVIDADO','USUARIO_SUSPENSO',
+                     'ADIANTAMENTO_AUTORIZADO','GRUPO_ALTERADO','USUARIO_CONVIDADO','USUARIO_ATIVADO',
+                     'USUARIO_SUSPENSO','USUARIO_REATIVADO',
                      'FORMULARIO_PUBLICADO','PESSOA_ANONIMIZADA','ANAMNESE_LIDA','AUDITORIA_CONSULTADA')),
   agregado_tipo    text NOT NULL,
   agregado_id      uuid NOT NULL,
   pessoa_alvo_id   uuid,                      -- quando o alvo é (ou envolve) uma pessoa
   detalhes         jsonb NOT NULL DEFAULT '[]'::jsonb,   -- [{rotulo, valor, anterior?}]
   sensivel         boolean NOT NULL DEFAULT false,
-  correlacao_id    uuid                       -- liga a trilha ao trace da requisição
+  correlacao_id    uuid,                      -- liga a trilha ao trace da requisição
+  CONSTRAINT autor_coerente CHECK ((autor_tipo = 'USUARIO') = (autor_usuario_id IS NOT NULL))
 );
 CREATE INDEX auditoria_por_data     ON identidade.registro_de_auditoria (instituicao_id, em DESC);
 CREATE INDEX auditoria_por_agregado ON identidade.registro_de_auditoria (agregado_tipo, agregado_id);
@@ -877,11 +932,14 @@ CREATE FUNCTION financeiro.chave_do_periodo(p_instituicao uuid, p_unidade uuid, 
 $$;
 
 -- A trava só serve em READ COMMITTED: em REPEATABLE READ o snapshot é anterior
--- à espera, e quem esperou leria o período como estava antes.
+-- à espera, e quem esperou leria o período como estava antes. Chegar aqui em
+-- outro nível não é "período fechado" — é erro de programação (a borda
+-- transacional abriu a transação no nível errado); código próprio para não
+-- ser confundido com a regra de negócio.
 CREATE FUNCTION financeiro.exigir_read_committed() RETURNS void LANGUAGE plpgsql AS $$
 BEGIN
   IF current_setting('transaction_isolation') <> 'read committed' THEN
-    RAISE EXCEPTION 'PERIODO_FECHADO: fechar ou gravar na competência exige READ COMMITTED (a transação está em %)',
+    RAISE EXCEPTION 'ISOLAMENTO_INVALIDO: fechar ou gravar na competência exige READ COMMITTED (a transação está em %)',
       current_setting('transaction_isolation') USING ERRCODE = 'P0001';
   END IF;
 END $$;
@@ -1526,51 +1584,89 @@ SELECT l.instituicao_id, l.id AS lote_id, l.item_id, l.nome, l.situacao,
 -- TRUNCATE passa por fora dos gatilhos de linha. Nas tabelas que guardam o
 -- histórico, nem o dono do banco — que é quem roda migration — as esvazia,
 -- nem por CASCADE a partir de outra tabela.
+--
+-- shared.proibir_truncate() é o que cada migration chama (Documento 7 §22)
+-- com a lista de tabelas que guarda até a sua etapa: idempotente, porque uma
+-- migration posterior repete a chamada com a lista maior, e a tabela que já
+-- tinha o gatilho não o recebe de novo. Religa o gatilho que alguém tenha
+-- desabilitado (`DISABLE TRIGGER`, tgenabled 'D') ou restringido à réplica
+-- (`ENABLE REPLICA TRIGGER`, 'R' — não dispara nas sessões normais) entre
+-- uma etapa e outra — do contrário, a varredura seguinte o encontraria e
+-- concluiria, errado, que a tabela já está guardada. 'A' (ALWAYS) dispara
+-- em qualquer sessão e fica como está.
 -- -----------------------------------------------------------------------------
 
-DO $$
+CREATE FUNCTION shared.proibir_truncate(p_tabelas regclass[]) RETURNS void LANGUAGE plpgsql AS $$
 DECLARE
-  t text;
+  t regclass;
+  v_gatilho pg_trigger;
 BEGIN
-  FOREACH t IN ARRAY ARRAY['financeiro.lancamento', 'financeiro.lancamento_categoria', 'financeiro.transferencia',
-                           'financeiro.periodo_contabil', 'financeiro.reabertura_de_periodo',
-                           'financeiro.prestacao_de_contas', 'identidade.registro_de_auditoria',
-                           'pessoas.registro_de_acesso', 'estoque.movimento_de_estoque', 'estoque.feitio']
+  FOREACH t IN ARRAY p_tabelas
   LOOP
-    EXECUTE format('CREATE TRIGGER sem_truncate BEFORE TRUNCATE ON %s
-                      FOR EACH STATEMENT EXECUTE FUNCTION shared.somente_insercao()', t);
+    SELECT * INTO v_gatilho FROM pg_trigger WHERE tgrelid = t AND tgname = 'sem_truncate';
+    IF NOT FOUND THEN
+      EXECUTE format('CREATE TRIGGER sem_truncate BEFORE TRUNCATE ON %s
+                        FOR EACH STATEMENT EXECUTE FUNCTION shared.somente_insercao()', t);
+    ELSIF v_gatilho.tgenabled IN ('D', 'R') THEN
+      EXECUTE format('ALTER TABLE %s ENABLE TRIGGER sem_truncate', t);
+    END IF;
   END LOOP;
 END $$;
+
+SELECT shared.proibir_truncate(ARRAY['financeiro.lancamento', 'financeiro.lancamento_categoria', 'financeiro.transferencia',
+                                     'financeiro.periodo_contabil', 'financeiro.reabertura_de_periodo',
+                                     'financeiro.prestacao_de_contas', 'identidade.registro_de_auditoria',
+                                     'pessoas.registro_de_acesso', 'estoque.movimento_de_estoque', 'estoque.feitio']::regclass[]);
 
 -- -----------------------------------------------------------------------------
 -- RLS — aplicada por varredura, não à mão
 --
 -- Toda tabela com `instituicao_id`, em todos os schemas de domínio, ganha RLS
--- com FORCE e a mesma política. A varredura é o que impede a tabela nova
--- esquecida; o teste T23 confere que ela rodou (cdd-07-verificacao.sql).
+-- com FORCE e a mesma política. shared.aplicar_isolamento_por_instituicao()
+-- é o que cada migration chama (Documento 7 §22) depois de criar suas
+-- tabelas — é o que impede a tabela nova esquecida; o teste T23 confere que
+-- ela rodou (cdd-07-verificacao.sql). Idempotente: a tabela que já tem
+-- ENABLE+FORCE não repete o ALTER TABLE (evita ACCESS EXCLUSIVE sem
+-- necessidade numa migration que só varre o que outra etapa já tratou), e a
+-- que já tem a política não a recebe de novo, então uma etapa posterior pode
+-- chamá-la de novo sobre o esquema inteiro sem duplicar nem travar à toa.
 -- -----------------------------------------------------------------------------
 
-DO $$
+CREATE FUNCTION shared.aplicar_isolamento_por_instituicao() RETURNS void LANGUAGE plpgsql AS $$
 DECLARE
   t record;
 BEGIN
   FOR t IN
-    SELECT c.table_schema, c.table_name
+    SELECT c.table_schema, c.table_name, pc.relrowsecurity, pc.relforcerowsecurity
       FROM information_schema.columns c
       JOIN information_schema.tables tb
         ON tb.table_schema = c.table_schema AND tb.table_name = c.table_name AND tb.table_type = 'BASE TABLE'
+      JOIN pg_namespace pn ON pn.nspname = c.table_schema
+      JOIN pg_class pc     ON pc.relnamespace = pn.oid AND pc.relname = c.table_name
      WHERE c.column_name = 'instituicao_id'
        AND c.table_schema IN ('shared','identidade','pessoas','financeiro','eventos','estoque')
        AND (c.table_schema, c.table_name) <> ('shared','outbox')
   LOOP
-    EXECUTE format('ALTER TABLE %I.%I ENABLE ROW LEVEL SECURITY', t.table_schema, t.table_name);
-    EXECUTE format('ALTER TABLE %I.%I FORCE ROW LEVEL SECURITY', t.table_schema, t.table_name);
-    EXECUTE format($p$CREATE POLICY isolamento_por_instituicao ON %I.%I
-                      USING (instituicao_id = shared.instituicao_atual())
-                      WITH CHECK (instituicao_id = shared.instituicao_atual())$p$,
-                   t.table_schema, t.table_name);
+    IF NOT (t.relrowsecurity AND t.relforcerowsecurity) THEN
+      EXECUTE format('ALTER TABLE %I.%I ENABLE ROW LEVEL SECURITY', t.table_schema, t.table_name);
+      EXECUTE format('ALTER TABLE %I.%I FORCE ROW LEVEL SECURITY', t.table_schema, t.table_name);
+    END IF;
+    IF NOT EXISTS (
+      SELECT 1 FROM pg_policy p
+        JOIN pg_class c     ON c.oid = p.polrelid
+        JOIN pg_namespace n ON n.oid = c.relnamespace
+       WHERE n.nspname = t.table_schema AND c.relname = t.table_name
+         AND p.polname = 'isolamento_por_instituicao'
+    ) THEN
+      EXECUTE format($p$CREATE POLICY isolamento_por_instituicao ON %I.%I
+                        USING (instituicao_id = shared.instituicao_atual())
+                        WITH CHECK (instituicao_id = shared.instituicao_atual())$p$,
+                     t.table_schema, t.table_name);
+    END IF;
   END LOOP;
 END $$;
+
+SELECT shared.aplicar_isolamento_por_instituicao();
 
 -- -----------------------------------------------------------------------------
 -- Privilégios do papel de execução
