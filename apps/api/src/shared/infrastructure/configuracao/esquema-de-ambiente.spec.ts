@@ -84,6 +84,17 @@ describe('analisarAmbiente', () => {
     'https://idp.exemplo.com/realms/cdd#frag',
     'idp.exemplo.com/realms/cdd',
     '',
+    ' https://idp.exemplo.com/realms/cdd',
+    'https://idp.exemplo.com/realms/cdd ',
+    'https://idp.exemplo.com/realms/cdd\t',
+    'HTTPS://IDP.EXEMPLO.COM/realms/cdd',
+    'https://IDP.exemplo.com/realms/cdd',
+    'http://LOCALHOST:8080/realms/cdd',
+    'https:idp.exemplo.com/realms/cdd',
+    'https://idp.exemplo.com/realms/cdd/..',
+    'https://idp.exemplo.com/realms/./cdd',
+    'https://idp.exemplo.com:443/realms/cdd',
+    'https://idp.exemplo.com/realms/cd d',
   ])('recusa OIDC_EMISSOR %j', (emissor) => {
     expect(() => analisarAmbiente({ ...OIDC_VALIDO, OIDC_EMISSOR: emissor })).toThrow(ErroDeAmbienteInvalido);
   });
@@ -95,7 +106,11 @@ describe('analisarAmbiente', () => {
     },
   );
 
-  it('recusa OIDC_AUDIENCIA vazia', () => {
-    expect(() => analisarAmbiente({ ...OIDC_VALIDO, OIDC_AUDIENCIA: '' })).toThrow(ErroDeAmbienteInvalido);
+  it.each(['', ' cdd-api', 'cdd-api ', 'cdd api', 'cdd-api\t', 'cdd-api\n'])('recusa OIDC_AUDIENCIA %j', (audiencia) => {
+    expect(() => analisarAmbiente({ ...OIDC_VALIDO, OIDC_AUDIENCIA: audiencia })).toThrow(ErroDeAmbienteInvalido);
+  });
+
+  it('aceita OIDC_AUDIENCIA sem espaços em branco', () => {
+    expect(analisarAmbiente({ ...OIDC_VALIDO, OIDC_AUDIENCIA: 'cdd-api' }).OIDC_AUDIENCIA).toBe('cdd-api');
   });
 });

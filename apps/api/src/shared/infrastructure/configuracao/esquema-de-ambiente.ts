@@ -13,15 +13,22 @@ const listaDeOrigens = z
   );
 
 const emissorOidc = z.string().refine(ehEmissorOidcAceito, {
-  message: 'deve ser uma URL https, ou http apenas em localhost, sem barra final, credenciais, query ou fragmento',
+  message:
+    'deve ser uma URL https, ou http apenas em localhost, na forma canônica, sem barra final, credenciais, query ou fragmento',
 });
+
+const audienciaOidc = z.string().regex(/^\S+$/, { message: 'deve ser um texto sem espaços em branco' });
 
 function ehEmissorOidcAceito(valor: string): boolean {
   const url = URL.parse(valor);
   if (url === null) return false;
   const protocoloAceito = url.protocol === 'https:' || (url.protocol === 'http:' && url.hostname === 'localhost');
   const semAdornos = url.username === '' && url.password === '' && url.search === '' && url.hash === '';
-  return protocoloAceito && semAdornos && !valor.endsWith('/');
+  return protocoloAceito && semAdornos && ehFormaCanonica(url, valor);
+}
+
+function ehFormaCanonica(url: URL, valor: string): boolean {
+  return url.href.replace(/\/$/, '') === valor;
 }
 
 export const EsquemaDeAmbiente = z.object({
@@ -30,7 +37,7 @@ export const EsquemaDeAmbiente = z.object({
   LOG_NIVEL: z.enum(NIVEIS_DE_LOG).default('info'),
   TZ: z.string().min(1).default('UTC'),
   OIDC_EMISSOR: emissorOidc,
-  OIDC_AUDIENCIA: z.string().min(1),
+  OIDC_AUDIENCIA: audienciaOidc,
 });
 
 export type Ambiente = z.infer<typeof EsquemaDeAmbiente>;
