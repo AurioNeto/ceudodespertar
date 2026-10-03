@@ -50,6 +50,8 @@ const CASOS_POSITIVOS = [
   ['dominio-sem-camadas-externas', 'fixtures/dominio-sem-camadas-externas/kernel-shared-infrastructure'],
   ['dominio-sem-camadas-externas', 'fixtures/dominio-sem-camadas-externas/domain-main-ts'],
   ['dominio-sem-camadas-externas', 'fixtures/dominio-sem-camadas-externas/kernel-pasta-nova'],
+  ['orm-so-na-infraestrutura-de-banco', 'fixtures/orm-so-na-infraestrutura-de-banco/application'],
+  ['orm-so-na-infraestrutura-de-banco', 'fixtures/orm-so-na-infraestrutura-de-banco/tipo'],
   ['modulo-so-por-public-api', 'fixtures/modulo-so-por-public-api/valor'],
   ['modulo-so-por-public-api', 'fixtures/modulo-so-por-public-api/tipo'],
   ['contracts-nao-importa-apps', 'fixtures/contracts-nao-importa-apps'],
@@ -57,6 +59,8 @@ const CASOS_POSITIVOS = [
 ] as const;
 
 const CASOS_NEGATIVOS = [
+  'fixtures-negativas/orm-so-na-infraestrutura-de-banco/shared-infrastructure-banco',
+  'fixtures-negativas/orm-so-na-infraestrutura-de-banco/banco',
   'fixtures-negativas/modulo-so-por-public-api/public-api-de-outro-modulo',
   'fixtures-negativas/modulo-so-por-public-api/mesmo-modulo',
 ] as const;

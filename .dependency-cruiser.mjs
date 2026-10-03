@@ -2,6 +2,11 @@ const RAIZ_DE_MODULO = '(?:^|/)apps/api/src/modules/([^/]+)/';
 const CAMADA_DE_DOMINIO = '(?:^|/)apps/api/src/(?:shared/kernel|modules/([^/]+)/domain)/';
 const PACOTES_DE_FRAMEWORK = ['@nestjs', '@mikro-orm', 'pg', 'zod', 'kysely', 'express'];
 const CAMINHO_DE_FRAMEWORK = `node_modules/(?:@types/)?(?:${PACOTES_DE_FRAMEWORK.join('|')})/`;
+const CAMINHO_DO_ORM = 'node_modules/@mikro-orm/';
+const CAMADAS_COM_ACESSO_AO_ORM = [
+  '(?:^|/)apps/api/src/shared/infrastructure/banco/',
+  '(?:^|/)apps/api/src/banco/',
+];
 
 export default {
   forbidden: [
@@ -22,6 +27,20 @@ export default {
       to: {
         path: [CAMINHO_DE_FRAMEWORK, '^(?:http|https|http2)$'],
       },
+    },
+    {
+      name: 'orm-so-na-infraestrutura-de-banco',
+      severity: 'error',
+      comment:
+        'MikroORM só é importado pela infraestrutura de banco: quem precisa de EntityManager ' +
+        'recebe o contexto da UnidadeDeTrabalho. A conexão que volta ao pool depois de um aborto ' +
+        'fica read-only, e só a UnidadeDeTrabalho a reabre para escrita. O domínio já é coberto ' +
+        'por dominio-sem-framework.',
+      from: {
+        path: '(?:^|/)apps/api/src/',
+        pathNot: [...CAMADAS_COM_ACESSO_AO_ORM, CAMADA_DE_DOMINIO],
+      },
+      to: { path: CAMINHO_DO_ORM },
     },
     {
       name: 'dominio-sem-camadas-externas',
