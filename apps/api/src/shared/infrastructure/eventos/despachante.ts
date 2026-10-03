@@ -4,7 +4,10 @@ import type { EventoDeDominio } from '../../kernel/evento-de-dominio.js';
 import { ContextoDaRequisicao } from '../contexto-da-requisicao.js';
 import { UnidadeDeTrabalho } from '../banco/unidade-de-trabalho.js';
 import type { ContextoDaTransacao } from '../banco/unidade-de-trabalho.js';
-import { VARIAVEL_DE_SESSAO_DA_INSTITUICAO } from '../banco/unidade-de-trabalho.mikro-orm.js';
+import {
+  VARIAVEL_DE_SESSAO_DA_INSTITUICAO,
+  foraDaTransacaoAtiva,
+} from '../banco/unidade-de-trabalho.mikro-orm.js';
 import { calcularProximaTentativa } from './backoff.js';
 import { formatarUltimoErro } from './formatador-de-erro.js';
 import type { ConsumidorRegistrado } from './registro-de-consumidores.js';
@@ -16,9 +19,11 @@ export const TIMEOUT_DO_CONSUMIDOR_EM_MS = Symbol('TIMEOUT_DO_CONSUMIDOR_EM_MS')
 export const TIMEOUT_PADRAO_DO_CONSUMIDOR_EM_MS = 30_000;
 const TAMANHO_MAXIMO_DO_CICLO = 100;
 const INTERVALO_DE_POLLING_EM_MS = 1000;
+const FOLGA_DO_TIMEOUT_DA_APLICACAO_EM_MS = 250;
 const SAVEPOINT_DO_CONSUMIDOR = 'evento_consumidor';
+const ENCERRAR_TRANSACAO_E_BLOQUEAR_ESCRITA_AVULSA = 'rollback; set default_transaction_read_only = on';
 
-const CONSULTA_DO_PROXIMO_EVENTO = `
+export const CONSULTA_DO_PROXIMO_EVENTO = `
   select o.id, o.evento_id as "eventoId", o.instituicao_id as "instituicaoId", o.tipo,
          o.agregado_tipo as "agregadoTipo", o.agregado_id as "agregadoId", o.payload,
          o.ocorrido_em as "ocorridoEm", o.tentativas
@@ -61,6 +66,16 @@ export class ErroDeTimeoutDoConsumidor extends Error {
   constructor(consumidor: string, timeoutEmMs: number) {
     super(`consumidor "${consumidor}" não respondeu em ${timeoutEmMs}ms`);
     this.name = 'ErroDeTimeoutDoConsumidor';
+  }
+}
+
+class AbortoDaTransacaoDoEvento extends Error {
+  constructor(
+    readonly linha: LinhaDoOutbox,
+    readonly causa: ErroDeTimeoutDoConsumidor,
+  ) {
+    super(causa.message);
+    this.name = 'AbortoDaTransacaoDoEvento';
   }
 }
 
@@ -131,28 +146,60 @@ export class Despachante implements OnModuleInit, OnModuleDestroy {
   }
 
   private agendarCiclo(): void {
-    ContextoDaRequisicao.foraDeQualquerContexto(() => this.executarCiclo()).catch((motivo: unknown) => {
-      this.logger.error('falha no ciclo do despachante', paraErro(motivo).stack);
-    });
+    ContextoDaRequisicao.foraDeQualquerContexto(() => foraDaTransacaoAtiva(() => this.executarCiclo())).catch(
+      (motivo: unknown) => {
+        this.logger.error('falha no ciclo do despachante', paraErro(motivo).stack);
+      },
+    );
   }
 
   private async processarProximoEvento(): Promise<boolean> {
-    return this.unidadeDeTrabalho.transacao('escrita', async (contexto) => {
-      const linha = await this.selecionarProximoEvento(contexto);
-      if (linha === undefined) {
-        return false;
+    try {
+      return await this.unidadeDeTrabalho.transacao('escrita', (contexto) =>
+        this.processarEventoNaTransacao(contexto),
+      );
+    } catch (motivo) {
+      if (!(motivo instanceof AbortoDaTransacaoDoEvento)) {
+        throw motivo;
       }
+      await this.registrarFalhaEmTransacaoSeparada(motivo.linha, motivo.causa);
+      return true;
+    }
+  }
 
-      await this.restabelecerContextoDaInstituicao(contexto, linha.instituicaoId);
-      const evento = paraEventoDeDominio(linha);
-      const erro = await ContextoDaRequisicao.executar(
+  private async processarEventoNaTransacao(contexto: ContextoDaTransacao): Promise<boolean> {
+    const linha = await this.selecionarProximoEvento(contexto);
+    if (linha === undefined) {
+      return false;
+    }
+
+    await this.restabelecerContextoDaInstituicao(contexto, linha.instituicaoId);
+    const evento = paraEventoDeDominio(linha);
+    const erro = await this.entregarComAbortoIdentificado(contexto, linha, evento);
+    if (erro === undefined) {
+      await contexto.em.execute('update shared.outbox set publicado_em = now() where id = ?', [linha.id]);
+    } else {
+      await this.registrarFalha(contexto, linha, erro);
+    }
+
+    return true;
+  }
+
+  private async entregarComAbortoIdentificado(
+    contexto: ContextoDaTransacao,
+    linha: LinhaDoOutbox,
+    evento: EventoDeDominio,
+  ): Promise<Error | undefined> {
+    try {
+      return await ContextoDaRequisicao.executar(
         { correlacaoId: evento.eventoId, instituicaoId: linha.instituicaoId },
         () => this.entregarAosConsumidores(contexto, evento, linha.tentativas),
       );
-      await this.registrarResultado(contexto, linha, erro);
-
-      return true;
-    });
+    } catch (motivo) {
+      throw motivo instanceof ErroDeTimeoutDoConsumidor
+        ? new AbortoDaTransacaoDoEvento(linha, motivo)
+        : motivo;
+    }
   }
 
   private async selecionarProximoEvento(contexto: ContextoDaTransacao): Promise<LinhaDoOutbox | undefined> {
@@ -188,7 +235,7 @@ export class Despachante implements OnModuleInit, OnModuleDestroy {
       if (erro !== undefined) {
         this.logger.warn(
           `consumidor falhou: evento=${evento.eventoId} tipo=${evento.tipo} ` +
-            `consumidor=${consumidor.consumidor} tentativas=${tentativasAntesDesteCiclo + 1} motivo=${erro.message}`,
+            `consumidor=${consumidor.consumidor} tentativas=${tentativasAntesDesteCiclo + 1} motivo=${formatarUltimoErro(erro)}`,
         );
         primeiroErro ??= erro;
       }
@@ -206,11 +253,19 @@ export class Despachante implements OnModuleInit, OnModuleDestroy {
 
     try {
       await contexto.em.execute('set constraints all immediate');
+      await contexto.em.execute("select set_config('statement_timeout', ?, true)", [
+        String(this.timeoutDoConsumidorEmMs),
+      ]);
       await this.executarComTimeout(consumidor, evento);
+      await contexto.em.execute('set local statement_timeout to default');
       await this.marcarComoProcessado(contexto, consumidor.consumidor, evento.eventoId);
       await contexto.em.execute(`release savepoint ${SAVEPOINT_DO_CONSUMIDOR}`);
       return undefined;
     } catch (motivo) {
+      if (motivo instanceof ErroDeTimeoutDoConsumidor) {
+        await contexto.em.execute(ENCERRAR_TRANSACAO_E_BLOQUEAR_ESCRITA_AVULSA);
+        throw motivo;
+      }
       await contexto.em.execute(`rollback to savepoint ${SAVEPOINT_DO_CONSUMIDOR}`);
       await contexto.em.execute(`release savepoint ${SAVEPOINT_DO_CONSUMIDOR}`);
       return paraErro(motivo);
@@ -222,7 +277,7 @@ export class Despachante implements OnModuleInit, OnModuleDestroy {
     const estouroDoTimeout = new Promise<never>((_resolver, rejeitar) => {
       temporizadorDoTimeout = setTimeout(() => {
         rejeitar(new ErroDeTimeoutDoConsumidor(consumidor.consumidor, this.timeoutDoConsumidorEmMs));
-      }, this.timeoutDoConsumidorEmMs);
+      }, this.timeoutDoConsumidorEmMs + FOLGA_DO_TIMEOUT_DA_APLICACAO_EM_MS);
     });
 
     try {
@@ -255,16 +310,18 @@ export class Despachante implements OnModuleInit, OnModuleDestroy {
     ]);
   }
 
-  private async registrarResultado(
+  private async registrarFalhaEmTransacaoSeparada(linha: LinhaDoOutbox, erro: Error): Promise<void> {
+    await this.unidadeDeTrabalho.transacao('escrita', async (contexto) => {
+      await this.restabelecerContextoDaInstituicao(contexto, linha.instituicaoId);
+      await this.registrarFalha(contexto, linha, erro);
+    });
+  }
+
+  private async registrarFalha(
     contexto: ContextoDaTransacao,
     linha: LinhaDoOutbox,
-    erro: Error | undefined,
+    erro: Error,
   ): Promise<void> {
-    if (erro === undefined) {
-      await contexto.em.execute('update shared.outbox set publicado_em = now() where id = ?', [linha.id]);
-      return;
-    }
-
     const tentativas = linha.tentativas + 1;
     const proximaTentativaEm = calcularProximaTentativa(tentativas, new Date());
 

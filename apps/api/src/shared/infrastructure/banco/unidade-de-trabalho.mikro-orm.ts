@@ -1,5 +1,5 @@
 import { AsyncLocalStorage } from 'node:async_hooks';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { IsolationLevel, MikroORM } from '@mikro-orm/postgresql';
 import type { TransactionOptions } from '@mikro-orm/postgresql';
 import { ContextoDaRequisicao } from '../contexto-da-requisicao.js';
@@ -11,7 +11,10 @@ export const VARIAVEL_DE_SESSAO_DA_INSTITUICAO = 'app.instituicao_id';
 export const OPCOES_DE_TRANSACAO_POR_MODO: Record<ModoDeTransacao, TransactionOptions> = {
   escrita: { isolationLevel: IsolationLevel.READ_COMMITTED, readOnly: false },
   leitura: { isolationLevel: IsolationLevel.REPEATABLE_READ, readOnly: true },
-  'leitura-que-grava': { isolationLevel: IsolationLevel.READ_COMMITTED, readOnly: false },
+  'leitura-que-grava': {
+    isolationLevel: IsolationLevel.READ_COMMITTED,
+    readOnly: false,
+  },
 };
 
 function ehGravavel(modo: ModoDeTransacao): boolean {
@@ -35,16 +38,19 @@ interface TransacaoAtiva {
 
 const transacaoAtiva = new AsyncLocalStorage<TransacaoAtiva>();
 
+export function foraDaTransacaoAtiva<T>(fn: () => T): T {
+  return transacaoAtiva.exit(fn);
+}
+
 @Injectable()
 export class UnidadeDeTrabalhoMikroOrm extends UnidadeDeTrabalho {
+  private readonly logger = new Logger(UnidadeDeTrabalhoMikroOrm.name);
+
   constructor(private readonly orm: MikroORM) {
     super();
   }
 
-  async transacao<T>(
-    modo: ModoDeTransacao,
-    fn: (contexto: ContextoDaTransacao) => Promise<T>,
-  ): Promise<T> {
+  async transacao<T>(modo: ModoDeTransacao, fn: (contexto: ContextoDaTransacao) => Promise<T>): Promise<T> {
     const ativa = transacaoAtiva.getStore();
     if (ativa !== undefined) {
       if (ehGravavel(modo) && !ehGravavel(ativa.modo)) {
@@ -75,10 +81,19 @@ export class UnidadeDeTrabalhoMikroOrm extends UnidadeDeTrabalho {
       return transacaoAtiva.run({ modo, contexto }, () => fn(contexto));
     }, OPCOES_DE_TRANSACAO_POR_MODO[modo]);
 
-    for (const gancho of ganchosDeConfirmacao) {
-      gancho();
-    }
+    this.executarGanchosDeConfirmacao(ganchosDeConfirmacao);
 
     return resultado;
+  }
+
+  private executarGanchosDeConfirmacao(ganchos: ReadonlyArray<() => void>): void {
+    for (const gancho of ganchos) {
+      try {
+        gancho();
+      } catch (motivo) {
+        const erro = motivo instanceof Error ? motivo : new Error(String(motivo));
+        this.logger.error(`gancho de confirmação falhou depois do commit: ${erro.name}`, erro.stack);
+      }
+    }
   }
 }

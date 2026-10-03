@@ -1,33 +1,62 @@
 import { describe, expect, it } from 'vitest';
 import { formatarUltimoErro } from './formatador-de-erro.js';
 
+const MENSAGEM_GENERICA = 'o consumidor falhou ao processar o evento';
+
 describe('formatarUltimoErro', () => {
-  it('prefixa com o nome da classe do erro e a mensagem', () => {
-    const resultado = formatarUltimoErro(new Error('falha proposital'));
-
-    expect(resultado).toBe('Error: Error - falha proposital');
+  it('de um erro que não é de banco grava só a classe e a mensagem genérica', () => {
+    expect(formatarUltimoErro(new TypeError('falha proposital'))).toBe(`TypeError - ${MENSAGEM_GENERICA}`);
   });
 
-  it('usa erro.code como identificador quando presente (erro de driver de banco)', () => {
-    const erroDeBanco = Object.assign(new Error('unique violation'), { code: '23505' });
+  it('de um erro de banco grava a classe, o SQLSTATE e o nome da constraint', () => {
+    const erroDeBanco = Object.assign(new Error('duplicado'), {
+      code: '23505',
+      constraint: 'usuario_email_key',
+    });
 
-    expect(formatarUltimoErro(erroDeBanco)).toBe('Error: 23505 - unique violation');
+    expect(formatarUltimoErro(erroDeBanco)).toBe(
+      `Error: 23505 constraint=usuario_email_key - ${MENSAGEM_GENERICA}`,
+    );
   });
 
-  it('mascara CPF no formato NNN.NNN.NNN-NN na mensagem', () => {
-    const resultado = formatarUltimoErro(new Error('titular cpf 123.456.789-00 duplicado'));
+  it('nunca grava a mensagem nem o detail do driver, onde o dado pessoal aparece', () => {
+    const erroDeBanco = Object.assign(
+      new Error('duplicate key value violates unique constraint "usuario_email_key"'),
+      {
+        code: '23505',
+        constraint: 'usuario_email_key',
+        detail: 'Key (email)=(fulana@exemplo.com) already exists.',
+      },
+    );
 
-    expect(resultado).toContain('***.***.***-**');
-    expect(resultado).not.toContain('123.456.789-00');
+    const resultado = formatarUltimoErro(erroDeBanco);
+
+    expect(resultado).not.toContain('fulana@exemplo.com');
+    expect(resultado).not.toContain('duplicate key');
+    expect(resultado).not.toContain('already exists');
   });
 
-  it('trunca o resultado em 500 caracteres mesmo com mensagem de 1 MB', () => {
-    const mensagemGigante = 'cpf 123.456.789-00 ' + 'x'.repeat(1_000_000);
+  it.each([
+    ['e-mail', 'titular fulana@exemplo.com duplicado'],
+    ['CPF formatado', 'titular 123.456.789-00 duplicado'],
+    ['CPF de 11 dígitos', 'titular 12345678900 duplicado'],
+  ])('não grava %s presente na mensagem de um erro comum', (_rotulo, mensagem) => {
+    expect(formatarUltimoErro(new Error(mensagem))).toBe(`Error - ${MENSAGEM_GENERICA}`);
+  });
 
-    const resultado = formatarUltimoErro(new Error(mensagemGigante));
+  it('descarta code e constraint que não têm o formato de identificador técnico', () => {
+    const erroComDadoNosCampos = Object.assign(new Error('x'), {
+      code: 'fulana@exemplo.com',
+      constraint: 'cpf 12345678900',
+    });
 
-    expect(resultado.length).toBeLessThanOrEqual(500);
-    expect(resultado).toContain('***.***.***-**');
-    expect(resultado).not.toContain('123.456.789-00');
+    expect(formatarUltimoErro(erroComDadoNosCampos)).toBe(`Error - ${MENSAGEM_GENERICA}`);
+  });
+
+  it('limita o nome da classe', () => {
+    const NomeGigante = class extends Error {};
+    Object.defineProperty(NomeGigante, 'name', { value: 'E'.repeat(10_000) });
+
+    expect(formatarUltimoErro(new NomeGigante()).length).toBeLessThan(200);
   });
 });

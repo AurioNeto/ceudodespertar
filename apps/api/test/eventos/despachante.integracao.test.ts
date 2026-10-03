@@ -1,6 +1,5 @@
 import { randomUUID } from 'node:crypto';
 import { Injectable } from '@nestjs/common';
-import type { INestApplicationContext } from '@nestjs/common';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { criarBancoDeTeste, derrubarBancoDeTeste } from '../integracao/banco-de-teste.js';
 import type { BancoDeTeste } from '../integracao/banco-de-teste.js';
@@ -14,45 +13,15 @@ import type { EventoDeDominio } from '../../src/shared/kernel/evento-de-dominio.
 import {
   INSTITUICAO_A,
   INSTITUICAO_B,
+  comContexto,
   criarEvento,
   encerrarContextoDeEventos,
+  gravarEvento,
+  linhaDoOutbox,
+  linhasDeEventoProcessado,
   semearInstituicoes,
   subirContextoDeEventos,
 } from './apoio.js';
-
-function comContexto<T>(instituicaoId: string, fn: () => Promise<T>): Promise<T> {
-  return ContextoDaRequisicao.executar({ correlacaoId: randomUUID(), instituicaoId }, fn);
-}
-
-async function gravarEvento(
-  app: INestApplicationContext,
-  evento: EventoDeDominio,
-  instituicaoId: string = INSTITUICAO_A,
-): Promise<void> {
-  const unidade = app.get(UnidadeDeTrabalho);
-  const repositorio = app.get(RepositorioDoOutbox);
-  await comContexto(instituicaoId, () =>
-    unidade.transacao('escrita', (contexto) => repositorio.gravar(contexto, [evento])),
-  );
-}
-
-async function linhaDoOutbox(banco: BancoDeTeste, eventoId: string) {
-  const resultado = await banco.owner.query(
-    'select publicado_em, tentativas, ultimo_erro, proxima_tentativa_em from shared.outbox where evento_id = $1',
-    [eventoId],
-  );
-  return resultado.rows[0] as
-    | { publicado_em: Date | null; tentativas: number; ultimo_erro: string | null; proxima_tentativa_em: Date | null }
-    | undefined;
-}
-
-async function linhasDeEventoProcessado(banco: BancoDeTeste, eventoId: string): Promise<string[]> {
-  const resultado = await banco.owner.query(
-    'select consumidor from shared.evento_processado where evento_id = $1 order by consumidor',
-    [eventoId],
-  );
-  return resultado.rows.map((linha: { consumidor: string }) => linha.consumidor);
-}
 
 @Injectable()
 class ConsumidorRegistraChamadas {
@@ -85,7 +54,7 @@ class ConsumidorLeContextoDaInstituicao {
   async reagir(): Promise<void> {
     const linhas = await this.unidadeDeTrabalho.transacao('escrita', ({ em }) =>
       em.execute<{ instituicaoId: string | null }[]>(
-        "select current_setting('app.instituicao_id', true) as \"instituicaoId\"",
+        'select current_setting(\'app.instituicao_id\', true) as "instituicaoId"',
       ),
     );
     this.instituicoesVistas.push(linhas[0]?.instituicaoId ?? null);
@@ -160,14 +129,13 @@ describe('Despachante · entrega do outbox (Documento 7 §9)', () => {
       const primeiraLinha = await linhaDoOutbox(banco, evento.eventoId);
       expect(primeiraLinha?.publicado_em).toBeNull();
       expect(primeiraLinha?.tentativas).toBe(1);
-      expect(primeiraLinha?.ultimo_erro).toBe('Error: Error - falha proposital do consumidor');
-      const primeiroAtraso =
-        (primeiraLinha?.proxima_tentativa_em?.getTime() ?? 0) - antesDaPrimeiraTentativa;
+      expect(primeiraLinha?.ultimo_erro).toBe('Error - o consumidor falhou ao processar o evento');
+      const primeiroAtraso = (primeiraLinha?.proxima_tentativa_em?.getTime() ?? 0) - antesDaPrimeiraTentativa;
       expect(primeiroAtraso).toBeGreaterThanOrEqual(900);
       expect(primeiroAtraso).toBeLessThan(2000);
 
       await banco.owner.query(
-        'update shared.outbox set proxima_tentativa_em = now() - interval \'1 second\' where evento_id = $1',
+        "update shared.outbox set proxima_tentativa_em = now() - interval '1 second' where evento_id = $1",
         [evento.eventoId],
       );
       const antesDaSegundaTentativa = Date.now();
@@ -175,8 +143,7 @@ describe('Despachante · entrega do outbox (Documento 7 §9)', () => {
 
       const segundaLinha = await linhaDoOutbox(banco, evento.eventoId);
       expect(segundaLinha?.tentativas).toBe(2);
-      const segundoAtraso =
-        (segundaLinha?.proxima_tentativa_em?.getTime() ?? 0) - antesDaSegundaTentativa;
+      const segundoAtraso = (segundaLinha?.proxima_tentativa_em?.getTime() ?? 0) - antesDaSegundaTentativa;
       expect(segundoAtraso).toBeGreaterThanOrEqual(1900);
       expect(segundoAtraso).toBeLessThan(3000);
 
@@ -240,7 +207,9 @@ describe('Despachante · entrega do outbox (Documento 7 §9)', () => {
          pai_id integer not null references teste_pai_deferravel(id) deferrable initially deferred
        )`,
     );
-    await banco.owner.query('grant select, insert on teste_pai_deferravel, teste_filho_deferravel to cdd_app');
+    await banco.owner.query(
+      'grant select, insert on teste_pai_deferravel, teste_filho_deferravel to cdd_app',
+    );
 
     @Injectable()
     class ConsumidorViolaConstraintAdiavel {
@@ -275,7 +244,10 @@ describe('Despachante · entrega do outbox (Documento 7 §9)', () => {
     const app = await subirContextoDeEventos(banco, [ConsumidorSempreFalha, ConsumidorRegistraChamadas]);
     try {
       const agregadoId = randomUUID();
-      const primeiro = criarEvento({ tipo: 'teste.EventoQueFalha', agregadoId });
+      const primeiro = criarEvento({
+        tipo: 'teste.EventoQueFalha',
+        agregadoId,
+      });
       const segundo = criarEvento({ tipo: 'teste.EventoFeliz', agregadoId });
       await gravarEvento(app, primeiro);
       await gravarEvento(app, segundo);
@@ -398,7 +370,10 @@ describe('Despachante · entrega do outbox (Documento 7 §9)', () => {
           );
           this.instituicaoNoBanco = linha?.instituicao ?? null;
           await this.repositorio.gravar(contexto, [
-            criarEvento({ tipo: 'teste.EventoDerivado', agregadoId: evento.agregadoId }),
+            criarEvento({
+              tipo: 'teste.EventoDerivado',
+              agregadoId: evento.agregadoId,
+            }),
           ]);
         });
       }
@@ -423,7 +398,9 @@ describe('Despachante · entrega do outbox (Documento 7 §9)', () => {
       await despachante.executarCiclo();
       await despachante.executarCiclo();
 
-      expect(app.get(ConsumidorEncadeia).contextoVisto).toMatchObject({ instituicaoId: INSTITUICAO_A });
+      expect(app.get(ConsumidorEncadeia).contextoVisto).toMatchObject({
+        instituicaoId: INSTITUICAO_A,
+      });
       expect(app.get(ConsumidorEncadeia).instituicaoNoBanco).toBe(INSTITUICAO_A);
       expect(app.get(ConsumidorDoDerivado).eventos.map((e) => e.agregadoId)).toEqual([origem.agregadoId]);
     } finally {
@@ -446,6 +423,41 @@ describe('Despachante · entrega do outbox (Documento 7 §9)', () => {
 
       await vi.waitFor(() => expect(contextosAoIniciarCiclo.length).toBeGreaterThan(0), { timeout: 2000 });
       expect(contextosAoIniciarCiclo).toStrictEqual(contextosAoIniciarCiclo.map(() => undefined));
+    } finally {
+      await encerrarContextoDeEventos(app);
+    }
+  });
+
+  it('o ciclo acordado por um sinal dado dentro de uma transação de leitura roda fora dela', async () => {
+    const app = await subirContextoDeEventos(banco, [ConsumidorRegistraChamadas]);
+    try {
+      const despachante = app.get(Despachante);
+      const executarCicloOriginal = despachante.executarCiclo.bind(despachante);
+      const ciclosAcordadosPeloSinal: Promise<void>[] = [];
+      let sinalEmCurso = false;
+      vi.spyOn(despachante, 'executarCiclo').mockImplementation(() => {
+        const ciclo = executarCicloOriginal();
+        if (sinalEmCurso) {
+          ciclosAcordadosPeloSinal.push(ciclo);
+        }
+        return ciclo;
+      });
+      const evento = criarEvento({ tipo: 'teste.EventoFeliz' });
+      await banco.owner.query(
+        `insert into shared.outbox (evento_id, instituicao_id, tipo, agregado_tipo, agregado_id, payload)
+         values ($1, $2, $3, $4, $5, '{}'::jsonb)`,
+        [evento.eventoId, INSTITUICAO_A, evento.tipo, evento.agregadoTipo, evento.agregadoId],
+      );
+
+      await app.get(UnidadeDeTrabalho).transacao('leitura', async () => {
+        sinalEmCurso = true;
+        app.get(SinalizadorDeEventos).notificar();
+        sinalEmCurso = false;
+      });
+
+      expect(ciclosAcordadosPeloSinal).toHaveLength(1);
+      await expect(ciclosAcordadosPeloSinal[0]).resolves.toBeUndefined();
+      expect((await linhaDoOutbox(banco, evento.eventoId))?.publicado_em).not.toBeNull();
     } finally {
       await encerrarContextoDeEventos(app);
     }
@@ -476,7 +488,7 @@ describe('Despachante · entrega do outbox (Documento 7 §9)', () => {
     }
   });
 
-  it('sem FOR UPDATE, um segundo despachante processaria o mesmo evento que o primeiro ainda segura (M17)', async () => {
+  it('sem FOR UPDATE, um segundo despachante processaria o mesmo evento que o primeiro ainda segura', async () => {
     let avisarQueComecou: () => void = () => {};
     const comecou = new Promise<void>((resolver) => {
       avisarQueComecou = resolver;
@@ -530,7 +542,7 @@ describe('Despachante · entrega do outbox (Documento 7 §9)', () => {
     }
   }, 10000);
 
-  it('set_config local ao commit: não vaza para a conexão reaproveitada no pool (M5, pool = 1)', async () => {
+  it('set_config local ao commit: não vaza para a conexão reaproveitada no pool', async () => {
     const app = await subirContextoDeEventos(banco, [ConsumidorRegistraChamadas], 1);
     try {
       const eventoDeB = criarEvento({ tipo: 'teste.EventoFeliz' });
@@ -549,7 +561,7 @@ describe('Despachante · entrega do outbox (Documento 7 §9)', () => {
     }
   });
 
-  it('entrega eventos por polling periódico mesmo sem nenhum sinal de gravação (M11)', async () => {
+  it('entrega eventos por polling periódico mesmo sem nenhum sinal de gravação', async () => {
     const app = await subirContextoDeEventos(banco, [ConsumidorRegistraChamadas]);
     try {
       const evento = criarEvento({ tipo: 'teste.EventoFeliz' });
@@ -570,7 +582,9 @@ describe('Despachante · entrega do outbox (Documento 7 §9)', () => {
 
       await vi.waitFor(
         () => {
-          expect(app.get(ConsumidorRegistraChamadas).eventos.map((e) => e.eventoId)).toEqual([evento.eventoId]);
+          expect(app.get(ConsumidorRegistraChamadas).eventos.map((e) => e.eventoId)).toEqual([
+            evento.eventoId,
+          ]);
         },
         { timeout: 3000, interval: 100 },
       );
@@ -579,7 +593,7 @@ describe('Despachante · entrega do outbox (Documento 7 §9)', () => {
     }
   }, 6000);
 
-  it('sinaliza depois do commit: latência commit -> entrega bem abaixo de 1s, e rollback não sinaliza (M8/M15)', async () => {
+  it('sinaliza depois do commit: latência commit -> entrega bem abaixo de 1s, e rollback não sinaliza', async () => {
     let chegou: (t: number) => void = () => {};
     @Injectable()
     class ConsumidorDeLatencia {
@@ -623,7 +637,7 @@ describe('Despachante · entrega do outbox (Documento 7 §9)', () => {
     }
   }, 10000);
 
-  it('onModuleDestroy espera o ciclo em andamento e, depois disso, mais nenhum evento é processado (M9/M16)', async () => {
+  it('onModuleDestroy espera o ciclo em andamento e, depois disso, mais nenhum evento é processado', async () => {
     let comecou: () => void = () => {};
     const pComecou = new Promise<void>((resolver) => {
       comecou = resolver;

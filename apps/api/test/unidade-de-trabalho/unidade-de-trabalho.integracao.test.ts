@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { Logger } from '@nestjs/common';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { criarBancoDeTeste, derrubarBancoDeTeste } from '../integracao/banco-de-teste.js';
 import type { BancoDeTeste } from '../integracao/banco-de-teste.js';
 import { ContextoDaRequisicao } from '../../src/shared/infrastructure/contexto-da-requisicao.js';
@@ -263,6 +264,70 @@ describe('UnidadeDeTrabalho · borda transacional (Documento 7 §5, §8, §22)',
           unidade.transacao('escrita', ({ em }) => em.execute('select 1')),
         ),
       ).rejects.toThrow();
+    });
+  });
+  describe('ganchos de confirmação', () => {
+    const INSERIR_CHAVE =
+      "insert into shared.chave_de_idempotencia (instituicao_id, chave, rota, status_http, resposta) values (?, ?, '/x', 200, '{}'::jsonb)";
+
+    async function contarChaveEmConexaoSeparada(chave: string): Promise<number> {
+      await banco.owner.query("select set_config('app.instituicao_id', $1, false)", [INSTITUICAO_A]);
+      const resultado = await banco.owner.query(
+        'select count(*)::int as total from shared.chave_de_idempotencia where chave = $1',
+        [chave],
+      );
+      return (resultado.rows[0] as { total: number }).total;
+    }
+
+    async function fazerCadaConfirmacaoDemorarParaCompletar(): Promise<void> {
+      await banco.owner.query(
+        `create function shared.demorar_na_confirmacao() returns trigger language plpgsql as
+         $$ begin perform pg_sleep(0.3); return null; end $$`,
+      );
+      await banco.owner.query(
+        `create constraint trigger demorar_na_confirmacao after insert on shared.chave_de_idempotencia
+         deferrable initially deferred for each row execute function shared.demorar_na_confirmacao()`,
+      );
+    }
+
+    it('rodam só depois do commit: uma conexão separada já enxerga a escrita', async () => {
+      await fazerCadaConfirmacaoDemorarParaCompletar();
+      const chave = randomUUID();
+      let leituraDoGancho: Promise<number> = Promise.resolve(-1);
+
+      await comContexto(INSTITUICAO_A, () =>
+        unidade.transacao('escrita', async ({ em, aoConfirmar }) => {
+          await em.execute(INSERIR_CHAVE, [INSTITUICAO_A, chave]);
+          aoConfirmar(() => {
+            leituraDoGancho = contarChaveEmConexaoSeparada(chave);
+          });
+        }),
+      );
+
+      expect(await leituraDoGancho).toBe(1);
+    });
+
+    it('um gancho que lança não derruba o chamador, não desfaz o commit e não impede o gancho seguinte', async () => {
+      const chave = randomUUID();
+      const registroDeErros = vi.spyOn(Logger.prototype, 'error').mockImplementation(() => undefined);
+      const ganchoSeguinte = vi.fn();
+
+      const resultado = await comContexto(INSTITUICAO_A, () =>
+        unidade.transacao('escrita', async ({ em, aoConfirmar }) => {
+          await em.execute(INSERIR_CHAVE, [INSTITUICAO_A, chave]);
+          aoConfirmar(() => {
+            throw new Error('gancho quebrado');
+          });
+          aoConfirmar(ganchoSeguinte);
+          return 'resultado-da-transacao';
+        }),
+      );
+
+      expect(resultado).toBe('resultado-da-transacao');
+      expect(ganchoSeguinte).toHaveBeenCalledOnce();
+      expect(registroDeErros).toHaveBeenCalledOnce();
+      expect(await contarChaveEmConexaoSeparada(chave)).toBe(1);
+      registroDeErros.mockRestore();
     });
   });
 });

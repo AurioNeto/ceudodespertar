@@ -1,3 +1,4 @@
+import { Logger } from '@nestjs/common';
 import { describe, expect, it, vi } from 'vitest';
 import { IsolationLevel } from '@mikro-orm/postgresql';
 import type { MikroORM, TransactionOptions } from '@mikro-orm/postgresql';
@@ -188,6 +189,26 @@ describe('UnidadeDeTrabalhoMikroOrm', () => {
     ).rejects.toThrow('falha proposital');
 
     expect(gancho).not.toHaveBeenCalled();
+  });
+
+  it('um gancho de aoConfirmar que lança não derruba o chamador nem impede os ganchos seguintes', async () => {
+    const em = new EntityManagerFalso();
+    const unidade = new UnidadeDeTrabalhoMikroOrm(ormFalsoCom(em));
+    const ganchoSeguinte = vi.fn();
+    const registroDeErros = vi.spyOn(Logger.prototype, 'error').mockImplementation(() => undefined);
+
+    const resultado = await unidade.transacao('escrita', async (contexto) => {
+      contexto.aoConfirmar(() => {
+        throw new Error('gancho quebrado');
+      });
+      contexto.aoConfirmar(ganchoSeguinte);
+      return 'resultado-da-transacao';
+    });
+
+    expect(resultado).toBe('resultado-da-transacao');
+    expect(ganchoSeguinte).toHaveBeenCalledOnce();
+    expect(registroDeErros).toHaveBeenCalledOnce();
+    registroDeErros.mockRestore();
   });
 
   it('uma transação aninhada registra o gancho na mesma lista da transação externa', async () => {
