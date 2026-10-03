@@ -6,7 +6,8 @@ import type { Ambiente } from '../configuracao/esquema-de-ambiente.js';
 import { ResolvedorDeContextoDeAcesso } from './contexto-de-acesso.js';
 import { GuardaDeAcesso } from './guarda-de-acesso.js';
 import { ResolvedorDeContextoDeAcessoVazio } from './resolvedor-de-contexto-de-acesso-vazio.js';
-import { CHAVES_DE_VERIFICACAO, criarChavesRemotas, VerificadorDeToken } from './verificador-de-token.js';
+import { criarChavesRemotas } from './chaves-remotas.js';
+import { CHAVES_DE_VERIFICACAO, VerificadorDeToken } from './verificador-de-token.js';
 
 @Module({
   providers: [

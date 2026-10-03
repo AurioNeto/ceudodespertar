@@ -19,3 +19,7 @@ export function semPermissao(): HttpException {
 export function erroDeConfiguracaoDeAcesso(): HttpException {
   return erroHttp(HttpStatus.INTERNAL_SERVER_ERROR, 'ERRO_INTERNO');
 }
+
+export function provedorDeIdentidadeIndisponivel(): HttpException {
+  return erroHttp(HttpStatus.SERVICE_UNAVAILABLE, 'PROVEDOR_DE_IDENTIDADE_INDISPONIVEL');
+}

@@ -2,7 +2,13 @@ import { Injectable, Logger } from '@nestjs/common';
 import type { CanActivate, ExecutionContext, HttpException } from '@nestjs/common';
 import { ResolvedorDeContextoDeAcesso } from './contexto-de-acesso.js';
 import type { ContextoDeAcesso } from './contexto-de-acesso.js';
-import { erroDeConfiguracaoDeAcesso, naoAutenticado, semPermissao } from './erros-de-acesso.js';
+import { ErroDeChavesIndisponiveis } from './chaves-remotas.js';
+import {
+  erroDeConfiguracaoDeAcesso,
+  naoAutenticado,
+  provedorDeIdentidadeIndisponivel,
+  semPermissao,
+} from './erros-de-acesso.js';
 import { lerMarcasProprias } from './marcas-de-acesso.js';
 import type { MarcaDeAcesso } from './marcas-de-acesso.js';
 import { guardarContexto, guardarIdentidade } from './requisicao-autenticada.js';
@@ -11,6 +17,9 @@ import { VerificadorDeToken } from './verificador-de-token.js';
 
 const DESAFIO_DE_AUTENTICACAO = 'Bearer';
 const FORMATO_DO_CABECALHO = /^Bearer ([A-Za-z0-9\-._~+/]+=*)$/i;
+
+const FORMATO_DO_MOTIVO = /^[A-Za-z0-9_]{1,64}$/;
+const MOTIVO_DESCONHECIDO = 'ERRO_DESCONHECIDO';
 
 type MarcaDePermissao = Extract<MarcaDeAcesso, { tipo: 'permissao' | 'alguma-permissao' }>;
 
@@ -40,6 +49,7 @@ export class GuardaDeAcesso implements CanActivate {
       throw this.nao401(resposta, resultado.codigo);
     }
     guardarContexto(requisicao, resultado);
+    if (marca.tipo === 'apenas-usuario-ativo') return true;
     if (!possuiPermissaoExigida(resultado, marca)) {
       this.log.warn('Acesso negado por falta de permissão');
       throw semPermissao();
@@ -69,6 +79,10 @@ export class GuardaDeAcesso implements CanActivate {
     try {
       return await this.verificador.verificar(token);
     } catch (erro) {
+      if (erro instanceof ErroDeChavesIndisponiveis) {
+        this.log.error(`Provedor de identidade indisponível: ${descreverMotivo(erro.causa)}`);
+        throw provedorDeIdentidadeIndisponivel();
+      }
       this.log.warn(`Token recusado: ${descreverMotivo(erro)}`);
       throw this.nao401(resposta);
     }
@@ -93,6 +107,8 @@ function possuiPermissaoExigida(contexto: ContextoDeAcesso, marca: MarcaDePermis
 }
 
 function descreverMotivo(erro: unknown): string {
-  if (erro instanceof Error) return `${erro.name}: ${erro.message}`;
-  return 'erro desconhecido';
+  if (!(erro instanceof Error)) return MOTIVO_DESCONHECIDO;
+  const { code } = erro as { code?: unknown };
+  const candidato = typeof code === 'string' ? code : erro.name;
+  return FORMATO_DO_MOTIVO.test(candidato) ? candidato : MOTIVO_DESCONHECIDO;
 }

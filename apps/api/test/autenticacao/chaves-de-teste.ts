@@ -7,6 +7,7 @@ export const KID_CONHECIDO = 'chave-1';
 export const SUB_DE_TESTE = '7f3c2c8e-6c1f-4e0b-9a5e-1d2f3a4b5c6d';
 
 export interface ChavesDeTeste {
+  readonly kid: string;
   readonly privada: CryptoKey;
   readonly outraPrivada: CryptoKey;
   readonly chavePublicaPem: string;
@@ -15,12 +16,13 @@ export interface ChavesDeTeste {
   readonly chaves: JWTVerifyGetKey;
 }
 
-export async function criarChavesDeTeste(): Promise<ChavesDeTeste> {
+export async function criarChavesDeTeste(kid = KID_CONHECIDO): Promise<ChavesDeTeste> {
   const par = await generateKeyPair('RS256');
   const outro = await generateKeyPair('RS256');
-  const jwk = { ...(await exportJWK(par.publicKey)), kid: KID_CONHECIDO, alg: 'RS256', use: 'sig' };
+  const jwk = { ...(await exportJWK(par.publicKey)), kid, alg: 'RS256', use: 'sig' };
   const conjunto: JSONWebKeySet = { keys: [jwk] };
   return {
+    kid,
     privada: par.privateKey,
     outraPrivada: outro.privateKey,
     chavePublicaPem: await exportSPKI(par.publicKey),
@@ -52,7 +54,7 @@ export async function emitirToken(chaves: ChavesDeTeste, opcoes: OpcoesDeEmissao
   const payload = { ...payloadValido(), ...opcoes.payload };
   const definidos = Object.fromEntries(Object.entries(payload).filter(([, valor]) => valor !== undefined));
   return new SignJWT(definidos)
-    .setProtectedHeader({ alg: opcoes.alg ?? 'RS256', kid: opcoes.kid ?? KID_CONHECIDO, typ: 'JWT' })
+    .setProtectedHeader({ alg: opcoes.alg ?? 'RS256', kid: opcoes.kid ?? chaves.kid, typ: 'JWT' })
     .sign(opcoes.chave ?? chaves.privada);
 }
 
@@ -62,6 +64,11 @@ function emBase64Url(valor: unknown): string {
 
 export function emitirTokenSemAssinatura(): string {
   return `${emBase64Url({ alg: 'none', typ: 'JWT' })}.${emBase64Url(payloadValido())}.`;
+}
+
+export function emitirTokenComCritForjado(valorDoCrit: string): string {
+  const cabecalho = emBase64Url({ alg: 'RS256', kid: KID_CONHECIDO, crit: [valorDoCrit] });
+  return `${cabecalho}.${emBase64Url(payloadValido())}.AAAA`;
 }
 
 export interface CasoDeTokenInvalido {

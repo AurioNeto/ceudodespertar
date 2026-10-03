@@ -1,7 +1,7 @@
 import { createServer } from 'node:http';
 import type { Server } from 'node:http';
 import type { AddressInfo } from 'node:net';
-import { createLocalJWKSet, exportJWK, generateKeyPair, jwtVerify } from 'jose';
+import { createLocalJWKSet, errors, exportJWK, generateKeyPair, jwtVerify } from 'jose';
 import { beforeAll, describe, expect, it } from 'vitest';
 import {
   AUDIENCIA_DE_TESTE,
@@ -13,7 +13,8 @@ import {
   SUB_DE_TESTE,
 } from './chaves-de-teste.js';
 import type { ChavesDeTeste } from './chaves-de-teste.js';
-import { criarChavesRemotas, ErroDeTokenInvalido, VerificadorDeToken } from '../../src/shared/infrastructure/autenticacao/verificador-de-token.js';
+import { criarChavesRemotas } from '../../src/shared/infrastructure/autenticacao/chaves-remotas.js';
+import { ErroDeTokenInvalido, VerificadorDeToken } from '../../src/shared/infrastructure/autenticacao/verificador-de-token.js';
 
 describe('VerificadorDeToken', () => {
   let chaves: ChavesDeTeste;
@@ -47,6 +48,18 @@ describe('VerificadorDeToken', () => {
     const token = await emitirToken(chaves, { payload: { exp: Math.floor(Date.now() / 1000) - 1 } });
 
     await expect(verificador.verificar(token)).resolves.toMatchObject({ sub: SUB_DE_TESTE });
+  });
+
+  it('aceita expiração três segundos no passado', async () => {
+    const token = await emitirToken(chaves, { payload: { exp: Math.floor(Date.now() / 1000) - 3 } });
+
+    await expect(verificador.verificar(token)).resolves.toMatchObject({ sub: SUB_DE_TESTE });
+  });
+
+  it('recusa expiração dez segundos no passado', async () => {
+    const token = await emitirToken(chaves, { payload: { exp: Math.floor(Date.now() / 1000) - 10 } });
+
+    await expect(verificador.verificar(token)).rejects.toBeInstanceOf(errors.JWTExpired);
   });
 
   it.each(CASOS_DE_TOKEN_INVALIDO)('recusa $nome', async ({ emitir }) => {

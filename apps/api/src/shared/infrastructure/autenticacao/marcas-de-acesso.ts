@@ -6,6 +6,7 @@ const CHAVE_DAS_MARCAS_DE_ACESSO = Symbol('marcas-de-acesso');
 export type MarcaDeAcesso =
   | { readonly tipo: 'publico' }
   | { readonly tipo: 'apenas-identificado' }
+  | { readonly tipo: 'apenas-usuario-ativo' }
   | { readonly tipo: 'permissao'; readonly permissao: Permissao }
   | { readonly tipo: 'alguma-permissao'; readonly permissoes: readonly Permissao[] };
 
@@ -35,6 +36,10 @@ export function Publico(): DecoratorDeMarca {
 
 export function ApenasIdentificado(): DecoratorDeMarca {
   return marcar({ tipo: 'apenas-identificado' });
+}
+
+export function ApenasUsuarioAtivo(): DecoratorDeMarca {
+  return marcar({ tipo: 'apenas-usuario-ativo' });
 }
 
 export function RequerPermissao(permissao: Permissao): DecoratorDeMarca {

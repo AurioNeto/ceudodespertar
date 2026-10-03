@@ -42,7 +42,7 @@ describe('esqueleto da API', () => {
     vi.stubEnv('OIDC_EMISSOR', 'http://localhost:8080/realms/cdd');
     vi.stubEnv('OIDC_AUDIENCIA', 'cdd-api');
     app = await criarAplicacao(AppModuloComSonda);
-    await app.listen(0);
+    await app.listen(0, '127.0.0.1');
     const endereco = app.getHttpServer().address() as AddressInfo;
     origem = `http://127.0.0.1:${endereco.port}`;
   });
