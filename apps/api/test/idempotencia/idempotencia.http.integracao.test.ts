@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { Body, Controller, Module, Next, Post, Req, Res } from '@nestjs/common';
 import type { INestApplication } from '@nestjs/common';
 import { APP_INTERCEPTOR, NestFactory } from '@nestjs/core';
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { criarBancoDeTeste, derrubarBancoDeTeste } from '../integracao/banco-de-teste.js';
 import type { BancoDeTeste } from '../integracao/banco-de-teste.js';
 import { abrirOrmDeTeste } from '../unidade-de-trabalho/orm-de-teste.js';
@@ -122,6 +122,7 @@ async function postar(caminho: string, chave: string | undefined, corpo: unknown
 }
 
 async function contar(tabela: 'shared.outbox' | 'shared.chave_de_idempotencia'): Promise<number> {
+  await banco.owner.query(`select set_config('app.instituicao_id', $1, false)`, [INSTITUICAO]);
   const { rows } = await banco.owner.query<{ total: number }>(`select count(*)::int as total from ${tabela}`);
   return rows[0]?.total ?? 0;
 }
@@ -221,7 +222,7 @@ describe('IdempotenciaInterceptor sobre HTTP real, com borda e idempotência reg
 
       expect(resposta.status).toBe(201);
       expect(JSON.parse(resposta.corpo)).toStrictEqual({ ok: true });
-      expect(await contar('shared.outbox')).toBe(efeitosAntes + 1);
+      await vi.waitFor(async () => expect(await contar('shared.outbox')).toBe(efeitosAntes + 1));
     });
 
     it('@Res com passthrough e chave funciona e o replay repete status, Location e corpo sem novo efeito', async () => {
