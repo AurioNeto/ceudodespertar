@@ -4,14 +4,17 @@ import { gerarUuidV7 } from '../../../../shared/kernel/ids.js';
 
 const AGREGADO_GRUPO = 'Grupo';
 
+export type AcaoSobrePermissao = 'CONCEDIDA' | 'REVOGADA';
+
 export type DadosDeAlteracaoDePermissao = {
   readonly permissao: Permissao;
-  readonly por: UsuarioId;
+  readonly acao: AcaoSobrePermissao;
+  readonly autorId: UsuarioId;
   readonly codigoSistema: CodigoGrupo | null;
 };
 
 export type DadosDeExclusao = {
-  readonly por: UsuarioId;
+  readonly autorId: UsuarioId;
   readonly codigoSistema: CodigoGrupo | null;
 };
 
@@ -33,17 +36,17 @@ function criarEvento<Dados>(tipo: string, grupoId: GrupoId, ocorridoEm: Date, da
 export function permissaoConcedida(
   grupoId: GrupoId,
   ocorridoEm: Date,
-  dados: DadosDeAlteracaoDePermissao,
+  dados: Omit<DadosDeAlteracaoDePermissao, 'acao'>,
 ): PermissaoConcedida {
-  return criarEvento('identidade.grupo.permissao_concedida', grupoId, ocorridoEm, dados);
+  return criarEvento('GRUPO_ALTERADO', grupoId, ocorridoEm, { ...dados, acao: 'CONCEDIDA' });
 }
 
 export function permissaoRevogada(
   grupoId: GrupoId,
   ocorridoEm: Date,
-  dados: DadosDeAlteracaoDePermissao,
+  dados: Omit<DadosDeAlteracaoDePermissao, 'acao'>,
 ): PermissaoRevogada {
-  return criarEvento('identidade.grupo.permissao_revogada', grupoId, ocorridoEm, dados);
+  return criarEvento('GRUPO_ALTERADO', grupoId, ocorridoEm, { ...dados, acao: 'REVOGADA' });
 }
 
 export function grupoExcluido(grupoId: GrupoId, ocorridoEm: Date, dados: DadosDeExclusao): GrupoExcluido {

@@ -81,38 +81,43 @@ export class Grupo extends RaizDeAgregado<GrupoId> {
     return this.#permissoes.has(permissao);
   }
 
-  renomear(nome: string, descricao: string): void {
+  renomear(nome: string, descricao: string): Result<void, ErroDeDominio> {
+    if (!this.#ativo) return err(erroDeDominio('GRUPO_INEXISTENTE'));
     this.#nome = nome;
     this.#descricao = descricao;
+    return ok();
   }
 
-  concederPermissao(permissao: string, por: UsuarioId, em: Date): Result<void, ErroDeDominio> {
+  concederPermissao(permissao: string, autorId: UsuarioId, em: Date): Result<void, ErroDeDominio> {
     const validada = this.validarAlteracaoDePermissao(permissao);
     if (validada.tipo === 'erro') return validada;
     if (this.#permissoes.has(validada.valor)) return ok();
     this.#permissoes.add(validada.valor);
     this.registrarEvento(
-      permissaoConcedida(this.id, em, { permissao: validada.valor, por, codigoSistema: this.#codigoSistema }),
+      permissaoConcedida(this.id, em, { permissao: validada.valor, autorId, codigoSistema: this.#codigoSistema }),
     );
     return ok();
   }
 
-  revogarPermissao(permissao: string, por: UsuarioId, em: Date): Result<void, ErroDeDominio> {
+  revogarPermissao(permissao: string, autorId: UsuarioId, em: Date): Result<void, ErroDeDominio> {
     const validada = this.validarAlteracaoDePermissao(permissao);
     if (validada.tipo === 'erro') return validada;
     if (!this.#permissoes.delete(validada.valor)) return ok();
     this.registrarEvento(
-      permissaoRevogada(this.id, em, { permissao: validada.valor, por, codigoSistema: this.#codigoSistema }),
+      permissaoRevogada(this.id, em, { permissao: validada.valor, autorId, codigoSistema: this.#codigoSistema }),
     );
     return ok();
   }
 
-  excluir(usuariosAtivos: number, por: UsuarioId, em: Date): Result<void, ErroDeDominio> {
+  excluir(usuariosAtivos: number, autorId: UsuarioId, em: Date): Result<void, ErroDeDominio> {
+    if (!Number.isInteger(usuariosAtivos) || usuariosAtivos < 0) {
+      throw new RangeError(`quantidade de usuários ativos inválida: ${usuariosAtivos}`);
+    }
     if (!this.#ativo) return err(erroDeDominio('GRUPO_INEXISTENTE'));
     if (this.#protegido) return err(erroDeDominio('GRUPO_PROTEGIDO'));
     if (usuariosAtivos > 0) return err(erroDeDominio('GRUPO_COM_USUARIOS_ATIVOS', { usuariosAtivos }));
     this.#ativo = false;
-    this.registrarEvento(grupoExcluido(this.id, em, { por, codigoSistema: this.#codigoSistema }));
+    this.registrarEvento(grupoExcluido(this.id, em, { autorId, codigoSistema: this.#codigoSistema }));
     return ok();
   }
 

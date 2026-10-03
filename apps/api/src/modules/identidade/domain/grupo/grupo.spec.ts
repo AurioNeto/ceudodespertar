@@ -116,10 +116,20 @@ describe('Grupo.renomear', () => {
   it('G2: permite renomear o rótulo de grupo protegido', () => {
     const grupo = criarGrupo({ protegido: true });
 
-    grupo.renomear('Consulta', 'Só leitura');
+    const resultado = grupo.renomear('Consulta', 'Só leitura');
 
+    expect(ehOk(resultado)).toBe(true);
     expect(grupo.nome).toBe('Consulta');
     expect(grupo.descricao).toBe('Só leitura');
+  });
+
+  it('grupo excluído dá GRUPO_INEXISTENTE e mantém nome e descrição', () => {
+    const grupo = criarGrupo({ protegido: false });
+    grupo.excluir(0, AUTOR, INSTANTE);
+
+    expect(codigoDoErro(grupo.renomear('Outro', 'Outra'))).toBe('GRUPO_INEXISTENTE');
+    expect(grupo.nome).toBe('Leitura');
+    expect(grupo.descricao).toBe('Consulta painéis');
   });
 });
 
@@ -134,11 +144,11 @@ describe('Grupo.concederPermissao', () => {
     const [evento, ...restantes] = grupo.retirarEventos();
     expect(restantes).toStrictEqual([]);
     expect(evento).toMatchObject({
-      tipo: 'identidade.grupo.permissao_concedida',
+      tipo: 'GRUPO_ALTERADO',
       agregadoTipo: 'Grupo',
       agregadoId: GRUPO_ID,
       ocorridoEm: INSTANTE,
-      dados: { permissao: 'pessoas.pessoa.ler', por: AUTOR, codigoSistema: 'LEITURA' },
+      dados: { permissao: 'pessoas.pessoa.ler', acao: 'CONCEDIDA', autorId: AUTOR, codigoSistema: 'LEITURA' },
     });
     expect(evento?.eventoId).toMatch(/^[0-9a-f-]{36}$/);
   });
@@ -187,11 +197,11 @@ describe('Grupo.revogarPermissao', () => {
     expect(grupo.permissoes).toStrictEqual([]);
     expect(grupo.retirarEventos()).toMatchObject([
       {
-        tipo: 'identidade.grupo.permissao_revogada',
+        tipo: 'GRUPO_ALTERADO',
         agregadoTipo: 'Grupo',
         agregadoId: GRUPO_ID,
         ocorridoEm: INSTANTE,
-        dados: { permissao: 'estoque.saldo.ler', por: AUTOR, codigoSistema: 'LEITURA' },
+        dados: { permissao: 'estoque.saldo.ler', acao: 'REVOGADA', autorId: AUTOR, codigoSistema: 'LEITURA' },
       },
     ]);
   });
@@ -247,6 +257,26 @@ describe('Grupo.excluir', () => {
     expect(grupo.ativo).toBe(true);
   });
 
+  it('G3: grupo com exatamente um usuário ativo não pode ser excluído', () => {
+    const grupo = criarGrupo({ protegido: false });
+
+    const resultado = grupo.excluir(1, AUTOR, INSTANTE);
+
+    expect(codigoDoErro(resultado)).toBe('GRUPO_COM_USUARIOS_ATIVOS');
+    expect(resultado).toMatchObject({ erro: { detalhes: { usuariosAtivos: 1 } } });
+    expect(grupo.ativo).toBe(true);
+  });
+
+  it.each([Number.NaN, -1, 1.5, Number.POSITIVE_INFINITY])(
+    'quantidade de usuários ativos inválida (%s) é erro de programação',
+    (quantidade) => {
+      const grupo = criarGrupo({ protegido: false });
+
+      expect(() => grupo.excluir(quantidade, AUTOR, INSTANTE)).toThrow(RangeError);
+      expect(grupo.ativo).toBe(true);
+    },
+  );
+
   it('G2 vence G3: grupo protegido com usuários dá GRUPO_PROTEGIDO', () => {
     expect(codigoDoErro(criarGrupo({ protegido: true }).excluir(3, AUTOR, INSTANTE))).toBe('GRUPO_PROTEGIDO');
   });
@@ -264,7 +294,7 @@ describe('Grupo.excluir', () => {
         agregadoTipo: 'Grupo',
         agregadoId: GRUPO_ID,
         ocorridoEm: INSTANTE,
-        dados: { por: AUTOR, codigoSistema: null },
+        dados: { autorId: AUTOR, codigoSistema: null },
       },
     ]);
   });
