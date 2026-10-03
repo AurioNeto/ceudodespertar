@@ -14,6 +14,7 @@ export type DadosDeAlteracaoDePermissao = {
 };
 
 export type DadosDeExclusao = {
+  readonly acao: 'EXCLUIDO';
   readonly autorId: UsuarioId;
   readonly codigoSistema: CodigoGrupo | null;
 };
@@ -49,6 +50,10 @@ export function permissaoRevogada(
   return criarEvento('GRUPO_ALTERADO', grupoId, ocorridoEm, { ...dados, acao: 'REVOGADA' });
 }
 
-export function grupoExcluido(grupoId: GrupoId, ocorridoEm: Date, dados: DadosDeExclusao): GrupoExcluido {
-  return criarEvento('identidade.grupo.excluido', grupoId, ocorridoEm, dados);
+export function grupoExcluido(
+  grupoId: GrupoId,
+  ocorridoEm: Date,
+  dados: Omit<DadosDeExclusao, 'acao'>,
+): GrupoExcluido {
+  return criarEvento('GRUPO_ALTERADO', grupoId, ocorridoEm, { ...dados, acao: 'EXCLUIDO' });
 }

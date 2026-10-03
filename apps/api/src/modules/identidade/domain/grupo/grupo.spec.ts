@@ -290,11 +290,11 @@ describe('Grupo.excluir', () => {
     expect(grupo.ativo).toBe(false);
     expect(grupo.retirarEventos()).toMatchObject([
       {
-        tipo: 'identidade.grupo.excluido',
+        tipo: 'GRUPO_ALTERADO',
         agregadoTipo: 'Grupo',
         agregadoId: GRUPO_ID,
         ocorridoEm: INSTANTE,
-        dados: { autorId: AUTOR, codigoSistema: null },
+        dados: { acao: 'EXCLUIDO', autorId: AUTOR, codigoSistema: null },
       },
     ]);
   });
