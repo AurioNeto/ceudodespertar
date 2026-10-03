@@ -53,6 +53,21 @@ describe('formatarUltimoErro', () => {
     expect(formatarUltimoErro(erroComDadoNosCampos)).toBe(`Error - ${MENSAGEM_GENERICA}`);
   });
 
+  it.each(['12345678900', '2350', '235055', '23505 ', 'ECONNRESET', '2350a'])(
+    'omite o code %j que não tem o formato SQLSTATE de cinco caracteres',
+    (code) => {
+      const erro = Object.assign(new Error('x'), { code });
+
+      expect(formatarUltimoErro(erro)).toBe(`Error - ${MENSAGEM_GENERICA}`);
+    },
+  );
+
+  it.each(['23505', '57014', '42P01', '0A000'])('mantém o SQLSTATE %s', (code) => {
+    const erro = Object.assign(new Error('x'), { code });
+
+    expect(formatarUltimoErro(erro)).toBe(`Error: ${code} - ${MENSAGEM_GENERICA}`);
+  });
+
   it('limita o nome da classe', () => {
     const NomeGigante = class extends Error {};
     Object.defineProperty(NomeGigante, 'name', { value: 'E'.repeat(10_000) });

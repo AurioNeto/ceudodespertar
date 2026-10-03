@@ -148,7 +148,7 @@ export class Despachante implements OnModuleInit, OnModuleDestroy {
   private agendarCiclo(): void {
     ContextoDaRequisicao.foraDeQualquerContexto(() => foraDaTransacaoAtiva(() => this.executarCiclo())).catch(
       (motivo: unknown) => {
-        this.logger.error('falha no ciclo do despachante', paraErro(motivo).stack);
+        this.logger.error(`falha no ciclo do despachante: ${formatarUltimoErro(paraErro(motivo))}`);
       },
     );
   }
@@ -257,6 +257,7 @@ export class Despachante implements OnModuleInit, OnModuleDestroy {
         String(this.timeoutDoConsumidorEmMs),
       ]);
       await this.executarComTimeout(consumidor, evento);
+      await contexto.em.flush();
       await contexto.em.execute('set local statement_timeout to default');
       await this.marcarComoProcessado(contexto, consumidor.consumidor, evento.eventoId);
       await contexto.em.execute(`release savepoint ${SAVEPOINT_DO_CONSUMIDOR}`);
@@ -266,6 +267,7 @@ export class Despachante implements OnModuleInit, OnModuleDestroy {
         await contexto.em.execute(ENCERRAR_TRANSACAO_E_BLOQUEAR_ESCRITA_AVULSA);
         throw motivo;
       }
+      contexto.em.clear();
       await contexto.em.execute(`rollback to savepoint ${SAVEPOINT_DO_CONSUMIDOR}`);
       await contexto.em.execute(`release savepoint ${SAVEPOINT_DO_CONSUMIDOR}`);
       return paraErro(motivo);
@@ -321,8 +323,14 @@ export class Despachante implements OnModuleInit, OnModuleDestroy {
     linha: LinhaDoOutbox,
     erro: Error,
   ): Promise<void> {
-    const tentativas = linha.tentativas + 1;
-    const proximaTentativaEm = calcularProximaTentativa(tentativas, new Date());
+    const registrado = await contexto.em.execute<{ tentativas: number }[]>(
+      'update shared.outbox set tentativas = tentativas + 1, ultimo_erro = ? where id = ? and publicado_em is null returning tentativas',
+      [formatarUltimoErro(erro), linha.id],
+    );
+    const tentativas = registrado[0]?.tentativas;
+    if (tentativas === undefined) {
+      return;
+    }
 
     if (tentativas >= TETO_DE_TENTATIVAS) {
       this.logger.error(
@@ -330,9 +338,9 @@ export class Despachante implements OnModuleInit, OnModuleDestroy {
       );
     }
 
-    await contexto.em.execute(
-      'update shared.outbox set tentativas = ?, ultimo_erro = ?, proxima_tentativa_em = ? where id = ?',
-      [tentativas, formatarUltimoErro(erro), proximaTentativaEm, linha.id],
-    );
+    await contexto.em.execute('update shared.outbox set proxima_tentativa_em = ? where id = ?', [
+      calcularProximaTentativa(tentativas, new Date()),
+      linha.id,
+    ]);
   }
 }

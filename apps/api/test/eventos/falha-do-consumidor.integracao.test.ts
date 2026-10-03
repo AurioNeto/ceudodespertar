@@ -384,6 +384,15 @@ describe('Despachante · falha do consumidor', () => {
       expect((await linhaDoOutbox(banco, evento.eventoId))?.publicado_em).not.toBeNull();
     });
 
+    it('o ciclo termina logo depois do timeout do banco, sem esperar uma folga grande do timer em JS', async () => {
+      app = await subirContextoDeEventos(banco, [ConsumidorPresoForaDoBanco, ConsumidorVizinhoDoPreso]);
+      await gravarEvento(app, criarEvento({ tipo: 'teste.EventoPresoEmJs' }));
+
+      const duracaoEmMs = await medirEmMs(() => app!.get(Despachante).executarCiclo());
+
+      expect(duracaoEmMs).toBeLessThan(TIMEOUT_DO_CONSUMIDOR_EM_MS + 1500);
+    });
+
     it('um consumidor que grava sem parar durante todo o aborto não persiste nada, nem na conexão reaproveitada', async () => {
       app = await subirContextoDeEventos(banco, [ConsumidorQueGravaSemParar], 1);
       const evento = criarEvento({ tipo: 'teste.EventoComGravacaoContinua' });

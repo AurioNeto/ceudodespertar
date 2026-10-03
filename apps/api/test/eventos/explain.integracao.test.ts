@@ -22,7 +22,7 @@ async function lerDefinicaoDoIndice(
   return { colunas: linhas.map((linha) => linha.coluna), predicado: linhas[0]?.predicado ?? '' };
 }
 
-describe('plano da consulta do despachante com histórico grande (item 6)', () => {
+describe('plano da consulta do despachante com histórico grande', () => {
   let banco: BancoDeTeste;
 
   beforeEach(async () => {

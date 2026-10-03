@@ -1,6 +1,6 @@
 const MENSAGEM_GENERICA = 'o consumidor falhou ao processar o evento';
 const TAMANHO_MAXIMO_DO_NOME_DA_CLASSE = 100;
-const PADRAO_DE_CODIGO = /^[A-Z0-9_]{1,32}$/;
+const PADRAO_DE_CODIGO = /^[0-9A-Z]{5}$/;
 const PADRAO_DE_NOME_DE_CONSTRAINT = /^[A-Za-z0-9_]{1,63}$/;
 
 function propriedadeTextualSegura(
