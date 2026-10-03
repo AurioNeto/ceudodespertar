@@ -12,6 +12,7 @@ export class Convite {
   private constructor(private readonly dados: DadosDoConvite) {}
 
   static criar(hashDoToken: string, expiraEm: Date): Convite {
+    if (Number.isNaN(expiraEm.getTime())) throw new RangeError('data de expiração do convite inválida');
     return new Convite({ hashDoToken, expiraEm, usadoEm: null, revogadoEm: null });
   }
 

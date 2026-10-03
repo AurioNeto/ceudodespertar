@@ -11,6 +11,10 @@ function conviteVigente(): Convite {
 }
 
 describe('Convite', () => {
+  it('data de expiração inválida é erro de programação', () => {
+    expect(() => Convite.criar(HASH, new Date('inválida'))).toThrow(RangeError);
+  });
+
   it('aceita o hash correto antes de expirar', () => {
     expect(ehOk(conviteVigente().validar(HASH, ANTES_DE_EXPIRAR))).toBe(true);
   });

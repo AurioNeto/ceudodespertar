@@ -10,35 +10,25 @@ export interface UsuarioDaInstituicao {
   readonly permissoesEfetivas: ReadonlySet<Permissao>;
 }
 
-export type MudancaProposta =
-  | {
-      readonly tipo: 'TROCAR_GRUPOS';
-      readonly autorId: UsuarioId;
-      readonly usuarioId: UsuarioId;
-      readonly permissoesResultantes: ReadonlySet<Permissao>;
-    }
-  | { readonly tipo: 'SUSPENDER'; readonly autorId: UsuarioId; readonly usuarioId: UsuarioId };
-
 function ehAdministradorAtivo(usuario: UsuarioDaInstituicao): boolean {
   return usuario.situacao === 'ATIVO' && usuario.permissoesEfetivas.has(PERMISSAO_DE_ADMINISTRADOR);
 }
 
-function aplicar(usuario: UsuarioDaInstituicao, mudanca: MudancaProposta): UsuarioDaInstituicao {
-  return mudanca.tipo === 'SUSPENDER'
-    ? { ...usuario, situacao: 'SUSPENSO' }
-    : { ...usuario, permissoesEfetivas: mudanca.permissoesResultantes };
+function idsDosAdministradoresAtivos(instituicao: readonly UsuarioDaInstituicao[]): Set<UsuarioId> {
+  return new Set(instituicao.filter(ehAdministradorAtivo).map((usuario) => usuario.id));
 }
 
 export class PoliticaDoUltimoAdministrador {
-  verificar(instituicao: readonly UsuarioDaInstituicao[], mudanca: MudancaProposta): Result<void, ErroDeDominio> {
-    const alvo = instituicao.find((usuario) => usuario.id === mudanca.usuarioId);
-    if (alvo === undefined) return err(erroDeDominio('USUARIO_DESCONHECIDO'));
+  verificar(
+    antes: readonly UsuarioDaInstituicao[],
+    depois: readonly UsuarioDaInstituicao[],
+    autorId: UsuarioId,
+  ): Result<void, ErroDeDominio> {
+    const administradoresAntes = idsDosAdministradoresAtivos(antes);
+    const administradoresDepois = idsDosAdministradoresAtivos(depois);
 
-    const alvoPerdeAdministracao = ehAdministradorAtivo(alvo) && !ehAdministradorAtivo(aplicar(alvo, mudanca));
-    const haOutroAdministrador = instituicao.some((usuario) => usuario !== alvo && ehAdministradorAtivo(usuario));
-
-    if (alvoPerdeAdministracao && !haOutroAdministrador) {
-      return err(erroDeDominio('ULTIMO_ADMINISTRADOR', { autorId: mudanca.autorId, usuarioId: mudanca.usuarioId }));
+    if (administradoresAntes.size > 0 && administradoresDepois.size === 0) {
+      return err(erroDeDominio('ULTIMO_ADMINISTRADOR', { autorId, administradoresAfetados: [...administradoresAntes] }));
     }
     return ok();
   }

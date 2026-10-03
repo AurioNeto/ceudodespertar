@@ -17,6 +17,7 @@ const CODIGO_DA_SITUACAO_INATIVA: Record<SituacaoInativa, CodigoDeErro> = {
 
 export interface DadosParaConvidar {
   readonly id: UsuarioId;
+  readonly nome: string;
   readonly email: string;
   readonly grupos: readonly GrupoId[];
   readonly hashDoConvite: string;
@@ -29,6 +30,7 @@ export interface DadosDoUsuario {
   readonly id: UsuarioId;
   readonly pessoaId: PessoaId | null;
   readonly subjectId: string | null;
+  readonly nome: string;
   readonly email: string;
   readonly situacao: SituacaoUsuario;
   readonly grupos: readonly GrupoId[];
@@ -55,16 +57,19 @@ function erroDaSituacao(situacao: SituacaoUsuario, codigoSeAtivo: CodigoDeErro):
 export class Usuario extends RaizDeAgregado<UsuarioId> {
   private _pessoaId: PessoaId | null;
   private _subjectId: string | null;
+  private _nome: string;
   private _email: string;
   private _situacao: SituacaoUsuario;
   private _grupos: GrupoId[];
   private _ultimoAcessoEm: Date | null;
   private _convite: Convite | null;
+  private readonly _convitesSubstituidos: Convite[] = [];
 
   private constructor(dados: DadosDoUsuario, versao?: number) {
     super(dados.id, versao);
     this._pessoaId = dados.pessoaId;
     this._subjectId = dados.subjectId;
+    this._nome = dados.nome;
     this._email = dados.email;
     this._situacao = dados.situacao;
     this._grupos = semDuplicatas(dados.grupos);
@@ -77,6 +82,7 @@ export class Usuario extends RaizDeAgregado<UsuarioId> {
       id: dados.id,
       pessoaId: null,
       subjectId: null,
+      nome: dados.nome,
       email: dados.email,
       situacao: 'CONVITE_PENDENTE',
       grupos: dados.grupos,
@@ -99,6 +105,10 @@ export class Usuario extends RaizDeAgregado<UsuarioId> {
     return this._subjectId;
   }
 
+  get nome(): string {
+    return this._nome;
+  }
+
   get email(): string {
     return this._email;
   }
@@ -119,6 +129,10 @@ export class Usuario extends RaizDeAgregado<UsuarioId> {
     return this._convite;
   }
 
+  get convitesSubstituidos(): readonly Convite[] {
+    return [...this._convitesSubstituidos];
+  }
+
   validarConvite(hashApresentado: string, em: Date): Result<void, ErroDeDominio> {
     return this._convite === null
       ? err(erroDeDominio('CONVITE_INVALIDO'))
@@ -128,18 +142,22 @@ export class Usuario extends RaizDeAgregado<UsuarioId> {
   reenviarConvite(novoHash: string, novaExpiraEm: Date, por: UsuarioId, em: Date): Result<void, ErroDeDominio> {
     if (this._situacao !== 'CONVITE_PENDENTE') return err(erroDaSituacao(this._situacao, 'CONVITE_JA_USADO'));
 
-    const hashDoConviteRevogado = this._convite?.hashDoToken ?? null;
-    this._convite = Convite.criar(novoHash, novaExpiraEm);
-    this.registrarOperacao('USUARIO_CONVIDADO', em, { autorId: por, email: this._email, hashDoConviteRevogado });
+    const novoConvite = Convite.criar(novoHash, novaExpiraEm);
+    if (this._convite !== null) this._convitesSubstituidos.push(this._convite.revogar(em));
+    this._convite = novoConvite;
+    this.registrarOperacao('USUARIO_CONVIDADO', em, { autorId: por, email: this._email });
     return ok();
   }
 
-  ativar(subjectId: string, em: Date): Result<void, ErroDeDominio> {
+  ativar(hashApresentado: string, subjectId: string, em: Date): Result<void, ErroDeDominio> {
     if (this._situacao !== 'CONVITE_PENDENTE') return err(erroDaSituacao(this._situacao, 'CONVITE_JA_USADO'));
+    if (this._convite === null) return err(erroDeDominio('CONVITE_INVALIDO'));
+    const conviteValido = this._convite.validar(hashApresentado, em);
+    if (conviteValido.tipo === 'erro') return conviteValido;
 
     this._situacao = 'ATIVO';
     this._subjectId = subjectId;
-    this._convite = this._convite?.usar(em) ?? null;
+    this._convite = this._convite.usar(em);
     this.registrarOperacao('USUARIO_ATIVADO', em, { autorId: this.id, subjectId });
     return ok();
   }

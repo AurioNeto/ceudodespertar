@@ -1,16 +1,11 @@
 import type { Permissao, SituacaoUsuario, UsuarioId } from '@cdd/contracts';
 import { describe, expect, it } from 'vitest';
 import { ehErr, ehOk } from '../../../../shared/kernel/result.js';
-import {
-  PoliticaDoUltimoAdministrador,
-  type MudancaProposta,
-  type UsuarioDaInstituicao,
-} from './politica-do-ultimo-administrador.js';
+import { PoliticaDoUltimoAdministrador, type UsuarioDaInstituicao } from './politica-do-ultimo-administrador.js';
 
 const ADMIN_1 = 'admin-1' as UsuarioId;
 const ADMIN_2 = 'admin-2' as UsuarioId;
 const COMUM = 'comum-1' as UsuarioId;
-const FANTASMA = 'fantasma' as UsuarioId;
 
 const ADMINISTRAR: ReadonlySet<Permissao> = new Set(['sistema.usuario.gerenciar']);
 const SO_GRUPOS: ReadonlySet<Permissao> = new Set(['sistema.grupo.gerenciar']);
@@ -26,123 +21,117 @@ function usuario(
 
 const politica = new PoliticaDoUltimoAdministrador();
 
-function codigoDe(instituicao: readonly UsuarioDaInstituicao[], mudanca: MudancaProposta): string | undefined {
-  const resultado = politica.verificar(instituicao, mudanca);
+function codigoDe(
+  antes: readonly UsuarioDaInstituicao[],
+  depois: readonly UsuarioDaInstituicao[],
+  autorId: UsuarioId = ADMIN_1,
+): string | undefined {
+  const resultado = politica.verificar(antes, depois, autorId);
   return ehErr(resultado) ? resultado.erro.codigo : undefined;
 }
 
-function trocarGrupos(
-  autorId: UsuarioId,
-  usuarioId: UsuarioId,
-  permissoesResultantes: ReadonlySet<Permissao>,
-): MudancaProposta {
-  return { tipo: 'TROCAR_GRUPOS', autorId, usuarioId, permissoesResultantes };
-}
+describe('PoliticaDoUltimoAdministrador (US5)', () => {
+  it('recusa quando o único administrador ativo perde a permissão', () => {
+    const antes = [usuario(ADMIN_1, 'ATIVO', ADMINISTRAR), usuario(COMUM, 'ATIVO', NADA)];
+    const depois = [usuario(ADMIN_1, 'ATIVO', SO_GRUPOS), usuario(COMUM, 'ATIVO', NADA)];
 
-function suspender(autorId: UsuarioId, usuarioId: UsuarioId): MudancaProposta {
-  return { tipo: 'SUSPENDER', autorId, usuarioId };
-}
+    expect(codigoDe(antes, depois)).toBe('ULTIMO_ADMINISTRADOR');
+  });
 
-describe('PoliticaDoUltimoAdministrador', () => {
-  describe('US5: trocar grupos', () => {
-    it('recusa quando o único administrador ativo perde a permissão, mesmo sendo o próprio autor', () => {
-      const instituicao = [usuario(ADMIN_1, 'ATIVO', ADMINISTRAR), usuario(COMUM, 'ATIVO', NADA)];
+  it('recusa a autossuspensão do único administrador', () => {
+    const antes = [usuario(ADMIN_1, 'ATIVO', ADMINISTRAR)];
+    const depois = [usuario(ADMIN_1, 'SUSPENSO', ADMINISTRAR)];
 
-      expect(codigoDe(instituicao, trocarGrupos(ADMIN_1, ADMIN_1, SO_GRUPOS))).toBe('ULTIMO_ADMINISTRADOR');
-    });
+    expect(codigoDe(antes, depois, ADMIN_1)).toBe('ULTIMO_ADMINISTRADOR');
+  });
 
-    it('recusa quando outro usuário remove o único administrador', () => {
-      const instituicao = [usuario(ADMIN_1, 'ATIVO', ADMINISTRAR), usuario(COMUM, 'ATIVO', NADA)];
+  it('recusa quando a revogação da permissão no grupo atinge todos os administradores', () => {
+    const antes = [usuario(ADMIN_1, 'ATIVO', ADMINISTRAR), usuario(ADMIN_2, 'ATIVO', ADMINISTRAR)];
+    const depois = [usuario(ADMIN_1, 'ATIVO', NADA), usuario(ADMIN_2, 'ATIVO', NADA)];
 
-      expect(codigoDe(instituicao, trocarGrupos(COMUM, ADMIN_1, NADA))).toBe('ULTIMO_ADMINISTRADOR');
-    });
+    expect(codigoDe(antes, depois, COMUM)).toBe('ULTIMO_ADMINISTRADOR');
+  });
 
-    it('detalha autor e alvo no erro', () => {
-      const instituicao = [usuario(ADMIN_1, 'ATIVO', ADMINISTRAR)];
+  it('detalha o autor, distinto do alvo, e os administradores que perderam a condição', () => {
+    const antes = [usuario(ADMIN_1, 'ATIVO', ADMINISTRAR), usuario(ADMIN_2, 'ATIVO', ADMINISTRAR)];
+    const depois = [usuario(ADMIN_1, 'ATIVO', NADA), usuario(ADMIN_2, 'SUSPENSO', ADMINISTRAR)];
 
-      const resultado = politica.verificar(instituicao, trocarGrupos(ADMIN_1, ADMIN_1, NADA));
+    const resultado = politica.verificar(antes, depois, COMUM);
 
-      expect(ehErr(resultado) && resultado.erro.detalhes).toEqual({ autorId: ADMIN_1, usuarioId: ADMIN_1 });
-    });
-
-    it('aceita quando existem dois administradores ativos', () => {
-      const instituicao = [usuario(ADMIN_1, 'ATIVO', ADMINISTRAR), usuario(ADMIN_2, 'ATIVO', ADMINISTRAR)];
-
-      expect(ehOk(politica.verificar(instituicao, trocarGrupos(ADMIN_1, ADMIN_1, NADA)))).toBe(true);
-    });
-
-    it('aceita quando o administrador continua administrador depois da troca', () => {
-      const instituicao = [usuario(ADMIN_1, 'ATIVO', ADMINISTRAR)];
-
-      expect(ehOk(politica.verificar(instituicao, trocarGrupos(ADMIN_1, ADMIN_1, ADMINISTRAR)))).toBe(true);
-    });
-
-    it('aceita mudança em quem não é administrador', () => {
-      const instituicao = [usuario(ADMIN_1, 'ATIVO', ADMINISTRAR), usuario(COMUM, 'ATIVO', SO_GRUPOS)];
-
-      expect(ehOk(politica.verificar(instituicao, trocarGrupos(ADMIN_1, COMUM, NADA)))).toBe(true);
-    });
-
-    it('aceita mudança em não administrador mesmo sem administrador ativo na instituição', () => {
-      const instituicao = [usuario(COMUM, 'ATIVO', NADA)];
-
-      expect(ehOk(politica.verificar(instituicao, trocarGrupos(COMUM, COMUM, SO_GRUPOS)))).toBe(true);
-    });
-
-    it('administrador suspenso não conta como outro administrador', () => {
-      const instituicao = [usuario(ADMIN_1, 'ATIVO', ADMINISTRAR), usuario(ADMIN_2, 'SUSPENSO', ADMINISTRAR)];
-
-      expect(codigoDe(instituicao, trocarGrupos(ADMIN_1, ADMIN_1, NADA))).toBe('ULTIMO_ADMINISTRADOR');
-    });
-
-    it('convite pendente com permissão administrativa não conta', () => {
-      const instituicao = [usuario(ADMIN_1, 'ATIVO', ADMINISTRAR), usuario(ADMIN_2, 'CONVITE_PENDENTE', ADMINISTRAR)];
-
-      expect(codigoDe(instituicao, trocarGrupos(ADMIN_1, ADMIN_1, NADA))).toBe('ULTIMO_ADMINISTRADOR');
-    });
-
-    it('usuário revogado não conta', () => {
-      const instituicao = [usuario(ADMIN_1, 'ATIVO', ADMINISTRAR), usuario(ADMIN_2, 'REVOGADO', ADMINISTRAR)];
-
-      expect(codigoDe(instituicao, trocarGrupos(ADMIN_1, ADMIN_1, NADA))).toBe('ULTIMO_ADMINISTRADOR');
-    });
-
-    it('outro ativo sem permissão administrativa não conta', () => {
-      const instituicao = [usuario(ADMIN_1, 'ATIVO', ADMINISTRAR), usuario(COMUM, 'ATIVO', SO_GRUPOS)];
-
-      expect(codigoDe(instituicao, trocarGrupos(ADMIN_1, ADMIN_1, NADA))).toBe('ULTIMO_ADMINISTRADOR');
+    expect(ehErr(resultado) && resultado.erro.detalhes).toEqual({
+      autorId: COMUM,
+      administradoresAfetados: [ADMIN_1, ADMIN_2],
     });
   });
 
-  describe('US5: suspender', () => {
-    it('recusa suspender o único administrador ativo, inclusive a si mesmo', () => {
-      const instituicao = [usuario(ADMIN_1, 'ATIVO', ADMINISTRAR)];
+  it('aceita quando um de dois administradores sai', () => {
+    const antes = [usuario(ADMIN_1, 'ATIVO', ADMINISTRAR), usuario(ADMIN_2, 'ATIVO', ADMINISTRAR)];
+    const depois = [usuario(ADMIN_1, 'SUSPENSO', ADMINISTRAR), usuario(ADMIN_2, 'ATIVO', ADMINISTRAR)];
 
-      expect(codigoDe(instituicao, suspender(ADMIN_1, ADMIN_1))).toBe('ULTIMO_ADMINISTRADOR');
-    });
+    expect(ehOk(politica.verificar(antes, depois, ADMIN_1))).toBe(true);
+  });
 
-    it('aceita suspender administrador quando há outro ativo', () => {
-      const instituicao = [usuario(ADMIN_1, 'ATIVO', ADMINISTRAR), usuario(ADMIN_2, 'ATIVO', ADMINISTRAR)];
+  it('aceita mudança em quem não é administrador', () => {
+    const antes = [usuario(ADMIN_1, 'ATIVO', ADMINISTRAR), usuario(COMUM, 'ATIVO', SO_GRUPOS)];
+    const depois = [usuario(ADMIN_1, 'ATIVO', ADMINISTRAR), usuario(COMUM, 'SUSPENSO', NADA)];
 
-      expect(ehOk(politica.verificar(instituicao, suspender(ADMIN_2, ADMIN_1)))).toBe(true);
-    });
+    expect(ehOk(politica.verificar(antes, depois, ADMIN_1))).toBe(true);
+  });
 
-    it('aceita suspender quem não é administrador', () => {
-      const instituicao = [usuario(ADMIN_1, 'ATIVO', ADMINISTRAR), usuario(COMUM, 'ATIVO', SO_GRUPOS)];
+  it('aceita quando a instituição já estava sem administrador ativo, porque nada piorou', () => {
+    const antes = [usuario(COMUM, 'ATIVO', NADA)];
+    const depois = [usuario(COMUM, 'ATIVO', SO_GRUPOS)];
 
-      expect(ehOk(politica.verificar(instituicao, suspender(ADMIN_1, COMUM)))).toBe(true);
-    });
+    expect(ehOk(politica.verificar(antes, depois, COMUM))).toBe(true);
+  });
 
-    it('aceita suspender administrador que já não estava ativo', () => {
-      const instituicao = [usuario(ADMIN_1, 'SUSPENSO', ADMINISTRAR)];
+  it('aceita quando o administrador continua administrador', () => {
+    const antes = [usuario(ADMIN_1, 'ATIVO', ADMINISTRAR)];
+    const depois = [usuario(ADMIN_1, 'ATIVO', ADMINISTRAR)];
 
-      expect(ehOk(politica.verificar(instituicao, suspender(COMUM, ADMIN_1)))).toBe(true);
+    expect(ehOk(politica.verificar(antes, depois, ADMIN_1))).toBe(true);
+  });
+
+  it('aceita quando a mudança promove um novo administrador no lugar do que sai', () => {
+    const antes = [usuario(ADMIN_1, 'ATIVO', ADMINISTRAR), usuario(COMUM, 'ATIVO', NADA)];
+    const depois = [usuario(ADMIN_1, 'SUSPENSO', ADMINISTRAR), usuario(COMUM, 'ATIVO', ADMINISTRAR)];
+
+    expect(ehOk(politica.verificar(antes, depois, ADMIN_1))).toBe(true);
+  });
+
+  it('linhas repetidas do mesmo id contam como um só administrador', () => {
+    const antes = [usuario(ADMIN_1, 'ATIVO', ADMINISTRAR), usuario(ADMIN_1, 'ATIVO', ADMINISTRAR)];
+    const depois = [usuario(ADMIN_1, 'SUSPENSO', ADMINISTRAR), usuario(ADMIN_1, 'SUSPENSO', ADMINISTRAR)];
+
+    const resultado = politica.verificar(antes, depois, ADMIN_1);
+
+    expect(ehErr(resultado) && resultado.erro.detalhes).toEqual({
+      autorId: ADMIN_1,
+      administradoresAfetados: [ADMIN_1],
     });
   });
 
-  it('recusa alvo fora da instituição com USUARIO_DESCONHECIDO', () => {
-    const instituicao = [usuario(ADMIN_1, 'ATIVO', ADMINISTRAR)];
+  it.each([
+    ['SUSPENSO'],
+    ['CONVITE_PENDENTE'],
+    ['REVOGADO'],
+  ] as const)('usuário %s com permissão administrativa não conta como administrador', (situacao) => {
+    const antes = [usuario(ADMIN_1, 'ATIVO', ADMINISTRAR), usuario(ADMIN_2, situacao, ADMINISTRAR)];
+    const depois = [usuario(ADMIN_1, 'ATIVO', NADA), usuario(ADMIN_2, situacao, ADMINISTRAR)];
 
-    expect(codigoDe(instituicao, suspender(ADMIN_1, FANTASMA))).toBe('USUARIO_DESCONHECIDO');
+    expect(codigoDe(antes, depois)).toBe('ULTIMO_ADMINISTRADOR');
+  });
+
+  it('outro ativo sem permissão administrativa não conta', () => {
+    const antes = [usuario(ADMIN_1, 'ATIVO', ADMINISTRAR), usuario(COMUM, 'ATIVO', SO_GRUPOS)];
+    const depois = [usuario(ADMIN_1, 'ATIVO', NADA), usuario(COMUM, 'ATIVO', SO_GRUPOS)];
+
+    expect(codigoDe(antes, depois)).toBe('ULTIMO_ADMINISTRADOR');
+  });
+
+  it('administrador ausente do estado depois deixa de contar', () => {
+    const antes = [usuario(ADMIN_1, 'ATIVO', ADMINISTRAR)];
+
+    expect(codigoDe(antes, [])).toBe('ULTIMO_ADMINISTRADOR');
   });
 });
