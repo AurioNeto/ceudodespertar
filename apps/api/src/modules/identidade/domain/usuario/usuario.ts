@@ -145,6 +145,7 @@ export class Usuario extends RaizDeAgregado<UsuarioId> {
   }
 
   desativar(por: UsuarioId, motivo: string, em: Date): Result<void, ErroDeDominio> {
+    if (this._situacao === 'SUSPENSO') return ok();
     if (this._situacao !== 'ATIVO') return err(erroDaSituacaoInativa(this._situacao));
     if (motivo.trim() === '') return err(erroDeDominio('MOTIVO_OBRIGATORIO'));
 
@@ -154,7 +155,8 @@ export class Usuario extends RaizDeAgregado<UsuarioId> {
   }
 
   reativar(por: UsuarioId, em: Date): Result<void, ErroDeDominio> {
-    if (this._situacao !== 'SUSPENSO') return err(erroDaSituacao(this._situacao, 'CONFLITO_DE_CONCORRENCIA'));
+    if (this._situacao === 'ATIVO') return ok();
+    if (this._situacao !== 'SUSPENSO') return err(erroDaSituacaoInativa(this._situacao));
 
     this._situacao = 'ATIVO';
     this.registrarOperacao('USUARIO_REATIVADO', em, { autorId: por });

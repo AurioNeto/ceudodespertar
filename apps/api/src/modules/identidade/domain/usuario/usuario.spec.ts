@@ -269,9 +269,16 @@ describe('Usuario.desativar', () => {
     expect(usuario.situacao).toBe('ATIVO');
   });
 
+  it('desativar usuário já SUSPENSO é idempotente: ok, sem evento', () => {
+    const usuario = emSituacao('SUSPENSO');
+
+    expect(ehOk(usuario.desativar(ADMIN_ID, 'de novo', DEPOIS))).toBe(true);
+    expect(usuario.situacao).toBe('SUSPENSO');
+    expect(usuario.retirarEventos()).toEqual([]);
+  });
+
   it.each([
     ['CONVITE_PENDENTE', 'USUARIO_CONVITE_PENDENTE'],
-    ['SUSPENSO', 'USUARIO_SUSPENSO'],
     ['REVOGADO', 'USUARIO_REVOGADO'],
   ] as const)('recusa desativar usuário %s com %s', (situacao, codigo) => {
     const usuario = emSituacao(situacao);
@@ -295,9 +302,17 @@ describe('Usuario.reativar', () => {
     ]);
   });
 
+  it('reativar usuário já ATIVO é idempotente: ok, sem evento', () => {
+    const usuario = ativo();
+    usuario.retirarEventos();
+
+    expect(ehOk(usuario.reativar(ADMIN_ID, DEPOIS))).toBe(true);
+    expect(usuario.situacao).toBe('ATIVO');
+    expect(usuario.retirarEventos()).toEqual([]);
+  });
+
   it.each([
     ['CONVITE_PENDENTE', 'USUARIO_CONVITE_PENDENTE'],
-    ['ATIVO', 'CONFLITO_DE_CONCORRENCIA'],
     ['REVOGADO', 'USUARIO_REVOGADO'],
   ] as const)('recusa reativar usuário %s com %s', (situacao, codigo) => {
     const usuario = emSituacao(situacao);
