@@ -6,6 +6,7 @@ const CAMINHO_DO_ORM = 'node_modules/@mikro-orm/';
 const CAMADAS_COM_ACESSO_AO_ORM = [
   '(?:^|/)apps/api/src/shared/infrastructure/banco/',
   '(?:^|/)apps/api/src/banco/',
+  '(?:^|/)apps/api/src/modules/[^/]+/infrastructure/',
 ];
 
 export default {
@@ -32,10 +33,11 @@ export default {
       name: 'orm-so-na-infraestrutura-de-banco',
       severity: 'error',
       comment:
-        'MikroORM só é importado pela infraestrutura de banco: quem precisa de EntityManager ' +
-        'recebe o contexto da UnidadeDeTrabalho. A conexão que volta ao pool depois de um aborto ' +
-        'fica read-only, e só a UnidadeDeTrabalho a reabre para escrita. O domínio já é coberto ' +
-        'por dominio-sem-framework.',
+        'MikroORM só é importado pela infraestrutura de banco compartilhada e pela infraestrutura ' +
+        'de cada módulo (entidades, mappers e repositórios, Documento 7 §3). application, interface ' +
+        'e o resto de shared/infrastructure recebem o contexto da UnidadeDeTrabalho. A regra limita ' +
+        'imports, não chamadas: em.fork() sobre o contexto recebido continua fora do alcance dela. ' +
+        'O domínio já é coberto por dominio-sem-framework.',
       from: {
         path: '(?:^|/)apps/api/src/',
         pathNot: [...CAMADAS_COM_ACESSO_AO_ORM, CAMADA_DE_DOMINIO],

@@ -61,6 +61,7 @@ const CASOS_POSITIVOS = [
 const CASOS_NEGATIVOS = [
   'fixtures-negativas/orm-so-na-infraestrutura-de-banco/shared-infrastructure-banco',
   'fixtures-negativas/orm-so-na-infraestrutura-de-banco/banco',
+  'fixtures-negativas/orm-so-na-infraestrutura-de-banco/modulo-infrastructure',
   'fixtures-negativas/modulo-so-por-public-api/public-api-de-outro-modulo',
   'fixtures-negativas/modulo-so-por-public-api/mesmo-modulo',
 ] as const;
