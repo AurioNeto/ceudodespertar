@@ -12,11 +12,25 @@ const listaDeOrigens = z
       .filter((origem) => origem.length > 0),
   );
 
+const emissorOidc = z.string().refine(ehEmissorOidcAceito, {
+  message: 'deve ser uma URL https, ou http apenas em localhost, sem barra final, credenciais, query ou fragmento',
+});
+
+function ehEmissorOidcAceito(valor: string): boolean {
+  const url = URL.parse(valor);
+  if (url === null) return false;
+  const protocoloAceito = url.protocol === 'https:' || (url.protocol === 'http:' && url.hostname === 'localhost');
+  const semAdornos = url.username === '' && url.password === '' && url.search === '' && url.hash === '';
+  return protocoloAceito && semAdornos && !valor.endsWith('/');
+}
+
 export const EsquemaDeAmbiente = z.object({
   PORTA: z.coerce.number().int().min(1).max(65535).default(3000),
   ORIGENS_CORS: listaDeOrigens,
   LOG_NIVEL: z.enum(NIVEIS_DE_LOG).default('info'),
   TZ: z.string().min(1).default('UTC'),
+  OIDC_EMISSOR: emissorOidc,
+  OIDC_AUDIENCIA: z.string().min(1),
 });
 
 export type Ambiente = z.infer<typeof EsquemaDeAmbiente>;
