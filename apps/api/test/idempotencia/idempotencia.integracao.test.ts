@@ -12,7 +12,6 @@ import {
   UnidadeDeTrabalhoMikroOrm,
 } from '../../src/shared/infrastructure/banco/unidade-de-trabalho.mikro-orm.js';
 import { IdempotenciaInterceptor } from '../../src/shared/infrastructure/idempotencia/idempotencia.interceptor.js';
-import { ErroDeConfiguracaoDeIdempotencia } from '../../src/shared/infrastructure/idempotencia/erro-de-configuracao-de-idempotencia.js';
 import { calcularHashDoCorpo } from '../../src/shared/infrastructure/idempotencia/hash-do-corpo.js';
 import { reclamarChaveVencida } from '../../src/shared/infrastructure/idempotencia/chave-de-idempotencia.repositorio.js';
 import type { DadosDaChaveDeIdempotencia } from '../../src/shared/infrastructure/idempotencia/chave-de-idempotencia.repositorio.js';
@@ -34,7 +33,6 @@ interface RequisicaoFake {
 
 interface RespostaFake {
   statusCode: number;
-  headersSent: boolean;
   getHeader(nome: string): string | undefined;
   setHeader(nome: string, valor: string): void;
 }
@@ -43,7 +41,6 @@ function respostaFake(statusCodeInicial = HttpStatus.CREATED): RespostaFake {
   const cabecalhos: Record<string, string> = {};
   return {
     statusCode: statusCodeInicial,
-    headersSent: false,
     getHeader: (nome: string) => cabecalhos[nome],
     setHeader: (nome: string, valor: string) => {
       cabecalhos[nome] = valor;
@@ -367,56 +364,6 @@ describe('IdempotenciaInterceptor · Idempotency-Key (Documento 7 §12)', () => 
     expect(linhas).toHaveLength(0);
   });
 
-  it('handler que responde por conta própria (@Res sem passthrough) falha fechado e não grava a chave', async () => {
-    const chave = randomUUID();
-    const resposta = respostaFake();
-
-    await expect(
-      executarComando(
-        INSTITUICAO_A,
-        requisicaoFake({ chave }),
-        () => {
-          resposta.headersSent = true;
-          return undefined;
-        },
-        resposta,
-      ),
-    ).rejects.toThrow(ErroDeConfiguracaoDeIdempotencia);
-
-    const linhas = await comIdentidade(INSTITUICAO_A, () =>
-      unidade.transacao('leitura', ({ em }) =>
-        em.execute<{ chave: string }[]>('select chave from shared.chave_de_idempotencia where chave = ?', [chave]),
-      ),
-    );
-    expect(linhas).toHaveLength(0);
-  });
-
-  it('depois da falha fechada por @Res, uma nova tentativa com a mesma chave roda o handler de novo (o replay não fica pendurado)', async () => {
-    const chave = randomUUID();
-    const respostaQueResponde = respostaFake();
-
-    await expect(
-      executarComando(
-        INSTITUICAO_A,
-        requisicaoFake({ chave }),
-        () => {
-          respostaQueResponde.headersSent = true;
-          return undefined;
-        },
-        respostaQueResponde,
-      ),
-    ).rejects.toThrow(ErroDeConfiguracaoDeIdempotencia);
-
-    let chamadas = 0;
-    const resposta = await executarComando(INSTITUICAO_A, requisicaoFake({ chave }), () => {
-      chamadas += 1;
-      return { ok: true };
-    });
-
-    expect(chamadas).toBe(1);
-    expect(resposta).toStrictEqual({ ok: true });
-  });
-
   it('a instituição A não vê a chave de B: a mesma chave literal em B roda de novo', async () => {
     const chave = randomUUID();
     let chamadas = 0;
@@ -612,7 +559,7 @@ describe('IdempotenciaInterceptor · Idempotency-Key (Documento 7 §12)', () => 
     expect(resposta).toStrictEqual({ novo: true });
   });
 
-  it('reclamação concorrente da mesma chave vencida dá um efeito só', async () => {
+  it('reclamação concorrente da mesma chave vencida: só uma reclama (true) e a outra perde (false)', async () => {
     const chave = randomUUID();
     await comIdentidade(INSTITUICAO_A, () =>
       unidade.transacao('escrita', ({ em }) =>

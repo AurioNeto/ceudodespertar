@@ -6,6 +6,7 @@ import type { EntityManager } from '@mikro-orm/postgresql';
 import { ContextoDaRequisicao } from '../contexto-da-requisicao.js';
 import { UnidadeDeTrabalho } from '../banco/unidade-de-trabalho.js';
 import { NOME_DO_CABECALHO_DE_IDEMPOTENCIA, chaveDeIdempotenciaEhValida } from './cabecalho-de-idempotencia.js';
+import { handlerRespondePorContaPropria } from './handler-responde-por-conta-propria.js';
 import { calcularHashDoCorpo } from './hash-do-corpo.js';
 import { erroDeChaveDeIdempotenciaReutilizada } from './erro-de-chave-de-idempotencia-reutilizada.js';
 import { erroDeChaveDeIdempotenciaInvalida } from './erro-de-chave-de-idempotencia-invalida.js';
@@ -19,8 +20,8 @@ const MENSAGEM_DE_CONTEXTO_AUSENTE =
   'Idempotency-Key recebida sem instituição no contexto da requisição — a ordem dos interceptors globais ' +
   'está errada (a borda transacional precisa rodar antes da idempotência) ou a requisição chegou sem identidade';
 const MENSAGEM_DE_RESPOSTA_PROPRIA_DO_HANDLER =
-  'Idempotency-Key recebida numa rota cujo handler respondeu por conta própria (@Res sem passthrough) — ' +
-  'a idempotência não sabe capturar corpo/status desse tipo de resposta e não gravou a chave';
+  'Idempotency-Key recebida numa rota cujo handler responde por conta própria (@Res ou @Next sem passthrough) — ' +
+  'a idempotência não sabe capturar corpo/status desse tipo de resposta e o handler não foi executado';
 
 interface RequisicaoDeIdempotencia {
   readonly method: string;
@@ -32,7 +33,6 @@ interface RequisicaoDeIdempotencia {
 
 interface RespostaDeIdempotencia {
   statusCode: number;
-  readonly headersSent: boolean;
   getHeader(nome: string): string | undefined;
   setHeader(nome: string, valor: string): void;
 }
@@ -77,6 +77,11 @@ export class IdempotenciaInterceptor implements NestInterceptor {
       throw new ErroDeConfiguracaoDeIdempotencia(MENSAGEM_DE_CONTEXTO_AUSENTE);
     }
 
+    if (handlerRespondePorContaPropria(contexto)) {
+      this.logger.error(MENSAGEM_DE_RESPOSTA_PROPRIA_DO_HANDLER);
+      throw new ErroDeConfiguracaoDeIdempotencia(MENSAGEM_DE_RESPOSTA_PROPRIA_DO_HANDLER);
+    }
+
     const resposta = contexto.switchToHttp().getResponse<RespostaDeIdempotencia>();
     const dados: DadosDaChaveDeIdempotencia = {
       instituicaoId: identidade.instituicaoId,
@@ -117,11 +122,6 @@ export class IdempotenciaInterceptor implements NestInterceptor {
     }
 
     const corpo = await executarComando();
-
-    if (resposta.headersSent) {
-      this.logger.error(MENSAGEM_DE_RESPOSTA_PROPRIA_DO_HANDLER);
-      throw new ErroDeConfiguracaoDeIdempotencia(MENSAGEM_DE_RESPOSTA_PROPRIA_DO_HANDLER);
-    }
 
     const location = resposta.getHeader(NOME_DO_CABECALHO_DE_LOCALIZACAO) ?? null;
     await gravarResposta(em, dados.instituicaoId, dados.chave, resposta.statusCode, corpo, location);
