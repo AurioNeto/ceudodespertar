@@ -1,14 +1,16 @@
 import type { AddressInfo } from 'node:net';
 import { Controller, Get, Module } from '@nestjs/common';
 import type { INestApplication } from '@nestjs/common';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { criarAplicacao } from '../src/composicao/aplicacao.js';
 import { AppModule } from '../src/composicao/app.module.js';
+import { ApenasIdentificado, Publico } from '../src/shared/infrastructure/autenticacao/marcas-de-acesso.js';
 
 interface EstadoDaSonda {
   status: 'ok';
 }
 
+@Publico()
 @Controller('sonda')
 class SondaController {
   @Get()
@@ -17,9 +19,18 @@ class SondaController {
   }
 }
 
+@ApenasIdentificado()
+@Controller('sonda-fechada')
+class SondaFechadaController {
+  @Get()
+  pingar(): EstadoDaSonda {
+    return { status: 'ok' };
+  }
+}
+
 @Module({
   imports: [AppModule],
-  controllers: [SondaController],
+  controllers: [SondaController, SondaFechadaController],
 })
 class AppModuloComSonda {}
 
@@ -28,6 +39,8 @@ describe('esqueleto da API', () => {
   let origem: string;
 
   beforeAll(async () => {
+    vi.stubEnv('OIDC_EMISSOR', 'http://localhost:8080/realms/cdd');
+    vi.stubEnv('OIDC_AUDIENCIA', 'cdd-api');
     app = await criarAplicacao(AppModuloComSonda);
     await app.listen(0);
     const endereco = app.getHttpServer().address() as AddressInfo;
@@ -36,6 +49,7 @@ describe('esqueleto da API', () => {
 
   afterAll(async () => {
     await app.close();
+    vi.unstubAllEnvs();
   });
 
   it('GET /saude/viva responde 200 fora do prefixo /api/v1', async () => {
@@ -68,5 +82,13 @@ describe('esqueleto da API', () => {
     const resposta = await fetch(`${origem}/api/v1/qualquer-coisa`);
 
     expect(resposta.status).toBe(404);
+  });
+
+  it('a guarda global está ativa: rota identificada sem token responde 401 com desafio Bearer', async () => {
+    const resposta = await fetch(`${origem}/api/v1/sonda-fechada`);
+
+    expect(resposta.status).toBe(401);
+    expect(resposta.headers.get('www-authenticate')).toBe('Bearer');
+    expect(await resposta.json()).toEqual({ erro: 'NAO_AUTENTICADO', correlacaoId: '' });
   });
 });
