@@ -20,6 +20,19 @@ describe('ContextoDaRequisicao', () => {
     expect(ContextoDaRequisicao.atual()).toBeUndefined();
   });
 
+  it('foraDeQualquerContexto() executa sem o valor de quem chamou, inclusive nas continuações', async () => {
+    const observado = await ContextoDaRequisicao.executar(
+      { correlacaoId: 'corr-4', instituicaoId: 'inst-a' },
+      () =>
+        ContextoDaRequisicao.foraDeQualquerContexto(async () => {
+          await Promise.resolve();
+          return ContextoDaRequisicao.atual();
+        }),
+    );
+
+    expect(observado).toBeUndefined();
+  });
+
   it('propaga através de continuações assíncronas', async () => {
     const valor = { correlacaoId: 'corr-3', instituicaoId: 'inst-b' };
 

@@ -1,4 +1,5 @@
-import { describe, expect, it } from 'vitest';
+import { Logger } from '@nestjs/common';
+import { describe, expect, it, vi } from 'vitest';
 import { IsolationLevel } from '@mikro-orm/postgresql';
 import type { MikroORM, TransactionOptions } from '@mikro-orm/postgresql';
 import { ContextoDaRequisicao } from '../contexto-da-requisicao.js';
@@ -160,5 +161,69 @@ describe('UnidadeDeTrabalhoMikroOrm', () => {
     ).rejects.toBeInstanceOf(ErroDeModoDeTransacaoIncompativel);
 
     expect(em.vezesQueAbriuTransacao).toBe(1);
+  });
+
+  it('roda o gancho de aoConfirmar depois que a transação commitou', async () => {
+    const em = new EntityManagerFalso();
+    const unidade = new UnidadeDeTrabalhoMikroOrm(ormFalsoCom(em));
+    const ordem: string[] = [];
+
+    await unidade.transacao('escrita', async (contexto) => {
+      contexto.aoConfirmar(() => ordem.push('gancho'));
+      ordem.push('dentro-da-transacao');
+    });
+
+    expect(ordem).toEqual(['dentro-da-transacao', 'gancho']);
+  });
+
+  it('não roda o gancho de aoConfirmar quando a transação rejeita (rollback)', async () => {
+    const em = new EntityManagerFalso();
+    const unidade = new UnidadeDeTrabalhoMikroOrm(ormFalsoCom(em));
+    const gancho = vi.fn();
+
+    await expect(
+      unidade.transacao('escrita', async (contexto) => {
+        contexto.aoConfirmar(gancho);
+        throw new Error('falha proposital');
+      }),
+    ).rejects.toThrow('falha proposital');
+
+    expect(gancho).not.toHaveBeenCalled();
+  });
+
+  it('um gancho de aoConfirmar que lança não derruba o chamador nem impede os ganchos seguintes', async () => {
+    const em = new EntityManagerFalso();
+    const unidade = new UnidadeDeTrabalhoMikroOrm(ormFalsoCom(em));
+    const ganchoSeguinte = vi.fn();
+    const registroDeErros = vi.spyOn(Logger.prototype, 'error').mockImplementation(() => undefined);
+
+    const resultado = await unidade.transacao('escrita', async (contexto) => {
+      contexto.aoConfirmar(() => {
+        throw new Error('gancho quebrado');
+      });
+      contexto.aoConfirmar(ganchoSeguinte);
+      return 'resultado-da-transacao';
+    });
+
+    expect(resultado).toBe('resultado-da-transacao');
+    expect(ganchoSeguinte).toHaveBeenCalledOnce();
+    expect(registroDeErros).toHaveBeenCalledOnce();
+    registroDeErros.mockRestore();
+  });
+
+  it('uma transação aninhada registra o gancho na mesma lista da transação externa', async () => {
+    const em = new EntityManagerFalso();
+    const unidade = new UnidadeDeTrabalhoMikroOrm(ormFalsoCom(em));
+    const gancho = vi.fn();
+
+    await unidade.transacao('escrita', (contextoExterno) =>
+      unidade.transacao('escrita', (contextoInterno) => {
+        contextoInterno.aoConfirmar(gancho);
+        expect(contextoInterno).toBe(contextoExterno);
+        return Promise.resolve(undefined);
+      }),
+    );
+
+    expect(gancho).toHaveBeenCalledOnce();
   });
 });
