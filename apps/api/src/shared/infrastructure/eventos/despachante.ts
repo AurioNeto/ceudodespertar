@@ -311,10 +311,9 @@ export class Despachante implements OnModuleInit, OnModuleDestroy {
   }
 
   private async registrarFalhaEmTransacaoSeparada(linha: LinhaDoOutbox, erro: Error): Promise<void> {
-    await this.unidadeDeTrabalho.transacao('escrita', async (contexto) => {
-      await this.restabelecerContextoDaInstituicao(contexto, linha.instituicaoId);
-      await this.registrarFalha(contexto, linha, erro);
-    });
+    await this.unidadeDeTrabalho.transacao('escrita', (contexto) =>
+      this.registrarFalha(contexto, linha, erro),
+    );
   }
 
   private async registrarFalha(

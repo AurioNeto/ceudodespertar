@@ -1,7 +1,8 @@
+import { randomUUID } from 'node:crypto';
 import { setImmediate as proximoTurno } from 'node:timers/promises';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import type { INestApplicationContext } from '@nestjs/common';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { criarBancoDeTeste, derrubarBancoDeTeste } from '../integracao/banco-de-teste.js';
 import type { BancoDeTeste } from '../integracao/banco-de-teste.js';
 import { UnidadeDeTrabalho } from '../../src/shared/infrastructure/banco/unidade-de-trabalho.js';
@@ -21,6 +22,20 @@ import {
 const TIMEOUT_DO_CONSUMIDOR_EM_MS = 200;
 const INSERIR_EFEITO =
   "insert into shared.chave_de_idempotencia (instituicao_id, chave, rota, status_http, resposta) values (?, ?, '/x', 200, '{}'::jsonb)";
+
+const INSERIR_SEM_ISOLAMENTO_POR_CASA =
+  'insert into shared.evento_processado (consumidor, evento_id) values (?, ?)';
+
+async function contarEscritasSemIsolamentoPorCasa(
+  banco: BancoDeTeste,
+  prefixoDoConsumidor: string,
+): Promise<number> {
+  const resultado = await banco.owner.query(
+    'select count(*)::int as total from shared.evento_processado where consumidor like $1',
+    [`${prefixoDoConsumidor}%`],
+  );
+  return (resultado.rows[0] as { total: number }).total;
+}
 
 async function contarEfeitos(banco: BancoDeTeste, prefixoDaChave: string): Promise<number> {
   await banco.owner.query("select set_config('app.instituicao_id', $1, false)", [INSTITUICAO_A]);
@@ -105,10 +120,13 @@ class ConsumidorPresoForaDoBanco {
     }
     this.preso = false;
     await this.unidadeDeTrabalho.transacao('escrita', async ({ em }) => {
-      await em.execute(INSERIR_EFEITO, [INSTITUICAO_A, 'efeito-preso-antes-do-timeout']);
+      await em.execute(INSERIR_SEM_ISOLAMENTO_POR_CASA, ['estranho-preso-antes-do-timeout', randomUUID()]);
       this.gravacaoTardia = new Promise((resolver) => {
         this.liberar = () => {
-          em.execute(INSERIR_EFEITO, [INSTITUICAO_A, 'efeito-preso-depois-do-timeout']).then(
+          em.execute(INSERIR_SEM_ISOLAMENTO_POR_CASA, [
+            'estranho-preso-depois-do-timeout',
+            randomUUID(),
+          ]).then(
             () => resolver('gravou'),
             () => resolver('rejeitada'),
           );
@@ -153,10 +171,8 @@ class ConsumidorQueGravaSemParar {
           sequencia += 1;
           // eslint-disable-next-line no-await-in-loop -- cada gravação tardia precisa ser tentada em sequência, sem pausa
           await em
-            .execute(INSERIR_EFEITO, [INSTITUICAO_A, `efeito-continuo-${sequencia}`])
-            .catch(() => undefined);
-          // eslint-disable-next-line no-await-in-loop -- cede o turno sem pausar a gravação
-          await proximoTurno();
+            .execute(INSERIR_SEM_ISOLAMENTO_POR_CASA, [`estranho-continuo-${sequencia}`, randomUUID()])
+            .catch(() => proximoTurno());
         }
       };
       this.laco = gravarAteParar();
@@ -218,6 +234,22 @@ describe('Despachante · falha do consumidor', () => {
   });
 
   describe('limite de duração das queries', () => {
+    it('não fica na conexão do pool depois do ciclo', async () => {
+      app = await subirContextoDeEventos(banco, [ConsumidorSimples], 1);
+      await gravarEvento(app, criarEvento({ tipo: 'teste.EventoSimples' }));
+
+      await app.get(Despachante).executarCiclo();
+
+      const padraoDoBanco = (await banco.app.query('show statement_timeout')).rows[0]
+        .statement_timeout as string;
+      const vistoNaConexaoReaproveitada = await app
+        .get(UnidadeDeTrabalho)
+        .transacao('leitura', ({ em }) =>
+          em.execute<{ statement_timeout: string }[]>('show statement_timeout'),
+        );
+      expect(vistoNaConexaoReaproveitada[0]?.statement_timeout).toBe(padraoDoBanco);
+    });
+
     it('vale só durante o consumidor: o restante da transação do despachante volta ao padrão do banco', async () => {
       await banco.owner.query(
         `create function shared.registrar_limite_de_duracao() returns trigger language plpgsql as
@@ -337,7 +369,7 @@ describe('Despachante · falha do consumidor', () => {
       consumidor.liberar();
 
       expect(await consumidor.gravacaoTardia).toBe('rejeitada');
-      expect(await contarEfeitos(banco, 'efeito-preso-')).toBe(0);
+      expect(await contarEscritasSemIsolamentoPorCasa(banco, 'estranho-preso-')).toBe(0);
       expect(await contarEfeitos(banco, 'efeito-vizinho-do-preso')).toBe(0);
       const aposOTimeout = await linhaDoOutbox(banco, evento.eventoId);
       expect(aposOTimeout?.tentativas).toBe(1);
@@ -366,7 +398,7 @@ describe('Despachante · falha do consumidor', () => {
       await consumidor.laco;
 
       expect(await contarEfeitos(banco, 'efeito-continuo-reentrega')).toBe(1);
-      expect(await contarEfeitos(banco, 'efeito-continuo-')).toBe(1);
+      expect(await contarEscritasSemIsolamentoPorCasa(banco, 'estranho-continuo-')).toBe(0);
       expect((await linhaDoOutbox(banco, evento.eventoId))?.publicado_em).not.toBeNull();
     });
   });
@@ -387,7 +419,8 @@ describe('Despachante · falha do consumidor', () => {
       expect(ultimoErro).not.toContain('already exists');
     });
 
-    it('de erro comum não grava e-mail, CPF formatado nem CPF de 11 dígitos da mensagem', async () => {
+    it('de erro comum não grava nem loga e-mail, CPF formatado nem CPF de 11 dígitos da mensagem', async () => {
+      const avisos = vi.spyOn(Logger.prototype, 'warn').mockImplementation(() => undefined);
       app = await subirContextoDeEventos(banco, [ConsumidorQueLancaComDadoPessoal]);
       const evento = criarEvento({
         tipo: 'teste.EventoComDadoPessoalNaMensagem',
@@ -401,6 +434,12 @@ describe('Despachante · falha do consumidor', () => {
       expect(ultimoErro).not.toContain('fulana');
       expect(ultimoErro).not.toContain('123.456.789-00');
       expect(ultimoErro).not.toContain('12345678900');
+      expect(avisos).toHaveBeenCalled();
+      const textoLogado = avisos.mock.calls.map((chamada) => String(chamada[0])).join('\n');
+      expect(textoLogado).not.toContain('fulana');
+      expect(textoLogado).not.toContain('123.456.789-00');
+      expect(textoLogado).not.toContain('12345678900');
+      avisos.mockRestore();
     });
   });
 });

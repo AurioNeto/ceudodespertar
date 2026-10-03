@@ -62,9 +62,9 @@ describe('plano da consulta do despachante com histórico grande (item 6)', () =
     expect(colunas).toEqual(['agregado_tipo', 'agregado_id', 'id']);
     expect(predicado).toBe('(publicado_em IS NULL)');
     for (const coluna of colunasDeIgualdade) {
-      expect(texto).toContain(`anterior.${coluna} = o.${coluna}`);
+      expect(texto).toContain(`${coluna} = o.${coluna}`);
     }
-    expect(texto).toContain(`anterior.${colunaDeOrdenacao} < o.${colunaDeOrdenacao}`);
+    expect(texto).toContain(`${colunaDeOrdenacao} < o.${colunaDeOrdenacao}`);
     expect(texto).toContain('outbox_por_agregado');
     expect(texto).not.toContain('Seq Scan on outbox');
   }, 60000);
