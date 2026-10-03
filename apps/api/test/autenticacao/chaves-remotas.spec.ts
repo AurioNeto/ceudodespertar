@@ -26,7 +26,7 @@ describe('padrões das chaves remotas', () => {
       validadeDoCacheEmMs: 10 * 60_000,
       limiteDeEsperaEmMs: 5_000,
       esperaAposFalhaEmMs: 30_000,
-      idadeMaximaDoJwksVelhoEmMs: 60 * 60_000,
+      idadeMaximaDoJwksVelhoEmMs: 15 * 60_000,
     });
   });
 });

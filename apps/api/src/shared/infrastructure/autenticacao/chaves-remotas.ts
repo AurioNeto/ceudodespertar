@@ -13,7 +13,7 @@ export const PADROES_DAS_CHAVES_REMOTAS = {
   validadeDoCacheEmMs: 600_000,
   limiteDeEsperaEmMs: 5_000,
   esperaAposFalhaEmMs: 30_000,
-  idadeMaximaDoJwksVelhoEmMs: 3_600_000,
+  idadeMaximaDoJwksVelhoEmMs: 900_000,
 } as const;
 
 export interface OpcoesDasChavesRemotas {
