@@ -281,6 +281,14 @@ describe('Usuario.reenviarConvite', () => {
 });
 
 describe('Usuario.ativar', () => {
+  it('instante inválido ou subjectId vazio são erro de programação e não ativam', () => {
+    const usuario = convidado();
+
+    expect(() => usuario.ativar(HASH, SUBJECT, new Date(Number.NaN))).toThrow(RangeError);
+    expect(() => usuario.ativar(HASH, '  ', DEPOIS)).toThrow(RangeError);
+    expect(usuario.situacao).toBe('CONVITE_PENDENTE');
+  });
+
   it('ativa a partir de CONVITE_PENDENTE, preenche o subjectId e consome o convite', () => {
     const usuario = convidado();
     usuario.retirarEventos();

@@ -15,7 +15,16 @@ function ehAdministradorAtivo(usuario: UsuarioDaInstituicao): boolean {
 }
 
 function idsDosAdministradoresAtivos(instituicao: readonly UsuarioDaInstituicao[]): Set<UsuarioId> {
-  return new Set(instituicao.filter(ehAdministradorAtivo).map((usuario) => usuario.id));
+  const ehAdministradorPorId = new Map<UsuarioId, boolean>();
+  for (const usuario of instituicao) {
+    const ehAdministrador = ehAdministradorAtivo(usuario);
+    const jaVisto = ehAdministradorPorId.get(usuario.id);
+    if (jaVisto !== undefined && jaVisto !== ehAdministrador) {
+      throw new RangeError(`estado da instituição com linhas conflitantes para o usuário ${usuario.id}`);
+    }
+    ehAdministradorPorId.set(usuario.id, ehAdministrador);
+  }
+  return new Set([...ehAdministradorPorId].filter(([, ehAdministrador]) => ehAdministrador).map(([id]) => id));
 }
 
 export class PoliticaDoUltimoAdministrador {

@@ -99,6 +99,13 @@ describe('PoliticaDoUltimoAdministrador (US5)', () => {
     expect(ehOk(politica.verificar(antes, depois, ADMIN_1))).toBe(true);
   });
 
+  it('linhas conflitantes do mesmo id no estado são erro de programação, não aprovação', () => {
+    const antes = [usuario(ADMIN_1, 'ATIVO', ADMINISTRAR)];
+    const depois = [usuario(ADMIN_1, 'ATIVO', ADMINISTRAR), usuario(ADMIN_1, 'SUSPENSO', ADMINISTRAR)];
+
+    expect(() => politica.verificar(antes, depois, ADMIN_1)).toThrow(RangeError);
+  });
+
   it('linhas repetidas do mesmo id contam como um só administrador', () => {
     const antes = [usuario(ADMIN_1, 'ATIVO', ADMINISTRAR), usuario(ADMIN_1, 'ATIVO', ADMINISTRAR)];
     const depois = [usuario(ADMIN_1, 'SUSPENSO', ADMINISTRAR), usuario(ADMIN_1, 'SUSPENSO', ADMINISTRAR)];

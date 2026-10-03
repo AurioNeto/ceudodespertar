@@ -150,6 +150,8 @@ export class Usuario extends RaizDeAgregado<UsuarioId> {
   }
 
   ativar(hashApresentado: string, subjectId: string, em: Date): Result<void, ErroDeDominio> {
+    if (Number.isNaN(em.getTime())) throw new RangeError('instante de ativação inválido');
+    if (subjectId.trim() === '') throw new RangeError('subjectId vazio na ativação');
     if (this._situacao !== 'CONVITE_PENDENTE') return err(erroDaSituacao(this._situacao, 'CONVITE_JA_USADO'));
     if (this._convite === null) return err(erroDeDominio('CONVITE_INVALIDO'));
     const conviteValido = this._convite.validar(hashApresentado, em);
