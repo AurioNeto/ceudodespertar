@@ -21,6 +21,41 @@ describe('destinoSeguro', () => {
     expect(destinoSeguro(valor)).toBe('/');
   });
 
+  it.each([
+    ['tab', '/\t/evil.com'],
+    ['quebra de linha', '/\n/evil.com'],
+    ['retorno de carro', '/\r/evil.com'],
+    ['barra dupla', '//'],
+    ['host com caminho, que não pode virar só o caminho', '//evil.com/lancamentos'],
+    ['tab antes do host com caminho', '/\t/evil.com/lancamentos'],
+    ['barra e contrabarra', '/\\'],
+    ['contrabarra com host', '/\\evil.com'],
+    ['esquema javascript', 'javascript:alert(1)'],
+  ])('descarta o que o navegador resolveria para fora do site: %s', (_nome, valor) => {
+    expect(destinoSeguro(valor)).toBe('/');
+  });
+
+  it.each([
+    ['barras codificadas', '/%2F%2Fevil.com', '/%2F%2Fevil.com'],
+    ['arroba no caminho', '/@evil.com', '/@evil.com'],
+    ['fragmento', '/lancamentos?pagina=2#fim', '/lancamentos?pagina=2#fim'],
+  ])('mantém como caminho do próprio site: %s', (_nome, valor, esperado) => {
+    expect(destinoSeguro(valor)).toBe(esperado);
+  });
+
+  it('o resultado é sempre um caminho do próprio site, nunca uma URL absoluta', () => {
+    for (const valor of ['/\t/evil.com', '/a/../b', '/%2F%2Fevil.com', '/@evil.com']) {
+      const resultado = destinoSeguro(valor);
+      expect(resultado.startsWith('/')).toBe(true);
+      expect(new URL(resultado, window.location.origin).origin).toBe(window.location.origin);
+    }
+  });
+
+  it('não devolve para a tela de entrada disfarçada de caminho relativo', () => {
+    expect(destinoSeguro('/./entrar')).toBe('/');
+    expect(destinoSeguro('/a/../entrar/retorno?code=1')).toBe('/');
+  });
+
   it('não confunde rota que só começa com as mesmas letras', () => {
     expect(destinoSeguro('/entrarem-contato')).toBe('/entrarem-contato');
   });
