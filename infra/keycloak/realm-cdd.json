@@ -31,6 +31,8 @@
   "internationalizationEnabled": true,
   "supportedLocales": ["pt-BR"],
   "defaultLocale": "pt-BR",
+  "loginTheme": "cdd",
+  "emailTheme": "cdd",
 
   "smtpServer": {
     "host": "mailpit",
@@ -53,6 +55,7 @@
       "implicitFlowEnabled": false,
       "serviceAccountsEnabled": false,
       "fullScopeAllowed": false,
+      "baseUrl": "http://localhost:5173",
       "redirectUris": ["http://localhost:5173/*"],
       "webOrigins": ["http://localhost:5173"],
       "defaultClientScopes": ["web-origins", "acr", "roles", "basic"],
