@@ -6,6 +6,7 @@ import { defaultClientConditions, defineConfig } from 'vite';
 const ORIGEM_DA_API = 'http://localhost:3000';
 
 export default defineConfig({
+  envDir: fileURLToPath(new URL('../..', import.meta.url)),
   plugins: [react(), tailwindcss()],
   resolve: {
     alias: {
