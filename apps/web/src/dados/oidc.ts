@@ -128,6 +128,13 @@ export function criarServicoDeEntrada(
       retornosEmAndamento.set(urlDeRetorno, retorno);
       return retorno;
     },
-    sair: () => gerenciador.signoutRedirect(),
+    async sair() {
+      try {
+        await gerenciador.signoutRedirect();
+      } catch (causa) {
+        await gerenciador.removeUser().catch(() => undefined);
+        throw causa;
+      }
+    },
   };
 }

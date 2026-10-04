@@ -100,7 +100,10 @@ export function SessaoProvider({ entrada, aoEncerrar, buscarEu, children }: Sess
   );
 
   const encerrar = useCallback(() => {
-    void entrada.sair().then(limparSessao);
+    void entrada
+      .sair()
+      .catch(() => undefined)
+      .then(limparSessao);
   }, [entrada, limparSessao]);
 
   const { refetch: buscarOEuDeNovo } = consulta;
