@@ -3,21 +3,10 @@ import { Link } from 'react-router-dom';
 import { FlowerOfLife, Icon } from '../../ds';
 import { useDensidade } from '../../lib/useDensidade';
 
-/**
- * A moldura das telas de entrada — o início do login e o retorno do Keycloak.
- *
- * É a única parte do sistema que vive fora do AppShell, e por isso a única que
- * precisa carregar a marca sozinha. No escritório ela abre em duas faces: a da
- * casa, com o wordmark e a flor da vida, e a do trabalho, com o formulário. No
- * celular a face da casa vira um cabeçalho curto — quem entra pelo telefone
- * está com pressa, e o formulário tem que caber acima do teclado.
- */
-
 export interface PortaoProps {
   titulo: string;
   descricao?: string;
   children: ReactNode;
-  /** Link discreto no pé do cartão — "voltar para a entrada", em geral. */
   volta?: { para: string; rotulo: string };
 }
 
@@ -30,9 +19,6 @@ export function Portao({ titulo, descricao, children, volta }: PortaoProps) {
         minHeight: '100%',
         display: 'grid',
         gridTemplateColumns: campo ? 'minmax(0,1fr)' : 'minmax(0,44%) minmax(0,56%)',
-        // No celular a marca é cabeçalho: ela ocupa o que precisa e devolve o
-        // resto da altura ao formulário, em vez de as duas faixas dividirem a
-        // tela ao meio.
         gridTemplateRows: campo ? 'auto 1fr' : undefined,
         background: 'var(--bg-app)',
       }}
