@@ -62,6 +62,11 @@ describe('configuracaoOidc', () => {
     expect(configuracao.post_logout_redirect_uri).toBe('http://localhost:5173/entrar');
   });
 
+  it('declara a página mínima que recebe a renovação silenciosa, dentro do padrão de redirect do realm', () => {
+    expect(configuracao.silent_redirect_uri).toBe('http://localhost:5173/silencioso.html');
+    expect(configuracao.silentRequestTimeoutInSeconds).toBe(5);
+  });
+
   it('desliga a renovação automática, que furaria a renovação única', () => {
     expect(configuracao.automaticSilentRenew).toBe(false);
   });
@@ -116,6 +121,7 @@ describe('criarServicoDeEntrada', () => {
     readonly signinCallback: ReturnType<typeof vi.fn<GerenciadorDeEntrada['signinCallback']>>;
     readonly signoutRedirect: ReturnType<typeof vi.fn<GerenciadorDeEntrada['signoutRedirect']>>;
     readonly getUser: ReturnType<typeof vi.fn<GerenciadorDeEntrada['getUser']>>;
+    readonly signinSilent: ReturnType<typeof vi.fn<GerenciadorDeEntrada['signinSilent']>>;
   }
 
   function criarFalso(): GerenciadorDeEntradaFalso {
@@ -139,13 +145,51 @@ describe('criarServicoDeEntrada', () => {
     expect(falso.signinRedirect).toHaveBeenCalledWith({ state: '/lancamentos?pagina=2' });
   });
 
-  it('informa se há usuário em memória', async () => {
+  it('recupera a sessão da memória sem abrir iframe', async () => {
     const falso = criarFalso();
-    const servico = criarServicoDeEntrada(falso);
-    expect(await servico.existeUsuario()).toBe(false);
-
     falso.getUser.mockResolvedValue(usuarioLogado());
-    expect(await servico.existeUsuario()).toBe(true);
+
+    expect(await criarServicoDeEntrada(falso).recuperarSessao()).toBe(true);
+    expect(falso.signinSilent).not.toHaveBeenCalled();
+  });
+
+  it('sem usuário em memória, recupera a sessão pelo SSO do provedor', async () => {
+    const falso = criarFalso();
+    falso.signinSilent.mockResolvedValue(usuarioLogado());
+
+    expect(await criarServicoDeEntrada(falso).recuperarSessao()).toBe(true);
+    expect(falso.signinSilent).toHaveBeenCalledTimes(1);
+  });
+
+  it('sem SSO no provedor, a sessão não existe', async () => {
+    const falso = criarFalso();
+    falso.signinSilent.mockResolvedValue(null);
+    expect(await criarServicoDeEntrada(falso).recuperarSessao()).toBe(false);
+  });
+
+  it('login_required ou timeout do iframe significam sem sessão, não erro', async () => {
+    const falso = criarFalso();
+    falso.signinSilent.mockRejectedValue(new Error('login_required'));
+    expect(await criarServicoDeEntrada(falso).recuperarSessao()).toBe(false);
+  });
+
+  it('na rota de retorno do login não abre iframe: o código do retorno é quem entra', async () => {
+    const falso = criarFalso();
+    falso.signinSilent.mockResolvedValue(usuarioLogado());
+    const servico = criarServicoDeEntrada(falso, { caminhoAtual: () => '/entrar/retorno' });
+
+    expect(await servico.recuperarSessao()).toBe(false);
+    expect(falso.signinSilent).not.toHaveBeenCalled();
+  });
+
+  it('recuperações simultâneas abrem um só iframe', async () => {
+    const falso = criarFalso();
+    falso.signinSilent.mockResolvedValue(usuarioLogado());
+    const servico = criarServicoDeEntrada(falso);
+
+    await Promise.all([servico.recuperarSessao(), servico.recuperarSessao()]);
+
+    expect(falso.signinSilent).toHaveBeenCalledTimes(1);
   });
 
   it('devolve o estado guardado no login ao concluir o retorno', async () => {

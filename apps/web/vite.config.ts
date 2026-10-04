@@ -14,6 +14,14 @@ export default defineConfig({
     },
     conditions: ['@cdd/fonte', ...defaultClientConditions],
   },
+  build: {
+    rollupOptions: {
+      input: {
+        main: fileURLToPath(new URL('./index.html', import.meta.url)),
+        silencioso: fileURLToPath(new URL('./silencioso.html', import.meta.url)),
+      },
+    },
+  },
   server: {
     proxy: {
       '/api': ORIGEM_DA_API,

@@ -4,6 +4,8 @@ import type { GerenciadorDeUsuario } from './credencialOidc';
 
 export const CAMINHO_DA_ENTRADA = '/entrar';
 export const CAMINHO_DE_RETORNO = '/entrar/retorno';
+export const CAMINHO_DA_RENOVACAO_SILENCIOSA = '/silencioso.html';
+export const ESPERA_DA_RENOVACAO_SILENCIOSA_EM_SEGUNDOS = 5;
 export const ESCOPO_OIDC = 'openid';
 
 export interface AmbienteOidc {
@@ -42,6 +44,8 @@ export function configuracaoOidc(ambiente: AmbienteOidc): UserManagerSettings {
     authority: ambiente.emissor,
     client_id: ambiente.cliente,
     redirect_uri: `${ambiente.origem}${CAMINHO_DE_RETORNO}`,
+    silent_redirect_uri: `${ambiente.origem}${CAMINHO_DA_RENOVACAO_SILENCIOSA}`,
+    silentRequestTimeoutInSeconds: ESPERA_DA_RENOVACAO_SILENCIOSA_EM_SEGUNDOS,
     post_logout_redirect_uri: `${ambiente.origem}${CAMINHO_DA_ENTRADA}`,
     response_type: 'code',
     scope: ESCOPO_OIDC,
@@ -63,14 +67,46 @@ export interface GerenciadorDeEntrada extends GerenciadorDeUsuario {
 }
 
 export interface ServicoDeEntrada {
-  existeUsuario(): Promise<boolean>;
+  recuperarSessao(): Promise<boolean>;
   iniciarEntrada(destino: string): Promise<void>;
   concluirEntrada(urlDeRetorno: string): Promise<unknown>;
   sair(): Promise<void>;
 }
 
-export function criarServicoDeEntrada(gerenciador: GerenciadorDeEntrada): ServicoDeEntrada {
+export interface OpcoesDoServicoDeEntrada {
+  readonly caminhoAtual?: () => string;
+}
+
+export function criarServicoDeEntrada(
+  gerenciador: GerenciadorDeEntrada,
+  opcoes: OpcoesDoServicoDeEntrada = {},
+): ServicoDeEntrada {
+  const caminhoAtual = opcoes.caminhoAtual ?? (() => window.location.pathname);
   const retornosEmAndamento = new Map<string, Promise<unknown>>();
+  let recuperacaoEmAndamento: Promise<boolean> | null = null;
+
+  async function restaurarPeloSso(): Promise<boolean> {
+    try {
+      return (await gerenciador.signinSilent()) !== null;
+    } catch {
+      return false;
+    }
+  }
+
+  async function recuperar(): Promise<boolean> {
+    if ((await gerenciador.getUser()) !== null) return true;
+    if (caminhoAtual() === CAMINHO_DE_RETORNO) return false;
+    return restaurarPeloSso();
+  }
+
+  function recuperarSessao(): Promise<boolean> {
+    if (recuperacaoEmAndamento) return recuperacaoEmAndamento;
+    const recuperacao = recuperar().finally(() => {
+      recuperacaoEmAndamento = null;
+    });
+    recuperacaoEmAndamento = recuperacao;
+    return recuperacao;
+  }
 
   async function concluir(urlDeRetorno: string): Promise<unknown> {
     try {
@@ -83,7 +119,7 @@ export function criarServicoDeEntrada(gerenciador: GerenciadorDeEntrada): Servic
   }
 
   return {
-    existeUsuario: async () => (await gerenciador.getUser()) !== null,
+    recuperarSessao,
     iniciarEntrada: (destino) => gerenciador.signinRedirect({ state: destino }),
     concluirEntrada(urlDeRetorno) {
       const emAndamento = retornosEmAndamento.get(urlDeRetorno);
