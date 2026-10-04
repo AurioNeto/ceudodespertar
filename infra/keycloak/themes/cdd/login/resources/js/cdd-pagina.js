@@ -13,7 +13,15 @@ if (authSessionHash) {
 }
 
 document.querySelectorAll("form[data-bloqueia-envio-duplo]").forEach((form) => {
-  form.addEventListener("submit", () => {
+  form.addEventListener("submit", (evento) => {
+    const acionador = evento.submitter;
+    if (acionador?.name) {
+      const campoDoAcionador = document.createElement("input");
+      campoDoAcionador.type = "hidden";
+      campoDoAcionador.name = acionador.name;
+      campoDoAcionador.value = acionador.value;
+      form.appendChild(campoDoAcionador);
+    }
     form.querySelectorAll("button[type=submit]").forEach((botao) => {
       botao.disabled = true;
     });

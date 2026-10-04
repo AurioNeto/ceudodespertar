@@ -20,6 +20,13 @@
             <link href="${url.resourcesPath}/${style}" rel="stylesheet" />
         </#list>
     </#if>
+    <script type="importmap">
+        {
+            "imports": {
+                "rfc4648": "${url.resourcesCommonPath}/vendor/rfc4648/rfc4648.js"
+            }
+        }
+    </script>
     <script type="module" src="${url.resourcesPath}/js/cdd-pagina.js"></script>
     <#if scripts??>
         <#list scripts as script>

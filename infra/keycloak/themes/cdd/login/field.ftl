@@ -73,7 +73,6 @@
     </div>
     <div class="${properties.kcFormHelperTextClass}" aria-live="polite">
         <div class="${properties.kcInputHelperTextClass}">
-            <#-- Additional helper items -->
             <#nested>
             <#if forgotPassword>
                 <div class="${properties.kcInputHelperTextItemClass}">
