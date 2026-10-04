@@ -4,16 +4,13 @@ import { FlowerOfLife, Icon } from '../../ds';
 import { useDensidade } from '../../lib/useDensidade';
 
 /**
- * A moldura das telas de entrada — login, convite e redefinição.
+ * A moldura das telas de entrada — o início do login e o retorno do Keycloak.
  *
  * É a única parte do sistema que vive fora do AppShell, e por isso a única que
  * precisa carregar a marca sozinha. No escritório ela abre em duas faces: a da
  * casa, com o wordmark e a flor da vida, e a do trabalho, com o formulário. No
  * celular a face da casa vira um cabeçalho curto — quem entra pelo telefone
  * está com pressa, e o formulário tem que caber acima do teclado.
- *
- * Quando o Keycloak entrar (Doc 1 §4.4), este arquivo é o que vira template do
- * login theme: a marcação abaixo já está separada do que é lógica de tela.
  */
 
 export interface PortaoProps {

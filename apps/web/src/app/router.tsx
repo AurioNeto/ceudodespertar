@@ -1,11 +1,9 @@
-import { createBrowserRouter } from 'react-router-dom';
+import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { Layout } from './Layout';
-import { ROTAS, ROTAS_PUBLICAS } from './navegacao';
+import { ROTAS, ROTAS_ANTIGAS_DA_ENTRADA, ROTAS_PUBLICAS } from './navegacao';
 import { ExigeSessao } from './sessao';
 import { EntrarPage } from '../pages/entrada/EntrarPage';
-import { EsqueciSenhaPage } from '../pages/entrada/EsqueciSenhaPage';
-import { RedefinirSenhaPage } from '../pages/entrada/RedefinirSenhaPage';
-import { ConvitePage } from '../pages/entrada/ConvitePage';
+import { RetornoPage } from '../pages/entrada/RetornoPage';
 import { InscricaoPublicaPage } from '../pages/publico/InscricaoPublicaPage';
 import { PainelPage } from '../pages/painel/PainelPage';
 import { RegistrarLancamentoPage } from '../pages/lancamento/RegistrarLancamentoPage';
@@ -35,9 +33,11 @@ import { MeuPerfilPage } from '../pages/perfil/MeuPerfilPage';
 
 export const router = createBrowserRouter([
   { path: ROTAS_PUBLICAS.entrar, element: <EntrarPage /> },
-  { path: ROTAS_PUBLICAS.esqueci, element: <EsqueciSenhaPage /> },
-  { path: ROTAS_PUBLICAS.redefinir, element: <RedefinirSenhaPage /> },
-  { path: ROTAS_PUBLICAS.convite, element: <ConvitePage /> },
+  { path: ROTAS_PUBLICAS.retorno, element: <RetornoPage /> },
+  ...ROTAS_ANTIGAS_DA_ENTRADA.map((path) => ({
+    path,
+    element: <Navigate to={ROTAS_PUBLICAS.entrar} replace />,
+  })),
   { path: ROTAS_PUBLICAS.inscricaoPublica, element: <InscricaoPublicaPage /> },
   {
     path: '/',
