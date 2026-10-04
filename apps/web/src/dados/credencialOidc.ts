@@ -1,11 +1,18 @@
+import { ErrorResponse } from 'oidc-client-ts';
 import type { User } from 'oidc-client-ts';
-import type { FonteDeCredencial } from './credencial';
+import type { FonteDeCredencial, ResultadoDaRenovacao } from './credencial';
+import { ESPERA_DA_RENOVACAO_SILENCIOSA_EM_SEGUNDOS } from './oidc';
 
 export type UsuarioOidc = Pick<User, 'access_token' | 'refresh_token' | 'expires_in'>;
 
+export interface ArgumentosDaRenovacaoSilenciosa {
+  readonly forceIframeAuth?: boolean;
+  readonly silentRequestTimeoutInSeconds: number;
+}
+
 export interface GerenciadorDeUsuario {
   getUser(): Promise<UsuarioOidc | null>;
-  signinSilent(): Promise<UsuarioOidc | null>;
+  signinSilent(argumentos?: ArgumentosDaRenovacaoSilenciosa): Promise<UsuarioOidc | null>;
   removeUser(): Promise<void>;
 }
 
@@ -17,6 +24,7 @@ export const MARGEM_DE_RENOVACAO_EM_SEGUNDOS = 30;
 
 export interface OpcoesDaCredencialOidc {
   readonly margemDeRenovacaoEmSegundos?: number;
+  readonly esperaDaRenovacaoEmSegundos?: number;
 }
 
 export function criarCredencialOidc(
@@ -25,28 +33,42 @@ export function criarCredencialOidc(
 ): CredencialOidc {
   const margem = opcoes.margemDeRenovacaoEmSegundos ?? MARGEM_DE_RENOVACAO_EM_SEGUNDOS;
   const ouvintes = new Set<() => void>();
-  let renovacaoEmAndamento: Promise<boolean> | null = null;
+  const espera = opcoes.esperaDaRenovacaoEmSegundos ?? ESPERA_DA_RENOVACAO_SILENCIOSA_EM_SEGUNDOS;
+  let renovacaoEmAndamento: Promise<ResultadoDaRenovacao> | null = null;
 
   const venceEmBreve = (usuario: UsuarioOidc): boolean =>
     usuario.expires_in !== undefined && usuario.expires_in <= margem;
 
-  async function tentarRenovar(): Promise<boolean> {
-    const usuario = await gerenciador.getUser();
-    if (!usuario?.refresh_token) return false;
+  async function recuperarPeloSso(): Promise<ResultadoDaRenovacao> {
     try {
-      const renovado = await gerenciador.signinSilent();
-      return renovado !== null;
-    } catch {
-      return false;
+      const recuperado = await gerenciador.signinSilent({
+        forceIframeAuth: true,
+        silentRequestTimeoutInSeconds: espera,
+      });
+      return recuperado === null ? 'sessao-encerrada' : 'renovado';
+    } catch (erro) {
+      return erro instanceof ErrorResponse ? 'sessao-encerrada' : 'indisponivel';
     }
   }
 
-  function renovar(): Promise<boolean> {
+  async function tentarRenovar(): Promise<ResultadoDaRenovacao> {
+    const usuario = await gerenciador.getUser();
+    if (!usuario?.refresh_token) return 'sessao-encerrada';
+    try {
+      const renovado = await gerenciador.signinSilent({ silentRequestTimeoutInSeconds: espera });
+      return renovado === null ? 'sessao-encerrada' : 'renovado';
+    } catch (erro) {
+      if (erro instanceof ErrorResponse) return recuperarPeloSso();
+      return 'indisponivel';
+    }
+  }
+
+  function renovar(): Promise<ResultadoDaRenovacao> {
     if (renovacaoEmAndamento) return renovacaoEmAndamento;
     const renovacao = tentarRenovar()
-      .then((renovou) => {
-        if (!renovou) aoSessaoEncerrada();
-        return renovou;
+      .then((resultado) => {
+        if (resultado === 'sessao-encerrada') aoSessaoEncerrada();
+        return resultado;
       })
       .finally(() => {
         renovacaoEmAndamento = null;
@@ -64,7 +86,8 @@ export function criarCredencialOidc(
     const usuario = await gerenciador.getUser();
     if (!usuario) return null;
     if (!venceEmBreve(usuario)) return usuario.access_token;
-    if (!(await renovar())) return null;
+    const resultado = await renovar();
+    if (resultado === 'sessao-encerrada') return null;
     return (await gerenciador.getUser())?.access_token ?? null;
   }
 
