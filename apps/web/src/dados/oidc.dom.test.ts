@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { User, UserManager } from 'oidc-client-ts';
+import type { IWindow } from 'oidc-client-ts';
 import {
   CAMINHO_DE_RETORNO,
   ErroDeConfiguracaoOidc,
@@ -9,6 +10,7 @@ import {
   lerAmbienteOidc,
 } from './oidc';
 import type { AmbienteOidc, GerenciadorDeEntrada } from './oidc';
+import { criarCredencialOidc } from './credencialOidc';
 
 const AMBIENTE: AmbienteOidc = {
   emissor: 'http://localhost:8080/realms/cdd',
@@ -69,6 +71,98 @@ describe('configuracaoOidc', () => {
 
   it('desliga a renovação automática, que furaria a renovação única', () => {
     expect(configuracao.automaticSilentRenew).toBe(false);
+  });
+
+  it('não monitora a sessão do provedor: o fim da sessão chega pelo 401 e pela renovação', () => {
+    expect(configuracao.monitorSession).toBe(false);
+  });
+});
+
+describe('armazenamento da requisição de login', () => {
+  const METADADOS = {
+    issuer: AMBIENTE.emissor,
+    authorization_endpoint: `${AMBIENTE.emissor}/protocol/openid-connect/auth`,
+    token_endpoint: `${AMBIENTE.emissor}/protocol/openid-connect/token`,
+  };
+
+  const navegadorQueNaoNavega = {
+    prepare: (): Promise<IWindow> =>
+      Promise.resolve({ navigate: () => Promise.resolve({ url: '' }), close: () => undefined }),
+    callback: () => Promise.resolve(),
+  };
+
+  async function iniciarLogin(): Promise<void> {
+    const gerenciador = new UserManager(
+      { ...configuracaoOidc(AMBIENTE), metadata: METADADOS },
+      navegadorQueNaoNavega,
+    );
+    await gerenciador.signinRedirect({ state: '/lancamentos' });
+  }
+
+  it('guarda o verifier e o state só no sessionStorage', async () => {
+    await iniciarLogin();
+
+    const guardado = conteudoDoArmazenamento(sessionStorage);
+    expect(guardado).toContain('code_verifier');
+    expect(guardado).toContain('/lancamentos');
+    expect(localStorage.length).toBe(0);
+    expect(conteudoDoArmazenamento(localStorage)).not.toContain('code_verifier');
+  });
+});
+
+describe('renovação contra um token endpoint pendurado', () => {
+  const METADADOS = {
+    issuer: AMBIENTE.emissor,
+    authorization_endpoint: `${AMBIENTE.emissor}/protocol/openid-connect/auth`,
+    token_endpoint: `${AMBIENTE.emissor}/protocol/openid-connect/token`,
+  };
+  const PRAZO_CURTO_EM_SEGUNDOS = 0.05;
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  function penduraOTokenEndpoint() {
+    const sinais: Array<AbortSignal | null | undefined> = [];
+    const fetchPendurado = vi.fn((_entrada: unknown, init?: RequestInit) => {
+      sinais.push(init?.signal);
+      return new Promise<Response>((_resolver, rejeitar) => {
+        init?.signal?.addEventListener('abort', () => {
+          rejeitar(new DOMException('aborted', 'AbortError'));
+        });
+      });
+    });
+    vi.stubGlobal('fetch', fetchPendurado);
+    return { sinais, fetchPendurado };
+  }
+
+  async function montarCredencial() {
+    const gerenciador = new UserManager({ ...configuracaoOidc(AMBIENTE), metadata: METADADOS });
+    await gerenciador.storeUser(usuarioLogado());
+    const credencial = criarCredencialOidc(gerenciador, { esperaDaRenovacaoEmSegundos: PRAZO_CURTO_EM_SEGUNDOS });
+    return { gerenciador, credencial };
+  }
+
+  it('a requisição de token sai com signal', async () => {
+    const { sinais } = penduraOTokenEndpoint();
+    const { credencial } = await montarCredencial();
+
+    await credencial.renovar();
+
+    expect(sinais).toHaveLength(1);
+    expect(sinais[0]).toBeInstanceOf(AbortSignal);
+  });
+
+  it('o token endpoint pendurado vira indisponível dentro do prazo e mantém o usuário', async () => {
+    penduraOTokenEndpoint();
+    const { gerenciador, credencial } = await montarCredencial();
+    const inicio = Date.now();
+
+    const resultado = await credencial.renovar();
+
+    expect(resultado).toBe('indisponivel');
+    expect(Date.now() - inicio).toBeLessThan(2000);
+    expect(await gerenciador.getUser()).not.toBeNull();
   });
 });
 
@@ -232,5 +326,14 @@ describe('criarServicoDeEntrada', () => {
     const falso = criarFalso();
     await criarServicoDeEntrada(falso).sair();
     expect(falso.signoutRedirect).toHaveBeenCalledTimes(1);
+    expect(falso.removeUser).not.toHaveBeenCalled();
+  });
+
+  it('se o logout remoto falha, descarta o usuário local e repassa a falha', async () => {
+    const falso = criarFalso();
+    falso.signoutRedirect.mockRejectedValue(new Error('keycloak fora'));
+
+    await expect(criarServicoDeEntrada(falso).sair()).rejects.toThrow('keycloak fora');
+    expect(falso.removeUser).toHaveBeenCalledTimes(1);
   });
 });

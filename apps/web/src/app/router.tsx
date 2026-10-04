@@ -1,6 +1,7 @@
-import { createBrowserRouter, Navigate } from 'react-router-dom';
+import { createBrowserRouter } from 'react-router-dom';
 import { Layout } from './Layout';
-import { ROTAS, ROTAS_ANTIGAS_DA_ENTRADA, ROTAS_PUBLICAS } from './navegacao';
+import { ROTAS, ROTAS_PUBLICAS } from './navegacao';
+import { rotasAntigasDaEntrada } from './rotasAntigasDaEntrada';
 import { ExigeSessao } from './sessao';
 import { EntrarPage } from '../pages/entrada/EntrarPage';
 import { RetornoPage } from '../pages/entrada/RetornoPage';
@@ -34,10 +35,7 @@ import { MeuPerfilPage } from '../pages/perfil/MeuPerfilPage';
 export const router = createBrowserRouter([
   { path: ROTAS_PUBLICAS.entrar, element: <EntrarPage /> },
   { path: ROTAS_PUBLICAS.retorno, element: <RetornoPage /> },
-  ...ROTAS_ANTIGAS_DA_ENTRADA.map((path) => ({
-    path,
-    element: <Navigate to={ROTAS_PUBLICAS.entrar} replace />,
-  })),
+  ...rotasAntigasDaEntrada,
   { path: ROTAS_PUBLICAS.inscricaoPublica, element: <InscricaoPublicaPage /> },
   {
     path: '/',

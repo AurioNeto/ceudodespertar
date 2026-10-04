@@ -1,9 +1,12 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { act } from 'react';
-import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
+import { MemoryRouter, Route, RouterProvider, Routes, createMemoryRouter, useLocation } from 'react-router-dom';
 import type { Eu } from '@cdd/contracts';
 import { EntrarPage } from '../pages/entrada/EntrarPage';
 import { MENSAGENS_DE_RECUSA } from '../pages/entrada/mensagens';
+import { RetornoPage } from '../pages/entrada/RetornoPage';
+import { ROTAS_ANTIGAS_DA_ENTRADA } from './navegacao';
+import { rotasAntigasDaEntrada } from './rotasAntigasDaEntrada';
 import {
   PERMISSAO_QUE_O_EU_NAO_TEM,
   PERMISSAO_QUE_O_EU_TEM,
@@ -142,6 +145,23 @@ describe('SessaoProvider', () => {
 
     expect(entrada.sair).toHaveBeenCalledTimes(1);
     expect(ler('estado')).toBe('sem-sessao');
+  });
+
+  it('se o logout remoto falha, limpa a sessão local mesmo assim', async () => {
+    const entrada = criarEntradaFalsa(true);
+    entrada.sair.mockRejectedValue(new Error('keycloak fora'));
+    function Sair() {
+      const { encerrar } = useSessao();
+      return <button onClick={encerrar}>sair</button>;
+    }
+    tela = await montarComSessao({ entrada, buscarEu: () => Promise.resolve(criarEu()) }, <><Sonda /><Sair /></>);
+    expect(ler('estado')).toBe('ativa');
+
+    await tela.clicar('sair');
+
+    expect(entrada.sair).toHaveBeenCalledTimes(1);
+    expect(ler('estado')).toBe('sem-sessao');
+    expect(tela.clienteDeConsultas.getQueryData(CHAVE_DO_EU)).toBeUndefined();
   });
 
   it('concluir a entrada abre a sessão e devolve o destino pedido antes do login', async () => {
@@ -302,6 +322,7 @@ describe('EntrarPage', () => {
     const alheias = Object.entries(MENSAGENS_DE_RECUSA).filter(([outro]) => outro !== codigo);
     for (const [, alheia] of alheias) expect(tela.texto()).not.toContain(alheia.titulo);
     expect(tela.texto()).toContain('Sair e usar outra conta');
+    expect(tela.texto()).not.toContain('Tentar de novo');
   });
 
   it('as quatro recusas têm títulos diferentes entre si', () => {
@@ -339,5 +360,53 @@ describe('EntrarPage', () => {
     await tela.clicar('Sair e usar outra conta');
 
     expect(entrada.sair).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('RetornoPage', () => {
+  async function concluirNoRetorno(destino: string) {
+    const entrada = criarEntradaFalsa(false);
+    entrada.concluirEntrada.mockResolvedValue(destino);
+    const roteador = createMemoryRouter(
+      [
+        { path: '/entrar/retorno', element: <RetornoPage /> },
+        { path: '/lancamentos', element: <p data-testid="destino">lancamentos</p> },
+      ],
+      { initialEntries: ['/entrar/retorno?code=abc&state=xyz'] },
+    );
+    tela = await montarComSessao(
+      { entrada, buscarEu: () => Promise.resolve(criarEu()) },
+      <RouterProvider router={roteador} />,
+    );
+    return roteador;
+  }
+
+  it('leva ao destino substituindo a entrada do retorno, para o code não ficar no histórico', async () => {
+    const roteador = await concluirNoRetorno('/lancamentos');
+
+    expect(ler('destino')).toBe('lancamentos');
+    expect(roteador.state.historyAction).toBe('REPLACE');
+    expect(roteador.state.location.search).toBe('');
+  });
+});
+
+describe('rotas antigas da entrada', () => {
+  it('são as três de antes do login por OIDC', () => {
+    expect(ROTAS_ANTIGAS_DA_ENTRADA).toEqual(['/esqueci-a-senha', '/redefinir-senha', '/convite']);
+  });
+
+  it.each(ROTAS_ANTIGAS_DA_ENTRADA)('%s redireciona para /entrar', async (caminho) => {
+    const roteador = createMemoryRouter(
+      [...rotasAntigasDaEntrada, { path: '/entrar', element: <p data-testid="entrar">entrar</p> }],
+      { initialEntries: [caminho] },
+    );
+    tela = await montarComSessao(
+      { entrada: criarEntradaFalsa(false), buscarEu: () => Promise.resolve(criarEu()) },
+      <RouterProvider router={roteador} />,
+    );
+
+    expect(ler('entrar')).toBe('entrar');
+    expect(roteador.state.location.pathname).toBe('/entrar');
+    expect(roteador.state.historyAction).toBe('REPLACE');
   });
 });
