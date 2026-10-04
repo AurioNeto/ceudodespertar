@@ -1,0 +1,389 @@
+/* Tokens espelhados de apps/web/src/styles/tokens (colors, typography, spacing).
+   As webfonts do front vêm do Google Fonts; aqui a pilha é a mesma, só que sem
+   requisição externa: Archivo/Public Sans se estiverem instaladas, senão o
+   sistema. */
+:root {
+  --color-paper: #faf7f0;
+  --color-surface: #ffffff;
+  --color-surface-sunken: #f0f1f4;
+  --color-surface-warm: #f3eee2;
+  --color-line: #dedfe6;
+  --color-line-strong: #c6c9d6;
+  --color-line-gold: #e3d9c5;
+  --color-ink: #22304e;
+  --color-ink-muted: #4c5670;
+  --color-ink-inverse: #ffffff;
+  --color-ink-brand: #764c29;
+  --color-label: #8a6539;
+  --color-royal: #1a3da8;
+  --color-royal-hover: #14307f;
+  --color-royal-soft: #e9edfa;
+  --color-royal-border: #c2cfef;
+  --color-pending: #8f5714;
+  --color-pending-soft: #f8ecd9;
+  --color-pending-border: #e4cda4;
+  --color-confirmed: #1b6e40;
+  --color-confirmed-soft: #e2f0e7;
+  --color-confirmed-border: #b6d8c3;
+  --color-attention: #9e3520;
+  --color-attention-soft: #f8e5df;
+  --color-attention-border: #e6c4b8;
+
+  --font-display: "Archivo", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-body: "Public Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+  --radius-sm: 6px;
+  --radius: 10px;
+  --radius-lg: 14px;
+  --target: 48px;
+  --shadow-raised: 0 1px 2px rgba(34, 48, 78, 0.07), 0 6px 16px -8px rgba(34, 48, 78, 0.2);
+  --estampa-flor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='166.277' viewBox='0 0 96 166.277'%3E%3Cg fill='none' stroke='%23E3D9C5' stroke-width='1' stroke-opacity='0.6'%3E%3Ccircle cx='48' cy='-83.138' r='96'/%3E%3Ccircle cx='0' cy='0' r='96'/%3E%3Ccircle cx='96' cy='0' r='96'/%3E%3Ccircle cx='-48' cy='83.138' r='96'/%3E%3Ccircle cx='48' cy='83.138' r='96'/%3E%3Ccircle cx='144' cy='83.138' r='96'/%3E%3Ccircle cx='0' cy='166.277' r='96'/%3E%3Ccircle cx='96' cy='166.277' r='96'/%3E%3Ccircle cx='48' cy='249.415' r='96'/%3E%3C/g%3E%3C/svg%3E");
+
+  --pf-v5-global--FontFamily--text: var(--font-body);
+  --pf-v5-global--FontFamily--heading: var(--font-display);
+  --pf-v5-global--primary-color--100: var(--color-royal);
+  --pf-v5-global--primary-color--200: var(--color-royal-hover);
+  --pf-v5-global--link--Color: var(--color-royal);
+  --pf-v5-global--link--Color--hover: var(--color-royal-hover);
+  --pf-v5-global--BorderRadius--sm: var(--radius-sm);
+  --pf-v5-global--BorderColor--100: var(--color-line-strong);
+  --pf-v5-global--Color--100: var(--color-ink);
+  --pf-v5-global--Color--200: var(--color-ink-muted);
+  --pf-v5-global--BackgroundColor--100: var(--color-surface);
+  --pf-v5-global--BackgroundColor--200: var(--color-surface-sunken);
+  --pf-v5-global--danger-color--100: var(--color-attention);
+  --pf-v5-global--active-color--100: var(--color-royal);
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body.cdd-corpo {
+  margin: 0;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font: 400 15px/1.5 var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+.cdd-portao {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: minmax(0, 44%) minmax(0, 56%);
+}
+
+.cdd-marca {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 44px;
+  background: var(--color-surface-warm);
+  border-right: 1px solid var(--color-line-gold);
+}
+
+.cdd-marca__flor {
+  position: absolute;
+  inset: 0;
+  background-image: var(--estampa-flor);
+  background-size: 96px 166.277px;
+  opacity: 0.7;
+  mask-image: linear-gradient(to left, #000 0%, transparent 85%);
+  -webkit-mask-image: linear-gradient(to left, #000 0%, transparent 85%);
+}
+
+.cdd-marca__nome,
+.cdd-marca__frase {
+  position: relative;
+}
+
+.cdd-marca__wordmark {
+  font: 800 34px/1.02 var(--font-display);
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  color: var(--color-ink-brand);
+}
+
+.cdd-marca__quebra {
+  display: block;
+}
+
+.cdd-marca__descritor {
+  margin-top: 12px;
+  font: 400 11px/1.3 var(--font-body);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-label);
+}
+
+.cdd-marca__frase {
+  max-width: 30ch;
+  margin: 0;
+  padding-top: 18px;
+  border-top: 1px solid var(--color-line-gold);
+  color: var(--color-ink-muted);
+}
+
+.cdd-conteudo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 32px;
+}
+
+.cdd-cartao {
+  width: 100%;
+  max-width: 404px;
+}
+
+.cdd-titulo {
+  margin: 0;
+  font: 700 27px/1.15 var(--font-display);
+  letter-spacing: -0.02em;
+  color: var(--color-ink-brand);
+}
+
+.cdd-descricao,
+.cdd-instrucao {
+  margin: 9px 0 0;
+  max-width: 42ch;
+  color: var(--color-ink-muted);
+}
+
+.cdd-instrucao {
+  margin-bottom: 20px;
+}
+
+#kc-form,
+#kc-form-login,
+#kc-reset-password-form,
+#kc-passwd-update-form {
+  margin-top: 24px;
+}
+
+.cdd-usuario {
+  display: flex;
+  gap: 12px;
+  align-items: baseline;
+  margin-top: 16px;
+}
+
+.cdd-aviso {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  margin-top: 20px;
+  padding: 12px 14px;
+  border: 1px solid var(--color-line-strong);
+  border-left-width: 3px;
+  border-radius: var(--radius);
+  background: var(--color-surface-sunken);
+  font-size: 14px;
+}
+
+.cdd-aviso__rotulo {
+  flex: none;
+  font-weight: 700;
+}
+
+.cdd-aviso--error {
+  background: var(--color-attention-soft);
+  border-color: var(--color-attention-border);
+  border-left-color: var(--color-attention);
+  color: var(--color-attention);
+}
+
+.cdd-aviso--success {
+  background: var(--color-confirmed-soft);
+  border-color: var(--color-confirmed-border);
+  border-left-color: var(--color-confirmed);
+  color: var(--color-confirmed);
+}
+
+.cdd-aviso--warning {
+  background: var(--color-pending-soft);
+  border-color: var(--color-pending-border);
+  border-left-color: var(--color-pending);
+  color: var(--color-pending);
+}
+
+.cdd-aviso--info {
+  background: var(--color-royal-soft);
+  border-color: var(--color-royal-border);
+  border-left-color: var(--color-royal);
+  color: var(--color-royal-hover);
+}
+
+.cdd-rodape {
+  margin-top: 22px;
+}
+
+.cdd-regras-erro {
+  margin: 4px 0 0;
+  padding-left: 18px;
+  color: var(--color-attention);
+  font-size: 13px;
+}
+
+.cdd-cartao .pf-v5-c-form {
+  gap: 18px;
+}
+
+.cdd-cartao .pf-v5-c-form__label-text {
+  font: 400 11px/1.3 var(--font-body);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-label);
+}
+
+.cdd-cartao .pf-v5-c-form-control {
+  height: var(--target);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  --pf-v5-c-form-control--BorderColor: var(--color-line-strong);
+  --pf-v5-c-form-control--BorderRadius: var(--radius-sm);
+  --pf-v5-c-form-control--BorderBottomColor: var(--color-line-strong);
+  --pf-v5-c-form-control--hover--BorderBottomColor: var(--color-line-strong);
+}
+
+.cdd-cartao .pf-v5-c-form-control {
+  border: 1px solid var(--color-line-strong);
+}
+
+.cdd-cartao .pf-v5-c-form-control::before,
+.cdd-cartao .pf-v5-c-form-control::after {
+  display: none;
+}
+
+.cdd-cartao .pf-v5-c-form-control:focus-within {
+  border-color: var(--color-royal);
+  box-shadow: 0 0 0 1px var(--color-royal);
+}
+
+.cdd-cartao .pf-v5-c-form-control.pf-m-error {
+  border-color: var(--color-attention);
+  box-shadow: none;
+}
+
+.cdd-cartao .pf-v5-c-form-control input {
+  background: transparent;
+}
+
+.cdd-cartao .pf-v5-c-form-control input:focus-visible {
+  outline: none;
+}
+
+.cdd-cartao .pf-v5-c-input-group__item.pf-m-fill .pf-v5-c-form-control {
+  border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+}
+
+.cdd-cartao .pf-v5-c-button.pf-m-control {
+  border: 1px solid var(--color-line-strong);
+  border-left-width: 0;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  background: var(--color-surface);
+  color: var(--color-ink-muted);
+}
+
+.cdd-cartao .pf-v5-c-button.pf-m-control::after {
+  display: none;
+}
+
+.cdd-cartao .pf-v5-c-form-control input {
+  height: 100%;
+  font: 400 16px/1.4 var(--font-body);
+  color: var(--color-ink);
+}
+
+.cdd-cartao .pf-v5-c-form-control.pf-m-error {
+  border-color: var(--color-attention);
+}
+
+.cdd-cartao .pf-v5-c-button {
+  min-height: var(--target);
+  border-radius: var(--radius-sm);
+  font: 600 15px/1.3 var(--font-body);
+}
+
+.cdd-cartao .pf-v5-c-button.pf-m-primary {
+  background: var(--color-royal);
+  color: var(--color-ink-inverse);
+}
+
+.cdd-cartao .pf-v5-c-button.pf-m-primary:hover {
+  background: var(--color-royal-hover);
+}
+
+.cdd-cartao .pf-v5-c-button.pf-m-secondary {
+  border: 1px solid var(--color-royal-border);
+  background: var(--color-surface);
+  color: var(--color-royal);
+}
+
+.cdd-cartao a.pf-v5-c-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.cdd-cartao a {
+  color: var(--color-royal);
+}
+
+.cdd-cartao a:hover {
+  color: var(--color-royal-hover);
+}
+
+.cdd-cartao a.pf-v5-c-button.pf-m-primary {
+  color: var(--color-ink-inverse);
+}
+
+:focus-visible {
+  outline: 2.5px solid var(--color-royal);
+  outline-offset: 2px;
+}
+
+@media (max-width: 767px) {
+  .cdd-portao {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto 1fr;
+  }
+
+  .cdd-marca {
+    padding: 20px 18px;
+    border-right: 0;
+    border-bottom: 1px solid var(--color-line-gold);
+  }
+
+  .cdd-marca__wordmark {
+    font-size: 17px;
+    line-height: 1.05;
+  }
+
+  .cdd-marca__quebra {
+    display: inline;
+  }
+
+  .cdd-marca__descritor {
+    margin-top: 4px;
+  }
+
+  .cdd-marca__frase {
+    display: none;
+  }
+
+  .cdd-conteudo {
+    align-items: flex-start;
+    padding: 22px 18px 40px;
+  }
+}
+
+@media print {
+  .cdd-marca__flor {
+    display: none;
+  }
+}
