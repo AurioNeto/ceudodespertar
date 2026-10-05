@@ -1,6 +1,8 @@
 import type { Permissao, SituacaoUsuario, UsuarioId } from '@cdd/contracts';
 import { erroDeDominio, type ErroDeDominio } from '../../../../shared/kernel/erro-de-dominio.js';
 import { err, ok, type Result } from '../../../../shared/kernel/result.js';
+import type { PermissoesEfetivas } from '../permissao/permissoes-efetivas.js';
+import type { Usuario } from '../usuario/usuario.js';
 
 const PERMISSAO_DE_ADMINISTRADOR: Permissao = 'sistema.usuario.gerenciar';
 
@@ -9,6 +11,12 @@ export interface UsuarioDaInstituicao {
   readonly situacao: SituacaoUsuario;
   readonly permissoesEfetivas: ReadonlySet<Permissao>;
 }
+
+export const UsuarioDaInstituicao = {
+  de(usuario: Usuario, permissoesEfetivas: PermissoesEfetivas): UsuarioDaInstituicao {
+    return { id: usuario.id, situacao: usuario.situacao, permissoesEfetivas: new Set(permissoesEfetivas.lista) };
+  },
+};
 
 function ehAdministradorAtivo(usuario: UsuarioDaInstituicao): boolean {
   return usuario.situacao === 'ATIVO' && usuario.permissoesEfetivas.has(PERMISSAO_DE_ADMINISTRADOR);

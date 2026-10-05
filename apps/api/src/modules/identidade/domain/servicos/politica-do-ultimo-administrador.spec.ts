@@ -1,7 +1,9 @@
 import type { Permissao, SituacaoUsuario, UsuarioId } from '@cdd/contracts';
 import { describe, expect, it } from 'vitest';
 import { ehErr, ehOk } from '../../../../shared/kernel/result.js';
-import { PoliticaDoUltimoAdministrador, type UsuarioDaInstituicao } from './politica-do-ultimo-administrador.js';
+import { PermissoesEfetivas } from '../permissao/permissoes-efetivas.js';
+import { Usuario } from '../usuario/usuario.js';
+import { PoliticaDoUltimoAdministrador, UsuarioDaInstituicao } from './politica-do-ultimo-administrador.js';
 
 const ADMIN_1 = 'admin-1' as UsuarioId;
 const ADMIN_2 = 'admin-2' as UsuarioId;
@@ -140,5 +142,42 @@ describe('PoliticaDoUltimoAdministrador (US5)', () => {
     const antes = [usuario(ADMIN_1, 'ATIVO', ADMINISTRAR)];
 
     expect(codigoDe(antes, [])).toBe('ULTIMO_ADMINISTRADOR');
+  });
+});
+
+describe('UsuarioDaInstituicao.de', () => {
+  function usuarioReal(situacao: SituacaoUsuario): Usuario {
+    return Usuario.reconstituir({
+      id: ADMIN_1,
+      pessoaId: null,
+      subjectId: 'sub-1',
+      nome: 'Maria Silva',
+      email: 'maria@casa.org',
+      situacao,
+      grupos: [],
+      ultimoAcessoEm: null,
+      convite: null,
+    });
+  }
+
+  it('monta a entrada da política a partir de um Usuario e de PermissoesEfetivas reais', () => {
+    const efetivas = PermissoesEfetivas.dosGrupos([
+      { ativo: true, permissoes: ['sistema.usuario.gerenciar', 'sistema.grupo.gerenciar'] },
+    ]);
+
+    const entrada = UsuarioDaInstituicao.de(usuarioReal('ATIVO'), efetivas);
+
+    expect(entrada.id).toBe(ADMIN_1);
+    expect(entrada.situacao).toBe('ATIVO');
+    expect([...entrada.permissoesEfetivas].toSorted()).toStrictEqual(efetivas.lista);
+  });
+
+  it('a entrada convertida alimenta a política', () => {
+    const administrador = PermissoesEfetivas.dosGrupos([{ ativo: true, permissoes: ['sistema.usuario.gerenciar'] }]);
+    const semPermissao = PermissoesEfetivas.dosGrupos([]);
+    const antes = [UsuarioDaInstituicao.de(usuarioReal('ATIVO'), administrador)];
+    const depois = [UsuarioDaInstituicao.de(usuarioReal('ATIVO'), semPermissao)];
+
+    expect(codigoDe(antes, depois)).toBe('ULTIMO_ADMINISTRADOR');
   });
 });
