@@ -42,13 +42,7 @@ async function criarEMigrarBancoAlvo(superusuario, host, porta) {
   return urlDeMigracao;
 }
 
-async function subirBancoMigrado() {
-  const container = await new PostgreSqlContainer(IMAGEM_POSTGRES)
-    .withUsername(USUARIO_SUPERUSUARIO)
-    .withPassword(SENHA_SUPERUSUARIO)
-    .withDatabase(BANCO_DE_ADMINISTRACAO)
-    .start();
-
+async function prepararBancoMigrado(container) {
   const host = container.getHost();
   const porta = container.getPort();
 
@@ -63,13 +57,25 @@ async function subirBancoMigrado() {
 
   try {
     await aplicarPapeisDeCluster(superusuario);
-    const urlDoBancoOwner = await criarEMigrarBancoAlvo(superusuario, host, porta);
+    return await criarEMigrarBancoAlvo(superusuario, host, porta);
+  } finally {
+    await superusuario.end().catch(() => {});
+  }
+}
+
+async function subirBancoMigrado() {
+  const container = await new PostgreSqlContainer(IMAGEM_POSTGRES)
+    .withUsername(USUARIO_SUPERUSUARIO)
+    .withPassword(SENHA_SUPERUSUARIO)
+    .withDatabase(BANCO_DE_ADMINISTRACAO)
+    .start();
+
+  try {
+    const urlDoBancoOwner = await prepararBancoMigrado(container);
     return { container, urlDoBancoOwner };
   } catch (erroAoPreparar) {
-    await container.stop();
+    await container.stop().catch(() => {});
     throw erroAoPreparar;
-  } finally {
-    await superusuario.end();
   }
 }
 
