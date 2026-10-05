@@ -97,7 +97,7 @@ describe('G1: codigoSistema imutável', () => {
   it('o código não muda depois de renomear nem de alterar permissões', () => {
     const grupo = criarGrupo();
 
-    grupo.renomear('Outro nome', 'Outra descrição');
+    grupo.renomear('Outro nome', 'Outra descrição', AUTOR, INSTANTE);
     grupo.concederPermissao('pessoas.pessoa.ler', AUTOR, INSTANTE);
 
     expect(grupo.codigoSistema).toBe('LEITURA');
@@ -116,20 +116,66 @@ describe('Grupo.renomear', () => {
   it('G2: permite renomear o rótulo de grupo protegido', () => {
     const grupo = criarGrupo({ protegido: true });
 
-    const resultado = grupo.renomear('Consulta', 'Só leitura');
+    const resultado = grupo.renomear('Consulta', 'Só leitura', AUTOR, INSTANTE);
 
     expect(ehOk(resultado)).toBe(true);
     expect(grupo.nome).toBe('Consulta');
     expect(grupo.descricao).toBe('Só leitura');
   });
 
+  it('registra o evento com nomes e descrições anteriores e novos, autor e instante', () => {
+    const grupo = criarGrupo();
+
+    grupo.renomear('Consulta', 'Só leitura', AUTOR, INSTANTE);
+
+    expect(grupo.retirarEventos()).toMatchObject([
+      {
+        tipo: 'GRUPO_EDITADO',
+        agregadoTipo: 'Grupo',
+        agregadoId: GRUPO_ID,
+        ocorridoEm: INSTANTE,
+        dados: {
+          acao: 'RENOMEADO',
+          nomeAnterior: 'Leitura',
+          nomeNovo: 'Consulta',
+          descricaoAnterior: 'Consulta painéis',
+          descricaoNova: 'Só leitura',
+          autorId: AUTOR,
+          codigoSistema: 'LEITURA',
+        },
+      },
+    ]);
+  });
+
+  it('é idempotente: mesmo nome e descrição não emitem evento', () => {
+    const grupo = criarGrupo();
+
+    const resultado = grupo.renomear('Leitura', 'Consulta painéis', AUTOR, INSTANTE);
+
+    expect(ehOk(resultado)).toBe(true);
+    expect(grupo.retirarEventos()).toStrictEqual([]);
+  });
+
+  it.each([
+    ['só o nome', 'Consulta', 'Consulta painéis'],
+    ['só a descrição', 'Leitura', 'Só leitura'],
+  ])('muda %s e emite o evento', (_rotulo, nome, descricao) => {
+    const grupo = criarGrupo();
+
+    grupo.renomear(nome, descricao, AUTOR, INSTANTE);
+
+    expect(grupo.retirarEventos()).toHaveLength(1);
+  });
+
   it('grupo excluído dá GRUPO_INEXISTENTE e mantém nome e descrição', () => {
     const grupo = criarGrupo({ protegido: false });
     grupo.excluir(0, AUTOR, INSTANTE);
+    grupo.retirarEventos();
 
-    expect(codigoDoErro(grupo.renomear('Outro', 'Outra'))).toBe('GRUPO_INEXISTENTE');
+    expect(codigoDoErro(grupo.renomear('Outro', 'Outra', AUTOR, INSTANTE))).toBe('GRUPO_INEXISTENTE');
     expect(grupo.nome).toBe('Leitura');
     expect(grupo.descricao).toBe('Consulta painéis');
+    expect(grupo.retirarEventos()).toStrictEqual([]);
   });
 });
 
@@ -144,7 +190,7 @@ describe('Grupo.concederPermissao', () => {
     const [evento, ...restantes] = grupo.retirarEventos();
     expect(restantes).toStrictEqual([]);
     expect(evento).toMatchObject({
-      tipo: 'GRUPO_ALTERADO',
+      tipo: 'GRUPO_EDITADO',
       agregadoTipo: 'Grupo',
       agregadoId: GRUPO_ID,
       ocorridoEm: INSTANTE,
@@ -197,7 +243,7 @@ describe('Grupo.revogarPermissao', () => {
     expect(grupo.permissoes).toStrictEqual([]);
     expect(grupo.retirarEventos()).toMatchObject([
       {
-        tipo: 'GRUPO_ALTERADO',
+        tipo: 'GRUPO_EDITADO',
         agregadoTipo: 'Grupo',
         agregadoId: GRUPO_ID,
         ocorridoEm: INSTANTE,
@@ -290,7 +336,7 @@ describe('Grupo.excluir', () => {
     expect(grupo.ativo).toBe(false);
     expect(grupo.retirarEventos()).toMatchObject([
       {
-        tipo: 'GRUPO_ALTERADO',
+        tipo: 'GRUPO_EDITADO',
         agregadoTipo: 'Grupo',
         agregadoId: GRUPO_ID,
         ocorridoEm: INSTANTE,
