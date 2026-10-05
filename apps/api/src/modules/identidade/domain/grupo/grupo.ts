@@ -3,7 +3,7 @@ import { erroDeDominio, type ErroDeDominio } from '../../../../shared/kernel/err
 import { RaizDeAgregado } from '../../../../shared/kernel/raiz-de-agregado.js';
 import { err, ok, type Result } from '../../../../shared/kernel/result.js';
 import { ehPermissaoDoCatalogo } from '../permissao/catalogo-de-permissoes.js';
-import { grupoExcluido, permissaoConcedida, permissaoRevogada } from './eventos-de-grupo.js';
+import { grupoExcluido, grupoRenomeado, permissaoConcedida, permissaoRevogada } from './eventos-de-grupo.js';
 
 export interface DadosDeGrupo {
   readonly id: GrupoId;
@@ -81,10 +81,20 @@ export class Grupo extends RaizDeAgregado<GrupoId> {
     return this.#permissoes.has(permissao);
   }
 
-  renomear(nome: string, descricao: string): Result<void, ErroDeDominio> {
+  renomear(nome: string, descricao: string, autorId: UsuarioId, em: Date): Result<void, ErroDeDominio> {
     if (!this.#ativo) return err(erroDeDominio('GRUPO_INEXISTENTE'));
+    if (nome === this.#nome && descricao === this.#descricao) return ok();
+    const evento = grupoRenomeado(this.id, em, {
+      nomeAnterior: this.#nome,
+      nomeNovo: nome,
+      descricaoAnterior: this.#descricao,
+      descricaoNova: descricao,
+      autorId,
+      codigoSistema: this.#codigoSistema,
+    });
     this.#nome = nome;
     this.#descricao = descricao;
+    this.registrarEvento(evento);
     return ok();
   }
 
