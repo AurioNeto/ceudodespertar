@@ -66,7 +66,6 @@ async function subirBancoMigrado() {
     const urlDoBancoOwner = await criarEMigrarBancoAlvo(superusuario, host, porta);
     return { container, urlDoBancoOwner };
   } catch (erroAoPreparar) {
-    await superusuario.end();
     await container.stop();
     throw erroAoPreparar;
   } finally {
