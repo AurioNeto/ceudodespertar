@@ -1,15 +1,15 @@
 import { vi } from 'vitest';
 import type { CodigoDeErro } from '@cdd/contracts';
-import type { FonteDeCredencial } from './credencial';
+import type { FonteDeCredencial, ResultadoDaRenovacao } from './credencial';
 
 export interface FonteDeCredencialFalsa extends FonteDeCredencial {
   readonly tokenAtual: ReturnType<typeof vi.fn<() => Promise<string | null>>>;
-  readonly renovar: ReturnType<typeof vi.fn<() => Promise<boolean>>>;
+  readonly renovar: ReturnType<typeof vi.fn<() => Promise<ResultadoDaRenovacao>>>;
   readonly aoSessaoEncerrada: ReturnType<typeof vi.fn<() => void>>;
 }
 
 export function criarFonteDeCredencialFalsa(
-  opcoes: { renovacao?: () => Promise<boolean> } = {},
+  opcoes: { renovacao?: () => Promise<ResultadoDaRenovacao> } = {},
 ): FonteDeCredencialFalsa {
   let token = 'token-velho';
   return {
@@ -18,7 +18,7 @@ export function criarFonteDeCredencialFalsa(
       opcoes.renovacao ??
         (() => {
           token = 'token-novo';
-          return Promise.resolve(true);
+          return Promise.resolve('renovado');
         }),
     ),
     aoSessaoEncerrada: vi.fn(),

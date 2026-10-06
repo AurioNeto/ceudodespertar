@@ -318,6 +318,7 @@ Erro de banco que chega à API **sem** mapeamento é bug: vira 500, vai ao Sentr
 | Logs | Pino JSON; **nunca** corpo de requisição nem resposta de anamnese; CPF mascarado |
 | Backup | `pg_dump` diário cifrado para bucket de outra conta, retenção de 35 dias + 12 mensais; PITR do provedor quando disponível. RPO/RTO de 24 h (Doc 1 §5) |
 | Restauração | **Testada todo mês**, por rotina que restaura o último backup num banco descartável e roda a verificação de garantias (`apps/api/test/banco/garantias/`) e a contagem de linhas. Backup que nunca foi restaurado é hipótese |
+| Sessão silenciosa | SPA e Keycloak sob o mesmo domínio registrável (ex.: `app.<domínio>` e `auth.<domínio>`), sem cabeçalho de frame (`X-Frame-Options`, CSP `frame-ancestors`) que bloqueie o redirect silencioso `prompt=none`. O F5 sem novo login e a recuperação de sessão dependem do cookie de sessão do Keycloak num iframe, que Safari (ITP) e Firefox bloqueiam como terceiro. E2e de F5 quando o deploy existir |
 | Custos | Um Postgres gerenciado pequeno, um processo de 512 MB, R2 no plano gratuito, Keycloak no mesmo host. Ordem de grandeza: dezenas de reais por mês |
 
 ---

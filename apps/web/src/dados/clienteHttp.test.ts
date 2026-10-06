@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { criarClienteHttp } from './clienteHttp';
+import type { ResultadoDaRenovacao } from './credencial';
 import { ErroDaApi, ErroDeRede } from './erros';
 import {
   cabecalhosDaChamada,
@@ -258,8 +259,8 @@ describe('política de 401', () => {
   });
 
   it('requisições concorrentes compartilham uma única renovação', async () => {
-    let concluirRenovacao: (renovou: boolean) => void = () => undefined;
-    const renovacao = new Promise<boolean>((resolver) => {
+    let concluirRenovacao: (resultado: ResultadoDaRenovacao) => void = () => undefined;
+    const renovacao = new Promise<ResultadoDaRenovacao>((resolver) => {
       concluirRenovacao = resolver;
     });
     const credencial = criarFonteDeCredencialFalsa({ renovacao: () => renovacao });
@@ -280,7 +281,7 @@ describe('política de 401', () => {
     ]);
     await vi.waitFor(() => expect(fetchFalso).toHaveBeenCalledTimes(3));
     await vi.waitFor(() => expect(credencial.renovar).toHaveBeenCalledTimes(1));
-    concluirRenovacao(true);
+    concluirRenovacao('renovado');
     const resultados = await todas;
 
     expect(resultados).toHaveLength(3);
@@ -320,8 +321,8 @@ describe('política de 401', () => {
     expect(cabecalhosDaChamada(fetchFalso, 3).get('Authorization')).toBe('Bearer token-novo');
   });
 
-  it('renovação que falha encerra a sessão uma vez e propaga o 401', async () => {
-    const credencial = criarFonteDeCredencialFalsa({ renovacao: () => Promise.resolve(false) });
+  it('renovação que encerra a sessão avisa uma vez e propaga o 401', async () => {
+    const credencial = criarFonteDeCredencialFalsa({ renovacao: () => Promise.resolve('sessao-encerrada') });
     const fetchFalso = criarFetchFalso(
       respostaDeErro(401, 'NAO_AUTENTICADO'),
       respostaDeErro(401, 'NAO_AUTENTICADO'),
@@ -341,17 +342,29 @@ describe('política de 401', () => {
     expect(fetchFalso).toHaveBeenCalledTimes(2);
   });
 
-  it('renovação que lança também encerra a sessão', async () => {
+  it('renovação indisponível mantém a sessão e falha como erro de rede', async () => {
+    const credencial = criarFonteDeCredencialFalsa({ renovacao: () => Promise.resolve('indisponivel') });
+    const fetchFalso = criarFetchFalso(respostaDeErro(401, 'NAO_AUTENTICADO'));
+    const cliente = criarClienteHttp({ credencial, fetch: fetchFalso });
+
+    const erro = await capturar(cliente.requisitar({ metodo: 'GET', caminho: '/x' }));
+
+    expect(erro).toBeInstanceOf(ErroDeRede);
+    expect(credencial.aoSessaoEncerrada).not.toHaveBeenCalled();
+    expect(fetchFalso).toHaveBeenCalledTimes(1);
+  });
+
+  it('renovação que lança não encerra a sessão: o erro é tratado como indisponibilidade', async () => {
     const credencial = criarFonteDeCredencialFalsa({
-      renovacao: () => Promise.reject(new Error('refresh expirado')),
+      renovacao: () => Promise.reject(new Error('falha inesperada')),
     });
     const fetchFalso = criarFetchFalso(respostaDeErro(401, 'NAO_AUTENTICADO'));
     const cliente = criarClienteHttp({ credencial, fetch: fetchFalso });
 
     const erro = await capturar(cliente.requisitar({ metodo: 'GET', caminho: '/x' }));
 
-    expect(erro).toMatchObject({ codigo: 'NAO_AUTENTICADO' });
-    expect(credencial.aoSessaoEncerrada).toHaveBeenCalledTimes(1);
+    expect(erro).toBeInstanceOf(ErroDeRede);
+    expect(credencial.aoSessaoEncerrada).not.toHaveBeenCalled();
   });
 
   it.each(['USUARIO_CONVITE_PENDENTE', 'USUARIO_SUSPENSO', 'USUARIO_REVOGADO'] as const)(
