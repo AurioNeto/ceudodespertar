@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
 import {
   CPF_REDIGIDO,
@@ -204,4 +205,65 @@ describe('redação de log', () => {
   it('descarta a linha que não é JSON em vez de repassá-la crua', () => {
     expect(redigirLinhaDeLog(`authorization: ${SEGREDO}`)).toBe(LINHA_DE_LOG_ILEGIVEL);
   });
+});
+
+const UUIDS_COM_LETRA_HEX_SEGUIDA_DE_ONZE_DIGITOS = [
+  '0b6a2c3e-1f2d-4a5b-8c7d-a12345678901',
+  '0B6A2C3E-1F2D-4A5B-8C7D-A12345678901',
+  '9d1e0f6a-7b3c-4d2e-9f80-f98765432100',
+  '9D1E0F6A-7B3C-4D2E-9F80-E00000000001',
+  '11111111-2222-4333-8444-b55555555555',
+] as const;
+
+const NUMERO_DE_UUIDS_DA_PROPRIEDADE = 20_000;
+
+describe('máscara de CPF em texto livre', () => {
+  it.each(UUIDS_COM_LETRA_HEX_SEGUIDA_DE_ONZE_DIGITOS)('mantém intacto o UUID %s', (uuid) => {
+    expect(mascararCpf(uuid)).toBe(uuid);
+  });
+
+  it.each(UUIDS_COM_LETRA_HEX_SEGUIDA_DE_ONZE_DIGITOS)('mantém intacto o UUID %s dentro de frase, URL e JSON', (uuid) => {
+    const frase = `evento ${uuid} recusado`;
+    const url = `https://api.cdd.local/v1/membros/${uuid}?incluir=vinculos`;
+    const json = JSON.stringify({ correlacaoId: uuid, agregadoId: uuid });
+
+    expect(mascararCpf(frase)).toBe(frase);
+    expect(mascararCpf(url)).toBe(url);
+    expect(mascararCpf(json)).toBe(json);
+  });
+
+  it('mantém intactos 20 mil UUIDs aleatórios', () => {
+    const corrompidos = Array.from({ length: NUMERO_DE_UUIDS_DA_PROPRIEDADE }, () => randomUUID()).filter(
+      (uuid) => mascararCpf(uuid) !== uuid,
+    );
+
+    expect(corrompidos).toStrictEqual([]);
+  });
+
+  it.each(['123.456.789-01', '12345678901', '123 456 789 01', '123456789-01', '123.456.78901'])(
+    'mascara o CPF %s sozinho na string',
+    (cpf) => {
+      expect(mascararCpf(cpf)).toBe(CPF_REDIGIDO);
+    },
+  );
+
+  it.each([
+    ['no meio de frase', 'titular 123.456.789-01 sem vínculo', `titular ${CPF_REDIGIDO} sem vínculo`],
+    ['no início da string', '12345678901 recusado', `${CPF_REDIGIDO} recusado`],
+    ['no fim da string', 'recusado: 12345678901', `recusado: ${CPF_REDIGIDO}`],
+    ['entre parênteses', 'titular (123.456.789-01)', `titular (${CPF_REDIGIDO})`],
+    ['entre aspas', 'cpf "12345678901" e \'123 456 789 01\'', `cpf "${CPF_REDIGIDO}" e '${CPF_REDIGIDO}'`],
+    ['depois de dois-pontos sem espaço', 'cpf:12345678901', `cpf:${CPF_REDIGIDO}`],
+    ['em JSON stringificado', '{"valor":"123.456.789-01"}', `{"valor":"${CPF_REDIGIDO}"}`],
+    ['grudado em hífen ou sublinhado', 'ref-12345678901_x', `ref-${CPF_REDIGIDO}_x`],
+  ])('mascara o CPF %s', (_caso, entrada, esperado) => {
+    expect(mascararCpf(entrada)).toBe(esperado);
+  });
+
+  it.each(['pedido12345678901', 'a12345678901b', '12345678901b', 'ção12345678901', 'A12345678901'])(
+    'não mascara 11 dígitos grudados em letra, porque a borda alfanumérica indica identificador e não CPF: %s',
+    (identificador) => {
+      expect(mascararCpf(identificador)).toBe(identificador);
+    },
+  );
 });
