@@ -80,7 +80,7 @@ describe('catálogo de erros — contrato (Documento 7 §12)', () => {
       USUARIO_CONVITE_PENDENTE: 401,
       USUARIO_SUSPENSO: 401,
       USUARIO_REVOGADO: 401,
-      USUARIO_DESCONHECIDO: 403,
+      USUARIO_DESCONHECIDO: 401,
       GRUPO_PROTEGIDO: 409,
       GRUPO_JA_EXISTE: 409,
       CONVITE_JA_PENDENTE: 409,
