@@ -8,7 +8,10 @@
   "rules": {
     "unicorn/no-array-sort": "error"
   },
-  "ignorePatterns": ["apps/api/test/estrutural/fixtures/**"],
+  "ignorePatterns": [
+    "apps/api/test/estrutural/fixtures/**",
+    "apps/api/src/shared/infrastructure/banco/banco-cdd.gerado.ts"
+  ],
   "env": {
     "builtin": true
   }
