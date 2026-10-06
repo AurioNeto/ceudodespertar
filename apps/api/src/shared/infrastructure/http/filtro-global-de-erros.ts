@@ -3,10 +3,12 @@ import { Catch, HttpException, Logger } from '@nestjs/common';
 import type { ArgumentsHost, ExceptionFilter } from '@nestjs/common';
 import { DriverException, OptimisticLockError } from '@mikro-orm/core';
 import { DatabaseError } from 'pg';
+import { CODIGOS_DE_ERRO } from '@cdd/contracts';
 import type { CodigoDeErro, CorpoDeErro } from '@cdd/contracts';
 import { ContextoDaRequisicao } from '../contexto-da-requisicao.js';
 import { lerCorrelacaoDaRequisicao } from './correlacao-da-requisicao.js';
-import { ErroDeDominioException } from '../../kernel/erro-de-dominio.js';
+import { erroDeDominio, ErroDeDominioException } from '../../kernel/erro-de-dominio.js';
+import type { ErroDeDominio } from '../../kernel/erro-de-dominio.js';
 import { STATUS_POR_CODIGO } from './status-por-codigo.js';
 import { RESTRICAO_PARA_CODIGO } from './restricao-para-codigo.js';
 import { codigoDaGuardaMinima } from './guardas-minimas-do-banco.js';
@@ -50,6 +52,20 @@ function ehErroDeBanco(valor: unknown): valor is ErroDeBanco {
 
 function ehCorpoGrandeDemais(valor: unknown): boolean {
   return typeof valor === 'object' && valor !== null && (valor as { type?: unknown }).type === TIPO_DE_ERRO_CORPO_GRANDE_DEMAIS;
+}
+
+function ehRegistro(valor: unknown): valor is Record<string, unknown> {
+  return typeof valor === 'object' && valor !== null && !Array.isArray(valor);
+}
+
+function ehCodigoDeErro(valor: unknown): valor is CodigoDeErro {
+  return typeof valor === 'string' && (CODIGOS_DE_ERRO as readonly string[]).includes(valor);
+}
+
+function corpoDeErroDeclarado(corpo: unknown): ErroDeDominio | undefined {
+  if (!ehRegistro(corpo) || !ehCodigoDeErro(corpo.erro)) return undefined;
+
+  return erroDeDominio(corpo.erro, ehRegistro(corpo.detalhes) ? corpo.detalhes : undefined);
 }
 
 function respostaParaCodigo(
@@ -109,6 +125,11 @@ export class FiltroGlobalDeErros implements ExceptionFilter {
   }
 
   private resolverHttpException(excecao: HttpException, correlacaoId: string): RespostaDeErro {
+    const declarado = corpoDeErroDeclarado(excecao.getResponse());
+    if (declarado !== undefined) {
+      return respostaParaCodigo(declarado.codigo, correlacaoId, declarado.detalhes);
+    }
+
     const status = excecao.getStatus();
     const codigo = CODIGO_POR_STATUS_HTTP_CONHECIDO[status];
 

@@ -240,6 +240,89 @@ describe('FiltroGlobalDeErros', () => {
     expect(capturada.corpo).toStrictEqual({ erro: 'RECURSO_NAO_ENCONTRADO', correlacaoId });
   });
 
+  it.each([
+    [400, 'CORPO_INVALIDO'],
+    [401, 'NAO_AUTENTICADO'],
+    [403, 'SEM_PERMISSAO'],
+    [404, 'RECURSO_NAO_ENCONTRADO'],
+  ] as const)('HttpException %i sem código no corpo cai no mapa por status e vira %s', (statusHttp, codigo) => {
+    const correlacaoId = randomUUID();
+
+    comCorrelacaoId(correlacaoId, () => {
+      filtro.catch(new HttpException('mensagem livre', statusHttp), hostFalso(capturada));
+    });
+
+    expect(capturada.status).toBe(statusHttp);
+    expect(capturada.corpo).toStrictEqual({ erro: codigo, correlacaoId });
+  });
+
+  it.each([
+    [401, 'USUARIO_SUSPENSO', 401],
+    [401, 'USUARIO_REVOGADO', 401],
+    [401, 'USUARIO_CONVITE_PENDENTE', 401],
+    [401, 'USUARIO_DESCONHECIDO', 401],
+    [503, 'PROVEDOR_DE_IDENTIDADE_INDISPONIVEL', 503],
+    [422, 'CHAVE_DE_IDEMPOTENCIA_REUTILIZADA', 422],
+  ] as const)('HttpException %i com corpo { erro: %s } responde %i com esse código e a correlacaoId do filtro', (statusDaExcecao, codigo, statusEsperado) => {
+    const correlacaoId = randomUUID();
+
+    comCorrelacaoId(correlacaoId, () => {
+      filtro.catch(new HttpException({ erro: codigo, correlacaoId: '' }, statusDaExcecao), hostFalso(capturada));
+    });
+
+    expect(capturada.status).toBe(statusEsperado);
+    expect(capturada.corpo).toStrictEqual({ erro: codigo, correlacaoId });
+    expect(logErro).not.toHaveBeenCalled();
+  });
+
+  it('o status vem do catálogo, não da exceção', () => {
+    const correlacaoId = randomUUID();
+
+    comCorrelacaoId(correlacaoId, () => {
+      filtro.catch(new HttpException({ erro: 'USUARIO_SUSPENSO' }, 418), hostFalso(capturada));
+    });
+
+    expect(capturada.status).toBe(401);
+    expect(capturada.corpo).toStrictEqual({ erro: 'USUARIO_SUSPENSO', correlacaoId });
+  });
+
+  it('detalhes em forma de registro são repassados', () => {
+    const correlacaoId = randomUUID();
+
+    comCorrelacaoId(correlacaoId, () => {
+      filtro.catch(new HttpException({ erro: 'USUARIO_SUSPENSO', detalhes: { motivo: 'x' } }, 401), hostFalso(capturada));
+    });
+
+    expect(capturada.corpo).toStrictEqual({ erro: 'USUARIO_SUSPENSO', detalhes: { motivo: 'x' }, correlacaoId });
+  });
+
+  it.each([['texto'], [['a']], [null], [7]])('detalhes fora de forma de registro (%j) são omitidos', (detalhes) => {
+    const correlacaoId = randomUUID();
+
+    comCorrelacaoId(correlacaoId, () => {
+      filtro.catch(new HttpException({ erro: 'USUARIO_SUSPENSO', detalhes }, 401), hostFalso(capturada));
+    });
+
+    expect(capturada.corpo).toStrictEqual({ erro: 'USUARIO_SUSPENSO', correlacaoId });
+  });
+
+  it.each([
+    [{ erro: 'CODIGO_QUE_NAO_EXISTE' }, 403, 403, 'SEM_PERMISSAO'],
+    [{ erro: 42 }, 403, 403, 'SEM_PERMISSAO'],
+    [{ mensagem: 'sem erro' }, 404, 404, 'RECURSO_NAO_ENCONTRADO'],
+    ['USUARIO_SUSPENSO', 401, 401, 'NAO_AUTENTICADO'],
+    [{ erro: 'CODIGO_QUE_NAO_EXISTE' }, 418, 500, 'ERRO_INTERNO'],
+  ] as const)('corpo %j em HttpException %i não é código do catálogo — cai no mapa por status', (corpoDaExcecao, statusDaExcecao, statusEsperado, codigo) => {
+    const correlacaoId = randomUUID();
+
+    comCorrelacaoId(correlacaoId, () => {
+      filtro.catch(new HttpException(corpoDaExcecao, statusDaExcecao), hostFalso(capturada));
+    });
+
+    expect(capturada.status).toBe(statusEsperado);
+    expect(capturada.corpo).toStrictEqual({ erro: codigo, correlacaoId });
+  });
+
   it('HttpException nativa sem código de domínio conhecido nunca mistura status alheio com ERRO_INTERNO — vira 500', () => {
     const correlacaoId = randomUUID();
 
