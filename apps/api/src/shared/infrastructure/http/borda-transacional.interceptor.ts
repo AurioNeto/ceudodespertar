@@ -10,6 +10,7 @@ import { UnidadeDeTrabalho } from '../banco/unidade-de-trabalho.js';
 import type { ModoDeTransacao } from '../banco/unidade-de-trabalho.js';
 import { CHAVE_DO_MODO_DE_TRANSACAO } from './modo-de-transacao.decorator.js';
 import { ProvedorDeContextoDeInstituicao } from './provedor-de-contexto-de-instituicao.js';
+import { gravarCorrelacaoNaRequisicao } from './correlacao-da-requisicao.js';
 
 export const MODO_PADRAO_SEM_MARCA: ModoDeTransacao = 'leitura';
 
@@ -34,6 +35,8 @@ export class BordaTransacionalInterceptor implements NestInterceptor {
       instituicaoId: identidade.instituicaoId,
       usuarioId: identidade.usuarioId,
     };
+
+    gravarCorrelacaoNaRequisicao(contexto.switchToHttp().getRequest<object>(), valorDoContexto.correlacaoId);
 
     const resposta = await ContextoDaRequisicao.executar(valorDoContexto, () =>
       this.unidadeDeTrabalho.transacao(modo, () =>

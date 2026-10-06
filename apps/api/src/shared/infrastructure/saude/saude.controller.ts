@@ -1,5 +1,9 @@
-import { Controller, Get, ServiceUnavailableException } from '@nestjs/common';
+import { Controller, Get, HttpStatus, Res } from '@nestjs/common';
 import { VerificadorDeProntidao } from './verificador-de-prontidao.js';
+
+interface RespostaComStatus {
+  status(codigo: number): unknown;
+}
 
 interface EstadoDeSaude {
   status: 'viva';
@@ -21,10 +25,11 @@ export class SaudeController {
   }
 
   @Get('pronta')
-  async pronta(): Promise<EstadoDeProntidao> {
+  async pronta(@Res({ passthrough: true }) resposta: RespostaComStatus): Promise<EstadoDeProntidao | typeof CORPO_DE_INDISPONIVEL> {
     const resultado = await this.verificadorDeProntidao.verificar();
     if (!resultado.pronta) {
-      throw new ServiceUnavailableException(CORPO_DE_INDISPONIVEL);
+      resposta.status(HttpStatus.SERVICE_UNAVAILABLE);
+      return CORPO_DE_INDISPONIVEL;
     }
     return { status: 'pronta' };
   }
