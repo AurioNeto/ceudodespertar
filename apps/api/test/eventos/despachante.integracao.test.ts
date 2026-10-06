@@ -463,20 +463,22 @@ describe('Despachante · entrega do outbox (Documento 7 §9)', () => {
     }
   });
 
+  async function inserirNoOutboxComTentativas(evento: EventoDeDominio, tentativas: number): Promise<void> {
+    await banco.owner.query(
+      `insert into shared.outbox (evento_id, instituicao_id, tipo, agregado_tipo, agregado_id, payload, tentativas)
+       values ($1, $2, $3, $4, $5, '{}'::jsonb, $6)`,
+      [evento.eventoId, INSTITUICAO_A, evento.tipo, evento.agregadoTipo, evento.agregadoId, tentativas],
+    );
+  }
+
   it('respeita o teto de tentativas: 9 ainda é elegível, 10 não é mais entregue', async () => {
     const app = await subirContextoDeEventos(banco, [ConsumidorRegistraChamadas]);
     try {
       const noLimite = criarEvento({ tipo: 'teste.EventoFeliz' });
-      await gravarEvento(app, noLimite);
-      await banco.owner.query('update shared.outbox set tentativas = 9 where evento_id = $1', [
-        noLimite.eventoId,
-      ]);
+      await inserirNoOutboxComTentativas(noLimite, 9);
 
       const esgotado = criarEvento({ tipo: 'teste.EventoFeliz' });
-      await gravarEvento(app, esgotado);
-      await banco.owner.query('update shared.outbox set tentativas = 10 where evento_id = $1', [
-        esgotado.eventoId,
-      ]);
+      await inserirNoOutboxComTentativas(esgotado, 10);
 
       await app.get(Despachante).executarCiclo();
 
