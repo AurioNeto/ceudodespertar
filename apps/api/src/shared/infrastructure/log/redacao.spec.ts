@@ -260,7 +260,16 @@ describe('máscara de CPF em texto livre', () => {
     expect(mascararCpf(entrada)).toBe(esperado);
   });
 
-  it.each(['pedido12345678901', 'a12345678901b', '12345678901b', 'ção12345678901', 'A12345678901'])(
+  it.each([
+    'pedido12345678901',
+    'a12345678901b',
+    '12345678901b',
+    '12345678901z',
+    '12345678901ção',
+    'ção12345678901',
+    'é12345678901',
+    'A12345678901',
+  ])(
     'não mascara 11 dígitos grudados em letra, porque a borda alfanumérica indica identificador e não CPF: %s',
     (identificador) => {
       expect(mascararCpf(identificador)).toBe(identificador);
