@@ -5,6 +5,8 @@ import { MikroORM } from '@mikro-orm/postgresql';
 import { afterEach, beforeEach, describe, expect, inject, it, vi } from 'vitest';
 import { criarAplicacao } from '../../src/composicao/aplicacao.js';
 import { NOME_DA_CONEXAO_DA_PRONTIDAO } from '../../src/shared/infrastructure/banco/pool-da-prontidao.js';
+import { TETO_DE_TENTATIVAS } from '../../src/shared/infrastructure/eventos/teto-de-tentativas.js';
+import { VerificadorDeProntidao } from '../../src/shared/infrastructure/saude/verificador-de-prontidao.js';
 import { criarBancoDeTeste, derrubarBancoDeTeste } from '../integracao/banco-de-teste.js';
 import type { BancoDeTeste } from '../integracao/banco-de-teste.js';
 import { urlDoAppPara } from '../unidade-de-trabalho/orm-de-teste.js';
@@ -111,10 +113,21 @@ describe('GET /saude/pronta (Documento 7 §13)', () => {
       expect(await consultarProntidao(origem)).toStrictEqual(PRONTA);
     });
 
-    it('responde 503 com um evento recente que já esgotou 10 tentativas', async () => {
-      await gravarEvento(banco, { ocorridoHa: '1 minute', tentativas: 10 });
+    it('responde 200 com um evento esgotado há um dia, porque evento esgotado é alerta e não prontidão', async () => {
+      await gravarEvento(banco, { ocorridoHa: '1 day', tentativas: TETO_DE_TENTATIVAS });
+
+      expect(await consultarProntidao(origem)).toStrictEqual(PRONTA);
+    });
+
+    it('responde 503 por outbox atrasado com um evento ainda sob o teto pendente há 6 min, mesmo ao lado de um esgotado', async () => {
+      await gravarEvento(banco, { ocorridoHa: '1 day', tentativas: TETO_DE_TENTATIVAS });
+      await gravarEvento(banco, { ocorridoHa: '6 minutes', tentativas: TETO_DE_TENTATIVAS - 1 });
 
       expect(await consultarProntidao(origem)).toStrictEqual(INDISPONIVEL);
+      expect(await app.get(VerificadorDeProntidao).verificar()).toStrictEqual({
+        pronta: false,
+        motivo: 'outbox-atrasado',
+      });
     });
 
     it('volta a 200 quando o evento atrasado é publicado', async () => {

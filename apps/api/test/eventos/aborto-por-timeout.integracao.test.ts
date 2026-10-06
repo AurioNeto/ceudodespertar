@@ -6,10 +6,8 @@ import type { BancoDeTeste } from '../integracao/banco-de-teste.js';
 import { UnidadeDeTrabalho } from '../../src/shared/infrastructure/banco/unidade-de-trabalho.js';
 import type { ContextoDaTransacao, ModoDeTransacao } from '../../src/shared/infrastructure/banco/unidade-de-trabalho.js';
 import { UnidadeDeTrabalhoMikroOrm } from '../../src/shared/infrastructure/banco/unidade-de-trabalho.mikro-orm.js';
-import {
-  Despachante,
-  TETO_DE_TENTATIVAS,
-} from '../../src/shared/infrastructure/eventos/despachante.js';
+import { Despachante } from '../../src/shared/infrastructure/eventos/despachante.js';
+import { TETO_DE_TENTATIVAS } from '../../src/shared/infrastructure/eventos/teto-de-tentativas.js';
 import { SinalizadorDeEventos } from '../../src/shared/infrastructure/eventos/sinalizador-de-eventos.js';
 import type { RegistroDeConsumidores } from '../../src/shared/infrastructure/eventos/registro-de-consumidores.js';
 import { abrirOrmDeTeste } from '../unidade-de-trabalho/orm-de-teste.js';

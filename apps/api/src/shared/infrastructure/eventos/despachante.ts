@@ -13,8 +13,8 @@ import { formatarUltimoErro } from './formatador-de-erro.js';
 import type { ConsumidorRegistrado } from './registro-de-consumidores.js';
 import { RegistroDeConsumidores } from './registro-de-consumidores.js';
 import { SinalizadorDeEventos } from './sinalizador-de-eventos.js';
+import { TETO_DE_TENTATIVAS } from './teto-de-tentativas.js';
 
-export const TETO_DE_TENTATIVAS = 10;
 export const TIMEOUT_DO_CONSUMIDOR_EM_MS = Symbol('TIMEOUT_DO_CONSUMIDOR_EM_MS');
 export const TIMEOUT_PADRAO_DO_CONSUMIDOR_EM_MS = 30_000;
 const TAMANHO_MAXIMO_DO_CICLO = 100;
