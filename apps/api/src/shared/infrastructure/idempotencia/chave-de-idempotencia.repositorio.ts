@@ -1,4 +1,6 @@
-import type { EntityManager, QueryResult } from '@mikro-orm/postgresql';
+import { sql } from 'kysely';
+import type { Kysely, RawBuilder } from 'kysely';
+import type { DB, Json } from '../banco/banco-cdd.gerado.js';
 import { JANELA_DE_RETENCAO_EM_HORAS } from './cabecalho-de-idempotencia.js';
 
 const CODIGO_DE_VIOLACAO_DE_CHAVE_UNICA = '23505';
@@ -52,53 +54,69 @@ function envelopar(corpo: unknown, location: string | null): string {
   return JSON.stringify(envelope);
 }
 
-async function inserirPlaceholder(em: EntityManager, dados: DadosDaChaveDeIdempotencia): Promise<void> {
-  await em.execute(
-    `insert into shared.chave_de_idempotencia
-       (instituicao_id, chave, usuario_id, rota, corpo_hash, status_http, resposta)
-     values (?, ?, ?, ?, ?, ${STATUS_HTTP_PLACEHOLDER}, '${RESPOSTA_PLACEHOLDER}'::jsonb)`,
-    [dados.instituicaoId, dados.chave, dados.usuarioId ?? null, dados.rota, dados.corpoHash],
-  );
+function condicaoDeVencida(): RawBuilder<boolean> {
+  return sql<boolean>`criada_em < now() - make_interval(hours => ${JANELA_DE_RETENCAO_EM_HORAS})`;
+}
+
+function comoJsonb(texto: string): RawBuilder<Json> {
+  return sql<Json>`${texto}::jsonb`;
+}
+
+async function inserirPlaceholder(kysely: Kysely<DB>, dados: DadosDaChaveDeIdempotencia): Promise<void> {
+  await kysely
+    .insertInto('shared.chave_de_idempotencia')
+    .values({
+      instituicao_id: dados.instituicaoId,
+      chave: dados.chave,
+      usuario_id: dados.usuarioId ?? null,
+      rota: dados.rota,
+      corpo_hash: dados.corpoHash,
+      status_http: STATUS_HTTP_PLACEHOLDER,
+      resposta: comoJsonb(RESPOSTA_PLACEHOLDER),
+    })
+    .execute();
 }
 
 async function buscarLinhaExistente(
-  em: EntityManager,
+  kysely: Kysely<DB>,
   instituicaoId: string,
   chave: string,
 ): Promise<LinhaDaChaveDeIdempotencia> {
-  const linhas = await em.execute<LinhaDaChaveDeIdempotencia[]>(
-    `select usuario_id, rota, corpo_hash, status_http, resposta,
-            criada_em < now() - make_interval(hours => ?) as vencida
-       from shared.chave_de_idempotencia
-      where instituicao_id = ? and chave = ?`,
-    [JANELA_DE_RETENCAO_EM_HORAS, instituicaoId, chave],
-  );
-  const linha = linhas[0];
+  const linha = await kysely
+    .selectFrom('shared.chave_de_idempotencia')
+    .select([
+      'usuario_id',
+      'rota',
+      'corpo_hash',
+      'status_http',
+      'resposta',
+      condicaoDeVencida().as('vencida'),
+    ])
+    .where('instituicao_id', '=', instituicaoId)
+    .where('chave', '=', chave)
+    .executeTakeFirst();
   if (linha === undefined) {
     throw new Error('chave de idempotência não encontrada logo após violação de unicidade na sua inserção');
   }
-  return linha;
+  return { ...linha, resposta: linha.resposta as unknown as EnvelopeDaResposta };
 }
 
-export async function reclamarChaveVencida(em: EntityManager, dados: DadosDaChaveDeIdempotencia): Promise<boolean> {
-  const resultado = await em.execute<QueryResult>(
-    `update shared.chave_de_idempotencia
-        set usuario_id = ?, rota = ?, corpo_hash = ?, status_http = ${STATUS_HTTP_PLACEHOLDER},
-            resposta = ?::jsonb, criada_em = now()
-      where instituicao_id = ? and chave = ?
-        and criada_em < now() - make_interval(hours => ?)`,
-    [
-      dados.usuarioId ?? null,
-      dados.rota,
-      dados.corpoHash,
-      RESPOSTA_PLACEHOLDER,
-      dados.instituicaoId,
-      dados.chave,
-      JANELA_DE_RETENCAO_EM_HORAS,
-    ],
-    'run',
-  );
-  return resultado.affectedRows > 0;
+export async function reclamarChaveVencida(kysely: Kysely<DB>, dados: DadosDaChaveDeIdempotencia): Promise<boolean> {
+  const resultado = await kysely
+    .updateTable('shared.chave_de_idempotencia')
+    .set({
+      usuario_id: dados.usuarioId ?? null,
+      rota: dados.rota,
+      corpo_hash: dados.corpoHash,
+      status_http: STATUS_HTTP_PLACEHOLDER,
+      resposta: comoJsonb(RESPOSTA_PLACEHOLDER),
+      criada_em: sql<Date>`now()`,
+    })
+    .where('instituicao_id', '=', dados.instituicaoId)
+    .where('chave', '=', dados.chave)
+    .where(condicaoDeVencida())
+    .executeTakeFirst();
+  return resultado.numUpdatedRows > 0n;
 }
 
 function paraChaveExistente(linha: LinhaDaChaveDeIdempotencia): ChaveDeIdempotenciaExistente {
@@ -113,42 +131,44 @@ function paraChaveExistente(linha: LinhaDaChaveDeIdempotencia): ChaveDeIdempoten
 }
 
 export async function reivindicarChave(
-  em: EntityManager,
+  kysely: Kysely<DB>,
   dados: DadosDaChaveDeIdempotencia,
 ): Promise<ChaveDeIdempotenciaExistente | undefined> {
-  await em.execute(`savepoint ${PONTO_DE_SALVAMENTO_DA_REIVINDICACAO}`);
+  await sql`savepoint ${sql.raw(PONTO_DE_SALVAMENTO_DA_REIVINDICACAO)}`.execute(kysely);
   try {
-    await inserirPlaceholder(em, dados);
+    await inserirPlaceholder(kysely, dados);
     return undefined;
   } catch (erro) {
     if (!ehViolacaoDeChaveUnica(erro)) {
       throw erro;
     }
-    await em.execute(`rollback to savepoint ${PONTO_DE_SALVAMENTO_DA_REIVINDICACAO}`);
+    await sql`rollback to savepoint ${sql.raw(PONTO_DE_SALVAMENTO_DA_REIVINDICACAO)}`.execute(kysely);
   }
 
-  let linha = await buscarLinhaExistente(em, dados.instituicaoId, dados.chave);
+  let linha = await buscarLinhaExistente(kysely, dados.instituicaoId, dados.chave);
   if (linha.vencida) {
-    const reclamou = await reclamarChaveVencida(em, dados);
+    const reclamou = await reclamarChaveVencida(kysely, dados);
     if (reclamou) {
       return undefined;
     }
-    linha = await buscarLinhaExistente(em, dados.instituicaoId, dados.chave);
+    linha = await buscarLinhaExistente(kysely, dados.instituicaoId, dados.chave);
   }
 
   return paraChaveExistente(linha);
 }
 
 export async function gravarResposta(
-  em: EntityManager,
+  kysely: Kysely<DB>,
   instituicaoId: string,
   chave: string,
   statusHttp: number,
   corpo: unknown,
   location: string | null,
 ): Promise<void> {
-  await em.execute(
-    'update shared.chave_de_idempotencia set status_http = ?, resposta = ?::jsonb where instituicao_id = ? and chave = ?',
-    [statusHttp, envelopar(corpo, location), instituicaoId, chave],
-  );
+  await kysely
+    .updateTable('shared.chave_de_idempotencia')
+    .set({ status_http: statusHttp, resposta: comoJsonb(envelopar(corpo, location)) })
+    .where('instituicao_id', '=', instituicaoId)
+    .where('chave', '=', chave)
+    .execute();
 }
