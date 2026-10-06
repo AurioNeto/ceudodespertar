@@ -206,6 +206,24 @@ else
   fi
 fi
 
+# O tema é montado no container (compose.yaml); se a montagem sumir, o Keycloak
+# cai calado no tema padrão e os verificadores do realm continuam verdes.
+echo "==> página de login do cdd-web precisa ser servida pelo tema cdd"
+if ! pagina_login="$(curl -s --max-time 20 -G "${emissor}/protocol/openid-connect/auth" \
+  --data-urlencode "client_id=cdd-web" \
+  --data-urlencode "response_type=code" \
+  --data-urlencode "redirect_uri=http://localhost:5173/callback" \
+  --data-urlencode "scope=openid" \
+  --data-urlencode "code_challenge=ZS_Cv2oAD2R7s1ebkXIup64X6LXidDUT2yF4RFGVC3Y" \
+  --data-urlencode "code_challenge_method=S256")"; then
+  falhar "não conseguiu abrir a página de login do cdd-web"
+elif printf '%s' "$pagina_login" | grep -q '/resources/[^"]*/login/cdd/css/cdd.css' \
+  && printf '%s' "$pagina_login" | grep -q 'type="importmap"'; then
+  echo "    OK (cdd.css e importmap presentes)"
+else
+  falhar "página de login sem o cdd.css ou sem o importmap: o tema cdd não está sendo servido"
+fi
+
 echo "==> autorização sem code_challenge deve ser recusada (PKCE obrigatório)"
 if ! resposta_sem_pkce="$(curl -s --max-time 20 -D - -o /dev/null -G "${emissor}/protocol/openid-connect/auth" \
   --data-urlencode "client_id=cdd-web" \

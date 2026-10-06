@@ -20,6 +20,7 @@ export default defineConfig({
       exclude: ['src/**/*.spec.ts'],
       thresholds: {
         'src/shared/kernel/**': { 100: true },
+        'src/modules/identidade/domain/**': { 100: true },
       },
     },
   },
