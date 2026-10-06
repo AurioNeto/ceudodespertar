@@ -10,6 +10,7 @@ import type { ContextoDaTransacao, ModoDeTransacao } from '../banco/unidade-de-t
 import { BordaTransacionalInterceptor, MODO_PADRAO_SEM_MARCA } from './borda-transacional.interceptor.js';
 import { ModoDeTransacao as ComModoDeTransacao } from './modo-de-transacao.decorator.js';
 import { ProvedorDeContextoDeInstituicao } from './provedor-de-contexto-de-instituicao.js';
+import { lerCorrelacaoDaRequisicao } from './correlacao-da-requisicao.js';
 
 class UnidadeDeTrabalhoFake extends UnidadeDeTrabalho {
   modosChamados: ModoDeTransacao[] = [];
@@ -50,6 +51,7 @@ function contextoDeExecucaoQualquer(): ExecutionContext {
   return {
     getHandler: () => function handlerQualquer() {},
     getClass: () => class ControladorQualquer {},
+    switchToHttp: () => ({ getRequest: () => ({}) }),
   } as unknown as ExecutionContext;
 }
 
@@ -68,6 +70,7 @@ function contextoDeExecucaoPara(nomeDoMetodo: 'heranca' | 'comOverride'): Execut
   return {
     getHandler: () => ControladorComMarcaDeClasse.prototype[nomeDoMetodo],
     getClass: () => ControladorComMarcaDeClasse,
+    switchToHttp: () => ({ getRequest: () => ({}) }),
   } as unknown as ExecutionContext;
 }
 
@@ -136,6 +139,33 @@ describe('BordaTransacionalInterceptor', () => {
 
     expect(contextoObservado).toMatchObject({ instituicaoId: 'inst-a', usuarioId: 'user-1' });
     expect(contextoObservado?.correlacaoId).toEqual(expect.any(String));
+  });
+
+  it('grava na requisição a mesma correlacaoId publicada em ContextoDaRequisicao', async () => {
+    const uow = new UnidadeDeTrabalhoFake();
+    const interceptor = new BordaTransacionalInterceptor(
+      new Reflector(),
+      uow,
+      new ProvedorDeContextoDeInstituicaoFixo({}),
+    );
+
+    let contextoObservado: ContextoDaRequisicaoValor | undefined;
+    const requisicao = {};
+    const contexto = {
+      getHandler: () => function handlerQualquer() {},
+      getClass: () => class ControladorQualquer {},
+      switchToHttp: () => ({ getRequest: () => requisicao }),
+    } as unknown as ExecutionContext;
+    const proximo: CallHandler = {
+      handle: () => {
+        contextoObservado = ContextoDaRequisicao.atual();
+        return of('resposta');
+      },
+    };
+
+    await interceptor.intercept(contexto, proximo);
+
+    expect(lerCorrelacaoDaRequisicao(requisicao)).toBe(contextoObservado?.correlacaoId);
   });
 
   it('não vaza ContextoDaRequisicao para fora do intercept', async () => {
@@ -215,5 +245,29 @@ describe('BordaTransacionalInterceptor', () => {
     await firstValueFrom(observavel);
 
     expect(uow.eventos.indexOf('emitiu-segundo-valor')).toBeLessThan(uow.eventos.indexOf('commit'));
+  });
+  it('reusa o correlacaoId já publicado pela correlação da requisição', async () => {
+    const interceptor = new BordaTransacionalInterceptor(
+      new Reflector(),
+      new UnidadeDeTrabalhoFake(),
+      new ProvedorDeContextoDeInstituicaoFixo({ instituicaoId: 'inst-a' }),
+    );
+    let contextoObservado: ContextoDaRequisicaoValor | undefined;
+    const proximo: CallHandler = {
+      handle: () => {
+        contextoObservado = ContextoDaRequisicao.atual();
+        return of('resposta');
+      },
+    };
+
+    await ContextoDaRequisicao.executar({ correlacaoId: 'correlacao-da-borda' }, () =>
+      interceptor.intercept(contextoDeExecucaoQualquer(), proximo),
+    );
+
+    expect(contextoObservado).toStrictEqual({
+      correlacaoId: 'correlacao-da-borda',
+      instituicaoId: 'inst-a',
+      usuarioId: undefined,
+    });
   });
 });

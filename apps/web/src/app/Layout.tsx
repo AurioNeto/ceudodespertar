@@ -3,7 +3,6 @@ import { AppShell } from '../ds';
 import { construirNav, ROTAS, rotaAtiva, type RotaId } from './navegacao';
 import { useDensidade } from '../lib/useDensidade';
 import { useSessao } from './sessao';
-import { usuarioAtual } from '../mocks/sessao';
 import { filaDeVerificacaoInicial } from '../mocks/verificacao';
 
 export function Layout() {
@@ -11,15 +10,16 @@ export function Layout() {
   const { pathname } = useLocation();
   const ativo = rotaAtiva(pathname);
 
-  // Dentro de ExigeSessao o usuário existe; o fallback é só para o TypeScript.
   const { usuario } = useSessao();
-  const quem = usuario ?? usuarioAtual;
+  const densidade = useDensidade();
+
+  if (!usuario) return null;
 
   return (
     <AppShell
       unit="CDD"
-      density={useDensidade()}
-      user={{ name: quem.nome, group: quem.grupoNome }}
+      density={densidade}
+      user={{ name: usuario.nome, group: usuario.grupoNome }}
       nav={construirNav(filaDeVerificacaoInicial.length)}
       activeId={ativo}
       onNavigate={(id) => navigate(ROTAS[id as RotaId] ?? '/')}

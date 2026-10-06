@@ -52,6 +52,9 @@ jobs:
       - name: testes unitarios da api
         run: pnpm --filter @cdd/api test
 
+      - name: testes unitarios do web
+        run: pnpm --filter @cdd/web test
+
       - name: build do web
         run: pnpm --filter @cdd/web build
 
@@ -80,3 +83,6 @@ jobs:
 
       - name: testes de integracao da api
         run: pnpm --filter @cdd/api test:integracao
+
+      - name: tipos do kysely batem com o banco migrado
+        run: pnpm --filter @cdd/api db:gerar-tipos:verificar

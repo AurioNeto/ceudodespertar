@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { erroDeDominio } from './erro-de-dominio.js';
+import { ErroDeDominioException, erroDeDominio } from './erro-de-dominio.js';
 
 describe('erroDeDominio', () => {
   it('cria erro só com o código quando não há detalhes', () => {
@@ -11,5 +11,16 @@ describe('erroDeDominio', () => {
       codigo: 'PERIODO_FECHADO',
       detalhes: { competencia: '2026-07' },
     });
+  });
+});
+
+describe('ErroDeDominioException', () => {
+  it('carrega o ErroDeDominio original para quem capturar a exceção', () => {
+    const erro = erroDeDominio('PERIODO_FECHADO', { competencia: '2026-07' });
+
+    const excecao = new ErroDeDominioException(erro);
+
+    expect(excecao).toBeInstanceOf(Error);
+    expect(excecao.erroDeDominio).toStrictEqual(erro);
   });
 });
