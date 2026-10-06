@@ -31,6 +31,7 @@ interface RespostaDeErro {
 
 const CODIGO_ERRO_INTERNO: CodigoDeErro = 'ERRO_INTERNO';
 const CODIGO_VERSAO_DESATUALIZADA: CodigoDeErro = 'VERSAO_DESATUALIZADA';
+const CODIGO_CORPO_INVALIDO: CodigoDeErro = 'CORPO_INVALIDO';
 const CODIGO_CORPO_GRANDE_DEMAIS: CodigoDeErro = 'CORPO_GRANDE_DEMAIS';
 const CODIGO_POR_STATUS_HTTP_CONHECIDO: Readonly<Partial<Record<number, CodigoDeErro>>> = {
   400: 'CORPO_INVALIDO',
@@ -52,6 +53,13 @@ function ehErroDeBanco(valor: unknown): valor is ErroDeBanco {
 
 function ehCorpoGrandeDemais(valor: unknown): boolean {
   return typeof valor === 'object' && valor !== null && (valor as { type?: unknown }).type === TIPO_DE_ERRO_CORPO_GRANDE_DEMAIS;
+}
+
+function ehErroDeClienteDoBodyParser(valor: unknown): boolean {
+  if (!ehRegistro(valor) || typeof valor.type !== 'string') return false;
+
+  const status = valor.status ?? valor.statusCode;
+  return typeof status === 'number' && status >= 400 && status < 500;
 }
 
 function ehRegistro(valor: unknown): valor is Record<string, unknown> {
@@ -110,6 +118,11 @@ export class FiltroGlobalDeErros implements ExceptionFilter {
     if (ehCorpoGrandeDemais(excecao)) {
       this.logger.warn(`corpo da requisição excede o limite [correlacaoId=${correlacaoId}]`);
       return respostaParaCodigo(CODIGO_CORPO_GRANDE_DEMAIS, correlacaoId);
+    }
+
+    if (ehErroDeClienteDoBodyParser(excecao)) {
+      this.logger.warn(`corpo da requisição rejeitado pelo parser [correlacaoId=${correlacaoId}]`);
+      return respostaParaCodigo(CODIGO_CORPO_INVALIDO, correlacaoId);
     }
 
     if (excecao instanceof HttpException) {

@@ -195,6 +195,43 @@ describe('FiltroGlobalDeErros', () => {
     logAviso.mockRestore();
   });
 
+  it.each([
+    ['status', 'encoding.unsupported', 415],
+    ['statusCode', 'entity.parse.failed', 400],
+    ['status', 'request.aborted', 400],
+  ] as const)('erro do body-parser (%s %i, type %s) vira 400 CORPO_INVALIDO, logado como aviso e sem stack', (campo, tipo, statusDoErro) => {
+    const correlacaoId = randomUUID();
+    const logAviso = vi.spyOn(Logger.prototype, 'warn').mockImplementation(() => undefined);
+    const erroDoParser = Object.assign(new SyntaxError('Unexpected token'), { [campo]: statusDoErro, type: tipo });
+
+    comCorrelacaoId(correlacaoId, () => {
+      filtro.catch(erroDoParser, hostFalso(capturada));
+    });
+
+    expect(capturada.status).toBe(400);
+    expect(capturada.corpo).toStrictEqual({ erro: 'CORPO_INVALIDO', correlacaoId });
+    expect(logAviso).toHaveBeenCalledWith(expect.stringContaining(correlacaoId));
+    expect(logErro).not.toHaveBeenCalled();
+    logAviso.mockRestore();
+  });
+
+  it.each([
+    [{ status: 500, type: 'qualquer.coisa' }],
+    [{ status: 400 }],
+    [{ status: '400', type: 'entity.parse.failed' }],
+    [{ type: 'entity.parse.failed' }],
+  ])('erro com forma parcial de body-parser (%j) continua 500 ERRO_INTERNO', (campos) => {
+    const correlacaoId = randomUUID();
+
+    comCorrelacaoId(correlacaoId, () => {
+      filtro.catch(Object.assign(new Error('x'), campos), hostFalso(capturada));
+    });
+
+    expect(capturada.status).toBe(500);
+    expect(capturada.corpo).toStrictEqual({ erro: 'ERRO_INTERNO', correlacaoId });
+    expect(logErro).toHaveBeenCalled();
+  });
+
   it('OptimisticLockError do MikroORM vira 409 VERSAO_DESATUALIZADA', () => {
     const correlacaoId = randomUUID();
 
