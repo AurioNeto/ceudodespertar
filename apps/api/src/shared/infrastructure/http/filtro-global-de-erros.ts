@@ -1,8 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { Catch, HttpException, Logger } from '@nestjs/common';
 import type { ArgumentsHost, ExceptionFilter } from '@nestjs/common';
-import { DriverException, OptimisticLockError } from '@mikro-orm/core';
-import { DatabaseError } from 'pg';
 import { CODIGOS_DE_ERRO } from '@cdd/contracts';
 import type { CodigoDeErro, CorpoDeErro } from '@cdd/contracts';
 import { ContextoDaRequisicao } from '../contexto-da-requisicao.js';
@@ -12,16 +10,12 @@ import type { ErroDeDominio } from '../../kernel/erro-de-dominio.js';
 import { STATUS_POR_CODIGO } from './status-por-codigo.js';
 import { RESTRICAO_PARA_CODIGO } from './restricao-para-codigo.js';
 import { codigoDaGuardaMinima } from './guardas-minimas-do-banco.js';
+import { ehErroDeBanco, ehVersaoDesatualizada } from '../banco/classificacao-de-erros-do-banco.js';
+import type { ErroDeBanco } from '../banco/classificacao-de-erros-do-banco.js';
 
 interface RespostaHttp {
   status(codigo: number): RespostaHttp;
   json(corpo: CorpoDeErro): void;
-}
-
-interface ErroDeBanco {
-  readonly code: string;
-  readonly constraint?: string;
-  readonly message: string;
 }
 
 interface RespostaDeErro {
@@ -41,15 +35,7 @@ const CODIGO_POR_STATUS_HTTP_CONHECIDO: Readonly<Partial<Record<number, CodigoDe
 };
 const SQLSTATE_GUARDA_MINIMA = 'P0001';
 const SQLSTATES_DE_RESTRICAO_NOMEADA: ReadonlySet<string> = new Set(['23505', '23503', '23514']);
-const PADRAO_SQLSTATE = /^[0-9A-Z]{5}$/;
 const TIPO_DE_ERRO_CORPO_GRANDE_DEMAIS = 'entity.too.large';
-
-function ehErroDeBanco(valor: unknown): valor is ErroDeBanco {
-  if (!(valor instanceof DatabaseError) && !(valor instanceof DriverException)) return false;
-
-  const codigo = (valor as { code?: unknown }).code;
-  return typeof codigo === 'string' && PADRAO_SQLSTATE.test(codigo);
-}
 
 function ehCorpoGrandeDemais(valor: unknown): boolean {
   return typeof valor === 'object' && valor !== null && (valor as { type?: unknown }).type === TIPO_DE_ERRO_CORPO_GRANDE_DEMAIS;
@@ -111,7 +97,7 @@ export class FiltroGlobalDeErros implements ExceptionFilter {
       return respostaParaCodigo(excecao.erroDeDominio.codigo, correlacaoId, excecao.erroDeDominio.detalhes);
     }
 
-    if (excecao instanceof OptimisticLockError) {
+    if (ehVersaoDesatualizada(excecao)) {
       return respostaParaCodigo(CODIGO_VERSAO_DESATUALIZADA, correlacaoId);
     }
 

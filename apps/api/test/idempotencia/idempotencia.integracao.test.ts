@@ -584,8 +584,8 @@ describe('IdempotenciaInterceptor · Idempotency-Key (Documento 7 §12)', () => 
     const sinalDaPrimeiraPronta = criarSinal();
 
     const primeira = comIdentidade(INSTITUICAO_A, () =>
-      unidade.transacao('escrita', async ({ em }) => {
-        const reclamou = await reclamarChaveVencida(em, dados);
+      unidade.transacao('escrita', async ({ kysely }) => {
+        const reclamou = await reclamarChaveVencida(kysely, dados);
         sinalDaPrimeiraPronta.emitir();
         await barreiraDaPrimeira.promessa;
         return reclamou;
@@ -595,7 +595,7 @@ describe('IdempotenciaInterceptor · Idempotency-Key (Documento 7 §12)', () => 
     await sinalDaPrimeiraPronta.promessa;
 
     const segunda = comIdentidade(INSTITUICAO_A, () =>
-      unidade.transacao('escrita', ({ em }) => reclamarChaveVencida(em, dados)),
+      unidade.transacao('escrita', ({ kysely }) => reclamarChaveVencida(kysely, dados)),
     );
 
     await esperarBloqueioNaLinhaDaChave(banco.owner);

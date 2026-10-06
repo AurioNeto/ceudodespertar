@@ -2,16 +2,15 @@ import { randomUUID } from 'node:crypto';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { HttpException, HttpStatus, Logger, NotFoundException } from '@nestjs/common';
 import type { ArgumentsHost } from '@nestjs/common';
-import { DriverException, OptimisticLockError } from '@mikro-orm/core';
-import { DatabaseError } from 'pg';
 import type { CorpoDeErro } from '@cdd/contracts';
 import { ContextoDaRequisicao } from '../contexto-da-requisicao.js';
 import { erroDeDominio, ErroDeDominioException } from '../../kernel/erro-de-dominio.js';
+import { erroDeVersaoDesatualizada, erroDoDriverComSqlstate, erroDoPgComSqlstate } from '../banco/erros-de-banco.fake.js';
 import { gravarCorrelacaoNaRequisicao } from './correlacao-da-requisicao.js';
 import { FiltroGlobalDeErros } from './filtro-global-de-erros.js';
 
-function violacaoDeRestricao(mensagem: string, constraint: string): DatabaseError {
-  return Object.assign(new DatabaseError(mensagem, 0, 'error'), { code: '23505', constraint });
+function violacaoDeRestricao(mensagem: string, constraint: string): Error {
+  return erroDoPgComSqlstate(mensagem, '23505', constraint);
 }
 
 interface RespostaCapturada {
@@ -89,11 +88,10 @@ describe('FiltroGlobalDeErros', () => {
 
   it('a mesma violação, vinda de uma DriverException do MikroORM, também vira o código mapeado', () => {
     const correlacaoId = randomUUID();
-    const violacao = new DriverException(
-      Object.assign(new Error('duplicate key value violates unique constraint "usuario_email_unico"'), {
-        code: '23505',
-        constraint: 'usuario_email_unico',
-      }),
+    const violacao = erroDoDriverComSqlstate(
+      'duplicate key value violates unique constraint "usuario_email_unico"',
+      '23505',
+      'usuario_email_unico',
     );
 
     comCorrelacaoId(correlacaoId, () => {
@@ -121,9 +119,7 @@ describe('FiltroGlobalDeErros', () => {
 
   it('P0001 com prefixo de guarda mínima é erro de programação — 500, com log de alerta', () => {
     const correlacaoId = randomUUID();
-    const violacao = Object.assign(new DatabaseError('REGISTRO_IMUTAVEL: identidade.usuario não aceita UPDATE', 0, 'error'), {
-      code: 'P0001',
-    });
+    const violacao = erroDoPgComSqlstate('REGISTRO_IMUTAVEL: identidade.usuario não aceita UPDATE', 'P0001');
 
     comCorrelacaoId(correlacaoId, () => {
       filtro.catch(violacao, hostFalso(capturada));
@@ -136,7 +132,7 @@ describe('FiltroGlobalDeErros', () => {
 
   it('erro de banco sem mapeamento é bug — 500 ERRO_INTERNO', () => {
     const correlacaoId = randomUUID();
-    const desconhecido = Object.assign(new DatabaseError('falha inesperada no banco', 0, 'error'), { code: '55000' });
+    const desconhecido = erroDoPgComSqlstate('falha inesperada no banco', '55000');
 
     comCorrelacaoId(correlacaoId, () => {
       filtro.catch(desconhecido, hostFalso(capturada));
@@ -236,7 +232,7 @@ describe('FiltroGlobalDeErros', () => {
     const correlacaoId = randomUUID();
 
     comCorrelacaoId(correlacaoId, () => {
-      filtro.catch(OptimisticLockError.lockFailed('Usuario'), hostFalso(capturada));
+      filtro.catch(erroDeVersaoDesatualizada('Usuario'), hostFalso(capturada));
     });
 
     expect(capturada.status).toBe(409);

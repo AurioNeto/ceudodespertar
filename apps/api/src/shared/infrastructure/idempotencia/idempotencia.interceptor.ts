@@ -2,8 +2,9 @@ import { Injectable, Logger } from '@nestjs/common';
 import type { CallHandler, ExecutionContext, NestInterceptor } from '@nestjs/common';
 import type { Observable } from 'rxjs';
 import { lastValueFrom, of } from 'rxjs';
-import type { EntityManager } from '@mikro-orm/postgresql';
+import type { Kysely } from 'kysely';
 import { ContextoDaRequisicao } from '../contexto-da-requisicao.js';
+import type { DB } from '../banco/banco-cdd.gerado.js';
 import { UnidadeDeTrabalho } from '../banco/unidade-de-trabalho.js';
 import { NOME_DO_CABECALHO_DE_IDEMPOTENCIA, chaveDeIdempotenciaEhValida } from './cabecalho-de-idempotencia.js';
 import { handlerRespondePorContaPropria } from './handler-responde-por-conta-propria.js';
@@ -91,8 +92,8 @@ export class IdempotenciaInterceptor implements NestInterceptor {
       corpoHash: calcularHashDoCorpo(requisicao.body),
     };
 
-    const corpoDaResposta = await this.unidadeDeTrabalho.transacao('escrita', ({ em }) =>
-      this.executarComIdempotencia(em, dados, resposta, identidade.correlacaoId, () =>
+    const corpoDaResposta = await this.unidadeDeTrabalho.transacao('escrita', ({ kysely }) =>
+      this.executarComIdempotencia(kysely, dados, resposta, identidade.correlacaoId, () =>
         lastValueFrom(proximo.handle(), { defaultValue: undefined }),
       ),
     );
@@ -101,13 +102,13 @@ export class IdempotenciaInterceptor implements NestInterceptor {
   }
 
   private async executarComIdempotencia(
-    em: EntityManager,
+    kysely: Kysely<DB>,
     dados: DadosDaChaveDeIdempotencia,
     resposta: RespostaDeIdempotencia,
     correlacaoId: string | undefined,
     executarComando: () => Promise<unknown>,
   ): Promise<unknown> {
-    const existente = await reivindicarChave(em, dados);
+    const existente = await reivindicarChave(kysely, dados);
 
     if (existente !== undefined) {
       const usuarioBate = (existente.usuarioId ?? undefined) === (dados.usuarioId ?? undefined);
@@ -124,7 +125,7 @@ export class IdempotenciaInterceptor implements NestInterceptor {
     const corpo = await executarComando();
 
     const location = resposta.getHeader(NOME_DO_CABECALHO_DE_LOCALIZACAO) ?? null;
-    await gravarResposta(em, dados.instituicaoId, dados.chave, resposta.statusCode, corpo, location);
+    await gravarResposta(kysely, dados.instituicaoId, dados.chave, resposta.statusCode, corpo, location);
     return corpo;
   }
 }
