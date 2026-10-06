@@ -1,7 +1,7 @@
 import type { LancamentoNaLista, LancamentoId } from '@cdd/contracts';
 import { competencia, dataLocal, reais } from '@cdd/contracts';
 import { id } from './ids';
-import { usuarioAtual } from './sessao';
+import { NOME_DO_REGISTRADOR_DE_EXEMPLO } from './sessao';
 
 const registro = (
   n: number,
@@ -344,7 +344,7 @@ export const lancamentos: readonly LancamentoNaLista[] = [
 ];
 
 /** "Meus registros": o recorte pessoal do mesmo livro. */
-export const meusLancamentos = lancamentos.filter((l) => l.registradoPor === usuarioAtual.nome);
+export const meusLancamentos = lancamentos.filter((l) => l.registradoPor === NOME_DO_REGISTRADOR_DE_EXEMPLO);
 
 export const rotuloDoTipo = (tipo: LancamentoNaLista['tipo']): string =>
   tipo === 'ENTRADA' ? 'Entrada' : tipo === 'TRANSFERENCIA' ? 'Transferência' : 'Saída';

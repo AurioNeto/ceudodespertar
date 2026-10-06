@@ -1,10 +1,11 @@
 import type { EntityManager, Kysely } from '@mikro-orm/postgresql';
+import type { DB } from './banco-cdd.gerado.js';
 
 export type ModoDeTransacao = 'escrita' | 'leitura' | 'leitura-que-grava';
 
 export interface ContextoDaTransacao {
   readonly em: EntityManager;
-  readonly kysely: Kysely<unknown>;
+  readonly kysely: Kysely<DB>;
   aoConfirmar(gancho: () => void): void;
 }
 
