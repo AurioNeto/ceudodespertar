@@ -24,6 +24,10 @@ describe('retry do cliente de consultas', () => {
     },
   );
 
+  it.each([502, 504] as const)('tenta de novo em %i SERVICO_INDISPONIVEL', (status) => {
+    expect(deveTentarDeNovo(0, erroDaApi(status, 'SERVICO_INDISPONIVEL'))).toBe(true);
+  });
+
   it.each([
     [400, 'CORPO_INVALIDO'],
     [401, 'NAO_AUTENTICADO'],

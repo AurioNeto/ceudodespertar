@@ -2,7 +2,6 @@ import { CODIGOS_DE_ERRO } from '@cdd/contracts';
 import type { CodigoDeErro } from '@cdd/contracts';
 
 const STATUS_DE_INDISPONIBILIDADE: ReadonlySet<number> = new Set([502, 503, 504]);
-const STATUS_DE_SERVICO_INDISPONIVEL = 503;
 const STATUS_DE_NAO_AUTORIZADO = 401;
 
 export class ErroDaApi extends Error {
@@ -30,7 +29,7 @@ export class ErroDaApi extends Error {
   }
 
   get ehIndisponibilidadeTemporaria(): boolean {
-    return this.status === STATUS_DE_SERVICO_INDISPONIVEL;
+    return STATUS_DE_INDISPONIBILIDADE.has(this.status);
   }
 }
 
