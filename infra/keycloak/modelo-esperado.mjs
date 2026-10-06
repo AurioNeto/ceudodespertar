@@ -271,14 +271,18 @@ const MAPEADORES_DE_IDENTIDADE_ITENS = {
   ...MAPEADORES_SO_ID_TOKEN_ITENS,
 };
 
-function validarLoginTheme(atual, caminho, falhas, contexto) {
-  if (atual === 'cdd') {
-    falhas.push(`${caminho} "cdd" ainda não existe (entra na peça I09)`);
-    return;
-  }
-  if (typeof contexto.existeTema === 'function' && !contexto.existeTema(atual)) {
-    falhas.push(`${caminho} "${atual}" não existe em infra/keycloak/themes`);
-  }
+const NOME_DO_TEMA_CDD = 'cdd';
+
+function validarTema(tipoDoTema) {
+  return (atual, caminho, falhas, contexto) => {
+    if (atual !== NOME_DO_TEMA_CDD) {
+      falhas.push(`${caminho} precisa ser "${NOME_DO_TEMA_CDD}", encontrado ${JSON.stringify(atual)}`);
+      return;
+    }
+    if (typeof contexto.existeTema === 'function' && !contexto.existeTema(atual, tipoDoTema)) {
+      falhas.push(`${caminho} "${atual}" não existe em infra/keycloak/themes/${atual}/${tipoDoTema}`);
+    }
+  };
 }
 
 export const MODELO_CLIENTES = {
@@ -293,6 +297,7 @@ export const MODELO_CLIENTES = {
       implicitFlowEnabled: valor(false),
       serviceAccountsEnabled: valor(false),
       fullScopeAllowed: valor(false),
+      baseUrl: valor('http://localhost:5173'),
       redirectUris: conjunto(['http://localhost:5173/*']),
       webOrigins: conjunto(['http://localhost:5173']),
       defaultClientScopes: conjunto(['web-origins', 'acr', 'roles', 'basic']),
@@ -468,6 +473,9 @@ export const MODELO_REALM = objeto({
     supportedLocales: conjunto(['pt-BR']),
     defaultLocale: valor('pt-BR'),
 
+    loginTheme: customizado(validarTema('login')),
+    emailTheme: customizado(validarTema('email')),
+
     smtpServer: objeto({
       obrigatorias: {
         host: valor('mailpit'),
@@ -495,9 +503,6 @@ export const MODELO_REALM = objeto({
 
     clients: listaDeObjetos({ chavePrimaria: 'clientId', itens: MODELO_CLIENTES }),
     users: listaDeObjetos({ chavePrimaria: 'username', itens: MODELO_USUARIOS }),
-  },
-  opcionais: {
-    loginTheme: customizado(validarLoginTheme),
   },
 });
 

@@ -83,3 +83,6 @@ jobs:
 
       - name: testes de integracao da api
         run: pnpm --filter @cdd/api test:integracao
+
+      - name: tipos do kysely batem com o banco migrado
+        run: pnpm --filter @cdd/api db:gerar-tipos:verificar

@@ -130,7 +130,7 @@ const realm = JSON.parse(readFileSync(caminhoDoRealm, 'utf8'));
 
 compararComEspecificacao(realm, MODELO_REALM, 'realm', falhas, {
   contexto: {
-    existeTema: (nomeDoTema) => existsSync(join(caminhoDosTemas, nomeDoTema, 'login')),
+    existeTema: (nomeDoTema, tipoDoTema) => existsSync(join(caminhoDosTemas, nomeDoTema, tipoDoTema, 'theme.properties')),
   },
 });
 verificarVariaveisDeAmbiente(realm);
