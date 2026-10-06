@@ -4,6 +4,7 @@ import { MigracaoB0002Identidade } from './b0-002-identidade/migracao.js';
 import { MigracaoB0003CatalogoDePermissoes } from './b0-003-catalogo-de-permissoes/migracao.js';
 import { MigracaoB0004Idempotencia } from './b0-004-idempotencia/migracao.js';
 import { MigracaoB0005OutboxPorAgregado } from './b0-005-outbox-por-agregado/migracao.js';
+import { MigracaoB0006OutboxEsgotados } from './b0-006-outbox-esgotados/migracao.js';
 
 export const MIGRACOES_DO_CDD = [
   { name: 'b0-000-esquemas', class: MigracaoB0000Esquemas },
@@ -12,4 +13,5 @@ export const MIGRACOES_DO_CDD = [
   { name: 'b0-003-catalogo-de-permissoes', class: MigracaoB0003CatalogoDePermissoes },
   { name: 'b0-004-idempotencia', class: MigracaoB0004Idempotencia },
   { name: 'b0-005-outbox-por-agregado', class: MigracaoB0005OutboxPorAgregado },
+  { name: 'b0-006-outbox-esgotados', class: MigracaoB0006OutboxEsgotados },
 ];

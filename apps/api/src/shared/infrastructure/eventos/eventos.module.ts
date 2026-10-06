@@ -6,6 +6,7 @@ import { RegistroDeConsumidores } from './registro-de-consumidores.js';
 import { RepositorioDoOutbox } from './repositorio-do-outbox.js';
 import { RepositorioDoOutboxPostgres } from './repositorio-do-outbox.postgres.js';
 import { SinalizadorDeEventos } from './sinalizador-de-eventos.js';
+import { VigiaDeEventosEsgotados } from './vigia-de-eventos-esgotados.js';
 
 @Module({
   imports: [DiscoveryModule, BancoModule],
@@ -15,6 +16,7 @@ import { SinalizadorDeEventos } from './sinalizador-de-eventos.js';
     { provide: RepositorioDoOutbox, useClass: RepositorioDoOutboxPostgres },
     { provide: TIMEOUT_DO_CONSUMIDOR_EM_MS, useFactory: () => lerTimeoutDoConsumidorEmMs(process.env) },
     Despachante,
+    VigiaDeEventosEsgotados,
   ],
   exports: [RepositorioDoOutbox, SinalizadorDeEventos],
 })
