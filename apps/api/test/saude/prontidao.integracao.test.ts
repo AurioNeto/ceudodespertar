@@ -23,6 +23,7 @@ interface EventoDoOutbox {
   readonly ocorridoHa: string;
   readonly tentativas?: number;
   readonly publicado?: boolean;
+  readonly agregadoId?: string;
 }
 
 async function gravarEvento(banco: BancoDeTeste, evento: EventoDoOutbox): Promise<void> {
@@ -31,7 +32,14 @@ async function gravarEvento(banco: BancoDeTeste, evento: EventoDoOutbox): Promis
        (evento_id, instituicao_id, tipo, agregado_tipo, agregado_id, payload, ocorrido_em, tentativas, publicado_em)
      values ($1, $2, 'teste.EventoDeProntidao', 'teste', $3, '{}'::jsonb,
              now() - $4::interval, $5, case when $6 then now() else null end)`,
-    [randomUUID(), randomUUID(), randomUUID(), evento.ocorridoHa, evento.tentativas ?? 0, evento.publicado ?? false],
+    [
+      randomUUID(),
+      randomUUID(),
+      evento.agregadoId ?? randomUUID(),
+      evento.ocorridoHa,
+      evento.tentativas ?? 0,
+      evento.publicado ?? false,
+    ],
   );
 }
 
@@ -128,6 +136,39 @@ describe('GET /saude/pronta (Documento 7 §13)', () => {
         pronta: false,
         motivo: 'outbox-atrasado',
       });
+    });
+
+    it('responde 200 com um evento pendente há 6 min travado atrás de um esgotado do mesmo agregado, porque o atraso é efeito do esgotado', async () => {
+      const agregadoId = randomUUID();
+      await gravarEvento(banco, { ocorridoHa: '1 day', tentativas: TETO_DE_TENTATIVAS, agregadoId });
+      await gravarEvento(banco, { ocorridoHa: '6 minutes', agregadoId });
+      await gravarEvento(banco, { ocorridoHa: '5 minutes 30 seconds', agregadoId });
+
+      expect(await consultarProntidao(origem)).toStrictEqual(PRONTA);
+    });
+
+    it('responde 503 com um evento pendente há 6 min cujo anterior esgotado do mesmo agregado já foi publicado', async () => {
+      const agregadoId = randomUUID();
+      await gravarEvento(banco, { ocorridoHa: '1 day', tentativas: TETO_DE_TENTATIVAS, publicado: true, agregadoId });
+      await gravarEvento(banco, { ocorridoHa: '6 minutes', agregadoId });
+
+      expect(await consultarProntidao(origem)).toStrictEqual(INDISPONIVEL);
+    });
+
+    it('responde 503 com um evento pendente há 6 min seguido, no mesmo agregado, por um esgotado posterior', async () => {
+      const agregadoId = randomUUID();
+      await gravarEvento(banco, { ocorridoHa: '6 minutes', agregadoId });
+      await gravarEvento(banco, { ocorridoHa: '1 minute', tentativas: TETO_DE_TENTATIVAS, agregadoId });
+
+      expect(await consultarProntidao(origem)).toStrictEqual(INDISPONIVEL);
+    });
+
+    it('responde 503 com um evento pendente há 6 min atrás de um anterior recente do mesmo agregado ainda sob o teto', async () => {
+      const agregadoId = randomUUID();
+      await gravarEvento(banco, { ocorridoHa: '1 minute', tentativas: TETO_DE_TENTATIVAS - 1, agregadoId });
+      await gravarEvento(banco, { ocorridoHa: '6 minutes', agregadoId });
+
+      expect(await consultarProntidao(origem)).toStrictEqual(INDISPONIVEL);
     });
 
     it('volta a 200 quando o evento atrasado é publicado', async () => {

@@ -36,7 +36,7 @@ describe('plano da consulta de prontidão com histórico grande (Documento 7 §1
     await derrubarBancoDeTeste(banco);
   });
 
-  it('usa outbox_pendentes, não Seq Scan, com 200 mil publicados e eventos esgotados', async () => {
+  it('usa outbox_pendentes, não Seq Scan, com 200 mil publicados e eventos esgotados com seguintes travados no mesmo agregado', async () => {
     await banco.owner.query(
       `insert into shared.outbox (evento_id, instituicao_id, tipo, agregado_tipo, agregado_id, payload, publicado_em)
        select gen_random_uuid(), $1, 't', 'A', gen_random_uuid(), '{}'::jsonb, now()
@@ -49,6 +49,12 @@ describe('plano da consulta de prontidão com histórico grande (Documento 7 §1
        from generate_series(1, ${EVENTOS_ESGOTADOS})`,
       [INSTITUICAO_A],
     );
+    await banco.owner.query(
+      `insert into shared.outbox (evento_id, instituicao_id, tipo, agregado_tipo, agregado_id, payload, ocorrido_em)
+       select gen_random_uuid(), instituicao_id, 't', agregado_tipo, agregado_id, '{}'::jsonb, now() - interval '1 hour'
+       from shared.outbox
+       where tentativas = ${TETO_DE_TENTATIVAS}`,
+    );
     await banco.owner.query('analyze shared.outbox');
 
     const plano = await planoDe(banco, CONSULTA_DO_OUTBOX_ATRASADO);
@@ -57,6 +63,7 @@ describe('plano da consulta de prontidão com histórico grande (Documento 7 §1
       `((publicado_em IS NULL) AND (tentativas < ${TETO_DE_TENTATIVAS}))`,
     );
     expect(plano).toContain('outbox_pendentes');
+    expect(plano).toContain('outbox_esgotados');
     expect(plano).not.toContain('Seq Scan on outbox');
   }, 60_000);
 });

@@ -27,10 +27,19 @@ interface LinhaDoOutbox {
 export const CONSULTA_DO_OUTBOX_ATRASADO = `
   select exists (
            select 1
-             from shared.outbox
-            where publicado_em is null
-              and tentativas < ${TETO_DE_TENTATIVAS}
-              and ocorrido_em < now() - interval '${ATRASO_MAXIMO_DO_OUTBOX_EM_SEGUNDOS} seconds'
+             from shared.outbox o
+            where o.publicado_em is null
+              and o.tentativas < ${TETO_DE_TENTATIVAS}
+              and o.ocorrido_em < now() - interval '${ATRASO_MAXIMO_DO_OUTBOX_EM_SEGUNDOS} seconds'
+              and not exists (
+                    select 1
+                      from shared.outbox anterior_esgotado
+                     where anterior_esgotado.agregado_tipo = o.agregado_tipo
+                       and anterior_esgotado.agregado_id = o.agregado_id
+                       and anterior_esgotado.id < o.id
+                       and anterior_esgotado.publicado_em is null
+                       and anterior_esgotado.tentativas >= ${TETO_DE_TENTATIVAS}
+                  )
          ) as outbox_atrasado
 `;
 
