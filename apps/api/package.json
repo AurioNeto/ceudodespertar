@@ -12,7 +12,9 @@
     "test:cobertura": "vitest run --coverage",
     "test:integracao": "vitest run --config vitest.integracao.config.ts",
     "db:migrar": "pnpm build && node --enable-source-maps --env-file-if-exists=../../.env dist/banco/cli.js migrar",
-    "db:situacao": "pnpm build && node --enable-source-maps --env-file-if-exists=../../.env dist/banco/cli.js situacao"
+    "db:situacao": "pnpm build && node --enable-source-maps --env-file-if-exists=../../.env dist/banco/cli.js situacao",
+    "db:gerar-tipos": "pnpm build && node scripts/gerar-tipos-do-banco.mjs",
+    "db:gerar-tipos:verificar": "pnpm build && node scripts/gerar-tipos-do-banco.mjs --verificar"
   },
   "dependencies": {
     "@cdd/contracts": "workspace:*",
@@ -23,6 +25,12 @@
     "@nestjs/core": "^12.1.0",
     "@nestjs/platform-express": "^12.1.0",
     "jose": "6.2.12",
+    "kysely": "^0.29.6",
+    "nestjs-pino": "^5.2.1",
+    "pg": "^8.23.0",
+    "pino": "^10.3.1",
+    "pino-http": "^11.0.0",
+    "postgres-array": "^3.0.4",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",
     "zod": "^4.6.5"
@@ -36,7 +44,7 @@
     "@vitest/coverage-v8": "^4.1.11",
     "concurrently": "^10.0.5",
     "dependency-cruiser": "^18.4.0",
-    "pg": "^8.23.0",
+    "kysely-codegen": "^0.20.0",
     "typescript": "^5.7.3",
     "unplugin-swc": "^2.0.0",
     "vitest": "^4.1.11"

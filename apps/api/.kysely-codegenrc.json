@@ -1,0 +1,12 @@
+{
+  "dialect": "postgres",
+  "outFile": "src/shared/infrastructure/banco/banco-cdd.gerado.ts",
+  "includePattern": "{shared,identidade}.*",
+  "dateParser": "string",
+  "numericParser": "string",
+  "typeMapping": {
+    "int8": "number"
+  },
+  "camelCase": false,
+  "runtimeEnums": false
+}

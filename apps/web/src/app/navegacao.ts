@@ -1,4 +1,5 @@
 import type { NavEntry } from '../ds';
+import { CAMINHO_DA_ENTRADA, CAMINHO_DE_RETORNO } from '../dados/oidc';
 
 /**
  * O menu como ficou depois das iterações do design: "Conferência" virou
@@ -49,12 +50,12 @@ export type RotaId = keyof typeof ROTAS;
  * WhatsApp. Caminho curto de propósito — ele vai ser colado numa conversa.
  */
 export const ROTAS_PUBLICAS = {
-  entrar: '/entrar',
-  esqueci: '/esqueci-a-senha',
-  redefinir: '/redefinir-senha',
-  convite: '/convite',
+  entrar: CAMINHO_DA_ENTRADA,
+  retorno: CAMINHO_DE_RETORNO,
   inscricaoPublica: '/i/:token',
 } as const;
+
+export const ROTAS_ANTIGAS_DA_ENTRADA: readonly string[] = ['/esqueci-a-senha', '/redefinir-senha', '/convite'];
 
 export const construirNav = (lotePendente: number): readonly NavEntry[] => [
   { id: 'painel', label: 'Painel', icon: 'layout-dashboard' },

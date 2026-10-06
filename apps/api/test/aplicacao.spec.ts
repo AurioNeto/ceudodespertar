@@ -41,6 +41,9 @@ describe('esqueleto da API', () => {
   beforeAll(async () => {
     vi.stubEnv('OIDC_EMISSOR', 'http://localhost:8080/realms/cdd');
     vi.stubEnv('OIDC_AUDIENCIA', 'cdd-api');
+    vi.stubEnv('BANCO_URL', 'postgres://cdd_app:sem-banco@127.0.0.1:1/cdd');
+    vi.stubEnv('BANCO_POOL_MAXIMO', '1');
+    vi.stubEnv('LOG_NIVEL', 'fatal');
     app = await criarAplicacao(AppModuloComSonda);
     await app.listen(0, '127.0.0.1');
     const endereco = app.getHttpServer().address() as AddressInfo;

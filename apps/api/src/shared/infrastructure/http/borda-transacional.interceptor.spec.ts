@@ -1,0 +1,273 @@
+import { describe, expect, it } from 'vitest';
+import { Controller, Get } from '@nestjs/common';
+import type { CallHandler, ExecutionContext } from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
+import { Observable, firstValueFrom, of } from 'rxjs';
+import { ContextoDaRequisicao } from '../contexto-da-requisicao.js';
+import type { ContextoDaRequisicaoValor } from '../contexto-da-requisicao.js';
+import { UnidadeDeTrabalho } from '../banco/unidade-de-trabalho.js';
+import type { ContextoDaTransacao, ModoDeTransacao } from '../banco/unidade-de-trabalho.js';
+import { BordaTransacionalInterceptor, MODO_PADRAO_SEM_MARCA } from './borda-transacional.interceptor.js';
+import { ModoDeTransacao as ComModoDeTransacao } from './modo-de-transacao.decorator.js';
+import { ProvedorDeContextoDeInstituicao } from './provedor-de-contexto-de-instituicao.js';
+import { lerCorrelacaoDaRequisicao } from './correlacao-da-requisicao.js';
+
+class UnidadeDeTrabalhoFake extends UnidadeDeTrabalho {
+  modosChamados: ModoDeTransacao[] = [];
+
+  async transacao<T>(modo: ModoDeTransacao, fn: (contexto: ContextoDaTransacao) => Promise<T>): Promise<T> {
+    this.modosChamados.push(modo);
+    return fn({} as ContextoDaTransacao);
+  }
+}
+
+class UnidadeDeTrabalhoQueRegistraSequencia extends UnidadeDeTrabalho {
+  readonly eventos: string[] = [];
+
+  async transacao<T>(modo: ModoDeTransacao, fn: (contexto: ContextoDaTransacao) => Promise<T>): Promise<T> {
+    this.eventos.push(`begin:${modo}`);
+    try {
+      const resultado = await fn({} as ContextoDaTransacao);
+      this.eventos.push('commit');
+      return resultado;
+    } catch (erro) {
+      this.eventos.push('rollback');
+      throw erro;
+    }
+  }
+}
+
+class ProvedorDeContextoDeInstituicaoFixo extends ProvedorDeContextoDeInstituicao {
+  constructor(private readonly identidade: { instituicaoId?: string; usuarioId?: string }) {
+    super();
+  }
+
+  identidadeAtual() {
+    return this.identidade;
+  }
+}
+
+function contextoDeExecucaoQualquer(): ExecutionContext {
+  return {
+    getHandler: () => function handlerQualquer() {},
+    getClass: () => class ControladorQualquer {},
+    switchToHttp: () => ({ getRequest: () => ({}) }),
+  } as unknown as ExecutionContext;
+}
+
+@ComModoDeTransacao('escrita')
+@Controller()
+class ControladorComMarcaDeClasse {
+  @Get()
+  heranca(): void {}
+
+  @ComModoDeTransacao('leitura')
+  @Get('override')
+  comOverride(): void {}
+}
+
+function contextoDeExecucaoPara(nomeDoMetodo: 'heranca' | 'comOverride'): ExecutionContext {
+  return {
+    getHandler: () => ControladorComMarcaDeClasse.prototype[nomeDoMetodo],
+    getClass: () => ControladorComMarcaDeClasse,
+    switchToHttp: () => ({ getRequest: () => ({}) }),
+  } as unknown as ExecutionContext;
+}
+
+describe('BordaTransacionalInterceptor', () => {
+  it('usa o modo padrão de leitura quando a rota não tem @ModoDeTransacao', async () => {
+    const uow = new UnidadeDeTrabalhoFake();
+    const interceptor = new BordaTransacionalInterceptor(
+      new Reflector(),
+      uow,
+      new ProvedorDeContextoDeInstituicaoFixo({}),
+    );
+    const proximo: CallHandler = { handle: () => of('resposta') };
+
+    const observavel = await interceptor.intercept(contextoDeExecucaoQualquer(), proximo);
+
+    expect(await firstValueFrom(observavel)).toBe('resposta');
+    expect(uow.modosChamados).toStrictEqual(['leitura']);
+    expect(MODO_PADRAO_SEM_MARCA).toBe('leitura');
+  });
+
+  it('herda o modo declarado na classe quando o método não sobrescreve', async () => {
+    const uow = new UnidadeDeTrabalhoFake();
+    const interceptor = new BordaTransacionalInterceptor(
+      new Reflector(),
+      uow,
+      new ProvedorDeContextoDeInstituicaoFixo({}),
+    );
+    const proximo: CallHandler = { handle: () => of('resposta') };
+
+    await interceptor.intercept(contextoDeExecucaoPara('heranca'), proximo);
+
+    expect(uow.modosChamados).toStrictEqual(['escrita']);
+  });
+
+  it('o modo declarado no método sobrescreve o modo declarado na classe', async () => {
+    const uow = new UnidadeDeTrabalhoFake();
+    const interceptor = new BordaTransacionalInterceptor(
+      new Reflector(),
+      uow,
+      new ProvedorDeContextoDeInstituicaoFixo({}),
+    );
+    const proximo: CallHandler = { handle: () => of('resposta') };
+
+    await interceptor.intercept(contextoDeExecucaoPara('comOverride'), proximo);
+
+    expect(uow.modosChamados).toStrictEqual(['leitura']);
+  });
+
+  it('publica a identidade do provedor em ContextoDaRequisicao durante o handler', async () => {
+    const uow = new UnidadeDeTrabalhoFake();
+    const interceptor = new BordaTransacionalInterceptor(
+      new Reflector(),
+      uow,
+      new ProvedorDeContextoDeInstituicaoFixo({ instituicaoId: 'inst-a', usuarioId: 'user-1' }),
+    );
+
+    let contextoObservado: ContextoDaRequisicaoValor | undefined;
+    const proximo: CallHandler = {
+      handle: () => {
+        contextoObservado = ContextoDaRequisicao.atual();
+        return of('resposta');
+      },
+    };
+
+    await interceptor.intercept(contextoDeExecucaoQualquer(), proximo);
+
+    expect(contextoObservado).toMatchObject({ instituicaoId: 'inst-a', usuarioId: 'user-1' });
+    expect(contextoObservado?.correlacaoId).toEqual(expect.any(String));
+  });
+
+  it('grava na requisição a mesma correlacaoId publicada em ContextoDaRequisicao', async () => {
+    const uow = new UnidadeDeTrabalhoFake();
+    const interceptor = new BordaTransacionalInterceptor(
+      new Reflector(),
+      uow,
+      new ProvedorDeContextoDeInstituicaoFixo({}),
+    );
+
+    let contextoObservado: ContextoDaRequisicaoValor | undefined;
+    const requisicao = {};
+    const contexto = {
+      getHandler: () => function handlerQualquer() {},
+      getClass: () => class ControladorQualquer {},
+      switchToHttp: () => ({ getRequest: () => requisicao }),
+    } as unknown as ExecutionContext;
+    const proximo: CallHandler = {
+      handle: () => {
+        contextoObservado = ContextoDaRequisicao.atual();
+        return of('resposta');
+      },
+    };
+
+    await interceptor.intercept(contexto, proximo);
+
+    expect(lerCorrelacaoDaRequisicao(requisicao)).toBe(contextoObservado?.correlacaoId);
+  });
+
+  it('não vaza ContextoDaRequisicao para fora do intercept', async () => {
+    const uow = new UnidadeDeTrabalhoFake();
+    const interceptor = new BordaTransacionalInterceptor(
+      new Reflector(),
+      uow,
+      new ProvedorDeContextoDeInstituicaoFixo({ instituicaoId: 'inst-a' }),
+    );
+    const proximo: CallHandler = { handle: () => of('resposta') };
+
+    await interceptor.intercept(contextoDeExecucaoQualquer(), proximo);
+
+    expect(ContextoDaRequisicao.atual()).toBeUndefined();
+  });
+
+  it('roda o handler dentro da transação — entre o begin e o commit', async () => {
+    const uow = new UnidadeDeTrabalhoQueRegistraSequencia();
+    const interceptor = new BordaTransacionalInterceptor(
+      new Reflector(),
+      uow,
+      new ProvedorDeContextoDeInstituicaoFixo({}),
+    );
+    const proximo: CallHandler = {
+      handle: () => {
+        uow.eventos.push('handler');
+        return of('resposta');
+      },
+    };
+
+    await interceptor.intercept(contextoDeExecucaoQualquer(), proximo);
+
+    expect(uow.eventos).toStrictEqual(['begin:leitura', 'handler', 'commit']);
+  });
+
+  it('reverte a transação quando o handler falha, sem gravar o commit', async () => {
+    const uow = new UnidadeDeTrabalhoQueRegistraSequencia();
+    const interceptor = new BordaTransacionalInterceptor(
+      new Reflector(),
+      uow,
+      new ProvedorDeContextoDeInstituicaoFixo({}),
+    );
+    const proximo: CallHandler = {
+      handle: () => {
+        uow.eventos.push('handler');
+        throw new Error('falha proposital');
+      },
+    };
+
+    await expect(interceptor.intercept(contextoDeExecucaoQualquer(), proximo)).rejects.toThrow(
+      'falha proposital',
+    );
+
+    expect(uow.eventos).toStrictEqual(['begin:leitura', 'handler', 'rollback']);
+  });
+
+  it('não deixa nada emitir depois do commit quando o handler emite mais de um valor', async () => {
+    const uow = new UnidadeDeTrabalhoQueRegistraSequencia();
+    const interceptor = new BordaTransacionalInterceptor(
+      new Reflector(),
+      uow,
+      new ProvedorDeContextoDeInstituicaoFixo({}),
+    );
+    const proximo: CallHandler = {
+      handle: () =>
+        new Observable<number>((assinante) => {
+          assinante.next(1);
+          setTimeout(() => {
+            uow.eventos.push('emitiu-segundo-valor');
+            assinante.next(2);
+            assinante.complete();
+          }, 5);
+        }),
+    };
+
+    const observavel = await interceptor.intercept(contextoDeExecucaoQualquer(), proximo);
+    await firstValueFrom(observavel);
+
+    expect(uow.eventos.indexOf('emitiu-segundo-valor')).toBeLessThan(uow.eventos.indexOf('commit'));
+  });
+  it('reusa o correlacaoId já publicado pela correlação da requisição', async () => {
+    const interceptor = new BordaTransacionalInterceptor(
+      new Reflector(),
+      new UnidadeDeTrabalhoFake(),
+      new ProvedorDeContextoDeInstituicaoFixo({ instituicaoId: 'inst-a' }),
+    );
+    let contextoObservado: ContextoDaRequisicaoValor | undefined;
+    const proximo: CallHandler = {
+      handle: () => {
+        contextoObservado = ContextoDaRequisicao.atual();
+        return of('resposta');
+      },
+    };
+
+    await ContextoDaRequisicao.executar({ correlacaoId: 'correlacao-da-borda' }, () =>
+      interceptor.intercept(contextoDeExecucaoQualquer(), proximo),
+    );
+
+    expect(contextoObservado).toStrictEqual({
+      correlacaoId: 'correlacao-da-borda',
+      instituicaoId: 'inst-a',
+      usuarioId: undefined,
+    });
+  });
+});
