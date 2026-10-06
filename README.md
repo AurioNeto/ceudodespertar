@@ -177,6 +177,20 @@ com `curl --data-urlencode campo@arquivo`, e tokens/claims são decodificados po
 stdin. Nem no caminho de falha o script imprime um token — quando o segredo literal do placeholder
 é aceito (bug), a falha é reportada sem o `access_token`.
 
+### Chaves de assinatura do Keycloak na API
+
+A API valida o access token pelo JWKS do realm, com cache de 10 min. Se a busca do JWKS falhar
+(Keycloak fora do ar ou reiniciando), ela continua usando as últimas chaves obtidas por até
+**15 min** desde a última busca bem-sucedida. Passado esse prazo, responde
+**503 `PROVEDOR_DE_IDENTIDADE_INDISPONIVEL`**, nunca 401, e por isso ninguém é deslogado por
+uma queda do provedor.
+
+**Runbook: rotação de chave por comprometimento.** Depois de rotacionar ou remover uma chave
+do realm em emergência, **reinicie a API**. O cache de chaves fica em memória. Sem o reinício,
+uma chave removida continua aceita até o cache expirar e, se o Keycloak estiver inacessível
+para a API nesse intervalo, por até 15 min. Quem tem a chave privada emite tokens com qualquer
+`exp`, então a validade de 300 s do token não limita essa janela.
+
 ---
 
 ## Handoff original do Claude Design

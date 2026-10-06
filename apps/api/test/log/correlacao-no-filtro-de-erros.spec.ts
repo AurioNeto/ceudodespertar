@@ -27,6 +27,8 @@ describe('filtro de erros lê a mesma correlacaoId que o middleware de log grava
   let origem: string;
 
   beforeAll(async () => {
+    vi.stubEnv('OIDC_EMISSOR', 'http://localhost:8080/realms/cdd');
+    vi.stubEnv('OIDC_AUDIENCIA', 'cdd-api');
     vi.stubEnv('ORIGENS_CORS', 'https://painel.ceudodespertar.test');
     app = await criarAplicacao(ModuloDeSonda);
     await app.listen(0);
