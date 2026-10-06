@@ -26,6 +26,7 @@ export interface DependenciasDoClienteHttp {
 }
 
 interface RespostaLida {
+  readonly tokenUsado: string | null;
   readonly status: number;
   readonly ok: boolean;
   readonly texto: string;
@@ -83,7 +84,7 @@ export function criarClienteHttp(dependencias: DependenciasDoClienteHttp): Clien
         signal: opcoes.sinal ?? null,
       });
       const texto = await resposta.text();
-      return { status: resposta.status, ok: resposta.ok, texto };
+      return { tokenUsado: token, status: resposta.status, ok: resposta.ok, texto };
     } catch (erro) {
       if (ehAbortamento(erro)) throw erro;
       throw new ErroDeRede(erro);
@@ -109,9 +110,12 @@ export function criarClienteHttp(dependencias: DependenciasDoClienteHttp): Clien
     const erro = erroDaResposta(primeira.status, primeira.texto);
     if (!erro.ehFalhaDeAutenticacao) throw erro;
 
-    const resultado = await renovarCompartilhando();
-    if (resultado === 'sessao-encerrada') throw erro;
-    if (resultado === 'indisponivel') throw new ErroDeRede(erro);
+    const tokenJaMudou = (await credencial.tokenAtual()) !== primeira.tokenUsado;
+    if (!tokenJaMudou) {
+      const resultado = await renovarCompartilhando();
+      if (resultado === 'sessao-encerrada') throw erro;
+      if (resultado === 'indisponivel') throw new ErroDeRede(erro);
+    }
 
     const segunda = await enviarUmaVez(opcoes, chaveDeIdempotencia);
     if (segunda.ok) return lerSucesso<Saida>(segunda);

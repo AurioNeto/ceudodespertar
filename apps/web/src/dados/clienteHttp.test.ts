@@ -289,6 +289,38 @@ describe('política de 401', () => {
     expect(fetchFalso).toHaveBeenCalledTimes(6);
   });
 
+  it('401 defasado depois da renovação concluída repete com o token novo sem renovar de novo', async () => {
+    const credencial = criarFonteDeCredencialFalsa();
+    let liberarSegundo401: () => void = () => undefined;
+    const segundo401Liberado = new Promise<void>((resolver) => {
+      liberarSegundo401 = resolver;
+    });
+    const respostas = [
+      () => Promise.resolve(respostaDeErro(401, 'NAO_AUTENTICADO')),
+      () => segundo401Liberado.then(() => respostaDeErro(401, 'NAO_AUTENTICADO')),
+      () => Promise.resolve(respostaJson(200, { n: 1 })),
+      () => Promise.resolve(respostaJson(200, { n: 2 })),
+    ];
+    const fetchFalso = vi.fn<typeof globalThis.fetch>(() => {
+      const proxima = respostas.shift();
+      if (!proxima) return Promise.reject(new Error('fila de respostas esgotada'));
+      return proxima();
+    });
+    const cliente = criarClienteHttp({ credencial, fetch: fetchFalso });
+
+    const primeira = cliente.requisitar({ metodo: 'GET', caminho: '/a' });
+    const segunda = cliente.requisitar({ metodo: 'GET', caminho: '/b' });
+    await primeira;
+    expect(credencial.renovar).toHaveBeenCalledTimes(1);
+    liberarSegundo401();
+    await segunda;
+
+    expect(credencial.renovar).toHaveBeenCalledTimes(1);
+    expect(fetchFalso).toHaveBeenCalledTimes(4);
+    expect(cabecalhosDaChamada(fetchFalso, 1).get('Authorization')).toBe('Bearer token-velho');
+    expect(cabecalhosDaChamada(fetchFalso, 3).get('Authorization')).toBe('Bearer token-novo');
+  });
+
   it('renovação que encerra a sessão avisa uma vez e propaga o 401', async () => {
     const credencial = criarFonteDeCredencialFalsa({ renovacao: () => Promise.resolve('sessao-encerrada') });
     const fetchFalso = criarFetchFalso(
