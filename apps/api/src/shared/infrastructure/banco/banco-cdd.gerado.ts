@@ -99,6 +99,7 @@ export interface IdentidadeUsuarioGrupo {
 
 export interface SharedChaveDeIdempotencia {
   chave: string;
+  corpo_hash: string | null;
   criada_em: Generated<Timestamp>;
   instituicao_id: string;
   resposta: Json;
