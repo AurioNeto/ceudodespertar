@@ -34,6 +34,8 @@ async function gravarEvento(banco: BancoDeTeste, evento: EventoDoOutbox): Promis
 }
 
 async function subirAplicacao(bancoUrl: string): Promise<{ app: INestApplication; origem: string }> {
+  vi.stubEnv('OIDC_EMISSOR', 'http://localhost:8080/realms/cdd');
+  vi.stubEnv('OIDC_AUDIENCIA', 'cdd-api');
   vi.stubEnv('BANCO_URL', bancoUrl);
   vi.stubEnv('BANCO_POOL_MAXIMO', String(POOL_DA_APLICACAO));
   vi.stubEnv('LOG_NIVEL', 'fatal');

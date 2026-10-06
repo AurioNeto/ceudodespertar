@@ -4,11 +4,13 @@ import type { INestApplication } from '@nestjs/common';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { criarAplicacao } from '../src/composicao/aplicacao.js';
 import { AppModule } from '../src/composicao/app.module.js';
+import { ApenasIdentificado, Publico } from '../src/shared/infrastructure/autenticacao/marcas-de-acesso.js';
 
 interface EstadoDaSonda {
   status: 'ok';
 }
 
+@Publico()
 @Controller('sonda')
 class SondaController {
   @Get()
@@ -17,9 +19,18 @@ class SondaController {
   }
 }
 
+@ApenasIdentificado()
+@Controller('sonda-fechada')
+class SondaFechadaController {
+  @Get()
+  pingar(): EstadoDaSonda {
+    return { status: 'ok' };
+  }
+}
+
 @Module({
   imports: [AppModule],
-  controllers: [SondaController],
+  controllers: [SondaController, SondaFechadaController],
 })
 class AppModuloComSonda {}
 
@@ -28,11 +39,13 @@ describe('esqueleto da API', () => {
   let origem: string;
 
   beforeAll(async () => {
+    vi.stubEnv('OIDC_EMISSOR', 'http://localhost:8080/realms/cdd');
+    vi.stubEnv('OIDC_AUDIENCIA', 'cdd-api');
     vi.stubEnv('BANCO_URL', 'postgres://cdd_app:sem-banco@127.0.0.1:1/cdd');
     vi.stubEnv('BANCO_POOL_MAXIMO', '1');
     vi.stubEnv('LOG_NIVEL', 'fatal');
     app = await criarAplicacao(AppModuloComSonda);
-    await app.listen(0);
+    await app.listen(0, '127.0.0.1');
     const endereco = app.getHttpServer().address() as AddressInfo;
     origem = `http://127.0.0.1:${endereco.port}`;
   });
@@ -72,5 +85,17 @@ describe('esqueleto da API', () => {
     const resposta = await fetch(`${origem}/api/v1/qualquer-coisa`);
 
     expect(resposta.status).toBe(404);
+  });
+
+  it('a guarda global está ativa: rota identificada sem token responde 401 com desafio Bearer', async () => {
+    const resposta = await fetch(`${origem}/api/v1/sonda-fechada`);
+
+    expect(resposta.status).toBe(401);
+    expect(resposta.headers.get('www-authenticate')).toBe('Bearer');
+    expect(await resposta.json()).toEqual({
+      erro: 'NAO_AUTENTICADO',
+      correlacaoId: resposta.headers.get('X-Correlacao-Id'),
+    });
+    expect(resposta.headers.get('X-Correlacao-Id')).toBeTruthy();
   });
 });

@@ -1,4 +1,5 @@
 import { Controller, Get, HttpStatus, Res } from '@nestjs/common';
+import { Publico } from '../autenticacao/marcas-de-acesso.js';
 import { VerificadorDeProntidao } from './verificador-de-prontidao.js';
 
 interface RespostaComStatus {
@@ -15,6 +16,7 @@ interface EstadoDeProntidao {
 
 export const CORPO_DE_INDISPONIVEL = { status: 'indisponivel' } as const;
 
+@Publico()
 @Controller('saude')
 export class SaudeController {
   constructor(private readonly verificadorDeProntidao: VerificadorDeProntidao) {}

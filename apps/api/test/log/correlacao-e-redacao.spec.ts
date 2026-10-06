@@ -75,6 +75,8 @@ describe('log por requisição: correlação e redação (Documento 7 §13)', ()
   let origem: string;
 
   beforeAll(async () => {
+    vi.stubEnv('OIDC_EMISSOR', 'http://localhost:8080/realms/cdd');
+    vi.stubEnv('OIDC_AUDIENCIA', 'cdd-api');
     vi.stubEnv('ORIGENS_CORS', ORIGEM_PERMITIDA);
     app = await criarAplicacao(ModuloDeSonda);
     await app.listen(0);
