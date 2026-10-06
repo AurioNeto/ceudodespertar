@@ -12,6 +12,7 @@ import { UnidadeDeTrabalhoMikroOrm } from '../../src/shared/infrastructure/banco
 import { BordaTransacionalInterceptor } from '../../src/shared/infrastructure/http/borda-transacional.interceptor.js';
 import { ProvedorDeContextoDeInstituicao } from '../../src/shared/infrastructure/http/provedor-de-contexto-de-instituicao.js';
 import { ModoDeTransacao } from '../../src/shared/infrastructure/http/modo-de-transacao.decorator.js';
+import { FiltroDeErrosModule } from '../../src/shared/infrastructure/http/filtro-de-erros.module.js';
 import { IdempotenciaInterceptor } from '../../src/shared/infrastructure/idempotencia/idempotencia.interceptor.js';
 import { calcularHashDoCorpo } from '../../src/shared/infrastructure/idempotencia/hash-do-corpo.js';
 
@@ -22,6 +23,9 @@ const LIMITE_DE_TENTATIVAS_DE_BLOQUEIO = 500;
 const INTERVALO_ENTRE_TENTATIVAS_DE_BLOQUEIO_EM_MS = 10;
 const BACKENDS_BLOQUEADOS_NA_CORRIDA = 2;
 const STATUS_ACEITO = 202;
+const TAMANHO_DE_CHAVE_LONGA_DEMAIS = 300;
+const STATUS_CHAVE_REUTILIZADA = 422;
+const CODIGO_CHAVE_REUTILIZADA = 'CHAVE_DE_IDEMPOTENCIA_REUTILIZADA';
 
 interface RespostaHttp {
   readonly status: number;
@@ -95,6 +99,7 @@ class ControladorDeProva {
 }
 
 @Module({
+  imports: [FiltroDeErrosModule],
   controllers: [ControladorDeProva],
   providers: [
     { provide: UnidadeDeTrabalho, useFactory: () => unidade },
@@ -119,6 +124,14 @@ async function postar(caminho: string, chave: string | undefined, corpo: unknown
     body: JSON.stringify(corpo),
   });
   return { status: resposta.status, corpo: await resposta.text(), location: resposta.headers.get('location') };
+}
+
+function esperarErroDeChaveReutilizada(resposta: RespostaHttp): void {
+  expect(resposta.status).toBe(STATUS_CHAVE_REUTILIZADA);
+  const corpo = JSON.parse(resposta.corpo) as { erro: string; correlacaoId: string };
+  expect(corpo.erro).toBe(CODIGO_CHAVE_REUTILIZADA);
+  expect(corpo.correlacaoId).not.toBe('');
+  expect(Object.keys(corpo).toSorted()).toStrictEqual(['correlacaoId', 'erro']);
 }
 
 async function contar(tabela: 'shared.outbox' | 'shared.chave_de_idempotencia'): Promise<number> {
@@ -240,6 +253,18 @@ describe('IdempotenciaInterceptor sobre HTTP real, com borda e idempotência reg
     });
   });
 
+  describe('chave inválida', () => {
+    it('chave longa demais dá 400 CORPO_INVALIDO com correlacaoId e não executa o handler', async () => {
+      const resposta = await postar('/simples', 'x'.repeat(TAMANHO_DE_CHAVE_LONGA_DEMAIS));
+
+      expect(resposta.status).toBe(400);
+      const corpo = JSON.parse(resposta.corpo) as { erro: string; correlacaoId: string };
+      expect(corpo.erro).toBe('CORPO_INVALIDO');
+      expect(corpo.correlacaoId).not.toBe('');
+      expect(chamadasDoHandler).toBe(0);
+    });
+  });
+
   describe('corrida na reclamação de chave vencida', () => {
     it('dois POSTs simultâneos sobre a mesma chave vencida executam o handler uma vez e respondem igual', async () => {
       const chave = randomUUID();
@@ -276,7 +301,7 @@ describe('IdempotenciaInterceptor sobre HTTP real, com borda e idempotência reg
     it('mais de uma chave de query diferindo dá 422', async () => {
       const [, segunda] = await repetirComQuery('?a=1&b=2', '?a=1&b=3');
 
-      expect(segunda.status).toBe(422);
+      esperarErroDeChaveReutilizada(segunda);
     });
 
     it('as mesmas chaves em ordem diferente dão replay', async () => {
@@ -289,19 +314,19 @@ describe('IdempotenciaInterceptor sobre HTTP real, com borda e idempotência reg
     it('valor repetido em ordem diferente (?a=1&a=2 contra ?a=2&a=1) dá 422', async () => {
       const [, segunda] = await repetirComQuery('?a=1&a=2', '?a=2&a=1');
 
-      expect(segunda.status).toBe(422);
+      esperarErroDeChaveReutilizada(segunda);
     });
 
     it('valor repetido não colide com um valor único que contém vírgula', async () => {
       const [, segunda] = await repetirComQuery('?a=1&a=2', '?a=1%2C2');
 
-      expect(segunda.status).toBe(422);
+      esperarErroDeChaveReutilizada(segunda);
     });
 
     it('valor codificado (?a=%26b%3D2) não colide com uma segunda chave (?a=&b=2)', async () => {
       const [, segunda] = await repetirComQuery('?a=%26b%3D2', '?a=&b=2');
 
-      expect(segunda.status).toBe(422);
+      esperarErroDeChaveReutilizada(segunda);
     });
   });
 });
