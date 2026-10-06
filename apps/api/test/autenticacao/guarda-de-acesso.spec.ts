@@ -699,6 +699,15 @@ describe('indisponibilidade do provedor de identidade', () => {
     expect(recusado.status).toBe(503);
   });
 
+  it('o log do 503 por conexão recusada registra o nome e o código da causa, sem mensagem livre', async () => {
+    const logs = capturarLogs();
+    await servidor.derrubar();
+
+    await pedirAutenticado('/identificado');
+
+    expect(logs.linhas('error')).toEqual(['Provedor de identidade indisponível: TypeError ECONNREFUSED']);
+  });
+
   it('o log do 503 não registra o token, o sub nem a URL do provedor', async () => {
     const logs = capturarLogs();
     servidor.modo = 'pendurado';

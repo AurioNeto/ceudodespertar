@@ -108,7 +108,19 @@ function possuiPermissaoExigida(contexto: ContextoDeAcesso, marca: MarcaDePermis
 
 function descreverMotivo(erro: unknown): string {
   if (!(erro instanceof Error)) return MOTIVO_DESCONHECIDO;
+  const proprio = lerCodigo(erro);
+  if (proprio !== undefined) return seguroOuDesconhecido(proprio);
+  const nome = seguroOuDesconhecido(erro.name);
+  const daCausa = lerCodigo(erro.cause);
+  return daCausa === undefined ? nome : `${nome} ${seguroOuDesconhecido(daCausa)}`;
+}
+
+function lerCodigo(erro: unknown): string | undefined {
+  if (typeof erro !== 'object' || erro === null) return undefined;
   const { code } = erro as { code?: unknown };
-  const candidato = typeof code === 'string' ? code : erro.name;
+  return typeof code === 'string' ? code : undefined;
+}
+
+function seguroOuDesconhecido(candidato: string): string {
   return FORMATO_DO_MOTIVO.test(candidato) ? candidato : MOTIVO_DESCONHECIDO;
 }
