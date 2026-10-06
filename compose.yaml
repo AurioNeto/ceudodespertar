@@ -111,6 +111,7 @@ services:
       - "127.0.0.1:8080:8080"
     volumes:
       - ./infra/keycloak/realm-cdd.json:/opt/keycloak/data/import/realm-cdd.json:ro
+      - ./infra/keycloak/themes/cdd:/opt/keycloak/themes/cdd:ro
       - ./infra/keycloak/saude.sh:/cdd/saude.sh:ro
     depends_on:
       mailpit:

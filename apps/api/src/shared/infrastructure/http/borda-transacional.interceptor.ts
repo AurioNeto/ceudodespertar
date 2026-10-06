@@ -31,7 +31,7 @@ export class BordaTransacionalInterceptor implements NestInterceptor {
 
     const identidade = this.provedorDeContexto.identidadeAtual(contexto);
     const valorDoContexto: ContextoDaRequisicaoValor = {
-      correlacaoId: randomUUID(),
+      correlacaoId: ContextoDaRequisicao.atual()?.correlacaoId ?? randomUUID(),
       instituicaoId: identidade.instituicaoId,
       usuarioId: identidade.usuarioId,
     };
