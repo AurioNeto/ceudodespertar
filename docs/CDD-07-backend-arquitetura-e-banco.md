@@ -305,6 +305,8 @@ Os códigos vivem em `packages/contracts/erros.ts` e vêm de três fontes, todas
 | Guardas mínimas de banco (§15) | `LANCAMENTO_IMUTAVEL`, `TRANSFERENCIA_IMUTAVEL`, `FEITIO_IMUTAVEL`, `REGISTRO_IMUTAVEL` | Prefixo da mensagem antes de `:`. O domínio recusa antes; se um desses chega à API, alguém escreveu código que contorna o agregado — é erro de programação: 500 com alerta ao Sentry |
 | Restrição nomeada | `i1_fitid_unico`, `ml1_vaga_livre_no_evento`, `uma_declaracao_por_cerimonia` | Tabela `nome da restrição → código` — é por isso que as restrições que o domínio mapeia **têm nome** no esquema |
 
+O status HTTP de cada código vem do catálogo (`STATUS_POR_CODIGO`), nunca da exceção que o carrega. Uma `HttpException` cujo corpo traz um código do catálogo (`{ "erro": "USUARIO_SUSPENSO" }`) é traduzida por esse código, com a `correlacaoId` do filtro; status sem código no corpo cai no mapa genérico (400, 401, 403 e 404), e qualquer outro vira 500.
+
 Erro de banco que chega à API **sem** mapeamento é bug: vira 500, vai ao Sentry, e o teste de contrato (§26) falha. Se o domínio está certo, a trava do banco nunca dispara em uso normal — quando dispara, alguém escreveu código que contorna o agregado.
 
 ## 13. Operação
