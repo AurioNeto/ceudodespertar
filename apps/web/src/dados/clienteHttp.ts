@@ -1,4 +1,4 @@
-import type { FonteDeCredencial } from './credencial';
+import type { FonteDeCredencial, ResultadoDaRenovacao } from './credencial';
 import { ErroDaApi, ErroDeRede, codigoDeFallback, erroDaResposta } from './erros';
 
 export const BASE_DA_API = '/api/v1';
@@ -47,16 +47,16 @@ export function criarClienteHttp(dependencias: DependenciasDoClienteHttp): Clien
   const chamarFetch = (entrada: string, init: RequestInit) =>
     (dependencias.fetch ?? globalThis.fetch)(entrada, init);
 
-  let renovacaoEmAndamento: Promise<boolean> | null = null;
+  let renovacaoEmAndamento: Promise<ResultadoDaRenovacao> | null = null;
 
-  function renovarCompartilhando(): Promise<boolean> {
+  function renovarCompartilhando(): Promise<ResultadoDaRenovacao> {
     if (renovacaoEmAndamento) return renovacaoEmAndamento;
     const renovacao = credencial
       .renovar()
-      .catch(() => false)
-      .then((renovou) => {
-        if (!renovou) credencial.aoSessaoEncerrada();
-        return renovou;
+      .catch((): ResultadoDaRenovacao => 'indisponivel')
+      .then((resultado) => {
+        if (resultado === 'sessao-encerrada') credencial.aoSessaoEncerrada();
+        return resultado;
       })
       .finally(() => {
         renovacaoEmAndamento = null;
@@ -112,8 +112,9 @@ export function criarClienteHttp(dependencias: DependenciasDoClienteHttp): Clien
 
     const tokenJaMudou = (await credencial.tokenAtual()) !== primeira.tokenUsado;
     if (!tokenJaMudou) {
-      const renovou = await renovarCompartilhando();
-      if (!renovou) throw erro;
+      const resultado = await renovarCompartilhando();
+      if (resultado === 'sessao-encerrada') throw erro;
+      if (resultado === 'indisponivel') throw new ErroDeRede(erro);
     }
 
     const segunda = await enviarUmaVez(opcoes, chaveDeIdempotencia);
