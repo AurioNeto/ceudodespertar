@@ -92,6 +92,10 @@ describe('esqueleto da API', () => {
 
     expect(resposta.status).toBe(401);
     expect(resposta.headers.get('www-authenticate')).toBe('Bearer');
-    expect(await resposta.json()).toEqual({ erro: 'NAO_AUTENTICADO', correlacaoId: '' });
+    expect(await resposta.json()).toEqual({
+      erro: 'NAO_AUTENTICADO',
+      correlacaoId: resposta.headers.get('X-Correlacao-Id'),
+    });
+    expect(resposta.headers.get('X-Correlacao-Id')).toBeTruthy();
   });
 });
