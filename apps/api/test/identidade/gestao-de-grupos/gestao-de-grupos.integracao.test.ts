@@ -464,14 +464,25 @@ describe('gestão de grupos pela API (Doc 3 §11, Doc 7 §25)', () => {
       expect(await efeitosGravados(banco, INSTITUICAO_A)).toEqual(efeitosAntes);
     });
 
-    it('só sistema.usuario.gerenciar não basta para escrever em grupo', async () => {
+    it('só sistema.usuario.gerenciar não basta para escrever em grupo: 403 em cada rota e nada muda', async () => {
       const gerentes = novoGrupoNomeado('Gestão de usuários', ['sistema.usuario.gerenciar']);
       const { leitura } = await semearCasa();
       await semearUsuarios(aplicacao, INSTITUICAO_A, [gerentes], [usuarioAtivoEm(GERENTE_DE_USUARIOS, [gerentes])]);
+      const antes = await estadoDe(leitura.id);
+      const efeitosAntes = await efeitosGravados(banco, INSTITUICAO_A);
 
-      const resposta = await conceder(GERENTE_DE_USUARIOS, leitura.id, 'pessoas.pessoa.ler', (await estadoDe(leitura.id)).versao);
+      const respostas = [
+        await conceder(GERENTE_DE_USUARIOS, leitura.id, 'pessoas.pessoa.ler', antes.versao),
+        await revogar(GERENTE_DE_USUARIOS, leitura.id, PERMISSAO_DA_LEITURA, antes.versao),
+        await renomear(GERENTE_DE_USUARIOS, leitura.id, { nome: 'Outro', descricao: '' }, antes.versao),
+      ];
 
-      expect(resposta.status).toBe(403);
+      for (const resposta of respostas) {
+        expect(resposta.status).toBe(403);
+        expect(resposta.corpo).toMatchObject({ erro: 'SEM_PERMISSAO' });
+      }
+      expect(await estadoDe(leitura.id)).toEqual(antes);
+      expect(await efeitosGravados(banco, INSTITUICAO_A)).toEqual(efeitosAntes);
     });
 
     it('revogar a permissão do grupo invalida o cache de acesso dos membros: o acesso cai na requisição seguinte', async () => {
@@ -520,6 +531,16 @@ describe('gestão de grupos pela API (Doc 3 §11, Doc 7 §25)', () => {
           },
         ],
       });
+    });
+
+    it('ordena por nome sem distinguir maiúsculas de minúsculas', async () => {
+      await semearCasa();
+      const minusculo = novoGrupoNomeado('beta', [PERMISSAO_DA_LEITURA]);
+      await semearUsuarios(aplicacao, INSTITUICAO_A, [minusculo], [usuarioAtivoEm('sub-qualquer', [])]);
+
+      const { itens } = (await (await aplicacao.pedirComo(ADMIN, ROTA_GRUPOS)).json()) as { itens: { nome: string }[] };
+
+      expect(itens.map(({ nome }) => nome)).toEqual(['Administração', 'beta', 'Leitura']);
     });
 
     it('não lista grupo excluído nem as permissões dele', async () => {
