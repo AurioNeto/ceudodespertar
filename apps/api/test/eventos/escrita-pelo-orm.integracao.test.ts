@@ -5,10 +5,8 @@ import { criarBancoDeTeste, derrubarBancoDeTeste } from '../integracao/banco-de-
 import type { BancoDeTeste } from '../integracao/banco-de-teste.js';
 import { construirOpcoesDoOrm } from '../../src/shared/infrastructure/banco/configuracao-do-orm.js';
 import { UnidadeDeTrabalhoMikroOrm } from '../../src/shared/infrastructure/banco/unidade-de-trabalho.mikro-orm.js';
-import {
-  Despachante,
-  TETO_DE_TENTATIVAS,
-} from '../../src/shared/infrastructure/eventos/despachante.js';
+import { Despachante } from '../../src/shared/infrastructure/eventos/despachante.js';
+import { TETO_DE_TENTATIVAS } from '../../src/shared/infrastructure/eventos/teto-de-tentativas.js';
 import { SinalizadorDeEventos } from '../../src/shared/infrastructure/eventos/sinalizador-de-eventos.js';
 import type {
   ConsumidorRegistrado,

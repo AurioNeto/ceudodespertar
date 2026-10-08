@@ -5,8 +5,9 @@ import {
   POOL_DA_PRONTIDAO,
   TIMEOUT_DA_CONSULTA_DE_PRONTIDAO_EM_MS,
 } from '../banco/pool-da-prontidao.js';
+import { TETO_DE_TENTATIVAS } from '../eventos/teto-de-tentativas.js';
+
 export const ATRASO_MAXIMO_DO_OUTBOX_EM_SEGUNDOS = 5 * 60;
-export const TENTATIVAS_QUE_ESGOTAM_O_EVENTO = 10;
 
 export type MotivoDeIndisponibilidade = 'banco-inacessivel' | 'outbox-atrasado';
 
@@ -23,19 +24,22 @@ interface LinhaDoOutbox {
   readonly outbox_atrasado: boolean;
 }
 
-const CONSULTA_DO_OUTBOX_ATRASADO = `
+export const CONSULTA_DO_OUTBOX_ATRASADO = `
   select exists (
            select 1
-             from shared.outbox
-            where publicado_em is null
-              and tentativas < ${TENTATIVAS_QUE_ESGOTAM_O_EVENTO}
-              and ocorrido_em < now() - interval '${ATRASO_MAXIMO_DO_OUTBOX_EM_SEGUNDOS} seconds'
-         )
-      or exists (
-           select 1
-             from shared.outbox
-            where publicado_em is null
-              and tentativas >= ${TENTATIVAS_QUE_ESGOTAM_O_EVENTO}
+             from shared.outbox o
+            where o.publicado_em is null
+              and o.tentativas < ${TETO_DE_TENTATIVAS}
+              and o.ocorrido_em < now() - interval '${ATRASO_MAXIMO_DO_OUTBOX_EM_SEGUNDOS} seconds'
+              and not exists (
+                    select 1
+                      from shared.outbox anterior_esgotado
+                     where anterior_esgotado.agregado_tipo = o.agregado_tipo
+                       and anterior_esgotado.agregado_id = o.agregado_id
+                       and anterior_esgotado.id < o.id
+                       and anterior_esgotado.publicado_em is null
+                       and anterior_esgotado.tentativas >= ${TETO_DE_TENTATIVAS}
+                  )
          ) as outbox_atrasado
 `;
 

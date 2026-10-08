@@ -38,7 +38,7 @@ export const FRAGMENTOS_DE_CHAVE_PROIBIDA = [
   'restric',
 ] as const;
 
-const FORMATO_DE_CPF = /(?<!\d)\d{3}[.\s]?\d{3}[.\s]?\d{3}[-\s]?\d{2}(?!\d)/g;
+const FORMATO_DE_CPF_FORA_DE_IDENTIFICADOR = /(?<![\p{L}\p{N}])\d{3}[.\s]?\d{3}[.\s]?\d{3}[-\s]?\d{2}(?![\p{L}\p{N}])/gu;
 const MENOR_NUMERO_DE_ONZE_DIGITOS = 10_000_000_000;
 const MAIOR_NUMERO_DE_ONZE_DIGITOS = 99_999_999_999;
 
@@ -55,7 +55,7 @@ export function ehChaveProibida(chave: string): boolean {
 }
 
 export function mascararCpf(texto: string): string {
-  return texto.replace(FORMATO_DE_CPF, CPF_REDIGIDO);
+  return texto.replace(FORMATO_DE_CPF_FORA_DE_IDENTIFICADOR, CPF_REDIGIDO);
 }
 
 function podeSerCpf(numero: number): boolean {
