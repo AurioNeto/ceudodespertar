@@ -15,6 +15,7 @@ const RESTRICOES_QUE_O_DOMINIO_MAPEIA_NO_B0: readonly string[] = [
   'usuario_pessoa_unica',
   'grupo_nome_unico',
   'convite_vigente_unico',
+  'usuario_grupo_grupo_fk',
 ];
 
 const RESTRICOES_SEM_CODIGO_POR_SEREM_GUARDA_INTERNA_DO_BANCO: readonly string[] = [
@@ -49,7 +50,11 @@ function restricoesNomeadas(sql: string): Set<string> {
   for (const casamento of sql.matchAll(/\bCREATE\s+UNIQUE\s+INDEX\s+(\w+)/gi)) {
     nomes.add(casamento[1] as string);
   }
-  for (const casamento of sql.matchAll(/\bCONSTRAINT\s+(\w+)/gi)) {
+  const renomeacao = /\bRENAME\s+CONSTRAINT\s+\w+\s+TO\s+(\w+)/gi;
+  for (const casamento of sql.matchAll(renomeacao)) {
+    nomes.add(casamento[1] as string);
+  }
+  for (const casamento of sql.replace(renomeacao, '').matchAll(/\bCONSTRAINT\s+(\w+)/gi)) {
     nomes.add(casamento[1] as string);
   }
   return nomes;

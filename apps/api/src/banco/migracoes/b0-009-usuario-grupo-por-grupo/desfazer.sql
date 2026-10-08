@@ -1,0 +1,4 @@
+ALTER TABLE identidade.usuario_grupo
+  RENAME CONSTRAINT usuario_grupo_grupo_fk TO usuario_grupo_instituicao_id_grupo_id_fkey;
+
+DROP INDEX identidade.usuario_grupo_por_grupo;
