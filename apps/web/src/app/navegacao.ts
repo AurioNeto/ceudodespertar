@@ -95,8 +95,13 @@ const POR_CAMINHO = new Map<string, RotaId>(
 export function rotaAtiva(pathname: string): RotaId {
   const exata = POR_CAMINHO.get(pathname);
   if (exata) return exata;
-  const prefixo = (Object.entries(ROTAS) as [RotaId, string][])
-    .filter(([, caminho]) => caminho !== '/' && pathname.startsWith(caminho))
-    .sort((a, b) => b[1].length - a[1].length)[0];
+  const prefixo = (Object.entries(ROTAS) as [RotaId, string][]).reduce<[RotaId, string] | null>(
+    (maisLongo, atual) => {
+      const [, caminho] = atual;
+      if (caminho === '/' || !pathname.startsWith(caminho)) return maisLongo;
+      return maisLongo === null || caminho.length > maisLongo[1].length ? atual : maisLongo;
+    },
+    null,
+  );
   return prefixo?.[0] ?? 'painel';
 }

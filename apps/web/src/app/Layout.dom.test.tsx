@@ -3,21 +3,26 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { TEXTO_DA_FAIXA_DE_DEMONSTRACAO } from '../ds';
 import { Layout } from './Layout';
 import { ROTAS, type RotaId } from './navegacao';
+import { PERMISSOES, type Permissao } from '@cdd/contracts';
 import { TELAS, type RegistroDeTelas } from './telas';
 import { criarEntradaFalsa, criarEu, montarComSessao, type TelaMontada } from './apoioDeTeste';
 
 const ROTAS_DO_SHELL = Object.entries(ROTAS) as [RotaId, string][];
 
 const todasComFonte = (fonte: 'mock' | 'api'): RegistroDeTelas =>
-  Object.fromEntries(ROTAS_DO_SHELL.map(([id]) => [id, { fonte }])) as RegistroDeTelas;
+  Object.fromEntries(ROTAS_DO_SHELL.map(([id]) => [id, { fonte, acesso: [] as readonly Permissao[] }])) as RegistroDeTelas;
 
-const telasComUmaApi = (id: RotaId): RegistroDeTelas => ({ ...todasComFonte('mock'), [id]: { fonte: 'api' } });
+const telasComUmaApi = (id: RotaId): RegistroDeTelas => ({ ...todasComFonte('mock'), [id]: { fonte: 'api', acesso: [] } });
 
 const telaAtiva: TelaMontada[] = [];
 
-async function montarLayoutEm(caminho: string, telas: RegistroDeTelas): Promise<TelaMontada> {
+async function montarLayoutEm(
+  caminho: string,
+  telas: RegistroDeTelas,
+  permissoes: readonly Permissao[] = PERMISSOES,
+): Promise<TelaMontada> {
   const tela = await montarComSessao(
-    { entrada: criarEntradaFalsa(true), buscarEu: () => Promise.resolve(criarEu()) },
+    { entrada: criarEntradaFalsa(true), buscarEu: () => Promise.resolve(criarEu({ permissoes: [...permissoes] })) },
     <MemoryRouter initialEntries={[caminho]}>
       <Routes>
         <Route element={<Layout telas={telas} />}>
@@ -87,5 +92,52 @@ describe('faixa de demonstração no Layout', () => {
       'Dados de demonstração. Esta tela ainda não está ligada ao sistema: o que aparece aqui é exemplo e nada é gravado.',
     );
     expect(TEXTO_DA_FAIXA_DE_DEMONSTRACAO).toBe(faixa?.textContent);
+  });
+});
+
+describe('acesso por permissão no Layout', () => {
+  const REGISTRO: readonly Permissao[] = [
+    'financeiro.lancamento.registrar',
+    'financeiro.lancamento.ler_proprios',
+    'financeiro.plano_contas.ler',
+    'estoque.movimento.registrar',
+  ];
+
+  const itensDoMenu = (tela: TelaMontada) =>
+    Array.from(tela.container.querySelectorAll('nav button')).map((b) => b.textContent ?? '');
+
+  it('o grupo REGISTRO vê só Painel, Registrar lançamento e Meus registros no menu', async () => {
+    const tela = await montarLayoutEm(ROTAS.painel, TELAS, REGISTRO);
+    const texto = itensDoMenu(tela).join('|');
+    expect(texto).toContain('Painel');
+    expect(texto).toContain('Registrar lançamento');
+    expect(texto).toContain('Meus registros');
+    expect(texto).not.toContain('Verificação de lote');
+    for (const secao of ['Financeiro', 'Cerimônias', 'Pessoas', 'Sistema']) {
+      expect(tela.container.querySelector('aside nav')?.textContent).not.toContain(secao);
+    }
+  });
+
+  it('link direto sem permissão mostra o PermissionDenied, sem faixa e sem a tela', async () => {
+    const tela = await montarLayoutEm(ROTAS.lote, TELAS, REGISTRO);
+    expect(tela.texto()).toContain('Você não tem acesso a Verificação de lote');
+    expect(tela.texto()).toContain('financeiro.lancamento.confirmar');
+    expect(tela.texto()).toContain('Tesouraria');
+    expect(tela.texto()).toContain('o administrador');
+    expect(faixas(tela).length).toBe(0);
+    expect(tela.texto()).not.toContain('conteudo-da-tela');
+  });
+
+  it('tela com várias permissões é liberada por qualquer uma delas', async () => {
+    const tela = await montarLayoutEm(ROTAS.relatorios, TELAS, ['financeiro.dre.ler']);
+    expect(tela.texto()).toContain('conteudo-da-tela');
+    expect(tela.texto()).not.toContain('Você não tem acesso');
+  });
+
+  it('tela bloqueada com várias permissões cita a primeira da lista', async () => {
+    const tela = await montarLayoutEm(ROTAS.relatorios, TELAS, REGISTRO);
+    expect(tela.texto()).toContain('Você não tem acesso a Relatórios');
+    expect(tela.texto()).toContain('financeiro.dre.ler');
+    expect(tela.texto()).not.toContain('financeiro.resultado_evento.ler');
   });
 });
