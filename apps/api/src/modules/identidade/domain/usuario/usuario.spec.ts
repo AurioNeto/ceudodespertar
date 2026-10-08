@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type { ErroDeDominio } from '../../../../shared/kernel/erro-de-dominio.js';
 import { ehErr, ehOk, type Result } from '../../../../shared/kernel/result.js';
 import { Convite } from './convite.js';
-import { Usuario } from './usuario.js';
+import { LIMITE_DE_CARACTERES_DO_MOTIVO_DE_SUSPENSAO, Usuario } from './usuario.js';
 
 const USUARIO_ID = 'usuario-1' as UsuarioId;
 const ADMIN_ID = 'admin-1' as UsuarioId;
@@ -379,6 +379,23 @@ describe('Usuario.desativar', () => {
 
     expect(codigoDe(usuario.desativar(ADMIN_ID, motivo, DEPOIS))).toBe('MOTIVO_OBRIGATORIO');
     expect(usuario.situacao).toBe('ATIVO');
+  });
+
+  it('aceita motivo no limite de caracteres, contado após o trim', () => {
+    const usuario = ativo();
+    const motivo = `  ${'a'.repeat(LIMITE_DE_CARACTERES_DO_MOTIVO_DE_SUSPENSAO)}  `;
+
+    expect(ehOk(usuario.desativar(ADMIN_ID, motivo, DEPOIS))).toBe(true);
+    expect(usuario.situacao).toBe('SUSPENSO');
+  });
+
+  it('recusa motivo acima do limite de caracteres com MOTIVO_LONGO_DEMAIS', () => {
+    const usuario = ativo();
+    const motivo = 'a'.repeat(LIMITE_DE_CARACTERES_DO_MOTIVO_DE_SUSPENSAO + 1);
+
+    expect(codigoDe(usuario.desativar(ADMIN_ID, motivo, DEPOIS))).toBe('MOTIVO_LONGO_DEMAIS');
+    expect(usuario.situacao).toBe('ATIVO');
+    expect(usuario.retirarEventos()).toEqual([]);
   });
 
   it('desativar usuário já SUSPENSO é idempotente: ok, sem evento', () => {

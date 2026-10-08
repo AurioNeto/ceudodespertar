@@ -6,6 +6,7 @@ import { err, ok, type Result } from '../../../../shared/kernel/result.js';
 import { Convite } from './convite.js';
 
 const AGREGADO_TIPO = 'Usuario';
+export const LIMITE_DE_CARACTERES_DO_MOTIVO_DE_SUSPENSAO = 500;
 
 type SituacaoInativa = Exclude<SituacaoUsuario, 'ATIVO'>;
 
@@ -197,7 +198,9 @@ export class Usuario extends RaizDeAgregado<UsuarioId> {
   desativar(por: UsuarioId, motivo: string, em: Date): Result<void, ErroDeDominio> {
     if (this._situacao === 'SUSPENSO') return ok();
     if (this._situacao !== 'ATIVO') return err(erroDaSituacaoInativa(this._situacao));
-    if (motivo.trim() === '') return err(erroDeDominio('MOTIVO_OBRIGATORIO'));
+    const motivoAparado = motivo.trim();
+    if (motivoAparado === '') return err(erroDeDominio('MOTIVO_OBRIGATORIO'));
+    if (motivoAparado.length > LIMITE_DE_CARACTERES_DO_MOTIVO_DE_SUSPENSAO) return err(erroDeDominio('MOTIVO_LONGO_DEMAIS'));
 
     this._situacao = 'SUSPENSO';
     this._suspensoEm = em;
