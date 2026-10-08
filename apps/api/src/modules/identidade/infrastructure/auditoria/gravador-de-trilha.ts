@@ -6,6 +6,7 @@ import { ContextoDaRequisicao } from '../../../../shared/infrastructure/contexto
 import type { EventoDeDominio } from '../../../../shared/kernel/evento-de-dominio.js';
 import { gerarUuidV7 } from '../../../../shared/kernel/ids.js';
 import type { EntradaDeAuditoria } from '../../application/auditoria/entrada-de-auditoria.js';
+import { TrilhaDeAuditoria } from '../../application/auditoria/trilha-de-auditoria.js';
 import { mapearEventoParaAuditoria } from '../../application/auditoria/mapeamento-de-eventos.js';
 import { instituicaoDoContexto } from '../persistencia/instituicao-do-contexto.js';
 
@@ -30,13 +31,13 @@ async function gruposDosAutores(kysely: Kysely<DB>, autores: readonly string[]):
 }
 
 @Injectable()
-export class GravadorDeTrilha {
+export class GravadorDeTrilha extends TrilhaDeAuditoria {
   async gravarEventos(contexto: ContextoDaTransacao, eventos: readonly EventoDeDominio[]): Promise<void> {
     const entradas = eventos.flatMap((evento) => mapearEventoParaAuditoria(evento) ?? []);
     await this.gravar(contexto, entradas);
   }
 
-  async gravar(contexto: ContextoDaTransacao, entradas: readonly EntradaDeAuditoria[]): Promise<void> {
+  override async gravar(contexto: ContextoDaTransacao, entradas: readonly EntradaDeAuditoria[]): Promise<void> {
     if (entradas.length === 0) return;
     const instituicaoId = instituicaoDoContexto();
     const correlacaoId = ContextoDaRequisicao.atual()?.correlacaoId ?? null;
