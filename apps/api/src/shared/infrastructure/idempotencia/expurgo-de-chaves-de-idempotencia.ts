@@ -70,7 +70,7 @@ export class ExpurgoDeChavesDeIdempotencia implements OnModuleInit, OnApplicatio
   private async expurgarInstituicao(instituicaoId: string): Promise<number> {
     try {
       return await ContextoDaRequisicao.executar({ correlacaoId: randomUUID(), instituicaoId }, () =>
-        this.unidadeDeTrabalho.transacao('escrita', ({ kysely }) => apagarChavesVencidas(kysely)),
+        this.unidadeDeTrabalho.transacao('escrita', ({ kysely }) => apagarChavesVencidas(kysely, instituicaoId)),
       );
     } catch (motivo) {
       this.logger.warn({ erro: nomeDoErro(motivo), instituicaoId }, MENSAGEM_DE_FALHA_NO_EXPURGO);

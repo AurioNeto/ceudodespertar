@@ -163,12 +163,15 @@ export async function reivindicarChave(
   return linha === undefined ? reivindicarChave(kysely, dados) : paraChaveExistente(linha);
 }
 
-export function consultaDeApagarChavesVencidas(kysely: Kysely<DB>) {
-  return kysely.deleteFrom('shared.chave_de_idempotencia').where(condicaoDeVencida());
+export function consultaDeApagarChavesVencidas(kysely: Kysely<DB>, instituicaoId: string) {
+  return kysely
+    .deleteFrom('shared.chave_de_idempotencia')
+    .where('instituicao_id', '=', instituicaoId)
+    .where(condicaoDeVencida());
 }
 
-export async function apagarChavesVencidas(kysely: Kysely<DB>): Promise<number> {
-  const resultado = await consultaDeApagarChavesVencidas(kysely).executeTakeFirst();
+export async function apagarChavesVencidas(kysely: Kysely<DB>, instituicaoId: string): Promise<number> {
+  const resultado = await consultaDeApagarChavesVencidas(kysely, instituicaoId).executeTakeFirst();
   return Number(resultado.numDeletedRows);
 }
 

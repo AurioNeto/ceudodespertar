@@ -66,6 +66,18 @@ describe('ExpurgoDeChavesDeIdempotencia', () => {
     ]);
   });
 
+  it('passa explicitamente o id de cada instituição ao apagar', async () => {
+    vi.mocked(listarIdsDasInstituicoes).mockResolvedValue(['inst-a', 'inst-b']);
+    vi.mocked(apagarChavesVencidas).mockResolvedValue(0);
+
+    await expurgo.expurgar();
+
+    expect(vi.mocked(apagarChavesVencidas).mock.calls.map(([, instituicaoId]) => instituicaoId)).toStrictEqual([
+      'inst-a',
+      'inst-b',
+    ]);
+  });
+
   it('loga info com o total apagado e as instituições afetadas quando apaga algo', async () => {
     vi.mocked(listarIdsDasInstituicoes).mockResolvedValue(['inst-a', 'inst-b', 'inst-c']);
     vi.mocked(apagarChavesVencidas).mockResolvedValueOnce(2).mockResolvedValueOnce(0).mockResolvedValueOnce(5);

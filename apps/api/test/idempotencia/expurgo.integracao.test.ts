@@ -156,11 +156,24 @@ describe('expurgo das chaves de idempotência vencidas contra o banco (Documento
       const vencidasB = await semearChaves(banco, INSTITUICAO_B, VENCIDAS_POR_INSTITUICAO, '25 hours');
 
       const apagadas = await comContexto(INSTITUICAO_A, () =>
-        unidade.transacao('escrita', ({ kysely }) => apagarChavesVencidas(kysely)),
+        unidade.transacao('escrita', ({ kysely }) => apagarChavesVencidas(kysely, INSTITUICAO_A)),
       );
 
       expect(apagadas).toBe(vencidasA.length);
       expect(await chavesGravadas(banco, INSTITUICAO_A)).toStrictEqual([]);
+      expect(await chavesGravadas(banco, INSTITUICAO_B)).toStrictEqual(ordenadas(vencidasB));
+    });
+
+    it('o apagar filtra a instituição explicitamente: com o contexto de A e o id de B, não remove nada', async () => {
+      const vencidasA = await semearChaves(banco, INSTITUICAO_A, VENCIDAS_POR_INSTITUICAO, '25 hours');
+      const vencidasB = await semearChaves(banco, INSTITUICAO_B, VENCIDAS_POR_INSTITUICAO, '25 hours');
+
+      const apagadas = await comContexto(INSTITUICAO_A, () =>
+        unidade.transacao('escrita', ({ kysely }) => apagarChavesVencidas(kysely, INSTITUICAO_B)),
+      );
+
+      expect(apagadas).toBe(0);
+      expect(await chavesGravadas(banco, INSTITUICAO_A)).toStrictEqual(ordenadas(vencidasA));
       expect(await chavesGravadas(banco, INSTITUICAO_B)).toStrictEqual(ordenadas(vencidasB));
     });
 
@@ -169,7 +182,7 @@ describe('expurgo das chaves de idempotência vencidas contra o banco (Documento
       const vencidasB = await semearChaves(banco, INSTITUICAO_B, VENCIDAS_POR_INSTITUICAO, '25 hours');
 
       const apagadas = await ContextoDaRequisicao.foraDeQualquerContexto(() =>
-        unidade.transacao('escrita', ({ kysely }) => apagarChavesVencidas(kysely)),
+        unidade.transacao('escrita', ({ kysely }) => apagarChavesVencidas(kysely, INSTITUICAO_A)),
       );
 
       expect(apagadas).toBe(0);
@@ -186,7 +199,7 @@ describe('expurgo das chaves de idempotência vencidas contra o banco (Documento
       await banco.owner.query('analyze shared.chave_de_idempotencia');
 
       const { sql, parameters } = await comContexto(INSTITUICAO_A, () =>
-        unidade.transacao('leitura', async ({ kysely }) => consultaDeApagarChavesVencidas(kysely).compile()),
+        unidade.transacao('leitura', async ({ kysely }) => consultaDeApagarChavesVencidas(kysely, INSTITUICAO_A).compile()),
       );
       await banco.app.query('begin');
       let plano: string;
@@ -279,7 +292,7 @@ describe('expurgo das chaves de idempotência vencidas contra o banco (Documento
           await em.execute('select 1 from shared.chave_de_idempotencia where chave = ? for update', [chave]);
           expurgoTemOLock();
           await expurgoPodeConfirmar;
-          return apagarChavesVencidas(kysely);
+          return apagarChavesVencidas(kysely, INSTITUICAO_A);
         }),
       );
       await lockObtido;
@@ -331,7 +344,7 @@ describe('expurgo das chaves de idempotência vencidas contra o banco (Documento
       );
       await jaReclamou;
       const expurgo = comContexto(INSTITUICAO_A, () =>
-        unidade.transacao('escrita', ({ kysely }) => apagarChavesVencidas(kysely)),
+        unidade.transacao('escrita', ({ kysely }) => apagarChavesVencidas(kysely, INSTITUICAO_A)),
       );
       await esperarBackendBloqueado();
       liberarReaproveitamento();
