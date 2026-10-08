@@ -9,6 +9,7 @@ import {
   ALVO,
   GRUPO_ADMINISTRADOR,
   GRUPO_DE_OUTRA_INSTITUICAO,
+  GRUPO_INATIVO,
   GRUPO_LEITURA,
   instituicaoComDoisAdministradores,
   instituicaoOndeOAlvoEOUnicoAdministrador,
@@ -74,9 +75,9 @@ describe('DefinirGruposDoUsuario', () => {
   });
 
   it('mantém sem erro um grupo já atribuído que deixou de estar ativo', async () => {
-    const { repositorio, definir } = montar(instituicaoComDoisAdministradores(), [GRUPO_LEITURA, GRUPO_DE_OUTRA_INSTITUICAO]);
+    const { repositorio, definir } = montar(instituicaoComDoisAdministradores(), [GRUPO_LEITURA, GRUPO_INATIVO]);
 
-    const resultado = await definir.executar(ACESSO, comando([GRUPO_LEITURA, GRUPO_DE_OUTRA_INSTITUICAO]));
+    const resultado = await definir.executar(ACESSO, comando([GRUPO_LEITURA, GRUPO_INATIVO]));
 
     expect(ehOk(resultado) && resultado.valor.versao).toBe(VERSAO_DO_ALVO);
     expect(repositorio.salvos).toEqual([]);
