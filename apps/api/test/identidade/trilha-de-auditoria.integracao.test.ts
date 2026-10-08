@@ -234,7 +234,7 @@ describe('trilha de auditoria gravada na transação do ato', () => {
       agregadoTipo: 'Usuario',
       agregadoId,
       ocorridoEm: DEPOIS,
-      dados: {},
+      dados: { motivo: 'retorno' },
     });
 
     await naInstituicaoA(() =>

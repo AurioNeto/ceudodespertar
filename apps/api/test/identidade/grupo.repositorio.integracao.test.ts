@@ -106,8 +106,9 @@ describe('RepositorioDeGrupoMikroOrm', () => {
     const lido = await carregar(grupo.id);
     lido.concederPermissao('financeiro.dre.ler', AUTOR, DEPOIS);
     lido.revogarPermissao('financeiro.conta.ler', AUTOR, DEPOIS);
-    await naInstituicaoA(() => ambiente.grupos.salvar(lido));
+    const versaoGravada = await naInstituicaoA(() => ambiente.grupos.salvar(lido));
 
+    expect(versaoGravada).toBe(2);
     expect(await permissoesGravadas(grupo.id)).toEqual(['financeiro.dre.ler', 'financeiro.lancamento.ler']);
     expect(await linhaDoGrupo(grupo.id)).toMatchObject({ versao: 2 });
     expect(await eventosDoOutbox(banco, grupo.id)).toEqual(['GRUPO_EDITADO', 'GRUPO_EDITADO']);

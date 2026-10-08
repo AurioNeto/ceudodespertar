@@ -108,6 +108,13 @@ describe('RepositorioDeUsuarioMikroOrm', () => {
     );
   }
 
+  async function registrarAcessoPorFora(id: UsuarioId, em: Date): Promise<void> {
+    await banco.owner.query('begin');
+    await banco.owner.query('select set_config($1, $2, true)', ['app.instituicao_id', INSTITUICAO_A]);
+    await banco.owner.query('update identidade.usuario set ultimo_acesso_em = $2 where id = $1', [id, em]);
+    await banco.owner.query('commit');
+  }
+
   async function carregar(id: UsuarioId): Promise<Usuario> {
     const usuario = await naInstituicaoA(() => ambiente.usuarios.porId(id));
     if (usuario === undefined) throw new Error('usuário não encontrado');
@@ -181,7 +188,7 @@ describe('RepositorioDeUsuarioMikroOrm', () => {
     expect(await carregar(convidado.id)).toMatchObject({ pessoaId, ultimoAcessoEm: DEPOIS, versao: 2 });
   });
 
-  it('salvar grava o pessoaId e o ultimoAcessoEm que o agregado passou a ter', async () => {
+  it('salvar grava o pessoaId e ignora o ultimoAcessoEm que o agregado passou a ter', async () => {
     const convidado = novoUsuarioConvidado();
     await naInstituicaoA(() => ambiente.usuarios.adicionar(convidado));
     const pessoaId = gerarUuidV7() as PessoaId;
@@ -190,7 +197,7 @@ describe('RepositorioDeUsuarioMikroOrm', () => {
       ambiente.usuarios.salvar(comoReconstituido(convidado, { pessoaId, ultimoAcessoEm: DEPOIS })),
     );
 
-    expect(await carregar(convidado.id)).toMatchObject({ pessoaId, ultimoAcessoEm: DEPOIS, versao: 2 });
+    expect(await carregar(convidado.id)).toMatchObject({ pessoaId, ultimoAcessoEm: null, versao: 2 });
   });
 
   it('salvar recusa grupo no agregado sem atribuição pendente nem gravada', async () => {
@@ -316,6 +323,26 @@ describe('RepositorioDeUsuarioMikroOrm', () => {
     reativado.reativar(AUTOR, 'retorno', EM_72_HORAS);
     await naInstituicaoA(() => ambiente.usuarios.salvar(reativado));
     expect(await linhaDoUsuario(convidado.id)).toMatchObject({ situacao: 'ATIVO', suspenso_em: null, versao: 4 });
+  });
+
+  it('salvar devolve a versão gravada e não regrava o último acesso registrado por fora', async () => {
+    const convidado = novoUsuarioConvidado();
+    await naInstituicaoA(() => ambiente.usuarios.adicionar(convidado));
+    const lido = await carregar(convidado.id);
+    const acessoPosteriorALeitura = new Date('2026-03-03T08:00:00.000Z');
+    await registrarAcessoPorFora(convidado.id, acessoPosteriorALeitura);
+    lido.ativar(convidado.convite!.hashDoToken, SUBJECT, DEPOIS);
+
+    const versaoGravada = await naInstituicaoA(() => ambiente.usuarios.salvar(lido));
+
+    expect(versaoGravada).toBe(lido.versao + 1);
+    const [linha] = await consultarNaInstituicao<{ ultimo_acesso_em: Date | null; versao: number }>(
+      banco,
+      INSTITUICAO_A,
+      'select ultimo_acesso_em, versao from identidade.usuario where id = $1',
+      [convidado.id],
+    );
+    expect(linha).toEqual({ ultimo_acesso_em: acessoPosteriorALeitura, versao: versaoGravada });
   });
 
   it('definirGrupos remove o que saiu, acrescenta o que entrou com o autor da mudança e preserva o resto', async () => {

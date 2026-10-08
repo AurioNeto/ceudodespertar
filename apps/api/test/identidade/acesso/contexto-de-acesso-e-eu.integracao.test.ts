@@ -362,7 +362,9 @@ describe('contexto de acesso e GET /api/v1/eu (etapa B0)', () => {
       expect((await aplicacao.pedirComo(SUJEITO_DE_A)).status).toBe(200);
       carregado!.definirGrupos([], usuario.id, AGORA);
 
-      await expect(comContexto(INSTITUICAO_A, () => aplicacao.usuarios.salvar(carregado!))).resolves.toBeUndefined();
+      await expect(comContexto(INSTITUICAO_A, () => aplicacao.usuarios.salvar(carregado!))).resolves.toBe(
+        carregado!.versao + 1,
+      );
     });
 
     it('falha ao gravar o último acesso não derruba o GET /eu', async () => {
