@@ -1,8 +1,12 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { GrupoId, Permissao } from '@cdd/contracts';
 import { criarEntradaFalsa, criarEu, montarComSessao } from '../../app/apoioDeTeste';
 import type { TelaMontada } from '../../app/apoioDeTeste';
 import { MeuPerfilPage } from './MeuPerfilPage';
+import { agruparPermissoes } from './permissoesAgrupadas';
+
+const MENSAGEM_DE_FALHA = 'Não foi possível carregar o seu perfil.';
+const SINAL_DO_SKELETON = 'cdd-sh';
 
 const montadas: TelaMontada[] = [];
 
@@ -84,5 +88,58 @@ describe('Meu perfil', () => {
     montadas.push(tela);
     await tela.clicar('Sair');
     expect(entrada.sair).toHaveBeenCalled();
+  });
+
+  it('com o /eu pendente mostra o skeleton e não mostra o erro', async () => {
+    const tela = await montarComSessao(
+      { entrada: criarEntradaFalsa(true), buscarEu: () => new Promise(() => undefined) },
+      <MeuPerfilPage />,
+    );
+    montadas.push(tela);
+    expect(tela.container.querySelector('style')?.textContent).toContain(SINAL_DO_SKELETON);
+    expect(tela.texto()).not.toContain(MENSAGEM_DE_FALHA);
+  });
+
+  it('com o /eu rejeitando mostra o erro e Tentar de novo busca o /eu outra vez', async () => {
+    const buscarEu = vi.fn(() => Promise.reject(new Error('falha de rede')));
+    const tela = await montarComSessao({ entrada: criarEntradaFalsa(true), buscarEu }, <MeuPerfilPage />);
+    montadas.push(tela);
+    const chamadasAntes = buscarEu.mock.calls.length;
+    expect(tela.texto()).toContain(MENSAGEM_DE_FALHA);
+    expect(tela.container.querySelector('style')).toBeNull();
+    await tela.clicar('Tentar de novo');
+    expect(buscarEu.mock.calls.length).toBe(chamadasAntes + 1);
+  });
+
+  it('sem grupos mostra Nenhum grupo', async () => {
+    const tela = await montarPerfil(criarEu({ grupos: [] }));
+    expect(tela.texto()).toContain('Nenhum grupo');
+  });
+});
+
+describe('agruparPermissoes', () => {
+  it.each(['constructor', 'toString', '__proto__'])(
+    'código %s herdado de Object cai em outras sem descrição',
+    (codigo) => {
+      const grupos = agruparPermissoes([codigo as Permissao]);
+      expect(grupos).toEqual([{ modulo: 'outras', permissoes: [{ codigo, descricao: null }] }]);
+    },
+  );
+
+  describe('com propriedades herdadas de Object.prototype', () => {
+    beforeEach(() => {
+      Object.defineProperty(Object.prototype, 'modulo', { value: 'herdado', configurable: true });
+      Object.defineProperty(Object.prototype, 'descricao', { value: 'herdada', configurable: true });
+    });
+
+    afterEach(() => {
+      Reflect.deleteProperty(Object.prototype, 'modulo');
+      Reflect.deleteProperty(Object.prototype, 'descricao');
+    });
+
+    it('código herdado não pega módulo nem descrição de fora do catálogo', () => {
+      const grupos = agruparPermissoes(['constructor' as Permissao]);
+      expect(grupos).toEqual([{ modulo: 'outras', permissoes: [{ codigo: 'constructor', descricao: null }] }]);
+    });
   });
 });
