@@ -32,10 +32,11 @@ import { RepositorioDeUsuarioMikroOrm } from './infrastructure/persistencia/repo
 import { SemeadorDeGruposDeSistema } from './infrastructure/persistencia/semeador-de-grupos-de-sistema.js';
 import { AuditoriaController } from './interface/http/auditoria.controller.js';
 import { EuController } from './interface/http/eu.controller.js';
+import { GestaoDeUsuariosController } from './interface/http/gestao-de-usuarios.controller.js';
 
 @Module({
   imports: [BancoModule, EventosModule],
-  controllers: [EuController, AuditoriaController],
+  controllers: [EuController, AuditoriaController, GestaoDeUsuariosController],
   providers: [
     { provide: Relogio, useClass: RelogioDoSistema },
     {
