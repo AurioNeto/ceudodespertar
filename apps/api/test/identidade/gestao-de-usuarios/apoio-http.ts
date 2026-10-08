@@ -10,7 +10,7 @@ import { consultarNaInstituicao } from '../apoio.js';
 export const ROTA_USUARIOS = '/api/v1/identidade/usuarios';
 
 export interface PedidoDeEscrita {
-  readonly metodo?: 'POST' | 'PUT';
+  readonly metodo?: 'POST' | 'PUT' | 'PATCH' | 'DELETE';
   readonly versao?: number | string;
   readonly corpo?: unknown;
   readonly chave?: string;

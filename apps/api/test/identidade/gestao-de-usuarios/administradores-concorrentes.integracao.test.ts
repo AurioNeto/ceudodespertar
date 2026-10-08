@@ -1,19 +1,18 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { CHAVE_DO_TRAVAMENTO_DA_ADMINISTRACAO } from '../../../src/modules/identidade/infrastructure/administracao/trava-da-administracao.advisory.js';
 import { INSTITUICAO_A, semearInstituicoes } from '../../eventos/apoio.js';
 import { criarBancoDeTeste, derrubarBancoDeTeste } from '../../integracao/banco-de-teste.js';
 import type { BancoDeTeste } from '../../integracao/banco-de-teste.js';
 import { novoGrupoNomeado, subirAplicacaoDeAcesso } from '../acesso/ambiente-http.js';
 import type { AplicacaoDeAcesso } from '../acesso/ambiente-http.js';
 import { consultarNaInstituicao } from '../apoio.js';
+import { apoioDaTrava } from './apoio-da-trava.js';
+import type { ApoioDaTrava } from './apoio-da-trava.js';
 import { escrever, estadoDoUsuario, ROTA_USUARIOS, semearUsuarios, usuarioAtivoEm } from './apoio-http.js';
 import type { RespostaDeEscrita } from './apoio-http.js';
 
 const SUJEITO_X = 'sub-administrador-x';
 const SUJEITO_Y = 'sub-administrador-y';
 const MOTIVO = 'afastamento temporário';
-const LIMITE_DE_TENTATIVAS_DE_BLOQUEIO = 200;
-const INTERVALO_ENTRE_TENTATIVAS_EM_MS = 25;
 
 const desativarDe = (id: string) => `${ROTA_USUARIOS}/${id}/desativar`;
 const gruposDe = (id: string) => `${ROTA_USUARIOS}/${id}/grupos`;
@@ -21,11 +20,13 @@ const gruposDe = (id: string) => `${ROTA_USUARIOS}/${id}/grupos`;
 describe('administradores concorrentes (Doc 3 §11, T25; Doc 7 §25)', () => {
   let banco: BancoDeTeste;
   let aplicacao: AplicacaoDeAcesso;
+  let trava: ApoioDaTrava;
 
   beforeEach(async () => {
     banco = await criarBancoDeTeste();
     await semearInstituicoes(banco);
     aplicacao = await subirAplicacaoDeAcesso(banco);
+    trava = apoioDaTrava(banco, INSTITUICAO_A);
   });
 
   afterEach(async () => {
@@ -42,36 +43,6 @@ describe('administradores concorrentes (Doc 3 §11, T25; Doc 7 §25)', () => {
     return { x, y };
   }
 
-  async function segurarATravaDaAdministracao(): Promise<() => Promise<void>> {
-    await banco.owner.query('begin');
-    await banco.owner.query('select pg_advisory_xact_lock(hashtextextended($1, 0))', [
-      CHAVE_DO_TRAVAMENTO_DA_ADMINISTRACAO + INSTITUICAO_A,
-    ]);
-    return async () => {
-      await banco.owner.query('rollback');
-    };
-  }
-
-  async function contarPedidosEsperandoATrava(): Promise<number> {
-    const { rows } = await banco.owner.query<{ total: number }>(
-      `select count(*)::int as total
-         from pg_locks
-        where locktype = 'advisory'
-          and not granted`,
-    );
-    return rows[0]?.total ?? 0;
-  }
-
-  async function esperarPedidosNaTrava(quantidade: number): Promise<void> {
-    for (let tentativa = 0; tentativa < LIMITE_DE_TENTATIVAS_DE_BLOQUEIO; tentativa += 1) {
-      // eslint-disable-next-line no-await-in-loop -- sondagem sequencial até o bloqueio aparecer
-      if ((await contarPedidosEsperandoATrava()) >= quantidade) return;
-      // eslint-disable-next-line no-await-in-loop -- intervalo entre as sondagens
-      await new Promise((resolver) => setTimeout(resolver, INTERVALO_ENTRE_TENTATIVAS_EM_MS));
-    }
-    throw new Error(`os ${quantidade} pedidos nunca ficaram bloqueados esperando a trava da administração`);
-  }
-
   async function administradoresAtivos(): Promise<number> {
     const [linha] = await consultarNaInstituicao<{ total: number }>(
       banco,
@@ -82,21 +53,6 @@ describe('administradores concorrentes (Doc 3 §11, T25; Doc 7 §25)', () => {
           and exists (select 1 from identidade.usuario_grupo ug where ug.usuario_id = u.id)`,
     );
     return linha!.total;
-  }
-
-  async function dispararComATravaSegura(
-    disparar: readonly (() => Promise<RespostaDeEscrita>)[],
-  ): Promise<RespostaDeEscrita[]> {
-    const liberar = await segurarATravaDaAdministracao();
-    try {
-      const pedidos = disparar.map((pedido) => pedido());
-      await esperarPedidosNaTrava(disparar.length);
-      await liberar();
-      return await Promise.all(pedidos);
-    } catch (erro) {
-      await liberar().catch(() => undefined);
-      throw erro;
-    }
   }
 
   function esperarUmSucessoEUmUltimoAdministrador(respostas: readonly RespostaDeEscrita[]): void {
@@ -110,7 +66,7 @@ describe('administradores concorrentes (Doc 3 §11, T25; Doc 7 §25)', () => {
     const versaoDeX = (await estadoDoUsuario(banco, INSTITUICAO_A, x.id)).versao;
     const versaoDeY = (await estadoDoUsuario(banco, INSTITUICAO_A, y.id)).versao;
 
-    const respostas = await dispararComATravaSegura([
+    const respostas = await trava.dispararComATravaSegura([
       () => escrever(aplicacao, SUJEITO_Y, desativarDe(x.id), { versao: versaoDeX, corpo: { motivo: MOTIVO } }),
       () => escrever(aplicacao, SUJEITO_X, desativarDe(y.id), { versao: versaoDeY, corpo: { motivo: MOTIVO } }),
     ]);
@@ -124,7 +80,7 @@ describe('administradores concorrentes (Doc 3 §11, T25; Doc 7 §25)', () => {
     const versaoDeX = (await estadoDoUsuario(banco, INSTITUICAO_A, x.id)).versao;
     const versaoDeY = (await estadoDoUsuario(banco, INSTITUICAO_A, y.id)).versao;
 
-    const respostas = await dispararComATravaSegura([
+    const respostas = await trava.dispararComATravaSegura([
       () => escrever(aplicacao, SUJEITO_Y, desativarDe(x.id), { versao: versaoDeX, corpo: { motivo: MOTIVO } }),
       () =>
         escrever(aplicacao, SUJEITO_X, gruposDe(y.id), { metodo: 'PUT', versao: versaoDeY, corpo: { grupos: [] } }),
@@ -137,7 +93,7 @@ describe('administradores concorrentes (Doc 3 §11, T25; Doc 7 §25)', () => {
   it('a trava por instituição segura o pedido enquanto outra transação a detém e o libera ao soltá-la', async () => {
     const { x } = await semearAdministradoresPorGruposDistintos();
     const versaoDeX = (await estadoDoUsuario(banco, INSTITUICAO_A, x.id)).versao;
-    const liberar = await segurarATravaDaAdministracao();
+    const liberar = await trava.segurar();
     let concluido = false;
 
     const pedido = escrever(aplicacao, SUJEITO_Y, desativarDe(x.id), {
@@ -146,7 +102,7 @@ describe('administradores concorrentes (Doc 3 §11, T25; Doc 7 §25)', () => {
     }).finally(() => {
       concluido = true;
     });
-    await esperarPedidosNaTrava(1);
+    await trava.esperarPedidos(1);
 
     expect(concluido).toBe(false);
     expect((await estadoDoUsuario(banco, INSTITUICAO_A, x.id)).situacao).toBe('ATIVO');
