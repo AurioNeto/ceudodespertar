@@ -101,6 +101,7 @@ export class Despachante implements OnModuleInit, OnModuleDestroy {
   private pararDeOuvirSinal: (() => void) | undefined;
   private cicloAtual: Promise<void> = Promise.resolve();
   private encerrando = false;
+  private cicloFalhando = false;
 
   constructor(
     private readonly unidadeDeTrabalho: UnidadeDeTrabalho,
@@ -146,11 +147,26 @@ export class Despachante implements OnModuleInit, OnModuleDestroy {
   }
 
   private agendarCiclo(): void {
-    ContextoDaRequisicao.foraDeQualquerContexto(() => foraDaTransacaoAtiva(() => this.executarCiclo())).catch(
-      (motivo: unknown) => {
-        this.logger.error(`falha no ciclo do despachante: ${formatarUltimoErro(paraErro(motivo))}`);
-      },
+    ContextoDaRequisicao.foraDeQualquerContexto(() => foraDaTransacaoAtiva(() => this.executarCiclo())).then(
+      () => this.aoConcluirCicloComSucesso(),
+      (motivo: unknown) => this.aoFalharCiclo(motivo),
     );
+  }
+
+  private aoConcluirCicloComSucesso(): void {
+    if (!this.cicloFalhando) {
+      return;
+    }
+    this.cicloFalhando = false;
+    this.logger.log('ciclo do despachante voltou a funcionar');
+  }
+
+  private aoFalharCiclo(motivo: unknown): void {
+    if (this.cicloFalhando) {
+      return;
+    }
+    this.cicloFalhando = true;
+    this.logger.error(`falha no ciclo do despachante: ${formatarUltimoErro(paraErro(motivo))}`);
   }
 
   private async processarProximoEvento(): Promise<boolean> {
