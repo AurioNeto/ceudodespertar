@@ -28,7 +28,7 @@ export function identidadeDaRequisicao(requisicao: RequisicaoHttp): IdentidadeAu
   return requisicao[IDENTIDADE];
 }
 
-export function contextoDaRequisicao(requisicao: RequisicaoHttp): ContextoDeAcesso | undefined {
+export function contextoDeAcessoDaRequisicao(requisicao: RequisicaoHttp): ContextoDeAcesso | undefined {
   return requisicao[CONTEXTO];
 }
 
@@ -37,5 +37,5 @@ export const IdentidadeAtual = createParamDecorator((_dados: unknown, contexto: 
 );
 
 export const ContextoAtual = createParamDecorator((_dados: unknown, contexto: ExecutionContext) =>
-  contextoDaRequisicao(contexto.switchToHttp().getRequest<RequisicaoHttp>()),
+  contextoDeAcessoDaRequisicao(contexto.switchToHttp().getRequest<RequisicaoHttp>()),
 );

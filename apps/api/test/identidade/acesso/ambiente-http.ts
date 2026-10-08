@@ -1,7 +1,7 @@
 import type { AddressInfo } from 'node:net';
 import { randomUUID } from 'node:crypto';
-import { Controller, Get, Injectable, Module } from '@nestjs/common';
-import type { DynamicModule, ExecutionContext, INestApplication } from '@nestjs/common';
+import { Controller, Get, Module } from '@nestjs/common';
+import type { DynamicModule, INestApplication } from '@nestjs/common';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { Test } from '@nestjs/testing';
 import type { GrupoId, Permissao, UsuarioId } from '@cdd/contracts';
@@ -14,8 +14,6 @@ import { RepositorioDeUsuarioMikroOrm } from '../../../src/modules/identidade/in
 import { AutenticacaoModule } from '../../../src/shared/infrastructure/autenticacao/autenticacao.module.js';
 import { criarChavesRemotas } from '../../../src/shared/infrastructure/autenticacao/chaves-remotas.js';
 import { RequerPermissao } from '../../../src/shared/infrastructure/autenticacao/marcas-de-acesso.js';
-import { contextoDaRequisicao } from '../../../src/shared/infrastructure/autenticacao/requisicao-autenticada.js';
-import type { RequisicaoHttp } from '../../../src/shared/infrastructure/autenticacao/requisicao-autenticada.js';
 import { CHAVES_DE_VERIFICACAO } from '../../../src/shared/infrastructure/autenticacao/verificador-de-token.js';
 import { BancoModule } from '../../../src/shared/infrastructure/banco/banco.module.js';
 import { UnidadeDeTrabalho } from '../../../src/shared/infrastructure/banco/unidade-de-trabalho.js';
@@ -26,7 +24,7 @@ import { RepositorioDoOutbox } from '../../../src/shared/infrastructure/eventos/
 import { BordaTransacionalInterceptor } from '../../../src/shared/infrastructure/http/borda-transacional.interceptor.js';
 import { FiltroDeErrosModule } from '../../../src/shared/infrastructure/http/filtro-de-erros.module.js';
 import { ProvedorDeContextoDeInstituicao } from '../../../src/shared/infrastructure/http/provedor-de-contexto-de-instituicao.js';
-import type { IdentidadeDaRequisicao } from '../../../src/shared/infrastructure/http/provedor-de-contexto-de-instituicao.js';
+import { ProvedorDeContextoDeInstituicaoDoAcesso } from '../../../src/shared/infrastructure/http/provedor-de-contexto-de-instituicao.do-acesso.js';
 import { middlewareDeCorrelacao } from '../../../src/shared/infrastructure/log/correlacao.js';
 import { Relogio } from '../../../src/shared/infrastructure/relogio.js';
 import { gerarUuidV7 } from '../../../src/shared/kernel/ids.js';
@@ -55,19 +53,11 @@ class RotaProtegidaPorPermissaoController {
   }
 }
 
-@Injectable()
-class ProvedorDeContextoDoAcessoResolvido extends ProvedorDeContextoDeInstituicao {
-  identidadeAtual(contexto: ExecutionContext): IdentidadeDaRequisicao {
-    const acesso = contextoDaRequisicao(contexto.switchToHttp().getRequest<RequisicaoHttp>());
-    return { instituicaoId: acesso?.instituicaoId, usuarioId: acesso?.usuarioId };
-  }
-}
-
 @Module({
   imports: [BancoModule],
   controllers: [RotaProtegidaPorPermissaoController],
   providers: [
-    { provide: ProvedorDeContextoDeInstituicao, useClass: ProvedorDeContextoDoAcessoResolvido },
+    { provide: ProvedorDeContextoDeInstituicao, useClass: ProvedorDeContextoDeInstituicaoDoAcesso },
     { provide: APP_INTERCEPTOR, useClass: BordaTransacionalInterceptor },
   ],
 })

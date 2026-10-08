@@ -5,12 +5,14 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { criarAplicacao } from '../src/composicao/aplicacao.js';
 import { AppModule } from '../src/composicao/app.module.js';
 import { ApenasIdentificado, Publico } from '../src/shared/infrastructure/autenticacao/marcas-de-acesso.js';
+import { SemTransacaoNaBorda } from '../src/shared/infrastructure/http/sem-transacao-na-borda.decorator.js';
 
 interface EstadoDaSonda {
   status: 'ok';
 }
 
 @Publico()
+@SemTransacaoNaBorda()
 @Controller('sonda')
 class SondaController {
   @Get()

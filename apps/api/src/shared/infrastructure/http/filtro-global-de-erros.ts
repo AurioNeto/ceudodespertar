@@ -16,6 +16,7 @@ import type { ErroDeBanco } from '../banco/classificacao-de-erros-do-banco.js';
 interface RespostaHttp {
   status(codigo: number): RespostaHttp;
   json(corpo: CorpoDeErro): void;
+  setHeader(nome: string, valor: string): unknown;
 }
 
 interface RespostaDeErro {
@@ -33,6 +34,9 @@ const CODIGO_POR_STATUS_HTTP_CONHECIDO: Readonly<Partial<Record<number, CodigoDe
   403: 'SEM_PERMISSAO',
   404: 'RECURSO_NAO_ENCONTRADO',
 };
+const CABECALHO_DE_DESAFIO = 'WWW-Authenticate';
+const DESAFIO_DE_AUTENTICACAO = 'Bearer';
+const STATUS_NAO_AUTENTICADO = 401;
 const SQLSTATE_GUARDA_MINIMA = 'P0001';
 const SQLSTATES_DE_RESTRICAO_NOMEADA: ReadonlySet<string> = new Set(['23505', '23503', '23514']);
 const TIPO_DE_ERRO_CORPO_GRANDE_DEMAIS = 'entity.too.large';
@@ -89,6 +93,9 @@ export class FiltroGlobalDeErros implements ExceptionFilter {
       lerCorrelacaoDaRequisicao(requisicao) ?? ContextoDaRequisicao.atual()?.correlacaoId ?? randomUUID();
 
     const { status, corpo } = this.resolver(excecao, correlacaoId);
+    if (status === STATUS_NAO_AUTENTICADO) {
+      resposta.setHeader(CABECALHO_DE_DESAFIO, DESAFIO_DE_AUTENTICACAO);
+    }
     resposta.status(status).json(corpo);
   }
 

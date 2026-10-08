@@ -68,4 +68,34 @@ describe('Despachante · falha do ciclo acordado pelo sinal', () => {
     expect(textoLogado).not.toContain('already exists');
     expect(textoLogado).not.toContain('    at ');
   });
+
+  it('loga error só na primeira falha seguida e info quando o ciclo se recupera', async () => {
+    const erros = vi.spyOn(Logger.prototype, 'error').mockImplementation(() => undefined);
+    const informacoes = vi.spyOn(Logger.prototype, 'log').mockImplementation(() => undefined);
+    let bancoForaDoAr = true;
+    const transacao = vi.fn(() => (bancoForaDoAr ? Promise.reject(new Error('banco fora')) : Promise.resolve(false)));
+    const unidade = { transacao } as unknown as UnidadeDeTrabalho;
+    const sinalizador = new SinalizadorDeEventos();
+    const despachante = new Despachante(unidade, {} as unknown as RegistroDeConsumidores, sinalizador, 100);
+    despachante.onModuleInit();
+
+    const falhasSeguidas = 3;
+    for (let tentativa = 1; tentativa <= falhasSeguidas; tentativa += 1) {
+      sinalizador.notificar();
+      // eslint-disable-next-line no-await-in-loop -- cada ciclo precisa terminar antes do próximo sinal
+      await vi.waitFor(() => expect(transacao).toHaveBeenCalledTimes(tentativa));
+    }
+    await despachante.executarCiclo().catch(() => undefined);
+    expect(erros).toHaveBeenCalledTimes(1);
+    expect(informacoes).not.toHaveBeenCalled();
+
+    bancoForaDoAr = false;
+    sinalizador.notificar();
+    await vi.waitFor(() => expect(informacoes).toHaveBeenCalledTimes(1));
+    sinalizador.notificar();
+    await despachante.onModuleDestroy();
+
+    expect(erros).toHaveBeenCalledTimes(1);
+    expect(informacoes).toHaveBeenCalledTimes(1);
+  });
 });

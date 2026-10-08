@@ -11,6 +11,7 @@ import type { ContextoDaRequisicaoValor } from '../contexto-da-requisicao.js';
 import { UnidadeDeTrabalho } from '../banco/unidade-de-trabalho.js';
 import type { ModoDeTransacao } from '../banco/unidade-de-trabalho.js';
 import { CHAVE_DO_MODO_DE_TRANSACAO } from './modo-de-transacao.decorator.js';
+import { CHAVE_DE_SEM_TRANSACAO_NA_BORDA } from './sem-transacao-na-borda.decorator.js';
 import { ProvedorDeContextoDeInstituicao } from './provedor-de-contexto-de-instituicao.js';
 import { gravarCorrelacaoNaRequisicao } from './correlacao-da-requisicao.js';
 
@@ -31,6 +32,10 @@ export class BordaTransacionalInterceptor implements NestInterceptor {
   ) {}
 
   async intercept(contexto: ExecutionContext, proximo: CallHandler): Promise<Observable<unknown>> {
+    if (this.rotaDispensaATransacao(contexto)) {
+      return proximo.handle();
+    }
+
     const modo =
       this.reflector.getAllAndOverride<ModoDeTransacao | undefined>(CHAVE_DO_MODO_DE_TRANSACAO, [
         contexto.getHandler(),
@@ -57,5 +62,14 @@ export class BordaTransacionalInterceptor implements NestInterceptor {
     }
 
     return of(ehResultadoDeSucesso(resposta) ? resposta.valor : resposta);
+  }
+
+  private rotaDispensaATransacao(contexto: ExecutionContext): boolean {
+    return (
+      this.reflector.getAllAndOverride<boolean | undefined>(CHAVE_DE_SEM_TRANSACAO_NA_BORDA, [
+        contexto.getHandler(),
+        contexto.getClass(),
+      ]) === true
+    );
   }
 }
