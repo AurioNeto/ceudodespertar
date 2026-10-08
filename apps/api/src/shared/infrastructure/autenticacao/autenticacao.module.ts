@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import type { DynamicModule, Type } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import type { JWTVerifyGetKey } from 'jose';
 import { AMBIENTE } from '../configuracao/esquema-de-ambiente.js';
@@ -26,4 +27,12 @@ import { CHAVES_DE_VERIFICACAO, VerificadorDeToken } from './verificador-de-toke
     { provide: APP_GUARD, useClass: GuardaDeAcesso },
   ],
 })
-export class AutenticacaoModule {}
+export class AutenticacaoModule {
+  static comResolvedor(modulo: Type, resolvedor: Type<ResolvedorDeContextoDeAcesso>): DynamicModule {
+    return {
+      module: AutenticacaoModule,
+      imports: [modulo],
+      providers: [{ provide: ResolvedorDeContextoDeAcesso, useExisting: resolvedor }],
+    };
+  }
+}
