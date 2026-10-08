@@ -1,7 +1,7 @@
 import type { AddressInfo } from 'node:net';
 import { randomUUID } from 'node:crypto';
 import { Controller, Get, Module } from '@nestjs/common';
-import type { DynamicModule, INestApplication, Type } from '@nestjs/common';
+import type { DynamicModule, INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import type { GrupoId, Permissao, UsuarioId } from '@cdd/contracts';
 import { IdentidadeModule } from '../../../src/modules/identidade/identidade.module.js';
@@ -79,7 +79,7 @@ export class RelogioManual extends Relogio {
 }
 
 export interface SubstituicoesDeProvider {
-  readonly provider: Type | symbol | string;
+  readonly provider: unknown;
   readonly valor: unknown;
 }
 
