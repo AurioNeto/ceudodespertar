@@ -636,6 +636,8 @@ A regra geral (issue #11): **toda regra de negócio mora no domínio**. O banco 
 
 As travas de concorrência que saíram do banco — o período e o saldo do lote — ganham teste de integração obrigatório na etapa do módulo (§26).
 
+A regra do último administrador é uma dessas travas: toda alteração que pode tirar `sistema.usuario.gerenciar` ou `sistema.grupo.gerenciar` da instituição toma o advisory lock transacional `identidade.administracao` por instituição, antes de ler o estado, e só então muda e valida. Duas alterações simultâneas se serializam; a segunda enxerga o commit da primeira.
+
 ## 22. Migrações, seed e evolução
 
 - **As migrations em SQL do MikroORM são a fonte de verdade.** Escritas à mão, por etapa (a partir do B0), pelo desenho mínimo do corte. RLS, gatilhos, `EXCLUDE` e FKs compostas são codificadas nas migrations, não geradas. O esquema de referência (`cdd-07-esquema.sql`) é documentação congelada em set/2026 do desenho aprovado — não roda em CI.
@@ -713,7 +715,7 @@ As etapas são as do Doc 6 §6, na mesma ordem e com as mesmas estimativas. O qu
 | Garantias de banco | `apps/api/test/banco/garantias/` em Postgres real (Testcontainers) | As invariantes de §15, contra o banco migrado; cresce a cada tabela nova | B0 |
 | Verificação de referência | `cdd-07-verificacao.sql` (manual, não CI) | As 155 verificações do desenho de set/2026; documentação congelada | — |
 | Integração | Testcontainers | Handler → banco → outbox → consumidor; idempotência; `If-Match`; contagem de consultas por read model (N+1) | Com cada comando |
-| Concorrência | Testcontainers, duas conexões | Saídas simultâneas do mesmo lote; duas confirmações do mesmo lançamento; duas inscrições da mesma pessoa pelo link; fechamento e lançamento na mesma competência, com o comando travando antes de P1 e do hash; obrigatório na etapa de cada módulo | B1, B5, B6 |
+| Concorrência | Testcontainers, duas conexões | Desativações e trocas de grupo simultâneas de administradores (T25, trava `identidade.administracao`); saídas simultâneas do mesmo lote; duas confirmações do mesmo lançamento; duas inscrições da mesma pessoa pelo link; fechamento e lançamento na mesma competência, com o comando travando antes de P1 e do hash; obrigatório na etapa de cada módulo | B1, B5, B6 |
 | Contrato | Vitest | Todo código de erro que a API pode devolver existe em `contracts/erros.ts`; toda restrição nomeada tem mapeamento | B0 |
 | Bloco ausente | Vitest sobre o read model | Para cada bloco com permissão, a resposta **não contém a chave** sem a permissão | Com cada read model |
 | Ponta a ponta | Playwright | Os cinco percursos do Doc 4 §11, mais a inscrição pelo link | Ao trocar cada mock |
