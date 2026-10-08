@@ -5,6 +5,7 @@ import type { GrupoId, PessoaId, SituacaoUsuario, UsuarioId } from '@cdd/contrac
 import { UnidadeDeTrabalho } from '../../../../shared/infrastructure/banco/unidade-de-trabalho.js';
 import { RepositorioDoOutbox } from '../../../../shared/infrastructure/eventos/repositorio-do-outbox.js';
 import { gerarUuidV7 } from '../../../../shared/kernel/ids.js';
+import { GravadorDeTrilha } from '../auditoria/gravador-de-trilha.js';
 import { Convite } from '../../domain/usuario/convite.js';
 import { Usuario } from '../../domain/usuario/usuario.js';
 import type { AtribuicaoDeGrupo } from '../../domain/usuario/usuario.js';
@@ -53,6 +54,7 @@ export class RepositorioDeUsuarioMikroOrm implements RepositorioDeUsuario {
   constructor(
     private readonly unidadeDeTrabalho: UnidadeDeTrabalho,
     private readonly outbox: RepositorioDoOutbox,
+    private readonly trilha: GravadorDeTrilha,
   ) {}
 
   porId(id: UsuarioId): Promise<Usuario | undefined> {
@@ -87,6 +89,8 @@ export class RepositorioDeUsuarioMikroOrm implements RepositorioDeUsuario {
   async adicionar(usuario: Usuario): Promise<void> {
     const instituicaoId = instituicaoDoContexto();
     return this.unidadeDeTrabalho.transacao('escrita', async (contexto) => {
+      const eventos = usuario.retirarEventos();
+      await this.trilha.gravarEventos(contexto, eventos);
       await contexto.em.insert(UsuarioEntidade, {
         id: usuario.id,
         instituicaoId,
@@ -102,13 +106,15 @@ export class RepositorioDeUsuarioMikroOrm implements RepositorioDeUsuario {
       });
       await this.gravarConvites(contexto.em, usuario, instituicaoId);
       await this.gravarGrupos(contexto.em, usuario, instituicaoId);
-      await this.outbox.gravar(contexto, usuario.retirarEventos());
+      await this.outbox.gravar(contexto, eventos);
     });
   }
 
   async salvar(usuario: Usuario): Promise<void> {
     const instituicaoId = instituicaoDoContexto();
     return this.unidadeDeTrabalho.transacao('escrita', async (contexto) => {
+      const eventos = usuario.retirarEventos();
+      await this.trilha.gravarEventos(contexto, eventos);
       const atualizadas = await contexto.em.nativeUpdate(
         UsuarioEntidade,
         { id: usuario.id, versao: usuario.versao },
@@ -127,7 +133,7 @@ export class RepositorioDeUsuarioMikroOrm implements RepositorioDeUsuario {
       if (atualizadas === 0) throw OptimisticLockError.lockFailed(NOME_DO_AGREGADO);
       await this.gravarConvites(contexto.em, usuario, instituicaoId);
       await this.gravarGrupos(contexto.em, usuario, instituicaoId);
-      await this.outbox.gravar(contexto, usuario.retirarEventos());
+      await this.outbox.gravar(contexto, eventos);
     });
   }
 

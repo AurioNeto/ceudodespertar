@@ -4,6 +4,7 @@ import type { EntityManager } from '@mikro-orm/postgresql';
 import type { CodigoGrupo, GrupoId, Permissao } from '@cdd/contracts';
 import { UnidadeDeTrabalho } from '../../../../shared/infrastructure/banco/unidade-de-trabalho.js';
 import { RepositorioDoOutbox } from '../../../../shared/infrastructure/eventos/repositorio-do-outbox.js';
+import { GravadorDeTrilha } from '../auditoria/gravador-de-trilha.js';
 import { Grupo } from '../../domain/grupo/grupo.js';
 import type { RepositorioDeGrupo } from '../../domain/grupo/grupo.repo.js';
 import { GrupoEntidade, GrupoPermissaoEntidade } from './entidades-de-grupo.js';
@@ -16,6 +17,7 @@ export class RepositorioDeGrupoMikroOrm implements RepositorioDeGrupo {
   constructor(
     private readonly unidadeDeTrabalho: UnidadeDeTrabalho,
     private readonly outbox: RepositorioDoOutbox,
+    private readonly trilha: GravadorDeTrilha,
   ) {}
 
   porId(id: GrupoId): Promise<Grupo | undefined> {
@@ -39,6 +41,8 @@ export class RepositorioDeGrupoMikroOrm implements RepositorioDeGrupo {
   async adicionar(grupo: Grupo): Promise<void> {
     const instituicaoId = instituicaoDoContexto();
     return this.unidadeDeTrabalho.transacao('escrita', async (contexto) => {
+      const eventos = grupo.retirarEventos();
+      await this.trilha.gravarEventos(contexto, eventos);
       await contexto.em.insert(GrupoEntidade, {
         id: grupo.id,
         instituicaoId,
@@ -50,13 +54,15 @@ export class RepositorioDeGrupoMikroOrm implements RepositorioDeGrupo {
         versao: grupo.versao,
       });
       await this.gravarPermissoes(contexto.em, grupo, instituicaoId);
-      await this.outbox.gravar(contexto, grupo.retirarEventos());
+      await this.outbox.gravar(contexto, eventos);
     });
   }
 
   async salvar(grupo: Grupo): Promise<void> {
     const instituicaoId = instituicaoDoContexto();
     return this.unidadeDeTrabalho.transacao('escrita', async (contexto) => {
+      const eventos = grupo.retirarEventos();
+      await this.trilha.gravarEventos(contexto, eventos);
       const atualizados = await contexto.em.nativeUpdate(
         GrupoEntidade,
         { id: grupo.id, versao: grupo.versao },
@@ -64,7 +70,7 @@ export class RepositorioDeGrupoMikroOrm implements RepositorioDeGrupo {
       );
       if (atualizados === 0) throw OptimisticLockError.lockFailed(NOME_DO_AGREGADO);
       await this.gravarPermissoes(contexto.em, grupo, instituicaoId);
-      await this.outbox.gravar(contexto, grupo.retirarEventos());
+      await this.outbox.gravar(contexto, eventos);
     });
   }
 

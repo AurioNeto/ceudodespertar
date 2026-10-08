@@ -5,6 +5,7 @@ import { Relogio, RelogioDoSistema } from '../../shared/infrastructure/relogio.j
 import { LeitorDoEu } from './application/leitor-do-eu.js';
 import { ObterEu } from './application/obter-eu.js';
 import { RegistradorDeUltimoAcesso } from './application/registrador-de-ultimo-acesso.js';
+import { GravadorDeTrilha } from './infrastructure/auditoria/gravador-de-trilha.js';
 import { CacheDeContextoDeAcesso } from './infrastructure/acesso/cache-de-contexto-de-acesso.js';
 import { InvalidadorDoCacheDeAcesso } from './infrastructure/acesso/invalidador-do-cache-de-acesso.js';
 import { LeitorDoEuKysely } from './infrastructure/acesso/leitor-do-eu.kysely.js';
@@ -29,6 +30,7 @@ import { EuController } from './interface/http/eu.controller.js';
     { provide: LeitorDoEu, useClass: LeitorDoEuKysely },
     { provide: RegistradorDeUltimoAcesso, useClass: RegistradorDeUltimoAcessoKysely },
     RegistroDasEntidadesDaIdentidade,
+    GravadorDeTrilha,
     RepositorioDeUsuarioMikroOrm,
     RepositorioDeGrupoMikroOrm,
     SemeadorDeGruposDeSistema,

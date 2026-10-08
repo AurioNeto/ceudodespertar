@@ -9,6 +9,7 @@ import { IdentidadeModule } from '../../../src/modules/identidade/identidade.mod
 import { Grupo } from '../../../src/modules/identidade/domain/grupo/grupo.js';
 import { Usuario } from '../../../src/modules/identidade/domain/usuario/usuario.js';
 import { ResolvedorDeContextoDeAcessoDaIdentidade } from '../../../src/modules/identidade/infrastructure/acesso/resolvedor-de-contexto-de-acesso.da-identidade.js';
+import { GravadorDeTrilha } from '../../../src/modules/identidade/infrastructure/auditoria/gravador-de-trilha.js';
 import { RepositorioDeGrupoMikroOrm } from '../../../src/modules/identidade/infrastructure/persistencia/repositorio-de-grupo.mikro-orm.js';
 import { RepositorioDeUsuarioMikroOrm } from '../../../src/modules/identidade/infrastructure/persistencia/repositorio-de-usuario.mikro-orm.js';
 import { AutenticacaoModule } from '../../../src/shared/infrastructure/autenticacao/autenticacao.module.js';
@@ -143,12 +144,13 @@ export async function subirAplicacaoDeAcesso(
 
   const unidade = app.get(UnidadeDeTrabalho);
   const outbox = app.get(RepositorioDoOutbox);
+  const trilha = app.get(GravadorDeTrilha);
 
   return {
     app,
     relogio,
-    usuarios: new RepositorioDeUsuarioMikroOrm(unidade, outbox),
-    grupos: new RepositorioDeGrupoMikroOrm(unidade, outbox),
+    usuarios: new RepositorioDeUsuarioMikroOrm(unidade, outbox, trilha),
+    grupos: new RepositorioDeGrupoMikroOrm(unidade, outbox, trilha),
     entregarEventos: () => app.get(Despachante).executarCiclo(),
     pedirComo: async (sujeito, rota = ROTA_EU) => {
       const token = await emitirToken(chaves, { payload: { iss: servidor.emissor, sub: sujeito } });
