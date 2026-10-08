@@ -16,6 +16,9 @@
 -- CREATE INDEX simples: CONCURRENTLY não roda dentro de transação e a
 -- migração é transacional.
 --
+-- O índice usuario_por_nome cobre a listagem de usuários, ordenada por
+-- (instituicao_id, lower(nome), id).
+--
 -- Roda como cdd_owner.
 
 CREATE INDEX usuario_grupo_por_grupo
@@ -23,3 +26,6 @@ CREATE INDEX usuario_grupo_por_grupo
 
 ALTER TABLE identidade.usuario_grupo
   RENAME CONSTRAINT usuario_grupo_instituicao_id_grupo_id_fkey TO usuario_grupo_grupo_fk;
+
+CREATE INDEX usuario_por_nome
+  ON identidade.usuario (instituicao_id, lower(nome), id);
