@@ -13,6 +13,7 @@ import { BordaTransacionalInterceptor } from '../../src/shared/infrastructure/ht
 import { ProvedorDeContextoDeInstituicao } from '../../src/shared/infrastructure/http/provedor-de-contexto-de-instituicao.js';
 import { ModoDeTransacao } from '../../src/shared/infrastructure/http/modo-de-transacao.decorator.js';
 import { FiltroDeErrosModule } from '../../src/shared/infrastructure/http/filtro-de-erros.module.js';
+import { RespostaSemCorpoNoReplay } from '../../src/shared/infrastructure/idempotencia/resposta-sem-corpo-no-replay.decorator.js';
 import { IdempotenciaInterceptor } from '../../src/shared/infrastructure/idempotencia/idempotencia.interceptor.js';
 import { calcularHashDoCorpo } from '../../src/shared/infrastructure/idempotencia/hash-do-corpo.js';
 
@@ -23,6 +24,8 @@ const LIMITE_DE_TENTATIVAS_DE_BLOQUEIO = 500;
 const INTERVALO_ENTRE_TENTATIVAS_DE_BLOQUEIO_EM_MS = 10;
 const BACKENDS_BLOQUEADOS_NA_CORRIDA = 2;
 const STATUS_ACEITO = 202;
+const STATUS_CRIADO = 201;
+const CPF_DEVOLVIDO = '12345678909';
 const TAMANHO_DE_CHAVE_LONGA_DEMAIS = 300;
 const STATUS_CHAVE_REUTILIZADA = 422;
 const CODIGO_CHAVE_REUTILIZADA = 'CHAVE_DE_IDEMPOTENCIA_REUTILIZADA';
@@ -89,6 +92,16 @@ class ControladorDeProva {
     resposta.status(STATUS_ACEITO);
     resposta.setHeader('Location', `/recursos/${chamadasDoHandler}`);
     return { chamada: chamadasDoHandler };
+  }
+
+  @Post('sensivel')
+  @RespostaSemCorpoNoReplay()
+  async sensivel(@Body() _corpo: unknown, @Res({ passthrough: true }) resposta: RespostaExpressPassthrough) {
+    chamadasDoHandler += 1;
+    await registrarEfeito();
+    resposta.status(STATUS_CRIADO);
+    resposta.setHeader('Location', `/pessoas/${chamadasDoHandler}`);
+    return { chamada: chamadasDoHandler, cpf: CPF_DEVOLVIDO };
   }
 
   @Post('eco')
@@ -250,6 +263,67 @@ describe('IdempotenciaInterceptor sobre HTTP real, com borda e idempotência reg
       expect(segunda).toStrictEqual(primeira);
       expect(chamadasDoHandler).toBe(1);
       expect(await contar('shared.outbox')).toBe(efeitosAntes + 1);
+    });
+  });
+
+  describe('rota marcada com RespostaSemCorpoNoReplay', () => {
+    async function respostaGravada(chave: string): Promise<unknown> {
+      await banco.owner.query(`select set_config('app.instituicao_id', $1, false)`, [INSTITUICAO]);
+      const { rows } = await banco.owner.query<{ resposta: unknown }>(
+        'select resposta from shared.chave_de_idempotencia where chave = $1',
+        [chave],
+      );
+      return rows[0]?.resposta;
+    }
+
+    it('a primeira chamada responde normalmente, com status, Location e corpo', async () => {
+      const primeira = await postar('/sensivel', randomUUID());
+
+      expect(primeira.status).toBe(STATUS_CRIADO);
+      expect(primeira.location).toBe('/pessoas/1');
+      expect(JSON.parse(primeira.corpo)).toStrictEqual({ chamada: 1, cpf: CPF_DEVOLVIDO });
+    });
+
+    it('grava no banco só status e Location, sem o corpo da resposta', async () => {
+      const chave = randomUUID();
+
+      await postar('/sensivel', chave);
+
+      const resposta = await respostaGravada(chave);
+      expect(resposta).toStrictEqual({ corpo: null, location: '/pessoas/1' });
+      expect(JSON.stringify(resposta)).not.toContain(CPF_DEVOLVIDO);
+    });
+
+    it('o replay devolve o mesmo status e Location com corpo vazio, sem reexecutar o handler', async () => {
+      const chave = randomUUID();
+
+      const primeira = await postar('/sensivel', chave);
+      const replay = await postar('/sensivel', chave);
+
+      expect(replay.status).toBe(primeira.status);
+      expect(replay.location).toBe(primeira.location);
+      expect(replay.corpo).toBe('');
+      expect(chamadasDoHandler).toBe(1);
+    });
+
+    it('reusar a chave com corpo diferente continua dando 422', async () => {
+      const chave = randomUUID();
+
+      await postar('/sensivel', chave, { nome: 'a' });
+      const reuso = await postar('/sensivel', chave, { nome: 'b' });
+
+      esperarErroDeChaveReutilizada(reuso);
+    });
+
+    it('a rota sem a marca segue repetindo o corpo no replay e guardando-o no banco', async () => {
+      const chave = randomUUID();
+
+      const primeira = await postar('/passthrough', chave);
+      const replay = await postar('/passthrough', chave);
+
+      expect(replay).toStrictEqual(primeira);
+      expect(JSON.parse(replay.corpo)).toStrictEqual({ chamada: 1 });
+      expect(await respostaGravada(chave)).toStrictEqual({ corpo: { chamada: 1 }, location: '/recursos/1' });
     });
   });
 

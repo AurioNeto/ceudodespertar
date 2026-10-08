@@ -14,6 +14,7 @@ import { erroDeChaveDeIdempotenciaInvalida } from './erro-de-chave-de-idempotenc
 import { ErroDeConfiguracaoDeIdempotencia } from './erro-de-configuracao-de-idempotencia.js';
 import { gravarResposta, reivindicarChave } from './chave-de-idempotencia.repositorio.js';
 import type { DadosDaChaveDeIdempotencia } from './chave-de-idempotencia.repositorio.js';
+import { rotaGuardaRespostaSemCorpo } from './resposta-sem-corpo-no-replay.decorator.js';
 
 const METODO_QUE_ACEITA_IDEMPOTENCIA = 'POST';
 const NOME_DO_CABECALHO_DE_LOCALIZACAO = 'Location';
@@ -36,6 +37,13 @@ interface RespostaDeIdempotencia {
   statusCode: number;
   getHeader(nome: string): string | undefined;
   setHeader(nome: string, valor: string): void;
+}
+
+interface ExecucaoIdempotente {
+  readonly dados: DadosDaChaveDeIdempotencia;
+  readonly resposta: RespostaDeIdempotencia;
+  readonly correlacaoId: string | undefined;
+  readonly guardaSoStatusELocation: boolean;
 }
 
 function normalizarQueryString(query: Record<string, unknown>): string {
@@ -92,9 +100,13 @@ export class IdempotenciaInterceptor implements NestInterceptor {
       corpoHash: calcularHashDoCorpo(requisicao.body),
     };
 
+    const guardaSoStatusELocation = rotaGuardaRespostaSemCorpo(contexto);
+
     const corpoDaResposta = await this.unidadeDeTrabalho.transacao('escrita', ({ kysely }) =>
-      this.executarComIdempotencia(kysely, dados, resposta, identidade.correlacaoId, () =>
-        lastValueFrom(proximo.handle(), { defaultValue: undefined }),
+      this.executarComIdempotencia(
+        kysely,
+        { dados, resposta, correlacaoId: identidade.correlacaoId, guardaSoStatusELocation },
+        () => lastValueFrom(proximo.handle(), { defaultValue: undefined }),
       ),
     );
 
@@ -103,9 +115,7 @@ export class IdempotenciaInterceptor implements NestInterceptor {
 
   private async executarComIdempotencia(
     kysely: Kysely<DB>,
-    dados: DadosDaChaveDeIdempotencia,
-    resposta: RespostaDeIdempotencia,
-    correlacaoId: string | undefined,
+    { dados, resposta, correlacaoId, guardaSoStatusELocation }: ExecucaoIdempotente,
     executarComando: () => Promise<unknown>,
   ): Promise<unknown> {
     const existente = await reivindicarChave(kysely, dados);
@@ -125,7 +135,8 @@ export class IdempotenciaInterceptor implements NestInterceptor {
     const corpo = await executarComando();
 
     const location = resposta.getHeader(NOME_DO_CABECALHO_DE_LOCALIZACAO) ?? null;
-    await gravarResposta(kysely, dados.instituicaoId, dados.chave, resposta.statusCode, corpo, location);
+    const corpoGuardado = guardaSoStatusELocation ? undefined : corpo;
+    await gravarResposta(kysely, dados.instituicaoId, dados.chave, resposta.statusCode, corpoGuardado, location);
     return corpo;
   }
 }
