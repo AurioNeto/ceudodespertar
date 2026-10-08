@@ -14,3 +14,6 @@ export async function carregarDemonstracao<Modulo>(pedido: PedidoDeDemonstracao<
   if (!demonstracaoLigada(pedido.desenvolvimento, pedido.flag)) return null;
   return pedido.importar();
 }
+
+export const sessaoDeDemonstracaoLigada = (): boolean =>
+  demonstracaoLigada(import.meta.env.DEV, import.meta.env.VITE_SESSAO_DE_DEMONSTRACAO);
