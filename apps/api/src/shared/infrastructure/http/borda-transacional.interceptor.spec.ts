@@ -11,6 +11,7 @@ import { UnidadeDeTrabalho } from '../banco/unidade-de-trabalho.js';
 import type { ContextoDaTransacao, ModoDeTransacao } from '../banco/unidade-de-trabalho.js';
 import { BordaTransacionalInterceptor, MODO_PADRAO_SEM_MARCA } from './borda-transacional.interceptor.js';
 import { ModoDeTransacao as ComModoDeTransacao } from './modo-de-transacao.decorator.js';
+import { SemTransacaoNaBorda } from './sem-transacao-na-borda.decorator.js';
 import { ProvedorDeContextoDeInstituicao } from './provedor-de-contexto-de-instituicao.js';
 import { lerCorrelacaoDaRequisicao } from './correlacao-da-requisicao.js';
 
@@ -76,7 +77,33 @@ function contextoDeExecucaoPara(nomeDoMetodo: 'heranca' | 'comOverride'): Execut
   } as unknown as ExecutionContext;
 }
 
+@SemTransacaoNaBorda()
+@Controller()
+class ControladorSemTransacaoNaBorda {
+  @Get()
+  rota(): void {}
+}
+
 describe('BordaTransacionalInterceptor', () => {
+  it('rota marcada com @SemTransacaoNaBorda não abre transação e entrega a resposta do handler', async () => {
+    const uow = new UnidadeDeTrabalhoFake();
+    const interceptor = new BordaTransacionalInterceptor(
+      new Reflector(),
+      uow,
+      new ProvedorDeContextoDeInstituicaoFixo({ instituicaoId: 'inst-a' }),
+    );
+    const contexto = {
+      getHandler: () => ControladorSemTransacaoNaBorda.prototype.rota,
+      getClass: () => ControladorSemTransacaoNaBorda,
+      switchToHttp: () => ({ getRequest: () => ({}) }),
+    } as unknown as ExecutionContext;
+
+    const observavel = await interceptor.intercept(contexto, { handle: () => of('resposta') });
+
+    expect(await firstValueFrom(observavel)).toBe('resposta');
+    expect(uow.modosChamados).toStrictEqual([]);
+  });
+
   it('usa o modo padrão de leitura quando a rota não tem @ModoDeTransacao', async () => {
     const uow = new UnidadeDeTrabalhoFake();
     const interceptor = new BordaTransacionalInterceptor(
