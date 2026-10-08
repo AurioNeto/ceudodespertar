@@ -1,9 +1,10 @@
 import type { PaginaDeAuditoria, RegistroDeAuditoria } from '@cdd/contracts';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { VARIAVEL_DE_SESSAO_DA_INSTITUICAO } from '../../../src/shared/infrastructure/banco/unidade-de-trabalho.mikro-orm.js';
-import { INSTITUICAO_A, INSTITUICAO_B, semearInstituicoes } from '../../eventos/apoio.js';
+import { INSTITUICAO_A, INSTITUICAO_B, comContexto, semearInstituicoes } from '../../eventos/apoio.js';
 import { criarBancoDeTeste, derrubarBancoDeTeste } from '../../integracao/banco-de-teste.js';
 import type { BancoDeTeste } from '../../integracao/banco-de-teste.js';
+import { AGORA } from '../apoio.js';
 import { novoGrupoNomeado, novoUsuarioAtivo, semear, subirAplicacaoDeAcesso } from './ambiente-http.js';
 import type { AplicacaoDeAcesso } from './ambiente-http.js';
 
@@ -162,6 +163,44 @@ describe('GET /api/v1/identidade/auditoria (etapa B0)', () => {
     expect(corpo.itens.length).toBeGreaterThan(0);
     expect(operacoes(corpo.itens)).not.toContain('AUDITORIA_CONSULTADA');
     expect(corpo.itens.every(({ em }) => em <= '2026-03-01T10:00:00.000Z')).toBe(true);
+  });
+
+  it('período iniciado exatamente no instante dos registros os inclui', async () => {
+    await semearCasaA();
+
+    const { corpo } = await consultar(SUJEITO_DE_A, `?de=${AGORA.toISOString()}`);
+
+    expect(operacoes(corpo.itens)).toContain('USUARIO_CONVIDADO');
+    expect(corpo.itens.every(({ em }) => em >= AGORA.toISOString())).toBe(true);
+  });
+
+  it('período encerrado exatamente no instante dos registros os inclui e exclui a consulta posterior', async () => {
+    await semearCasaA();
+
+    const { corpo } = await consultar(SUJEITO_DE_A, `?ate=${AGORA.toISOString()}`);
+
+    expect(operacoes(corpo.itens)).toContain('USUARIO_CONVIDADO');
+    expect(operacoes(corpo.itens)).not.toContain('AUDITORIA_CONSULTADA');
+    expect(corpo.itens.some(({ em }) => em === AGORA.toISOString())).toBe(true);
+  });
+
+  it('grava em autor_grupos os grupos que o autor tinha ANTES do ato, mesmo quando o ato altera os próprios grupos', async () => {
+    const { auditores, visitantes, maria } = await semearCasaA();
+
+    await comContexto(INSTITUICAO_A, async () => {
+      const usuario = await aplicacao.usuarios.porId(maria.id);
+      if (usuario === undefined) throw new Error('usuário semeado não encontrado');
+      const resultado = usuario.definirGrupos([auditores.id, visitantes.id], maria.id, AGORA);
+      if (resultado.tipo === 'erro') throw new Error(resultado.erro.codigo);
+      await aplicacao.usuarios.salvar(usuario);
+    });
+
+    const [linha] = await consultarNaInstituicao<{ autor_grupos: string[] }>(
+      banco,
+      INSTITUICAO_A,
+      "select autor_grupos from identidade.registro_de_auditoria where operacao = 'GRUPO_ALTERADO'",
+    );
+    expect(linha?.autor_grupos).toEqual([auditores.id]);
   });
 
   it.each([
