@@ -205,6 +205,8 @@ learnings:
     note: "GET /identidade/auditoria é leitura-que-grava: cada página pedida registra AUDITORIA_CONSULTADA (com o filtro, sem o cursor), gravada antes da leitura e portanto presente na própria resposta. Autor, grupo e alvo são resolvidos por junção na leitura, nunca copiados na trilha."
   - date: "2026-10-08"
     note: "Toda escrita que pode tirar administrador — inclusive sobre GRUPO (editar permissões, desativar grupo) — passa por AlteracaoQuePodeTirarAdministrador (efeito 'usuario' ou 'grupo'), que pega a trava advisory por instituição antes da fotografia. Caso de uso de grupo que salvar direto pelo RepositorioDeGrupo zera administradores por write skew; exigir também teste de corrida grupo × usuário."
+  - date: "2026-10-08"
+    note: "Página dentro do ExigeSessao só renderiza com a sessão ativa (verificando mostra o portão; falha/indisponivel redireciona para /entrar). Estado de carregamento ou erro do /eu dentro da página é ramo morto, e teste que monta a página sem a guarda não prova comportamento de produção."
 
 --- # Ferramentas do /pre-push (monorepo pnpm)
 stack:
