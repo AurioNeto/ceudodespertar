@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { Injectable, Logger } from '@nestjs/common';
-import type { OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import type { OnApplicationBootstrap, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { ContextoDaRequisicao } from '../contexto-da-requisicao.js';
 import { UnidadeDeTrabalho } from '../banco/unidade-de-trabalho.js';
 import { foraDaTransacaoAtiva } from '../banco/unidade-de-trabalho.mikro-orm.js';
@@ -16,14 +16,18 @@ function nomeDoErro(motivo: unknown): string {
 }
 
 @Injectable()
-export class ExpurgoDeChavesDeIdempotencia implements OnModuleInit, OnModuleDestroy {
+export class ExpurgoDeChavesDeIdempotencia implements OnModuleInit, OnApplicationBootstrap, OnModuleDestroy {
   private readonly logger = new Logger(ExpurgoDeChavesDeIdempotencia.name);
   private temporizador: NodeJS.Timeout | undefined;
 
   constructor(private readonly unidadeDeTrabalho: UnidadeDeTrabalho) {}
 
   onModuleInit(): void {
-    this.temporizador = setInterval(() => this.agendarExpurgo(), INTERVALO_DO_EXPURGO_EM_MS);
+    this.temporizador = setInterval(() => this.dispararExpurgo(), INTERVALO_DO_EXPURGO_EM_MS);
+  }
+
+  onApplicationBootstrap(): void {
+    this.dispararExpurgo();
   }
 
   onModuleDestroy(): void {
@@ -57,8 +61,10 @@ export class ExpurgoDeChavesDeIdempotencia implements OnModuleInit, OnModuleDest
     }
   }
 
-  private agendarExpurgo(): void {
-    void ContextoDaRequisicao.foraDeQualquerContexto(() => foraDaTransacaoAtiva(() => this.expurgar()));
+  private dispararExpurgo(): void {
+    ContextoDaRequisicao.foraDeQualquerContexto(() => foraDaTransacaoAtiva(() => this.expurgar())).catch(
+      (motivo: unknown) => this.logger.warn({ erro: nomeDoErro(motivo) }, MENSAGEM_DE_FALHA_NO_EXPURGO),
+    );
   }
 
   private async expurgarInstituicao(instituicaoId: string): Promise<number> {

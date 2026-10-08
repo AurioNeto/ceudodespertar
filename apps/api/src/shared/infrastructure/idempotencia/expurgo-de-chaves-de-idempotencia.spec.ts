@@ -137,4 +137,47 @@ describe('ExpurgoDeChavesDeIdempotencia', () => {
 
     expect(contextoVisto).toBeUndefined();
   });
+
+  it('na subida da aplicação expurga uma vez sem esperar o intervalo e sem bloquear o boot', async () => {
+    vi.useFakeTimers();
+    let concluirListagem: (ids: string[]) => void = () => undefined;
+    vi.mocked(listarIdsDasInstituicoes).mockReturnValue(
+      new Promise<string[]>((resolver) => {
+        concluirListagem = resolver;
+      }),
+    );
+
+    expurgo.onModuleInit();
+    const retorno = expurgo.onApplicationBootstrap();
+    await Promise.resolve();
+
+    expect(retorno).toBeUndefined();
+    expect(listarIdsDasInstituicoes).toHaveBeenCalledTimes(1);
+    concluirListagem([]);
+    expurgo.onModuleDestroy();
+  });
+
+  it('falha na primeira rodada da subida não derruba a aplicação nem vira rejeição não tratada', async () => {
+    vi.spyOn(expurgo, 'expurgar').mockRejectedValue(new ErroDoDriver('falha inesperada'));
+
+    expect(() => expurgo.onApplicationBootstrap()).not.toThrow();
+    await new Promise((resolver) => setImmediate(resolver));
+
+    expect(avisos).toHaveBeenCalledWith({ erro: 'ErroDoDriver' }, MENSAGEM_DE_FALHA_NO_EXPURGO);
+  });
+
+  it('a rodada da subida roda fora do contexto de quem inicializou o módulo', async () => {
+    let contextoVisto: unknown = 'não chamado';
+    vi.mocked(listarIdsDasInstituicoes).mockImplementation(() => {
+      contextoVisto = ContextoDaRequisicao.atual();
+      return Promise.resolve([]);
+    });
+
+    ContextoDaRequisicao.executar({ correlacaoId: 'quem-subiu', instituicaoId: 'inst-x' }, () => {
+      expurgo.onApplicationBootstrap();
+    });
+    await new Promise((resolver) => setImmediate(resolver));
+
+    expect(contextoVisto).toBeUndefined();
+  });
 });
