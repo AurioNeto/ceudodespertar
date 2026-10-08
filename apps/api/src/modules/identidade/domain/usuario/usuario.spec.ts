@@ -15,8 +15,8 @@ const HASH = 'hash-1';
 const NOVO_HASH = 'hash-2';
 const AGORA = new Date('2026-03-01T10:00:00Z');
 const DEPOIS = new Date('2026-03-02T10:00:00Z');
-const EXPIRA_EM = new Date('2026-03-08T10:00:00Z');
-const NOVA_EXPIRA_EM = new Date('2026-03-15T10:00:00Z');
+const EXPIRA_EM = new Date('2026-03-04T10:00:00Z');
+const NOVA_EXPIRA_EM = new Date('2026-03-05T10:00:00Z');
 const SUBJECT = 'sub-keycloak-1';
 
 function convidado(grupos: readonly GrupoId[] = [GRUPO_A]): Usuario {
@@ -32,7 +32,7 @@ function convidado(grupos: readonly GrupoId[] = [GRUPO_A]): Usuario {
   });
 }
 
-function emSituacao(situacao: SituacaoUsuario, convite: Convite | null = Convite.criar(HASH, EXPIRA_EM)): Usuario {
+function emSituacao(situacao: SituacaoUsuario, convite: Convite | null = Convite.criar(HASH, EXPIRA_EM, ADMIN_ID, AGORA)): Usuario {
   return Usuario.reconstituir(
     {
       id: USUARIO_ID,
@@ -42,6 +42,8 @@ function emSituacao(situacao: SituacaoUsuario, convite: Convite | null = Convite
       email: 'maria@casa.org',
       situacao,
       grupos: [GRUPO_A],
+      ativadoEm: null,
+      suspensoEm: null,
       ultimoAcessoEm: null,
       convite,
     },
@@ -122,6 +124,8 @@ describe('Usuario.reconstituir', () => {
         email: 'maria@casa.org',
         situacao: 'ATIVO',
         grupos: [GRUPO_B],
+        ativadoEm: null,
+        suspensoEm: null,
         ultimoAcessoEm: AGORA,
         convite: null,
       },
@@ -149,6 +153,8 @@ describe('Usuario.reconstituir', () => {
       email: 'a@b.c',
       situacao: 'CONVITE_PENDENTE',
       grupos: [],
+      ativadoEm: null,
+      suspensoEm: null,
       ultimoAcessoEm: null,
       convite: null,
     });
@@ -319,10 +325,10 @@ describe('Usuario.ativar', () => {
   });
 
   it.each([
-    ['hash que não é o do convite', 'x', DEPOIS, Convite.criar(HASH, EXPIRA_EM), 'CONVITE_INVALIDO'],
-    ['convite expirado', HASH, NOVA_EXPIRA_EM, Convite.criar(HASH, EXPIRA_EM), 'CONVITE_EXPIRADO'],
-    ['convite já usado', HASH, DEPOIS, Convite.criar(HASH, EXPIRA_EM).usar(AGORA), 'CONVITE_JA_USADO'],
-    ['convite revogado', HASH, DEPOIS, Convite.criar(HASH, EXPIRA_EM).revogar(AGORA), 'CONVITE_INVALIDO'],
+    ['hash que não é o do convite', 'x', DEPOIS, Convite.criar(HASH, EXPIRA_EM, ADMIN_ID, AGORA), 'CONVITE_INVALIDO'],
+    ['convite expirado', HASH, NOVA_EXPIRA_EM, Convite.criar(HASH, EXPIRA_EM, ADMIN_ID, AGORA), 'CONVITE_EXPIRADO'],
+    ['convite já usado', HASH, DEPOIS, Convite.criar(HASH, EXPIRA_EM, ADMIN_ID, AGORA).usar(AGORA), 'CONVITE_JA_USADO'],
+    ['convite revogado', HASH, DEPOIS, Convite.criar(HASH, EXPIRA_EM, ADMIN_ID, AGORA).revogar(AGORA), 'CONVITE_INVALIDO'],
   ] as const)('recusa ativar com %s e deixa o usuário intacto', (_descricao, hash, em, convite, codigo) => {
     const usuario = emSituacao('CONVITE_PENDENTE', convite);
 
@@ -525,4 +531,166 @@ describe('Usuario.definirGrupos', () => {
 
 describe('Usuario × pessoa', () => {
   it.todo('US1: todo usuário referencia uma pessoa existente e ativa (etapa B1)');
+});
+
+describe('Usuario · convite com autor e validade de 72 horas', () => {
+  const LIMITE_DE_72_HORAS = new Date('2026-03-04T10:00:00Z');
+
+  function convidarComExpiracao(conviteExpiraEm: Date): Usuario {
+    return Usuario.convidar({
+      id: USUARIO_ID,
+      nome: NOME,
+      email: 'maria@casa.org',
+      grupos: [GRUPO_A],
+      hashDoConvite: HASH,
+      conviteExpiraEm,
+      convidadoPor: ADMIN_ID,
+      em: AGORA,
+    });
+  }
+
+  it('convidar grava quem criou o convite e quando', () => {
+    const { convite } = convidado();
+
+    expect(convite?.criadoPor).toBe(ADMIN_ID);
+    expect(convite?.criadoEm).toEqual(AGORA);
+  });
+
+  it('reenviar grava como autor quem reenviou, não quem convidou', () => {
+    const usuario = convidado();
+    const outroAdmin = 'admin-2' as UsuarioId;
+
+    usuario.reenviarConvite(NOVO_HASH, NOVA_EXPIRA_EM, outroAdmin, DEPOIS);
+
+    expect(usuario.convite?.criadoPor).toBe(outroAdmin);
+    expect(usuario.convite?.criadoEm).toEqual(DEPOIS);
+    expect(usuario.convitesSubstituidos[0]?.criadoPor).toBe(ADMIN_ID);
+  });
+
+  it('convidar aceita expiração no limite de 72 horas', () => {
+    expect(convidarComExpiracao(LIMITE_DE_72_HORAS).convite?.expiraEm).toEqual(LIMITE_DE_72_HORAS);
+  });
+
+  it.each([
+    ['além de 72 horas', new Date(LIMITE_DE_72_HORAS.getTime() + 1)],
+    ['no passado', new Date('2026-02-28T10:00:00Z')],
+    ['no instante do convite', AGORA],
+  ])('convidar recusa expiração %s', (_descricao, expiracao) => {
+    expect(() => convidarComExpiracao(expiracao)).toThrow(RangeError);
+  });
+
+  it('reenviar recusa expiração além de 72 horas do reenvio e preserva o convite atual', () => {
+    const usuario = convidado();
+    const alemDoLimite = new Date(DEPOIS.getTime() + 72 * 3_600_000 + 1);
+
+    expect(() => usuario.reenviarConvite(NOVO_HASH, alemDoLimite, ADMIN_ID, DEPOIS)).toThrow(RangeError);
+    expect(usuario.convite?.hashDoToken).toBe(HASH);
+    expect(usuario.convitesSubstituidos).toEqual([]);
+  });
+
+  it('reenviar recusa expiração no passado', () => {
+    expect(() => convidado().reenviarConvite(NOVO_HASH, AGORA, ADMIN_ID, DEPOIS)).toThrow(RangeError);
+  });
+});
+
+describe('Usuario · ativadoEm e suspensoEm', () => {
+  it('nasce sem ativação nem suspensão', () => {
+    const usuario = convidado();
+
+    expect(usuario.ativadoEm).toBeNull();
+    expect(usuario.suspensoEm).toBeNull();
+  });
+
+  it('ativar grava o instante da ativação', () => {
+    const usuario = convidado();
+    usuario.ativar(HASH, SUBJECT, DEPOIS);
+
+    expect(usuario.ativadoEm).toEqual(DEPOIS);
+    expect(usuario.suspensoEm).toBeNull();
+  });
+
+  it('desativar grava o instante da suspensão e preserva o da ativação', () => {
+    const usuario = convidado();
+    usuario.ativar(HASH, SUBJECT, DEPOIS);
+    usuario.desativar(ADMIN_ID, 'saiu da casa', EXPIRA_EM);
+
+    expect(usuario.suspensoEm).toEqual(EXPIRA_EM);
+    expect(usuario.ativadoEm).toEqual(DEPOIS);
+  });
+
+  it('desativar de novo não move o instante da suspensão', () => {
+    const usuario = ativo();
+    usuario.desativar(ADMIN_ID, 'motivo', DEPOIS);
+    usuario.desativar(ADMIN_ID, 'motivo', EXPIRA_EM);
+
+    expect(usuario.suspensoEm).toEqual(DEPOIS);
+  });
+
+  it('reativar limpa a suspensão', () => {
+    const usuario = ativo();
+    usuario.desativar(ADMIN_ID, 'motivo', DEPOIS);
+    usuario.reativar(ADMIN_ID, EXPIRA_EM);
+
+    expect(usuario.suspensoEm).toBeNull();
+  });
+
+  it('reconstituir restaura os dois instantes', () => {
+    const usuario = Usuario.reconstituir({
+      id: USUARIO_ID,
+      pessoaId: null,
+      subjectId: SUBJECT,
+      nome: NOME,
+      email: 'maria@casa.org',
+      situacao: 'SUSPENSO',
+      grupos: [],
+      ativadoEm: AGORA,
+      suspensoEm: DEPOIS,
+      ultimoAcessoEm: null,
+      convite: null,
+    });
+
+    expect(usuario.ativadoEm).toEqual(AGORA);
+    expect(usuario.suspensoEm).toEqual(DEPOIS);
+  });
+});
+
+describe('Usuario · atribuições de grupo pendentes', () => {
+  it('convidar registra cada grupo atribuído por quem convidou', () => {
+    const usuario = convidado([GRUPO_A, GRUPO_B]);
+
+    expect(usuario.atribuicoesPendentes).toEqual([
+      { grupoId: GRUPO_A, por: ADMIN_ID, em: AGORA },
+      { grupoId: GRUPO_B, por: ADMIN_ID, em: AGORA },
+    ]);
+  });
+
+  it('definirGrupos registra só os grupos acrescentados, com o autor da mudança', () => {
+    const usuario = ativo();
+    const outroAdmin = 'admin-2' as UsuarioId;
+
+    usuario.definirGrupos([GRUPO_A, GRUPO_B], outroAdmin, DEPOIS);
+
+    expect(usuario.atribuicoesPendentes).toEqual([{ grupoId: GRUPO_B, por: outroAdmin, em: DEPOIS }]);
+  });
+
+  it('grupo acrescentado e depois removido não fica pendente', () => {
+    const usuario = ativo();
+    usuario.definirGrupos([GRUPO_A, GRUPO_B], ADMIN_ID, DEPOIS);
+    usuario.definirGrupos([GRUPO_A], ADMIN_ID, DEPOIS);
+
+    expect(usuario.atribuicoesPendentes).toEqual([]);
+  });
+
+  it('grupo reacrescentado fica com a atribuição mais recente', () => {
+    const usuario = ativo();
+    usuario.definirGrupos([GRUPO_A, GRUPO_B], ADMIN_ID, DEPOIS);
+    usuario.definirGrupos([GRUPO_A], ADMIN_ID, DEPOIS);
+    usuario.definirGrupos([GRUPO_A, GRUPO_B], 'admin-2' as UsuarioId, EXPIRA_EM);
+
+    expect(usuario.atribuicoesPendentes).toEqual([{ grupoId: GRUPO_B, por: 'admin-2', em: EXPIRA_EM }]);
+  });
+
+  it('usuário reconstituído não tem atribuição pendente', () => {
+    expect(ativo().atribuicoesPendentes).toEqual([]);
+  });
 });
