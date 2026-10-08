@@ -23,6 +23,10 @@ export abstract class RaizDeAgregado<Id> extends Entidade<Id> {
     this.eventosPendentes.push(evento);
   }
 
+  get possuiEventosPendentes(): boolean {
+    return this.eventosPendentes.length > 0;
+  }
+
   retirarEventos(): EventoDeDominio[] {
     return this.eventosPendentes.splice(0, this.eventosPendentes.length);
   }
