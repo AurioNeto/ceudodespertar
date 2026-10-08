@@ -64,9 +64,11 @@ export class ExpurgoDeChavesDeIdempotencia implements OnModuleInit, OnApplicatio
   }
 
   private dispararExpurgo(): void {
-    this.rodadaEmAndamento = ContextoDaRequisicao.foraDeQualquerContexto(() =>
-      foraDaTransacaoAtiva(() => this.expurgar()),
-    ).catch((motivo: unknown) => this.logger.warn({ erro: nomeDoErro(motivo) }, MENSAGEM_DE_FALHA_NO_EXPURGO));
+    this.rodadaEmAndamento = this.rodadaEmAndamento.then(() =>
+      ContextoDaRequisicao.foraDeQualquerContexto(() => foraDaTransacaoAtiva(() => this.expurgar())).catch(
+        (motivo: unknown) => this.logger.warn({ erro: nomeDoErro(motivo) }, MENSAGEM_DE_FALHA_NO_EXPURGO),
+      ),
+    );
   }
 
   private async expurgarInstituicao(instituicaoId: string): Promise<number> {

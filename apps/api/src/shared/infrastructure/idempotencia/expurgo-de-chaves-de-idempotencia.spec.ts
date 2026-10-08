@@ -213,4 +213,67 @@ describe('ExpurgoDeChavesDeIdempotencia', () => {
     await destruicao;
     expect(destruido).toBe(true);
   });
+
+  describe('rodadas em fila', () => {
+    const cederOEventLoop = () => new Promise((resolver) => setImmediate(resolver));
+
+    function expurgarControlado(): { concluir: Array<() => void>; inicios: () => number } {
+      const concluir: Array<() => void> = [];
+      vi.spyOn(expurgo, 'expurgar').mockImplementation(
+        () =>
+          new Promise<void>((resolver) => {
+            concluir.push(resolver);
+          }),
+      );
+      return { concluir, inicios: () => concluir.length };
+    }
+
+    it('um segundo disparo só começa depois que o primeiro termina', async () => {
+      const rodadas = expurgarControlado();
+
+      expurgo.onApplicationBootstrap();
+      expurgo.onApplicationBootstrap();
+      await cederOEventLoop();
+
+      expect(rodadas.inicios()).toBe(1);
+      rodadas.concluir[0]?.();
+      await cederOEventLoop();
+      expect(rodadas.inicios()).toBe(2);
+      rodadas.concluir[1]?.();
+      await expurgo.onModuleDestroy();
+    });
+
+    it('ao destruir o módulo aguarda todas as rodadas enfileiradas', async () => {
+      const rodadas = expurgarControlado();
+      let destruido = false;
+
+      expurgo.onApplicationBootstrap();
+      expurgo.onApplicationBootstrap();
+      const destruicao = expurgo.onModuleDestroy().then(() => {
+        destruido = true;
+      });
+      await cederOEventLoop();
+      rodadas.concluir[0]?.();
+      await cederOEventLoop();
+
+      expect(destruido).toBe(false);
+      rodadas.concluir[1]?.();
+      await destruicao;
+      expect(destruido).toBe(true);
+    });
+
+    it('uma rodada que rejeita não impede a seguinte', async () => {
+      const expurgar = vi
+        .spyOn(expurgo, 'expurgar')
+        .mockRejectedValueOnce(new ErroDoDriver('falha inesperada'))
+        .mockResolvedValueOnce(undefined);
+
+      expurgo.onApplicationBootstrap();
+      expurgo.onApplicationBootstrap();
+      await expurgo.onModuleDestroy();
+
+      expect(expurgar).toHaveBeenCalledTimes(2);
+      expect(avisos).toHaveBeenCalledWith({ erro: 'ErroDoDriver' }, MENSAGEM_DE_FALHA_NO_EXPURGO);
+    });
+  });
 });
