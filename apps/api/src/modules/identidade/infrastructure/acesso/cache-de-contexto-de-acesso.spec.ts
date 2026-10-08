@@ -1,6 +1,7 @@
-import type { InstituicaoId, UsuarioId } from '@cdd/contracts';
+import type { InstituicaoId, Permissao, UsuarioId } from '@cdd/contracts';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { criarContextoDeAcesso, recusarAcesso } from '../../../../shared/infrastructure/autenticacao/contexto-de-acesso.js';
+import type { ContextoDeAcesso } from '../../../../shared/infrastructure/autenticacao/contexto-de-acesso.js';
 import { Relogio } from '../../../../shared/infrastructure/relogio.js';
 import { CacheDeContextoDeAcesso, TTL_DO_CACHE_DE_ACESSO_EM_MS } from './cache-de-contexto-de-acesso.js';
 
@@ -42,6 +43,30 @@ describe('CacheDeContextoDeAcesso', () => {
 
   it('o TTL padrão é de 60 segundos', () => {
     expect(TTL_DO_CACHE_DE_ACESSO_EM_MS).toBe(60_000);
+  });
+
+  describe('isolamento do Set de permissões entre requisições', () => {
+    const PERMISSAO = 'financeiro.lancamento.ler' as Permissao;
+    const permissoesDe = (resultado: ReturnType<CacheDeContextoDeAcesso['obter']>) =>
+      (resultado as ContextoDeAcesso).permissoes as Set<Permissao>;
+
+    it('alterar o Set recebido do cache não vaza para a requisição seguinte', () => {
+      const original = criarContextoDeAcesso({ usuarioId: USUARIO_A, instituicaoId: CASA_1, permissoes: new Set([PERMISSAO]) });
+      cache.guardar('sub-a', donoDe(USUARIO_A, CASA_1), original, cache.geracaoAtual());
+
+      permissoesDe(cache.obter('sub-a')).clear();
+
+      expect([...permissoesDe(cache.obter('sub-a'))]).toEqual([PERMISSAO]);
+    });
+
+    it('alterar o Set do contexto original depois de guardá-lo não altera o que está no cache', () => {
+      const original = criarContextoDeAcesso({ usuarioId: USUARIO_A, instituicaoId: CASA_1, permissoes: new Set([PERMISSAO]) });
+      cache.guardar('sub-a', donoDe(USUARIO_A, CASA_1), original, cache.geracaoAtual());
+
+      (original.permissoes as Set<Permissao>).clear();
+
+      expect([...permissoesDe(cache.obter('sub-a'))]).toEqual([PERMISSAO]);
+    });
   });
 
   it('devolve o resultado guardado enquanto o TTL não vence', () => {

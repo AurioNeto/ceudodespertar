@@ -17,6 +17,10 @@ interface EntradaDoCache {
   readonly expiraEm: number;
 }
 
+function copiarResultado(resultado: ResultadoDoAcesso): ResultadoDoAcesso {
+  return resultado.recusada ? resultado : { ...resultado, permissoes: new Set(resultado.permissoes) };
+}
+
 export class CacheDeContextoDeAcesso {
   private readonly entradas = new Map<string, EntradaDoCache>();
   private geracao = 0;
@@ -33,7 +37,7 @@ export class CacheDeContextoDeAcesso {
       this.entradas.delete(sujeito);
       return undefined;
     }
-    return entrada.resultado;
+    return copiarResultado(entrada.resultado);
   }
 
   geracaoAtual(): number {
@@ -42,7 +46,7 @@ export class CacheDeContextoDeAcesso {
 
   guardar(sujeito: string, dono: DonoDoAcesso, resultado: ResultadoDoAcesso, geracaoDaLeitura: number): void {
     if (geracaoDaLeitura !== this.geracao) return;
-    this.entradas.set(sujeito, { dono, resultado, expiraEm: this.relogio.agora().getTime() + this.ttlEmMs });
+    this.entradas.set(sujeito, { dono, resultado: copiarResultado(resultado), expiraEm: this.relogio.agora().getTime() + this.ttlEmMs });
   }
 
   invalidarUsuario(usuarioId: string): void {
