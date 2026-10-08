@@ -14,6 +14,7 @@ export { DataTable } from './DataTable';
 export type { Column } from './DataTable';
 export { DefaultField } from './DefaultField';
 export { DomainError, EmptyState, FlowerOfLife, InfraError, PermissionDenied, SkeletonList } from './estados';
+export { FaixaDeDemonstracao, TEXTO_DA_FAIXA_DE_DEMONSTRACAO } from './FaixaDeDemonstracao';
 export { Icon } from './Icon';
 export type { IconName } from './Icon';
 export { PendencyCard } from './PendencyCard';

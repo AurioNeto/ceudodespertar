@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import type { Hospedagem, NivelDeContribuicao, Refeicao } from '@cdd/contracts';
-import { Button, FlowerOfLife, Icon, StatusBadge, TextField } from '../../ds';
+import { Button, FaixaDeDemonstracao, FlowerOfLife, Icon, StatusBadge, TextField } from '../../ds';
 import { BlocoDePergunta, disparaAlerta, respondida } from '../../components/Anamnese';
 import { Cartao, Rotulo } from '../../components/Blocos';
 import { useDensidade } from '../../lib/useDensidade';
@@ -387,6 +387,8 @@ function Moldura({ campo, passo, children }: { campo: boolean; passo: Passo; chi
           </div>
         </div>
       </header>
+
+      <FaixaDeDemonstracao />
 
       <main
         className="cdd-papel-estampado"
