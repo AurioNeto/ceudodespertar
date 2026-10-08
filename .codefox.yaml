@@ -197,6 +197,10 @@ learnings:
     note: "ultimoAcessoEm é gravado fora do agregado, por UPDATE condicional sem versão, no máximo 1x/h no GET /eu."
   - date: "2026-10-08"
     note: "Rota POST/PUT/PATCH/DELETE precisa declarar @ModoDeTransacao('escrita' | 'leitura-que-grava'); a aplicação recusa partir sem isso (Idempotency-Key em rota de leitura deixa de ser um 500 em tempo de requisição). Rota que não usa o banco da aplicação (saúde, pool próprio) usa @SemTransacaoNaBorda, e só em rota que não muda estado: a aplicação recusa partir com @SemTransacaoNaBorda em POST/PUT/PATCH/DELETE/ALL (decisão do dono, Doc 7 §5)."
+  - date: "2026-10-08"
+    note: "A auditoria da identidade é síncrona: o repositório grava a trilha na mesma transação do agregado e do outbox, antes de tocar o agregado (a fotografia de autor_grupos é a de antes do ato). Mapeamento evento → trilha é explícito e sem dado pessoal; o e-mail do USUARIO_CONVIDADO fica só no outbox (decisão do dono, LGPD: a trilha é só-inserção e não pode ser reescrita na anonimização)."
+  - date: "2026-10-08"
+    note: "GET /identidade/auditoria é leitura-que-grava: cada página pedida registra AUDITORIA_CONSULTADA (com o filtro, sem o cursor), gravada antes da leitura e portanto presente na própria resposta. Autor, grupo e alvo são resolvidos por junção na leitura, nunca copiados na trilha."
 
 --- # Ferramentas do /pre-push (monorepo pnpm)
 stack:
