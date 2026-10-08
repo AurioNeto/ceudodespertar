@@ -209,6 +209,37 @@ describe('gestão de grupos pela API (Doc 3 §11, Doc 7 §25)', () => {
       );
     });
 
+    it('escrita em grupo excluído responde 404 GRUPO_INEXISTENTE nas três rotas', async () => {
+      await semearCasa();
+      const excluido = novoGrupoNomeado('Excluído', [PERMISSAO_DA_LEITURA]);
+      await semearUsuarios(aplicacao, INSTITUICAO_A, [excluido], [usuarioAtivoEm('sub-qualquer', [])]);
+      await comContexto(INSTITUICAO_A, async () => {
+        const grupo = (await aplicacao.grupos.porId(excluido.id))!;
+        grupo.excluir(0, AUTOR, new Date());
+        await aplicacao.grupos.salvar(grupo);
+      });
+      const { versao } = await estadoDe(excluido.id);
+
+      await esperarRecusaSemEfeitos(
+        excluido.id,
+        () => conceder(ADMIN, excluido.id, 'pessoas.pessoa.ler', versao),
+        404,
+        'GRUPO_INEXISTENTE',
+      );
+      await esperarRecusaSemEfeitos(
+        excluido.id,
+        () => revogar(ADMIN, excluido.id, PERMISSAO_DA_LEITURA, versao),
+        404,
+        'GRUPO_INEXISTENTE',
+      );
+      await esperarRecusaSemEfeitos(
+        excluido.id,
+        () => renomear(ADMIN, excluido.id, { nome: 'Outro', descricao: '' }, versao),
+        404,
+        'GRUPO_INEXISTENTE',
+      );
+    });
+
     it('permissão fora do catálogo no path responde 404 PERMISSAO_INEXISTENTE ao conceder e ao revogar', async () => {
       const { leitura } = await semearCasa();
       const { versao } = await estadoDe(leitura.id);
