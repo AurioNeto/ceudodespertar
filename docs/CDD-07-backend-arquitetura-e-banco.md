@@ -110,7 +110,7 @@ apps/api/src/modules/financeiro/
 │   ├── importacao/                parser OFX/CSV
 │   └── acl/                       adaptadores das portas públicas de outros módulos
 ├── interface/
-│   ├── http/                      controllers finos: validam, chamam o handler, traduzem Result
+│   ├── http/                      controllers finos: validam e chamam o handler, que devolve Result; a borda traduz (ok vira o corpo, erro de domínio vira o código do catálogo depois do rollback)
 │   └── consultas/                 read models em SQL (um por tela e por bloco)
 └── public-api.ts                  o que os outros módulos podem importar
 ```
@@ -151,6 +151,10 @@ async executar(cmd: ConfirmarLancamento, ctx: Contexto): Promise<Result<void, Do
   });
 }
 ```
+
+**Result de erro desfaz a transação (passo 8).** A porta `UnidadeDeTrabalho` reconhece o `Result` de erro devolvido por `fn` pelo discriminante `tipo === 'erro'` do kernel: desfaz a transação sem `flush`, não dispara os ganchos `aoConfirmar` (nem o sinal do outbox) e devolve o mesmo `Result` ao chamador, sem convertê-lo em exceção. Exceção lançada continua desfazendo como antes.
+
+Transação aninhada reaproveita a de fora e **a de fora decide**: o `Result` de erro devolvido por uma chamada interna chega ao chamador sem desfazer nada. Se a de fora o repassa como seu retorno, tudo é desfeito, inclusive as escritas da interna; se o ignora e devolve sucesso, tudo é confirmado. Não há savepoint. Na borda HTTP, o `BordaTransacionalInterceptor` converte o `Result` de erro devolvido pelo handler em `ErroDeDominioException` depois do rollback, e o filtro global responde pelo código de domínio (§12). No `Result` ok, a mesma borda entrega o `valor` como corpo da resposta, sem o envelope `{tipo, valor}`.
 
 **Por que a auditoria é síncrona e não um assinante do evento.** Uma trilha que pode perder linha quando o despachante falha não é trilha. Ela entra na mesma transação do ato; se a transação desfaz, a linha some junto, e é isso que se quer.
 

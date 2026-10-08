@@ -4,6 +4,8 @@ import type { CallHandler, ExecutionContext, NestInterceptor } from '@nestjs/com
 import { Reflector } from '@nestjs/core';
 import type { Observable } from 'rxjs';
 import { lastValueFrom, of } from 'rxjs';
+import { ErroDeDominioException, ehErroDeDominio } from '../../kernel/erro-de-dominio.js';
+import { ehResultadoDeErro, ehResultadoDeSucesso } from '../../kernel/result.js';
 import { ContextoDaRequisicao } from '../contexto-da-requisicao.js';
 import type { ContextoDaRequisicaoValor } from '../contexto-da-requisicao.js';
 import { UnidadeDeTrabalho } from '../banco/unidade-de-trabalho.js';
@@ -13,6 +15,12 @@ import { ProvedorDeContextoDeInstituicao } from './provedor-de-contexto-de-insti
 import { gravarCorrelacaoNaRequisicao } from './correlacao-da-requisicao.js';
 
 export const MODO_PADRAO_SEM_MARCA: ModoDeTransacao = 'leitura';
+
+function erroDaRespostaDeErro(erro: unknown): Error {
+  return ehErroDeDominio(erro)
+    ? new ErroDeDominioException(erro)
+    : new Error('handler devolveu Result de erro que não é um erro de domínio');
+}
 
 @Injectable()
 export class BordaTransacionalInterceptor implements NestInterceptor {
@@ -44,6 +52,10 @@ export class BordaTransacionalInterceptor implements NestInterceptor {
       ),
     );
 
-    return of(resposta);
+    if (ehResultadoDeErro(resposta)) {
+      throw erroDaRespostaDeErro(resposta.erro);
+    }
+
+    return of(ehResultadoDeSucesso(resposta) ? resposta.valor : resposta);
   }
 }

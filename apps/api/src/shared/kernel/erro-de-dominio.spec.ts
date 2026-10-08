@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ErroDeDominioException, erroDeDominio } from './erro-de-dominio.js';
+import { ErroDeDominioException, ehErroDeDominio, erroDeDominio } from './erro-de-dominio.js';
 
 describe('erroDeDominio', () => {
   it('cria erro só com o código quando não há detalhes', () => {
@@ -23,4 +23,17 @@ describe('ErroDeDominioException', () => {
     expect(excecao).toBeInstanceOf(Error);
     expect(excecao.erroDeDominio).toStrictEqual(erro);
   });
+});
+
+describe('ehErroDeDominio', () => {
+  it('reconhece erro com código conhecido', () => {
+    expect(ehErroDeDominio(erroDeDominio('RECURSO_NAO_ENCONTRADO'))).toBe(true);
+  });
+
+  it.each([null, undefined, 'RECURSO_NAO_ENCONTRADO', {}, { codigo: 'INEXISTENTE' }])(
+    'não reconhece %j',
+    (valor) => {
+      expect(ehErroDeDominio(valor)).toBe(false);
+    },
+  );
 });

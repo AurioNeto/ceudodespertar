@@ -2,6 +2,7 @@ import { Logger } from '@nestjs/common';
 import { describe, expect, it, vi } from 'vitest';
 import { IsolationLevel } from '@mikro-orm/postgresql';
 import type { MikroORM, TransactionOptions } from '@mikro-orm/postgresql';
+import { err, ok } from '../../kernel/result.js';
 import { ContextoDaRequisicao } from '../contexto-da-requisicao.js';
 import {
   ErroDeModoDeTransacaoIncompativel,
@@ -21,10 +22,20 @@ class EntityManagerFalso {
     return this;
   }
 
+  desfeitas = 0;
+  confirmadas = 0;
+
   async transactional<T>(cb: (em: this) => Promise<T>, opcoes: TransactionOptions): Promise<T> {
     this.vezesQueAbriuTransacao += 1;
     this.opcoesRecebidas = opcoes;
-    return cb(this);
+    try {
+      const resultado = await cb(this);
+      this.confirmadas += 1;
+      return resultado;
+    } catch (erro) {
+      this.desfeitas += 1;
+      throw erro;
+    }
   }
 
   async execute(sql: string, parametros: unknown[]): Promise<void> {
@@ -225,5 +236,79 @@ describe('UnidadeDeTrabalhoMikroOrm', () => {
     );
 
     expect(gancho).toHaveBeenCalledOnce();
+  });
+
+  describe('Result de erro devolvido por fn', () => {
+    it('desfaz a transação sem confirmar e devolve o mesmo Result ao chamador', async () => {
+      const em = new EntityManagerFalso();
+      const unidade = new UnidadeDeTrabalhoMikroOrm(ormFalsoCom(em));
+      const falha = err('REGRA_VIOLADA');
+
+      const resultado = await unidade.transacao('escrita', async () => falha);
+
+      expect(resultado).toBe(falha);
+      expect(em.desfeitas).toBe(1);
+      expect(em.confirmadas).toBe(0);
+    });
+
+    it('Result ok confirma a transação', async () => {
+      const em = new EntityManagerFalso();
+      const unidade = new UnidadeDeTrabalhoMikroOrm(ormFalsoCom(em));
+
+      await unidade.transacao('escrita', async () => ok(1));
+
+      expect(em.confirmadas).toBe(1);
+      expect(em.desfeitas).toBe(0);
+    });
+
+    it('objeto parecido com Result mas sem o discriminante confirma', async () => {
+      const em = new EntityManagerFalso();
+      const unidade = new UnidadeDeTrabalhoMikroOrm(ormFalsoCom(em));
+
+      await unidade.transacao('escrita', async () => ({ erro: 'x' }));
+
+      expect(em.confirmadas).toBe(1);
+    });
+
+    it('não dispara os ganchos de confirmação registrados antes do Result de erro', async () => {
+      const em = new EntityManagerFalso();
+      const unidade = new UnidadeDeTrabalhoMikroOrm(ormFalsoCom(em));
+      const gancho = vi.fn();
+
+      await unidade.transacao('escrita', async ({ aoConfirmar }) => {
+        aoConfirmar(gancho);
+        return err('REGRA_VIOLADA');
+      });
+
+      expect(gancho).not.toHaveBeenCalled();
+    });
+
+    it('Result de erro de transação aninhada não desfaz a de fora: quem decide é a de fora', async () => {
+      const em = new EntityManagerFalso();
+      const unidade = new UnidadeDeTrabalhoMikroOrm(ormFalsoCom(em));
+      const falhaInterna = err('REGRA_VIOLADA');
+
+      const resultadoInterno = await unidade.transacao('escrita', async () => {
+        const interno = await unidade.transacao('escrita', async () => falhaInterna);
+        expect(em.desfeitas).toBe(0);
+        return ok(interno);
+      });
+
+      expect(resultadoInterno).toStrictEqual(ok(falhaInterna));
+      expect(em.vezesQueAbriuTransacao).toBe(1);
+      expect(em.confirmadas).toBe(1);
+    });
+
+    it('a de fora que repassa o Result de erro da de dentro desfaz tudo', async () => {
+      const em = new EntityManagerFalso();
+      const unidade = new UnidadeDeTrabalhoMikroOrm(ormFalsoCom(em));
+
+      const resultado = await unidade.transacao('escrita', () =>
+        unidade.transacao('escrita', async () => err('REGRA_VIOLADA')),
+      );
+
+      expect(resultado).toStrictEqual(err('REGRA_VIOLADA'));
+      expect(em.desfeitas).toBe(1);
+    });
   });
 });

@@ -1,0 +1,230 @@
+# =============================================================================
+# codefox — configuração do projeto Céu do Despertar (CDD)
+# Derivada do BASE global (~/.claude/.codefox.yaml). Com este arquivo na raiz,
+# os skills do kit ignoram o global.
+# ⚠️ Os comandos de `tools` executam localmente; trate mudanças aqui como sensíveis.
+# =============================================================================
+
+project:
+  name: "Céu do Despertar (CDD) — sistema de gestão"
+  stack: "Node.js 24, pnpm (monorepo), NestJS 12 ESM, TypeScript strict, MikroORM 7 + Kysely, PostgreSQL 16 com RLS, Keycloak 26 (OIDC), React + Vite + TanStack Query, Vitest + testcontainers, oxlint, dependency-cruiser"
+  architecture: "Monólito modular: apps/api (modules/<modulo>/{domain,application,infrastructure,interface} + shared/{kernel,infrastructure}), apps/web e packages/contracts. Domínio sem framework; ORM só na infraestrutura de banco e de cada módulo; regra de negócio só no backend (banco = estrutura, isolamento e guardas mínimas)."
+  critical_domain: "Multi-instituição com RLS por instituicao_id; financeiro (dinheiro em centavos, lançamentos imutáveis) e dados sensíveis de saúde/anamnese (LGPD)"
+  reference_docs:
+    - "docs/CDD-06-plano-do-backend.md"
+    - "docs/CDD-07-backend-arquitetura-e-banco.md"
+    - "project/uploads/CDD - System/CDD-v2_2-03-identidade-acesso-e-permissoes.md"
+
+language: "pt-BR"
+identifiers_language: "keep-original"
+
+tone_instructions: >-
+  Revisor sênior, direto e técnico. Sem elogios genéricos, sem rodeios.
+  Aponte o problema, o motivo e a correção sugerida, com o cenário concreto de falha.
+  Trate o autor como par experiente.
+
+review:
+  profile: "chill"
+  max_comments: 15
+  nitpick:
+    level: 1
+    scale:
+      0: "Apenas bugs, regressões e riscos reais. Zero estilo."
+      1: "Nível 0 + problemas de manutenibilidade com impacto claro."
+      2: "Nível 1 + nitpicks agrupados em seção separada, nunca inline."
+      3: "Tudo, incluindo estilo e preferências. Uso pontual, não default."
+
+precision:
+  min_confidence: "high"
+  rules:
+    - "Suposição sobre código não visível vira pergunta, nunca afirmação."
+    - "Não afirmar comportamento de biblioteca/framework sem certeza; marcar como 'verificar:'."
+    - "Prefixos obrigatórios em incerteza: 'pergunta:' ou 'verificar:'."
+    - "Proibido referenciar arquivos, símbolos ou linhas inexistentes no diff."
+    - "Em PR empilhado ou sincronizado com a main, considerar a interação com os PRs irmãos (conflito de comportamento não aparece como conflito de texto)."
+
+priorities:
+  - "Bugs e riscos reais — lógica incorreta, null/undefined, race conditions, edge cases"
+  - "Isolamento por instituição — RLS, app.instituicao_id na transação, fail-closed sem contexto"
+  - "Regressões comportamentais — contrato HTTP (código do catálogo + status de STATUS_POR_CODIGO) ou comportamento alterado sem intenção declarada"
+  - "Impacto operacional — migrations (expandir → migrar → contrair), deploy, rollback, timeout, retry, outbox"
+  - "Segurança e LGPD — authz/authn, segredos, dado pessoal em log ou em shared.chave_de_idempotencia"
+  - "Observabilidade — logs ausentes em caminhos de erro, correlação"
+  - "Lacunas de teste — caminhos críticos sem cobertura, testes que não provam o que dizem (mutante sobrevive)"
+  - "Manutenibilidade e legibilidade — conforme nitpick.level"
+
+severity:
+  levels:
+    blocker:  { marker: "🔴", blocks_merge: true,  meaning: "Bug, regressão, vulnerabilidade ou risco operacional real" }
+    major:    { marker: "🟠", blocks_merge: false, meaning: "Problema relevante; corrigir neste PR salvo justificativa" }
+    minor:    { marker: "🟡", blocks_merge: false, meaning: "Melhoria válida; pode ir em follow-up" }
+    nitpick:  { marker: "🔵", blocks_merge: false, meaning: "Estilo/preferência; agrupar em seção própria" }
+    question: { marker: "❓", blocks_merge: false, meaning: "Dúvida genuína sobre intenção ou contexto" }
+  comment_format: |
+    <marcador> <resumo em 1 linha>
+
+    Problema: <o que está errado e por quê>
+    Sugestão: <correção concreta; incluir diff/snippet quando couber>
+    [Risco: <se aplicável>]
+
+path_filters:
+  - "!**/dist/**"
+  - "!**/node_modules/**"
+  - "!**/pnpm-lock.yaml"
+  - "!**/*.snap"
+  - "!apps/api/src/shared/infrastructure/banco/banco-cdd.gerado.ts"
+  - "!docs/sql/**"
+
+path_instructions:
+  - path: "apps/api/src/modules/*/domain/**"
+    instructions: |
+      - Sem dependência de framework, ORM ou infra (regra dominio-sem-framework). Violação é blocker.
+      - Invariante nova vive no agregado, com teste de domínio; nada de empurrá-la para gatilho ou CHECK.
+      - Erro de domínio é código estável do catálogo, sem frase.
+  - path: "apps/api/src/banco/migracoes/**"
+    instructions: |
+      - Migração nova em pasta própria (b0-NNN-…), registrada em lista.ts, com desfazer.sql.
+      - No SQL só estrutura, isolamento (RLS, papéis, SECURITY DEFINER de resolução) e guardas mínimas de histórico. Regra de negócio no SQL é blocker.
+      - Tabela nova com instituicao_id precisa entrar no isolamento (aplicar_isolamento_por_instituicao).
+      - Mudança de esquema exige regenerar banco-cdd.gerado.ts (db:gerar-tipos:verificar).
+  - path: "apps/api/src/shared/infrastructure/**"
+    instructions: |
+      - MikroORM só em banco/ e na infraestrutura de cada módulo (regra orm-so-na-infraestrutura-de-banco); o resto usa o contexto da UnidadeDeTrabalho.
+      - Toda chamada externa com timeout e erro tratado; nada de logar o objeto de erro do driver.
+      - Job com setInterval: rodadas encadeadas, sem sobreposição, e encerramento que aguarda a rodada.
+  - path: "apps/api/src/**/*.controller.ts"
+    instructions: |
+      - Toda rota com exatamente uma marca de acesso; escrita exige permissão.
+      - Comando que devolve dado pessoal usa @RespostaSemCorpoNoReplay.
+      - Validação por Zod; erros pelo catálogo, sem HttpException com status fixo.
+  - path: "**/*.{spec,test}.ts"
+    instructions: |
+      - Teste precisa falhar se o comportamento mudar (sem asserção vazia ou tautológica).
+      - Concorrência com barreira/lock explícito, nunca sleep arbitrário.
+      - Integração por testcontainers; nunca depender do compose compartilhado.
+  - path: ".github/workflows/**"
+    instructions: |
+      - Permissions mínimas e actions fixadas.
+      - Segredos nunca em echo/log.
+
+global_rules:
+  - "Sem comentários de prosa no código (Clean Code): nomes reveladores; só diretivas de tooling, TODO/FIXME e licença."
+  - "Docs, comentários, nomes de teste e corpos de PR não citam IDs do plano local (Fxx, Ixx, Wxx, Rxx, Gx); cite etapa B0–B6, #PR ou seção do Doc 7."
+  - "Regra de negócio fora do banco: nada de máquina de estados, cálculo ou CHECK de política em SQL (issue #11)."
+  - "O status HTTP de cada código de erro vem de STATUS_POR_CODIGO; HttpException com código do catálogo no corpo responde por esse código."
+  - "Dinheiro sempre inteiro em centavos."
+  - "Erros nunca silenciados; log com contexto, sem dado pessoal e sem o objeto de erro do driver."
+  - "Feature nova sem teste = major no mínimo."
+
+never_comment:
+  - "Formatação coberta pelo oxlint/formatter."
+  - "Preferência pessoal sem regra escrita neste arquivo."
+  - "Código não alterado no diff, exceto se a mudança introduzir risco direto nele."
+  - "Refactor amplo fora do escopo do PR (no máximo 1 nota em 'Fora do escopo')."
+  - "Mesmo apontamento repetido: comentar 1 vez e listar as demais ocorrências."
+  - "TODOs preexistentes."
+  - "Ausência de comentário explicativo no código (é a convenção do projeto)."
+
+pre_merge_checks:
+  title:
+    mode: "warning"
+    requirements: "Conventional Commits: 'tipo(escopo): descrição', <= 72 chars, em pt-BR"
+  description:
+    mode: "warning"
+    requirements: "Contém contexto, o que muda e como testar; decisões do dono registradas; link para issue quando houver"
+  size:
+    mode: "warning"
+    requirements: "> 600 linhas alteradas fora de testes: sugerir split, revisar mesmo assim"
+  custom_checks:
+    - name: "tests"
+      mode: "error"
+      instructions: "Mudança em apps/*/src sem mudança em testes exige justificativa na descrição."
+    - name: "migration-rollback"
+      mode: "error"
+      instructions: "PR com migration exige desfazer.sql e o efeito de lock/tamanho descrito."
+    - name: "sem-ids-de-plano"
+      mode: "error"
+      instructions: "Título, descrição, commits, docs e nomes de teste sem IDs do plano local (Fxx, Ixx, Wxx, Rxx)."
+
+output:
+  verdict_rules:
+    approve: "Nenhum blocker e no máximo 1 major"
+    approve_with_reservations: "Sem blocker; majors pontuais com caminho claro"
+    request_changes: "Ao menos 1 blocker OU 2+ majors"
+  constraints:
+    - "Sem poema, sem elogio de abertura, sem repetir o diff."
+    - "Apontamentos ordenados por severidade."
+    - "Nitpicks agrupados; apenas se nitpick.level >= 2."
+    - "Seção 'Fora do escopo': no máximo 1–2 notas, apenas se relevante."
+  template: |
+    ## Review — <título do PR>
+
+    **Veredicto:** ✅ aprovar | ⚠️ aprovar com ressalvas | ❌ solicitar mudanças
+    **Risco geral:** baixo | médio | alto — <1 linha de justificativa>
+
+    ### Resumo
+    <2–4 linhas: o que o PR faz e principal preocupação, se houver>
+
+    ### Apontamentos
+    <comentários por arquivo/linha, formato de severity.comment_format>
+
+    ### Nitpicks
+    <agrupados, apenas se nível >= 2>
+
+    ### Fora do escopo
+    <no máximo 1–2 notas, apenas se relevante>
+
+learnings:
+  - date: "2026-09-27"
+    note: "Regra de negócio mora só no backend; docs/sql/*.sql é documentação do desenho, não a fonte do banco (issue #11). Não sugerir gatilho/CHECK de regra."
+  - date: "2026-10-06"
+    note: "GRUPO_ALTERADO é a mudança de grupo DE UM USUÁRIO (Doc 3 §10.4); o evento do agregado Grupo é GRUPO_EDITADO."
+  - date: "2026-10-06"
+    note: "CHAVE_DE_IDEMPOTENCIA_REUTILIZADA = 422 e USUARIO_DESCONHECIDO = 401 (decisão do dono)."
+  - date: "2026-10-06"
+    note: "A regra orm-so-na-infraestrutura-de-banco vale sem exceções: não sugerir acrescentar caminhos em CAMADAS_COM_ACESSO_AO_ORM."
+  - date: "2026-10-07"
+    note: "Evento esgotado no outbox é alerta (log 'outbox: eventos esgotados'), não prontidão; o atraso > 5 min continua derrubando /saude/pronta (Doc 7 §13)."
+  - date: "2026-10-07"
+    note: "Máscara de CPF só casa com bordas não alfanuméricas; CPF colado em letra não mascarado é decisão aceita. O `detail` dos erros do Postgres é risco aceito — não apontar como achado novo."
+  - date: "2026-10-07"
+    note: "Expurgo de idempotência é job na API por instituição, sem SECURITY DEFINER/BYPASSRLS (decisão do dono)."
+  - date: "2026-10-07"
+    note: "Quando um comando devolve Result de erro, a UnidadeDeTrabalho desfaz a transação (decisão do dono, Doc 7 §5)."
+
+--- # Ferramentas do /pre-push (monorepo pnpm)
+stack:
+  name: cdd-monorepo
+  detect: ["pnpm-workspace.yaml"]
+tools:
+  typecheck:
+    command: "pnpm typecheck"
+    paths: ["apps/**/*.ts", "apps/**/*.tsx", "packages/**/*.ts", "**/tsconfig*.json"]
+  lint:
+    command: "pnpm lint"
+    paths: ["apps/api/**", "packages/contracts/**", ".oxlintrc.json", ".dependency-cruiser.mjs"]
+  fronteiras:
+    command: "pnpm fronteiras"
+    paths: ["apps/api/src/**", "packages/contracts/src/**", ".dependency-cruiser.mjs"]
+  test_api:
+    command: "pnpm --filter @cdd/api test"
+    paths: ["apps/api/**", "packages/contracts/**"]
+    timeout_seconds: 600
+  test_web:
+    command: "pnpm --filter @cdd/web test"
+    paths: ["apps/web/**", "packages/contracts/**"]
+    timeout_seconds: 600
+  tipos_do_banco:
+    command: "pnpm --filter @cdd/api db:gerar-tipos:verificar"
+    paths: ["apps/api/src/banco/migracoes/**", "apps/api/src/shared/infrastructure/banco/banco-cdd.gerado.ts"]
+    timeout_seconds: 600
+  test_integracao:
+    command: "pnpm --filter @cdd/api test:integracao"
+    paths: ["apps/api/src/banco/**", "apps/api/src/shared/infrastructure/**", "apps/api/test/**"]
+    timeout_seconds: 900
+  build_web:
+    command: "pnpm build"
+    paths: ["apps/web/**", "packages/contracts/**"]
+  security:
+    command: "pnpm audit --prod"
+    paths: ["package.json", "apps/*/package.json", "pnpm-lock.yaml"]

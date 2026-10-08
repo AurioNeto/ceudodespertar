@@ -3,6 +3,8 @@ import {
   desembrulharOuLancar,
   ehErr,
   ehOk,
+  ehResultadoDeErro,
+  ehResultadoDeSucesso,
   encadear,
   err,
   mapear,
@@ -88,5 +90,44 @@ describe('desembrulharOuLancar', () => {
     expect(() =>
       desembrulharOuLancar(err('motivo'), (erro) => new Error(`falhou: ${erro}`)),
     ).toThrow('falhou: motivo');
+  });
+});
+
+describe('ehResultadoDeErro', () => {
+  it('reconhece o Result de erro de qualquer origem, inclusive de valor desconhecido', () => {
+    const desconhecido: unknown = err('falhou');
+
+    expect(ehResultadoDeErro(desconhecido)).toBe(true);
+  });
+
+  it.each([
+    ['Result ok', ok(1)],
+    ['null', null],
+    ['undefined', undefined],
+    ['string', 'erro'],
+    ['objeto sem o campo erro', { tipo: 'erro' }],
+    ['objeto de outra forma', { erro: 'x' }],
+  ])('não reconhece %s', (_nome, valor) => {
+    expect(ehResultadoDeErro(valor)).toBe(false);
+  });
+});
+
+describe('ehResultadoDeSucesso', () => {
+  it('reconhece o Result ok de qualquer origem, inclusive o ok sem valor', () => {
+    const desconhecido: unknown = ok();
+
+    expect(ehResultadoDeSucesso(desconhecido)).toBe(true);
+    expect(ehResultadoDeSucesso(ok(1))).toBe(true);
+  });
+
+  it.each([
+    ['Result de erro', err('falhou')],
+    ['null', null],
+    ['undefined', undefined],
+    ['string', 'ok'],
+    ['objeto sem o campo valor', { tipo: 'ok' }],
+    ['objeto de outra forma', { valor: 1 }],
+  ])('não reconhece %s', (_nome, valor) => {
+    expect(ehResultadoDeSucesso(valor)).toBe(false);
   });
 });

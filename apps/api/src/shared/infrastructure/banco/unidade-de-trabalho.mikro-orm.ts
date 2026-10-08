@@ -1,7 +1,8 @@
 import { AsyncLocalStorage } from 'node:async_hooks';
 import { Injectable, Logger } from '@nestjs/common';
 import { IsolationLevel, MikroORM } from '@mikro-orm/postgresql';
-import type { TransactionOptions } from '@mikro-orm/postgresql';
+import type { EntityManager, TransactionOptions } from '@mikro-orm/postgresql';
+import { ehResultadoDeErro } from '../../kernel/result.js';
 import { ContextoDaRequisicao } from '../contexto-da-requisicao.js';
 import { UnidadeDeTrabalho } from './unidade-de-trabalho.js';
 import type { ContextoDaTransacao, ModoDeTransacao } from './unidade-de-trabalho.js';
@@ -37,6 +38,13 @@ interface TransacaoAtiva {
   readonly contexto: ContextoDaTransacao;
 }
 
+class DesfazerPorResultadoDeErro<T> extends Error {
+  constructor(readonly resultado: T) {
+    super('transação desfeita por Result de erro');
+    this.name = 'DesfazerPorResultadoDeErro';
+  }
+}
+
 const transacaoAtiva = new AsyncLocalStorage<TransacaoAtiva>();
 
 export function foraDaTransacaoAtiva<T>(fn: () => T): T {
@@ -64,6 +72,23 @@ export class UnidadeDeTrabalhoMikroOrm extends UnidadeDeTrabalho {
     const em = this.orm.em.fork();
     const ganchosDeConfirmacao: Array<() => void> = [];
 
+    try {
+      return await this.executarNaTransacao(em, modo, instituicaoId, ganchosDeConfirmacao, fn);
+    } catch (motivo) {
+      if (motivo instanceof DesfazerPorResultadoDeErro) {
+        return motivo.resultado as T;
+      }
+      throw motivo;
+    }
+  }
+
+  private async executarNaTransacao<T>(
+    em: EntityManager,
+    modo: ModoDeTransacao,
+    instituicaoId: string | undefined,
+    ganchosDeConfirmacao: Array<() => void>,
+    fn: (contexto: ContextoDaTransacao) => Promise<T>,
+  ): Promise<T> {
     const resultado = await em.transactional(async (emDaTransacao) => {
       if (ehGravavel(modo)) {
         await emDaTransacao.execute('set transaction read write');
@@ -79,7 +104,11 @@ export class UnidadeDeTrabalhoMikroOrm extends UnidadeDeTrabalho {
         kysely: emDaTransacao.getKysely<DB>(),
         aoConfirmar: (gancho) => ganchosDeConfirmacao.push(gancho),
       };
-      return transacaoAtiva.run({ modo, contexto }, () => fn(contexto));
+      const valor = await transacaoAtiva.run({ modo, contexto }, () => fn(contexto));
+      if (ehResultadoDeErro(valor)) {
+        throw new DesfazerPorResultadoDeErro(valor);
+      }
+      return valor;
     }, OPCOES_DE_TRANSACAO_POR_MODO[modo]);
 
     this.executarGanchosDeConfirmacao(ganchosDeConfirmacao);

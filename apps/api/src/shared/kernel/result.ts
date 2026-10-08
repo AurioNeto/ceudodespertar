@@ -28,6 +28,24 @@ export function ehErr<T, E>(resultado: Result<T, E>): resultado is ResultadoErro
   return resultado.tipo === 'erro';
 }
 
+export function ehResultadoDeErro(valor: unknown): valor is ResultadoErro<unknown> {
+  return (
+    typeof valor === 'object' &&
+    valor !== null &&
+    (valor as { tipo?: unknown }).tipo === 'erro' &&
+    'erro' in valor
+  );
+}
+
+export function ehResultadoDeSucesso(valor: unknown): valor is ResultadoOk<unknown> {
+  return (
+    typeof valor === 'object' &&
+    valor !== null &&
+    (valor as { tipo?: unknown }).tipo === 'ok' &&
+    'valor' in valor
+  );
+}
+
 export function mapear<T, E, U>(resultado: Result<T, E>, transformar: (valor: T) => U): Result<U, E> {
   return ehOk(resultado) ? ok(transformar(resultado.valor)) : resultado;
 }
