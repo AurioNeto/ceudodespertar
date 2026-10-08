@@ -6,7 +6,7 @@ import { ok, type Result } from '../../../../shared/kernel/result.js';
 import { RepositorioDeUsuario } from '../../domain/usuario/usuario.repo.js';
 import { AlteracaoQuePodeTirarAdministrador, efeitoDoUsuario } from '../administracao/alteracao-que-pode-tirar-administrador.js';
 import { conferirVersao, salvarSeAlterado } from '../conferir-versao.js';
-import type { AcessoDoUsuario } from '../obter-eu.js';
+import type { AcessoDoUsuario } from '../acesso-do-usuario.js';
 
 export interface ComandoDeDesativacao {
   readonly usuarioId: UsuarioId;

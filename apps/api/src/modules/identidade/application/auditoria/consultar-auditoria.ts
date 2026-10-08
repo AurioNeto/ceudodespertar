@@ -3,7 +3,7 @@ import type { DetalheDeAuditoria, FiltroDeAuditoria, PaginaDeAuditoria, Registro
 import { UnidadeDeTrabalho } from '../../../../shared/infrastructure/banco/unidade-de-trabalho.js';
 import { Relogio } from '../../../../shared/infrastructure/relogio.js';
 import { erroDeDominio, ErroDeDominioException } from '../../../../shared/kernel/erro-de-dominio.js';
-import type { AcessoDoUsuario } from '../obter-eu.js';
+import type { AcessoDoUsuario } from '../acesso-do-usuario.js';
 import { codificarCursor, decodificarCursor, ErroDeCursorInvalido } from './cursor-de-auditoria.js';
 import type { PosicaoDaTrilha } from './cursor-de-auditoria.js';
 import type { EntradaDeAuditoria } from './entrada-de-auditoria.js';

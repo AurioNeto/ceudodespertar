@@ -7,7 +7,7 @@ import { RepositorioDeUsuario } from '../../domain/usuario/usuario.repo.js';
 import { AlteracaoQuePodeTirarAdministrador, efeitoDoUsuario } from '../administracao/alteracao-que-pode-tirar-administrador.js';
 import type { FotografiaDaAdministracao } from '../administracao/leitor-da-administracao.js';
 import { conferirVersao, salvarSeAlterado } from '../conferir-versao.js';
-import type { AcessoDoUsuario } from '../obter-eu.js';
+import type { AcessoDoUsuario } from '../acesso-do-usuario.js';
 
 export interface ComandoDeDefinicaoDeGrupos {
   readonly usuarioId: UsuarioId;
@@ -20,9 +20,14 @@ export interface GruposDefinidos {
   readonly versao: number;
 }
 
-function gruposForaDaInstituicao(grupos: readonly GrupoId[], fotografia: FotografiaDaAdministracao): GrupoId[] {
+function gruposAcrescentadosForaDaInstituicao(
+  pretendidos: readonly GrupoId[],
+  jaAtribuidos: readonly GrupoId[],
+  fotografia: FotografiaDaAdministracao,
+): GrupoId[] {
   const ativos = new Set(fotografia.gruposAtivos.map((grupo) => grupo.id));
-  return grupos.filter((grupoId) => !ativos.has(grupoId));
+  const atribuidos = new Set(jaAtribuidos);
+  return pretendidos.filter((grupoId) => !atribuidos.has(grupoId) && !ativos.has(grupoId));
 }
 
 @Injectable()
@@ -41,7 +46,7 @@ export class DefinirGruposDoUsuario {
         if (encontrado.tipo === 'erro') return encontrado;
         const usuario = encontrado.valor;
 
-        const inexistentes = gruposForaDaInstituicao(comando.grupos, antes);
+        const inexistentes = gruposAcrescentadosForaDaInstituicao(comando.grupos, usuario.grupos, antes);
         if (inexistentes.length > 0) return err(erroDeDominio('GRUPO_INEXISTENTE', { grupos: inexistentes }));
 
         const definido = usuario.definirGrupos(comando.grupos, acesso.usuarioId, this.relogio.agora());

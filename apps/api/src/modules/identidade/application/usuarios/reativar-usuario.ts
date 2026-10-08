@@ -6,7 +6,7 @@ import type { ErroDeDominio } from '../../../../shared/kernel/erro-de-dominio.js
 import { ok, type Result } from '../../../../shared/kernel/result.js';
 import { RepositorioDeUsuario } from '../../domain/usuario/usuario.repo.js';
 import { conferirVersao, salvarSeAlterado } from '../conferir-versao.js';
-import type { AcessoDoUsuario } from '../obter-eu.js';
+import type { AcessoDoUsuario } from '../acesso-do-usuario.js';
 import type { SituacaoAlterada } from './desativar-usuario.js';
 
 export interface ComandoDeReativacao {

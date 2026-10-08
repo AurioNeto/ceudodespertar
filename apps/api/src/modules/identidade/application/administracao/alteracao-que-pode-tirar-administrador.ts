@@ -9,7 +9,7 @@ import {
   UsuarioDaInstituicao,
 } from '../../domain/servicos/politica-do-ultimo-administrador.js';
 import type { Usuario } from '../../domain/usuario/usuario.js';
-import type { AcessoDoUsuario } from '../obter-eu.js';
+import type { AcessoDoUsuario } from '../acesso-do-usuario.js';
 import { LeitorDaAdministracao } from './leitor-da-administracao.js';
 import type { FotografiaDaAdministracao } from './leitor-da-administracao.js';
 import { TravaDaAdministracao } from './trava-da-administracao.js';

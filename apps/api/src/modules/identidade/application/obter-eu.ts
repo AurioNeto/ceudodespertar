@@ -1,15 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
-import type { Eu, InstituicaoId, UsuarioId } from '@cdd/contracts';
+import type { Eu } from '@cdd/contracts';
 import { Relogio } from '../../../shared/infrastructure/relogio.js';
+import type { AcessoDoUsuario } from './acesso-do-usuario.js';
 import { LeitorDoEu } from './leitor-do-eu.js';
 import { RegistradorDeUltimoAcesso } from './registrador-de-ultimo-acesso.js';
 
 export const INTERVALO_MINIMO_ENTRE_REGISTROS_DE_ACESSO_EM_MS = 60 * 60 * 1000;
-
-export interface AcessoDoUsuario {
-  readonly usuarioId: UsuarioId;
-  readonly instituicaoId: InstituicaoId;
-}
 
 @Injectable()
 export class ObterEu {

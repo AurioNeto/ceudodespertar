@@ -73,6 +73,15 @@ describe('DefinirGruposDoUsuario', () => {
     expect(repositorio.salvos).toEqual([]);
   });
 
+  it('mantém sem erro um grupo já atribuído que deixou de estar ativo', async () => {
+    const { repositorio, definir } = montar(instituicaoComDoisAdministradores(), [GRUPO_LEITURA, GRUPO_DE_OUTRA_INSTITUICAO]);
+
+    const resultado = await definir.executar(ACESSO, comando([GRUPO_LEITURA, GRUPO_DE_OUTRA_INSTITUICAO]));
+
+    expect(ehOk(resultado) && resultado.valor.versao).toBe(VERSAO_DO_ALVO);
+    expect(repositorio.salvos).toEqual([]);
+  });
+
   it('devolve RECURSO_NAO_ENCONTRADO para id desconhecido', async () => {
     const { definir } = montar(instituicaoComDoisAdministradores(), [GRUPO_LEITURA]);
 
