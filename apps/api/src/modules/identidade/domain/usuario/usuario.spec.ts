@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type { ErroDeDominio } from '../../../../shared/kernel/erro-de-dominio.js';
 import { ehErr, ehOk, type Result } from '../../../../shared/kernel/result.js';
 import { Convite } from './convite.js';
-import { LIMITE_DE_CARACTERES_DO_MOTIVO_DE_SUSPENSAO, Usuario } from './usuario.js';
+import { LIMITE_DE_CARACTERES_DO_MOTIVO, Usuario } from './usuario.js';
 
 const USUARIO_ID = 'usuario-1' as UsuarioId;
 const ADMIN_ID = 'admin-1' as UsuarioId;
@@ -383,7 +383,7 @@ describe('Usuario.desativar', () => {
 
   it('aceita motivo no limite de caracteres, contado após o trim, e registra o motivo aparado', () => {
     const usuario = ativo();
-    const motivoAparado = 'a'.repeat(LIMITE_DE_CARACTERES_DO_MOTIVO_DE_SUSPENSAO);
+    const motivoAparado = 'a'.repeat(LIMITE_DE_CARACTERES_DO_MOTIVO);
 
     expect(ehOk(usuario.desativar(ADMIN_ID, `  ${motivoAparado}\n `, DEPOIS))).toBe(true);
     expect(usuario.situacao).toBe('SUSPENSO');
@@ -392,7 +392,7 @@ describe('Usuario.desativar', () => {
 
   it('recusa motivo acima do limite de caracteres com MOTIVO_LONGO_DEMAIS', () => {
     const usuario = ativo();
-    const motivo = 'a'.repeat(LIMITE_DE_CARACTERES_DO_MOTIVO_DE_SUSPENSAO + 1);
+    const motivo = 'a'.repeat(LIMITE_DE_CARACTERES_DO_MOTIVO + 1);
 
     expect(codigoDe(usuario.desativar(ADMIN_ID, motivo, DEPOIS))).toBe('MOTIVO_LONGO_DEMAIS');
     expect(usuario.situacao).toBe('ATIVO');
@@ -408,12 +408,15 @@ describe('Usuario.desativar', () => {
   });
 
   it.each([
-    ['CONVITE_PENDENTE', 'USUARIO_CONVITE_PENDENTE'],
-    ['REVOGADO', 'USUARIO_REVOGADO'],
-  ] as const)('recusa desativar usuário %s com %s', (situacao, codigo) => {
+    'CONVITE_PENDENTE',
+    'REVOGADO',
+  ] as const)('recusa desativar usuário %s com SITUACAO_DO_USUARIO_NAO_PERMITE', (situacao) => {
     const usuario = emSituacao(situacao);
 
-    expect(codigoDe(usuario.desativar(ADMIN_ID, 'motivo', DEPOIS))).toBe(codigo);
+    const resultado = usuario.desativar(ADMIN_ID, 'motivo', DEPOIS);
+
+    expect(codigoDe(resultado)).toBe('SITUACAO_DO_USUARIO_NAO_PERMITE');
+    expect(ehErr(resultado) && resultado.erro.detalhes).toEqual({ situacao });
     expect(usuario.situacao).toBe(situacao);
     expect(usuario.retirarEventos()).toEqual([]);
   });
@@ -423,31 +426,60 @@ describe('Usuario.reativar', () => {
   it('volta de SUSPENSO para ATIVO com USUARIO_REATIVADO e autor', () => {
     const usuario = emSituacao('SUSPENSO');
 
-    const resultado = usuario.reativar(ADMIN_ID, DEPOIS);
+    const resultado = usuario.reativar(ADMIN_ID, 'voltou das férias', DEPOIS);
 
     expect(ehOk(resultado)).toBe(true);
     expect(usuario.situacao).toBe('ATIVO');
     expect(usuario.retirarEventos()).toMatchObject([
-      { tipo: 'USUARIO_REATIVADO', ocorridoEm: DEPOIS, dados: { autorId: ADMIN_ID } },
+      { tipo: 'USUARIO_REATIVADO', ocorridoEm: DEPOIS, dados: { autorId: ADMIN_ID, motivo: 'voltou das férias' } },
     ]);
+  });
+
+  it.each(['', '   \n'])('recusa reativar sem motivo (%j) com MOTIVO_OBRIGATORIO', (motivo) => {
+    const usuario = emSituacao('SUSPENSO');
+
+    expect(codigoDe(usuario.reativar(ADMIN_ID, motivo, DEPOIS))).toBe('MOTIVO_OBRIGATORIO');
+    expect(usuario.situacao).toBe('SUSPENSO');
+    expect(usuario.retirarEventos()).toEqual([]);
+  });
+
+  it('grava o motivo aparado e aceita exatamente o limite', () => {
+    const usuario = emSituacao('SUSPENSO');
+    const motivoAparado = 'a'.repeat(LIMITE_DE_CARACTERES_DO_MOTIVO);
+
+    expect(ehOk(usuario.reativar(ADMIN_ID, `  ${motivoAparado}\n `, DEPOIS))).toBe(true);
+
+    expect(usuario.retirarEventos()).toMatchObject([{ tipo: 'USUARIO_REATIVADO', dados: { motivo: motivoAparado } }]);
+  });
+
+  it('recusa motivo acima do limite com MOTIVO_LONGO_DEMAIS', () => {
+    const usuario = emSituacao('SUSPENSO');
+
+    const resultado = usuario.reativar(ADMIN_ID, 'a'.repeat(LIMITE_DE_CARACTERES_DO_MOTIVO + 1), DEPOIS);
+
+    expect(codigoDe(resultado)).toBe('MOTIVO_LONGO_DEMAIS');
+    expect(usuario.situacao).toBe('SUSPENSO');
   });
 
   it('reativar usuário já ATIVO é idempotente: ok, sem evento', () => {
     const usuario = ativo();
     usuario.retirarEventos();
 
-    expect(ehOk(usuario.reativar(ADMIN_ID, DEPOIS))).toBe(true);
+    expect(ehOk(usuario.reativar(ADMIN_ID, 'motivo', DEPOIS))).toBe(true);
     expect(usuario.situacao).toBe('ATIVO');
     expect(usuario.retirarEventos()).toEqual([]);
   });
 
   it.each([
-    ['CONVITE_PENDENTE', 'USUARIO_CONVITE_PENDENTE'],
-    ['REVOGADO', 'USUARIO_REVOGADO'],
-  ] as const)('recusa reativar usuário %s com %s', (situacao, codigo) => {
+    'CONVITE_PENDENTE',
+    'REVOGADO',
+  ] as const)('recusa reativar usuário %s com SITUACAO_DO_USUARIO_NAO_PERMITE', (situacao) => {
     const usuario = emSituacao(situacao);
 
-    expect(codigoDe(usuario.reativar(ADMIN_ID, DEPOIS))).toBe(codigo);
+    const resultado = usuario.reativar(ADMIN_ID, 'motivo', DEPOIS);
+
+    expect(codigoDe(resultado)).toBe('SITUACAO_DO_USUARIO_NAO_PERMITE');
+    expect(ehErr(resultado) && resultado.erro.detalhes).toEqual({ situacao });
     expect(usuario.situacao).toBe(situacao);
     expect(usuario.retirarEventos()).toEqual([]);
   });
@@ -456,7 +488,7 @@ describe('Usuario.reativar', () => {
     const usuario = ativo();
 
     usuario.desativar(ADMIN_ID, 'pausa', AGORA);
-    usuario.reativar(ADMIN_ID, DEPOIS);
+    usuario.reativar(ADMIN_ID, 'motivo', DEPOIS);
 
     expect(usuario.subjectId).toBe(SUBJECT);
     expect(usuario.grupos).toEqual([GRUPO_A]);
@@ -541,7 +573,7 @@ describe('Usuario.definirGrupos', () => {
   it('recusa definir grupos de usuário REVOGADO', () => {
     const usuario = emSituacao('REVOGADO');
 
-    expect(codigoDe(usuario.definirGrupos([GRUPO_B], ADMIN_ID, DEPOIS))).toBe('USUARIO_REVOGADO');
+    expect(codigoDe(usuario.definirGrupos([GRUPO_B], ADMIN_ID, DEPOIS))).toBe('SITUACAO_DO_USUARIO_NAO_PERMITE');
     expect(usuario.grupos).toEqual([GRUPO_A]);
     expect(usuario.retirarEventos()).toEqual([]);
   });
@@ -647,7 +679,7 @@ describe('Usuario · ativadoEm e suspensoEm', () => {
   it('reativar limpa a suspensão', () => {
     const usuario = ativo();
     usuario.desativar(ADMIN_ID, 'motivo', DEPOIS);
-    usuario.reativar(ADMIN_ID, EXPIRA_EM);
+    usuario.reativar(ADMIN_ID, 'motivo', EXPIRA_EM);
 
     expect(usuario.suspensoEm).toBeNull();
   });

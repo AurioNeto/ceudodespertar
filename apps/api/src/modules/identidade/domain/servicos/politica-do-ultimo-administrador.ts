@@ -4,7 +4,10 @@ import { err, ok, type Result } from '../../../../shared/kernel/result.js';
 import type { PermissoesEfetivas } from '../permissao/permissoes-efetivas.js';
 import type { Usuario } from '../usuario/usuario.js';
 
-const PERMISSAO_DE_ADMINISTRADOR: Permissao = 'sistema.usuario.gerenciar';
+const PERMISSOES_QUE_NUNCA_PODEM_FICAR_SEM_ADMINISTRADOR: readonly Permissao[] = [
+  'sistema.usuario.gerenciar',
+  'sistema.grupo.gerenciar',
+];
 
 export interface UsuarioDaInstituicao {
   readonly id: UsuarioId;
@@ -13,19 +16,19 @@ export interface UsuarioDaInstituicao {
 }
 
 export const UsuarioDaInstituicao = {
-  de(usuario: Usuario, permissoesEfetivas: PermissoesEfetivas): UsuarioDaInstituicao {
+  de(usuario: Pick<Usuario, 'id' | 'situacao'>, permissoesEfetivas: PermissoesEfetivas): UsuarioDaInstituicao {
     return { id: usuario.id, situacao: usuario.situacao, permissoesEfetivas: new Set(permissoesEfetivas.lista) };
   },
 };
 
-function ehAdministradorAtivo(usuario: UsuarioDaInstituicao): boolean {
-  return usuario.situacao === 'ATIVO' && usuario.permissoesEfetivas.has(PERMISSAO_DE_ADMINISTRADOR);
+function ehAdministradorAtivo(usuario: UsuarioDaInstituicao, permissao: Permissao): boolean {
+  return usuario.situacao === 'ATIVO' && usuario.permissoesEfetivas.has(permissao);
 }
 
-function idsDosAdministradoresAtivos(instituicao: readonly UsuarioDaInstituicao[]): Set<UsuarioId> {
+function idsDosAdministradoresAtivos(instituicao: readonly UsuarioDaInstituicao[], permissao: Permissao): Set<UsuarioId> {
   const ehAdministradorPorId = new Map<UsuarioId, boolean>();
   for (const usuario of instituicao) {
-    const ehAdministrador = ehAdministradorAtivo(usuario);
+    const ehAdministrador = ehAdministradorAtivo(usuario, permissao);
     const jaVisto = ehAdministradorPorId.get(usuario.id);
     if (jaVisto !== undefined && jaVisto !== ehAdministrador) {
       throw new RangeError(`estado da instituição com linhas conflitantes para o usuário ${usuario.id}`);
@@ -41,11 +44,15 @@ export class PoliticaDoUltimoAdministrador {
     depois: readonly UsuarioDaInstituicao[],
     autorId: UsuarioId,
   ): Result<void, ErroDeDominio> {
-    const administradoresAntes = idsDosAdministradoresAtivos(antes);
-    const administradoresDepois = idsDosAdministradoresAtivos(depois);
+    for (const permissao of PERMISSOES_QUE_NUNCA_PODEM_FICAR_SEM_ADMINISTRADOR) {
+      const administradoresAntes = idsDosAdministradoresAtivos(antes, permissao);
+      const administradoresDepois = idsDosAdministradoresAtivos(depois, permissao);
 
-    if (administradoresAntes.size > 0 && administradoresDepois.size === 0) {
-      return err(erroDeDominio('ULTIMO_ADMINISTRADOR', { autorId, administradoresAfetados: [...administradoresAntes] }));
+      if (administradoresAntes.size > 0 && administradoresDepois.size === 0) {
+        return err(
+          erroDeDominio('ULTIMO_ADMINISTRADOR', { autorId, permissao, administradoresAfetados: [...administradoresAntes] }),
+        );
+      }
     }
     return ok();
   }

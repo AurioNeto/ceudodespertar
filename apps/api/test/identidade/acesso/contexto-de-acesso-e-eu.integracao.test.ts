@@ -241,7 +241,7 @@ describe('contexto de acesso e GET /api/v1/eu (etapa B0)', () => {
       expect((await aplicacao.pedirComo(SUJEITO_DE_A)).status).toBe(401);
 
       const suspenso = await comContexto(INSTITUICAO_A, () => aplicacao.usuarios.porId(usuario.id));
-      suspenso!.reativar(usuario.id, AGORA);
+      suspenso!.reativar(usuario.id, 'retorno', AGORA);
       await comContexto(INSTITUICAO_A, () => aplicacao.usuarios.salvar(suspenso!));
       await aplicacao.entregarEventos();
 

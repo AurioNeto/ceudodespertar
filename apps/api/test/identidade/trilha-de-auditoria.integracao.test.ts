@@ -177,13 +177,13 @@ describe('trilha de auditoria gravada na transação do ato', () => {
     });
   });
 
-  it('suspensão e reativação registram uma linha cada, com o motivo da suspensão', async () => {
+  it('suspensão e reativação registram uma linha cada, com o motivo de cada uma', async () => {
     const convidado = novoUsuarioConvidado();
     await naInstituicaoA(() => ambiente.usuarios.adicionar(convidado));
     const usuario = await carregar(convidado.id);
     usuario.ativar(convidado.convite!.hashDoToken, SUBJECT, DEPOIS);
     usuario.desativar(AUTOR, 'afastamento', DEPOIS);
-    usuario.reativar(AUTOR, DEPOIS);
+    usuario.reativar(AUTOR, 'retorno', DEPOIS);
 
     await naInstituicaoA(() => ambiente.usuarios.salvar(usuario));
 
@@ -194,7 +194,13 @@ describe('trilha de auditoria gravada na transação do ato', () => {
     expect(linhas.find((linha) => linha.operacao === 'USUARIO_SUSPENSO')?.detalhes).toEqual([
       { rotulo: 'Motivo', valor: 'afastamento' },
     ]);
-    expect(linhas.filter((linha) => linha.sensivel).map((linha) => linha.operacao)).toEqual(['USUARIO_SUSPENSO']);
+    expect(linhas.find((linha) => linha.operacao === 'USUARIO_REATIVADO')?.detalhes).toEqual([
+      { rotulo: 'Motivo', valor: 'retorno' },
+    ]);
+    expect(linhas.filter((linha) => linha.sensivel).map((linha) => linha.operacao).toSorted()).toEqual([
+      'USUARIO_REATIVADO',
+      'USUARIO_SUSPENSO',
+    ]);
     expect(linhas.find((linha) => linha.operacao === 'USUARIO_ATIVADO')).toMatchObject({
       autor_tipo: 'USUARIO',
       autor_usuario_id: convidado.id,

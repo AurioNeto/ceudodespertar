@@ -40,7 +40,7 @@ function semDetalhes(): DetalhesDoEvento {
   return [];
 }
 
-function detalhesDeSuspensao(dados: Dados): DetalhesDoEvento {
+function detalhesDeMotivo(dados: Dados): DetalhesDoEvento {
   return [{ rotulo: ROTULOS_DE_AUDITORIA.motivo, valor: textoDe(dados, 'motivo') }];
 }
 
@@ -89,8 +89,8 @@ function detalhesEspecificosDaAcao(acao: string, dados: Dados): DetalhesDoEvento
 const DETALHES_POR_TIPO: Record<TipoDeEventoDaIdentidade, MapeadorDeDetalhes> = {
   USUARIO_CONVIDADO: semDetalhes,
   USUARIO_ATIVADO: semDetalhes,
-  USUARIO_SUSPENSO: detalhesDeSuspensao,
-  USUARIO_REATIVADO: semDetalhes,
+  USUARIO_SUSPENSO: detalhesDeMotivo,
+  USUARIO_REATIVADO: detalhesDeMotivo,
   GRUPO_ALTERADO: detalhesDeMudancaDeGrupos,
   GRUPO_EDITADO: detalhesDeEdicaoDeGrupo,
 };
@@ -99,7 +99,7 @@ const SENSIBILIDADE_POR_TIPO: Record<TipoDeEventoDaIdentidade, boolean> = {
   USUARIO_CONVIDADO: false,
   USUARIO_ATIVADO: false,
   USUARIO_SUSPENSO: true,
-  USUARIO_REATIVADO: false,
+  USUARIO_REATIVADO: true,
   GRUPO_ALTERADO: false,
   GRUPO_EDITADO: false,
 };

@@ -313,7 +313,7 @@ describe('RepositorioDeUsuarioMikroOrm', () => {
     });
 
     const reativado = await carregar(convidado.id);
-    reativado.reativar(AUTOR, EM_72_HORAS);
+    reativado.reativar(AUTOR, 'retorno', EM_72_HORAS);
     await naInstituicaoA(() => ambiente.usuarios.salvar(reativado));
     expect(await linhaDoUsuario(convidado.id)).toMatchObject({ situacao: 'ATIVO', suspenso_em: null, versao: 4 });
   });
