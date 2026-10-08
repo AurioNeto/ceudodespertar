@@ -194,6 +194,7 @@ describe('trilha de auditoria gravada na transação do ato', () => {
     expect(linhas.find((linha) => linha.operacao === 'USUARIO_SUSPENSO')?.detalhes).toEqual([
       { rotulo: 'Motivo', valor: 'afastamento' },
     ]);
+    expect(linhas.filter((linha) => linha.sensivel).map((linha) => linha.operacao)).toEqual(['USUARIO_SUSPENSO']);
     expect(linhas.find((linha) => linha.operacao === 'USUARIO_ATIVADO')).toMatchObject({
       autor_tipo: 'USUARIO',
       autor_usuario_id: convidado.id,

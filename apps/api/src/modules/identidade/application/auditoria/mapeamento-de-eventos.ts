@@ -95,6 +95,15 @@ const DETALHES_POR_TIPO: Record<TipoDeEventoDaIdentidade, MapeadorDeDetalhes> = 
   GRUPO_EDITADO: detalhesDeEdicaoDeGrupo,
 };
 
+const SENSIBILIDADE_POR_TIPO: Record<TipoDeEventoDaIdentidade, boolean> = {
+  USUARIO_CONVIDADO: false,
+  USUARIO_ATIVADO: false,
+  USUARIO_SUSPENSO: true,
+  USUARIO_REATIVADO: false,
+  GRUPO_ALTERADO: false,
+  GRUPO_EDITADO: false,
+};
+
 function ehTipoDaIdentidade(tipo: string): tipo is TipoDeEventoDaIdentidade {
   return (TIPOS_DE_EVENTO_DA_IDENTIDADE as readonly string[]).includes(tipo);
 }
@@ -112,6 +121,6 @@ export function mapearEventoParaAuditoria(evento: EventoDeDominio): EntradaDeAud
     agregadoId: evento.agregadoId,
     pessoaAlvoId: null,
     detalhes: DETALHES_POR_TIPO[evento.tipo](dados),
-    sensivel: false,
+    sensivel: SENSIBILIDADE_POR_TIPO[evento.tipo],
   };
 }

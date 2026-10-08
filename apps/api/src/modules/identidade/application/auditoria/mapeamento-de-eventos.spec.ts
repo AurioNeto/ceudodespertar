@@ -112,6 +112,7 @@ describe('mapearEventoParaAuditoria', () => {
       operacao: 'USUARIO_SUSPENSO',
       autorId: AUTOR,
       detalhes: [{ rotulo: ROTULOS_DE_AUDITORIA.motivo, valor: 'afastamento' }],
+      sensivel: true,
     });
   });
 
