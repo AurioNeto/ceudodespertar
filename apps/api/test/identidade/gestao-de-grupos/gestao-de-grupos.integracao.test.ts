@@ -564,14 +564,22 @@ describe('gestão de grupos pela API (Doc 3 §11, Doc 7 §25)', () => {
       });
     });
 
-    it('ordena por nome sem distinguir maiúsculas de minúsculas', async () => {
+    it('ordena por nome sem distinguir maiúsculas de minúsculas mesmo com collation binária', async () => {
+      await banco.owner.query('ALTER TABLE identidade.grupo ALTER COLUMN nome TYPE text COLLATE "C"');
       await semearCasa();
       const minusculo = novoGrupoNomeado('beta', [PERMISSAO_DA_LEITURA]);
-      await semearUsuarios(aplicacao, INSTITUICAO_A, [minusculo], [usuarioAtivoEm('sub-qualquer', [])]);
+      const maiusculoSemAcento = novoGrupoNomeado('Alfa', [PERMISSAO_DA_LEITURA]);
+      const minusculoDepois = novoGrupoNomeado('alfa2', [PERMISSAO_DA_LEITURA]);
+      await semearUsuarios(
+        aplicacao,
+        INSTITUICAO_A,
+        [minusculo, maiusculoSemAcento, minusculoDepois],
+        [usuarioAtivoEm('sub-qualquer', [])],
+      );
 
       const { itens } = (await (await aplicacao.pedirComo(ADMIN, ROTA_GRUPOS)).json()) as { itens: { nome: string }[] };
 
-      expect(itens.map(({ nome }) => nome)).toEqual(['Administração', 'beta', 'Leitura']);
+      expect(itens.map(({ nome }) => nome)).toEqual(['Administração', 'Alfa', 'alfa2', 'beta', 'Leitura']);
     });
 
     it('não lista grupo excluído nem as permissões dele', async () => {
