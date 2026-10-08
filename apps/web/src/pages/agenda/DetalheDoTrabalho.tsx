@@ -267,7 +267,7 @@ export function DetalheDoTrabalho({
             <Button
               variant="quiet"
               iconName="copy"
-              onClick={() => onAviso('Link do preparo copiado. Quem abrir marca as tarefas sem precisar de login.')}
+              onClick={() => onAviso('Link do preparo copiado. Quem abrir entra com o próprio login para marcar as tarefas.')}
             >
               Copiar
             </Button>

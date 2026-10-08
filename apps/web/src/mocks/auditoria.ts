@@ -365,7 +365,7 @@ export const acessos: readonly RegistroDeAcesso[] = [
     leitorGrupo: 'Acolhimento',
     pessoaId: pes('p-7'),
     pessoaNome: 'Helena Duarte',
-    contexto: { tipo: 'INSCRICAO', descricao: 'Trabalho de 05/09 · gestante, participação fora do salão' },
+    contexto: { tipo: 'INSCRICAO', descricao: 'Trabalho de 05/09' },
   },
   {
     id: ace('ac-12'),
@@ -465,7 +465,7 @@ export const acessos: readonly RegistroDeAcesso[] = [
     leitorGrupo: 'Governança',
     pessoaId: pes('p-7'),
     pessoaNome: 'Helena Duarte',
-    contexto: { tipo: 'ATENDIMENTO', descricao: 'Decisão sobre participação de gestante' },
+    contexto: { tipo: 'ATENDIMENTO', descricao: 'Decisão sobre participação em trabalho' },
   },
   {
     id: ace('ac-02'),
@@ -485,7 +485,7 @@ export const acessos: readonly RegistroDeAcesso[] = [
     leitorGrupo: 'Acolhimento',
     pessoaId: pes('p-6'),
     pessoaNome: 'Sérgio Bittencourt',
-    contexto: { tipo: 'INSCRICAO', descricao: 'Trabalho de 22/08 · cirurgia cardíaca declarada' },
+    contexto: { tipo: 'INSCRICAO', descricao: 'Trabalho de 22/08' },
   },
 ];
 
