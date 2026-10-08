@@ -35,5 +35,5 @@ export const TELAS: RegistroDeTelas = {
   pessoas: MOCK,
   anamnese: MOCK,
   auditoria: MOCK,
-  perfil: MOCK,
+  perfil: { fonte: 'api' },
 };
