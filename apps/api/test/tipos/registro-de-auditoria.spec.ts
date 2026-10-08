@@ -37,6 +37,15 @@ describe('RegistroDeAuditoria — contrato de tipos do ator', () => {
     expect(registro.autorId).toBeNull();
   });
 
+  it('aceita autorTipo LINK_PUBLICO sem autorId', () => {
+    const registro: RegistroDeAuditoria = {
+      ...CAMPOS_COMUNS,
+      autorTipo: 'LINK_PUBLICO',
+    };
+
+    expect(registro.autorId).toBeUndefined();
+  });
+
   it('aceita GRUPO_EDITADO como operação auditada', () => {
     const registro: RegistroDeAuditoria = {
       ...CAMPOS_COMUNS,

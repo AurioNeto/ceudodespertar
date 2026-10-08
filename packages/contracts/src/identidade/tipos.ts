@@ -77,7 +77,7 @@ export interface DetalheDeAuditoria {
 
 export type AutorDeAuditoria =
   | { readonly autorTipo: 'USUARIO'; readonly autorId: UsuarioId }
-  | { readonly autorTipo: 'SISTEMA' | 'LINK_PUBLICO'; readonly autorId: null };
+  | { readonly autorTipo: 'SISTEMA' | 'LINK_PUBLICO'; readonly autorId?: null };
 
 export type RegistroDeAuditoria = AutorDeAuditoria & {
   readonly id: RegistroAuditoriaId;
