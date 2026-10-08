@@ -12,7 +12,7 @@ import {
   ROTA_USUARIOS,
   semearUsuarios,
 } from '../gestao-de-usuarios/apoio-http.js';
-import { semearGruposDeSistema } from './apoio-de-convite.js';
+import { desativarGrupo, semearGruposDeSistema } from './apoio-de-convite.js';
 
 const ADMIN = 'sub-admin';
 const SEM_PERMISSAO = 'sub-sem-permissao';
@@ -140,6 +140,22 @@ describe('listagem de usuários pela API (Doc 3 §11, Doc 7 §25)', () => {
       expect(corpo.itens).toMatchObject([{ nome: 'Sem Grupo', grupos: [], ultimoAcessoEm: null }]);
     });
 
+    it('oculta grupo desativado dos grupos do item e mantém o ativo', async () => {
+      const { gestao, mutirao, admin } = await semearCasa();
+      await banco.owner.query('begin');
+      await banco.owner.query('select set_config($1, $2, true)', [VARIAVEL_DE_SESSAO_DA_INSTITUICAO, INSTITUICAO_A]);
+      await banco.owner.query(
+        'insert into identidade.usuario_grupo (usuario_id, grupo_id, instituicao_id, atribuido_por) values ($1, $2, $3, $1)',
+        [admin.id, mutirao.id, INSTITUICAO_A],
+      );
+      await banco.owner.query('commit');
+      await desativarGrupo(banco, INSTITUICAO_A, mutirao.id);
+
+      const { corpo } = await listar({ busca: 'Administrador' });
+
+      expect(corpo.itens).toMatchObject([{ id: admin.id, grupos: [{ id: gestao.id, nome: 'Gestão da casa' }] }]);
+    });
+
     it('listar não grava trilha de consulta', async () => {
       await semearCasa();
       const antes = await contarTrilha(banco, INSTITUICAO_A);
@@ -257,6 +273,15 @@ describe('listagem de usuários pela API (Doc 3 §11, Doc 7 §25)', () => {
       const { corpo } = await listar({ grupoId: gestao.id });
 
       expect(corpo.itens.map(({ id }) => id)).toEqual([admin.id]);
+    });
+
+    it('grupoId de grupo desativado não casa ninguém', async () => {
+      const { mutirao } = await semearCasa(['Beto']);
+      await desativarGrupo(banco, INSTITUICAO_A, mutirao.id);
+
+      const { corpo } = await listar({ grupoId: mutirao.id });
+
+      expect(corpo.itens).toEqual([]);
     });
 
     it('combina situacao, grupoId e busca', async () => {

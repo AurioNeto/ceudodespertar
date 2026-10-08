@@ -64,17 +64,21 @@ export class LeitorDeUsuariosKysely extends LeitorDeUsuarios {
               from identidade.usuario_grupo atribuicao
               join identidade.grupo grupo on grupo.id = atribuicao.grupo_id
              where atribuicao.usuario_id = ${sql.ref('usuario.id')}
+               and grupo.ativo
           ), '[]'::json)`.as('grupos'),
         ]);
+      if (consulta.usuarioId !== undefined) consultaSql = consultaSql.where('usuario.id', '=', consulta.usuarioId);
       if (consulta.situacao !== undefined) consultaSql = consultaSql.where('usuario.situacao', '=', consulta.situacao);
       if (consulta.grupoId !== undefined) {
         const grupoId = consulta.grupoId;
         consultaSql = consultaSql.where(({ exists, selectFrom }) =>
           exists(
             selectFrom('identidade.usuario_grupo as filtro')
+              .innerJoin('identidade.grupo as grupo_filtrado', 'grupo_filtrado.id', 'filtro.grupo_id')
               .select('filtro.grupo_id')
               .whereRef('filtro.usuario_id', '=', 'usuario.id')
-              .where('filtro.grupo_id', '=', grupoId),
+              .where('filtro.grupo_id', '=', grupoId)
+              .where('grupo_filtrado.ativo', '=', true),
           ),
         );
       }

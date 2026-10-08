@@ -1,7 +1,8 @@
-import type { GrupoId, SituacaoUsuario, UsuarioListado } from '@cdd/contracts';
+import type { GrupoId, SituacaoUsuario, UsuarioId, UsuarioListado } from '@cdd/contracts';
 import type { PosicaoDaListagem } from './cursor-de-usuarios.js';
 
 export interface ConsultaDeUsuarios {
+  readonly usuarioId?: UsuarioId;
   readonly situacao?: SituacaoUsuario;
   readonly grupoId?: GrupoId;
   readonly busca?: string;

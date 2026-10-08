@@ -13,6 +13,7 @@ import type {
   PaginaDeUsuarios,
   SituacaoDoUsuarioAlterada,
   UsuarioConvidado,
+  UsuarioListado,
 } from '@cdd/contracts';
 import type { ContextoDeAcesso } from '../../../../shared/infrastructure/autenticacao/contexto-de-acesso.js';
 import { RequerPermissao } from '../../../../shared/infrastructure/autenticacao/marcas-de-acesso.js';
@@ -25,6 +26,7 @@ import type { Result } from '../../../../shared/kernel/result.js';
 import { ConvidarUsuario } from '../../application/usuarios/convidar-usuario.js';
 import { DefinirGruposDoUsuario } from '../../application/usuarios/definir-grupos-do-usuario.js';
 import { DesativarUsuario } from '../../application/usuarios/desativar-usuario.js';
+import { ObterUsuario } from '../../application/usuarios/obter-usuario.js';
 import { ListarUsuarios } from '../../application/usuarios/listar-usuarios.js';
 import { ReativarUsuario } from '../../application/usuarios/reativar-usuario.js';
 import { ReenviarConvite } from '../../application/usuarios/reenviar-convite.js';
@@ -46,12 +48,19 @@ export class GestaoDeUsuariosController {
     private readonly convidarUsuario: ConvidarUsuario,
     private readonly reenviarConvite: ReenviarConvite,
     private readonly listarUsuarios: ListarUsuarios,
+    private readonly obterUsuario: ObterUsuario,
   ) {}
 
   @Get()
   @ModoDeTransacao('leitura')
   listar(@Query({ schema: FiltroDeUsuarios }) filtro: FiltroDeUsuarios): Promise<PaginaDeUsuarios> {
     return this.listarUsuarios.executar(filtro);
+  }
+
+  @Get(':id')
+  @ModoDeTransacao('leitura')
+  obter(@Param({ schema: ParametrosDoUsuario }) { id }: ParametrosDoUsuario): Promise<Result<UsuarioListado, ErroDeDominio>> {
+    return this.obterUsuario.executar(id);
   }
 
   @Post()

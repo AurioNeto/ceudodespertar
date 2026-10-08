@@ -19,6 +19,7 @@ import { DefinirGruposDoUsuario } from './application/usuarios/definir-grupos-do
 import { DesativarUsuario } from './application/usuarios/desativar-usuario.js';
 import { LeitorDeGruposDaInstituicao } from './application/usuarios/leitor-de-grupos-da-instituicao.js';
 import { LeitorDeUsuarios } from './application/usuarios/leitor-de-usuarios.js';
+import { ObterUsuario } from './application/usuarios/obter-usuario.js';
 import { ListarUsuarios } from './application/usuarios/listar-usuarios.js';
 import { ReativarUsuario } from './application/usuarios/reativar-usuario.js';
 import { ReenviarConvite } from './application/usuarios/reenviar-convite.js';
@@ -80,6 +81,7 @@ import { GestaoDeUsuariosController } from './interface/http/gestao-de-usuarios.
     ConvidarUsuario,
     ReenviarConvite,
     ListarUsuarios,
+    ObterUsuario,
     SemeadorDeGruposDeSistema,
     ObterEu,
     InvalidadorDoCacheDeAcesso,

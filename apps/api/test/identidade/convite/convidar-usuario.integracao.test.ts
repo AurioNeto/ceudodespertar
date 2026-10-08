@@ -114,6 +114,16 @@ describe('convidar usuário pela API (Doc 3 §11, Doc 7 §25)', () => {
       expect([...estado.grupos].toSorted()).toEqual([gestao.id, outro.id].toSorted());
     });
 
+    it('convidar direto para o grupo ADMINISTRADOR com só sistema.usuario.gerenciar é permitido', async () => {
+      await semearCasa();
+      const administrador = (await gruposDeSistemaPorCodigo(banco, INSTITUICAO_A)).get('ADMINISTRADOR')!;
+
+      const resposta = await convidar({ ...PEDIDO, grupos: [administrador.id] });
+
+      expect(resposta.status).toBe(201);
+      expect(resposta.corpo.grupos).toEqual([{ id: administrador.id, nome: administrador.nome }]);
+    });
+
     it('grupo de outra instituição dá 404 GRUPO_INEXISTENTE e nada é gravado', async () => {
       await semearCasa();
       const grupoDeB = await semearCasaDeB();
