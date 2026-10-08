@@ -16,6 +16,7 @@ function violacaoDeRestricao(mensagem: string, constraint: string): Error {
 interface RespostaCapturada {
   status?: number;
   corpo?: CorpoDeErro;
+  cabecalhos?: Record<string, string>;
 }
 
 function hostFalso(capturada: RespostaCapturada): ArgumentsHost {
@@ -26,6 +27,9 @@ function hostFalso(capturada: RespostaCapturada): ArgumentsHost {
     },
     json(corpo: CorpoDeErro) {
       capturada.corpo = corpo;
+    },
+    setHeader(nome: string, valor: string) {
+      capturada.cabecalhos = { ...capturada.cabecalhos, [nome]: valor };
     },
   };
 
@@ -54,6 +58,24 @@ describe('FiltroGlobalDeErros', () => {
 
   afterEach(() => {
     logErro.mockRestore();
+  });
+
+  it('toda resposta 401 leva o desafio Bearer, inclusive a recusa por situação do usuário vinda do handler', () => {
+    comCorrelacaoId(randomUUID(), () => {
+      filtro.catch(new ErroDeDominioException(erroDeDominio('USUARIO_SUSPENSO')), hostFalso(capturada));
+    });
+
+    expect(capturada.status).toBe(401);
+    expect(capturada.cabecalhos).toStrictEqual({ 'WWW-Authenticate': 'Bearer' });
+  });
+
+  it('resposta que não é 401 não leva desafio de autenticação', () => {
+    comCorrelacaoId(randomUUID(), () => {
+      filtro.catch(new ErroDeDominioException(erroDeDominio('PERIODO_FECHADO')), hostFalso(capturada));
+    });
+
+    expect(capturada.status).toBe(422);
+    expect(capturada.cabecalhos).toBeUndefined();
   });
 
   it('erro de domínio (Result.err) responde com o status do mapa e o código', () => {
