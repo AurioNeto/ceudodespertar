@@ -196,7 +196,7 @@ learnings:
   - date: "2026-10-08"
     note: "ultimoAcessoEm é gravado fora do agregado, por UPDATE condicional sem versão, no máximo 1x/h no GET /eu."
   - date: "2026-10-08"
-    note: "Rota POST/PUT/PATCH/DELETE precisa declarar @ModoDeTransacao('escrita' | 'leitura-que-grava'); a aplicação recusa partir sem isso (Idempotency-Key em rota de leitura deixa de ser um 500 em tempo de requisição). Rota que não usa o banco da aplicação (saúde, pool próprio) usa @SemTransacaoNaBorda (decisão do dono, Doc 7 §5)."
+    note: "Rota POST/PUT/PATCH/DELETE precisa declarar @ModoDeTransacao('escrita' | 'leitura-que-grava'); a aplicação recusa partir sem isso (Idempotency-Key em rota de leitura deixa de ser um 500 em tempo de requisição). Rota que não usa o banco da aplicação (saúde, pool próprio) usa @SemTransacaoNaBorda, e só em rota que não muda estado: a aplicação recusa partir com @SemTransacaoNaBorda em POST/PUT/PATCH/DELETE/ALL (decisão do dono, Doc 7 §5)."
 
 --- # Ferramentas do /pre-push (monorepo pnpm)
 stack:
