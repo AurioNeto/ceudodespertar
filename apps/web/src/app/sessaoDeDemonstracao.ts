@@ -1,9 +1,6 @@
-import type { Eu, GrupoId, InstituicaoId, UsuarioId } from '@cdd/contracts';
+import { PERMISSOES, type Eu, type GrupoId, type InstituicaoId, type UsuarioId } from '@cdd/contracts';
 import { id } from '../mocks/ids';
-import { gruposIniciais } from '../mocks/pessoas';
 import type { ServicoDeEntrada } from '../dados/oidc';
-
-const GRUPO_DA_DEMONSTRACAO = 'tesouraria';
 
 export const MARCA_DA_SESSAO_DE_DEMONSTRACAO = 'sessao-de-demonstracao-somente-desenvolvimento';
 
@@ -14,8 +11,8 @@ export const euDeDemonstracao: Eu = {
     email: 'demonstracao@cdd.local',
   },
   instituicao: { id: id<InstituicaoId>('i-demonstracao'), nome: 'Céu do Despertar' },
-  grupos: [{ id: id<GrupoId>('g-tesouraria'), nome: 'Tesouraria' }],
-  permissoes: gruposIniciais.find((grupo) => grupo.id === GRUPO_DA_DEMONSTRACAO)?.permissoes ?? [],
+  grupos: [{ id: id<GrupoId>('g-administrador'), nome: 'Administrador' }],
+  permissoes: PERMISSOES,
 };
 
 export function criarEntradaDeDemonstracao(): ServicoDeEntrada {
