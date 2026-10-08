@@ -1,0 +1,1 @@
+DROP INDEX shared.chave_de_idempotencia_por_criacao;

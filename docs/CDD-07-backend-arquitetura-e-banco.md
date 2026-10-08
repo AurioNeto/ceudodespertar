@@ -287,7 +287,7 @@ Há três exceções desenhadas. O despachante do outbox: `shared.outbox` não t
 | Dinheiro | Inteiro em **centavos**, sempre — o mesmo `Dinheiro` de `packages/contracts/kernel.ts` |
 | Datas | `YYYY-MM-DD` para data local (fuso `America/Sao_Paulo`), ISO 8601 com fuso para instante, `YYYY-MM` para competência |
 | Concorrência | Toda escrita em agregado existente envia `If-Match: {versao}`; divergiu, **409 `VERSAO_DESATUALIZADA`** e o front recarrega o item. Seis pessoas raramente colidem; quando colidem, é na Verificação de lote, e perder a conferência de alguém em silêncio é o pior resultado |
-| Idempotência | Todo `POST` que cria aceita `Idempotency-Key`; a resposta fica em `shared.chave_de_idempotencia` por 24 h. Evita o lançamento em dobro do duplo toque — e prepara o terreno para o PWA offline |
+| Idempotência | Todo `POST` que cria aceita `Idempotency-Key`; a resposta fica em `shared.chave_de_idempotencia` por no máximo 24 h além do intervalo do expurgo: um job da API apaga, na subida da aplicação e depois de hora em hora, instituição a instituição, as chaves vencidas. Rota que devolve dado pessoal leva `@RespostaSemCorpoNoReplay`: só o status e o `Location` são guardados e o replay volta sem corpo. Evita o lançamento em dobro do duplo toque — e prepara o terreno para o PWA offline |
 | Paginação | Cursor opaco (`?depois=…`), nunca `offset` |
 | Leitura por bloco | Chave ausente = sem permissão; `null` = sem dado. Nunca os dois significando a mesma coisa |
 
@@ -647,6 +647,7 @@ As travas de concorrência que saíram do banco — o período e o saldo do lote
 | Trilha × anonimização | A trilha guarda referência, não nome (§16) — anonimizar não exige reescrever o que é só-inserção |
 | Logs | Nunca corpo de requisição de anamnese; CPF mascarado; IP só como hash na declaração |
 | Criptografia de coluna | Adiada (Doc 1 §5). O banco gerenciado cifra em repouso; se um dia a coluna precisar de chave própria, `item_de_resposta.valor` é o único alvo e já está isolado |
+| Resposta de idempotência | A resposta guardada de um `POST` vive no máximo 24 h além do expurgo periódico (§12). Comando que devolve dado pessoal usa `@RespostaSemCorpoNoReplay`: o corpo nunca vai para `shared.chave_de_idempotencia` e o replay volta sem corpo |
 | Retenção | O conteúdo (`item_de_resposta`) da resposta de anamnese supersedida há mais de 5 anos é elegível a expurgo, pelo mesmo caminho da anonimização. O cabeçalho fica, porque o registro de acesso, a declaração de veracidade e os itens herdados (`herdado_de`) apontam para ele. Prazo a confirmar com a coordenação (§27) |
 
 ## 24. Volume, índices e desempenho
