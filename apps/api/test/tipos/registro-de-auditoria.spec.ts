@@ -37,6 +37,16 @@ describe('RegistroDeAuditoria — contrato de tipos do ator', () => {
     expect(registro.autorId).toBeNull();
   });
 
+  it('aceita GRUPO_EDITADO como operação auditada', () => {
+    const registro: RegistroDeAuditoria = {
+      ...CAMPOS_COMUNS,
+      operacao: 'GRUPO_EDITADO',
+      autorTipo: 'SISTEMA',
+    };
+
+    expect(registro.operacao).toBe('GRUPO_EDITADO');
+  });
+
   it('recusa em tempo de compilação autorId preenchido fora de USUARIO', () => {
     // @ts-expect-error autorId só é UsuarioId quando autorTipo é USUARIO
     const registro: RegistroDeAuditoria = {

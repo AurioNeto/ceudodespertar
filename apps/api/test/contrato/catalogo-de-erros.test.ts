@@ -20,6 +20,7 @@ const RESTRICOES_QUE_O_DOMINIO_MAPEIA_NO_B0: readonly string[] = [
 const RESTRICOES_SEM_CODIGO_POR_SEREM_GUARDA_INTERNA_DO_BANCO: readonly string[] = [
   'convite_nao_usado_e_revogado',
   'autor_coerente',
+  'registro_de_auditoria_operacao_check',
 ];
 
 function arquivosSqlDeMigracaoRecursivos(diretorio: string): string[] {

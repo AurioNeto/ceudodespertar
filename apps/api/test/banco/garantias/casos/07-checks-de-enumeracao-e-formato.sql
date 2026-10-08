@@ -1,4 +1,4 @@
--- verificacoes: 9
+-- verificacoes: 10
 -- B0 · CHECKs de enumeração e de formato (Documento 7 §15): valor fora da
 -- lista declarada não entra — identidade.usuario.situacao,
 -- identidade.registro_de_auditoria.autor_tipo e .operacao — e o formato de
@@ -29,6 +29,11 @@ SELECT verif.espera_erro('registro_de_auditoria.operacao · valor fora da lista'
   INSERT INTO identidade.registro_de_auditoria (instituicao_id, autor_tipo, autor_grupos, operacao, agregado_tipo, agregado_id)
     VALUES ('a0000000-0000-0000-0000-000000000000', 'SISTEMA', ARRAY[]::text[], 'OPERACAO_INEXISTENTE', 'PeriodoContabil', gen_random_uuid())
 $$, '23514');
+
+SELECT verif.espera_ok('registro_de_auditoria.operacao · GRUPO_EDITADO é aceita', $$
+  INSERT INTO identidade.registro_de_auditoria (instituicao_id, autor_tipo, autor_grupos, operacao, agregado_tipo, agregado_id)
+    VALUES ('a0000000-0000-0000-0000-000000000000', 'SISTEMA', ARRAY[]::text[], 'GRUPO_EDITADO', 'Grupo', gen_random_uuid())
+$$);
 
 -- T29 · a aplicação não inventa permissão: grupo_permissao.permissao só
 -- aceita um código presente no catálogo (FK a identidade.permissao).
@@ -69,7 +74,7 @@ SELECT verif.confere('CHECK · identidade.registro_de_auditoria.autor_tipo não 
 SELECT verif.confere('CHECK · identidade.registro_de_auditoria.operacao não foi alargado', (
   SELECT pg_get_constraintdef(oid) FROM pg_constraint
    WHERE conrelid = 'identidade.registro_de_auditoria'::regclass AND conname = 'registro_de_auditoria_operacao_check'
-), $chk$CHECK ((operacao = ANY (ARRAY['LANCAMENTO_CONFIRMADO'::text, 'LANCAMENTO_ESTORNADO'::text, 'PENDENCIA_ABERTA'::text, 'PERIODO_FECHADO'::text, 'PERIODO_REABERTO'::text, 'PRESTACAO_GERADA'::text, 'EXTRATO_IMPORTADO'::text, 'ADIANTAMENTO_AUTORIZADO'::text, 'GRUPO_ALTERADO'::text, 'USUARIO_CONVIDADO'::text, 'USUARIO_ATIVADO'::text, 'USUARIO_SUSPENSO'::text, 'USUARIO_REATIVADO'::text, 'FORMULARIO_PUBLICADO'::text, 'PESSOA_ANONIMIZADA'::text, 'ANAMNESE_LIDA'::text, 'AUDITORIA_CONSULTADA'::text])))$chk$);
+), $chk$CHECK ((operacao = ANY (ARRAY['LANCAMENTO_CONFIRMADO'::text, 'LANCAMENTO_ESTORNADO'::text, 'PENDENCIA_ABERTA'::text, 'PERIODO_FECHADO'::text, 'PERIODO_REABERTO'::text, 'PRESTACAO_GERADA'::text, 'EXTRATO_IMPORTADO'::text, 'ADIANTAMENTO_AUTORIZADO'::text, 'GRUPO_ALTERADO'::text, 'GRUPO_EDITADO'::text, 'USUARIO_CONVIDADO'::text, 'USUARIO_ATIVADO'::text, 'USUARIO_SUSPENSO'::text, 'USUARIO_REATIVADO'::text, 'FORMULARIO_PUBLICADO'::text, 'PESSOA_ANONIMIZADA'::text, 'ANAMNESE_LIDA'::text, 'AUDITORIA_CONSULTADA'::text])))$chk$);
 
 SELECT verif.confere('CHECK · identidade.permissao.codigo não teve o formato alargado', (
   SELECT pg_get_constraintdef(oid) FROM pg_constraint
