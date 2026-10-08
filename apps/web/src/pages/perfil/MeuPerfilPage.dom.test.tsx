@@ -94,6 +94,20 @@ describe('Meu perfil', () => {
 });
 
 describe('agruparPermissoes', () => {
+  it('ordena os módulos por nome com outras por último e os códigos dentro de cada módulo', () => {
+    const grupos = agruparPermissoes([
+      'x.y.z',
+      'financeiro.lancamento.registrar',
+      'eventos.evento.criar',
+      'financeiro.conta.ler',
+    ] as Permissao[]);
+    expect(grupos.map((g) => g.modulo)).toEqual(['eventos', 'financeiro', 'outras']);
+    expect(grupos[1]?.permissoes.map((p) => p.codigo)).toEqual([
+      'financeiro.conta.ler',
+      'financeiro.lancamento.registrar',
+    ]);
+  });
+
   it.each(['constructor', 'toString', '__proto__'])(
     'código %s herdado de Object cai em outras sem descrição',
     (codigo) => {
