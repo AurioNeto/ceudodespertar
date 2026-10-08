@@ -20,6 +20,7 @@ import {
 } from '../gestao-de-usuarios/apoio-http.js';
 import {
   convitesDoUsuario,
+  desativarGrupo,
   enviadorQueSondaOBanco,
   gruposDeSistemaPorCodigo,
   semearGruposDeSistema,
@@ -119,6 +120,32 @@ describe('convidar usuário pela API (Doc 3 §11, Doc 7 §25)', () => {
       const antes = await efeitosGravados(banco, INSTITUICAO_A);
 
       const resposta = await convidar({ ...PEDIDO, grupos: [grupoDeB.id] });
+
+      expect(resposta.status).toBe(404);
+      expect(resposta.corpo).toMatchObject({ erro: 'GRUPO_INEXISTENTE' });
+      expect(await efeitosGravados(banco, INSTITUICAO_A)).toEqual(antes);
+      expect(enviador.enviados).toEqual([]);
+    });
+
+    it('grupo desativado da própria instituição dá 404 GRUPO_INEXISTENTE e nada é gravado', async () => {
+      const { outro } = await semearCasa();
+      await desativarGrupo(banco, INSTITUICAO_A, outro.id);
+      const antes = await efeitosGravados(banco, INSTITUICAO_A);
+
+      const resposta = await convidar({ ...PEDIDO, grupos: [outro.id] });
+
+      expect(resposta.status).toBe(404);
+      expect(resposta.corpo).toMatchObject({ erro: 'GRUPO_INEXISTENTE' });
+      expect(await efeitosGravados(banco, INSTITUICAO_A)).toEqual(antes);
+      expect(enviador.enviados).toEqual([]);
+    });
+
+    it('sem grupos e com LEITURA desativado, o padrão falha e nada é gravado', async () => {
+      const { leitura } = await semearCasa();
+      await desativarGrupo(banco, INSTITUICAO_A, leitura.id);
+      const antes = await efeitosGravados(banco, INSTITUICAO_A);
+
+      const resposta = await convidar(PEDIDO);
 
       expect(resposta.status).toBe(404);
       expect(resposta.corpo).toMatchObject({ erro: 'GRUPO_INEXISTENTE' });

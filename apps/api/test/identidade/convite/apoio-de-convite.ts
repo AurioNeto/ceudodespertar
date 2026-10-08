@@ -101,3 +101,15 @@ export async function convitesDoUsuario(
   );
   return linhas.map(({ hash, revogado, expira_em }) => ({ hash, revogado, expiraEm: expira_em }));
 }
+
+export async function desativarGrupo(banco: BancoDeTeste, instituicaoId: string, grupoId: string): Promise<void> {
+  await banco.owner.query('begin');
+  try {
+    await banco.owner.query('select set_config($1, $2, true)', [VARIAVEL_DE_SESSAO_DA_INSTITUICAO, instituicaoId]);
+    await banco.owner.query('update identidade.grupo set ativo = false where id = $1', [grupoId]);
+    await banco.owner.query('commit');
+  } catch (erro) {
+    await banco.owner.query('rollback');
+    throw erro;
+  }
+}
