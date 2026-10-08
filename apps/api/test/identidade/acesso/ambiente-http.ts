@@ -14,7 +14,7 @@ import { RepositorioDeUsuarioMikroOrm } from '../../../src/modules/identidade/in
 import { AutenticacaoModule } from '../../../src/shared/infrastructure/autenticacao/autenticacao.module.js';
 import { criarChavesRemotas } from '../../../src/shared/infrastructure/autenticacao/chaves-remotas.js';
 import { RequerPermissao } from '../../../src/shared/infrastructure/autenticacao/marcas-de-acesso.js';
-import { contextoDaRequisicao } from '../../../src/shared/infrastructure/autenticacao/requisicao-autenticada.js';
+import { contextoDeAcessoDaRequisicao } from '../../../src/shared/infrastructure/autenticacao/requisicao-autenticada.js';
 import type { RequisicaoHttp } from '../../../src/shared/infrastructure/autenticacao/requisicao-autenticada.js';
 import { CHAVES_DE_VERIFICACAO } from '../../../src/shared/infrastructure/autenticacao/verificador-de-token.js';
 import { BancoModule } from '../../../src/shared/infrastructure/banco/banco.module.js';
@@ -58,7 +58,7 @@ class RotaProtegidaPorPermissaoController {
 @Injectable()
 class ProvedorDeContextoDoAcessoResolvido extends ProvedorDeContextoDeInstituicao {
   identidadeAtual(contexto: ExecutionContext): IdentidadeDaRequisicao {
-    const acesso = contextoDaRequisicao(contexto.switchToHttp().getRequest<RequisicaoHttp>());
+    const acesso = contextoDeAcessoDaRequisicao(contexto.switchToHttp().getRequest<RequisicaoHttp>());
     return { instituicaoId: acesso?.instituicaoId, usuarioId: acesso?.usuarioId };
   }
 }
