@@ -2,9 +2,14 @@ import { Module } from '@nestjs/common';
 import { BancoModule } from '../../shared/infrastructure/banco/banco.module.js';
 import { EventosModule } from '../../shared/infrastructure/eventos/eventos.module.js';
 import { Relogio, RelogioDoSistema } from '../../shared/infrastructure/relogio.js';
+import { ConsultarAuditoria } from './application/auditoria/consultar-auditoria.js';
+import { LeitorDeAuditoria } from './application/auditoria/leitor-de-auditoria.js';
+import { TrilhaDeAuditoria } from './application/auditoria/trilha-de-auditoria.js';
 import { LeitorDoEu } from './application/leitor-do-eu.js';
 import { ObterEu } from './application/obter-eu.js';
 import { RegistradorDeUltimoAcesso } from './application/registrador-de-ultimo-acesso.js';
+import { GravadorDeTrilha } from './infrastructure/auditoria/gravador-de-trilha.js';
+import { LeitorDeAuditoriaKysely } from './infrastructure/auditoria/leitor-de-auditoria.kysely.js';
 import { CacheDeContextoDeAcesso } from './infrastructure/acesso/cache-de-contexto-de-acesso.js';
 import { InvalidadorDoCacheDeAcesso } from './infrastructure/acesso/invalidador-do-cache-de-acesso.js';
 import { LeitorDoEuKysely } from './infrastructure/acesso/leitor-do-eu.kysely.js';
@@ -14,11 +19,12 @@ import { RegistroDasEntidadesDaIdentidade } from './infrastructure/persistencia/
 import { RepositorioDeGrupoMikroOrm } from './infrastructure/persistencia/repositorio-de-grupo.mikro-orm.js';
 import { RepositorioDeUsuarioMikroOrm } from './infrastructure/persistencia/repositorio-de-usuario.mikro-orm.js';
 import { SemeadorDeGruposDeSistema } from './infrastructure/persistencia/semeador-de-grupos-de-sistema.js';
+import { AuditoriaController } from './interface/http/auditoria.controller.js';
 import { EuController } from './interface/http/eu.controller.js';
 
 @Module({
   imports: [BancoModule, EventosModule],
-  controllers: [EuController],
+  controllers: [EuController, AuditoriaController],
   providers: [
     { provide: Relogio, useClass: RelogioDoSistema },
     {
@@ -29,6 +35,10 @@ import { EuController } from './interface/http/eu.controller.js';
     { provide: LeitorDoEu, useClass: LeitorDoEuKysely },
     { provide: RegistradorDeUltimoAcesso, useClass: RegistradorDeUltimoAcessoKysely },
     RegistroDasEntidadesDaIdentidade,
+    GravadorDeTrilha,
+    { provide: TrilhaDeAuditoria, useExisting: GravadorDeTrilha },
+    { provide: LeitorDeAuditoria, useClass: LeitorDeAuditoriaKysely },
+    ConsultarAuditoria,
     RepositorioDeUsuarioMikroOrm,
     RepositorioDeGrupoMikroOrm,
     SemeadorDeGruposDeSistema,

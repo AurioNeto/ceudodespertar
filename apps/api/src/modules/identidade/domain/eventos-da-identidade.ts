@@ -1,0 +1,10 @@
+export const TIPOS_DE_EVENTO_DA_IDENTIDADE = [
+  'USUARIO_CONVIDADO',
+  'USUARIO_ATIVADO',
+  'USUARIO_SUSPENSO',
+  'USUARIO_REATIVADO',
+  'GRUPO_ALTERADO',
+  'GRUPO_EDITADO',
+] as const;
+
+export type TipoDeEventoDaIdentidade = (typeof TIPOS_DE_EVENTO_DA_IDENTIDADE)[number];

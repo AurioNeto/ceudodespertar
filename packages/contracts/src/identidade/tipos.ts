@@ -49,24 +49,28 @@ export interface Convite {
 
 export type FalhaDeConvite = 'INVALIDO' | 'EXPIRADO' | 'JA_USADO';
 
-export type OperacaoAuditada =
-  | 'LANCAMENTO_CONFIRMADO'
-  | 'LANCAMENTO_ESTORNADO'
-  | 'PENDENCIA_ABERTA'
-  | 'PERIODO_FECHADO'
-  | 'PERIODO_REABERTO'
-  | 'PRESTACAO_GERADA'
-  | 'EXTRATO_IMPORTADO'
-  | 'ADIANTAMENTO_AUTORIZADO'
-  | 'GRUPO_ALTERADO'
-  | 'USUARIO_CONVIDADO'
-  | 'USUARIO_ATIVADO'
-  | 'USUARIO_SUSPENSO'
-  | 'USUARIO_REATIVADO'
-  | 'FORMULARIO_PUBLICADO'
-  | 'PESSOA_ANONIMIZADA'
-  | 'ANAMNESE_LIDA'
-  | 'AUDITORIA_CONSULTADA';
+export const OPERACOES_AUDITADAS = [
+  'LANCAMENTO_CONFIRMADO',
+  'LANCAMENTO_ESTORNADO',
+  'PENDENCIA_ABERTA',
+  'PERIODO_FECHADO',
+  'PERIODO_REABERTO',
+  'PRESTACAO_GERADA',
+  'EXTRATO_IMPORTADO',
+  'ADIANTAMENTO_AUTORIZADO',
+  'GRUPO_ALTERADO',
+  'GRUPO_EDITADO',
+  'USUARIO_CONVIDADO',
+  'USUARIO_ATIVADO',
+  'USUARIO_SUSPENSO',
+  'USUARIO_REATIVADO',
+  'FORMULARIO_PUBLICADO',
+  'PESSOA_ANONIMIZADA',
+  'ANAMNESE_LIDA',
+  'AUDITORIA_CONSULTADA',
+] as const;
+
+export type OperacaoAuditada = (typeof OPERACOES_AUDITADAS)[number];
 
 export interface DetalheDeAuditoria {
   readonly rotulo: string;
@@ -76,7 +80,7 @@ export interface DetalheDeAuditoria {
 
 export type AutorDeAuditoria =
   | { readonly autorTipo: 'USUARIO'; readonly autorId: UsuarioId }
-  | { readonly autorTipo: 'SISTEMA' | 'LINK_PUBLICO'; readonly autorId: null };
+  | { readonly autorTipo: 'SISTEMA' | 'LINK_PUBLICO'; readonly autorId?: null };
 
 export type RegistroDeAuditoria = AutorDeAuditoria & {
   readonly id: RegistroAuditoriaId;

@@ -378,7 +378,11 @@ describe('RepositorioDeUsuarioMikroOrm', () => {
     const outboxQueFalha: RepositorioDoOutbox = {
       gravar: () => Promise.reject(new Error('outbox indisponível')),
     };
-    const repositorioComOutboxQuebrado = new RepositorioDeUsuarioMikroOrm(ambiente.unidadeDeTrabalho, outboxQueFalha);
+    const repositorioComOutboxQuebrado = new RepositorioDeUsuarioMikroOrm(
+      ambiente.unidadeDeTrabalho,
+      outboxQueFalha,
+      ambiente.trilha,
+    );
     const usuario = await carregar(convidado.id);
     usuario.desativar(AUTOR, 'motivo', DEPOIS);
 

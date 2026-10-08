@@ -52,6 +52,7 @@ export const FEICAO: Record<OperacaoAuditada, FeicaoDaOperacao> = {
   EXTRATO_IMPORTADO: { rotulo: 'Extrato importado', verbo: 'importou', icone: 'file-spreadsheet', tom: 'neutro' },
   ADIANTAMENTO_AUTORIZADO: { rotulo: 'Adiantamento autorizado', verbo: 'autorizou', icone: 'shield-half', tom: 'neutro' },
   GRUPO_ALTERADO: { rotulo: 'Grupo de usuário alterado', verbo: 'mudou o grupo de', icone: 'key-round', tom: 'atencao' },
+  GRUPO_EDITADO: { rotulo: 'Grupo editado', verbo: 'editou o grupo', icone: 'key-round', tom: 'atencao' },
   USUARIO_CONVIDADO: { rotulo: 'Usuário convidado', verbo: 'convidou', icone: 'user-plus', tom: 'neutro' },
   USUARIO_SUSPENSO: { rotulo: 'Usuário suspenso', verbo: 'suspendeu', icone: 'user-x', tom: 'atencao' },
   USUARIO_ATIVADO: { rotulo: 'Acesso ativado', verbo: 'ativou o acesso de', icone: 'circle-check', tom: 'neutro' },

@@ -12,6 +12,7 @@ import { gerarUuidV7 } from '../../src/shared/kernel/ids.js';
 import { Grupo } from '../../src/modules/identidade/domain/grupo/grupo.js';
 import { Usuario } from '../../src/modules/identidade/domain/usuario/usuario.js';
 import { ENTIDADES_DA_IDENTIDADE } from '../../src/modules/identidade/infrastructure/persistencia/entidades-da-identidade.js';
+import { GravadorDeTrilha } from '../../src/modules/identidade/infrastructure/auditoria/gravador-de-trilha.js';
 import { RepositorioDeGrupoMikroOrm } from '../../src/modules/identidade/infrastructure/persistencia/repositorio-de-grupo.mikro-orm.js';
 import { RepositorioDeUsuarioMikroOrm } from '../../src/modules/identidade/infrastructure/persistencia/repositorio-de-usuario.mikro-orm.js';
 import { SemeadorDeGruposDeSistema } from '../../src/modules/identidade/infrastructure/persistencia/semeador-de-grupos-de-sistema.js';
@@ -28,6 +29,7 @@ export interface AmbienteDaIdentidade {
   readonly usuarios: RepositorioDeUsuarioMikroOrm;
   readonly grupos: RepositorioDeGrupoMikroOrm;
   readonly semeador: SemeadorDeGruposDeSistema;
+  readonly trilha: GravadorDeTrilha;
 }
 
 export async function abrirAmbienteDaIdentidade(banco: BancoDeTeste, poolMaximo = 4): Promise<AmbienteDaIdentidade> {
@@ -37,12 +39,14 @@ export async function abrirAmbienteDaIdentidade(banco: BancoDeTeste, poolMaximo 
   });
   const unidadeDeTrabalho = new UnidadeDeTrabalhoMikroOrm(orm);
   const outbox = new RepositorioDoOutboxPostgres(new SinalizadorDeEventos());
+  const trilha = new GravadorDeTrilha();
   return {
     orm,
     unidadeDeTrabalho,
-    usuarios: new RepositorioDeUsuarioMikroOrm(unidadeDeTrabalho, outbox),
-    grupos: new RepositorioDeGrupoMikroOrm(unidadeDeTrabalho, outbox),
+    usuarios: new RepositorioDeUsuarioMikroOrm(unidadeDeTrabalho, outbox, trilha),
+    grupos: new RepositorioDeGrupoMikroOrm(unidadeDeTrabalho, outbox, trilha),
     semeador: new SemeadorDeGruposDeSistema(unidadeDeTrabalho),
+    trilha,
   };
 }
 
