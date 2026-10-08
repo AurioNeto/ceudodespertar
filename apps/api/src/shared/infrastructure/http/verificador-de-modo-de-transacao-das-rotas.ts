@@ -25,6 +25,21 @@ export class ErroDeRotaQueMudaEstadoSemModoGravavel extends Error {
   }
 }
 
+export class ErroDeRotaQueMudaEstadoSemTransacao extends Error {
+  constructor(rotas: readonly string[]) {
+    super(
+      `rotas que mudam estado marcadas com @SemTransacaoNaBorda: ${rotas.join(', ')} — ` +
+        'rota que muda estado não pode dispensar a transação da borda',
+    );
+    this.name = 'ErroDeRotaQueMudaEstadoSemTransacao';
+  }
+}
+
+interface RotasInvalidas {
+  readonly semModoGravavel: string[];
+  readonly semTransacao: string[];
+}
+
 @Injectable()
 export class VerificadorDeModoDeTransacaoDasRotas implements OnModuleInit {
   constructor(
@@ -34,30 +49,41 @@ export class VerificadorDeModoDeTransacaoDasRotas implements OnModuleInit {
   ) {}
 
   onModuleInit(): void {
-    const rotasInvalidas = this.descoberta
+    const { semModoGravavel, semTransacao } = this.descoberta
       .getControllers()
-      .flatMap((wrapper) => (typeof wrapper.metatype === 'function' ? this.rotasInvalidasDe(wrapper.metatype as Type) : []));
-    if (rotasInvalidas.length > 0) {
-      throw new ErroDeRotaQueMudaEstadoSemModoGravavel(rotasInvalidas);
+      .flatMap((wrapper) => (typeof wrapper.metatype === 'function' ? this.rotasInvalidasDe(wrapper.metatype as Type) : []))
+      .reduce<RotasInvalidas>(
+        (acumulado, { tipo, rota }) => {
+          acumulado[tipo].push(rota);
+          return acumulado;
+        },
+        { semModoGravavel: [], semTransacao: [] },
+      );
+    if (semTransacao.length > 0) {
+      throw new ErroDeRotaQueMudaEstadoSemTransacao(semTransacao);
+    }
+    if (semModoGravavel.length > 0) {
+      throw new ErroDeRotaQueMudaEstadoSemModoGravavel(semModoGravavel);
     }
   }
 
-  private rotasInvalidasDe(controlador: Type): string[] {
+  private rotasInvalidasDe(controlador: Type): { tipo: keyof RotasInvalidas; rota: string }[] {
     const prototipo = controlador.prototype as Record<string, Function>;
     return this.scanner.getAllMethodNames(prototipo).flatMap((nomeDoMetodo) => {
       const handler = prototipo[nomeDoMetodo]!;
       const metodoHttp = Reflect.getMetadata(METHOD_METADATA, handler) as RequestMethod | undefined;
       if (metodoHttp === undefined || !METODOS_QUE_MUDAM_ESTADO.has(metodoHttp)) return [];
+      const rota = `${controlador.name}.${nomeDoMetodo} (${RequestMethod[metodoHttp]})`;
       const semTransacao = this.reflector.getAllAndOverride<boolean | undefined>(CHAVE_DE_SEM_TRANSACAO_NA_BORDA, [
         handler,
         controlador,
       ]);
-      if (semTransacao === true) return [];
+      if (semTransacao === true) return [{ tipo: 'semTransacao' as const, rota }];
       const modo = this.reflector.getAllAndOverride<ModoDeTransacao | undefined>(CHAVE_DO_MODO_DE_TRANSACAO, [
         handler,
         controlador,
       ]);
-      return MODOS_GRAVAVEIS.has(modo) ? [] : [`${controlador.name}.${nomeDoMetodo} (${RequestMethod[metodoHttp]})`];
+      return MODOS_GRAVAVEIS.has(modo) ? [] : [{ tipo: 'semModoGravavel' as const, rota }];
     });
   }
 }

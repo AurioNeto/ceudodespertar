@@ -1,11 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { Controller, Delete, Get, Patch, Post, Put } from '@nestjs/common';
+import { All, Controller, Delete, Get, Patch, Post, Put } from '@nestjs/common';
 import { DiscoveryModule } from '@nestjs/core';
 import { Test } from '@nestjs/testing';
 import { ModoDeTransacao } from './modo-de-transacao.decorator.js';
 import { SemTransacaoNaBorda } from './sem-transacao-na-borda.decorator.js';
 import {
   ErroDeRotaQueMudaEstadoSemModoGravavel,
+  ErroDeRotaQueMudaEstadoSemTransacao,
   VerificadorDeModoDeTransacaoDasRotas,
 } from './verificador-de-modo-de-transacao-das-rotas.js';
 
@@ -49,6 +50,39 @@ class PostSemMarca {
   criar(): void {}
 }
 
+@Controller('put-sem-marca')
+class PutSemMarca {
+  @Put()
+  substituir(): void {}
+}
+
+@Controller('delete-sem-marca')
+class DeleteSemMarca {
+  @Delete()
+  remover(): void {}
+}
+
+@Controller('all-sem-marca')
+class AllSemMarca {
+  @All()
+  qualquer(): void {}
+}
+
+@Controller('get-fora-da-borda')
+class GetForaDaBorda {
+  @SemTransacaoNaBorda()
+  @Get()
+  listar(): void {}
+}
+
+@Controller('metodo-fora-da-borda')
+class PatchForaDaBordaNoMetodo {
+  @SemTransacaoNaBorda()
+  @ModoDeTransacao('escrita')
+  @Patch()
+  alterar(): void {}
+}
+
 @Controller('mistas')
 class RotasMistas {
   @Patch()
@@ -86,13 +120,31 @@ describe('VerificadorDeModoDeTransacaoDasRotas', () => {
     await expect(subirCom(RotasComMarcaNaClasse)).resolves.toBeUndefined();
   });
 
-  it('aceita rota que mudaria estado mas dispensa a transação da borda', async () => {
-    await expect(subirCom(PostForaDaBorda)).resolves.toBeUndefined();
+  it('aceita rota de leitura que dispensa a transação da borda', async () => {
+    await expect(subirCom(GetForaDaBorda)).resolves.toBeUndefined();
+  });
+
+  it('recusa a partida com rota que muda estado e dispensa a transação da borda, na classe', async () => {
+    await expect(subirCom(PostForaDaBorda)).rejects.toThrow(ErroDeRotaQueMudaEstadoSemTransacao);
+    await expect(subirCom(PostForaDaBorda)).rejects.toThrow('PostForaDaBorda.criar (POST)');
+  });
+
+  it('recusa a partida com rota que muda estado e dispensa a transação da borda, no método, mesmo com modo gravável', async () => {
+    await expect(subirCom(PatchForaDaBordaNoMetodo)).rejects.toThrow('PatchForaDaBordaNoMetodo.alterar (PATCH)');
   });
 
   it('recusa a partida com POST sem modo de transação, nomeando a rota', async () => {
     await expect(subirCom(PostSemMarca)).rejects.toThrow(ErroDeRotaQueMudaEstadoSemModoGravavel);
     await expect(subirCom(PostSemMarca)).rejects.toThrow('PostSemMarca.criar (POST)');
+  });
+
+  it.each([
+    ['PUT', PutSemMarca, 'PutSemMarca.substituir (PUT)'],
+    ['DELETE', DeleteSemMarca, 'DeleteSemMarca.remover (DELETE)'],
+    ['@All', AllSemMarca, 'AllSemMarca.qualquer (ALL)'],
+  ])('recusa a partida com %s sem modo de transação, nomeando a rota', async (_metodo, controlador, rota) => {
+    await expect(subirCom(controlador)).rejects.toThrow(ErroDeRotaQueMudaEstadoSemModoGravavel);
+    await expect(subirCom(controlador)).rejects.toThrow(rota);
   });
 
   it('recusa PATCH sem marca e POST marcado como leitura, e lista todas as rotas erradas', async () => {
