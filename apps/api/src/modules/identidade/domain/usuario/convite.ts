@@ -21,7 +21,7 @@ export class Convite {
     if (Number.isNaN(expiraEm.getTime())) throw new RangeError('data de expiração do convite inválida');
     if (Number.isNaN(em.getTime())) throw new RangeError('instante de criação do convite inválido');
     if (expiraEm <= em) throw new RangeError('convite não pode expirar no passado');
-    if (expiraEm > limiteDeValidade(em)) {
+    if (expiraEm > expiracaoMaximaDoConvite(em)) {
       throw new RangeError(`convite não pode valer mais que ${VALIDADE_MAXIMA_DO_CONVITE_EM_HORAS} horas`);
     }
     return new Convite({ hashDoToken, expiraEm, criadoPor, criadoEm: em, usadoEm: null, revogadoEm: null });
@@ -73,6 +73,6 @@ export class Convite {
   }
 }
 
-function limiteDeValidade(em: Date): Date {
+export function expiracaoMaximaDoConvite(em: Date): Date {
   return new Date(em.getTime() + VALIDADE_MAXIMA_DO_CONVITE_EM_HORAS * MILISSEGUNDOS_POR_HORA);
 }

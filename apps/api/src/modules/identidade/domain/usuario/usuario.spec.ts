@@ -274,8 +274,8 @@ describe('Usuario.reenviarConvite', () => {
 
   it.each([
     ['ATIVO', 'CONVITE_JA_USADO'],
-    ['SUSPENSO', 'USUARIO_SUSPENSO'],
-    ['REVOGADO', 'USUARIO_REVOGADO'],
+    ['SUSPENSO', 'SITUACAO_DO_USUARIO_NAO_PERMITE'],
+    ['REVOGADO', 'SITUACAO_DO_USUARIO_NAO_PERMITE'],
   ] as const)('recusa reenvio para usuário %s com %s', (situacao, codigo) => {
     const usuario = emSituacao(situacao);
 
