@@ -4,6 +4,7 @@ import {
   ehErr,
   ehOk,
   ehResultadoDeErro,
+  ehResultadoDeSucesso,
   encadear,
   err,
   mapear,
@@ -108,5 +109,25 @@ describe('ehResultadoDeErro', () => {
     ['objeto de outra forma', { erro: 'x' }],
   ])('não reconhece %s', (_nome, valor) => {
     expect(ehResultadoDeErro(valor)).toBe(false);
+  });
+});
+
+describe('ehResultadoDeSucesso', () => {
+  it('reconhece o Result ok de qualquer origem, inclusive o ok sem valor', () => {
+    const desconhecido: unknown = ok();
+
+    expect(ehResultadoDeSucesso(desconhecido)).toBe(true);
+    expect(ehResultadoDeSucesso(ok(1))).toBe(true);
+  });
+
+  it.each([
+    ['Result de erro', err('falhou')],
+    ['null', null],
+    ['undefined', undefined],
+    ['string', 'ok'],
+    ['objeto sem o campo valor', { tipo: 'ok' }],
+    ['objeto de outra forma', { valor: 1 }],
+  ])('não reconhece %s', (_nome, valor) => {
+    expect(ehResultadoDeSucesso(valor)).toBe(false);
   });
 });

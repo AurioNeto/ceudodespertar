@@ -5,7 +5,7 @@ import { Reflector } from '@nestjs/core';
 import type { Observable } from 'rxjs';
 import { lastValueFrom, of } from 'rxjs';
 import { ErroDeDominioException, ehErroDeDominio } from '../../kernel/erro-de-dominio.js';
-import { ehResultadoDeErro } from '../../kernel/result.js';
+import { ehResultadoDeErro, ehResultadoDeSucesso } from '../../kernel/result.js';
 import { ContextoDaRequisicao } from '../contexto-da-requisicao.js';
 import type { ContextoDaRequisicaoValor } from '../contexto-da-requisicao.js';
 import { UnidadeDeTrabalho } from '../banco/unidade-de-trabalho.js';
@@ -56,6 +56,6 @@ export class BordaTransacionalInterceptor implements NestInterceptor {
       throw erroDaRespostaDeErro(resposta.erro);
     }
 
-    return of(resposta);
+    return of(ehResultadoDeSucesso(resposta) ? resposta.valor : resposta);
   }
 }

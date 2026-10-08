@@ -244,19 +244,64 @@ describe('BordaTransacionalInterceptor', () => {
     expect(uow.eventos).toStrictEqual(['begin:leitura', 'rollback']);
   });
 
-  it('handler que devolve Result ok confirma e entrega o Result', async () => {
+  it('handler que devolve Result ok confirma e entrega o valor, sem o envelope', async () => {
     const uow = new UnidadeDeTrabalhoQueRegistraSequencia();
     const interceptor = new BordaTransacionalInterceptor(
       new Reflector(),
       uow,
       new ProvedorDeContextoDeInstituicaoFixo({}),
     );
-    const proximo: CallHandler = { handle: () => of(ok(7)) };
+    const proximo: CallHandler = { handle: () => of(ok({ id: 7 })) };
 
     const resposta = await firstValueFrom(await interceptor.intercept(contextoDeExecucaoQualquer(), proximo));
 
-    expect(resposta).toStrictEqual(ok(7));
+    expect(resposta).toStrictEqual({ id: 7 });
     expect(uow.eventos).toStrictEqual(['begin:leitura', 'commit']);
+  });
+
+  it('handler que devolve ok sem valor confirma e entrega undefined', async () => {
+    const uow = new UnidadeDeTrabalhoQueRegistraSequencia();
+    const interceptor = new BordaTransacionalInterceptor(
+      new Reflector(),
+      uow,
+      new ProvedorDeContextoDeInstituicaoFixo({}),
+    );
+    const proximo: CallHandler = { handle: () => of(ok()) };
+
+    const resposta = await firstValueFrom(await interceptor.intercept(contextoDeExecucaoQualquer(), proximo));
+
+    expect(resposta).toBeUndefined();
+    expect(uow.eventos).toStrictEqual(['begin:leitura', 'commit']);
+  });
+
+  it.each([
+    ['objeto', { id: 7 }],
+    ['string', 'resposta'],
+    ['objeto com tipo ok mas sem valor', { tipo: 'ok' }],
+  ])('handler que devolve %s fora do Result entrega o valor intacto', async (_nome, devolvido) => {
+    const interceptor = new BordaTransacionalInterceptor(
+      new Reflector(),
+      new UnidadeDeTrabalhoFake(),
+      new ProvedorDeContextoDeInstituicaoFixo({}),
+    );
+    const proximo: CallHandler = { handle: () => of(devolvido) };
+
+    const resposta = await firstValueFrom(await interceptor.intercept(contextoDeExecucaoQualquer(), proximo));
+
+    expect(resposta).toStrictEqual(devolvido);
+  });
+
+  it('handler que devolve ok com valor nulo entrega null', async () => {
+    const interceptor = new BordaTransacionalInterceptor(
+      new Reflector(),
+      new UnidadeDeTrabalhoFake(),
+      new ProvedorDeContextoDeInstituicaoFixo({}),
+    );
+    const proximo: CallHandler = { handle: () => of(ok(null)) };
+
+    const resposta = await firstValueFrom(await interceptor.intercept(contextoDeExecucaoQualquer(), proximo));
+
+    expect(resposta).toBeNull();
   });
 
   it('não deixa nada emitir depois do commit quando o handler emite mais de um valor', async () => {
