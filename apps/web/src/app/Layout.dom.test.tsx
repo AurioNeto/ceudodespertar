@@ -133,4 +133,11 @@ describe('acesso por permissão no Layout', () => {
     expect(tela.texto()).toContain('conteudo-da-tela');
     expect(tela.texto()).not.toContain('Você não tem acesso');
   });
+
+  it('tela bloqueada com várias permissões cita a primeira da lista', async () => {
+    const tela = await montarLayoutEm(ROTAS.relatorios, TELAS, REGISTRO);
+    expect(tela.texto()).toContain('Você não tem acesso a Relatórios');
+    expect(tela.texto()).toContain('financeiro.dre.ler');
+    expect(tela.texto()).not.toContain('financeiro.resultado_evento.ler');
+  });
 });

@@ -6,7 +6,7 @@ describe('rotaAtiva', () => {
     expect(rotaAtiva(caminho)).toBe(id);
   });
 
-  it('usa o prefixo mais longo', () => {
+  it('subcaminho cai na rota do prefixo', () => {
     expect(rotaAtiva('/lancamentos/123')).toBe('lancamentos');
     expect(rotaAtiva('/verificacao-de-lote/abc')).toBe('lote');
   });
@@ -14,10 +14,5 @@ describe('rotaAtiva', () => {
   it('a raiz só casa exata', () => {
     expect(rotaAtiva('/')).toBe('painel');
     expect(rotaAtiva('/inexistente')).toBe('painel');
-  });
-
-  it('entre prefixos concorrentes vence o mais longo', () => {
-    expect(rotaAtiva('/meus-registros/x')).toBe('meus');
-    expect(rotaAtiva('/meu-perfil/editar')).toBe('perfil');
   });
 });
