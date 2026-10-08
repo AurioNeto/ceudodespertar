@@ -36,9 +36,7 @@ export class LeitorDeGruposKysely extends LeitorDeGrupos {
         .execute();
       const concessoes = await kysely
         .selectFrom('identidade.grupo_permissao as concessao')
-        .innerJoin('identidade.grupo as grupo', 'grupo.id', 'concessao.grupo_id')
         .select(['concessao.grupo_id as grupoId', 'concessao.permissao'])
-        .where('grupo.ativo', '=', true)
         .orderBy('concessao.permissao')
         .execute();
 
