@@ -15,6 +15,8 @@ import { ModoDeTransacao } from '../../src/shared/infrastructure/http/modo-de-tr
 import { FiltroDeErrosModule } from '../../src/shared/infrastructure/http/filtro-de-erros.module.js';
 import { RespostaSemCorpoNoReplay } from '../../src/shared/infrastructure/idempotencia/resposta-sem-corpo-no-replay.decorator.js';
 import { IdempotenciaInterceptor } from '../../src/shared/infrastructure/idempotencia/idempotencia.interceptor.js';
+import { erroDeDominio } from '../../src/shared/kernel/erro-de-dominio.js';
+import { err, ok } from '../../src/shared/kernel/result.js';
 import { calcularHashDoCorpo } from '../../src/shared/infrastructure/idempotencia/hash-do-corpo.js';
 
 const INSTITUICAO = 'a0000000-0000-0000-0000-000000000000';
@@ -29,6 +31,8 @@ const CPF_DEVOLVIDO = '12345678909';
 const TAMANHO_DE_CHAVE_LONGA_DEMAIS = 300;
 const STATUS_CHAVE_REUTILIZADA = 422;
 const CODIGO_CHAVE_REUTILIZADA = 'CHAVE_DE_IDEMPOTENCIA_REUTILIZADA';
+const STATUS_PERIODO_FECHADO = 422;
+const CODIGO_PERIODO_FECHADO = 'PERIODO_FECHADO';
 
 interface RespostaHttp {
   readonly status: number;
@@ -102,6 +106,20 @@ class ControladorDeProva {
     resposta.status(STATUS_CRIADO);
     resposta.setHeader('Location', `/pessoas/${chamadasDoHandler}`);
     return { chamada: chamadasDoHandler, cpf: CPF_DEVOLVIDO };
+  }
+
+  @Post('result-de-erro')
+  async resultDeErro() {
+    chamadasDoHandler += 1;
+    await registrarEfeito();
+    return err(erroDeDominio(CODIGO_PERIODO_FECHADO));
+  }
+
+  @Post('result-ok')
+  async resultOk() {
+    chamadasDoHandler += 1;
+    await registrarEfeito();
+    return ok({ chamada: chamadasDoHandler });
   }
 
   @Post('eco')
@@ -324,6 +342,39 @@ describe('IdempotenciaInterceptor sobre HTTP real, com borda e idempotência reg
       expect(replay).toStrictEqual(primeira);
       expect(JSON.parse(replay.corpo)).toStrictEqual({ chamada: 1 });
       expect(await respostaGravada(chave)).toStrictEqual({ corpo: { chamada: 1 }, location: '/recursos/1' });
+    });
+  });
+
+  describe('handler que devolve Result', () => {
+    it('Result de erro com a mesma chave: as duas respostas trazem status e código do catálogo, sem outbox nem chave gravada, e o handler roda duas vezes', async () => {
+      const chave = randomUUID();
+      const efeitosAntes = await contar('shared.outbox');
+      const chavesAntes = await contar('shared.chave_de_idempotencia');
+
+      const primeira = await postar('/result-de-erro', chave);
+      const segunda = await postar('/result-de-erro', chave);
+
+      for (const resposta of [primeira, segunda]) {
+        expect(resposta.status).toBe(STATUS_PERIODO_FECHADO);
+        expect((JSON.parse(resposta.corpo) as { erro: string }).erro).toBe(CODIGO_PERIODO_FECHADO);
+      }
+      expect(chamadasDoHandler).toBe(2);
+      expect(await contar('shared.outbox')).toBe(efeitosAntes);
+      expect(await contar('shared.chave_de_idempotencia')).toBe(chavesAntes);
+    });
+
+    it('Result ok com chave responde 201 com o valor como corpo e o replay devolve o mesmo corpo sem reexecutar', async () => {
+      const chave = randomUUID();
+      const efeitosAntes = await contar('shared.outbox');
+
+      const primeira = await postar('/result-ok', chave);
+      const replay = await postar('/result-ok', chave);
+
+      expect(primeira.status).toBe(STATUS_CRIADO);
+      expect(JSON.parse(primeira.corpo)).toStrictEqual({ chamada: 1 });
+      expect(replay).toStrictEqual(primeira);
+      expect(chamadasDoHandler).toBe(1);
+      expect(await contar('shared.outbox')).toBe(efeitosAntes + 1);
     });
   });
 
