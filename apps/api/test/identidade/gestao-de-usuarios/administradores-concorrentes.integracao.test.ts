@@ -52,21 +52,20 @@ describe('administradores concorrentes (Doc 3 §11, T25; Doc 7 §25)', () => {
     };
   }
 
-  async function contarBackendsBloqueados(): Promise<number> {
-    await banco.owner.query('select pg_stat_clear_snapshot()');
+  async function contarPedidosEsperandoATrava(): Promise<number> {
     const { rows } = await banco.owner.query<{ total: number }>(
       `select count(*)::int as total
-         from pg_stat_activity
-        where datname = current_database()
-          and pg_blocking_pids(pid) != '{}'`,
+         from pg_locks
+        where locktype = 'advisory'
+          and not granted`,
     );
     return rows[0]?.total ?? 0;
   }
 
-  async function esperarBackendsBloqueados(quantidade: number): Promise<void> {
+  async function esperarPedidosNaTrava(quantidade: number): Promise<void> {
     for (let tentativa = 0; tentativa < LIMITE_DE_TENTATIVAS_DE_BLOQUEIO; tentativa += 1) {
       // eslint-disable-next-line no-await-in-loop -- sondagem sequencial até o bloqueio aparecer
-      if ((await contarBackendsBloqueados()) >= quantidade) return;
+      if ((await contarPedidosEsperandoATrava()) >= quantidade) return;
       // eslint-disable-next-line no-await-in-loop -- intervalo entre as sondagens
       await new Promise((resolver) => setTimeout(resolver, INTERVALO_ENTRE_TENTATIVAS_EM_MS));
     }
@@ -91,7 +90,7 @@ describe('administradores concorrentes (Doc 3 §11, T25; Doc 7 §25)', () => {
     const liberar = await segurarATravaDaAdministracao();
     try {
       const pedidos = disparar.map((pedido) => pedido());
-      await esperarBackendsBloqueados(disparar.length);
+      await esperarPedidosNaTrava(disparar.length);
       await liberar();
       return await Promise.all(pedidos);
     } catch (erro) {
@@ -147,7 +146,7 @@ describe('administradores concorrentes (Doc 3 §11, T25; Doc 7 §25)', () => {
     }).finally(() => {
       concluido = true;
     });
-    await esperarBackendsBloqueados(1);
+    await esperarPedidosNaTrava(1);
 
     expect(concluido).toBe(false);
     expect((await estadoDoUsuario(banco, INSTITUICAO_A, x.id)).situacao).toBe('ATIVO');
