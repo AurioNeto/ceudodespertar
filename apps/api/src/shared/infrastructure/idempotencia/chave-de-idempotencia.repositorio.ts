@@ -81,7 +81,7 @@ async function buscarLinhaExistente(
   kysely: Kysely<DB>,
   instituicaoId: string,
   chave: string,
-): Promise<LinhaDaChaveDeIdempotencia> {
+): Promise<LinhaDaChaveDeIdempotencia | undefined> {
   const linha = await kysely
     .selectFrom('shared.chave_de_idempotencia')
     .select([
@@ -96,7 +96,7 @@ async function buscarLinhaExistente(
     .where('chave', '=', chave)
     .executeTakeFirst();
   if (linha === undefined) {
-    throw new Error('chave de idempotência não encontrada logo após violação de unicidade na sua inserção');
+    return undefined;
   }
   return { ...linha, resposta: linha.resposta as unknown as EnvelopeDaResposta };
 }
@@ -130,31 +130,51 @@ function paraChaveExistente(linha: LinhaDaChaveDeIdempotencia): ChaveDeIdempoten
   };
 }
 
-export async function reivindicarChave(
-  kysely: Kysely<DB>,
-  dados: DadosDaChaveDeIdempotencia,
-): Promise<ChaveDeIdempotenciaExistente | undefined> {
+async function inserirPlaceholderSeLivre(kysely: Kysely<DB>, dados: DadosDaChaveDeIdempotencia): Promise<boolean> {
   await sql`savepoint ${sql.raw(PONTO_DE_SALVAMENTO_DA_REIVINDICACAO)}`.execute(kysely);
   try {
     await inserirPlaceholder(kysely, dados);
-    return undefined;
+    return true;
   } catch (erro) {
     if (!ehViolacaoDeChaveUnica(erro)) {
       throw erro;
     }
     await sql`rollback to savepoint ${sql.raw(PONTO_DE_SALVAMENTO_DA_REIVINDICACAO)}`.execute(kysely);
+    return false;
+  }
+}
+
+export async function reivindicarChave(
+  kysely: Kysely<DB>,
+  dados: DadosDaChaveDeIdempotencia,
+): Promise<ChaveDeIdempotenciaExistente | undefined> {
+  if (await inserirPlaceholderSeLivre(kysely, dados)) {
+    return undefined;
   }
 
   let linha = await buscarLinhaExistente(kysely, dados.instituicaoId, dados.chave);
-  if (linha.vencida) {
-    const reclamou = await reclamarChaveVencida(kysely, dados);
-    if (reclamou) {
+  if (linha?.vencida === true) {
+    if (await reclamarChaveVencida(kysely, dados)) {
       return undefined;
     }
     linha = await buscarLinhaExistente(kysely, dados.instituicaoId, dados.chave);
   }
 
-  return paraChaveExistente(linha);
+  return linha === undefined ? reivindicarChave(kysely, dados) : paraChaveExistente(linha);
+}
+
+export function consultaDeApagarChavesVencidas(kysely: Kysely<DB>) {
+  return kysely.deleteFrom('shared.chave_de_idempotencia').where(condicaoDeVencida());
+}
+
+export async function apagarChavesVencidas(kysely: Kysely<DB>): Promise<number> {
+  const resultado = await consultaDeApagarChavesVencidas(kysely).executeTakeFirst();
+  return Number(resultado.numDeletedRows);
+}
+
+export async function listarIdsDasInstituicoes(kysely: Kysely<DB>): Promise<string[]> {
+  const linhas = await kysely.selectFrom('shared.instituicao').select('id').execute();
+  return linhas.map((linha) => linha.id);
 }
 
 export async function gravarResposta(
