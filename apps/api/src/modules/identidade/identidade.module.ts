@@ -8,6 +8,10 @@ import { TrilhaDeAuditoria } from './application/auditoria/trilha-de-auditoria.j
 import { AlteracaoQuePodeTirarAdministrador } from './application/administracao/alteracao-que-pode-tirar-administrador.js';
 import { LeitorDaAdministracao } from './application/administracao/leitor-da-administracao.js';
 import { TravaDaAdministracao } from './application/administracao/trava-da-administracao.js';
+import { ConcederPermissaoAoGrupo } from './application/grupos/conceder-permissao-ao-grupo.js';
+import { LeitorDeGrupos } from './application/grupos/leitor-de-grupos.js';
+import { RenomearGrupo } from './application/grupos/renomear-grupo.js';
+import { RevogarPermissaoDoGrupo } from './application/grupos/revogar-permissao-do-grupo.js';
 import { LeitorDoEu } from './application/leitor-do-eu.js';
 import { ObterEu } from './application/obter-eu.js';
 import { RegistradorDeUltimoAcesso } from './application/registrador-de-ultimo-acesso.js';
@@ -19,6 +23,7 @@ import { PoliticaDoUltimoAdministrador } from './domain/servicos/politica-do-ult
 import { RepositorioDeUsuario } from './domain/usuario/usuario.repo.js';
 import { LeitorDaAdministracaoKysely } from './infrastructure/administracao/leitor-da-administracao.kysely.js';
 import { TravaDaAdministracaoAdvisory } from './infrastructure/administracao/trava-da-administracao.advisory.js';
+import { LeitorDeGruposKysely } from './infrastructure/grupos/leitor-de-grupos.kysely.js';
 import { GravadorDeTrilha } from './infrastructure/auditoria/gravador-de-trilha.js';
 import { LeitorDeAuditoriaKysely } from './infrastructure/auditoria/leitor-de-auditoria.kysely.js';
 import { CacheDeContextoDeAcesso } from './infrastructure/acesso/cache-de-contexto-de-acesso.js';
@@ -32,11 +37,12 @@ import { RepositorioDeUsuarioMikroOrm } from './infrastructure/persistencia/repo
 import { SemeadorDeGruposDeSistema } from './infrastructure/persistencia/semeador-de-grupos-de-sistema.js';
 import { AuditoriaController } from './interface/http/auditoria.controller.js';
 import { EuController } from './interface/http/eu.controller.js';
+import { GestaoDeGruposController } from './interface/http/gestao-de-grupos.controller.js';
 import { GestaoDeUsuariosController } from './interface/http/gestao-de-usuarios.controller.js';
 
 @Module({
   imports: [BancoModule, EventosModule],
-  controllers: [EuController, AuditoriaController, GestaoDeUsuariosController],
+  controllers: [EuController, AuditoriaController, GestaoDeUsuariosController, GestaoDeGruposController],
   providers: [
     { provide: Relogio, useClass: RelogioDoSistema },
     {
@@ -60,6 +66,10 @@ import { GestaoDeUsuariosController } from './interface/http/gestao-de-usuarios.
     DesativarUsuario,
     ReativarUsuario,
     DefinirGruposDoUsuario,
+    { provide: LeitorDeGrupos, useClass: LeitorDeGruposKysely },
+    ConcederPermissaoAoGrupo,
+    RevogarPermissaoDoGrupo,
+    RenomearGrupo,
     SemeadorDeGruposDeSistema,
     ObterEu,
     InvalidadorDoCacheDeAcesso,
