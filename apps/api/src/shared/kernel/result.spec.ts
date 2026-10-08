@@ -3,6 +3,7 @@ import {
   desembrulharOuLancar,
   ehErr,
   ehOk,
+  ehResultadoDeErro,
   encadear,
   err,
   mapear,
@@ -88,5 +89,24 @@ describe('desembrulharOuLancar', () => {
     expect(() =>
       desembrulharOuLancar(err('motivo'), (erro) => new Error(`falhou: ${erro}`)),
     ).toThrow('falhou: motivo');
+  });
+});
+
+describe('ehResultadoDeErro', () => {
+  it('reconhece o Result de erro de qualquer origem, inclusive de valor desconhecido', () => {
+    const desconhecido: unknown = err('falhou');
+
+    expect(ehResultadoDeErro(desconhecido)).toBe(true);
+  });
+
+  it.each([
+    ['Result ok', ok(1)],
+    ['null', null],
+    ['undefined', undefined],
+    ['string', 'erro'],
+    ['objeto sem o campo erro', { tipo: 'erro' }],
+    ['objeto de outra forma', { erro: 'x' }],
+  ])('não reconhece %s', (_nome, valor) => {
+    expect(ehResultadoDeErro(valor)).toBe(false);
   });
 });

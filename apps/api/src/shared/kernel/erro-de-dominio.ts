@@ -1,3 +1,4 @@
+import { CODIGOS_DE_ERRO } from '@cdd/contracts';
 import type { CodigoDeErro } from '@cdd/contracts';
 
 export interface ErroDeDominio {
@@ -7,6 +8,11 @@ export interface ErroDeDominio {
 
 export function erroDeDominio(codigo: CodigoDeErro, detalhes?: Record<string, unknown>): ErroDeDominio {
   return detalhes === undefined ? { codigo } : { codigo, detalhes };
+}
+
+export function ehErroDeDominio(valor: unknown): valor is ErroDeDominio {
+  const codigo = (valor as { codigo?: unknown } | null)?.codigo;
+  return typeof valor === 'object' && CODIGOS_DE_ERRO.some((conhecido) => conhecido === codigo);
 }
 
 export class ErroDeDominioException extends Error {

@@ -4,6 +4,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { criarBancoDeTeste, derrubarBancoDeTeste } from '../integracao/banco-de-teste.js';
 import type { BancoDeTeste } from '../integracao/banco-de-teste.js';
 import { ContextoDaRequisicao } from '../../src/shared/infrastructure/contexto-da-requisicao.js';
+import { err, ok } from '../../src/shared/kernel/result.js';
+import { RepositorioDoOutboxPostgres } from '../../src/shared/infrastructure/eventos/repositorio-do-outbox.postgres.js';
+import { SinalizadorDeEventos } from '../../src/shared/infrastructure/eventos/sinalizador-de-eventos.js';
 import { UnidadeDeTrabalho } from '../../src/shared/infrastructure/banco/unidade-de-trabalho.js';
 import { UnidadeDeTrabalhoMikroOrm } from '../../src/shared/infrastructure/banco/unidade-de-trabalho.mikro-orm.js';
 import { abrirOrmDeTeste } from './orm-de-teste.js';
@@ -266,6 +269,128 @@ describe('UnidadeDeTrabalho · borda transacional (Documento 7 §5, §8, §22)',
       ).rejects.toThrow();
     });
   });
+  describe('Result de erro (Documento 7 §5, passo 8)', () => {
+    const INSERIR_CHAVE =
+      "insert into shared.chave_de_idempotencia (instituicao_id, chave, rota, status_http, resposta) values (?, ?, '/x', 200, '{}'::jsonb)";
+
+    async function contarChave(chave: string): Promise<number> {
+      const linhas = await comContexto(INSTITUICAO_A, () =>
+        unidade.transacao('leitura', ({ em }) =>
+          em.execute<{ chave: string }[]>('select chave from shared.chave_de_idempotencia where chave = ?', [
+            chave,
+          ]),
+        ),
+      );
+      return linhas.length;
+    }
+
+    async function contarEventosDoOutbox(): Promise<number> {
+      const resultado = await banco.owner.query('select count(*)::int as total from shared.outbox');
+      return (resultado.rows[0] as { total: number }).total;
+    }
+
+    function eventoQualquer() {
+      return {
+        eventoId: randomUUID(),
+        tipo: 'LancamentoConfirmado',
+        ocorridoEm: new Date(),
+        agregadoTipo: 'Lancamento',
+        agregadoId: randomUUID(),
+        dados: {},
+      };
+    }
+
+    it('o que foi mutado antes do Result de erro não fica gravado, e o Result chega intacto', async () => {
+      const chave = randomUUID();
+      const falha = err({ codigo: 'RECURSO_NAO_ENCONTRADO' });
+
+      const resultado = await comContexto(INSTITUICAO_A, () =>
+        unidade.transacao('escrita', async ({ em }) => {
+          await em.execute(INSERIR_CHAVE, [INSTITUICAO_A, chave]);
+          return falha;
+        }),
+      );
+
+      expect(resultado).toBe(falha);
+      expect(await contarChave(chave)).toBe(0);
+    });
+
+    it('o mesmo fluxo com Result ok grava', async () => {
+      const chave = randomUUID();
+
+      await comContexto(INSTITUICAO_A, () =>
+        unidade.transacao('escrita', async ({ em }) => {
+          await em.execute(INSERIR_CHAVE, [INSTITUICAO_A, chave]);
+          return ok();
+        }),
+      );
+
+      expect(await contarChave(chave)).toBe(1);
+    });
+
+    it('nada vai ao outbox e o sinalizador não dispara quando há Result de erro', async () => {
+      const sinalizador = new SinalizadorDeEventos();
+      const ouvinte = vi.fn();
+      sinalizador.aoNotificar(ouvinte);
+      const outbox = new RepositorioDoOutboxPostgres(sinalizador);
+
+      await comContexto(INSTITUICAO_A, () =>
+        unidade.transacao('escrita', async (contexto) => {
+          await outbox.gravar(contexto, [eventoQualquer()]);
+          return err({ codigo: 'RECURSO_NAO_ENCONTRADO' });
+        }),
+      );
+
+      expect(await contarEventosDoOutbox()).toBe(0);
+      expect(ouvinte).not.toHaveBeenCalled();
+    });
+
+    it('com Result ok o evento entra no outbox e o sinalizador dispara', async () => {
+      const sinalizador = new SinalizadorDeEventos();
+      const ouvinte = vi.fn();
+      sinalizador.aoNotificar(ouvinte);
+      const outbox = new RepositorioDoOutboxPostgres(sinalizador);
+
+      await comContexto(INSTITUICAO_A, () =>
+        unidade.transacao('escrita', async (contexto) => {
+          await outbox.gravar(contexto, [eventoQualquer()]);
+          return ok();
+        }),
+      );
+
+      expect(await contarEventosDoOutbox()).toBe(1);
+      expect(ouvinte).toHaveBeenCalledOnce();
+    });
+
+    it('Result de erro de transação aninhada ignorado pela de fora: a de fora decide e confirma tudo', async () => {
+      const chave = randomUUID();
+
+      await comContexto(INSTITUICAO_A, () =>
+        unidade.transacao('escrita', async ({ em }) => {
+          await em.execute(INSERIR_CHAVE, [INSTITUICAO_A, chave]);
+          await unidade.transacao('escrita', async () => err({ codigo: 'RECURSO_NAO_ENCONTRADO' }));
+          return ok();
+        }),
+      );
+
+      expect(await contarChave(chave)).toBe(1);
+    });
+
+    it('Result de erro de transação aninhada repassado pela de fora desfaz a escrita das duas', async () => {
+      const chave = randomUUID();
+
+      const resultado = await comContexto(INSTITUICAO_A, () =>
+        unidade.transacao('escrita', async ({ em }) => {
+          await em.execute(INSERIR_CHAVE, [INSTITUICAO_A, chave]);
+          return unidade.transacao('escrita', async () => err({ codigo: 'RECURSO_NAO_ENCONTRADO' }));
+        }),
+      );
+
+      expect(resultado).toStrictEqual(err({ codigo: 'RECURSO_NAO_ENCONTRADO' }));
+      expect(await contarChave(chave)).toBe(0);
+    });
+  });
+
   describe('ganchos de confirmação', () => {
     const INSERIR_CHAVE =
       "insert into shared.chave_de_idempotencia (instituicao_id, chave, rota, status_http, resposta) values (?, ?, '/x', 200, '{}'::jsonb)";
