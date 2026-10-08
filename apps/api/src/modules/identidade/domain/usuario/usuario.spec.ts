@@ -381,12 +381,13 @@ describe('Usuario.desativar', () => {
     expect(usuario.situacao).toBe('ATIVO');
   });
 
-  it('aceita motivo no limite de caracteres, contado após o trim', () => {
+  it('aceita motivo no limite de caracteres, contado após o trim, e registra o motivo aparado', () => {
     const usuario = ativo();
-    const motivo = `  ${'a'.repeat(LIMITE_DE_CARACTERES_DO_MOTIVO_DE_SUSPENSAO)}  `;
+    const motivoAparado = 'a'.repeat(LIMITE_DE_CARACTERES_DO_MOTIVO_DE_SUSPENSAO);
 
-    expect(ehOk(usuario.desativar(ADMIN_ID, motivo, DEPOIS))).toBe(true);
+    expect(ehOk(usuario.desativar(ADMIN_ID, `  ${motivoAparado}\n `, DEPOIS))).toBe(true);
     expect(usuario.situacao).toBe('SUSPENSO');
+    expect(usuario.retirarEventos()).toMatchObject([{ tipo: 'USUARIO_SUSPENSO', dados: { motivo: motivoAparado } }]);
   });
 
   it('recusa motivo acima do limite de caracteres com MOTIVO_LONGO_DEMAIS', () => {

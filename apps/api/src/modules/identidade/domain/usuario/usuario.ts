@@ -204,7 +204,7 @@ export class Usuario extends RaizDeAgregado<UsuarioId> {
 
     this._situacao = 'SUSPENSO';
     this._suspensoEm = em;
-    this.registrarOperacao('USUARIO_SUSPENSO', em, { autorId: por, motivo });
+    this.registrarOperacao('USUARIO_SUSPENSO', em, { autorId: por, motivo: motivoAparado });
     return ok();
   }
 
