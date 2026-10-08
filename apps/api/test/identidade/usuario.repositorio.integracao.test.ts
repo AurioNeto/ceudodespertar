@@ -1,5 +1,5 @@
 import { OptimisticLockError } from '@mikro-orm/core';
-import type { GrupoId, UsuarioId } from '@cdd/contracts';
+import type { GrupoId, PessoaId, UsuarioId } from '@cdd/contracts';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { criarBancoDeTeste, derrubarBancoDeTeste } from '../integracao/banco-de-teste.js';
 import type { BancoDeTeste } from '../integracao/banco-de-teste.js';
@@ -8,7 +8,11 @@ import { gerarUuidV7 } from '../../src/shared/kernel/ids.js';
 import { RepositorioDoOutbox } from '../../src/shared/infrastructure/eventos/repositorio-do-outbox.js';
 import { ehVersaoDesatualizada } from '../../src/shared/infrastructure/banco/classificacao-de-erros-do-banco.js';
 import { Usuario } from '../../src/modules/identidade/domain/usuario/usuario.js';
-import { RepositorioDeUsuarioMikroOrm } from '../../src/modules/identidade/infrastructure/persistencia/repositorio-de-usuario.mikro-orm.js';
+import type { DadosDoUsuario } from '../../src/modules/identidade/domain/usuario/usuario.js';
+import {
+  ErroDeGrupoSemAtribuicao,
+  RepositorioDeUsuarioMikroOrm,
+} from '../../src/modules/identidade/infrastructure/persistencia/repositorio-de-usuario.mikro-orm.js';
 import {
   abrirAmbienteDaIdentidade,
   AGORA,
@@ -140,6 +144,67 @@ describe('RepositorioDeUsuarioMikroOrm', () => {
       revogadoEm: null,
     });
     expect(recarregado.retirarEventos()).toEqual([]);
+  });
+
+  function comoReconstituido(usuario: Usuario, alteracoes: Partial<DadosDoUsuario>): Usuario {
+    return Usuario.reconstituir(
+      {
+        id: usuario.id,
+        pessoaId: usuario.pessoaId,
+        subjectId: usuario.subjectId,
+        nome: usuario.nome,
+        email: usuario.email,
+        situacao: usuario.situacao,
+        grupos: usuario.grupos,
+        ativadoEm: usuario.ativadoEm,
+        suspensoEm: usuario.suspensoEm,
+        ultimoAcessoEm: usuario.ultimoAcessoEm,
+        convite: usuario.convite,
+        ...alteracoes,
+      },
+      usuario.versao,
+    );
+  }
+
+  it('pessoaId e ultimoAcessoEm gravados sobrevivem à leitura e a uma nova gravação', async () => {
+    const pessoaId = gerarUuidV7() as PessoaId;
+    const convidado = novoUsuarioConvidado();
+    const comPessoaEAcesso = comoReconstituido(convidado, { pessoaId, ultimoAcessoEm: DEPOIS });
+    await naInstituicaoA(() => ambiente.usuarios.adicionar(comPessoaEAcesso));
+
+    const lido = await carregar(convidado.id);
+    expect(lido).toMatchObject({ pessoaId, ultimoAcessoEm: DEPOIS });
+    lido.definirGrupos([], AUTOR, DEPOIS);
+    lido.reenviarConvite(hashDeConvite(), EM_72_HORAS, AUTOR, DEPOIS);
+    await naInstituicaoA(() => ambiente.usuarios.salvar(lido));
+
+    expect(await carregar(convidado.id)).toMatchObject({ pessoaId, ultimoAcessoEm: DEPOIS, versao: 2 });
+  });
+
+  it('salvar grava o pessoaId e o ultimoAcessoEm que o agregado passou a ter', async () => {
+    const convidado = novoUsuarioConvidado();
+    await naInstituicaoA(() => ambiente.usuarios.adicionar(convidado));
+    const pessoaId = gerarUuidV7() as PessoaId;
+
+    await naInstituicaoA(() =>
+      ambiente.usuarios.salvar(comoReconstituido(convidado, { pessoaId, ultimoAcessoEm: DEPOIS })),
+    );
+
+    expect(await carregar(convidado.id)).toMatchObject({ pessoaId, ultimoAcessoEm: DEPOIS, versao: 2 });
+  });
+
+  it('salvar recusa grupo no agregado sem atribuição pendente nem gravada', async () => {
+    const [grupo] = await criarGrupos(1);
+    const convidado = novoUsuarioConvidado();
+    await naInstituicaoA(() => ambiente.usuarios.adicionar(convidado));
+
+    const semRegistroDeAutor = comoReconstituido(convidado, { grupos: [grupo!] });
+
+    await expect(naInstituicaoA(() => ambiente.usuarios.salvar(semRegistroDeAutor))).rejects.toBeInstanceOf(
+      ErroDeGrupoSemAtribuicao,
+    );
+    expect(await atribuicoesDoUsuario(convidado.id)).toEqual([]);
+    expect(await linhaDoUsuario(convidado.id)).toMatchObject({ versao: 1 });
   });
 
   it('grava quem atribuiu cada grupo e quando', async () => {

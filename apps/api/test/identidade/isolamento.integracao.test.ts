@@ -17,6 +17,8 @@ import type { AmbienteDaIdentidade } from './apoio.js';
 
 const DEPOIS = new Date('2026-03-02T10:00:00.000Z');
 const CODIGO_DE_VIOLACAO_DE_RLS = '42501';
+const CODIGO_DE_VIOLACAO_DE_CHAVE_ESTRANGEIRA = '23503';
+const CHAVE_ESTRANGEIRA_DO_GRUPO_DO_USUARIO = 'usuario_grupo_instituicao_id_grupo_id_fkey';
 
 describe('isolamento por instituição da persistência da identidade', () => {
   let banco: BancoDeTeste;
@@ -105,7 +107,10 @@ describe('isolamento por instituição da persistência da identidade', () => {
   it('usuário de uma instituição não aceita grupo de outra, mesmo sabendo o id', async () => {
     const intruso = novoUsuarioConvidado([grupoDeA]);
 
-    await expect(comContexto(INSTITUICAO_B, () => ambiente.usuarios.adicionar(intruso))).rejects.toThrow();
+    await expect(comContexto(INSTITUICAO_B, () => ambiente.usuarios.adicionar(intruso))).rejects.toMatchObject({
+      code: CODIGO_DE_VIOLACAO_DE_CHAVE_ESTRANGEIRA,
+      constraint: CHAVE_ESTRANGEIRA_DO_GRUPO_DO_USUARIO,
+    });
 
     const naB = await comContexto(INSTITUICAO_B, () => ambiente.usuarios.porId(intruso.id));
     expect(naB).toBeUndefined();
