@@ -35,6 +35,11 @@ export class ErroDeRotaQueMudaEstadoSemTransacao extends Error {
   }
 }
 
+interface RotaInvalida {
+  readonly tipo: keyof RotasInvalidas;
+  readonly rota: string;
+}
+
 interface RotasInvalidas {
   readonly semModoGravavel: string[];
   readonly semTransacao: string[];
@@ -67,9 +72,9 @@ export class VerificadorDeModoDeTransacaoDasRotas implements OnModuleInit {
     }
   }
 
-  private rotasInvalidasDe(controlador: Type): { tipo: keyof RotasInvalidas; rota: string }[] {
+  private rotasInvalidasDe(controlador: Type): RotaInvalida[] {
     const prototipo = controlador.prototype as Record<string, Function>;
-    return this.scanner.getAllMethodNames(prototipo).flatMap((nomeDoMetodo) => {
+    return this.scanner.getAllMethodNames(prototipo).flatMap<RotaInvalida>((nomeDoMetodo) => {
       const handler = prototipo[nomeDoMetodo]!;
       const metodoHttp = Reflect.getMetadata(METHOD_METADATA, handler) as RequestMethod | undefined;
       if (metodoHttp === undefined || !METODOS_QUE_MUDAM_ESTADO.has(metodoHttp)) return [];
