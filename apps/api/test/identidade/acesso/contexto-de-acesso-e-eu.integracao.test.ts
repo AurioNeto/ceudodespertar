@@ -1,7 +1,8 @@
 import type { Eu, UsuarioId } from '@cdd/contracts';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { RegistradorDeUltimoAcesso } from '../../../src/modules/identidade/application/registrador-de-ultimo-acesso.js';
-import { TTL_DO_CACHE_DE_ACESSO_EM_MS } from '../../../src/modules/identidade/infrastructure/acesso/cache-de-contexto-de-acesso.js';
+import { CacheDeContextoDeAcesso, TTL_DO_CACHE_DE_ACESSO_EM_MS } from '../../../src/modules/identidade/infrastructure/acesso/cache-de-contexto-de-acesso.js';
+import { UnidadeDeTrabalho } from '../../../src/shared/infrastructure/banco/unidade-de-trabalho.js';
 import { VARIAVEL_DE_SESSAO_DA_INSTITUICAO } from '../../../src/shared/infrastructure/banco/unidade-de-trabalho.mikro-orm.js';
 import { comContexto, INSTITUICAO_A, INSTITUICAO_B, semearInstituicoes } from '../../eventos/apoio.js';
 import { criarBancoDeTeste, derrubarBancoDeTeste } from '../../integracao/banco-de-teste.js';
@@ -260,6 +261,52 @@ describe('contexto de acesso e GET /api/v1/eu (etapa B0)', () => {
       expect((await aplicacao.pedirComo(SUJEITO_DE_A, ROTA_PROTEGIDA_POR_PERMISSAO)).status).toBe(403);
     });
 
+    it('mudar os grupos de um usuário e consumir GRUPO_ALTERADO não invalida outro usuário, nem da mesma instituição', async () => {
+      await subir();
+      const { grupo, usuario: maria } = await semearMariaNaCasaA();
+      const joao = novoUsuarioAtivo(SUJEITO_DE_B, 'João', [grupo.id]);
+      await semear(aplicacao, INSTITUICAO_A, [], joao);
+      expect((await aplicacao.pedirComo(SUJEITO_DE_A, ROTA_PROTEGIDA_POR_PERMISSAO)).status).toBe(200);
+      expect((await aplicacao.pedirComo(SUJEITO_DE_B, ROTA_PROTEGIDA_POR_PERMISSAO)).status).toBe(200);
+      await executarNaInstituicao(banco, INSTITUICAO_A, 'delete from identidade.usuario_grupo where usuario_id = $1', [
+        joao.id,
+      ]);
+
+      const carregado = await comContexto(INSTITUICAO_A, () => aplicacao.usuarios.porId(maria.id));
+      carregado!.definirGrupos([], maria.id, AGORA);
+      await comContexto(INSTITUICAO_A, () => aplicacao.usuarios.salvar(carregado!));
+      await aplicacao.entregarEventos();
+
+      expect((await aplicacao.pedirComo(SUJEITO_DE_A, ROTA_PROTEGIDA_POR_PERMISSAO)).status).toBe(403);
+      expect((await aplicacao.pedirComo(SUJEITO_DE_B, ROTA_PROTEGIDA_POR_PERMISSAO)).status).toBe(200);
+    });
+
+    it('uma leitura que atravessa uma invalidação não guarda o resultado velho no cache', async () => {
+      await subir();
+      const { usuario } = await semearMariaNaCasaA();
+      const unidade = aplicacao.app.get(UnidadeDeTrabalho);
+      const cache = aplicacao.app.get(CacheDeContextoDeAcesso);
+      const transacaoOriginal = unidade.transacao.bind(unidade);
+      let primeiraChamada = true;
+      vi.spyOn(unidade, 'transacao').mockImplementation(async (modo, fn) => {
+        const resultado = await transacaoOriginal(modo, fn);
+        if (primeiraChamada) {
+          primeiraChamada = false;
+          cache.invalidarUsuario(usuario.id);
+        }
+        return resultado;
+      });
+      expect((await aplicacao.pedirComo(SUJEITO_DE_A, ROTA_PROTEGIDA_POR_PERMISSAO)).status).toBe(200);
+      vi.restoreAllMocks();
+      await executarNaInstituicao(banco, INSTITUICAO_A, "update identidade.usuario set situacao = 'SUSPENSO' where id = $1", [
+        usuario.id,
+      ]);
+
+      const seguinte = await aplicacao.pedirComo(SUJEITO_DE_A, ROTA_PROTEGIDA_POR_PERMISSAO);
+
+      expect(seguinte.status).toBe(401);
+    });
+
     it('editar o grupo e consumir GRUPO_EDITADO invalida os usuários da instituição, e só dela', async () => {
       await subir();
       const { grupo } = await semearMariaNaCasaA();
@@ -296,7 +343,11 @@ describe('contexto de acesso e GET /api/v1/eu (etapa B0)', () => {
       await aplicacao.pedirComo(SUJEITO_DE_A);
       expect((await situacaoNoBanco(usuario.id)).ultimo_acesso_em?.toISOString()).toBe(primeiro.toISOString());
 
-      aplicacao.relogio.avancarEmMs(2);
+      aplicacao.relogio.avancarEmMs(1);
+      await aplicacao.pedirComo(SUJEITO_DE_A);
+      expect((await situacaoNoBanco(usuario.id)).ultimo_acesso_em?.toISOString()).toBe(primeiro.toISOString());
+
+      aplicacao.relogio.avancarEmMs(1);
       await aplicacao.pedirComo(SUJEITO_DE_A);
       const aposAHora = await situacaoNoBanco(usuario.id);
       expect(aposAHora.ultimo_acesso_em?.toISOString()).toBe(aplicacao.relogio.agora().toISOString());
