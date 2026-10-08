@@ -1,13 +1,18 @@
 import { Injectable } from '@nestjs/common';
-import type { Eu, InstituicaoId, UsuarioId } from '@cdd/contracts';
+import type { Eu, InstituicaoId, SituacaoUsuario, UsuarioId } from '@cdd/contracts';
+import { erroDeDominio, ErroDeDominioException } from '../../../../shared/kernel/erro-de-dominio.js';
 import { UnidadeDeTrabalho } from '../../../../shared/infrastructure/banco/unidade-de-trabalho.js';
 import { LeitorDoEu } from '../../application/leitor-do-eu.js';
-import { gruposAtivosDoUsuario, permissoesEfetivasDosGrupos } from './consultas-de-acesso.js';
+import { CacheDeContextoDeAcesso } from './cache-de-contexto-de-acesso.js';
+import { CODIGO_DE_RECUSA_POR_SITUACAO, gruposAtivosDoUsuario, permissoesEfetivasDosGrupos } from './consultas-de-acesso.js';
 import { emContextoDaInstituicao } from './contexto-da-instituicao.js';
 
 @Injectable()
 export class LeitorDoEuKysely extends LeitorDoEu {
-  constructor(private readonly unidadeDeTrabalho: UnidadeDeTrabalho) {
+  constructor(
+    private readonly unidadeDeTrabalho: UnidadeDeTrabalho,
+    private readonly cache: CacheDeContextoDeAcesso,
+  ) {
     super();
   }
 
@@ -16,9 +21,10 @@ export class LeitorDoEuKysely extends LeitorDoEu {
       this.unidadeDeTrabalho.transacao('leitura', async ({ kysely }) => {
         const usuario = await kysely
           .selectFrom('identidade.usuario')
-          .select(['nome', 'email'])
+          .select(['nome', 'email', 'situacao'])
           .where('id', '=', usuarioId)
           .executeTakeFirstOrThrow();
+        this.exigirUsuarioAtivo(usuarioId, usuario.situacao as SituacaoUsuario);
         const instituicao = await kysely
           .selectFrom('shared.instituicao')
           .select('nome')
@@ -33,5 +39,11 @@ export class LeitorDoEuKysely extends LeitorDoEu {
         };
       }),
     );
+  }
+
+  private exigirUsuarioAtivo(usuarioId: UsuarioId, situacao: SituacaoUsuario): void {
+    if (situacao === 'ATIVO') return;
+    this.cache.invalidarUsuario(usuarioId);
+    throw new ErroDeDominioException(erroDeDominio(CODIGO_DE_RECUSA_POR_SITUACAO[situacao]));
   }
 }

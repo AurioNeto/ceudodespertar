@@ -6,19 +6,13 @@ import {
   recusarAcesso,
   ResolvedorDeContextoDeAcesso,
 } from '../../../../shared/infrastructure/autenticacao/contexto-de-acesso.js';
-import type { CodigoDeRecusa, ContextoDeAcesso, RecusaDeAcesso } from '../../../../shared/infrastructure/autenticacao/contexto-de-acesso.js';
+import type { ContextoDeAcesso, RecusaDeAcesso } from '../../../../shared/infrastructure/autenticacao/contexto-de-acesso.js';
 import type { IdentidadeAutenticada } from '../../../../shared/infrastructure/autenticacao/identidade-autenticada.js';
 import { UnidadeDeTrabalho } from '../../../../shared/infrastructure/banco/unidade-de-trabalho.js';
 import { CacheDeContextoDeAcesso } from './cache-de-contexto-de-acesso.js';
 import type { DonoDoAcesso, ResultadoDoAcesso } from './cache-de-contexto-de-acesso.js';
 import { emContextoDaInstituicao } from './contexto-da-instituicao.js';
-import { gruposAtivosDoUsuario, permissoesEfetivasDosGrupos } from './consultas-de-acesso.js';
-
-const CODIGO_DE_RECUSA_POR_SITUACAO: Record<Exclude<SituacaoUsuario, 'ATIVO'>, CodigoDeRecusa> = {
-  CONVITE_PENDENTE: 'USUARIO_CONVITE_PENDENTE',
-  SUSPENSO: 'USUARIO_SUSPENSO',
-  REVOGADO: 'USUARIO_REVOGADO',
-};
+import { CODIGO_DE_RECUSA_POR_SITUACAO, gruposAtivosDoUsuario, permissoesEfetivasDosGrupos } from './consultas-de-acesso.js';
 
 @Injectable()
 export class ResolvedorDeContextoDeAcessoDaIdentidade extends ResolvedorDeContextoDeAcesso {

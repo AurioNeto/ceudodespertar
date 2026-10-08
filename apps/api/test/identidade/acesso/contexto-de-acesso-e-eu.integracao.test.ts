@@ -142,6 +142,25 @@ describe('contexto de acesso e GET /api/v1/eu (etapa B0)', () => {
       expect(await lerCodigoDeErro(resposta)).toBe(codigo);
     });
 
+    it('suspenso por SQL, sem evento, dentro do TTL: /eu recusa 401 USUARIO_SUSPENSO, esquece o cache e a próxima rota protegida também recusa', async () => {
+      await subir();
+      const { usuario } = await semearMariaNaCasaA();
+      expect((await aplicacao.pedirComo(SUJEITO_DE_A, ROTA_PROTEGIDA_POR_PERMISSAO)).status).toBe(200);
+      await executarNaInstituicao(banco, INSTITUICAO_A, "update identidade.usuario set situacao = 'SUSPENSO' where id = $1", [
+        usuario.id,
+      ]);
+      aplicacao.relogio.avancarEmMs(TTL_DO_CACHE_DE_ACESSO_EM_MS - 1);
+      expect((await aplicacao.pedirComo(SUJEITO_DE_A, ROTA_PROTEGIDA_POR_PERMISSAO)).status).toBe(200);
+
+      const noEu = await aplicacao.pedirComo(SUJEITO_DE_A);
+      const naProximaRota = await aplicacao.pedirComo(SUJEITO_DE_A, ROTA_PROTEGIDA_POR_PERMISSAO);
+
+      expect(noEu.status).toBe(401);
+      expect(await lerCodigoDeErro(noEu)).toBe('USUARIO_SUSPENSO');
+      expect(naProximaRota.status).toBe(401);
+      expect(await lerCodigoDeErro(naProximaRota)).toBe('USUARIO_SUSPENSO');
+    });
+
     it('cada usuário vê só a própria instituição, os próprios grupos e as próprias permissões', async () => {
       await subir();
       await semearMariaNaCasaA();
@@ -182,16 +201,16 @@ describe('contexto de acesso e GET /api/v1/eu (etapa B0)', () => {
     it('dentro do TTL não relê o banco; no vencimento do TTL relê', async () => {
       await subir();
       const { usuario } = await semearMariaNaCasaA();
-      expect((await aplicacao.pedirComo(SUJEITO_DE_A)).status).toBe(200);
+      expect((await aplicacao.pedirComo(SUJEITO_DE_A, ROTA_PROTEGIDA_POR_PERMISSAO)).status).toBe(200);
       await executarNaInstituicao(banco, INSTITUICAO_A, "update identidade.usuario set situacao = 'SUSPENSO' where id = $1", [
         usuario.id,
       ]);
 
       aplicacao.relogio.avancarEmMs(TTL_DO_CACHE_DE_ACESSO_EM_MS - 1);
-      expect((await aplicacao.pedirComo(SUJEITO_DE_A)).status).toBe(200);
+      expect((await aplicacao.pedirComo(SUJEITO_DE_A, ROTA_PROTEGIDA_POR_PERMISSAO)).status).toBe(200);
 
       aplicacao.relogio.avancarEmMs(1);
-      const aposOTtl = await aplicacao.pedirComo(SUJEITO_DE_A);
+      const aposOTtl = await aplicacao.pedirComo(SUJEITO_DE_A, ROTA_PROTEGIDA_POR_PERMISSAO);
       expect(aposOTtl.status).toBe(401);
       expect(await lerCodigoDeErro(aposOTtl)).toBe('USUARIO_SUSPENSO');
     });

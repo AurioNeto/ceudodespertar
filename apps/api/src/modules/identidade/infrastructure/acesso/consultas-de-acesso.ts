@@ -1,8 +1,15 @@
-import type { GrupoId, Permissao } from '@cdd/contracts';
+import type { GrupoId, Permissao, SituacaoUsuario } from '@cdd/contracts';
 import type { Kysely } from 'kysely';
 import type { DB } from '../../../../shared/infrastructure/banco/banco-cdd.gerado.js';
+import type { CodigoDeRecusa } from '../../../../shared/infrastructure/autenticacao/contexto-de-acesso.js';
 import { ehPermissaoDoCatalogo } from '../../domain/permissao/catalogo-de-permissoes.js';
 import { PermissoesEfetivas } from '../../domain/permissao/permissoes-efetivas.js';
+
+export const CODIGO_DE_RECUSA_POR_SITUACAO: Record<Exclude<SituacaoUsuario, 'ATIVO'>, CodigoDeRecusa> = {
+  CONVITE_PENDENTE: 'USUARIO_CONVITE_PENDENTE',
+  SUSPENSO: 'USUARIO_SUSPENSO',
+  REVOGADO: 'USUARIO_REVOGADO',
+};
 
 export interface GrupoAtivoDoUsuario {
   readonly id: GrupoId;
