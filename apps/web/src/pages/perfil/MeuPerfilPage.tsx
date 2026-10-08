@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import type { Eu } from '@cdd/contracts';
-import { Button, InfraError, ScreenHeader, SkeletonList } from '../../ds';
+import { Button, ScreenHeader } from '../../ds';
 import { useDensidade } from '../../lib/useDensidade';
 import { iniciais } from '../../lib/formato';
 import { useSessao } from '../../app/sessao';
@@ -16,7 +16,7 @@ const rotuloLabel = {
 export function MeuPerfilPage() {
   const densidade = useDensidade();
   const campo = densidade === 'field';
-  const { estado, encerrar, tentarDeNovo } = useSessao();
+  const { estado, encerrar } = useSessao();
 
   return (
     <>
@@ -35,13 +35,7 @@ export function MeuPerfilPage() {
           maxWidth: campo ? undefined : 860,
         }}
       >
-        {estado.tipo === 'ativa' ? (
-          <PerfilDoEu eu={estado.eu} campo={campo} aoSair={encerrar} />
-        ) : estado.tipo === 'verificando' ? (
-          <SkeletonList rows={3} />
-        ) : (
-          <InfraError description="Não foi possível carregar o seu perfil." onRetry={tentarDeNovo} />
-        )}
+        {estado.tipo === 'ativa' ? <PerfilDoEu eu={estado.eu} campo={campo} aoSair={encerrar} /> : null}
       </div>
     </>
   );

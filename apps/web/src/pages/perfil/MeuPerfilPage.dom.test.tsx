@@ -5,9 +5,6 @@ import type { TelaMontada } from '../../app/apoioDeTeste';
 import { MeuPerfilPage } from './MeuPerfilPage';
 import { agruparPermissoes } from './permissoesAgrupadas';
 
-const MENSAGEM_DE_FALHA = 'Não foi possível carregar o seu perfil.';
-const SINAL_DO_SKELETON = 'cdd-sh';
-
 const montadas: TelaMontada[] = [];
 
 async function montarPerfil(eu = criarEu()) {
@@ -88,27 +85,6 @@ describe('Meu perfil', () => {
     montadas.push(tela);
     await tela.clicar('Sair');
     expect(entrada.sair).toHaveBeenCalled();
-  });
-
-  it('com o /eu pendente mostra o skeleton e não mostra o erro', async () => {
-    const tela = await montarComSessao(
-      { entrada: criarEntradaFalsa(true), buscarEu: () => new Promise(() => undefined) },
-      <MeuPerfilPage />,
-    );
-    montadas.push(tela);
-    expect(tela.container.querySelector('style')?.textContent).toContain(SINAL_DO_SKELETON);
-    expect(tela.texto()).not.toContain(MENSAGEM_DE_FALHA);
-  });
-
-  it('com o /eu rejeitando mostra o erro e Tentar de novo busca o /eu outra vez', async () => {
-    const buscarEu = vi.fn(() => Promise.reject(new Error('falha de rede')));
-    const tela = await montarComSessao({ entrada: criarEntradaFalsa(true), buscarEu }, <MeuPerfilPage />);
-    montadas.push(tela);
-    const chamadasAntes = buscarEu.mock.calls.length;
-    expect(tela.texto()).toContain(MENSAGEM_DE_FALHA);
-    expect(tela.container.querySelector('style')).toBeNull();
-    await tela.clicar('Tentar de novo');
-    expect(buscarEu.mock.calls.length).toBe(chamadasAntes + 1);
   });
 
   it('sem grupos mostra Nenhum grupo', async () => {
