@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { TEXTO_DA_FAIXA_DE_DEMONSTRACAO } from '../ds';
 import { Layout } from './Layout';
@@ -31,6 +31,10 @@ async function montarLayoutEm(caminho: string, telas: RegistroDeTelas): Promise<
 }
 
 const faixas = (tela: TelaMontada) => tela.container.querySelectorAll('[role="note"]');
+
+beforeEach(() => {
+  vi.stubEnv('VITE_SESSAO_DE_DEMONSTRACAO', '');
+});
 
 afterEach(async () => {
   vi.unstubAllEnvs();
