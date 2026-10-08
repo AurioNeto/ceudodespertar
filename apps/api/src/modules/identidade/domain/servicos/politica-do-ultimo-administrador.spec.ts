@@ -155,6 +155,8 @@ describe('UsuarioDaInstituicao.de', () => {
       email: 'maria@casa.org',
       situacao,
       grupos: [],
+      ativadoEm: null,
+      suspensoEm: null,
       ultimoAcessoEm: null,
       convite: null,
     });

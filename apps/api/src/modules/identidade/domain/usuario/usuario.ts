@@ -34,8 +34,16 @@ export interface DadosDoUsuario {
   readonly email: string;
   readonly situacao: SituacaoUsuario;
   readonly grupos: readonly GrupoId[];
+  readonly ativadoEm: Date | null;
+  readonly suspensoEm: Date | null;
   readonly ultimoAcessoEm: Date | null;
   readonly convite: Convite | null;
+}
+
+export interface AtribuicaoDeGrupo {
+  readonly grupoId: GrupoId;
+  readonly por: UsuarioId;
+  readonly em: Date;
 }
 
 function semDuplicatas(grupos: readonly GrupoId[]): GrupoId[] {
@@ -61,9 +69,12 @@ export class Usuario extends RaizDeAgregado<UsuarioId> {
   private _email: string;
   private _situacao: SituacaoUsuario;
   private _grupos: GrupoId[];
+  private _ativadoEm: Date | null;
+  private _suspensoEm: Date | null;
   private _ultimoAcessoEm: Date | null;
   private _convite: Convite | null;
   private readonly _convitesSubstituidos: Convite[] = [];
+  private readonly _atribuicoesPendentes: AtribuicaoDeGrupo[] = [];
 
   private constructor(dados: DadosDoUsuario, versao?: number) {
     super(dados.id, versao);
@@ -73,6 +84,8 @@ export class Usuario extends RaizDeAgregado<UsuarioId> {
     this._email = dados.email;
     this._situacao = dados.situacao;
     this._grupos = semDuplicatas(dados.grupos);
+    this._ativadoEm = dados.ativadoEm;
+    this._suspensoEm = dados.suspensoEm;
     this._ultimoAcessoEm = dados.ultimoAcessoEm;
     this._convite = dados.convite;
   }
@@ -86,9 +99,12 @@ export class Usuario extends RaizDeAgregado<UsuarioId> {
       email: dados.email,
       situacao: 'CONVITE_PENDENTE',
       grupos: dados.grupos,
+      ativadoEm: null,
+      suspensoEm: null,
       ultimoAcessoEm: null,
-      convite: Convite.criar(dados.hashDoConvite, dados.conviteExpiraEm),
+      convite: Convite.criar(dados.hashDoConvite, dados.conviteExpiraEm, dados.convidadoPor, dados.em),
     });
+    usuario.registrarAtribuicoes(usuario._grupos, dados.convidadoPor, dados.em);
     usuario.registrarOperacao('USUARIO_CONVIDADO', dados.em, { autorId: dados.convidadoPor, email: dados.email });
     return usuario;
   }
@@ -121,6 +137,14 @@ export class Usuario extends RaizDeAgregado<UsuarioId> {
     return [...this._grupos];
   }
 
+  get ativadoEm(): Date | null {
+    return this._ativadoEm;
+  }
+
+  get suspensoEm(): Date | null {
+    return this._suspensoEm;
+  }
+
   get ultimoAcessoEm(): Date | null {
     return this._ultimoAcessoEm;
   }
@@ -133,6 +157,11 @@ export class Usuario extends RaizDeAgregado<UsuarioId> {
     return [...this._convitesSubstituidos];
   }
 
+  get atribuicoesPendentes(): readonly AtribuicaoDeGrupo[] {
+    const ultimaPorGrupo = new Map(this._atribuicoesPendentes.map((atribuicao) => [atribuicao.grupoId, atribuicao]));
+    return this._grupos.flatMap((grupoId) => ultimaPorGrupo.get(grupoId) ?? []);
+  }
+
   validarConvite(hashApresentado: string, em: Date): Result<void, ErroDeDominio> {
     return this._convite === null
       ? err(erroDeDominio('CONVITE_INVALIDO'))
@@ -142,7 +171,7 @@ export class Usuario extends RaizDeAgregado<UsuarioId> {
   reenviarConvite(novoHash: string, novaExpiraEm: Date, por: UsuarioId, em: Date): Result<void, ErroDeDominio> {
     if (this._situacao !== 'CONVITE_PENDENTE') return err(erroDaSituacao(this._situacao, 'CONVITE_JA_USADO'));
 
-    const novoConvite = Convite.criar(novoHash, novaExpiraEm);
+    const novoConvite = Convite.criar(novoHash, novaExpiraEm, por, em);
     if (this._convite !== null) this._convitesSubstituidos.push(this._convite.revogar(em));
     this._convite = novoConvite;
     this.registrarOperacao('USUARIO_CONVIDADO', em, { autorId: por, email: this._email });
@@ -159,6 +188,7 @@ export class Usuario extends RaizDeAgregado<UsuarioId> {
 
     this._situacao = 'ATIVO';
     this._subjectId = subjectId;
+    this._ativadoEm = em;
     this._convite = this._convite.usar(em);
     this.registrarOperacao('USUARIO_ATIVADO', em, { autorId: this.id, subjectId });
     return ok();
@@ -170,6 +200,7 @@ export class Usuario extends RaizDeAgregado<UsuarioId> {
     if (motivo.trim() === '') return err(erroDeDominio('MOTIVO_OBRIGATORIO'));
 
     this._situacao = 'SUSPENSO';
+    this._suspensoEm = em;
     this.registrarOperacao('USUARIO_SUSPENSO', em, { autorId: por, motivo });
     return ok();
   }
@@ -179,6 +210,7 @@ export class Usuario extends RaizDeAgregado<UsuarioId> {
     if (this._situacao !== 'SUSPENSO') return err(erroDaSituacaoInativa(this._situacao));
 
     this._situacao = 'ATIVO';
+    this._suspensoEm = null;
     this.registrarOperacao('USUARIO_REATIVADO', em, { autorId: por });
     return ok();
   }
@@ -195,8 +227,17 @@ export class Usuario extends RaizDeAgregado<UsuarioId> {
     if (mesmoConjunto(gruposAntes, gruposDepois)) return ok();
 
     this._grupos = gruposDepois;
+    this.registrarAtribuicoes(
+      gruposDepois.filter((grupoId) => !gruposAntes.includes(grupoId)),
+      por,
+      em,
+    );
     this.registrarOperacao('GRUPO_ALTERADO', em, { autorId: por, gruposAntes, gruposDepois });
     return ok();
+  }
+
+  private registrarAtribuicoes(grupos: readonly GrupoId[], por: UsuarioId, em: Date): void {
+    for (const grupoId of grupos) this._atribuicoesPendentes.push({ grupoId, por, em });
   }
 
   private registrarOperacao(operacao: OperacaoAuditada, ocorridoEm: Date, dados: Record<string, unknown>): void {

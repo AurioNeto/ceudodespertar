@@ -1,18 +1,55 @@
+import type { UsuarioId } from '@cdd/contracts';
 import { describe, expect, it } from 'vitest';
 import { ehErr, ehOk } from '../../../../shared/kernel/result.js';
 import { Convite } from './convite.js';
 
+const CRIADO_EM = new Date('2026-03-07T12:00:00Z');
 const EXPIRA_EM = new Date('2026-03-10T12:00:00Z');
 const ANTES_DE_EXPIRAR = new Date('2026-03-09T12:00:00Z');
 const HASH = 'hash-correto';
+const AUTOR = 'admin-1' as UsuarioId;
 
 function conviteVigente(): Convite {
-  return Convite.criar(HASH, EXPIRA_EM);
+  return Convite.criar(HASH, EXPIRA_EM, AUTOR, CRIADO_EM);
 }
 
 describe('Convite', () => {
   it('data de expiração inválida é erro de programação', () => {
-    expect(() => Convite.criar(HASH, new Date('inválida'))).toThrow(RangeError);
+    expect(() => Convite.criar(HASH, new Date('inválida'), AUTOR, CRIADO_EM)).toThrow(RangeError);
+  });
+
+  it('instante de criação inválido é erro de programação', () => {
+    expect(() => Convite.criar(HASH, EXPIRA_EM, AUTOR, new Date('inválida'))).toThrow(RangeError);
+  });
+
+  it('guarda quem criou e quando', () => {
+    const convite = conviteVigente();
+
+    expect(convite.criadoPor).toBe(AUTOR);
+    expect(convite.criadoEm).toEqual(CRIADO_EM);
+  });
+
+  it('aceita expirar exatamente 72 horas depois da criação', () => {
+    expect(conviteVigente().expiraEm).toEqual(EXPIRA_EM);
+  });
+
+  it('recusa expirar um milissegundo além de 72 horas', () => {
+    const alemDoLimite = new Date(EXPIRA_EM.getTime() + 1);
+
+    expect(() => Convite.criar(HASH, alemDoLimite, AUTOR, CRIADO_EM)).toThrow(RangeError);
+  });
+
+  it('aceita expirar um milissegundo depois da criação', () => {
+    const logoDepois = new Date(CRIADO_EM.getTime() + 1);
+
+    expect(Convite.criar(HASH, logoDepois, AUTOR, CRIADO_EM).expiraEm).toEqual(logoDepois);
+  });
+
+  it.each([
+    ['no instante da criação', CRIADO_EM],
+    ['antes da criação', new Date('2026-03-06T12:00:00Z')],
+  ])('recusa expirar %s', (_descricao, expiraEm) => {
+    expect(() => Convite.criar(HASH, expiraEm, AUTOR, CRIADO_EM)).toThrow(RangeError);
   });
 
   it('aceita o hash correto antes de expirar', () => {
@@ -60,6 +97,8 @@ describe('Convite', () => {
     const convite = Convite.reconstituir({
       hashDoToken: HASH,
       expiraEm: EXPIRA_EM,
+      criadoPor: AUTOR,
+      criadoEm: CRIADO_EM,
       usadoEm: ANTES_DE_EXPIRAR,
       revogadoEm: null,
     });
@@ -67,5 +106,7 @@ describe('Convite', () => {
     expect(convite.hashDoToken).toBe(HASH);
     expect(convite.expiraEm).toEqual(EXPIRA_EM);
     expect(convite.usadoEm).toEqual(ANTES_DE_EXPIRAR);
+    expect(convite.criadoPor).toBe(AUTOR);
+    expect(convite.criadoEm).toEqual(CRIADO_EM);
   });
 });
