@@ -6,7 +6,9 @@ import { comContexto, INSTITUICAO_A, INSTITUICAO_B, semearInstituicoes } from '.
 import { TravaDaAdministracao } from '../../src/modules/identidade/application/administracao/trava-da-administracao.js';
 import { CHAVE_DO_TRAVAMENTO_DA_ADMINISTRACAO } from '../../src/modules/identidade/infrastructure/administracao/trava-da-administracao.advisory.js';
 import type { Grupo } from '../../src/modules/identidade/domain/grupo/grupo.js';
+import type { ErroDeDominio } from '../../src/shared/kernel/erro-de-dominio.js';
 import { ehErr, ehOk } from '../../src/shared/kernel/result.js';
+import type { Result } from '../../src/shared/kernel/result.js';
 import { criarBarreira } from './barreira.js';
 import type { Barreira } from './barreira.js';
 import {
@@ -245,7 +247,7 @@ describe('administração da instituição', () => {
       );
       const acessoDe = (usuarioId: UsuarioId) => ({ usuarioId, instituicaoId: INSTITUICAO_A as InstituicaoId });
 
-      const resultados = await Promise.all([
+      const resultados: Result<unknown, ErroDeDominio>[] = await Promise.all([
         naInstituicaoA(() => desativar.executar(acessoDe(y), { usuarioId: x, versaoEsperada: versaoX, motivo: 'saída' })),
         naInstituicaoA(() =>
           definirGrupos.executar(acessoDe(x), { usuarioId: y, versaoEsperada: versaoY, grupos: [] }),
