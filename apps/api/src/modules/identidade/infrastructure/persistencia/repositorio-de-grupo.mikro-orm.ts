@@ -6,19 +6,21 @@ import { UnidadeDeTrabalho } from '../../../../shared/infrastructure/banco/unida
 import { RepositorioDoOutbox } from '../../../../shared/infrastructure/eventos/repositorio-do-outbox.js';
 import { GravadorDeTrilha } from '../auditoria/gravador-de-trilha.js';
 import { Grupo } from '../../domain/grupo/grupo.js';
-import type { RepositorioDeGrupo } from '../../domain/grupo/grupo.repo.js';
+import { RepositorioDeGrupo } from '../../domain/grupo/grupo.repo.js';
 import { GrupoEntidade, GrupoPermissaoEntidade } from './entidades-de-grupo.js';
 import { instituicaoDoContexto } from './instituicao-do-contexto.js';
 
 const NOME_DO_AGREGADO = 'Grupo';
 
 @Injectable()
-export class RepositorioDeGrupoMikroOrm implements RepositorioDeGrupo {
+export class RepositorioDeGrupoMikroOrm extends RepositorioDeGrupo {
   constructor(
     private readonly unidadeDeTrabalho: UnidadeDeTrabalho,
     private readonly outbox: RepositorioDoOutbox,
     private readonly trilha: GravadorDeTrilha,
-  ) {}
+  ) {
+    super();
+  }
 
   porId(id: GrupoId): Promise<Grupo | undefined> {
     return this.unidadeDeTrabalho.transacao('leitura', async ({ em }) => {
@@ -58,7 +60,7 @@ export class RepositorioDeGrupoMikroOrm implements RepositorioDeGrupo {
     });
   }
 
-  async salvar(grupo: Grupo): Promise<void> {
+  async salvar(grupo: Grupo): Promise<number> {
     const instituicaoId = instituicaoDoContexto();
     return this.unidadeDeTrabalho.transacao('escrita', async (contexto) => {
       const eventos = grupo.retirarEventos();
@@ -71,6 +73,7 @@ export class RepositorioDeGrupoMikroOrm implements RepositorioDeGrupo {
       if (atualizados === 0) throw OptimisticLockError.lockFailed(NOME_DO_AGREGADO);
       await this.gravarPermissoes(contexto.em, grupo, instituicaoId);
       await this.outbox.gravar(contexto, eventos);
+      return grupo.versao + 1;
     });
   }
 

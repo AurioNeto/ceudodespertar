@@ -6,7 +6,7 @@ import { err, ok, type Result } from '../../../../shared/kernel/result.js';
 import { Convite } from './convite.js';
 
 const AGREGADO_TIPO = 'Usuario';
-export const LIMITE_DE_CARACTERES_DO_MOTIVO_DE_SUSPENSAO = 500;
+export const LIMITE_DE_CARACTERES_DO_MOTIVO = 500;
 
 type SituacaoInativa = Exclude<SituacaoUsuario, 'ATIVO'>;
 
@@ -57,6 +57,17 @@ function mesmoConjunto(a: readonly GrupoId[], b: readonly GrupoId[]): boolean {
 
 function erroDaSituacaoInativa(situacao: SituacaoInativa): ErroDeDominio {
   return erroDeDominio(CODIGO_DA_SITUACAO_INATIVA[situacao]);
+}
+
+function erroDaSituacaoDoAlvo(situacao: SituacaoInativa): ErroDeDominio {
+  return erroDeDominio('SITUACAO_DO_USUARIO_NAO_PERMITE', { situacao });
+}
+
+function motivoAparado(motivo: string): Result<string, ErroDeDominio> {
+  const aparado = motivo.trim();
+  if (aparado === '') return err(erroDeDominio('MOTIVO_OBRIGATORIO'));
+  if (aparado.length > LIMITE_DE_CARACTERES_DO_MOTIVO) return err(erroDeDominio('MOTIVO_LONGO_DEMAIS'));
+  return ok(aparado);
 }
 
 function erroDaSituacao(situacao: SituacaoUsuario, codigoSeAtivo: CodigoDeErro): ErroDeDominio {
@@ -197,24 +208,25 @@ export class Usuario extends RaizDeAgregado<UsuarioId> {
 
   desativar(por: UsuarioId, motivo: string, em: Date): Result<void, ErroDeDominio> {
     if (this._situacao === 'SUSPENSO') return ok();
-    if (this._situacao !== 'ATIVO') return err(erroDaSituacaoInativa(this._situacao));
-    const motivoAparado = motivo.trim();
-    if (motivoAparado === '') return err(erroDeDominio('MOTIVO_OBRIGATORIO'));
-    if (motivoAparado.length > LIMITE_DE_CARACTERES_DO_MOTIVO_DE_SUSPENSAO) return err(erroDeDominio('MOTIVO_LONGO_DEMAIS'));
+    if (this._situacao !== 'ATIVO') return err(erroDaSituacaoDoAlvo(this._situacao));
+    const motivoValido = motivoAparado(motivo);
+    if (motivoValido.tipo === 'erro') return motivoValido;
 
     this._situacao = 'SUSPENSO';
     this._suspensoEm = em;
-    this.registrarOperacao('USUARIO_SUSPENSO', em, { autorId: por, motivo: motivoAparado });
+    this.registrarOperacao('USUARIO_SUSPENSO', em, { autorId: por, motivo: motivoValido.valor });
     return ok();
   }
 
-  reativar(por: UsuarioId, em: Date): Result<void, ErroDeDominio> {
+  reativar(por: UsuarioId, motivo: string, em: Date): Result<void, ErroDeDominio> {
     if (this._situacao === 'ATIVO') return ok();
-    if (this._situacao !== 'SUSPENSO') return err(erroDaSituacaoInativa(this._situacao));
+    if (this._situacao !== 'SUSPENSO') return err(erroDaSituacaoDoAlvo(this._situacao));
+    const motivoValido = motivoAparado(motivo);
+    if (motivoValido.tipo === 'erro') return motivoValido;
 
     this._situacao = 'ATIVO';
     this._suspensoEm = null;
-    this.registrarOperacao('USUARIO_REATIVADO', em, { autorId: por });
+    this.registrarOperacao('USUARIO_REATIVADO', em, { autorId: por, motivo: motivoValido.valor });
     return ok();
   }
 
@@ -223,7 +235,7 @@ export class Usuario extends RaizDeAgregado<UsuarioId> {
   }
 
   definirGrupos(grupoIds: readonly GrupoId[], por: UsuarioId, em: Date): Result<void, ErroDeDominio> {
-    if (this._situacao === 'REVOGADO') return err(erroDaSituacaoInativa(this._situacao));
+    if (this._situacao === 'REVOGADO') return err(erroDaSituacaoDoAlvo(this._situacao));
 
     const gruposAntes = this._grupos;
     const gruposDepois = semDuplicatas(grupoIds);

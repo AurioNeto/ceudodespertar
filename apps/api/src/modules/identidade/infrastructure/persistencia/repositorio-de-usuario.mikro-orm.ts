@@ -9,7 +9,7 @@ import { GravadorDeTrilha } from '../auditoria/gravador-de-trilha.js';
 import { Convite } from '../../domain/usuario/convite.js';
 import { Usuario } from '../../domain/usuario/usuario.js';
 import type { AtribuicaoDeGrupo } from '../../domain/usuario/usuario.js';
-import type { RepositorioDeUsuario } from '../../domain/usuario/usuario.repo.js';
+import { RepositorioDeUsuario } from '../../domain/usuario/usuario.repo.js';
 import { ConviteEntidade, UsuarioEntidade, UsuarioGrupoEntidade } from './entidades-de-usuario.js';
 import { instituicaoDoContexto } from './instituicao-do-contexto.js';
 
@@ -50,12 +50,14 @@ function paraConvite(linha: {
 }
 
 @Injectable()
-export class RepositorioDeUsuarioMikroOrm implements RepositorioDeUsuario {
+export class RepositorioDeUsuarioMikroOrm extends RepositorioDeUsuario {
   constructor(
     private readonly unidadeDeTrabalho: UnidadeDeTrabalho,
     private readonly outbox: RepositorioDoOutbox,
     private readonly trilha: GravadorDeTrilha,
-  ) {}
+  ) {
+    super();
+  }
 
   porId(id: UsuarioId): Promise<Usuario | undefined> {
     return this.unidadeDeTrabalho.transacao('leitura', async ({ em }) => {
@@ -110,7 +112,7 @@ export class RepositorioDeUsuarioMikroOrm implements RepositorioDeUsuario {
     });
   }
 
-  async salvar(usuario: Usuario): Promise<void> {
+  async salvar(usuario: Usuario): Promise<number> {
     const instituicaoId = instituicaoDoContexto();
     return this.unidadeDeTrabalho.transacao('escrita', async (contexto) => {
       const eventos = usuario.retirarEventos();
@@ -126,7 +128,6 @@ export class RepositorioDeUsuarioMikroOrm implements RepositorioDeUsuario {
           situacao: usuario.situacao,
           ativadoEm: usuario.ativadoEm,
           suspensoEm: usuario.suspensoEm,
-          ultimoAcessoEm: usuario.ultimoAcessoEm,
           versao: usuario.versao + 1,
         },
       );
@@ -134,6 +135,7 @@ export class RepositorioDeUsuarioMikroOrm implements RepositorioDeUsuario {
       await this.gravarConvites(contexto.em, usuario, instituicaoId);
       await this.gravarGrupos(contexto.em, usuario, instituicaoId);
       await this.outbox.gravar(contexto, eventos);
+      return usuario.versao + 1;
     });
   }
 

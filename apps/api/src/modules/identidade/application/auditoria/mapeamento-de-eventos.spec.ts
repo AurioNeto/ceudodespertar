@@ -66,7 +66,7 @@ function todosOsEventosEmitidosPeloDominio(): EventoDeDominio[] {
   reenviado.reenviarConvite('b'.repeat(64), EXPIRA, AUTOR, INSTANTE);
   const ativo = usuarioAtivo();
   ativo.desativar(AUTOR, 'afastamento', INSTANTE);
-  ativo.reativar(AUTOR, INSTANTE);
+  ativo.reativar(AUTOR, 'retorno', INSTANTE);
   ativo.definirGrupos([GRUPO_B], AUTOR, INSTANTE);
   const grupo = grupoDaCasa();
   grupo.concederPermissao('estoque.movimento.registrar', AUTOR, INSTANTE);
@@ -116,15 +116,20 @@ describe('mapearEventoParaAuditoria', () => {
     });
   });
 
-  it('USUARIO_REATIVADO: sem detalhes', () => {
+  it('USUARIO_REATIVADO: registra o motivo informado como sensível', () => {
     const usuario = usuarioAtivo();
     usuario.desativar(AUTOR, 'afastamento', INSTANTE);
     usuario.retirarEventos();
-    usuario.reativar(AUTOR, INSTANTE);
+    usuario.reativar(AUTOR, 'retorno', INSTANTE);
 
     const entrada = mapearEventoParaAuditoria(unico(usuario.retirarEventos()));
 
-    expect(entrada).toMatchObject({ operacao: 'USUARIO_REATIVADO', autorId: AUTOR, detalhes: [] });
+    expect(entrada).toMatchObject({
+      operacao: 'USUARIO_REATIVADO',
+      autorId: AUTOR,
+      detalhes: [{ rotulo: ROTULOS_DE_AUDITORIA.motivo, valor: 'retorno' }],
+      sensivel: true,
+    });
   });
 
   it('GRUPO_ALTERADO: grupos antes e depois por id', () => {
@@ -229,7 +234,7 @@ describe('mapearEventoParaAuditoria', () => {
       ocorridoEm: INSTANTE,
       agregadoTipo: 'Usuario',
       agregadoId: USUARIO_ID,
-      dados: {},
+      dados: { motivo: 'retorno' },
     });
 
     expect(entrada?.autorId).toBeNull();

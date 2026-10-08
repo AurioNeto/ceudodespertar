@@ -636,6 +636,8 @@ A regra geral (issue #11): **toda regra de negócio mora no domínio**. O banco 
 
 As travas de concorrência que saíram do banco — o período e o saldo do lote — ganham teste de integração obrigatório na etapa do módulo (§26).
 
+A regra do último administrador é uma dessas travas: toda alteração que pode tirar `sistema.usuario.gerenciar` ou `sistema.grupo.gerenciar` da instituição toma o advisory lock transacional `identidade.administracao` por instituição, antes de ler o estado, e só então muda e valida. Duas alterações simultâneas se serializam; a segunda enxerga o commit da primeira.
+
 ## 22. Migrações, seed e evolução
 
 - **As migrations em SQL do MikroORM são a fonte de verdade.** Escritas à mão, por etapa (a partir do B0), pelo desenho mínimo do corte. RLS, gatilhos, `EXCLUDE` e FKs compostas são codificadas nas migrations, não geradas. O esquema de referência (`cdd-07-esquema.sql`) é documentação congelada em set/2026 do desenho aprovado — não roda em CI.
@@ -659,7 +661,7 @@ As travas de concorrência que saíram do banco — o período e o saldo do lote
 | Base legal | `consentimento` com finalidade, versão do texto lido, canal, data; revogável |
 | Anonimização | `pessoas.pessoa.anonimizar()`: nome vira *"Pessoa anonimizada"*, documento, contato, nascimento e foto viram nulos (`CHECK` exige documento nulo quando anonimizada), o conteúdo das respostas de anamnese é apagado — as linhas de `item_de_resposta` saem e o alerta derivado (`dispara_alerta`) vai a falso —, o hash de IP da declaração de veracidade vira nulo, as sessões do link público da pessoa (`eventos.sessao_de_inscricao`, que guardam o CPF declarado) são apagadas antes de o documento ser anulado — pelo `pessoa_id` e pelo CPF, porque a sessão pode ter o CPF antes de reconhecer a pessoa —, e a exclusão fica registrada na trilha. O cabeçalho da resposta fica, só com versão, datas e canal, porque o registro de acesso (só-inserção, RA3) e a declaração de veracidade apontam para ele. Na inscrição, contato de emergência e restrições alimentares são sobrescritos com *"anonimizado"*, porque as colunas são obrigatórias. **O id permanece**: lançamentos, inscrições e trilha continuam íntegros e passam a mostrar a pessoa anonimizada |
 | Trilha × anonimização | A trilha guarda referência, não nome (§16) — anonimizar não exige reescrever o que é só-inserção |
-| Motivo da suspensão | Texto livre na trilha só-inserção (`USUARIO_SUSPENSO`): limite de 500 caracteres no domínio (`MOTIVO_LONGO_DEMAIS`), registro gravado com `sensivel = true`, e a tela de suspensão avisa para não escrever dado pessoal |
+| Motivo da suspensão e da reativação | Texto livre na trilha só-inserção (`USUARIO_SUSPENSO` e `USUARIO_REATIVADO`): limite de 500 caracteres no domínio (`MOTIVO_LONGO_DEMAIS`), registro gravado com `sensivel = true`, e as telas de suspensão e de reativação avisam para não escrever dado pessoal |
 | Logs | Nunca corpo de requisição de anamnese; CPF mascarado; IP só como hash na declaração |
 | Criptografia de coluna | Adiada (Doc 1 §5). O banco gerenciado cifra em repouso; se um dia a coluna precisar de chave própria, `item_de_resposta.valor` é o único alvo e já está isolado |
 | Resposta de idempotência | A resposta guardada de um `POST` vive no máximo 24 h além do expurgo periódico (§12). Comando que devolve dado pessoal usa `@RespostaSemCorpoNoReplay`: o corpo nunca vai para `shared.chave_de_idempotencia` e o replay volta sem corpo |
@@ -713,7 +715,7 @@ As etapas são as do Doc 6 §6, na mesma ordem e com as mesmas estimativas. O qu
 | Garantias de banco | `apps/api/test/banco/garantias/` em Postgres real (Testcontainers) | As invariantes de §15, contra o banco migrado; cresce a cada tabela nova | B0 |
 | Verificação de referência | `cdd-07-verificacao.sql` (manual, não CI) | As 155 verificações do desenho de set/2026; documentação congelada | — |
 | Integração | Testcontainers | Handler → banco → outbox → consumidor; idempotência; `If-Match`; contagem de consultas por read model (N+1) | Com cada comando |
-| Concorrência | Testcontainers, duas conexões | Saídas simultâneas do mesmo lote; duas confirmações do mesmo lançamento; duas inscrições da mesma pessoa pelo link; fechamento e lançamento na mesma competência, com o comando travando antes de P1 e do hash; obrigatório na etapa de cada módulo | B1, B5, B6 |
+| Concorrência | Testcontainers, duas conexões | Desativações e trocas de grupo simultâneas de administradores (T25, trava `identidade.administracao`); saídas simultâneas do mesmo lote; duas confirmações do mesmo lançamento; duas inscrições da mesma pessoa pelo link; fechamento e lançamento na mesma competência, com o comando travando antes de P1 e do hash; obrigatório na etapa de cada módulo | B0, B1, B5, B6 |
 | Contrato | Vitest | Todo código de erro que a API pode devolver existe em `contracts/erros.ts`; toda restrição nomeada tem mapeamento | B0 |
 | Bloco ausente | Vitest sobre o read model | Para cada bloco com permissão, a resposta **não contém a chave** sem a permissão | Com cada read model |
 | Ponta a ponta | Playwright | Os cinco percursos do Doc 4 §11, mais a inscrição pelo link | Ao trocar cada mock |

@@ -36,6 +36,17 @@ describe('RaizDeAgregado', () => {
     expect(() => new AgregadoDeTeste('id-1', versao)).toThrow(RangeError);
   });
 
+  it('informa se há eventos pendentes, e deixa de haver depois de retirá-los', () => {
+    const agregado = new AgregadoDeTeste('id-1');
+    expect(agregado.possuiEventosPendentes).toBe(false);
+
+    agregado.emitir(criarEvento('X'));
+    expect(agregado.possuiEventosPendentes).toBe(true);
+
+    agregado.retirarEventos();
+    expect(agregado.possuiEventosPendentes).toBe(false);
+  });
+
   it('acumula eventos registrados', () => {
     const agregado = new AgregadoDeTeste('id-1');
 

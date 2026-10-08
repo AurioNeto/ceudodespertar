@@ -5,9 +5,20 @@ import { Relogio, RelogioDoSistema } from '../../shared/infrastructure/relogio.j
 import { ConsultarAuditoria } from './application/auditoria/consultar-auditoria.js';
 import { LeitorDeAuditoria } from './application/auditoria/leitor-de-auditoria.js';
 import { TrilhaDeAuditoria } from './application/auditoria/trilha-de-auditoria.js';
+import { AlteracaoQuePodeTirarAdministrador } from './application/administracao/alteracao-que-pode-tirar-administrador.js';
+import { LeitorDaAdministracao } from './application/administracao/leitor-da-administracao.js';
+import { TravaDaAdministracao } from './application/administracao/trava-da-administracao.js';
 import { LeitorDoEu } from './application/leitor-do-eu.js';
 import { ObterEu } from './application/obter-eu.js';
 import { RegistradorDeUltimoAcesso } from './application/registrador-de-ultimo-acesso.js';
+import { DefinirGruposDoUsuario } from './application/usuarios/definir-grupos-do-usuario.js';
+import { DesativarUsuario } from './application/usuarios/desativar-usuario.js';
+import { ReativarUsuario } from './application/usuarios/reativar-usuario.js';
+import { RepositorioDeGrupo } from './domain/grupo/grupo.repo.js';
+import { PoliticaDoUltimoAdministrador } from './domain/servicos/politica-do-ultimo-administrador.js';
+import { RepositorioDeUsuario } from './domain/usuario/usuario.repo.js';
+import { LeitorDaAdministracaoKysely } from './infrastructure/administracao/leitor-da-administracao.kysely.js';
+import { TravaDaAdministracaoAdvisory } from './infrastructure/administracao/trava-da-administracao.advisory.js';
 import { GravadorDeTrilha } from './infrastructure/auditoria/gravador-de-trilha.js';
 import { LeitorDeAuditoriaKysely } from './infrastructure/auditoria/leitor-de-auditoria.kysely.js';
 import { CacheDeContextoDeAcesso } from './infrastructure/acesso/cache-de-contexto-de-acesso.js';
@@ -21,10 +32,11 @@ import { RepositorioDeUsuarioMikroOrm } from './infrastructure/persistencia/repo
 import { SemeadorDeGruposDeSistema } from './infrastructure/persistencia/semeador-de-grupos-de-sistema.js';
 import { AuditoriaController } from './interface/http/auditoria.controller.js';
 import { EuController } from './interface/http/eu.controller.js';
+import { GestaoDeUsuariosController } from './interface/http/gestao-de-usuarios.controller.js';
 
 @Module({
   imports: [BancoModule, EventosModule],
-  controllers: [EuController, AuditoriaController],
+  controllers: [EuController, AuditoriaController, GestaoDeUsuariosController],
   providers: [
     { provide: Relogio, useClass: RelogioDoSistema },
     {
@@ -39,8 +51,15 @@ import { EuController } from './interface/http/eu.controller.js';
     { provide: TrilhaDeAuditoria, useExisting: GravadorDeTrilha },
     { provide: LeitorDeAuditoria, useClass: LeitorDeAuditoriaKysely },
     ConsultarAuditoria,
-    RepositorioDeUsuarioMikroOrm,
-    RepositorioDeGrupoMikroOrm,
+    { provide: RepositorioDeUsuario, useClass: RepositorioDeUsuarioMikroOrm },
+    { provide: RepositorioDeGrupo, useClass: RepositorioDeGrupoMikroOrm },
+    { provide: TravaDaAdministracao, useClass: TravaDaAdministracaoAdvisory },
+    { provide: LeitorDaAdministracao, useClass: LeitorDaAdministracaoKysely },
+    PoliticaDoUltimoAdministrador,
+    AlteracaoQuePodeTirarAdministrador,
+    DesativarUsuario,
+    ReativarUsuario,
+    DefinirGruposDoUsuario,
     SemeadorDeGruposDeSistema,
     ObterEu,
     InvalidadorDoCacheDeAcesso,

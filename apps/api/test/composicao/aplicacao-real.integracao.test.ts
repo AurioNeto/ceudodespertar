@@ -6,7 +6,7 @@ import type { GrupoId } from '@cdd/contracts';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { criarAplicacao } from '../../src/composicao/aplicacao.js';
 import { AppModule } from '../../src/composicao/app.module.js';
-import { RepositorioDeUsuarioMikroOrm } from '../../src/modules/identidade/infrastructure/persistencia/repositorio-de-usuario.mikro-orm.js';
+import { RepositorioDeUsuario } from '../../src/modules/identidade/domain/usuario/usuario.repo.js';
 import { SemeadorDeGruposDeSistema } from '../../src/modules/identidade/public-api.js';
 import { ApenasIdentificado, Publico, RequerPermissao } from '../../src/shared/infrastructure/autenticacao/marcas-de-acesso.js';
 import { ContextoAtual } from '../../src/shared/infrastructure/autenticacao/requisicao-autenticada.js';
@@ -157,7 +157,7 @@ describe('aplicação real (AppModule) contra o banco', () => {
       `select id from identidade.grupo where codigo_sistema = 'TESOURARIA'`,
     );
     usuario = novoUsuarioAtivo(SUJEITO_DA_MARIA, 'Maria Silva', [tesouraria!.id as GrupoId]);
-    await comContexto(INSTITUICAO_A, () => app.get(RepositorioDeUsuarioMikroOrm).adicionar(usuario));
+    await comContexto(INSTITUICAO_A, () => app.get(RepositorioDeUsuario).adicionar(usuario));
     await app.get(Despachante).executarCiclo();
   }
 
@@ -260,7 +260,7 @@ describe('aplicação real (AppModule) contra o banco', () => {
       expect(antes.status).toBe(200);
 
       await comContexto(INSTITUICAO_A, async () => {
-        const repositorio = app.get(RepositorioDeUsuarioMikroOrm);
+        const repositorio = app.get(RepositorioDeUsuario);
         const carregado = await repositorio.porId(usuario.id);
         const suspensao = carregado!.desativar(AUTOR, 'afastamento', new Date());
         expect(suspensao.tipo).toBe('ok');

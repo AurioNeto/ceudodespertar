@@ -9,6 +9,15 @@ import {
 import { RepositorioDoOutboxPostgres } from '../../src/shared/infrastructure/eventos/repositorio-do-outbox.postgres.js';
 import { SinalizadorDeEventos } from '../../src/shared/infrastructure/eventos/sinalizador-de-eventos.js';
 import { gerarUuidV7 } from '../../src/shared/kernel/ids.js';
+import { RelogioDoSistema } from '../../src/shared/infrastructure/relogio.js';
+import { AlteracaoQuePodeTirarAdministrador } from '../../src/modules/identidade/application/administracao/alteracao-que-pode-tirar-administrador.js';
+import type { TravaDaAdministracao } from '../../src/modules/identidade/application/administracao/trava-da-administracao.js';
+import { DefinirGruposDoUsuario } from '../../src/modules/identidade/application/usuarios/definir-grupos-do-usuario.js';
+import { DesativarUsuario } from '../../src/modules/identidade/application/usuarios/desativar-usuario.js';
+import { ReativarUsuario } from '../../src/modules/identidade/application/usuarios/reativar-usuario.js';
+import { PoliticaDoUltimoAdministrador } from '../../src/modules/identidade/domain/servicos/politica-do-ultimo-administrador.js';
+import { LeitorDaAdministracaoKysely } from '../../src/modules/identidade/infrastructure/administracao/leitor-da-administracao.kysely.js';
+import { TravaDaAdministracaoAdvisory } from '../../src/modules/identidade/infrastructure/administracao/trava-da-administracao.advisory.js';
 import { Grupo } from '../../src/modules/identidade/domain/grupo/grupo.js';
 import { Usuario } from '../../src/modules/identidade/domain/usuario/usuario.js';
 import { ENTIDADES_DA_IDENTIDADE } from '../../src/modules/identidade/infrastructure/persistencia/entidades-da-identidade.js';
@@ -30,6 +39,32 @@ export interface AmbienteDaIdentidade {
   readonly grupos: RepositorioDeGrupoMikroOrm;
   readonly semeador: SemeadorDeGruposDeSistema;
   readonly trilha: GravadorDeTrilha;
+  readonly trava: TravaDaAdministracaoAdvisory;
+  readonly leitor: LeitorDaAdministracaoKysely;
+}
+
+export interface CasosDeUsoDaGestao {
+  readonly desativar: DesativarUsuario;
+  readonly reativar: ReativarUsuario;
+  readonly definirGrupos: DefinirGruposDoUsuario;
+}
+
+export function montarCasosDeUsoDaGestao(
+  ambiente: AmbienteDaIdentidade,
+  trava: TravaDaAdministracao = ambiente.trava,
+): CasosDeUsoDaGestao {
+  const relogio = new RelogioDoSistema();
+  const alteracao = new AlteracaoQuePodeTirarAdministrador(
+    ambiente.unidadeDeTrabalho,
+    trava,
+    ambiente.leitor,
+    new PoliticaDoUltimoAdministrador(),
+  );
+  return {
+    desativar: new DesativarUsuario(alteracao, ambiente.usuarios, relogio),
+    reativar: new ReativarUsuario(ambiente.unidadeDeTrabalho, ambiente.usuarios, relogio),
+    definirGrupos: new DefinirGruposDoUsuario(alteracao, ambiente.usuarios, relogio),
+  };
 }
 
 export async function abrirAmbienteDaIdentidade(banco: BancoDeTeste, poolMaximo = 4): Promise<AmbienteDaIdentidade> {
@@ -47,6 +82,8 @@ export async function abrirAmbienteDaIdentidade(banco: BancoDeTeste, poolMaximo 
     grupos: new RepositorioDeGrupoMikroOrm(unidadeDeTrabalho, outbox, trilha),
     semeador: new SemeadorDeGruposDeSistema(unidadeDeTrabalho),
     trilha,
+    trava: new TravaDaAdministracaoAdvisory(unidadeDeTrabalho),
+    leitor: new LeitorDaAdministracaoKysely(unidadeDeTrabalho),
   };
 }
 

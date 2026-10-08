@@ -23,6 +23,7 @@ import { Despachante } from '../../../src/shared/infrastructure/eventos/despacha
 import { EventosModule } from '../../../src/shared/infrastructure/eventos/eventos.module.js';
 import { RepositorioDoOutbox } from '../../../src/shared/infrastructure/eventos/repositorio-do-outbox.js';
 import { BordaTransacionalInterceptor } from '../../../src/shared/infrastructure/http/borda-transacional.interceptor.js';
+import { IdempotenciaInterceptor } from '../../../src/shared/infrastructure/idempotencia/idempotencia.interceptor.js';
 import { FiltroDeErrosModule } from '../../../src/shared/infrastructure/http/filtro-de-erros.module.js';
 import { ProvedorDeContextoDeInstituicao } from '../../../src/shared/infrastructure/http/provedor-de-contexto-de-instituicao.js';
 import { ProvedorDeContextoDeInstituicaoDoAcesso } from '../../../src/shared/infrastructure/http/provedor-de-contexto-de-instituicao.do-acesso.js';
@@ -32,6 +33,7 @@ import { gerarUuidV7 } from '../../../src/shared/kernel/ids.js';
 import { AUDIENCIA_DE_TESTE, criarChavesDeTeste, emitirToken } from '../../autenticacao/chaves-de-teste.js';
 import type { ChavesDeTeste } from '../../autenticacao/chaves-de-teste.js';
 import { pedir } from '../../autenticacao/cliente-http.js';
+import type { OpcoesDaRequisicao } from '../../autenticacao/cliente-http.js';
 import { ServidorDeJwks } from '../../autenticacao/servidor-de-jwks.js';
 import { comContexto } from '../../eventos/apoio.js';
 import type { BancoDeTeste } from '../../integracao/banco-de-teste.js';
@@ -60,6 +62,7 @@ class RotaProtegidaPorPermissaoController {
   providers: [
     { provide: ProvedorDeContextoDeInstituicao, useClass: ProvedorDeContextoDeInstituicaoDoAcesso },
     { provide: APP_INTERCEPTOR, useClass: BordaTransacionalInterceptor },
+    { provide: APP_INTERCEPTOR, useClass: IdempotenciaInterceptor },
   ],
 })
 class RotasDeTesteModule {}
@@ -101,7 +104,7 @@ export interface AplicacaoDeAcesso {
   readonly usuarios: RepositorioDeUsuarioMikroOrm;
   readonly grupos: RepositorioDeGrupoMikroOrm;
   entregarEventos(): Promise<void>;
-  pedirComo(sujeito: string, rota?: string): Promise<Response>;
+  pedirComo(sujeito: string, rota?: string, requisicao?: OpcoesDaRequisicao): Promise<Response>;
   encerrar(): Promise<void>;
 }
 
@@ -152,9 +155,9 @@ export async function subirAplicacaoDeAcesso(
     usuarios: new RepositorioDeUsuarioMikroOrm(unidade, outbox, trilha),
     grupos: new RepositorioDeGrupoMikroOrm(unidade, outbox, trilha),
     entregarEventos: () => app.get(Despachante).executarCiclo(),
-    pedirComo: async (sujeito, rota = ROTA_EU) => {
+    pedirComo: async (sujeito, rota = ROTA_EU, { metodo, corpo, cabecalhos = {} } = {}) => {
       const token = await emitirToken(chaves, { payload: { iss: servidor.emissor, sub: sujeito } });
-      return pedir(origem, rota, { authorization: `Bearer ${token}` });
+      return pedir(origem, rota, { ...cabecalhos, authorization: `Bearer ${token}` }, { metodo, corpo });
     },
     encerrar: async () => {
       await app.close();
