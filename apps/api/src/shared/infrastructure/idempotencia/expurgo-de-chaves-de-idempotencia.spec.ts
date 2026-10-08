@@ -192,4 +192,25 @@ describe('ExpurgoDeChavesDeIdempotencia', () => {
 
     expect(contextoVisto).toBeUndefined();
   });
+
+  it('ao destruir o módulo aguarda a rodada em andamento terminar', async () => {
+    let concluirListagem: (ids: string[]) => void = () => undefined;
+    vi.mocked(listarIdsDasInstituicoes).mockReturnValue(
+      new Promise<string[]>((resolver) => {
+        concluirListagem = resolver;
+      }),
+    );
+    let destruido = false;
+
+    expurgo.onApplicationBootstrap();
+    const destruicao = expurgo.onModuleDestroy().then(() => {
+      destruido = true;
+    });
+    await new Promise((resolver) => setImmediate(resolver));
+
+    expect(destruido).toBe(false);
+    concluirListagem([]);
+    await destruicao;
+    expect(destruido).toBe(true);
+  });
 });

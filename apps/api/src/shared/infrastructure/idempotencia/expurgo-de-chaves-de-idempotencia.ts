@@ -19,6 +19,7 @@ function nomeDoErro(motivo: unknown): string {
 export class ExpurgoDeChavesDeIdempotencia implements OnModuleInit, OnApplicationBootstrap, OnModuleDestroy {
   private readonly logger = new Logger(ExpurgoDeChavesDeIdempotencia.name);
   private temporizador: NodeJS.Timeout | undefined;
+  private rodadaEmAndamento: Promise<void> = Promise.resolve();
 
   constructor(private readonly unidadeDeTrabalho: UnidadeDeTrabalho) {}
 
@@ -30,10 +31,11 @@ export class ExpurgoDeChavesDeIdempotencia implements OnModuleInit, OnApplicatio
     this.dispararExpurgo();
   }
 
-  onModuleDestroy(): void {
+  async onModuleDestroy(): Promise<void> {
     if (this.temporizador !== undefined) {
       clearInterval(this.temporizador);
     }
+    await this.rodadaEmAndamento;
   }
 
   async expurgar(): Promise<void> {
@@ -62,9 +64,9 @@ export class ExpurgoDeChavesDeIdempotencia implements OnModuleInit, OnApplicatio
   }
 
   private dispararExpurgo(): void {
-    ContextoDaRequisicao.foraDeQualquerContexto(() => foraDaTransacaoAtiva(() => this.expurgar())).catch(
-      (motivo: unknown) => this.logger.warn({ erro: nomeDoErro(motivo) }, MENSAGEM_DE_FALHA_NO_EXPURGO),
-    );
+    this.rodadaEmAndamento = ContextoDaRequisicao.foraDeQualquerContexto(() =>
+      foraDaTransacaoAtiva(() => this.expurgar()),
+    ).catch((motivo: unknown) => this.logger.warn({ erro: nomeDoErro(motivo) }, MENSAGEM_DE_FALHA_NO_EXPURGO));
   }
 
   private async expurgarInstituicao(instituicaoId: string): Promise<number> {
