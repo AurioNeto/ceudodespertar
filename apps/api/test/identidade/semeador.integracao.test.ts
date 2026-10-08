@@ -3,7 +3,9 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { criarBancoDeTeste, derrubarBancoDeTeste } from '../integracao/banco-de-teste.js';
 import type { BancoDeTeste } from '../integracao/banco-de-teste.js';
 import { comContexto, INSTITUICAO_A, INSTITUICAO_B, semearInstituicoes } from '../eventos/apoio.js';
+import { Grupo } from '../../src/modules/identidade/domain/grupo/grupo.js';
 import { GRUPOS_DE_SISTEMA } from '../../src/modules/identidade/domain/grupo/grupos-de-sistema.js';
+import { gerarUuidV7 } from '../../src/shared/kernel/ids.js';
 import { abrirAmbienteDaIdentidade, AUTOR, consultarNaInstituicao } from './apoio.js';
 import type { AmbienteDaIdentidade } from './apoio.js';
 import { permissoesDaMatrizPara } from './matriz-do-doc-3-secao-6.js';
@@ -114,6 +116,29 @@ describe('SemeadorDeGruposDeSistema', () => {
 
     expect(await gruposDe(INSTITUICAO_A)).toEqual(gruposAntes);
     expect(await permissoesDe(INSTITUICAO_A)).toEqual(permissoesAntes);
+  });
+
+  it('grupo da casa com o nome de um grupo de sistema faz o seed falhar pelo índice de nome, sem semear nada', async () => {
+    const [grupoDeSistema] = GRUPOS_DE_SISTEMA;
+    const resultado = Grupo.criar({
+      id: gerarUuidV7() as GrupoId,
+      codigoSistema: null,
+      nome: grupoDeSistema!.nome.toUpperCase(),
+      descricao: 'Criado pela casa',
+      protegido: false,
+      permissoes: ['financeiro.lancamento.ler'],
+    });
+    if (resultado.tipo === 'erro') throw new Error(resultado.erro.codigo);
+    await comContexto(INSTITUICAO_A, () => ambiente.grupos.adicionar(resultado.valor));
+
+    await expect(ambiente.semeador.semear(INSTITUICAO_A)).rejects.toMatchObject({
+      code: '23505',
+      constraint: 'grupo_nome_unico',
+    });
+
+    const grupos = await gruposDe(INSTITUICAO_A);
+    expect(grupos).toHaveLength(1);
+    expect(grupos[0]!.codigo_sistema).toBeNull();
   });
 
   it('não reverte edição posterior de grupo protegido: nome, descrição e permissões', async () => {

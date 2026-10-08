@@ -1,9 +1,12 @@
 import { randomUUID } from 'node:crypto';
 import { Injectable } from '@nestjs/common';
+import { sql } from 'kysely';
 import { ContextoDaRequisicao } from '../../../../shared/infrastructure/contexto-da-requisicao.js';
 import { UnidadeDeTrabalho } from '../../../../shared/infrastructure/banco/unidade-de-trabalho.js';
 import { gerarUuidV7 } from '../../../../shared/kernel/ids.js';
 import { GRUPOS_DE_SISTEMA } from '../../domain/grupo/grupos-de-sistema.js';
+
+const CHAVE_DO_TRAVAMENTO_DO_SEED = 'identidade.semear-grupos-de-sistema';
 
 @Injectable()
 export class SemeadorDeGruposDeSistema {
@@ -12,6 +15,9 @@ export class SemeadorDeGruposDeSistema {
   semear(instituicaoId: string): Promise<void> {
     return ContextoDaRequisicao.executar({ correlacaoId: randomUUID(), instituicaoId }, () =>
       this.unidadeDeTrabalho.transacao('escrita', async ({ kysely }) => {
+        await sql`select pg_advisory_xact_lock(hashtextextended(${CHAVE_DO_TRAVAMENTO_DO_SEED + instituicaoId}, 0))`.execute(
+          kysely,
+        );
         const gruposNovos = await kysely
           .insertInto('identidade.grupo')
           .values(
@@ -24,7 +30,7 @@ export class SemeadorDeGruposDeSistema {
               protegido: true,
             })),
           )
-          .onConflict((conflito) => conflito.doNothing())
+          .onConflict((conflito) => conflito.columns(['instituicao_id', 'codigo_sistema']).doNothing())
           .returning(['id', 'codigo_sistema'])
           .execute();
 
