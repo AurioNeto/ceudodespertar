@@ -15,7 +15,8 @@ import {
   marcarRolagensHorizontais,
   medirExcessoDeRolagem,
   refazerOLayoutDoZero,
-  rolarAteOFimHorizontal,
+  posicoesDaRolagemHorizontal,
+  rolarHorizontalPara,
   semearAleatorio,
   tirarFocoDoElementoAtivo,
 } from './naPagina.mjs';
@@ -89,11 +90,15 @@ async function prepararParaFoto(pagina) {
 async function fotografarRolagensHorizontais(pagina) {
   const total = await pagina.evaluate(marcarRolagensHorizontais, ATRIBUTO_DA_ROLAGEM_HORIZONTAL);
   const fotos = [];
-  for (let numero = 1; numero <= total; numero += 1) {
-    const area = pagina.locator(`[${ATRIBUTO_DA_ROLAGEM_HORIZONTAL}="${numero}"]`);
-    await area.evaluate(rolarAteOFimHorizontal);
-    await pagina.evaluate(esperarDoisQuadros);
-    fotos.push(await area.screenshot({ type: 'png', animations: 'disabled', caret: 'hide' }));
+  for (let area = 1; area <= total; area += 1) {
+    const elemento = pagina.locator(`[${ATRIBUTO_DA_ROLAGEM_HORIZONTAL}="${area}"]`);
+    const posicoes = await elemento.evaluate(posicoesDaRolagemHorizontal);
+    for (const [indice, posicao] of posicoes.entries()) {
+      await elemento.evaluate(rolarHorizontalPara, posicao);
+      await pagina.evaluate(esperarDoisQuadros);
+      const png = await elemento.screenshot({ type: 'png', animations: 'disabled', caret: 'hide' });
+      fotos.push({ area, passo: indice + 1, png });
+    }
   }
   return fotos;
 }

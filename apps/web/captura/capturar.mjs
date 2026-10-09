@@ -34,8 +34,10 @@ respondidas por fixture e quantas chegaram ao proxy (precisa ser 0).
 
 Arquivos gerados em --saida:
   <tela>--<campo|escritorio>.png            a tela inteira
-  <tela>--<campo|escritorio>--rolagem-N.png cada área com rolagem horizontal
-                                            (tabela, carrossel), já rolada até o fim
+  <tela>--<campo|escritorio>--rolagem-N-P.png
+                                            área N com rolagem horizontal (tabela,
+                                            carrossel), no passo P: rolada de uma
+                                            largura visível por vez até o fim
   Telas com passo próprio levam o passo no nome: acessos.grupos, inscricaoPublica.pronto.
 
 Sobra conhecida de rolagem interna: o corpo do app rola por dentro e a captura
@@ -46,7 +48,7 @@ faixa (70px em campo, 32px em escritório). A captura imprime
 "aviso: <arquivo>: Npx" para cada foto assim; o valor é o mesmo em toda execução.
 `;
 
-const NOME_DE_ARQUIVO_DA_CAPTURA = /^.+--(campo|escritorio)(--rolagem-\d+)?\.png$/;
+const NOME_DE_ARQUIVO_DA_CAPTURA = /^.+--(campo|escritorio)(--rolagem-\d+-\d+)?\.png$/;
 
 function lerOpcoes() {
   const { values } = parseArgs({
@@ -121,13 +123,14 @@ function escolherTelas(catalogo, nomes) {
   return catalogo.filter((tela) => nomes.includes(tela.nome));
 }
 
-const nomeDaRolagem = (tela, densidade, numero) => `${tela.nome}--${densidade.nome}--rolagem-${numero}.png`;
+const nomeDaRolagem = (tela, densidade, { area, passo }) =>
+  `${tela.nome}--${densidade.nome}--rolagem-${area}-${passo}.png`;
 
 async function gravarFotos({ saida, tela, densidade, foto }) {
   const arquivo = `${tela.nome}--${densidade.nome}.png`;
   await writeFile(join(saida, arquivo), foto.png);
   await Promise.all(
-    foto.rolagens.map((png, indice) => writeFile(join(saida, nomeDaRolagem(tela, densidade, indice + 1)), png)),
+    foto.rolagens.map((rolagem) => writeFile(join(saida, nomeDaRolagem(tela, densidade, rolagem)), rolagem.png)),
   );
   if (foto.sobraDeRolagemEmPx > 0) {
     console.warn(`  aviso: ${arquivo}: ${foto.sobraDeRolagemEmPx}px de rolagem interna ficam abaixo da foto (ver --ajuda)`);

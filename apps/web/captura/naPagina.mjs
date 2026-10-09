@@ -92,6 +92,15 @@ export const marcarRolagensHorizontais = (atributo) => {
   return comRolagem.length;
 };
 
-export const rolarAteOFimHorizontal = (elemento) => {
-  elemento.scrollLeft = elemento.scrollWidth;
+export const posicoesDaRolagemHorizontal = (elemento) => {
+  const passo = elemento.clientWidth;
+  const fim = elemento.scrollWidth - elemento.clientWidth;
+  const posicoes = [];
+  for (let posicao = passo; posicao < fim; posicao += passo) posicoes.push(posicao);
+  posicoes.push(fim);
+  return posicoes;
+};
+
+export const rolarHorizontalPara = (elemento, posicao) => {
+  elemento.scrollLeft = posicao;
 };
