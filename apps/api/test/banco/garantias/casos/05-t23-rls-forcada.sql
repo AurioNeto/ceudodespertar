@@ -1,4 +1,4 @@
--- verificacoes: 11
+-- verificacoes: 12
 -- T23 (Doc 3 §11.4, Documento 7 §15/§22): toda tabela com `instituicao_id`
 -- em `shared` e `identidade` tem RLS habilitada e FORÇADA, e a política
 -- `isolamento_por_instituicao` com a expressão certa — exceto `shared.outbox`,
@@ -57,16 +57,17 @@ SELECT verif.confere('T23 · toda tabela-alvo tem WITH CHECK da política isolam
     )), 0::bigint);
 
 -- Nenhuma tabela-alvo tem política a mais que abra uma fresta — em
--- identidade.usuario, a única exceção documentada é resolucao_do_sujeito
--- (Documento 7 §7.1/§8: o resolvedor de identidade lê antes de haver
--- instituição no contexto).
-SELECT verif.confere('T23 · nenhuma tabela-alvo tem política além da esperada (isolamento_por_instituicao; em usuario, também resolucao_do_sujeito)',
+-- identidade.usuario e identidade.convite, as únicas exceções documentadas são
+-- resolucao_do_sujeito e resolucao_do_convite (Documento 7 §7.1/§8: o
+-- resolvedor de identidade lê antes de haver instituição no contexto).
+SELECT verif.confere('T23 · nenhuma tabela-alvo tem política além da esperada (isolamento_por_instituicao; em usuario, também resolucao_do_sujeito; em convite, também resolucao_do_convite)',
   (SELECT count(*) FROM verif.tabelas_com_instituicao_id() t
     WHERE EXISTS (
       SELECT 1 FROM pg_policy p
        WHERE p.polrelid = t.relid
          AND p.polname <> 'isolamento_por_instituicao'
          AND NOT (t.nspname = 'identidade' AND t.relname = 'usuario' AND p.polname = 'resolucao_do_sujeito')
+         AND NOT (t.nspname = 'identidade' AND t.relname = 'convite' AND p.polname = 'resolucao_do_convite')
     )), 0::bigint);
 
 -- A exceção anterior só confere o NOME da política — recriar
@@ -80,6 +81,15 @@ SELECT verif.confere('T23 · resolucao_do_sujeito é exatamente FOR SELECT TO cd
       AND pg_get_expr(p.polqual, p.polrelid) = 'true'
      FROM pg_policy p
     WHERE p.polrelid = 'identidade.usuario'::regclass AND p.polname = 'resolucao_do_sujeito'),
+  true);
+
+SELECT verif.confere('T23 · resolucao_do_convite é exatamente FOR SELECT TO cdd_resolvedor_identidade USING (true) — sem papel, comando ou expressão a mais',
+  (SELECT p.polroles = ARRAY['cdd_resolvedor_identidade'::regrole]::oid[]
+      AND p.polcmd = 'r'
+      AND p.polpermissive
+      AND pg_get_expr(p.polqual, p.polrelid) = 'true'
+     FROM pg_policy p
+    WHERE p.polrelid = 'identidade.convite'::regclass AND p.polname = 'resolucao_do_convite'),
   true);
 
 -- Idempotência da varredura (Documento 7 §22): uma segunda chamada, sobre o

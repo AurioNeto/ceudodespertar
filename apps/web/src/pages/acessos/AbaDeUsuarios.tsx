@@ -1,11 +1,15 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import type { RefObject } from 'react';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import type { GrupoId, SituacaoUsuario, UsuarioId, UsuarioListado } from '@cdd/contracts';
-import { Button, EmptyState, InfraError, SkeletonList } from '../../ds';
+import { Button, EmptyState, InfraError, SkeletonList, varianteDoPainel } from '../../ds';
+import { useDensidade } from '../../lib/useDensidade';
 import { useValorComAtraso } from '../../lib/useValorComAtraso';
 import { useConsultasDeAcessos, temFiltroAplicado } from './consultasDeAcessos';
+import { focarTitulo } from './focarTitulo';
 import { FiltrosDeUsuarios } from './FiltrosDeUsuarios';
 import { LinhaDeUsuario } from './LinhaDeUsuario';
+import { PainelDoUsuario } from './PainelDoUsuario';
 
 export const ATRASO_DA_BUSCA_EM_MS = 300;
 
@@ -18,7 +22,30 @@ function semRepetidos(usuarios: readonly UsuarioListado[]): readonly UsuarioList
   });
 }
 
+interface OpcoesDoFocoDaLinhaGerenciada {
+  readonly painelAberto: boolean;
+  readonly ultimoUsuarioGerenciado: RefObject<UsuarioId | null>;
+  readonly itens: readonly UsuarioListado[];
+}
+
+function useDevolverFocoAoTituloQuandoLinhaGerenciadaSome({
+  painelAberto,
+  ultimoUsuarioGerenciado,
+  itens,
+}: OpcoesDoFocoDaLinhaGerenciada) {
+  useEffect(() => {
+    const id = ultimoUsuarioGerenciado.current;
+    if (painelAberto || id === null) return;
+    if (itens.some((usuario) => usuario.id === id)) return;
+    ultimoUsuarioGerenciado.current = null;
+    if (document.activeElement === document.body) focarTitulo()?.focus();
+  }, [painelAberto, ultimoUsuarioGerenciado, itens]);
+}
+
 export function AbaDeUsuarios() {
+  const densidade = useDensidade();
+  const [usuarioEmEdicao, setUsuarioEmEdicao] = useState<UsuarioListado | null>(null);
+  const ultimoUsuarioGerenciado = useRef<UsuarioId | null>(null);
   const consultas = useConsultasDeAcessos();
   const [buscaDigitada, setBuscaDigitada] = useState('');
   const [situacao, setSituacao] = useState<SituacaoUsuario | null>(null);
@@ -29,6 +56,17 @@ export function AbaDeUsuarios() {
   const grupos = useQuery(consultas.grupos());
   const usuarios = useInfiniteQuery(consultas.usuarios(filtro));
   const itens = useMemo(() => semRepetidos(usuarios.data?.pages.flatMap((pagina) => pagina.itens) ?? []), [usuarios.data]);
+
+  const gerenciar = (usuario: UsuarioListado) => {
+    ultimoUsuarioGerenciado.current = usuario.id;
+    setUsuarioEmEdicao(usuario);
+  };
+
+  useDevolverFocoAoTituloQuandoLinhaGerenciadaSome({
+    painelAberto: usuarioEmEdicao !== null,
+    ultimoUsuarioGerenciado,
+    itens,
+  });
 
   return (
     <>
@@ -65,7 +103,7 @@ export function AbaDeUsuarios() {
       {itens.length > 0 ? (
         <ul aria-label="Usuários" style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
           {itens.map((usuario) => (
-            <LinhaDeUsuario key={usuario.id} usuario={usuario} />
+            <LinhaDeUsuario key={usuario.id} usuario={usuario} aoGerenciar={gerenciar} />
           ))}
         </ul>
       ) : null}
@@ -84,6 +122,14 @@ export function AbaDeUsuarios() {
           </Button>
         </div>
       ) : null}
+      <PainelDoUsuario
+        usuario={usuarioEmEdicao}
+        variante={varianteDoPainel(densidade)}
+        densidade={densidade}
+        aoFechar={() => setUsuarioEmEdicao(null)}
+        aoAtualizarUsuario={setUsuarioEmEdicao}
+        focoDeReserva={focarTitulo}
+      />
     </>
   );
 }
