@@ -506,38 +506,152 @@ describe('Acessos: foco e leitor de tela no painel', () => {
   });
 });
 
+interface Adiado<T> {
+  readonly promessa: Promise<T>;
+  resolver(valor: T): void;
+  rejeitar(erro: Error): void;
+}
+
+function adiar<T>(): Adiado<T> {
+  let resolver: (valor: T) => void = () => undefined;
+  let rejeitar: (erro: Error) => void = () => undefined;
+  const promessa = new Promise<T>((aoResolver, aoRejeitar) => {
+    resolver = aoResolver;
+    rejeitar = aoRejeitar;
+  });
+  return { promessa, resolver, rejeitar };
+}
+
+const fecharPeloBotao = () =>
+  act(async () => painelAberto()?.querySelector<HTMLButtonElement>('button[aria-label="Fechar"]')?.click());
+
+const fecharPeloFundo = () => act(async () => fundoDoPainel()?.click());
+
+const FORMAS_DE_FECHAR = [
+  ['Esc', teclarEsc],
+  ['fundo', fecharPeloFundo],
+  ['Fechar', fecharPeloBotao],
+] as const;
+
+const OUTRO_USUARIO = usuarioListado({ id: 'u-2' as UsuarioId, nome: 'João Lima', email: 'joao@cdd.local' });
+
 describe('Acessos: fechar durante o envio', () => {
-  it('convite: Esc, fundo e Fechar são ignorados enquanto envia e o que foi digitado fica', async () => {
-    let liberar: (valor: UsuarioConvidado) => void = () => undefined;
-    const { tela } = await montar({ comando: () => new Promise<UsuarioConvidado>((resolver) => (liberar = resolver)) });
+  it.each(FORMAS_DE_FECHAR)('convite: %s fecha o painel mesmo com o envio em andamento', async (_forma, fechar) => {
+    const envio = adiar<UsuarioConvidado>();
+    const { tela } = await montar({ comando: () => envio.promessa });
+    await abrirConvite(tela);
+    await preencherConvite();
+    await clicarNoPainel('Registrar convite');
+    expect(botaoDoPainel('Enviando…').getAttribute('aria-disabled')).toBe('true');
+    await fechar();
+    expect(painelAberto()).toBeNull();
+  });
+
+  it('convite: sucesso tardio depois de fechar não reabre, mantém o painel novo limpo e atualiza a lista', async () => {
+    const envio = adiar<UsuarioConvidado>();
+    let leituras = 0;
+    const { cliente, tela } = await montar({
+      usuarios: () => pagina(++leituras === 1 ? [USUARIO_ATIVO] : [USUARIO_ATIVO, OUTRO_USUARIO]),
+      comando: () => envio.promessa,
+    });
     await abrirConvite(tela);
     await preencherConvite();
     await clicarNoPainel('Registrar convite');
     await teclarEsc();
-    await act(async () => fundoDoPainel()?.click());
-    await act(async () => painelAberto()?.querySelector<HTMLButtonElement>('button[aria-label="Fechar"]')?.click());
-    expect(painelAberto()).not.toBeNull();
-    expect(campoDoPainel<HTMLInputElement>('Nome').value).toBe('Ana Souza');
-    await act(async () => liberar(convidado()));
+    await act(async () => envio.resolver(convidado()));
     await assentar();
-    expect(textoDoPainel()).toContain(CONVITE_REGISTRADO);
-    await teclarEsc();
+
     expect(painelAberto()).toBeNull();
+    expect(cliente.chamadasDeComando()).toHaveLength(1);
+    expect(tela.container.querySelectorAll('ul[aria-label="Usuários"] > li')).toHaveLength(2);
+    await abrirConvite(tela);
+    expect(textoDoPainel()).not.toContain(CONVITE_REGISTRADO);
+    expect(campoDoPainel<HTMLInputElement>('Nome').value).toBe('');
   });
 
-  it('gerenciar: Esc durante o envio não fecha; depois de erro volta a fechar', async () => {
-    let falhar: (erro: Error) => void = () => undefined;
-    const { tela } = await montar({ comando: () => new Promise((_, rejeitar) => (falhar = rejeitar)) });
+  it('convite: erro tardio depois de fechar não reabre nem mostra o erro no painel seguinte', async () => {
+    const envio = adiar<UsuarioConvidado>();
+    const { cliente, tela } = await montar({ comando: () => envio.promessa });
+    await abrirConvite(tela);
+    await preencherConvite();
+    await clicarNoPainel('Registrar convite');
+    await teclarEsc();
+    const leiturasAntes = cliente.chamadasDeUsuarios().length;
+    await act(async () => envio.rejeitar(new ErroDaApi({ status: 409, codigo: 'EMAIL_JA_CADASTRADO' })));
+    await assentar();
+
+    expect(painelAberto()).toBeNull();
+    expect(cliente.chamadasDeUsuarios()).toHaveLength(leiturasAntes);
+    await abrirConvite(tela);
+    expect(painelAberto()?.querySelector('[role="alert"]')).toBeNull();
+  });
+
+  it.each(FORMAS_DE_FECHAR)('gerenciar: %s fecha o painel mesmo com o envio em andamento', async (_forma, fechar) => {
+    const envio = adiar<unknown>();
+    const { tela } = await montar({ comando: () => envio.promessa });
     await abrirGerenciar(tela);
     await digitarNoPainel('Motivo', 'deixou a tesouraria');
     await clicarNoPainel('Suspender acesso');
-    await teclarEsc();
-    expect(painelAberto()).not.toBeNull();
-    await act(async () => falhar(new ErroDaApi({ status: 422, codigo: 'ULTIMO_ADMINISTRADOR' })));
-    await assentar();
-    expect(painelAberto()).not.toBeNull();
-    await teclarEsc();
+    await fechar();
     expect(painelAberto()).toBeNull();
+  });
+
+  const DESFECHOS_TARDIOS = [
+    ['sucesso', (envio: Adiado<unknown>) => envio.resolver(situacaoAlterada('SUSPENSO', 2)), true],
+    ['erro', (envio: Adiado<unknown>) => envio.rejeitar(new ErroDaApi({ status: 422, codigo: 'ULTIMO_ADMINISTRADOR' })), false],
+    ['409', (envio: Adiado<unknown>) => envio.rejeitar(new ErroDaApi({ status: 409, codigo: 'VERSAO_DESATUALIZADA' })), true],
+  ] as const;
+
+  it.each(DESFECHOS_TARDIOS)(
+    'gerenciar: %s tardio depois de fechar e abrir outro usuário não fecha nem altera o painel aberto',
+    async (_desfecho, desfecho, invalidaALista) => {
+      const envio = adiar<unknown>();
+      const { cliente, tela } = await montar({
+        usuarios: () => pagina([USUARIO_ATIVO, OUTRO_USUARIO]),
+        usuario: () => usuarioListado({ versao: 2, situacao: 'SUSPENSO' }),
+        comando: () => envio.promessa,
+      });
+      await abrirGerenciar(tela);
+      await digitarNoPainel('Motivo', 'deixou a tesouraria');
+      await clicarNoPainel('Suspender acesso');
+      await teclarEsc();
+      await abrirPeloGatilho(gatilhoDe(tela, 'João Lima'));
+      await digitarNoPainel('Motivo', 'motivo do João');
+      const leiturasAntes = cliente.chamadasDeUsuarios().length;
+      await act(async () => desfecho(envio));
+      await assentar();
+
+      expect(textoDoPainel()).toContain('Gerenciar João Lima');
+      expect(painelAberto()?.querySelector('[role="alert"]')).toBeNull();
+      expect(painelAberto()?.querySelector('[role="status"]')).toBeNull();
+      expect(textoDoPainel()).toContain('Suspender acesso');
+      expect(gruposMarcadosNoPainel()).toEqual(['Tesouraria']);
+      expect(campoDoPainel<HTMLTextAreaElement>('Motivo').value).toBe('motivo do João');
+      expect(cliente.chamadasDeComando()).toHaveLength(1);
+      if (invalidaALista) expect(cliente.chamadasDeUsuarios().length).toBeGreaterThan(leiturasAntes);
+      else expect(cliente.chamadasDeUsuarios()).toHaveLength(leiturasAntes);
+    },
+  );
+
+  it('gerenciar: sucesso tardio depois de fechar ainda atualiza a lista e a contagem da aba Grupos', async () => {
+    const envio = adiar<unknown>();
+    let leituras = 0;
+    const { tela } = await montar({
+      usuarios: () => pagina(++leituras === 1 ? [USUARIO_ATIVO] : [usuarioListado({ nome: 'Maria Atualizada', versao: 2 })]),
+      grupos: () => ({ itens: [grupoDaGestao({ usuarios: leituras === 1 ? 2 : 1 })] }),
+      comando: () => envio.promessa,
+    });
+    await abrirGerenciar(tela);
+    await digitarNoPainel('Motivo', 'deixou a tesouraria');
+    await clicarNoPainel('Suspender acesso');
+    await fecharPeloBotao();
+    await act(async () => envio.resolver(situacaoAlterada('SUSPENSO', 2)));
+    await assentar();
+
+    expect(painelAberto()).toBeNull();
+    expect(tela.container.querySelector('ul[aria-label="Usuários"]')?.textContent).toContain('Maria Atualizada');
+    await irParaAbaGrupos(tela);
+    expect(contagemDeUsuariosNaAbaGrupos(tela)).toContain('1 usuário');
   });
 
   it('409 com a ação já fechada pelo pai não reabre o painel nem mexe em outro usuário', async () => {

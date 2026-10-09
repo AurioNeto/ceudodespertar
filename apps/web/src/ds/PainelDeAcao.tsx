@@ -12,7 +12,6 @@ export interface PainelDeAcaoProps {
   descricao?: string;
   variante: VarianteDoPainel;
   aoFechar: () => void;
-  fechamentoBloqueado?: boolean;
   rodape?: ReactNode;
   focoDeReserva?: () => HTMLElement | null;
   children: ReactNode;
@@ -58,7 +57,6 @@ function PainelAberto({
   descricao,
   variante,
   aoFechar,
-  fechamentoBloqueado = false,
   rodape,
   focoDeReserva,
   children,
@@ -71,14 +69,11 @@ function PainelAberto({
   const corpo = useRef<HTMLDivElement>(null);
   const focoDeReservaAtual = useRef(focoDeReserva);
 
-  const pedirFechamento = () => {
-    if (!fechamentoBloqueado) aoFechar();
-  };
-  const pedirFechamentoAtual = useRef(pedirFechamento);
+  const aoFecharAtual = useRef(aoFechar);
 
   useEffect(() => {
     focoDeReservaAtual.current = focoDeReserva;
-    pedirFechamentoAtual.current = pedirFechamento;
+    aoFecharAtual.current = aoFechar;
   });
 
   useEffect(() => {
@@ -98,7 +93,7 @@ function PainelAberto({
     const fecharComEsc = (evento: globalThis.KeyboardEvent) => {
       if (evento.key !== 'Escape' || evento.defaultPrevented || evento.isComposing) return;
       evento.preventDefault();
-      pedirFechamentoAtual.current();
+      aoFecharAtual.current();
     };
     document.addEventListener('keydown', fecharComEsc);
     return () => document.removeEventListener('keydown', fecharComEsc);
@@ -127,7 +122,7 @@ function PainelAberto({
       ref={fundo}
       data-testid="painel-de-acao-fundo"
       onClick={(evento) => {
-        if (evento.target === evento.currentTarget) pedirFechamento();
+        if (evento.target === evento.currentTarget) aoFechar();
       }}
       style={{
         position: 'fixed',
@@ -188,7 +183,7 @@ function PainelAberto({
           <button
             type="button"
             aria-label="Fechar"
-            onClick={pedirFechamento}
+            onClick={aoFechar}
             style={{
               display: 'grid',
               placeItems: 'center',

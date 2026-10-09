@@ -84,7 +84,6 @@ function PainelDoUsuarioAberto({
       descricao={usuario.email}
       variante={variante}
       aoFechar={aoFechar}
-      fechamentoBloqueado={enviando}
       focoDeReserva={focoDeReserva}
     >
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>

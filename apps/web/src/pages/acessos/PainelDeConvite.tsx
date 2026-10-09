@@ -113,7 +113,6 @@ function PainelDeConviteAberto({ variante, densidade, aoFechar, focoDeReserva }:
       titulo="Convidar usuário"
       variante={variante}
       aoFechar={aoFechar}
-      fechamentoBloqueado={enviando}
       focoDeReserva={focoDeReserva}
     >
       <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>

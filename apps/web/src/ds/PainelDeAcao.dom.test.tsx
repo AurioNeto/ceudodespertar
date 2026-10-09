@@ -12,12 +12,11 @@ globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 interface AnfitriaoProps {
   variante?: VarianteDoPainel;
   comCampo?: boolean;
-  bloqueado?: boolean;
   aoFecharExtra?: () => void;
   focoDeReserva?: () => HTMLElement | null;
 }
 
-function Anfitriao({ variante = 'folha', comCampo = true, bloqueado = false, aoFecharExtra, focoDeReserva }: AnfitriaoProps) {
+function Anfitriao({ variante = 'folha', comCampo = true, aoFecharExtra, focoDeReserva }: AnfitriaoProps) {
   const [aberto, setAberto] = useState(false);
   const [gatilhoVisivel, setGatilhoVisivel] = useState(true);
   return (
@@ -35,7 +34,6 @@ function Anfitriao({ variante = 'folha', comCampo = true, bloqueado = false, aoF
         titulo="Gerenciar acesso"
         descricao="Escolha o que fazer"
         variante={variante}
-        fechamentoBloqueado={bloqueado}
         aoFechar={() => {
           aoFecharExtra?.();
           setAberto(false);
@@ -226,18 +224,7 @@ describe('PainelDeAcao', () => {
   });
 });
 
-describe('PainelDeAcao: fechamento bloqueado', () => {
-  it('Esc, fundo e Fechar não fecham enquanto bloqueado', async () => {
-    const aoFecharExtra = vi.fn();
-    await montar({ aoFecharExtra, bloqueado: true });
-    await clicar(botao('Abrir'));
-    await teclar(document, 'Escape');
-    await clicar(document.querySelector('[data-testid="painel-de-acao-fundo"]') as HTMLElement);
-    await clicar(document.querySelector('button[aria-label="Fechar"]') as HTMLElement);
-    expect(aoFecharExtra).not.toHaveBeenCalled();
-    expect(dialogo()).not.toBeNull();
-  });
-
+describe('PainelDeAcao: Esc', () => {
   it('Esc já tratado ou durante composição de texto não fecha', async () => {
     const aoFecharExtra = vi.fn();
     await montar({ aoFecharExtra });
