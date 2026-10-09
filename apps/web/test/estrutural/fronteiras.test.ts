@@ -51,16 +51,12 @@ function opcoesSemOArquivoDeRegras(resultado: ICruiseResult) {
   );
 }
 
-function argumentosDoScript(nomeDoScript: string): string[] {
+function scriptDoPacote(nomeDoScript: string): string | undefined {
   const pacote = JSON.parse(readFileSync(join(RAIZ_DO_REPOSITORIO, 'package.json'), 'utf8')) as {
     scripts: Record<string, string>;
   };
 
-  return (pacote.scripts[nomeDoScript] ?? '').split(/\s+/);
-}
-
-function valorDaOpcao(argumentos: string[], opcao: string): string | undefined {
-  return argumentos[argumentos.indexOf(opcao) + 1];
+  return pacote.scripts[nomeDoScript];
 }
 
 function nomeDoPacote(caminhoDentroDeNodeModules: string): string {
@@ -199,10 +195,18 @@ describe('catraca das fronteiras do web', () => {
     expect(opcoesSemOArquivoDeRegras(daCatraca)).toEqual(opcoesSemOArquivoDeRegras(doWeb));
   });
 
-  it('é o que o script fronteiras:web:catraca executa, com a linha de base versionada', () => {
-    const argumentos = argumentosDoScript(SCRIPT_DA_CATRACA);
+  it('é o que o script fronteiras:web:catraca executa, sobre o src inteiro e com a linha de base versionada', () => {
+    expect(scriptDoPacote(SCRIPT_DA_CATRACA)).toBe(
+      `depcruise --config ${CONFIGURACAO_DA_CATRACA} --ignore-known ${LINHA_DE_BASE_DAS_VIOLACOES} apps/web/src`,
+    );
+  });
 
-    expect(valorDaOpcao(argumentos, '--config')).toBe(CONFIGURACAO_DA_CATRACA);
-    expect(valorDaOpcao(argumentos, '--ignore-known')).toBe(LINHA_DE_BASE_DAS_VIOLACOES);
+  it.each([
+    ['fronteiras:web:linha-de-base', 'shrink-only'],
+    ['fronteiras:web:linha-de-base:regenerar', 'full'],
+  ])('o script %s regenera a linha de base em modo %s, sobre o src inteiro', (nomeDoScript, modo) => {
+    expect(scriptDoPacote(nomeDoScript)).toBe(
+      `depcruise --config ${CONFIGURACAO_DA_CATRACA} --baseline ${LINHA_DE_BASE_DAS_VIOLACOES} --baseline-mode ${modo} apps/web/src`,
+    );
   });
 });
