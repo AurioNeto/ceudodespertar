@@ -4,6 +4,7 @@ import { createRoot } from 'react-dom/client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { vi } from 'vitest';
 import type { CodigoDeErro, Eu, GrupoId, InstituicaoId, Permissao, UsuarioId } from '@cdd/contracts';
+import { JANELA_DE_FRESCOR_EM_MS } from '../dados/clienteDeConsultas';
 import { ErroDaApi } from '../dados/erros';
 import type { ServicoDeEntrada } from '../dados/oidc';
 import { SessaoProvider } from './sessao';
@@ -104,7 +105,9 @@ export async function assentar(): Promise<void> {
 }
 
 export async function montarComSessao(cenario: CenarioDeSessao, arvore: ReactElement): Promise<TelaMontada> {
-  const clienteDeConsultas = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  const clienteDeConsultas = new QueryClient({
+    defaultOptions: { queries: { retry: false, staleTime: JANELA_DE_FRESCOR_EM_MS } },
+  });
   const aviso = cenario.aviso ?? criarAvisoDeEncerramentoFalso();
   const container = document.createElement('div');
   document.body.append(container);

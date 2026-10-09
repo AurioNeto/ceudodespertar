@@ -2,6 +2,9 @@ import { Controller, Module, Post } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { AppModule } from '../../src/composicao/app.module.js';
+import { ModoDeTransacao } from '../../src/shared/infrastructure/http/modo-de-transacao.decorator.js';
+import { SemIdempotencia } from '../../src/shared/infrastructure/idempotencia/sem-idempotencia.decorator.js';
+import { ErroDeSemIdempotenciaEmRotaComInstituicao } from '../../src/shared/infrastructure/idempotencia/verificador-de-sem-idempotencia-das-rotas.js';
 import { RequerPermissao } from '../../src/shared/infrastructure/autenticacao/marcas-de-acesso.js';
 import { ErroDeRotaQueMudaEstadoSemModoGravavel } from '../../src/shared/infrastructure/http/verificador-de-modo-de-transacao-das-rotas.js';
 
@@ -12,8 +15,20 @@ class RotaDeEscritaSemModoController {
   criar(): void {}
 }
 
+@Controller('rota-sem-idempotencia-com-permissao')
+class RotaSemIdempotenciaComPermissaoController {
+  @RequerPermissao('financeiro.lancamento.registrar')
+  @ModoDeTransacao('escrita')
+  @SemIdempotencia()
+  @Post()
+  criar(): void {}
+}
+
 @Module({ imports: [AppModule], controllers: [RotaDeEscritaSemModoController] })
 class AppComRotaSemModo {}
+
+@Module({ imports: [AppModule], controllers: [RotaSemIdempotenciaComPermissaoController] })
+class AppComRotaSemIdempotenciaComPermissao {}
 
 describe('partida da aplicação real', () => {
   beforeAll(() => {
@@ -40,5 +55,17 @@ describe('partida da aplicação real', () => {
 
     expect(falha).toBeInstanceOf(ErroDeRotaQueMudaEstadoSemModoGravavel);
     expect((falha as Error).message).toContain('RotaDeEscritaSemModoController.criar (POST)');
+  });
+
+  it('recusa partir quando uma rota com permissão é marcada como sem idempotência', async () => {
+    const modulo = await Test.createTestingModule({ imports: [AppComRotaSemIdempotenciaComPermissao] }).compile();
+
+    const falha = await modulo.init().then(
+      () => undefined,
+      (erro: unknown) => erro,
+    );
+
+    expect(falha).toBeInstanceOf(ErroDeSemIdempotenciaEmRotaComInstituicao);
+    expect((falha as Error).message).toContain('RotaSemIdempotenciaComPermissaoController.criar');
   });
 });

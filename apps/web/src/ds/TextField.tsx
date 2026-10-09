@@ -44,6 +44,10 @@ export function TextField({
   const generated = useId();
   const fid = id ?? generated;
   const field = density === 'field';
+  const idDaMensagem = `${fid}-mensagem`;
+  const mensagem = error ?? hint;
+  const descritoPor = [rest['aria-describedby'], mensagem ? idDaMensagem : undefined].filter(Boolean).join(' ') || undefined;
+  const ligacaoAcessivel = { 'aria-describedby': descritoPor, ...(error ? { 'aria-invalid': true } : {}) } as const;
 
   const controlStyle: CSSProperties = {
     width: '100%',
@@ -79,9 +83,9 @@ export function TextField({
 
       <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
         {multiline ? (
-          <textarea id={fid} readOnly={readOnly} rows={3} style={controlStyle} {...rest} />
+          <textarea id={fid} readOnly={readOnly} rows={3} style={controlStyle} {...rest} {...ligacaoAcessivel} />
         ) : (
-          <input id={fid} type={type} readOnly={readOnly} style={controlStyle} {...rest} />
+          <input id={fid} type={type} readOnly={readOnly} style={controlStyle} {...rest} {...ligacaoAcessivel} />
         )}
         {suffix ? (
           <span
@@ -121,9 +125,13 @@ export function TextField({
       </div>
 
       {error ? (
-        <span style={{ marginTop: 7, font: 'var(--text-small)', color: 'var(--color-attention)' }}>{error}</span>
+        <span id={idDaMensagem} style={{ marginTop: 7, font: 'var(--text-small)', color: 'var(--color-attention)' }}>
+          {error}
+        </span>
       ) : hint ? (
-        <span style={{ marginTop: 7, font: 'var(--text-small)', color: 'var(--text-secondary)' }}>{hint}</span>
+        <span id={idDaMensagem} style={{ marginTop: 7, font: 'var(--text-small)', color: 'var(--text-secondary)' }}>
+          {hint}
+        </span>
       ) : null}
     </div>
   );

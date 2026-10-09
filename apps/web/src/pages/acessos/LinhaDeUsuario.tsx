@@ -1,10 +1,17 @@
 import type { UsuarioListado } from '@cdd/contracts';
-import { StatusBadge } from '../../ds';
+import { Button, StatusBadge } from '../../ds';
+import { useDensidade } from '../../lib/useDensidade';
 import { Avatar } from '../../components/Avatar';
 import { formatarDataHora } from '../../lib/formato';
 import { SITUACAO_DE_USUARIO } from './situacaoDeUsuario';
 
-export function LinhaDeUsuario({ usuario }: { usuario: UsuarioListado }) {
+export interface LinhaDeUsuarioProps {
+  readonly usuario: UsuarioListado;
+  readonly aoGerenciar: (usuario: UsuarioListado) => void;
+}
+
+export function LinhaDeUsuario({ usuario, aoGerenciar }: LinhaDeUsuarioProps) {
+  const densidade = useDensidade();
   const situacao = SITUACAO_DE_USUARIO[usuario.situacao];
   const ultimoAcesso = usuario.ultimoAcessoEm
     ? `Último acesso: ${formatarDataHora(usuario.ultimoAcessoEm)}`
@@ -40,6 +47,15 @@ export function LinhaDeUsuario({ usuario }: { usuario: UsuarioListado }) {
         ))}
       </ul>
       <StatusBadge tone={situacao.tom}>{situacao.rotulo}</StatusBadge>
+      <Button
+        variant="ghost"
+        density={densidade}
+        aria-label={`Gerenciar acesso de ${usuario.nome}`}
+        aria-haspopup="dialog"
+        onClick={() => aoGerenciar(usuario)}
+      >
+        Gerenciar
+      </Button>
     </li>
   );
 }

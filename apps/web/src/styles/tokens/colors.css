@@ -96,6 +96,7 @@
   --bg-sunken:         var(--color-surface-sunken);
   --bg-rail:           var(--color-surface-rail);
   --bg-brand:          var(--color-surface-warm);
+  --bg-scrim:          rgba(59,38,23,.38);
 
   --text-primary:      var(--color-ink);
   --text-title:        var(--color-ink-brand);

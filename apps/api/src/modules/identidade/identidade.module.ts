@@ -15,6 +15,7 @@ import { RevogarPermissaoDoGrupo } from './application/grupos/revogar-permissao-
 import { EntregaDeConvite } from './application/convite/entrega-de-convite.js';
 import { EnviadorDeConvite } from './application/convite/enviador-de-convite.js';
 import { GeradorDeTokenDeConvite } from './application/convite/gerador-de-token-de-convite.js';
+import { ResolvedorDeConvite } from './application/convite/resolvedor-de-convite.js';
 import { LeitorDoEu } from './application/leitor-do-eu.js';
 import { ObterEu } from './application/obter-eu.js';
 import { RegistradorDeUltimoAcesso } from './application/registrador-de-ultimo-acesso.js';
@@ -35,6 +36,7 @@ import { TravaDaAdministracaoAdvisory } from './infrastructure/administracao/tra
 import { LeitorDeGruposKysely } from './infrastructure/grupos/leitor-de-grupos.kysely.js';
 import { EnviadorDeConviteQueRegistra } from './infrastructure/convite/enviador-de-convite.que-registra.js';
 import { GeradorDeTokenDeConviteNode } from './infrastructure/convite/gerador-de-token-de-convite.node.js';
+import { ResolvedorDeConviteKysely } from './infrastructure/convite/resolvedor-de-convite.kysely.js';
 import { LeitorDeGruposDaInstituicaoKysely } from './infrastructure/usuarios/leitor-de-grupos-da-instituicao.kysely.js';
 import { LeitorDeUsuariosKysely } from './infrastructure/usuarios/leitor-de-usuarios.kysely.js';
 import { GravadorDeTrilha } from './infrastructure/auditoria/gravador-de-trilha.js';
@@ -86,6 +88,7 @@ import { GestaoDeUsuariosController } from './interface/http/gestao-de-usuarios.
     { provide: GeradorDeTokenDeConvite, useClass: GeradorDeTokenDeConviteNode },
     { provide: EnviadorDeConvite, useClass: EnviadorDeConviteQueRegistra },
     EntregaDeConvite,
+    { provide: ResolvedorDeConvite, useClass: ResolvedorDeConviteKysely },
     { provide: LeitorDeGruposDaInstituicao, useClass: LeitorDeGruposDaInstituicaoKysely },
     { provide: LeitorDeUsuarios, useClass: LeitorDeUsuariosKysely },
     ConvidarUsuario,

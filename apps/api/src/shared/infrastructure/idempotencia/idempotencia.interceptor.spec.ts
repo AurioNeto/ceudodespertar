@@ -1,11 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import type { CallHandler, ExecutionContext } from '@nestjs/common';
-import { of } from 'rxjs';
+import { firstValueFrom, of } from 'rxjs';
 import { ContextoDaRequisicao } from '../contexto-da-requisicao.js';
 import { UnidadeDeTrabalho } from '../banco/unidade-de-trabalho.js';
 import type { ContextoDaTransacao, ModoDeTransacao } from '../banco/unidade-de-trabalho.js';
 import { IdempotenciaInterceptor } from './idempotencia.interceptor.js';
 import { ErroDeConfiguracaoDeIdempotencia } from './erro-de-configuracao-de-idempotencia.js';
+import { SemIdempotencia } from './sem-idempotencia.decorator.js';
 
 interface RequisicaoFake {
   readonly method: string;
@@ -35,10 +36,26 @@ function requisicaoFake(opcoes: { metodo?: string; chave?: string }): Requisicao
   };
 }
 
-function contextoDeExecucao(requisicao: RequisicaoFake): ExecutionContext {
+class ControladorComRotaSemIdempotencia {
+  @SemIdempotencia()
+  rota(): void {}
+}
+
+@SemIdempotencia()
+class ControladorSemIdempotenciaNaClasse {
+  rota(): void {}
+}
+
+function contextoDeExecucao(
+  requisicao: RequisicaoFake,
+  alvo: { handler: Function; controlador: Function } = {
+    handler: function handlerQualquer() {},
+    controlador: class ControladorQualquer {},
+  },
+): ExecutionContext {
   return {
-    getHandler: () => function handlerQualquer() {},
-    getClass: () => class ControladorQualquer {},
+    getHandler: () => alvo.handler,
+    getClass: () => alvo.controlador,
     switchToHttp: () => ({ getRequest: () => requisicao }),
   } as unknown as ExecutionContext;
 }
@@ -110,5 +127,41 @@ describe('IdempotenciaInterceptor · validação do cabeçalho', () => {
         interceptor.intercept(contextoDeExecucao(requisicaoFake({ chave: chaveGigante })), proximo),
       ),
     ).rejects.toMatchObject({ status: 400, response: { erro: 'CORPO_INVALIDO' } });
+  });
+});
+
+describe('IdempotenciaInterceptor · rota marcada com @SemIdempotencia', () => {
+  const alvoNoMetodo = {
+    handler: ControladorComRotaSemIdempotencia.prototype.rota,
+    controlador: ControladorComRotaSemIdempotencia,
+  };
+  const alvoNaClasse = {
+    handler: ControladorSemIdempotenciaNaClasse.prototype.rota,
+    controlador: ControladorSemIdempotenciaNaClasse,
+  };
+
+  it.each([
+    ['no método', alvoNoMetodo],
+    ['na classe', alvoNaClasse],
+  ])('ignora a chave sem erro e executa o handler quando a marca está %s e não há instituição', async (_onde, alvo) => {
+    const interceptor = new IdempotenciaInterceptor(new UnidadeDeTrabalhoQueNuncaDeveSerChamada());
+    const proximo: CallHandler = { handle: () => of('resposta') };
+
+    const observavel = await ContextoDaRequisicao.executar({ correlacaoId: 'c1' }, () =>
+      interceptor.intercept(contextoDeExecucao(requisicaoFake({ chave: 'k1' }), alvo), proximo),
+    );
+
+    expect(await firstValueFrom(observavel)).toBe('resposta');
+  });
+
+  it('ignora a chave mesmo malformada, sem responder 400', async () => {
+    const interceptor = new IdempotenciaInterceptor(new UnidadeDeTrabalhoQueNuncaDeveSerChamada());
+    const proximo: CallHandler = { handle: () => of('resposta') };
+
+    const observavel = await ContextoDaRequisicao.executar({ correlacaoId: 'c1' }, () =>
+      interceptor.intercept(contextoDeExecucao(requisicaoFake({ chave: '' }), alvoNoMetodo), proximo),
+    );
+
+    expect(await firstValueFrom(observavel)).toBe('resposta');
   });
 });
