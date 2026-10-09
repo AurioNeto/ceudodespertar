@@ -200,6 +200,8 @@ O bloco sem permissão **não é consultado e não aparece na resposta** — a c
 
 `sistema.usuario.gerenciar` cria o `Usuario` em `CONVITE_PENDENTE` e um convite com token aleatório; o banco guarda só o SHA-256 dele. Ao aceitar, a pessoa cria a credencial no Keycloak (tela do tema do CDD), o `sub` é gravado e a situação vira `ATIVO`. Convite vale 72 h e é de uso único.
 
+A ativação chega sem instituição no contexto, e `identidade.convite` tem RLS FORCE. A API descobre a casa do convite por `identidade.resolver_convite(hash)`, no mesmo desenho de `resolver_sujeito` (§7.1, §8): devolve só `instituicao_id` e `usuario_id` e não olha validade. Vencido, usado ou revogado é regra do caso de uso, conferida depois, já com o contexto da instituição.
+
 **Convite vencido e não revogado continua vigente para o índice.** `convite_vigente_unico` (§15) só sai do caminho de um usuário quando `usado_em` ou `revogado_em` deixam de ser nulos — a expiração por si só não grava nada. O reenvio de convite, então, precisa **revogar o anterior na mesma transação** antes de criar o novo; sem isso, o `INSERT` do novo convite esbarra no índice único mesmo com o velho havendo expirado horas atrás.
 
 ### 7.3 O link público de inscrição
@@ -242,9 +244,9 @@ O CDD é uma instituição. O desenho é multi-instituição desde o início por
 | `cdd_app` | a aplicação em execução | **não** |
 | `cdd_backup` | `pg_dump` | sim, só leitura |
 | `cdd_resolvedor_link` | dono só de `eventos.resolver_link`; lê quatro colunas de `link_de_inscricao` por uma política só dele | **não** |
-| `cdd_resolvedor_identidade` | dono só de `identidade.resolver_sujeito`; lê três colunas de `identidade.usuario` por uma política só dele | **não** |
+| `cdd_resolvedor_identidade` | dono só de `identidade.resolver_sujeito` e `identidade.resolver_convite`; lê três colunas de `identidade.usuario` e três de `identidade.convite`, cada tabela por uma política só dele | **não** |
 
-Há três exceções desenhadas. O despachante do outbox: `shared.outbox` não tem RLS porque ele lê eventos de todas as instituições; antes de entregar cada um, abre transação com o `instituicao_id` do evento. E os dois resolvedores que chegam sem instituição: o do link público, que lê o token de qualquer instituição sem `BYPASSRLS` — por uma política `FOR SELECT TO cdd_resolvedor_link` — e devolve só a instituição e o evento; e o do sujeito autenticado (§7.1), que lê o `sub` de qualquer instituição sem `BYPASSRLS` — por uma política `FOR SELECT TO cdd_resolvedor_identidade` — e devolve só a instituição e o usuário. Em produção, quem roda a migration precisa poder assumir os dois papéis para passar as funções a eles: `GRANT cdd_resolvedor_link TO cdd_owner WITH INHERIT FALSE` e `GRANT cdd_resolvedor_identidade TO cdd_owner WITH INHERIT FALSE`. Sem o `INHERIT FALSE`, o dono herdaria a política de um dos resolvedores e leria sem contexto as linhas de todas as instituições.
+Há três exceções desenhadas. O despachante do outbox: `shared.outbox` não tem RLS porque ele lê eventos de todas as instituições; antes de entregar cada um, abre transação com o `instituicao_id` do evento. E os resolvedores que chegam sem instituição: o do link público, que lê o token de qualquer instituição sem `BYPASSRLS` — por uma política `FOR SELECT TO cdd_resolvedor_link` — e devolve só a instituição e o evento; e o do sujeito autenticado (§7.1), que lê o `sub` de qualquer instituição sem `BYPASSRLS` — por uma política `FOR SELECT TO cdd_resolvedor_identidade` — e devolve só a instituição e o usuário; e o do convite (§7.2), que pelo mesmo papel e por uma política `FOR SELECT TO cdd_resolvedor_identidade` em `identidade.convite` acha o convite pelo SHA-256 do token e devolve só a instituição e o usuário. Em produção, quem roda a migration precisa poder assumir os dois papéis para passar as funções a eles: `GRANT cdd_resolvedor_link TO cdd_owner WITH INHERIT FALSE` e `GRANT cdd_resolvedor_identidade TO cdd_owner WITH INHERIT FALSE`. Sem o `INHERIT FALSE`, o dono herdaria a política de um dos resolvedores e leria sem contexto as linhas de todas as instituições.
 
 ## 9. Eventos de domínio e integração entre módulos
 
