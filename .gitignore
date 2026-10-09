@@ -10,6 +10,9 @@ coverage/
 # scratch de verificação visual
 apps/web/shot.mjs
 
+# PNGs gerados por `pnpm --filter @cdd/web captura`
+/apps/web/captura/saida/
+
 # pacotes de mentira usados pelas fixtures de fronteiras.test.ts, para o resolver
 # encontrar um node_modules/<pacote> sem precisar dele como dependência real
 !/apps/api/test/estrutural/fixtures/**/node_modules/
