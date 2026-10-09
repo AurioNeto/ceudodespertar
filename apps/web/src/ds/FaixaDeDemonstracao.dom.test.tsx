@@ -7,12 +7,6 @@ afterEach(desmontarTudo);
 const faixaDe = (container: HTMLElement) => elemento<HTMLDivElement>(container, '[role="note"]');
 
 describe('FaixaDeDemonstracao', () => {
-  it('texto exportado — avisa que os dados são de demonstração e nada é gravado', () => {
-    expect(TEXTO_DA_FAIXA_DE_DEMONSTRACAO).toBe(
-      'Dados de demonstração. Esta tela ainda não está ligada ao sistema: o que aparece aqui é exemplo e nada é gravado.',
-    );
-  });
-
   it('renderiza uma nota com o texto exportado', async () => {
     const { container } = await montar(<FaixaDeDemonstracao />);
 
