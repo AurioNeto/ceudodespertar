@@ -14,7 +14,7 @@ import type {
 } from '@cdd/contracts';
 import { criarEntradaFalsa, criarEu, montarComSessao, type TelaMontada } from '../../app/apoioDeTeste';
 import type { ClienteHttp, OpcoesDeRequisicao } from '../../dados/clienteHttp';
-import { ClienteHttpProvider } from '../../dados/ClienteHttpContexto';
+import { ClienteHttpProvider } from '../../app/clienteHttp';
 import { ErroDaApi } from '../../dados/erros';
 import { AcessosPage } from './AcessosPage';
 

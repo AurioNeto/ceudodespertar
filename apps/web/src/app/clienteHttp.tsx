@@ -1,6 +1,6 @@
 import { createContext, useContext } from 'react';
 import type { ReactNode } from 'react';
-import type { ClienteHttp } from './clienteHttp';
+import type { ClienteHttp } from '../dados/clienteHttp';
 
 const Contexto = createContext<ClienteHttp | null>(null);
 

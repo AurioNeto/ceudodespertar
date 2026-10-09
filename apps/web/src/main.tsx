@@ -8,7 +8,7 @@ import { SessaoProvider } from './app/sessao';
 import type { SessaoProviderProps } from './app/sessao';
 import { carregarDemonstracao } from './app/demonstracao';
 import { clienteHttp, credencial, criarClienteDeConsultas, servicoDeEntrada } from './dados';
-import { ClienteHttpProvider } from './dados/ClienteHttpContexto';
+import { ClienteHttpProvider } from './app/clienteHttp';
 import './styles/global.css';
 
 const clienteDeConsultas = criarClienteDeConsultas();

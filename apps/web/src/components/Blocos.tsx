@@ -109,13 +109,18 @@ export function Cartao({
   children,
   campo = false,
   style,
+  as: Elemento = 'div',
+  'aria-label': rotuloAcessivel,
 }: {
   children: ReactNode;
   campo?: boolean;
   style?: CSSProperties;
+  as?: 'div' | 'article';
+  'aria-label'?: string;
 }) {
   return (
-    <div
+    <Elemento
+      aria-label={rotuloAcessivel}
       style={{
         background: 'var(--bg-card)',
         border: 'var(--border-hairline)',
@@ -129,7 +134,7 @@ export function Cartao({
       }}
     >
       {children}
-    </div>
+    </Elemento>
   );
 }
 

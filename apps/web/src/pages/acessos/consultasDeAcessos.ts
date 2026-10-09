@@ -4,7 +4,7 @@ import type { GrupoId, GruposDaGestao, PaginaDeUsuarios, SituacaoUsuario } from 
 import { LIMITE_PADRAO_DA_LISTAGEM_DE_USUARIOS } from '@cdd/contracts';
 import { criarConsulta } from '../../dados/consultaEComando';
 import type { ClienteHttp } from '../../dados/clienteHttp';
-import { useClienteHttp } from '../../dados/ClienteHttpContexto';
+import { useClienteHttp } from '../../app/clienteHttp';
 
 export interface FiltroDaTela {
   readonly situacao: SituacaoUsuario | null;
