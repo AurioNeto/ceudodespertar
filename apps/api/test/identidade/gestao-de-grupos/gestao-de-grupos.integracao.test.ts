@@ -371,6 +371,7 @@ describe('gestão de grupos pela API (Doc 3 §11, Doc 7 §25)', () => {
       const revogado = await revogar(ADMIN, protegido.id, PERMISSAO_DA_LEITURA, (await estadoDe(protegido.id)).versao);
 
       expect([renomeado.status, concedido.status, revogado.status]).toEqual([200, 200, 200]);
+      expect(renomeado.corpo).toMatchObject({ nome: 'Consulta', codigoSistema: 'LEITURA', protegido: true });
       expect(await estadoDe(protegido.id)).toMatchObject({ nome: 'Consulta', permissoes: ['pessoas.pessoa.ler'] });
     });
   });
