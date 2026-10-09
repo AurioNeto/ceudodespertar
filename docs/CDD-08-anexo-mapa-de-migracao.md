@@ -53,7 +53,8 @@ Os destinos são agrupados por área: `app/`, `dados/`, `lib/`, `ds/`, `testes/`
 | `app/sessao.test.tsx` (linha 393) | `app/rotas/rotasAntigasDaEntrada.dom.test.tsx` | repartir por export (por describe) | app/ em subpastas |
 | `app/sessao.test.tsx` (linha 276, testes de entrada) | `pages/transversal/entrada/EntrarPage/EntrarPage.dom.test.tsx` | repartir por export (por describe) | Mover transversal |
 | `app/sessao.test.tsx` (linha 366, testes de entrada) | `pages/transversal/entrada/RetornoPage/RetornoPage.dom.test.tsx` | repartir por export (por describe) | Mover transversal |
-| `app/sessao.test.tsx` (`Sonda`, linha 30, e `ler`, linha 42; privados) | `testes/sessaoDeTeste.tsx` (os testes que os usam se repartem entre `app/sessao` e `pages/transversal/entrada`; ancestral comum: `src/`). `ler` passa a receber a tela por parâmetro, porque hoje lê a variável `tela` do arquivo | repartir por export (`ler` muda de assinatura, só em apoio de teste) | testes/ global e setupFiles |
+| `app/sessao.test.tsx` (`Sonda`, linha 30; privada, só os testes do `SessaoProvider` a usam) | `app/sessao/SessaoProvider/SessaoProvider.dom.test.tsx` | mover | app/ em subpastas |
+| `app/sessao.test.tsx` (`ler`, linha 42; privado) | `testes/sessaoDeTeste.tsx` (os testes que o usam se repartem entre `app/sessao` e `pages/transversal/entrada`; ancestral comum: `src/`). `ler` passa a receber a tela por parâmetro, porque hoje lê a variável `tela` do arquivo | repartir por export (`ler` muda de assinatura, só em apoio de teste) | testes/ global e setupFiles |
 | `app/sessaoDeDemonstracao.ts` | `app/demonstracao/sessaoDeDemonstracao.ts` | mover | app/ em subpastas |
 | `app/telas.ts` | `app/shell/telas.ts` | mover | app/ em subpastas |
 | `app/telas.test.ts` | `app/shell/telas.test.ts` | mover | app/ em subpastas |
@@ -262,7 +263,7 @@ Os testes do #58 e do #59 se repartem por describe entre as unidades de destino.
 | Origem | Destino | Ação | Etapa |
 |---|---|---|---|
 | `app/apoioDeTeste.tsx`: `IS_REACT_ACT_ENVIRONMENT` e stub de `matchMedia` | `testes/configurarDom.ts` (`setupFiles` do projeto dom) | repartir por export (do #55, que alterou o arquivo de origem) | testes/ global e setupFiles |
-| `app/apoioDeTeste.tsx`: `PERMISSAO_QUE_O_EU_TEM`, `PERMISSAO_QUE_O_EU_NAO_TEM`, `criarEu`, `EntradaFalsa`, `criarEntradaFalsa`, `AvisoDeEncerramentoFalso`, `criarAvisoDeEncerramentoFalso`, `CenarioDeSessao`, `TelaMontada`, `VOLTAS_PARA_ASSENTAR`, `proximoCiclo`, `assentar`, `montarComSessao` (os `PERMISSAO_*` ficam com `criarEu`; `Sonda` e `ler` vêm de `app/sessao.test.tsx`, seção 1) | `testes/sessaoDeTeste.tsx` | repartir por export (do #55, que alterou `montarComSessao`) | testes/ global e setupFiles |
+| `app/apoioDeTeste.tsx`: `PERMISSAO_QUE_O_EU_TEM`, `PERMISSAO_QUE_O_EU_NAO_TEM`, `criarEu`, `EntradaFalsa`, `criarEntradaFalsa`, `AvisoDeEncerramentoFalso`, `criarAvisoDeEncerramentoFalso`, `CenarioDeSessao`, `TelaMontada`, `VOLTAS_PARA_ASSENTAR`, `proximoCiclo`, `assentar`, `montarComSessao` (os `PERMISSAO_*` ficam com `criarEu`; `ler` vem de `app/sessao.test.tsx`, seção 1) | `testes/sessaoDeTeste.tsx` | repartir por export (do #55, que alterou `montarComSessao`) | testes/ global e setupFiles |
 | `app/apoioDeTeste.tsx`: `erroDoEu`, unificado como `erroDaApi` (também usado por `dados/clienteDeConsultas.test.ts` e `app/estadoDaSessao.test.ts`) | `testes/fabricas.ts` | repartir por export (do #55, que alterou o arquivo de origem) | testes/ global e setupFiles |
 | novo (`montagem.tsx`, render global sem provider; entra com o #58 e o #59 traz o mesmo arquivo) | `testes/montagem.tsx` | criar | Caracterizar lib/formato e components |
 
@@ -522,8 +523,9 @@ Os testes do #58 e do #59 se repartem por describe entre as unidades de destino.
 | `pages/acessos/textosDeAcessos.ts`: `MOTIVO_OBRIGATORIO` (só `PainelDoUsuario`) | `.../AbaDeUsuarios/components/PainelDoUsuario/constantes.ts` | repartir por export (do #55) | Mover sistema |
 | `pages/acessos/useAcaoNoUsuario.ts` (`PainelDeConvite` e `PainelDoUsuario`) | `pages/sistema/AcessosPage/hooks/useAcaoNoUsuario.ts` | mover (do #55) | Mover sistema |
 | `pages/acessos/useFocoNoPrimeiroCampoInvalido.ts` (do #55; os dois painéis) | `pages/sistema/AcessosPage/hooks/useFocoNoPrimeiroCampoInvalido.ts` | mover (do #55) | Mover sistema |
-| `lib/chaveDeIdempotencia.ts` (PR #55; tem hook React, que `lib/` não pode ter) | `pages/sistema/AcessosPage/hooks/useChaveDeIdempotencia.ts` | mover (do #55) | Mover sistema |
-| `lib/chaveDeIdempotencia.test.ts` (PR #55) | `pages/sistema/AcessosPage/hooks/useChaveDeIdempotencia.test.ts` | mover (do #55) | Mover sistema |
+| `lib/chaveDeIdempotencia.ts`: `useChaveDeIdempotencia` (PR #55; hook React, que `lib/` não pode ter) | `pages/sistema/AcessosPage/hooks/useChaveDeIdempotencia.ts` | repartir por export (do #55) | Mover sistema |
+| `lib/chaveDeIdempotencia.ts`: `criarGuardiaoDeChave`, `GuardiaoDeChave` e `GeradorDeChave` (PR #55; função pura) | `pages/sistema/AcessosPage/utils/guardiaoDeChave.ts` | repartir por export (do #55) | Mover sistema |
+| `lib/chaveDeIdempotencia.test.ts` (PR #55; testa só `criarGuardiaoDeChave`) | `pages/sistema/AcessosPage/utils/guardiaoDeChave.test.ts` | mover (do #55) | Mover sistema |
 | `lib/chaveDeIdempotencia.dom.test.tsx` (PR #55) | `pages/sistema/AcessosPage/hooks/useChaveDeIdempotencia.dom.test.tsx` (`.dom.test.tsx` porque usa JSX, seção 8.1 do Documento 8; nome final no merge, seção 14 deste anexo) | mover (do #55) | Mover sistema |
 | `lib/useValorComAtraso.ts` (único consumidor: `AbaDeUsuarios`) | `pages/sistema/AcessosPage/components/AbaDeUsuarios/hooks/useValorComAtraso.ts` | mover | Mover sistema |
 | `lib/formato.ts`: `FUSO_DA_CASA`, `DATA_E_HORA`, `formatarDataHora` (único consumidor: `LinhaDeUsuario`) | `pages/sistema/AcessosPage/components/AbaDeUsuarios/components/LinhaDeUsuario/utils/formatarDataHora.ts` | repartir por export | Mover sistema |
@@ -582,7 +584,7 @@ Os testes do #58 e do #59 se repartem por describe entre as unidades de destino.
 
 ## 14. Pendências do mapeamento
 
-- **Testes de hook da `AcessosPage`.** O teste de `useChaveDeIdempotencia` que o #55 traz é `.dom.test.tsx` porque usa JSX, o que a convenção admite (Documento 8, seção 8.1). Na main ficam `lib/chaveDeIdempotencia.dom.test.tsx` e `lib/chaveDeIdempotencia.test.ts`, que acompanham o hook e o util.
+- **Testes de hook da `AcessosPage`.** O teste de `useChaveDeIdempotencia` que o #55 traz é `.dom.test.tsx` porque usa JSX, o que a convenção admite (Documento 8, seção 8.1). Na main ficam `lib/chaveDeIdempotencia.dom.test.tsx`, que acompanha o hook, e `lib/chaveDeIdempotencia.test.ts`, que testa a função pura `criarGuardiaoDeChave` e vai com ela para `utils/guardiaoDeChave.test.ts`.
 - **Nomes de arquivo nas divisões.** São propostos. A etapa confere no código da época e pode ajustar o nome, nunca a posse.
 - **Mocks com destinos em mais de uma etapa.** `mocks/sessao.ts`, `mocks/financeiro.ts` e `mocks/lancamentos.ts` se repartem em etapas diferentes. Cada parte aparece na linha da própria etapa.
 - **Fábrica `fontesDaSessao`.** É opcional, como indicado na linha de `main.tsx` (seção 6 deste anexo).

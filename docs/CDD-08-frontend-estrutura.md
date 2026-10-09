@@ -38,8 +38,8 @@ O dono aprovou as recomendações da proposta em todos os pontos. Quatro decisõ
 |---|---|
 | O que é global | O `ds/` é global por definição: o catálogo do Documento 5 §4 e os primitivos genéricos (sem regra de domínio) que 3 ou mais telas pedem, contando uso real e re-implementações comprovadas. Isso é exceção declarada à regra do ancestral comum. Todo o resto (composições de tela, hooks, utils, constantes, mocks e apoios de teste) segue a regra do ancestral comum, com granularidade por export. |
 | Páginas | `pages/{financeiro, eventos, estoque, pessoas, sistema}`, pelo módulo da primeira permissão da tela em `telas.ts`; `pages/transversal/` para telas sem módulo. Subgrupo de fluxo só com compartilhamento exclusivo: `financeiro/lancamentos`, `eventos/inscricao`, `transversal/entrada`. Devoluções fica em eventos; Ayahuasca e Feitio, em estoque; a `InscricaoPublicaPage`, em `eventos/inscricao`. O menu não muda. |
-| Pastas atômicas | Só no `ds/`: `fundacao`, `providers`, `atoms`, `molecules`, `organisms`, `templates`. Cada nível só importa os de baixo. |
-| Convenções | Unidade = pasta PascalCase com o nome do componente + `index.ts` (porta única; tudo dentro é privado à subárvore). Alias `@/` para atravessar camada ou módulo; relativo dentro da unidade. Primitivos promovidos mantêm o nome em pt-BR (o catálogo do Documento 5 continua em inglês). Tipos continuam exportados do arquivo que os define; `tipos.ts` quando 2 ou mais arquivos da unidade compartilham. |
+| Pastas atômicas | Só no `ds/`: `fundacao`, `providers`, `atoms`, `molecules`, `organisms`, `templates`. Cada nível importa a base, o próprio nível e os de baixo. |
+| Convenções | Unidade = pasta PascalCase com o nome do componente + `index.ts` (porta única; tudo dentro é privado à subárvore). Alias `@/` para sair da camada e, dentro de `pages/`, para sair do módulo ou da pasta compartilhada (`components`, `hooks`, `utils`, `mocks`); relativo só dentro do mesmo módulo ou da mesma pasta compartilhada. Primitivos promovidos mantêm o nome em pt-BR (o catálogo do Documento 5 continua em inglês). Tipos continuam exportados do arquivo que os define; `tipos.ts` quando 2 ou mais arquivos da unidade compartilham. |
 
 **Ajustes aceitos nas revisões de conformidade e de viabilidade**
 
@@ -52,7 +52,7 @@ O dono aprovou as recomendações da proposta em todos os pontos. Quatro decisõ
 - `Th` e `Td` são átomos do `ds` até a adoção do `DataTable`.
 - `SheetOption` vira tipo comum de opção em `ds/fundacao/opcao.ts`: molécula não importa organismo.
 - `eventoDoLink` acompanha `linkDaCerimonia` em `eventos/inscricao/mocks/linkDaCerimonia.ts`.
-- `PERMISSAO_QUE_O_EU_TEM`, `PERMISSAO_QUE_O_EU_NAO_TEM`, `Sonda` e `ler` (testes de sessão) ficam junto de `criarEu` em `src/testes/sessaoDeTeste.tsx`. Os testes que os usam se repartem entre `app/sessao` e `pages/transversal/entrada`, então o ancestral comum é `src/`. `ler` hoje lê a tela de uma variável do próprio arquivo de teste e passa a recebê-la por parâmetro (`ler(tela, id)`): mudança só em apoio de teste, declarada na etapa.
+- `PERMISSAO_QUE_O_EU_TEM`, `PERMISSAO_QUE_O_EU_NAO_TEM` e `ler` (testes de sessão) ficam junto de `criarEu` em `src/testes/sessaoDeTeste.tsx`. Os testes que os usam se repartem entre `app/sessao` e `pages/transversal/entrada`, então o ancestral comum é `src/`. `Sonda` só é usada pelos testes do `SessaoProvider` e fica em `app/sessao/SessaoProvider/SessaoProvider.dom.test.tsx`. `ler` hoje lê a tela de uma variável do próprio arquivo de teste e passa a recebê-la por parâmetro (`ler(tela, id)`): mudança só em apoio de teste, declarada na etapa.
 - O `Aviso` da entrada tem um consumidor só, o `MensagemDeEntradaNaTela`, e vai para `transversal/entrada/components/MensagemDeEntradaNaTela/components/Aviso/`. O tipo `TomDeAviso` vai para `transversal/entrada/tipos.ts`, junto de `MensagemDeEntrada`. Na etapa de primitivos novos, o `ds/molecules/Aviso` absorve o componente.
 - `Layout` é composição de app, fora da escala atômica. `ActionBar` e `ScreenHeader` são moléculas.
 - Testes de hook são `useX.dom.test.ts` (projeto dom do vitest), ou `.dom.test.tsx` quando precisam de JSX.
@@ -173,7 +173,7 @@ Catálogo = item do catálogo do Documento 5 §4. Consumidores = uso de hoje, an
 | `PermissionDenied` | molécula | sim | `ds/molecules/PermissionDenied/` | app |
 | `Density` | fundação (tipo) | não | `ds/fundacao/densidade.ts` | `ds` inteiro, `useDensidade`, páginas |
 | `SheetOption` | fundação (tipo) | não | `ds/fundacao/opcao.ts` | `BottomSheet`, `Select`, `CampoDeTags`, mocks de opções |
-| `useDensidade` | fundação (hook) | não | `ds/fundacao/useDensidade.ts` | `app/Layout` e 29 arquivos de `pages` |
+| `useDensidade` | fundação (hook) | não | `ds/fundacao/useDensidade.ts` | `app/Layout` e 31 arquivos de `pages` |
 | `rotuloCaixaAlta` | fundação (estilo) | não | `ds/fundacao/estilos.ts` | `Rotulo`, `Th`; 12 constantes `rotuloLabel` das páginas (etapa de rótulo e corpo da tela) |
 | `Button` | átomo | não | `ds/atoms/Button/` | 23 áreas |
 | `Icon` | átomo | não | `ds/atoms/Icon/` | 23 áreas |
@@ -435,7 +435,7 @@ Fluxo só existe com compartilhamento exclusivo entre telas do mesmo módulo. Fl
 O apoio global fica em `src/testes/`:
 
 - `configurarDom.ts`: efeito global do projeto dom (`IS_REACT_ACT_ENVIRONMENT` e stub de `matchMedia`), por `setupFiles`;
-- `sessaoDeTeste.tsx`: `criarEu`, com `PERMISSAO_QUE_O_EU_TEM` e `PERMISSAO_QUE_O_EU_NAO_TEM`, `Sonda` e `ler`, além de falsos e montagens de sessão (`EntradaFalsa`, `AvisoDeEncerramentoFalso`, `CenarioDeSessao`, `TelaMontada`, `montarComSessao`, entre outros);
+- `sessaoDeTeste.tsx`: `criarEu`, com `PERMISSAO_QUE_O_EU_TEM` e `PERMISSAO_QUE_O_EU_NAO_TEM`, e `ler`, além de falsos e montagens de sessão (`EntradaFalsa`, `AvisoDeEncerramentoFalso`, `CenarioDeSessao`, `TelaMontada`, `montarComSessao`, entre outros);
 - `fabricas.ts`: `erroDaApi`, que unifica as fábricas locais de erro dos testes.
 - `montagem.tsx`: render global sem provider (`montar`, `desmontarTudo`, `elemento`, `todos`, `clicar`). Entra com o #58; o #59 traz o mesmo arquivo.
 
@@ -480,7 +480,7 @@ Regras: `dados-sem-ui` (erro), `dados-so-pelo-barrel` (aviso), `instancias-so-no
 
 ### 10.2 Imports
 
-- Alias `@/…` para atravessar camada ou módulo. Relativo dentro da camada ou do módulo.
+- Alias `@/` para sair da camada e, dentro de `pages/`, para sair do módulo ou da pasta compartilhada (`components`, `hooks`, `utils`, `mocks`); relativo só dentro do mesmo módulo ou da mesma pasta compartilhada.
 - Fora do `ds/`, importa-se só `ds/index.ts`:
 
 ```ts
@@ -611,7 +611,7 @@ Todas as regras rodam no depcruise, com configuração `.dependency-cruiser.web.
 | Regra | O que proíbe | Severidade inicial | Linha de base (main) |
 |---|---|:--:|:--:|
 | `web-sem-ciclo` | Ciclo no grafo de `apps/web/src`, inclusive por `import type` | aviso | 2 |
-| `lib-e-folha` | `lib/` importar outra camada ou React | aviso | 5 |
+| `lib-e-folha` | `lib/` importar outra camada ou React | aviso | 8 |
 | `dados-sem-ui` | `dados/` importar UI ou React | erro | 0 |
 | `ds-autonomo` | `ds/` importar `app`, `components`, `dados`, `mocks`, `pages` ou `react-router` | erro | 0 |
 | `ds-so-pelo-barrel` | Fora do `ds/`, importar qualquer caminho do `ds/` que não seja `ds/index.ts` | erro | 0 |
@@ -619,11 +619,11 @@ Todas as regras rodam no depcruise, com configuração `.dependency-cruiser.web.
 | `ds-atomo-nao-sobe` | Átomos importarem moléculas, organismos ou templates | erro | 0 |
 | `ds-molecula-nao-sobe` | Moléculas importarem organismos ou templates | erro | 0 |
 | `ds-organismo-nao-sobe` | Organismos importarem templates | erro | 0 |
-| `dados-so-pelo-barrel` | Fora de `dados/`, importar arquivo que não seja `index.ts` ou `instancias.ts` | aviso | 14 |
+| `dados-so-pelo-barrel` | Fora de `dados/`, importar arquivo que não seja `index.ts` ou `instancias.ts` | aviso | 25 |
 | `instancias-so-no-main` | Importar `dados/instancias.ts` fora de `main.tsx` | erro | 0 |
 | `app-nao-conhece-paginas` | `app/` importar `pages/`, exceto `router.tsx` e testes | aviso | 1 |
 | `roteador-so-pelo-index-da-pagina` | `router.tsx` importar `pages/` por outro caminho que não o `index.ts` de uma `*Page/` | aviso | 29 |
-| `paginas-so-pela-api-publica-do-app` | `pages/` importar `app/` fora de `sessao`, `rotas`, `providers` e `demonstracao` (pelo `index.ts`) | aviso | 16 |
+| `paginas-so-pela-api-publica-do-app` | `pages/` importar `app/` fora de `sessao`, `rotas`, `providers` e `demonstracao` (pelo `index.ts`) | aviso | 22 |
 | `pagina-nao-importa-pagina` | Uma `*Page/` importar outra | erro | 0 |
 | `modulo-nao-importa-modulo` | Um módulo importar outro | erro | 0 |
 | `compartilhado-nao-importa-tela` | Nível compartilhado de `pages/` importar uma `*Page/` | erro | 0 |
@@ -631,18 +631,18 @@ Todas as regras rodam no depcruise, com configuração `.dependency-cruiser.web.
 | `unidade-so-pelo-index-0` a `-6` | De fora de uma unidade, importar algo que não seja o `index.ts` do topo dela (irmão, primo ou neto). Uma regra por profundidade da origem, de 0 a 6 unidades | erro | 0 cada |
 | `unidade-ate-6-niveis` | Sétima unidade aninhada | erro | 0 |
 | `producao-global-sem-mock` | `ds/`, `lib/` ou `dados/` importar mock | aviso | 1 |
-| `mock-global-so-dados` | `src/mocks/` importar `app`, `components`, `dados`, `ds`, `pages` ou `testes` | aviso | 1 |
+| `mock-global-so-dados` | `src/mocks/` importar `app`, `components`, `dados`, `ds`, `pages`, `testes` ou biblioteca externa que não seja `@cdd/contracts` | aviso | 1 |
 | `tela-de-api-sem-mock` | Telas com fonte `api` e o fluxo de entrada inteiro (`transversal/entrada/`, inclusive `constantes.ts` e `components/`) importarem mock | erro | 0 |
 | `apoio-de-teste-so-em-teste` | Código de produção importar `apoioDeTeste`, `src/testes` ou `vitest` | erro | 0 |
-| `camada-cruzada-por-alias` | Atravessar camada, ou módulo dentro de `pages/`, sem alias `@/`. Passa a erro quando chegar a zero | aviso | 290 |
-| `pasta-camel-case` | Pasta de agrupamento em camelCase sob `apps/web/src` (agrupamento é minúsculo; unidade é PascalCase), que escaparia das regras de unidade | erro | 0 |
+| `camada-cruzada-por-alias` | Atravessar camada, ou módulo dentro de `pages/`, sem alias `@/`. Passa a erro quando chegar a zero | aviso | 315 |
+| `pasta-camel-case` | Pasta de agrupamento em camelCase sob `apps/web/src` (agrupamento é minúsculo; unidade é PascalCase), que escaparia das regras de unidade, pelos imports feitos de dentro dela | erro | 0 |
+| `pasta-camel-case-no-destino` | Importar arquivo de pasta camelCase, inclusive pasta só com arquivos-folha | erro | 0 |
 
-São 32 regras: 25 nomeadas acima e as 7 de `unidade-so-pelo-index`. As contagens são a linha de base de 09/10/2026; os `comment` da configuração apontam para `pnpm fronteiras:web`, que a reproduz.
+São 33 regras: 26 nomeadas acima e as 7 de `unidade-so-pelo-index`. As contagens são a linha de base da main `1812df6`, já com o #55; os `comment` da configuração apontam para `pnpm fronteiras:web`, que a reproduz.
 
 ### 12.2 Linha de base
 
-- Na main: 359 avisos e 0 erros. São 40 avisos de sete regras, 29 do roteador e 290 da regra de alias.
-- Com o #55 (mesclado em 09/10/2026), a main passa a 404 avisos e 0 erros.
+- Na main `1812df6`, já com o #55: 404 avisos e 0 erros. São 60 avisos de sete regras, 29 do roteador e 315 da regra de alias.
 - Ainda não há catraca: um aviso novo não falha o CI, e nas etapas de mover "sem aviso novo" é conferido à mão (seção 13.3). A catraca entra logo depois do merge do #57, do #58 e do #59 (seção 15). Nesse PR, os imports do apoio de teste passam ao alias `@/`, que entra no vitest com o #57; `depcruise-baseline` gera os avisos conhecidos e o CI roda com `--ignore-known`.
 - A linha de base é a foto de antes da migração. Cada etapa de mover a reduz, e a etapa de fronteiras em erro fecha a conta.
 
@@ -658,7 +658,7 @@ São 32 regras: 25 nomeadas acima e as 7 de `unidade-so-pelo-index`. As contagen
 ### 12.4 Outros verificadores
 
 - `apps/web/scripts/conferir-movimento.mjs` (criado na etapa Mover ds em níveis, a primeira que precisa dele): em cada renomeação de `git diff -M --name-status`, compara o conteúdo sem as linhas de import e `export … from`. Para declarações repartidas, compara o hash do corpo pelo nome. Renomes com troca de nome (seção 2) entram como par `antigo → novo` explícito, porque a detecção de similaridade do git pode não os casar.
-- `apps/web/scripts/conferir-estrutura.mjs` (etapa de fronteiras em erro): toda pasta PascalCase tem `<Nome>.tsx`, `index.ts` e teste (falta de teste é aviso até o fim da migração); o módulo de cada tela é o prefixo da primeira permissão em `app/shell/telas.ts`; fluxo sem pasta de tipo compartilhada é acusado; toda `RotaId` tem rota, item em `TELAS` e elemento no router.
+- `apps/web/scripts/conferir-estrutura.mjs` (etapa de fronteiras em erro): toda pasta PascalCase tem `<Nome>.tsx`, `index.ts` e teste (falta de teste é aviso até o fim da migração); todo `*.tsx` PascalCase de produção fora de `<Nome>/<Nome>.tsx` é acusado, exceto `main.tsx` e `router.tsx`; o módulo de cada tela é o prefixo da primeira permissão em `app/shell/telas.ts`; fluxo sem pasta de tipo compartilhada é acusado; toda `RotaId` tem rota, item em `TELAS` e elemento no router.
 - `pnpm lint` passa a cobrir `apps/web/src` (etapa de fronteiras em erro). As violações antigas vão em PR separado.
 - Captura de telas (seção 13.6), para o efeito visual.
 
@@ -829,4 +829,4 @@ Respondidas pelo dono em 09/10/2026. Cada uma vira correção em PR próprio, de
 | Ligar a catraca de avisos das fronteiras no CI? | Sim: `depcruise-baseline` gera os avisos conhecidos e o CI roda com `--ignore-known`, então aviso novo falha o PR. A linha de base só cai; cada etapa de mover a regenera | PR próprio, logo depois do merge do #57, do #58 e do #59, com os imports do apoio de teste já pelo alias `@/` |
 | Como a Agenda lê "Contribuições sugeridas"? | Só valores inteiros em reais, separados por vírgula, como o placeholder ("40, 60, 90"). Valor com centavos é recusado com mensagem no campo; hoje `45,50` vira 45 e 50 | PR próprio, depois da caracterização de eventos |
 
-Pendência de redação: o Documento 5 ainda não lista os primitivos admitidos em pt-BR (tabela da seção 4.3, coluna "Catálogo" = não). Ele mora fora do repositório (`project/uploads/`) e não foi alterado; o apêndice entra quando os documentos de desenho forem versionados.
+Pendência de redação: o Documento 5 ainda não lista os primitivos admitidos em pt-BR (tabela da seção 4.3, coluna "Catálogo" = não). Ele está em `project/uploads/CDD - System/CDD-v2_2-05-sistema-de-design.md` e não foi alterado; o apêndice com os primitivos em pt-BR entra em PR próprio.
