@@ -39,12 +39,14 @@ export function AcessosPage() {
           maxWidth: campo ? undefined : 1080,
         }}
       >
-        <SeletorDeTipo
-          opcoes={abasVisiveis.map((valor) => ({ valor, label: ROTULO_DA_ABA[valor] }))}
-          valor={aba}
-          onEscolher={setAbaEscolhida}
-          densidade={densidade}
-        />
+        {abasVisiveis.length > 1 ? (
+          <SeletorDeTipo
+            opcoes={abasVisiveis.map((valor) => ({ valor, label: ROTULO_DA_ABA[valor] }))}
+            valor={aba}
+            onEscolher={setAbaEscolhida}
+            densidade={densidade}
+          />
+        ) : null}
         {aba === 'usuarios' ? <AbaDeUsuarios /> : <AbaDeGrupos />}
       </div>
     </>

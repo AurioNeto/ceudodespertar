@@ -66,7 +66,7 @@ describe('Acessos: abas por permissão', () => {
 
   it('só com gerenciar grupos esconde Usuários, abre em Grupos e não pede usuários', async () => {
     const { cliente, tela } = await montar({}, [PERMISSAO_DE_GRUPOS]);
-    expect(nomesDasAbas(tela)).toEqual(['Grupos']);
+    expect(nomesDasAbas(tela)).toEqual([]);
     expect(tela.texto()).toContain('Guardião');
     expect(tela.container.querySelector('ul[aria-label="Usuários"]')).toBeNull();
     expect(cliente.chamadasDeUsuarios()).toHaveLength(0);
