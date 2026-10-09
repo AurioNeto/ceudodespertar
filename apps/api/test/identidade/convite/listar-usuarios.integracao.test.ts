@@ -207,8 +207,8 @@ describe('listagem de usuários pela API (Doc 3 §11, Doc 7 §25)', () => {
       const idMaior = '00000000-0000-4000-8000-000000000002';
       await semearCasa();
       await inserirUsuarios([
-        { id: idMenor, nome: 'Ana' },
         { id: idMaior, nome: 'ana' },
+        { id: idMenor, nome: 'Ana' },
       ]);
 
       const itens = await percorrerTudo({ limite: 1, busca: 'ana' });
