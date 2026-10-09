@@ -147,10 +147,16 @@ describe('RecordRow — interação', () => {
     expect(aoClicar).toHaveBeenCalledTimes(1);
   });
 
-  it('clique sem onClick — não quebra', async () => {
+  it('clique sem onClick — nenhum erro chega ao window', async () => {
+    const errosDoWindow: string[] = [];
+    const registrarErro = (evento: ErrorEvent) => errosDoWindow.push(evento.message);
+    window.addEventListener('error', registrarErro);
     const { container } = await montar(<RecordRow description="Mercado" amount={1} />);
 
-    await expect(clicar(linhaDe(container))).resolves.toBeUndefined();
+    await clicar(linhaDe(container));
+    window.removeEventListener('error', registrarErro);
+
+    expect(errosDoWindow).toEqual([]);
   });
 
   it('com onClick — cursor de clique', async () => {
