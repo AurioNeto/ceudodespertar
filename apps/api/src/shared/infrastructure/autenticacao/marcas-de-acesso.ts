@@ -24,6 +24,11 @@ export function lerMarcasProprias(portador: object): readonly MarcaDeAcesso[] {
   return Reflect.getOwnMetadata(CHAVE_DAS_MARCAS_DE_ACESSO, portador) ?? [];
 }
 
+export function marcaEfetivaDaRota(handler: object, classe: object): readonly MarcaDeAcesso[] {
+  const doMetodo = lerMarcasProprias(handler);
+  return doMetodo.length > 0 ? doMetodo : lerMarcasProprias(classe);
+}
+
 function exigirPermissaoDoCatalogo(permissao: string): asserts permissao is Permissao {
   if (!(PERMISSOES as readonly string[]).includes(permissao)) {
     throw new Error(`Permissão fora do catálogo em marca de acesso: ${permissao}`);
