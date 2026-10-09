@@ -162,6 +162,20 @@ class SaudeAdminController {
 @Controller('sem-rotas')
 class SemRotasController {}
 
+@Controller('eu')
+class UsuarioAtivoEmCaminhosDoMetodoController {
+  @ApenasUsuarioAtivo()
+  @Get(['', 'outra'])
+  rota(): void {}
+}
+
+@Controller(['saude', 'admin'])
+class PublicoEmCaminhosDaClasseController {
+  @Publico()
+  @Get('viva')
+  rota(): void {}
+}
+
 const PLANTADOS_COM_VIOLACAO: readonly Type[] = [
   SemMarcaController,
   DuasMarcasController,
@@ -179,6 +193,8 @@ const PLANTADOS_COM_VIOLACAO: readonly Type[] = [
   PublicoNoEuController,
   ModoNaClasseController,
   SaudeAdminController,
+  UsuarioAtivoEmCaminhosDoMetodoController,
+  PublicoEmCaminhosDaClasseController,
 ];
 
 const PLANTADOS_SEM_VIOLACAO: readonly Type[] = [
@@ -242,6 +258,9 @@ describe('T30 — controllers plantados', () => {
         'escrita-sem-permissao | GET /api/v1/modo-na-classe',
         'sem-permissao-fora-da-tabela | GET /api/v1/modo-na-classe',
         'sem-permissao-fora-da-tabela | GET /api/v1/saude-admin/viva',
+        'usuario-ativo-fora-do-eu | GET /api/v1/eu/outra',
+        'sem-permissao-fora-da-tabela | GET /api/v1/eu/outra',
+        'sem-permissao-fora-da-tabela | GET /api/v1/admin/viva',
       ].toSorted(),
     );
   });

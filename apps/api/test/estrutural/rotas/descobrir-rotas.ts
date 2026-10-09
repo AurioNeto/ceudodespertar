@@ -1,5 +1,5 @@
 import { RequestMethod } from '@nestjs/common';
-import type { Type } from '@nestjs/common';
+import type { INestApplication, Type } from '@nestjs/common';
 import { METHOD_METADATA, PATH_METADATA } from '@nestjs/common/internal';
 import { DiscoveryService, MetadataScanner, Reflector } from '@nestjs/core';
 import type { MarcaDeAcesso } from '../../../src/shared/infrastructure/autenticacao/marcas-de-acesso.js';
@@ -31,9 +31,10 @@ export interface Descoberta {
   readonly classesSemRota: readonly string[];
 }
 
-function primeiroSegmento(caminho: string | readonly string[] | undefined): string {
-  if (caminho === undefined) return '';
-  return typeof caminho === 'string' ? caminho : (caminho[0] ?? '');
+function caminhosDeclarados(caminho: string | readonly string[] | undefined): readonly string[] {
+  if (caminho === undefined) return [''];
+  if (typeof caminho === 'string') return [caminho];
+  return caminho.length > 0 ? caminho : [''];
 }
 
 function aparar(segmento: string): string {
@@ -76,24 +77,38 @@ function rotasDaClasse(
   opcoes: OpcoesDeDescoberta,
 ): Rota[] {
   const prototipo = classe.prototype as Record<string, Function>;
-  const classePath = primeiroSegmento(Reflect.getMetadata(PATH_METADATA, classe) as string | string[] | undefined);
+  const caminhosDaClasse = caminhosDeclarados(Reflect.getMetadata(PATH_METADATA, classe) as string | string[] | undefined);
   return scanner.getAllMethodNames(prototipo).flatMap<Rota>((nomeDoMetodo) => {
     const handler = prototipo[nomeDoMetodo]!;
     const metodo = Reflect.getMetadata(METHOD_METADATA, handler) as RequestMethod | undefined;
     if (metodo === undefined) return [];
-    const metodoPath = primeiroSegmento(Reflect.getMetadata(PATH_METADATA, handler) as string | string[] | undefined);
+    const caminhosDoMetodo = caminhosDeclarados(Reflect.getMetadata(PATH_METADATA, handler) as string | string[] | undefined);
     const metodoHttp = RequestMethod[metodo]!;
-    const caminho = montarCaminho(classePath, metodoPath, opcoes);
-    return [
-      {
-        id: `${metodoHttp} ${caminho}`,
-        metodoHttp,
-        caminho,
-        classe,
-        handler,
-        marcas: marcaEfetivaDaRota(handler, classe),
-        modo: reflector.getAllAndOverride<ModoDeTransacao | undefined>(CHAVE_DO_MODO_DE_TRANSACAO, [handler, classe]),
-      },
-    ];
+    const marcas = marcaEfetivaDaRota(handler, classe);
+    const modo = reflector.getAllAndOverride<ModoDeTransacao | undefined>(CHAVE_DO_MODO_DE_TRANSACAO, [handler, classe]);
+    return caminhosDaClasse.flatMap((classePath) =>
+      caminhosDoMetodo.map((metodoPath) => {
+        const caminho = montarCaminho(classePath, metodoPath, opcoes);
+        return { id: `${metodoHttp} ${caminho}`, metodoHttp, caminho, classe, handler, marcas, modo };
+      }),
+    );
+  });
+}
+
+interface CamadaDoExpress {
+  readonly route?: { readonly path: string; readonly methods: Readonly<Record<string, boolean>> };
+}
+
+export function rotasRegistradasNoExpress(app: INestApplication, opcoes: OpcoesDeDescoberta): string[] {
+  const curingasDosMiddlewares = new Set([
+    `/${aparar(opcoes.prefixoGlobal)}{/*splat}`,
+    ...opcoes.foraDoPrefixo.map(({ path }) => `/${aparar(path)}`),
+  ]);
+  const { router } = app.getHttpAdapter().getInstance() as { router: { stack: readonly CamadaDoExpress[] } };
+  return router.stack.flatMap(({ route }) => {
+    if (route === undefined || curingasDosMiddlewares.has(route.path)) return [];
+    const metodos = Object.keys(route.methods);
+    const metodoHttp = metodos.length === 1 ? metodos[0]!.toUpperCase() : 'ALL';
+    return [`${metodoHttp} ${route.path}`];
   });
 }
