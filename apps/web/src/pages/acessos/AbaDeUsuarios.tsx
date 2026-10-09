@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import type { GrupoId, SituacaoUsuario, UsuarioId, UsuarioListado } from '@cdd/contracts';
-import { Button, EmptyState, InfraError, SkeletonList } from '../../ds';
+import { Button, EmptyState, InfraError, SkeletonList, varianteDoPainel } from '../../ds';
 import { useDensidade } from '../../lib/useDensidade';
 import { useValorComAtraso } from '../../lib/useValorComAtraso';
 import { useConsultasDeAcessos, temFiltroAplicado } from './consultasDeAcessos';
@@ -91,7 +91,7 @@ export function AbaDeUsuarios() {
       ) : null}
       <PainelDoUsuario
         usuario={usuarioEmEdicao}
-        variante={densidade === 'field' ? 'folha' : 'lateral'}
+        variante={varianteDoPainel(densidade)}
         densidade={densidade}
         aoFechar={() => setUsuarioEmEdicao(null)}
         aoAtualizarUsuario={setUsuarioEmEdicao}

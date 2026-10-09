@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import type { GrupoId, PedidoDeConvite } from '@cdd/contracts';
 import { Button, PainelDeAcao, TextField, type Density, type VarianteDoPainel } from '../../ds';
@@ -21,23 +21,13 @@ interface ErrosDeCampo {
   readonly email?: string;
 }
 
-const pareceEmail = (valor: string) => /^[^\s@]+@[^\s@]+$/.test(valor);
+const pareceEmail = (valor: string) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(valor);
 
-export function PainelDeConvite({ aberto, variante, densidade, aoFechar, focoDeReserva }: PainelDeConviteProps) {
-  return (
-    <PainelDeAcao
-      aberto={aberto}
-      titulo="Convidar usuário"
-      variante={variante}
-      aoFechar={aoFechar}
-      focoDeReserva={focoDeReserva}
-    >
-      <FormularioDeConvite densidade={densidade} aoFechar={aoFechar} />
-    </PainelDeAcao>
-  );
+export function PainelDeConvite({ aberto, ...resto }: PainelDeConviteProps) {
+  return aberto ? <PainelDeConviteAberto {...resto} /> : null;
 }
 
-function FormularioDeConvite({ densidade, aoFechar }: { densidade: Density; aoFechar: () => void }) {
+function PainelDeConviteAberto({ variante, densidade, aoFechar, focoDeReserva }: Omit<PainelDeConviteProps, 'aberto'>) {
   const comandos = useComandosDeAcessos();
   const chavePara = useChaveDeIdempotencia();
   const { enviando, erro, enviar } = useAcaoNoUsuario({ usuarioId: null });
@@ -47,20 +37,10 @@ function FormularioDeConvite({ densidade, aoFechar }: { densidade: Density; aoFe
   const [errosDeCampo, setErrosDeCampo] = useState<ErrosDeCampo>({});
   const [registrado, setRegistrado] = useState(false);
 
-  if (registrado) {
-    return (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-        <p role="status" style={{ margin: 0, font: 'var(--text-body-strong)', color: 'var(--text-primary)' }}>
-          {CONVITE_REGISTRADO}
-        </p>
-        <div>
-          <Button density={densidade} onClick={aoFechar}>
-            Concluir
-          </Button>
-        </div>
-      </div>
-    );
-  }
+  const conclusao = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (registrado) conclusao.current?.querySelector('button')?.focus();
+  }, [registrado]);
 
   const submeter = (evento: FormEvent<HTMLFormElement>) => {
     evento.preventDefault();
@@ -83,7 +63,13 @@ function FormularioDeConvite({ densidade, aoFechar }: { densidade: Density; aoFe
     );
   };
 
-  return (
+  const conteudo = registrado ? (
+    <div ref={conclusao}>
+      <Button density={densidade} onClick={aoFechar}>
+        Concluir
+      </Button>
+    </div>
+  ) : (
     <form noValidate onSubmit={submeter} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
       <TextField
         label="Nome"
@@ -119,5 +105,23 @@ function FormularioDeConvite({ densidade, aoFechar }: { densidade: Density; aoFe
         </Button>
       </div>
     </form>
+  );
+
+  return (
+    <PainelDeAcao
+      aberto
+      titulo="Convidar usuário"
+      variante={variante}
+      aoFechar={aoFechar}
+      fechamentoBloqueado={enviando}
+      focoDeReserva={focoDeReserva}
+    >
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+        <p role="status" style={{ margin: 0, font: 'var(--text-body-strong)', color: 'var(--text-primary)' }}>
+          {registrado ? CONVITE_REGISTRADO : null}
+        </p>
+        {conteudo}
+      </div>
+    </PainelDeAcao>
   );
 }

@@ -293,8 +293,9 @@ describe('Acessos: gerenciar usuário', () => {
     const { cliente, tela } = await montar({ comando: () => situacaoAlterada('SUSPENSO', 2) });
     await abrirGerenciar(tela);
     const campo = campoDoPainel<HTMLTextAreaElement>('Motivo');
-    const aviso = document.getElementById(campo.getAttribute('aria-describedby') ?? '');
-    expect(aviso?.textContent).toBe(AVISO_LGPD_DO_MOTIVO);
+    const [idDoAviso, idDoContador] = (campo.getAttribute('aria-describedby') ?? '').split(' ');
+    expect(document.getElementById(idDoAviso ?? '')?.textContent).toBe(AVISO_LGPD_DO_MOTIVO);
+    expect(document.getElementById(idDoContador ?? '')?.textContent).toBe('0/500');
     expect(campo.maxLength).toBe(500);
     expect(textoDoPainel()).toContain('0/500');
     await digitarNoPainel('Motivo', '  deixou a tesouraria  ');
@@ -430,5 +431,184 @@ describe('Acessos: gerenciar usuário', () => {
     const { tela } = await montar();
     await abrirGerenciar(tela);
     expect(painelAberto()?.dataset.variante).toBe('folha');
+  });
+});
+
+const fundoDoPainel = () => document.querySelector<HTMLElement>('[data-testid="painel-de-acao-fundo"]');
+
+const teclarEsc = () =>
+  act(async () => {
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }));
+  });
+
+async function irParaAbaGrupos(tela: TelaMontada) {
+  const aba = Array.from(tela.container.querySelectorAll<HTMLElement>('button, [role="radio"], [role="tab"]')).find(
+    (el) => el.textContent === 'Grupos',
+  );
+  if (!aba) throw new Error('aba Grupos não encontrada');
+  await act(async () => aba.click());
+  await assentar();
+}
+
+const contagemDeUsuariosNaAbaGrupos = (tela: TelaMontada) =>
+  tela.container.querySelector('article[aria-label="Grupo Tesouraria"]')?.textContent ?? '';
+
+describe('Acessos: foco e leitor de tela no painel', () => {
+  it('depois do convite o foco vai para Concluir e a região de status já existia vazia', async () => {
+    const { tela } = await montar();
+    await abrirConvite(tela);
+    const status = painelAberto()?.querySelector('[role="status"]');
+    expect(status?.textContent).toBe('');
+    await preencherConvite();
+    await clicarNoPainel('Registrar convite');
+    expect(painelAberto()?.querySelector('[role="status"]')).toBe(status);
+    expect(status?.textContent).toBe(CONVITE_REGISTRADO);
+    expect(document.activeElement).toBe(botaoDoPainel('Concluir'));
+  });
+
+  it('erro de campo fica ligado ao campo por aria-describedby e aria-invalid', async () => {
+    const { tela } = await montar();
+    await abrirConvite(tela);
+    await clicarNoPainel('Registrar convite');
+    const campo = campoDoPainel<HTMLInputElement>('Nome');
+    const ids = (campo.getAttribute('aria-describedby') ?? '').split(' ');
+    expect(ids.map((id) => document.getElementById(id)?.textContent)).toContain('Informe o nome.');
+    expect(campo.getAttribute('aria-invalid')).toBe('true');
+  });
+
+  it('erro de motivo convive com o aviso LGPD e o contador no aria-describedby', async () => {
+    const { tela } = await montar();
+    await abrirGerenciar(tela);
+    await clicarNoPainel('Suspender acesso');
+    const campo = campoDoPainel<HTMLTextAreaElement>('Motivo');
+    const textos = (campo.getAttribute('aria-describedby') ?? '').split(' ').map((id) => document.getElementById(id)?.textContent);
+    expect(textos).toEqual([AVISO_LGPD_DO_MOTIVO, '0/500', 'Informe o motivo.']);
+  });
+
+  it('o contador só é anunciado perto do limite', async () => {
+    const { tela } = await montar();
+    await abrirGerenciar(tela);
+    const contador = () => painelAberto()?.querySelector('[aria-live]');
+    expect(contador()?.getAttribute('aria-live')).toBe('off');
+    await digitarNoPainel('Motivo', 'x'.repeat(449));
+    expect(contador()?.getAttribute('aria-live')).toBe('off');
+    await digitarNoPainel('Motivo', 'x'.repeat(450));
+    expect(contador()?.getAttribute('aria-live')).toBe('polite');
+  });
+
+  it('e-mail sem domínio completo é recusado antes de enviar', async () => {
+    const { cliente, tela } = await montar();
+    await abrirConvite(tela);
+    await preencherConvite('Ana Souza', 'a@b');
+    await clicarNoPainel('Registrar convite');
+    expect(textoDoPainel()).toContain('Informe um e-mail válido.');
+    expect(cliente.chamadasDeComando()).toHaveLength(0);
+  });
+});
+
+describe('Acessos: fechar durante o envio', () => {
+  it('convite: Esc, fundo e Fechar são ignorados enquanto envia e o que foi digitado fica', async () => {
+    let liberar: (valor: UsuarioConvidado) => void = () => undefined;
+    const { tela } = await montar({ comando: () => new Promise<UsuarioConvidado>((resolver) => (liberar = resolver)) });
+    await abrirConvite(tela);
+    await preencherConvite();
+    await clicarNoPainel('Registrar convite');
+    await teclarEsc();
+    await act(async () => fundoDoPainel()?.click());
+    await act(async () => painelAberto()?.querySelector<HTMLButtonElement>('button[aria-label="Fechar"]')?.click());
+    expect(painelAberto()).not.toBeNull();
+    expect(campoDoPainel<HTMLInputElement>('Nome').value).toBe('Ana Souza');
+    await act(async () => liberar(convidado()));
+    await assentar();
+    expect(textoDoPainel()).toContain(CONVITE_REGISTRADO);
+    await teclarEsc();
+    expect(painelAberto()).toBeNull();
+  });
+
+  it('gerenciar: Esc durante o envio não fecha; depois de erro volta a fechar', async () => {
+    let falhar: (erro: Error) => void = () => undefined;
+    const { tela } = await montar({ comando: () => new Promise((_, rejeitar) => (falhar = rejeitar)) });
+    await abrirGerenciar(tela);
+    await digitarNoPainel('Motivo', 'deixou a tesouraria');
+    await clicarNoPainel('Suspender acesso');
+    await teclarEsc();
+    expect(painelAberto()).not.toBeNull();
+    await act(async () => falhar(new ErroDaApi({ status: 422, codigo: 'ULTIMO_ADMINISTRADOR' })));
+    await assentar();
+    expect(painelAberto()).not.toBeNull();
+    await teclarEsc();
+    expect(painelAberto()).toBeNull();
+  });
+
+  it('409 com a ação já fechada pelo pai não reabre o painel nem mexe em outro usuário', async () => {
+    let rejeitar: (erro: Error) => void = () => undefined;
+    const outro = usuarioListado({ id: 'u-2' as UsuarioId, nome: 'João Lima', email: 'joao@cdd.local' });
+    const { tela } = await montar({
+      usuarios: () => pagina([USUARIO_ATIVO, outro]),
+      usuario: () => usuarioListado({ versao: 2 }),
+      comando: () => new Promise((_, falhar) => (rejeitar = falhar)),
+    });
+    await abrirGerenciar(tela);
+    await digitarNoPainel('Motivo', 'deixou a tesouraria');
+    await clicarNoPainel('Suspender acesso');
+    await tela.desmontar();
+    montadas.pop();
+    await act(async () => rejeitar(new ErroDaApi({ status: 409, codigo: 'VERSAO_DESATUALIZADA' })));
+    await assentar();
+    expect(painelAberto()).toBeNull();
+  });
+});
+
+describe('Acessos: isolamento do fundo', () => {
+  it('trava a rolagem e inativa o resto da página enquanto o painel está aberto e restaura ao fechar', async () => {
+    const { tela } = await montar();
+    const paginaInteira = tela.container;
+    await abrirConvite(tela);
+    expect(document.body.style.overflow).toBe('hidden');
+    expect(paginaInteira.hasAttribute('inert')).toBe(true);
+    expect(fundoDoPainel()?.hasAttribute('inert')).toBe(false);
+    await teclarEsc();
+    expect(document.body.style.overflow).toBe('');
+    expect(paginaInteira.hasAttribute('inert')).toBe(false);
+  });
+});
+
+describe('Acessos: contagem de usuários por grupo', () => {
+  it('depois do convite a aba Grupos mostra a contagem nova', async () => {
+    let leituras = 0;
+    const { tela } = await montar({
+      grupos: () => ({ itens: [grupoDaGestao({ usuarios: ++leituras === 1 ? 2 : 3 })] }),
+    });
+    await abrirConvite(tela);
+    await preencherConvite();
+    await clicarNoPainel('Registrar convite');
+    await irParaAbaGrupos(tela);
+    expect(contagemDeUsuariosNaAbaGrupos(tela)).toContain('3 usuários');
+  });
+
+  it('depois da troca de grupos a aba Grupos mostra a contagem nova', async () => {
+    let leituras = 0;
+    const { tela } = await montar({
+      grupos: () => ({ itens: [grupoDaGestao({ usuarios: ++leituras === 1 ? 2 : 1 }), GRUPO_SECRETARIA] }),
+      comando: () => ({ grupos: [{ id: 'g-2', nome: 'Secretaria' }], versao: 2 }),
+    });
+    await abrirGerenciar(tela);
+    await alternarGrupoNoPainel('Secretaria');
+    await clicarNoPainel('Salvar grupos');
+    await irParaAbaGrupos(tela);
+    expect(contagemDeUsuariosNaAbaGrupos(tela)).toContain('1 usuário');
+  });
+
+  it('depois do 409 a lista de usuários é lida de novo', async () => {
+    let leituras = 0;
+    const { tela } = await montar({
+      usuarios: () => pagina(++leituras === 1 ? [USUARIO_ATIVO] : [usuarioListado({ nome: 'Maria Atualizada', versao: 2 })]),
+      usuario: () => usuarioListado({ versao: 2 }),
+      comando: () => new ErroDaApi({ status: 409, codigo: 'VERSAO_DESATUALIZADA' }),
+    });
+    await abrirGerenciar(tela);
+    await digitarNoPainel('Motivo', 'deixou a tesouraria');
+    await clicarNoPainel('Suspender acesso');
+    expect(tela.container.querySelector('ul[aria-label="Usuários"]')?.textContent).toContain('Maria Atualizada');
   });
 });

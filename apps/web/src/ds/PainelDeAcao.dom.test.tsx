@@ -1,7 +1,7 @@
 import { act, useState } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { PainelDeAcao, type VarianteDoPainel } from './PainelDeAcao';
+import { PainelDeAcao, varianteDoPainel, type VarianteDoPainel } from './PainelDeAcao';
 
 declare global {
   var IS_REACT_ACT_ENVIRONMENT: boolean | undefined;
@@ -12,11 +12,12 @@ globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 interface AnfitriaoProps {
   variante?: VarianteDoPainel;
   comCampo?: boolean;
+  bloqueado?: boolean;
   aoFecharExtra?: () => void;
   focoDeReserva?: () => HTMLElement | null;
 }
 
-function Anfitriao({ variante = 'folha', comCampo = true, aoFecharExtra, focoDeReserva }: AnfitriaoProps) {
+function Anfitriao({ variante = 'folha', comCampo = true, bloqueado = false, aoFecharExtra, focoDeReserva }: AnfitriaoProps) {
   const [aberto, setAberto] = useState(false);
   const [gatilhoVisivel, setGatilhoVisivel] = useState(true);
   return (
@@ -34,6 +35,7 @@ function Anfitriao({ variante = 'folha', comCampo = true, aoFecharExtra, focoDeR
         titulo="Gerenciar acesso"
         descricao="Escolha o que fazer"
         variante={variante}
+        fechamentoBloqueado={bloqueado}
         aoFechar={() => {
           aoFecharExtra?.();
           setAberto(false);
@@ -221,5 +223,75 @@ describe('PainelDeAcao', () => {
     expect(fundo.style.alignItems).toBe('stretch');
     expect(d.style.height).toBe('100%');
     expect(d.style.width).toContain('440px');
+  });
+});
+
+describe('PainelDeAcao: fechamento bloqueado', () => {
+  it('Esc, fundo e Fechar não fecham enquanto bloqueado', async () => {
+    const aoFecharExtra = vi.fn();
+    await montar({ aoFecharExtra, bloqueado: true });
+    await clicar(botao('Abrir'));
+    await teclar(document, 'Escape');
+    await clicar(document.querySelector('[data-testid="painel-de-acao-fundo"]') as HTMLElement);
+    await clicar(document.querySelector('button[aria-label="Fechar"]') as HTMLElement);
+    expect(aoFecharExtra).not.toHaveBeenCalled();
+    expect(dialogo()).not.toBeNull();
+  });
+
+  it('Esc já tratado ou durante composição de texto não fecha', async () => {
+    const aoFecharExtra = vi.fn();
+    await montar({ aoFecharExtra });
+    await clicar(botao('Abrir'));
+    const tratado = (evento: Event) => evento.preventDefault();
+    document.body.addEventListener('keydown', tratado);
+    await teclar(document.body, 'Escape');
+    document.body.removeEventListener('keydown', tratado);
+    await teclar(document, 'Escape', { isComposing: true });
+    expect(aoFecharExtra).not.toHaveBeenCalled();
+    await teclar(document, 'Escape');
+    expect(aoFecharExtra).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('PainelDeAcao: isolamento do fundo', () => {
+  it('trava a rolagem do body e inativa os irmãos do portal, restaurando ao fechar', async () => {
+    document.body.style.overflow = 'scroll';
+    const jaInativo = document.createElement('div');
+    jaInativo.setAttribute('inert', '');
+    document.body.append(jaInativo);
+    await montar();
+    await clicar(botao('Abrir'));
+    expect(document.body.style.overflow).toBe('hidden');
+    expect(container.hasAttribute('inert')).toBe(true);
+    expect(document.querySelector('[data-testid="painel-de-acao-fundo"]')?.hasAttribute('inert')).toBe(false);
+    await teclar(document, 'Escape');
+    expect(document.body.style.overflow).toBe('scroll');
+    expect(container.hasAttribute('inert')).toBe(false);
+    expect(jaInativo.hasAttribute('inert')).toBe(true);
+    document.body.style.overflow = '';
+    jaInativo.remove();
+  });
+
+  it('o foco volta a quem abriu depois de o fundo ser liberado', async () => {
+    await montar();
+    const gatilho = botao('Abrir');
+    gatilho.focus();
+    await clicar(gatilho);
+    const inertNoRetorno: boolean[] = [];
+    const original = HTMLElement.prototype.focus;
+    HTMLElement.prototype.focus = function (this: HTMLElement, ...args: Parameters<typeof original>) {
+      inertNoRetorno.push(container.hasAttribute('inert'));
+      original.apply(this, args);
+    };
+    await teclar(document, 'Escape');
+    HTMLElement.prototype.focus = original;
+    expect(inertNoRetorno).toEqual([false]);
+  });
+});
+
+describe('varianteDoPainel', () => {
+  it('campo vira folha e escritório vira lateral', () => {
+    expect(varianteDoPainel('field')).toBe('folha');
+    expect(varianteDoPainel('office')).toBe('lateral');
   });
 });

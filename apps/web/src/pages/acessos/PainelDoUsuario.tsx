@@ -21,43 +21,23 @@ const MOTIVO_OBRIGATORIO = 'Informe o motivo.';
 
 const idsDosGrupos = (usuario: UsuarioListado): GrupoId[] => usuario.grupos.map((grupo) => grupo.id);
 
-export function PainelDoUsuario({
+export function PainelDoUsuario({ usuario, ...resto }: PainelDoUsuarioProps) {
+  if (!usuario) return null;
+  return <PainelDoUsuarioAberto key={usuario.id} usuario={usuario} {...resto} />;
+}
+
+interface PainelDoUsuarioAbertoProps extends Omit<PainelDoUsuarioProps, 'usuario'> {
+  readonly usuario: UsuarioListado;
+}
+
+function PainelDoUsuarioAberto({
   usuario,
   variante,
   densidade,
   aoFechar,
   aoAtualizarUsuario,
   focoDeReserva,
-}: PainelDoUsuarioProps) {
-  return (
-    <PainelDeAcao
-      aberto={usuario !== null}
-      titulo={usuario ? `Gerenciar ${usuario.nome}` : 'Gerenciar usuário'}
-      descricao={usuario?.email}
-      variante={variante}
-      aoFechar={aoFechar}
-      focoDeReserva={focoDeReserva}
-    >
-      {usuario ? (
-        <FormularioDoUsuario
-          usuario={usuario}
-          densidade={densidade}
-          aoFechar={aoFechar}
-          aoAtualizarUsuario={aoAtualizarUsuario}
-        />
-      ) : null}
-    </PainelDeAcao>
-  );
-}
-
-interface FormularioDoUsuarioProps {
-  readonly usuario: UsuarioListado;
-  readonly densidade: Density;
-  readonly aoFechar: () => void;
-  readonly aoAtualizarUsuario: (usuario: UsuarioListado) => void;
-}
-
-function FormularioDoUsuario({ usuario, densidade, aoFechar, aoAtualizarUsuario }: FormularioDoUsuarioProps) {
+}: PainelDoUsuarioAbertoProps) {
   const comandos = useComandosDeAcessos();
   const chavePara = useChaveDeIdempotencia();
   const [grupos, setGrupos] = useState<readonly GrupoId[]>(() => idsDosGrupos(usuario));
@@ -98,6 +78,15 @@ function FormularioDoUsuario({ usuario, densidade, aoFechar, aoAtualizarUsuario 
   };
 
   return (
+    <PainelDeAcao
+      aberto
+      titulo={`Gerenciar ${usuario.nome}`}
+      descricao={usuario.email}
+      variante={variante}
+      aoFechar={aoFechar}
+      fechamentoBloqueado={enviando}
+      focoDeReserva={focoDeReserva}
+    >
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
       {aviso ? (
         <p
@@ -157,5 +146,6 @@ function FormularioDoUsuario({ usuario, densidade, aoFechar, aoAtualizarUsuario 
         ) : null}
       </section>
     </div>
+    </PainelDeAcao>
   );
 }

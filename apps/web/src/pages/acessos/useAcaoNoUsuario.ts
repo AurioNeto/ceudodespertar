@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import type { UsuarioId, UsuarioListado } from '@cdd/contracts';
 import { ErroDaApi } from '../../dados/erros';
@@ -12,6 +12,7 @@ export interface OpcoesDaAcaoNoUsuario {
 }
 
 const CHAVE_DAS_CONSULTAS_DE_USUARIOS = ['acessos', 'usuarios'] as const;
+const CHAVE_DAS_CONSULTAS_DE_GRUPOS = ['acessos', 'grupos'] as const;
 
 const ehVersaoDesatualizada = (erro: unknown): boolean =>
   erro instanceof ErroDaApi && erro.codigo === 'VERSAO_DESATUALIZADA';
@@ -20,13 +21,22 @@ export function useAcaoNoUsuario({ usuarioId, aoRecarregar }: OpcoesDaAcaoNoUsua
   const clienteDeConsultas = useQueryClient();
   const consultas = useConsultasDeAcessos();
   const emEnvio = useRef(false);
+  const montado = useRef(false);
   const [enviando, setEnviando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const [aviso, setAviso] = useState<string | null>(null);
 
+  useEffect(() => {
+    montado.current = true;
+    return () => {
+      montado.current = false;
+    };
+  }, []);
+
   const recarregarUsuario = async (id: UsuarioId) => {
     const recarregado = await clienteDeConsultas.fetchQuery({ ...consultas.usuario(id), staleTime: 0 });
     void clienteDeConsultas.invalidateQueries({ queryKey: CHAVE_DAS_CONSULTAS_DE_USUARIOS });
+    if (!montado.current) return;
     aoRecarregar?.(recarregado);
     setAviso(AVISO_DE_VERSAO_DESATUALIZADA);
   };
@@ -36,11 +46,11 @@ export function useAcaoNoUsuario({ usuarioId, aoRecarregar }: OpcoesDaAcaoNoUsua
       try {
         await recarregarUsuario(usuarioId);
       } catch (falhaAoRecarregar) {
-        setErro(mensagemDeErro(falhaAoRecarregar));
+        if (montado.current) setErro(mensagemDeErro(falhaAoRecarregar));
       }
       return;
     }
-    setErro(mensagemDeErro(falha));
+    if (montado.current) setErro(mensagemDeErro(falha));
   };
 
   const enviar = async <Saida,>(operacao: () => Promise<Saida>, aoSucesso: (saida: Saida) => void) => {
@@ -51,13 +61,16 @@ export function useAcaoNoUsuario({ usuarioId, aoRecarregar }: OpcoesDaAcaoNoUsua
     setAviso(null);
     try {
       const saida = await operacao();
-      await clienteDeConsultas.invalidateQueries({ queryKey: CHAVE_DAS_CONSULTAS_DE_USUARIOS });
-      aoSucesso(saida);
+      await Promise.all([
+        clienteDeConsultas.invalidateQueries({ queryKey: CHAVE_DAS_CONSULTAS_DE_USUARIOS }),
+        clienteDeConsultas.invalidateQueries({ queryKey: CHAVE_DAS_CONSULTAS_DE_GRUPOS }),
+      ]);
+      if (montado.current) aoSucesso(saida);
     } catch (falha) {
       await tratarFalha(falha);
     } finally {
       emEnvio.current = false;
-      setEnviando(false);
+      if (montado.current) setEnviando(false);
     }
   };
 

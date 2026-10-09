@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Button, ScreenHeader } from '../../ds';
+import { Button, ScreenHeader, varianteDoPainel } from '../../ds';
 import { SeletorDeTipo } from '../../components/Campo';
 import { useDensidade } from '../../lib/useDensidade';
 import { useSessao } from '../../app/sessao';
@@ -24,7 +24,6 @@ export function AcessosPage() {
   const aba = abasVisiveis.includes(abaEscolhida) ? abaEscolhida : abasVisiveis[0];
 
   const [conviteAberto, setConviteAberto] = useState(false);
-  const variante = campo ? 'folha' : 'lateral';
 
   if (!aba) return null;
 
@@ -64,7 +63,7 @@ export function AcessosPage() {
       {podeGerenciarUsuarios ? (
         <PainelDeConvite
           aberto={conviteAberto}
-          variante={variante}
+          variante={varianteDoPainel(densidade)}
           densidade={densidade}
           aoFechar={() => setConviteAberto(false)}
           focoDeReserva={focarTitulo}

@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef } from 'react';
 import type { KeyboardEvent, ReactNode } from 'react';
 import { createPortal } from 'react-dom';
+import type { Density } from './Button';
 import { Icon } from './Icon';
 
 export type VarianteDoPainel = 'folha' | 'lateral';
@@ -11,6 +12,7 @@ export interface PainelDeAcaoProps {
   descricao?: string;
   variante: VarianteDoPainel;
   aoFechar: () => void;
+  fechamentoBloqueado?: boolean;
   rodape?: ReactNode;
   focoDeReserva?: () => HTMLElement | null;
   children: ReactNode;
@@ -25,6 +27,27 @@ const LARGURA_LATERAL = 'min(440px, 100vw)';
 const focaveisDe = (raiz: HTMLElement): HTMLElement[] =>
   Array.from(raiz.querySelectorAll<HTMLElement>(SELETOR_DE_FOCAVEL));
 
+export const varianteDoPainel = (densidade: Density): VarianteDoPainel =>
+  densidade === 'field' ? 'folha' : 'lateral';
+
+function isolarFundo(fundoDoPainel: HTMLElement | null): () => void {
+  const corpoDaPagina = document.body;
+  const overflowAnterior = corpoDaPagina.style.overflow;
+  corpoDaPagina.style.overflow = 'hidden';
+  const isolados = Array.from(corpoDaPagina.children).filter(
+    (irmao): irmao is HTMLElement => irmao instanceof HTMLElement && irmao !== fundoDoPainel && !irmao.hasAttribute('inert'),
+  );
+  isolados.forEach((irmao) => {
+    irmao.setAttribute('inert', '');
+  });
+  return () => {
+    corpoDaPagina.style.overflow = overflowAnterior;
+    isolados.forEach((irmao) => {
+      irmao.removeAttribute('inert');
+    });
+  };
+}
+
 export function PainelDeAcao(props: PainelDeAcaoProps) {
   if (!props.aberto) return null;
   return createPortal(<PainelAberto {...props} />, document.body);
@@ -35,29 +58,37 @@ function PainelAberto({
   descricao,
   variante,
   aoFechar,
+  fechamentoBloqueado = false,
   rodape,
   focoDeReserva,
   children,
 }: PainelDeAcaoProps) {
   const idDoTitulo = useId();
   const idDaDescricao = useId();
+  const fundo = useRef<HTMLDivElement>(null);
   const dialogo = useRef<HTMLDivElement>(null);
   const tituloRef = useRef<HTMLHeadingElement>(null);
   const corpo = useRef<HTMLDivElement>(null);
-  const aoFecharAtual = useRef(aoFechar);
   const focoDeReservaAtual = useRef(focoDeReserva);
 
+  const pedirFechamento = () => {
+    if (!fechamentoBloqueado) aoFechar();
+  };
+  const pedirFechamentoAtual = useRef(pedirFechamento);
+
   useEffect(() => {
-    aoFecharAtual.current = aoFechar;
     focoDeReservaAtual.current = focoDeReserva;
+    pedirFechamentoAtual.current = pedirFechamento;
   });
 
   useEffect(() => {
     const quemAbriu = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const liberarFundo = isolarFundo(fundo.current);
     const primeiroCampo = corpo.current?.querySelector<HTMLElement>(SELETOR_DE_CAMPO);
     (primeiroCampo ?? tituloRef.current)?.focus();
 
     return () => {
+      liberarFundo();
       const destino = quemAbriu?.isConnected ? quemAbriu : focoDeReservaAtual.current?.();
       destino?.focus();
     };
@@ -65,9 +96,9 @@ function PainelAberto({
 
   useEffect(() => {
     const fecharComEsc = (evento: globalThis.KeyboardEvent) => {
-      if (evento.key !== 'Escape') return;
+      if (evento.key !== 'Escape' || evento.defaultPrevented || evento.isComposing) return;
       evento.preventDefault();
-      aoFecharAtual.current();
+      pedirFechamentoAtual.current();
     };
     document.addEventListener('keydown', fecharComEsc);
     return () => document.removeEventListener('keydown', fecharComEsc);
@@ -93,9 +124,10 @@ function PainelAberto({
 
   return (
     <div
+      ref={fundo}
       data-testid="painel-de-acao-fundo"
       onClick={(evento) => {
-        if (evento.target === evento.currentTarget) aoFechar();
+        if (evento.target === evento.currentTarget) pedirFechamento();
       }}
       style={{
         position: 'fixed',
@@ -156,7 +188,7 @@ function PainelAberto({
           <button
             type="button"
             aria-label="Fechar"
-            onClick={aoFechar}
+            onClick={pedirFechamento}
             style={{
               display: 'grid',
               placeItems: 'center',
