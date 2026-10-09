@@ -63,6 +63,13 @@ const teclar = (alvo: EventTarget, key: string, opcoes: KeyboardEventInit = {}) 
     alvo.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true, ...opcoes }));
   });
 
+const teclarEsc = () => teclar(document.activeElement ?? document.body, 'Escape');
+const fundoDoPainel = () => document.querySelector<HTMLElement>('[data-testid="painel-de-acao-fundo"]') as HTMLElement;
+const apertarMouse = (alvo: HTMLElement) =>
+  act(async () => {
+    alvo.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true }));
+  });
+
 async function montar(props: AnfitriaoProps = {}) {
   await act(async () => raiz.render(<Anfitriao {...props} />));
 }
@@ -141,9 +148,23 @@ describe('PainelDeAcao', () => {
     await clicar(botao('Abrir'));
     await clicar(dialogo() as HTMLElement);
     expect(aoFecharExtra).not.toHaveBeenCalled();
-    await clicar(document.querySelector('[data-testid="painel-de-acao-fundo"]') as HTMLElement);
+    await apertarMouse(fundoDoPainel());
+    await clicar(fundoDoPainel());
     expect(aoFecharExtra).toHaveBeenCalledTimes(1);
     expect(dialogo()).toBeNull();
+  });
+
+  it('arrastar de dentro do painel até o fundo não fecha, e o clique seguinte no fundo ainda fecha', async () => {
+    const aoFecharExtra = vi.fn();
+    await montar({ aoFecharExtra });
+    await clicar(botao('Abrir'));
+    await apertarMouse(dialogo() as HTMLElement);
+    await clicar(fundoDoPainel());
+    expect(aoFecharExtra).not.toHaveBeenCalled();
+    expect(dialogo()).not.toBeNull();
+    await apertarMouse(fundoDoPainel());
+    await clicar(fundoDoPainel());
+    expect(aoFecharExtra).toHaveBeenCalledTimes(1);
   });
 
   it('Tab no último elemento volta ao primeiro e Shift+Tab no primeiro vai ao último', async () => {
@@ -182,7 +203,7 @@ describe('PainelDeAcao', () => {
     gatilho.focus();
     await clicar(gatilho);
     await clicar(botao('Sumir gatilho'));
-    await teclar(document, 'Escape');
+    await teclarEsc();
     expect(dialogo()).toBeNull();
     expect(document.activeElement).toBe(reserva);
     reserva.remove();
@@ -193,7 +214,7 @@ describe('PainelDeAcao', () => {
     await clicar(botao('Abrir'));
     const campo = document.querySelector<HTMLInputElement>('input[aria-label="Motivo"]') as HTMLInputElement;
     campo.value = 'rascunho';
-    await teclar(document, 'Escape');
+    await teclarEsc();
     await clicar(botao('Abrir'));
     const novoCampo = document.querySelector<HTMLInputElement>('input[aria-label="Motivo"]');
     expect(novoCampo?.value).toBe('');
@@ -229,14 +250,51 @@ describe('PainelDeAcao: Esc', () => {
     const aoFecharExtra = vi.fn();
     await montar({ aoFecharExtra });
     await clicar(botao('Abrir'));
+    const campo = document.activeElement as HTMLElement;
     const tratado = (evento: Event) => evento.preventDefault();
-    document.body.addEventListener('keydown', tratado);
-    await teclar(document.body, 'Escape');
-    document.body.removeEventListener('keydown', tratado);
-    await teclar(document, 'Escape', { isComposing: true });
+    campo.addEventListener('keydown', tratado);
+    await teclar(campo, 'Escape');
+    campo.removeEventListener('keydown', tratado);
+    await teclar(campo, 'Escape', { isComposing: true });
     expect(aoFecharExtra).not.toHaveBeenCalled();
-    await teclar(document, 'Escape');
+    await teclarEsc();
     expect(aoFecharExtra).toHaveBeenCalledTimes(1);
+  });
+});
+
+function PaineisEmpilhados({ aoFecharDeBaixo, aoFecharDeCima }: { aoFecharDeBaixo: () => void; aoFecharDeCima: () => void }) {
+  const [cimaAberto, setCimaAberto] = useState(false);
+  return (
+    <PainelDeAcao aberto titulo="De baixo" variante="lateral" aoFechar={aoFecharDeBaixo}>
+      <button type="button" onClick={() => setCimaAberto(true)}>
+        Abrir de cima
+      </button>
+      <PainelDeAcao
+        aberto={cimaAberto}
+        titulo="De cima"
+        variante="lateral"
+        aoFechar={() => {
+          aoFecharDeCima();
+          setCimaAberto(false);
+        }}
+      >
+        <input aria-label="Campo de cima" />
+      </PainelDeAcao>
+    </PainelDeAcao>
+  );
+}
+
+describe('PainelDeAcao: painéis empilhados', () => {
+  it('Esc fecha só o painel de cima e deixa o de baixo aberto', async () => {
+    const aoFecharDeBaixo = vi.fn();
+    const aoFecharDeCima = vi.fn();
+    await act(async () => raiz.render(<PaineisEmpilhados aoFecharDeBaixo={aoFecharDeBaixo} aoFecharDeCima={aoFecharDeCima} />));
+    await clicar(botao('Abrir de cima'));
+    expect(document.activeElement).toBe(document.querySelector('input[aria-label="Campo de cima"]'));
+    await teclarEsc();
+    expect(aoFecharDeCima).toHaveBeenCalledTimes(1);
+    expect(aoFecharDeBaixo).not.toHaveBeenCalled();
+    expect(document.querySelectorAll('[role="dialog"]')).toHaveLength(1);
   });
 });
 
@@ -251,7 +309,7 @@ describe('PainelDeAcao: isolamento do fundo', () => {
     expect(document.body.style.overflow).toBe('hidden');
     expect(container.hasAttribute('inert')).toBe(true);
     expect(document.querySelector('[data-testid="painel-de-acao-fundo"]')?.hasAttribute('inert')).toBe(false);
-    await teclar(document, 'Escape');
+    await teclarEsc();
     expect(document.body.style.overflow).toBe('scroll');
     expect(container.hasAttribute('inert')).toBe(false);
     expect(jaInativo.hasAttribute('inert')).toBe(true);
@@ -270,7 +328,7 @@ describe('PainelDeAcao: isolamento do fundo', () => {
       inertNoRetorno.push(container.hasAttribute('inert'));
       original.apply(this, args);
     };
-    await teclar(document, 'Escape');
+    await teclarEsc();
     HTMLElement.prototype.focus = original;
     expect(inertNoRetorno).toEqual([false]);
   });

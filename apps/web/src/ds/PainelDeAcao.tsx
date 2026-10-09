@@ -69,11 +69,10 @@ function PainelAberto({
   const corpo = useRef<HTMLDivElement>(null);
   const focoDeReservaAtual = useRef(focoDeReserva);
 
-  const aoFecharAtual = useRef(aoFechar);
+  const pointerdownComecouNoFundo = useRef(false);
 
   useEffect(() => {
     focoDeReservaAtual.current = focoDeReserva;
-    aoFecharAtual.current = aoFechar;
   });
 
   useEffect(() => {
@@ -89,15 +88,11 @@ function PainelAberto({
     };
   }, []);
 
-  useEffect(() => {
-    const fecharComEsc = (evento: globalThis.KeyboardEvent) => {
-      if (evento.key !== 'Escape' || evento.defaultPrevented || evento.isComposing) return;
-      evento.preventDefault();
-      aoFecharAtual.current();
-    };
-    document.addEventListener('keydown', fecharComEsc);
-    return () => document.removeEventListener('keydown', fecharComEsc);
-  }, []);
+  const fecharComEsc = (evento: KeyboardEvent<HTMLDivElement>) => {
+    if (evento.key !== 'Escape' || evento.defaultPrevented || evento.nativeEvent.isComposing) return;
+    evento.preventDefault();
+    aoFechar();
+  };
 
   const circularFocoComTab = (evento: KeyboardEvent<HTMLDivElement>) => {
     if (evento.key !== 'Tab' || !dialogo.current) return;
@@ -115,14 +110,25 @@ function PainelAberto({
     }
   };
 
+  const tratarTecla = (evento: KeyboardEvent<HTMLDivElement>) => {
+    fecharComEsc(evento);
+    circularFocoComTab(evento);
+  };
+
   const lateral = variante === 'lateral';
 
   return (
     <div
       ref={fundo}
       data-testid="painel-de-acao-fundo"
+      onPointerDown={(evento) => {
+        pointerdownComecouNoFundo.current = evento.target === evento.currentTarget;
+      }}
       onClick={(evento) => {
-        if (evento.target === evento.currentTarget) aoFechar();
+        const clicouNoFundo = evento.target === evento.currentTarget;
+        const comecouNoFundo = pointerdownComecouNoFundo.current;
+        pointerdownComecouNoFundo.current = false;
+        if (clicouNoFundo && comecouNoFundo) aoFechar();
       }}
       style={{
         position: 'fixed',
@@ -141,7 +147,8 @@ function PainelAberto({
         aria-labelledby={idDoTitulo}
         aria-describedby={descricao ? idDaDescricao : undefined}
         data-variante={variante}
-        onKeyDown={circularFocoComTab}
+        onKeyDown={tratarTecla}
+        tabIndex={-1}
         style={{
           display: 'flex',
           flexDirection: 'column',
@@ -152,6 +159,7 @@ function PainelAberto({
           borderRadius: lateral ? 0 : 'var(--radius-lg) var(--radius-lg) 0 0',
           boxShadow: lateral ? 'var(--shadow-raised)' : 'var(--shadow-sheet)',
           borderLeft: lateral ? 'var(--border-hairline)' : undefined,
+          outline: 'none',
         }}
       >
         <div

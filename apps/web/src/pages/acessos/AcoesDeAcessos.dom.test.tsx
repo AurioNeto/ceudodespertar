@@ -10,6 +10,7 @@ import {
   botaoDeFora,
   botaoDoPainel,
   campoDoPainel,
+  clicarNoFundoDoPainel,
   clicarNoPainel,
   criarClienteFalso,
   digitarNoPainel,
@@ -19,6 +20,7 @@ import {
   pagina,
   painelAberto,
   simularCelular,
+  teclarEscNoFoco,
   textoDoPainel,
   usuarioListado,
 } from './apoioDeTeste';
@@ -195,9 +197,7 @@ describe('Acessos: convidar', () => {
     const gatilho = botaoDeFora(tela, 'Convidar');
     await abrirPeloGatilho(gatilho);
     expect(painelAberto()).not.toBeNull();
-    await act(async () => {
-      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
-    });
+    await teclarEscNoFoco();
     expect(painelAberto()).toBeNull();
     expect(document.activeElement).toBe(gatilho);
   });
@@ -524,9 +524,7 @@ describe('Acessos: gerenciar usuário', () => {
     const { tela } = await montar();
     const gatilho = gatilhoDe(tela);
     await abrirGerenciar(tela);
-    await act(async () => {
-      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
-    });
+    await teclarEscNoFoco();
     expect(painelAberto()).toBeNull();
     expect(document.activeElement).toBe(gatilho);
   });
@@ -552,11 +550,6 @@ describe('Acessos: gerenciar usuário', () => {
 });
 
 const fundoDoPainel = () => document.querySelector<HTMLElement>('[data-testid="painel-de-acao-fundo"]');
-
-const teclarEsc = () =>
-  act(async () => {
-    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }));
-  });
 
 async function irParaAbaGrupos(tela: TelaMontada) {
   const aba = Array.from(tela.container.querySelectorAll<HTMLElement>('button, [role="radio"], [role="tab"]')).find(
@@ -626,10 +619,10 @@ describe('Acessos: foco e leitor de tela no painel', () => {
 const fecharPeloBotao = () =>
   act(async () => painelAberto()?.querySelector<HTMLButtonElement>('button[aria-label="Fechar"]')?.click());
 
-const fecharPeloFundo = () => act(async () => fundoDoPainel()?.click());
+const fecharPeloFundo = clicarNoFundoDoPainel;
 
 const FORMAS_DE_FECHAR = [
-  ['Esc', teclarEsc],
+  ['Esc', teclarEscNoFoco],
   ['fundo', fecharPeloFundo],
   ['Fechar', fecharPeloBotao],
 ] as const;
@@ -658,7 +651,7 @@ describe('Acessos: fechar durante o envio', () => {
     await abrirConvite(tela);
     await preencherConvite();
     await clicarNoPainel('Registrar convite');
-    await teclarEsc();
+    await teclarEscNoFoco();
     await act(async () => envio.resolver(convidado()));
     await assentar();
 
@@ -676,7 +669,7 @@ describe('Acessos: fechar durante o envio', () => {
     await abrirConvite(tela);
     await preencherConvite();
     await clicarNoPainel('Registrar convite');
-    await teclarEsc();
+    await teclarEscNoFoco();
     const leiturasAntes = cliente.chamadasDeUsuarios().length;
     await act(async () => envio.rejeitar(new ErroDaApi({ status: 409, codigo: 'EMAIL_JA_CADASTRADO' })));
     await assentar();
@@ -715,7 +708,7 @@ describe('Acessos: fechar durante o envio', () => {
       await abrirGerenciar(tela);
       await digitarNoPainel('Motivo', 'deixou a tesouraria');
       await clicarNoPainel('Suspender acesso');
-      await teclarEsc();
+      await teclarEscNoFoco();
       await abrirPeloGatilho(gatilhoDe(tela, 'João Lima'));
       await digitarNoPainel('Motivo', 'motivo do João');
       const leiturasAntes = cliente.chamadasDeUsuarios().length;
@@ -782,7 +775,7 @@ describe('Acessos: isolamento do fundo', () => {
     expect(document.body.style.overflow).toBe('hidden');
     expect(paginaInteira.hasAttribute('inert')).toBe(true);
     expect(fundoDoPainel()?.hasAttribute('inert')).toBe(false);
-    await teclarEsc();
+    await teclarEscNoFoco();
     expect(document.body.style.overflow).toBe('');
     expect(paginaInteira.hasAttribute('inert')).toBe(false);
   });

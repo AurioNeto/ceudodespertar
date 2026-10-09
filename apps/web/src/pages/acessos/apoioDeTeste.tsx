@@ -224,3 +224,17 @@ export async function abrirPeloGatilho(botao: HTMLButtonElement): Promise<void> 
   });
   await assentar();
 }
+
+export const teclarEscNoFoco = () =>
+  act(async () => {
+    (document.activeElement ?? document.body).dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }),
+    );
+  });
+
+export const clicarNoFundoDoPainel = () =>
+  act(async () => {
+    const fundo = document.querySelector<HTMLElement>('[data-testid="painel-de-acao-fundo"]');
+    fundo?.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true }));
+    fundo?.click();
+  });
