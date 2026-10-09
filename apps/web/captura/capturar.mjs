@@ -1,4 +1,5 @@
 import { mkdir, readdir, rm, writeFile } from 'node:fs/promises';
+import { constants } from 'node:os';
 import { isAbsolute, join, resolve } from 'node:path';
 import { parseArgs } from 'node:util';
 import { chromium } from 'playwright';
@@ -53,6 +54,8 @@ faixa (70px em campo, 32px em escritório). A captura imprime
 `;
 
 const NOME_DE_ARQUIVO_DA_CAPTURA = /^.+--(campo|escritorio)(--rolagem-\d+-\d+)?\.png$/;
+const BASE_DO_CODIGO_DE_SAIDA_POR_SINAL = 128;
+const SINAIS_DE_ENCERRAMENTO = ['SIGINT', 'SIGTERM'];
 
 function lerOpcoes() {
   const { values } = parseArgs({
@@ -184,8 +187,9 @@ async function principal() {
   const encerrarTudo = async () => {
     for (const encerrar of recursos.splice(0).reverse()) await encerrar().catch(() => undefined);
   };
-  for (const sinal of ['SIGINT', 'SIGTERM']) {
-    process.once(sinal, () => void encerrarTudo().finally(() => process.exit(130)));
+  for (const sinal of SINAIS_DE_ENCERRAMENTO) {
+    const codigoDeSaida = BASE_DO_CODIGO_DE_SAIDA_POR_SINAL + constants.signals[sinal];
+    process.once(sinal, () => void encerrarTudo().finally(() => process.exit(codigoDeSaida)));
   }
 
   try {
