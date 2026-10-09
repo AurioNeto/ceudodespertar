@@ -9,7 +9,6 @@ import {
   DomainError,
   Icon,
   PeriodLock,
-  PermissionDenied,
   Receipt,
   ScreenHeader,
   StatusBadge,
@@ -68,26 +67,10 @@ const rotuloLabel = {
 
 export function RegistrarLancamentoPage() {
   const densidade = useDensidade();
-  const { usuario, pode } = useSessao();
+  const { pode } = useSessao();
   const consolida = pode('financeiro.lancamento.confirmar');
   const f = useFormularioDeLancamento(consolida);
   const campo = densidade === 'field';
-
-  if (!pode('financeiro.lancamento.registrar')) {
-    return (
-      <>
-        <ScreenHeader code="F-01 · Lançamento" title="Registrar lançamento" density={densidade} />
-        <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 760 }}>
-          <PermissionDenied
-            screen="Registrar lançamento"
-            group={usuario?.grupoNome ?? ''}
-            missing="financeiro.lancamento.registrar"
-            whoToAsk="Aurio Neto, administrador da unidade"
-          />
-        </div>
-      </>
-    );
-  }
 
   const pickerAberto = f.picker ? LISTAS[f.picker] : null;
 
