@@ -712,13 +712,13 @@ A cadeia de dependências transmite esses gates: as etapas de divisão de sistem
 ### 13.6 Captura de telas
 
 - O script (`apps/web/captura/`) sobe o Vite em desenvolvimento com a sessão de demonstração, congela o relógio em 2026-09-02 e usa dois viewports: campo (390 × 844, dentro da consulta de 900 px do `useDensidade`) e escritório (1440 × 900).
-- Cobre as 26 rotas do `Layout`, a aba de grupos de Acessos, a entrada (`/entrar` e o retorno, inclusive o recusado) e a inscrição pública com os passos do assistente: 36 telas em 2 densidades. Cada área com rolagem horizontal ganha fotos extras, uma por largura visível (`<tela>--<densidade>--rolagem-N-P.png`).
+- Cobre as 26 rotas do `Layout` e a entrada nas duas densidades, mais os passos catalogados em `captura/telas.mjs`: abas e painéis de Acessos, retorno recusado da entrada e os passos do assistente da inscrição pública. O catálogo é a fonte da lista; cada etapa que mexe numa tela com estados abertos por clique ou por resposta da API acrescenta o passo. Cada área com rolagem horizontal ganha fotos extras, uma por largura visível (`<tela>--<densidade>--rolagem-N-P.png`).
 - Não precisa de API nem de `.env`: toda requisição `/api` é respondida por fixtures de `captura/fixturesDaApi.mjs`, e uma requisição sem fixture derruba a captura. O proxy do Vite aponta para uma porta sem ninguém.
 - Comandos: `pnpm --filter @cdd/web captura --saida <dir>` (opções `--so <telas>`, `--url <servidor>`; `--ajuda` lista tudo) e `pnpm --filter @cdd/web captura:comparar <dirA> <dirB>`, que compara byte a byte e sai com código diferente de 0 se alguma foto mudou ou faltou.
 - Antes e depois: gerar a base na main e a captura na branch, na mesma máquina, com o mesmo script; depois comparar.
 - Critério: duas execuções seguidas no mesmo código dão fotos idênticas, inclusive com a máquina carregada. Uma mudança visual proposital acusa diferença.
 - Por que o relógio é congelado: há 14 usos de `new Date()` e `Date.now()` nas páginas. As fontes do Google ficam em cache local (`~/.cache/cdd-captura/fontes`) e são carregadas antes da foto.
-- Limites: só o estado inicial de cada tela e os passos catalogados em `captura/telas.mjs` são fotografados; painéis e modais que abrem por clique entram no catálogo quando uma etapa for mexer neles. Telas com wrapper `min-height: 100%` abaixo de uma faixa de aviso deixam a área vazia final fora da foto, e a captura avisa.
+- Limites: só o estado inicial de cada tela e os passos catalogados em `captura/telas.mjs` são fotografados; painéis e modais que abrem por clique entram no catálogo quando uma etapa for mexer neles. Telas com wrapper `min-height: 100%` abaixo de uma faixa de aviso deixam a área vazia final fora da foto, e a captura avisa. A comparação é por pixel: uma mudança só de DOM ou de acessibilidade que não muda a imagem (`aria-label`, `role`, ordem de foco, texto oculto) passa como igual. Essa parte fica com os testes de caracterização, que consultam por papel e rótulo (seção 13.4).
 - A captura roda antes de qualquer divisão de view. Toda divisão de view depende do harness.
 
 ### 13.7 Etapas
