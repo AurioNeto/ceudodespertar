@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { clicar, desmontarTudo, elemento, folhaComTexto, montar, todos } from '@/testes/montagem';
+import { errosAoClicar, glifoDe } from './apoioDeTeste';
 import { DefaultField } from './DefaultField';
 
 afterEach(desmontarTudo);
@@ -55,6 +56,7 @@ describe('DefaultField: padrão visível', () => {
     const lapis = campo(container).lastElementChild as Element;
     expect(lapis.tagName.toLowerCase()).toBe('svg');
     expect(lapis.getAttribute('aria-hidden')).toBe('true');
+    expect(glifoDe(lapis)).toBe('pencil');
   });
 });
 
@@ -77,6 +79,11 @@ describe('DefaultField: editar em um toque', () => {
     const { container } = await montar(<DefaultField label="Conta" value="Cora PJ" onEdit={aoEditar} />);
     await clicar(folhaComTexto(container, 'span', 'Cora PJ'));
     expect(aoEditar).toHaveBeenCalledOnce();
+  });
+
+  it('sem onEdit clicar no campo não lança erro', async () => {
+    const { container } = await montar(<DefaultField label="Conta" value="Cora PJ" />);
+    expect(await errosAoClicar(campo(container))).toEqual([]);
   });
 
   it('mostrar o padrão não chama onEdit', async () => {

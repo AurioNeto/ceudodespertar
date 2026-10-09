@@ -81,7 +81,7 @@ describe('ActionBar: fixação na base', () => {
     );
     expect(barra(container).style.position).toBe('sticky');
     expect(barra(container).style.bottom).toBe('0px');
-    expect(barra(container).style.boxShadow).not.toBe('none');
+    expect(barra(container).style.boxShadow).toBe('0 -6px 18px -14px rgba(59,38,23,.4)');
   });
 
   it('com sticky falso fica no fluxo normal e sem sombra', async () => {

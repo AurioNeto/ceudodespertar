@@ -10,7 +10,7 @@ import {
   tirarMouseDe,
   todos,
 } from '@/testes/montagem';
-import { errosAoClicar } from './apoioDeTeste';
+import { errosAoClicar, glifoDe } from './apoioDeTeste';
 import { AppShell, type NavEntry } from './AppShell';
 
 afterEach(desmontarTudo);
@@ -34,6 +34,7 @@ const navInferior = (container: HTMLElement) => elemento(container, 'nav');
 const barraDeContexto = (container: HTMLElement) => elemento(container, 'header');
 const chipDoUsuario = (container: HTMLElement) => elemento<HTMLButtonElement>(container, 'button[title="Meu perfil"]');
 const textosDosFilhos = (pai: HTMLElement) => Array.from(pai.children).map((filho) => filho.textContent);
+const glifosDosBotoes = (nav: HTMLElement) => todos<HTMLButtonElement>(nav, 'button').map((botao) => glifoDe(elemento(botao, 'svg')));
 
 describe('AppShell: estrutura por densidade', () => {
   it('sem densidade vale a de escritório, com coluna lateral de 232px', async () => {
@@ -119,6 +120,15 @@ describe('AppShell: navegação lateral', () => {
       'Contas',
       'Acessos',
     ]);
+  });
+
+  it('cada item mostra o ícone que recebeu', async () => {
+    const { container } = await montar(
+      <AppShell user={USUARIA} nav={NAV}>
+        conteúdo
+      </AppShell>,
+    );
+    expect(glifosDosBotoes(navLateral(container))).toEqual(['layout-dashboard', 'inbox', 'users', 'wallet', 'key-round']);
   });
 
   it('seção é só um título: não é botão e clicar nela não navega', async () => {
@@ -367,6 +377,11 @@ describe('AppShell: barra de contexto', () => {
     expect(botaoComTexto(barraDeContexto(container), 'CDD')).toBeTruthy();
   });
 
+  it('a unidade leva a seta para baixo que indica a troca', async () => {
+    const { container } = await montar(<AppShell user={USUARIA}>conteúdo</AppShell>);
+    expect(glifoDe(elemento(botaoComTexto(barraDeContexto(container), 'CDD'), 'svg'))).toBe('chevron-down');
+  });
+
   it('aceita instituição e unidade próprias', async () => {
     const { container } = await montar(
       <AppShell user={USUARIA} institution="Instituto Aurora" unit="Filial Norte">
@@ -426,6 +441,11 @@ describe('AppShell: navegação inferior em campo', () => {
   it('mostra só os quatro primeiros itens, sem seções e sem contagem', async () => {
     const { container } = await montarEmCampo({ nav: NAV });
     expect(textosDosFilhos(navInferior(container))).toEqual(['Painel', 'Fila de verificação', 'Pessoas', 'Contas']);
+  });
+
+  it('cada item mostra o ícone que recebeu', async () => {
+    const { container } = await montarEmCampo({ nav: NAV });
+    expect(glifosDosBotoes(navInferior(container))).toEqual(['layout-dashboard', 'inbox', 'users', 'wallet']);
   });
 
   it('com exatamente quatro itens mostra os quatro', async () => {

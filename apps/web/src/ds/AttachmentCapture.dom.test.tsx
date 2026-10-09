@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { clicar, desmontarTudo, elemento, folhaComTexto, montar, todos } from '@/testes/montagem';
-import { errosAoClicar } from './apoioDeTeste';
+import { errosAoClicar, glifoDe } from './apoioDeTeste';
 import { AttachmentCapture } from './AttachmentCapture';
 
 afterEach(desmontarTudo);
@@ -30,6 +30,7 @@ describe('AttachmentCapture: sem anexo', () => {
     const icone = botaoDeCaptura(container).firstElementChild as Element;
     expect(icone.tagName.toLowerCase()).toBe('svg');
     expect(icone.getAttribute('aria-hidden')).toBe('true');
+    expect(glifoDe(icone)).toBe('camera');
   });
 
   it('um toque chama onCapture uma vez, sem passo extra', async () => {
@@ -120,8 +121,10 @@ describe('AttachmentCapture: com anexo', () => {
 
   it('o ícone de clipe vem antes do nome e o de fechar fica dentro do botão', async () => {
     const { container } = await montar(<AttachmentCapture filename="nota-0912.jpg" />);
-    expect(container.firstElementChild?.firstElementChild?.tagName.toLowerCase()).toBe('svg');
-    expect(botaoDeRemover(container).querySelector('svg')).not.toBeNull();
+    const clipe = container.firstElementChild?.firstElementChild as Element;
+    expect(clipe.tagName.toLowerCase()).toBe('svg');
+    expect(glifoDe(clipe)).toBe('paperclip');
+    expect(glifoDe(elemento(botaoDeRemover(container), 'svg'))).toBe('x');
   });
 
   it('remover chama onRemove uma vez e não chama onCapture', async () => {

@@ -15,7 +15,7 @@ const OPCOES: readonly SheetOption[] = [
 const fundoEscurecido = (container: HTMLElement) => container.firstElementChild as HTMLElement;
 const painel = (container: HTMLElement) => fundoEscurecido(container).firstElementChild as HTMLElement;
 const botoesDeOpcao = (container: HTMLElement) => todos<HTMLButtonElement>(container, 'button');
-const temCheck = (botao: HTMLElement) => botao.querySelector('svg') !== null;
+const temCheck = (botao: HTMLElement) => botao.querySelector('svg.lucide-check') !== null;
 const opcoesMarcadas = (container: HTMLElement) => botoesDeOpcao(container).map(temCheck);
 
 const teclar = (alvo: EventTarget, key: string) =>

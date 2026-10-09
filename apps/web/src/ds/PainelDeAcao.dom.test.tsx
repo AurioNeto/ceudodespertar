@@ -1,7 +1,7 @@
 import { act, useState, type ReactNode } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { errosDurante } from './apoioDeTeste';
+import { errosDurante, glifoDe } from './apoioDeTeste';
 import { PainelDeAcao, varianteDoPainel, type VarianteDoPainel } from './PainelDeAcao';
 
 declare global {
@@ -140,6 +140,16 @@ describe('PainelDeAcao', () => {
     await clicar(fechar as HTMLElement);
     expect(dialogo()).toBeNull();
     expect(document.activeElement).toBe(gatilho);
+  });
+
+  it('o botão Fechar mostra só o ícone de x, decorativo', async () => {
+    await montar();
+    await clicar(botao('Abrir'));
+    const fechar = document.querySelector('button[aria-label="Fechar"]') as HTMLElement;
+    const icone = fechar.querySelector('svg') as SVGElement;
+    expect(glifoDe(icone)).toBe('x');
+    expect(icone.getAttribute('aria-hidden')).toBe('true');
+    expect(fechar.textContent).toBe('');
   });
 
   it('clicar no fundo fecha; clicar dentro do painel não', async () => {
@@ -423,7 +433,7 @@ describe('PainelDeAcao: foco inicial', () => {
 });
 
 describe('PainelDeAcao: foco preso', () => {
-  it('Tab ignora botão desabilitado e elemento com tabindex -1 ao decidir quem é o último', async () => {
+  it('Tab ignora botão e select desabilitados, âncora sem href e tabindex -1 ao decidir quem é o último', async () => {
     await renderizarAberto({
       children: (
         <>
@@ -432,6 +442,8 @@ describe('PainelDeAcao: foco preso', () => {
           <button type="button" disabled>
             Inativo
           </button>
+          <select aria-label="Bloqueado" disabled />
+          <a>Sem destino</a>
           <div tabIndex={-1}>Só por programa</div>
         </>
       ),

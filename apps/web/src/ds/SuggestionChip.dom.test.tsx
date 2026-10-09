@@ -1,6 +1,7 @@
 import { act } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { clicar, desmontarTudo, elemento, montar, todos } from '@/testes/montagem';
+import { glifoDe } from './apoioDeTeste';
 import { SuggestionChip } from './SuggestionChip';
 
 beforeEach(() => {
@@ -27,6 +28,7 @@ describe('SuggestionChip: conteúdo', () => {
     const icone = elemento(container, 'svg');
     expect(icone.getAttribute('aria-hidden')).toBe('true');
     expect(chip(container).firstElementChild).toBe(icone);
+    expect(glifoDe(icone)).toBe('sparkles');
   });
 
   it('aceita elemento React como conteúdo', async () => {
@@ -62,6 +64,22 @@ describe('SuggestionChip: aceitar e descartar', () => {
       </SuggestionChip>,
     );
     expect(todos(container, 'button').map((botao) => botao.title)).toEqual(['Aceitar sugestão', 'Descartar sugestão']);
+  });
+
+  it('o botão de aceitar tem só o ícone de check, decorativo', async () => {
+    const { container } = await montar(<SuggestionChip onAccept={vi.fn()}>Cora PJ</SuggestionChip>);
+    const icone = elemento(botaoAceitar(container), 'svg');
+    expect(glifoDe(icone)).toBe('check');
+    expect(icone.getAttribute('aria-hidden')).toBe('true');
+    expect(botaoAceitar(container).textContent).toBe('');
+  });
+
+  it('o botão de descartar tem só o ícone de x, decorativo', async () => {
+    const { container } = await montar(<SuggestionChip onDismiss={vi.fn()}>Cora PJ</SuggestionChip>);
+    const icone = elemento(botaoDescartar(container), 'svg');
+    expect(glifoDe(icone)).toBe('x');
+    expect(icone.getAttribute('aria-hidden')).toBe('true');
+    expect(botaoDescartar(container).textContent).toBe('');
   });
 
   it('os botões são de tipo button e dentro de um formulário não o enviam', async () => {

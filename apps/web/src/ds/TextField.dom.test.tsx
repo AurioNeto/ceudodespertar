@@ -2,6 +2,7 @@ import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { clicar, digitar } from '@/testes/montagem';
+import { glifoDe } from './apoioDeTeste';
 import { TextField, type TextFieldProps } from './TextField';
 
 declare global {
@@ -134,6 +135,14 @@ describe('TextField: rótulo', () => {
     expect(etiqueta.nextElementSibling?.contains(campo())).toBe(true);
   });
 
+  it('na multilinha o rótulo aponta para a textarea', async () => {
+    await montar({ multiline: true });
+    const etiqueta = container.querySelector('label') as HTMLLabelElement;
+    expect(campo().tagName).toBe('TEXTAREA');
+    expect(campo().id).not.toBe('');
+    expect(etiqueta.htmlFor).toBe(campo().id);
+  });
+
   it.each([
     ['ausente', undefined],
     ['vazio', ''],
@@ -188,6 +197,13 @@ describe('TextField: controle', () => {
     await montar({ readOnly: true, value: 'Ana', onChange: () => undefined });
     expect(campo().value).toBe('Ana');
     expect((campo() as HTMLInputElement).readOnly).toBe(true);
+    expect(campo().style.background).toBe('var(--bg-sunken)');
+  });
+
+  it('multilinha somente leitura marca readonly e usa o fundo rebaixado', async () => {
+    await montar({ multiline: true, readOnly: true, value: 'Ana', onChange: () => undefined });
+    expect(campo().tagName).toBe('TEXTAREA');
+    expect((campo() as HTMLTextAreaElement).readOnly).toBe(true);
     expect(campo().style.background).toBe('var(--bg-sunken)');
   });
 
@@ -286,6 +302,11 @@ describe('TextField: ação do campo', () => {
   it('o ícone da ação é decorativo e fica dentro do botão', async () => {
     await montar({ action: acao() });
     expect(botaoDaAcao().querySelector('svg')?.getAttribute('aria-hidden')).toBe('true');
+  });
+
+  it.each(['eye', 'eye-off'] as const)('o ícone da ação é o informado: %s', async (icone) => {
+    await montar({ action: { ...acao(), icon: icone } });
+    expect(glifoDe(botaoDaAcao().querySelector('svg') as SVGElement)).toBe(icone);
   });
 
   it('clicar chama onClick da ação uma vez', async () => {
