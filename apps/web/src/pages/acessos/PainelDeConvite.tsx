@@ -30,7 +30,7 @@ export function PainelDeConvite({ aberto, ...resto }: PainelDeConviteProps) {
 function PainelDeConviteAberto({ variante, densidade, aoFechar, focoDeReserva }: Omit<PainelDeConviteProps, 'aberto'>) {
   const comandos = useComandosDeAcessos();
   const chavePara = useChaveDeIdempotencia();
-  const { enviando, erro, enviar } = useAcaoNoUsuario({ usuarioId: null });
+  const { enviando, erro, enviar } = useAcaoNoUsuario<'convidar'>({ usuarioId: null });
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
   const [grupos, setGrupos] = useState<readonly GrupoId[]>([]);
@@ -58,6 +58,7 @@ function PainelDeConviteAberto({ variante, densidade, aoFechar, focoDeReserva }:
       ...(grupos.length > 0 ? { grupos: [...grupos] } : {}),
     };
     void enviar(
+      'convidar',
       () => comandos.convidar(pedido, { chaveDeIdempotencia: chavePara(pedido) }),
       () => setRegistrado(true),
     );

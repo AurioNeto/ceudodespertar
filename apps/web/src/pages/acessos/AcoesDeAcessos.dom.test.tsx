@@ -25,6 +25,22 @@ import {
 import type { RoteiroDoCliente } from './apoioDeTeste';
 import { AVISO_DE_VERSAO_DESATUALIZADA, AVISO_LGPD_DO_MOTIVO, CONVITE_REGISTRADO } from './textosDeAcessos';
 
+interface Adiado<T> {
+  readonly promessa: Promise<T>;
+  resolver(valor: T): void;
+  rejeitar(erro: Error): void;
+}
+
+function adiar<T>(): Adiado<T> {
+  let resolver: (valor: T) => void = () => undefined;
+  let rejeitar: (erro: Error) => void = () => undefined;
+  const promessa = new Promise<T>((aoResolver, aoRejeitar) => {
+    resolver = aoResolver;
+    rejeitar = aoRejeitar;
+  });
+  return { promessa, resolver, rejeitar };
+}
+
 const montadas: TelaMontada[] = [];
 const restauracoes: Array<() => void> = [];
 
@@ -165,11 +181,8 @@ describe('Acessos: convidar', () => {
     });
     await abrirConvite(tela);
     await preencherConvite();
-    const botao = botaoDoPainel('Registrar convite');
-    await act(async () => {
-      botao.click();
-      botao.click();
-    });
+    await act(async () => botaoDoPainel('Registrar convite').click());
+    await act(async () => botaoDoPainel('Enviando…').click());
     expect(cliente.chamadasDeComando()).toHaveLength(1);
     expect(botaoDoPainel('Enviando…').getAttribute('aria-disabled')).toBe('true');
     await act(async () => liberar(convidado()));
@@ -446,6 +459,65 @@ describe('Acessos: gerenciar usuário', () => {
     expect(painelAberto()).toBeNull();
   });
 
+  it('não aceita segundo "Salvar grupos" enquanto o primeiro está em andamento', async () => {
+    const envio = adiar<unknown>();
+    const { cliente, tela } = await montar({ comando: () => envio.promessa });
+    await abrirGerenciar(tela);
+    await alternarGrupoNoPainel('Secretaria');
+    await act(async () => botaoDoPainel('Salvar grupos').click());
+    await act(async () => botaoDoPainel('Salvando…').click());
+    expect(cliente.chamadasDeComando()).toHaveLength(1);
+    await act(async () => envio.resolver({ grupos: [], versao: 2 }));
+    await assentar();
+    expect(painelAberto()).toBeNull();
+  });
+
+  it('depois do 409 o novo "Salvar grupos" usa a versão recarregada no If-Match', async () => {
+    let tentativa = 0;
+    const { cliente, tela } = await montar({
+      usuario: () => usuarioListado({ versao: 5 }),
+      comando: () =>
+        ++tentativa === 1 ? new ErroDaApi({ status: 409, codigo: 'VERSAO_DESATUALIZADA' }) : { grupos: [], versao: 6 },
+    });
+    await abrirGerenciar(tela);
+    await alternarGrupoNoPainel('Secretaria');
+    await clicarNoPainel('Salvar grupos');
+    await clicarNoPainel('Salvar grupos');
+    const [primeira, segunda] = cliente.chamadasDeComando();
+    expect(primeira).toMatchObject({ metodo: 'PUT', versao: 1 });
+    expect(segunda).toMatchObject({ metodo: 'PUT', caminho: '/identidade/usuarios/u-1/grupos', versao: 5 });
+    expect(painelAberto()).toBeNull();
+  });
+
+  it('durante o envio só o botão da ação em curso mostra progresso: Salvando… nos grupos', async () => {
+    const envio = adiar<unknown>();
+    const { tela } = await montar({ comando: () => envio.promessa });
+    await abrirGerenciar(tela);
+    await clicarNoPainel('Salvar grupos');
+    expect(botaoDoPainel('Salvando…').getAttribute('aria-disabled')).toBe('true');
+    expect(botaoDoPainel('Suspender acesso').getAttribute('aria-disabled')).toBe('true');
+    expect(textoDoPainel()).not.toContain('Enviando…');
+    await act(async () => envio.rejeitar(new ErroDaApi({ status: 422, codigo: 'ULTIMO_ADMINISTRADOR' })));
+    await assentar();
+    expect(botaoDoPainel('Salvar grupos').getAttribute('aria-disabled')).toBe('false');
+    expect(textoDoPainel()).not.toContain('Salvando…');
+  });
+
+  it('durante o envio só o botão da ação em curso mostra progresso: Enviando… na situação', async () => {
+    const envio = adiar<unknown>();
+    const { tela } = await montar({ comando: () => envio.promessa });
+    await abrirGerenciar(tela);
+    await digitarNoPainel('Motivo', 'deixou a tesouraria');
+    await clicarNoPainel('Suspender acesso');
+    expect(botaoDoPainel('Enviando…').getAttribute('aria-disabled')).toBe('true');
+    expect(botaoDoPainel('Salvar grupos').getAttribute('aria-disabled')).toBe('true');
+    expect(textoDoPainel()).not.toContain('Salvando…');
+    await act(async () => envio.rejeitar(new ErroDaApi({ status: 422, codigo: 'ULTIMO_ADMINISTRADOR' })));
+    await assentar();
+    expect(botaoDoPainel('Suspender acesso').getAttribute('aria-disabled')).toBe('false');
+    expect(textoDoPainel()).not.toContain('Enviando…');
+  });
+
   it('Esc fecha o painel e devolve o foco ao gatilho da linha', async () => {
     const { tela } = await montar();
     const gatilho = gatilhoDe(tela);
@@ -548,22 +620,6 @@ describe('Acessos: foco e leitor de tela no painel', () => {
     expect(cliente.chamadasDeComando()).toHaveLength(0);
   });
 });
-
-interface Adiado<T> {
-  readonly promessa: Promise<T>;
-  resolver(valor: T): void;
-  rejeitar(erro: Error): void;
-}
-
-function adiar<T>(): Adiado<T> {
-  let resolver: (valor: T) => void = () => undefined;
-  let rejeitar: (erro: Error) => void = () => undefined;
-  const promessa = new Promise<T>((aoResolver, aoRejeitar) => {
-    resolver = aoResolver;
-    rejeitar = aoRejeitar;
-  });
-  return { promessa, resolver, rejeitar };
-}
 
 const fecharPeloBotao = () =>
   act(async () => painelAberto()?.querySelector<HTMLButtonElement>('button[aria-label="Fechar"]')?.click());

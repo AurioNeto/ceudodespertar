@@ -17,12 +17,12 @@ const CHAVE_DAS_CONSULTAS_DE_GRUPOS = ['acessos', 'grupos'] as const;
 const ehVersaoDesatualizada = (erro: unknown): boolean =>
   erro instanceof ErroDaApi && erro.codigo === 'VERSAO_DESATUALIZADA';
 
-export function useAcaoNoUsuario({ usuarioId, aoRecarregar }: OpcoesDaAcaoNoUsuario) {
+export function useAcaoNoUsuario<Acao extends string>({ usuarioId, aoRecarregar }: OpcoesDaAcaoNoUsuario) {
   const clienteDeConsultas = useQueryClient();
   const consultas = useConsultasDeAcessos();
   const emEnvio = useRef(false);
   const montado = useRef(false);
-  const [enviando, setEnviando] = useState(false);
+  const [acaoEmCurso, setAcaoEmCurso] = useState<Acao | null>(null);
   const [erro, setErro] = useState<string | null>(null);
   const [aviso, setAviso] = useState<string | null>(null);
 
@@ -53,10 +53,10 @@ export function useAcaoNoUsuario({ usuarioId, aoRecarregar }: OpcoesDaAcaoNoUsua
     if (montado.current) setErro(mensagemDeErro(falha));
   };
 
-  const enviar = async <Saida,>(operacao: () => Promise<Saida>, aoSucesso: (saida: Saida) => void) => {
+  const enviar = async <Saida,>(acao: Acao, operacao: () => Promise<Saida>, aoSucesso: (saida: Saida) => void) => {
     if (emEnvio.current) return;
     emEnvio.current = true;
-    setEnviando(true);
+    setAcaoEmCurso(acao);
     setErro(null);
     setAviso(null);
     try {
@@ -70,9 +70,9 @@ export function useAcaoNoUsuario({ usuarioId, aoRecarregar }: OpcoesDaAcaoNoUsua
       await tratarFalha(falha);
     } finally {
       emEnvio.current = false;
-      if (montado.current) setEnviando(false);
+      if (montado.current) setAcaoEmCurso(null);
     }
   };
 
-  return { enviando, erro, aviso, enviar };
+  return { enviando: acaoEmCurso !== null, acaoEmCurso, erro, aviso, enviar };
 }

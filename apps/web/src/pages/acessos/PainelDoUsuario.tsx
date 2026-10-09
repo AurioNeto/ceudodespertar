@@ -20,6 +20,7 @@ export interface PainelDoUsuarioProps {
 const MOTIVO_OBRIGATORIO = 'Informe o motivo.';
 
 type AcaoDeSituacao = 'suspender' | 'reativar';
+type AcaoDoPainel = 'grupos' | AcaoDeSituacao;
 
 const acaoDeSituacaoDisponivel = (usuario: UsuarioListado): AcaoDeSituacao | null => {
   if (usuario.situacao === 'ATIVO') return 'suspender';
@@ -52,7 +53,7 @@ function PainelDoUsuarioAberto({
   const [motivo, setMotivo] = useState('');
   const [erroDeMotivo, setErroDeMotivo] = useState<string | undefined>();
 
-  const { enviando, erro, aviso, enviar } = useAcaoNoUsuario({
+  const { enviando, acaoEmCurso, erro, aviso, enviar } = useAcaoNoUsuario<AcaoDoPainel>({
     usuarioId: usuario.id,
     aoRecarregar: (recarregado) => {
       aoAtualizarUsuario(recarregado);
@@ -69,6 +70,7 @@ function PainelDoUsuarioAberto({
 
   const salvarGrupos = () =>
     void enviar(
+      'grupos',
       () => comandos.definirGrupos({ usuarioId: usuario.id, versao: usuario.versao, grupos }),
       aoFechar,
     );
@@ -82,6 +84,7 @@ function PainelDoUsuarioAberto({
     setErroDeMotivo(undefined);
     const mudanca = { usuarioId: usuario.id, versao: usuario.versao, motivo: motivoLimpo };
     void enviar(
+      acao,
       () => comandos[acao](mudanca, { chaveDeIdempotencia: chavePara({ acao, ...mudanca }) }),
       aoFechar,
     );
@@ -128,7 +131,7 @@ function PainelDoUsuarioAberto({
         ) : (
           <div>
             <Button density={densidade} aria-disabled={enviando} onClick={salvarGrupos}>
-              Salvar grupos
+              {acaoEmCurso === 'grupos' ? 'Salvando…' : 'Salvar grupos'}
             </Button>
           </div>
         )}
@@ -148,7 +151,7 @@ function PainelDoUsuarioAberto({
                 aria-disabled={enviando}
                 onClick={() => mudarSituacao(acaoDeSituacao)}
               >
-                {acaoDeSituacao === 'suspender' ? 'Suspender acesso' : 'Reativar acesso'}
+                {acaoEmCurso === acaoDeSituacao ? 'Enviando…' : acaoDeSituacao === 'suspender' ? 'Suspender acesso' : 'Reativar acesso'}
               </Button>
             </div>
           </>
