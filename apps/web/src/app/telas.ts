@@ -34,6 +34,7 @@ export const TELAS: RegistroDeTelas = {
   feitio: { fonte: 'mock', acesso: ['estoque.feitio.gerenciar'] },
   pessoas: { fonte: 'mock', acesso: ['pessoas.pessoa.ler'] },
   anamnese: { fonte: 'mock', acesso: ['pessoas.anamnese.ler'] },
+  acessos: { fonte: 'api', acesso: ['sistema.usuario.gerenciar', 'sistema.grupo.gerenciar'] },
   auditoria: { fonte: 'mock', acesso: ['sistema.auditoria.ler'] },
   perfil: { fonte: 'api', acesso: [] },
 };
