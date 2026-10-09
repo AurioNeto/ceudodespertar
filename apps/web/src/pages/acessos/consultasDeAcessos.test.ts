@@ -1,6 +1,7 @@
-import { describe, expect, it } from 'vitest';
-import type { GrupoId } from '@cdd/contracts';
-import { SEM_FILTRO, caminhoDaListagemDeUsuarios, temFiltroAplicado } from './consultasDeAcessos';
+import { describe, expect, it, vi } from 'vitest';
+import type { GrupoId, UsuarioId } from '@cdd/contracts';
+import type { ClienteHttp } from '../../dados/clienteHttp';
+import { SEM_FILTRO, criarConsultasDeAcessos, caminhoDaListagemDeUsuarios, temFiltroAplicado } from './consultasDeAcessos';
 
 describe('caminhoDaListagemDeUsuarios', () => {
   it('sem filtro pede só o limite padrão', () => {
@@ -45,5 +46,24 @@ describe('temFiltroAplicado', () => {
     { ...SEM_FILTRO, busca: 'x' },
   ])('é verdadeiro com %o', (filtro) => {
     expect(temFiltroAplicado(filtro)).toBe(true);
+  });
+});
+
+describe('consulta usuario(id)', () => {
+  const requisitar = vi.fn(() => Promise.resolve({ id: 'u-7' }));
+  const consultas = criarConsultasDeAcessos({ requisitar: requisitar as ClienteHttp['requisitar'] });
+
+  it('lê GET /identidade/usuarios/:id', async () => {
+    const sinal = new AbortController().signal;
+    await consultas.usuario('u-7' as UsuarioId).queryFn({ signal: sinal });
+    expect(requisitar).toHaveBeenCalledWith({ metodo: 'GET', caminho: '/identidade/usuarios/u-7', sinal });
+  });
+
+  it('a chave fica sob o prefixo da lista, para a invalidação cobrir os dois', () => {
+    const chaveDoUsuario = consultas.usuario('u-7' as UsuarioId).queryKey;
+    const chaveDaLista = consultas.usuarios(SEM_FILTRO).queryKey;
+    expect(chaveDoUsuario.slice(0, 2)).toEqual(['acessos', 'usuarios']);
+    expect(chaveDaLista.slice(0, 2)).toEqual(['acessos', 'usuarios']);
+    expect(chaveDoUsuario).toEqual(['acessos', 'usuarios', 'porId', 'u-7']);
   });
 });

@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { infiniteQueryOptions } from '@tanstack/react-query';
-import type { GrupoId, GruposDaGestao, PaginaDeUsuarios, SituacaoUsuario } from '@cdd/contracts';
+import type { GrupoId, GruposDaGestao, PaginaDeUsuarios, SituacaoUsuario, UsuarioId, UsuarioListado } from '@cdd/contracts';
 import { LIMITE_PADRAO_DA_LISTAGEM_DE_USUARIOS } from '@cdd/contracts';
 import { criarConsulta } from '../../dados/consultaEComando';
 import type { ClienteHttp } from '../../dados/clienteHttp';
@@ -43,6 +43,8 @@ export function criarConsultasDeAcessos(cliente: ClienteHttp) {
           }),
         getNextPageParam: (pagina) => pagina.proxima,
       }),
+    usuario: (id: UsuarioId) =>
+      consulta<UsuarioListado>(`/identidade/usuarios/${encodeURIComponent(id)}`, ['acessos', 'usuarios', 'porId', id]),
     grupos: () => consulta<GruposDaGestao>('/identidade/grupos', ['acessos', 'grupos']),
   };
 }
