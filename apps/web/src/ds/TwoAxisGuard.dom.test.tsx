@@ -72,7 +72,7 @@ describe('TwoAxisGuard: não é erro de sistema', () => {
     expect(exigencia.style.background).toBe('var(--color-royal-soft)');
   });
 
-  it('nenhum elemento do guarda usa o tom de atenção nem o de pendência', async () => {
+  it('nenhum estilo que o jsdom serializa no guarda usa o tom de atenção nem o de pendência', async () => {
     const { container } = await montar(guarda({ requirement: EXIGENCIA }));
     expect(container.innerHTML).not.toContain('--color-attention');
     expect(container.innerHTML).not.toContain('--color-pending');

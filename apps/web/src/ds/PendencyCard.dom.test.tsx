@@ -55,14 +55,20 @@ describe('PendencyCard: pendência já respondida', () => {
     expect(rotulo.compareDocumentPosition(resposta)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
   });
 
-  it('a pergunta e quem perguntou continuam visíveis ao lado da resposta', async () => {
-    const { container } = await montar(pendencia({ answer: 'Gás e extintor.' }));
+  it.each([
+    ['destinatário', true],
+    ['quem conferiu', false],
+  ])('para %s, a pergunta e quem perguntou continuam visíveis ao lado da resposta', async (_papel, canAnswer) => {
+    const { container } = await montar(pendencia({ answer: 'Gás e extintor.', canAnswer }));
     expect(folhaComTexto(container, 'p', PERGUNTA)).toBeTruthy();
     expect(folhaComTexto(container, 'p', AUTOR)).toBeTruthy();
   });
 
-  it('o cabeçalho continua dizendo Pendência aberta mesmo com a pendência respondida', async () => {
-    const { container } = await montar(pendencia({ answer: 'Gás e extintor.' }));
+  it.each([
+    ['destinatário', true],
+    ['quem conferiu', false],
+  ])('para %s, o cabeçalho continua dizendo Pendência aberta mesmo com a pendência respondida', async (_papel, canAnswer) => {
+    const { container } = await montar(pendencia({ answer: 'Gás e extintor.', canAnswer }));
     expect(folhaComTexto(container, 'span', 'Pendência aberta')).toBeTruthy();
   });
 
