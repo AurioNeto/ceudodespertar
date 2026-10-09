@@ -433,7 +433,7 @@ describe('PainelDeAcao: foco inicial', () => {
 });
 
 describe('PainelDeAcao: foco preso', () => {
-  it('Tab ignora botão e select desabilitados, âncora sem href e tabindex -1 ao decidir quem é o último', async () => {
+  it('Tab ignora botão, campo, área de texto e select desabilitados, âncora sem href e tabindex -1 ao decidir quem é o último', async () => {
     await renderizarAberto({
       children: (
         <>
@@ -442,6 +442,8 @@ describe('PainelDeAcao: foco preso', () => {
           <button type="button" disabled>
             Inativo
           </button>
+          <input aria-label="Desligado" disabled />
+          <textarea aria-label="Nota" disabled />
           <select aria-label="Bloqueado" disabled />
           <a>Sem destino</a>
           <div tabIndex={-1}>Só por programa</div>
