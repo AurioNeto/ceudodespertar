@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import type { GrupoId } from '@cdd/contracts';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { Logger } from '@nestjs/common';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { Grupo } from '../../../src/modules/identidade/domain/grupo/grupo.js';
 import { VARIAVEL_DE_SESSAO_DA_INSTITUICAO } from '../../../src/shared/infrastructure/banco/unidade-de-trabalho.mikro-orm.js';
 import { comContexto, INSTITUICAO_A, INSTITUICAO_B, semearInstituicoes } from '../../eventos/apoio.js';
@@ -590,14 +591,22 @@ describe('gestão de grupos pela API (Doc 3 §11, Doc 7 §25)', () => {
       });
     });
 
-    it('omite a permissão gravada no banco que não pertence ao catálogo do código', async () => {
+    it('omite a permissão gravada no banco que não pertence ao catálogo do código e avisa no log', async () => {
       const { leitura } = await semearCasa();
       await gravarPermissaoForaDoCatalogoDoCodigo(leitura.id, 'legada.coisa.fazer');
+      const avisos = vi.spyOn(Logger.prototype, 'warn').mockImplementation(() => undefined);
 
-      const resposta = await aplicacao.pedirComo(ADMIN, ROTA_GRUPOS);
+      try {
+        const resposta = await aplicacao.pedirComo(ADMIN, ROTA_GRUPOS);
 
-      const { itens } = (await resposta.json()) as { itens: { id: string; permissoes: string[] }[] };
-      expect(itens.find(({ id }) => id === leitura.id)!.permissoes).toEqual([PERMISSAO_DA_LEITURA]);
+        const { itens } = (await resposta.json()) as { itens: { id: string; permissoes: string[] }[] };
+        expect(itens.find(({ id }) => id === leitura.id)!.permissoes).toEqual([PERMISSAO_DA_LEITURA]);
+        expect(avisos).toHaveBeenCalledWith(
+          `permissão fora do catálogo do código omitida: legada.coisa.fazer no grupo ${leitura.id}`,
+        );
+      } finally {
+        avisos.mockRestore();
+      }
     });
 
     it('ordena por nome sem distinguir maiúsculas de minúsculas mesmo com collation binária', async () => {

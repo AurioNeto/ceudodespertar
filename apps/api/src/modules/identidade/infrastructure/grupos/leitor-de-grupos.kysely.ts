@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { sql } from 'kysely';
 import type { CodigoGrupo, GrupoDaGestao, GrupoId, Permissao } from '@cdd/contracts';
 import { UnidadeDeTrabalho } from '../../../../shared/infrastructure/banco/unidade-de-trabalho.js';
@@ -7,6 +7,8 @@ import { ehPermissaoDoCatalogo } from '../../domain/permissao/catalogo-de-permis
 
 @Injectable()
 export class LeitorDeGruposKysely extends LeitorDeGrupos {
+  private readonly log = new Logger(LeitorDeGruposKysely.name);
+
   constructor(private readonly unidadeDeTrabalho: UnidadeDeTrabalho) {
     super();
   }
@@ -44,7 +46,10 @@ export class LeitorDeGruposKysely extends LeitorDeGrupos {
 
       const permissoesPorGrupo = new Map<string, Permissao[]>();
       for (const { grupoId, permissao } of concessoes) {
-        if (!ehPermissaoDoCatalogo(permissao)) continue;
+        if (!ehPermissaoDoCatalogo(permissao)) {
+          this.log.warn(`permissão fora do catálogo do código omitida: ${permissao} no grupo ${grupoId}`);
+          continue;
+        }
         permissoesPorGrupo.set(grupoId, [...(permissoesPorGrupo.get(grupoId) ?? []), permissao]);
       }
 
