@@ -20,7 +20,8 @@ const NIVEL6 = `${NIVEL5}/components/Nivel6`;
 const NIVEL7 = `${NIVEL6}/components/Nivel7`;
 const ACESSOS = 'pages/sistema/AcessosPage';
 const PAINEL = 'pages/transversal/PainelPage';
-const ENTRAR = 'pages/transversal/entrada/EntrarPage';
+const ENTRADA = 'pages/transversal/entrada';
+const ENTRAR = `${ENTRADA}/EntrarPage`;
 
 export const CASOS_DAS_FRONTEIRAS = {
   'web-sem-ciclo': {
@@ -262,10 +263,12 @@ export const CASOS_DAS_FRONTEIRAS = {
       `${ACESSOS}/AcessosPage.tsx -> ${ACESSOS}/mocks/x.ts`,
       `${ACESSOS}/AcessosPage.tsx -> mocks/ids.ts`,
       'pages/acessos/legado.tsx -> mocks/ids.ts',
+      `${ENTRADA}/constantes.ts -> mocks/ids.ts`,
     ],
     permite: [
       `${ACESSOS}/AcessosPage.tsx -> ${ACESSOS}/utils/abas.ts`,
       `${ENTRAR}/EntrarPage.tsx -> app/sessao/index.ts`,
+      `${ENTRADA}/constantes.ts -> lib/formato.ts`,
     ],
   },
   'apoio-de-teste-so-em-teste': {

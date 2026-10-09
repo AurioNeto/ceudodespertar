@@ -245,13 +245,16 @@ export default {
       name: 'tela-de-api-sem-mock',
       severity: 'error',
       comment:
-        'Telas com fonte "api" em app/telas.ts (Acessos, Meu perfil) e as de entrada não leem dado de ' +
-        'demonstração. Cobre a pasta de hoje e a final; a lista cresce a cada tela ligada no backend ' +
-        'nas etapas B1 a B6.',
+        'Telas com fonte "api" em app/telas.ts (Acessos, Meu perfil) e o fluxo de entrada inteiro ' +
+        '(EntrarPage, RetornoPage e o nível do fluxo, com constantes e components) não leem dado de ' +
+        'demonstração. Cobre a pasta de hoje e a final: o fluxo final é pages/transversal/entrada/, ' +
+        'que já contém as duas páginas. A lista de nomes cresce a cada tela ligada no backend nas ' +
+        'etapas B1 a B6.',
       from: {
         path: [
           `${SRC}pages/(?:acessos|perfil|entrada)/`,
-          `${SRC}pages/.*/(?:AcessosPage|MeuPerfilPage|EntrarPage|RetornoPage)/`,
+          `${SRC}pages/transversal/entrada/`,
+          `${SRC}pages/.*/(?:AcessosPage|MeuPerfilPage)/`,
         ],
       },
       to: { path: PASTA_DE_MOCKS },
