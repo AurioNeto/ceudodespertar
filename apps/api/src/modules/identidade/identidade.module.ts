@@ -12,18 +12,31 @@ import { ConcederPermissaoAoGrupo } from './application/grupos/conceder-permissa
 import { LeitorDeGrupos } from './application/grupos/leitor-de-grupos.js';
 import { RenomearGrupo } from './application/grupos/renomear-grupo.js';
 import { RevogarPermissaoDoGrupo } from './application/grupos/revogar-permissao-do-grupo.js';
+import { EntregaDeConvite } from './application/convite/entrega-de-convite.js';
+import { EnviadorDeConvite } from './application/convite/enviador-de-convite.js';
+import { GeradorDeTokenDeConvite } from './application/convite/gerador-de-token-de-convite.js';
 import { LeitorDoEu } from './application/leitor-do-eu.js';
 import { ObterEu } from './application/obter-eu.js';
 import { RegistradorDeUltimoAcesso } from './application/registrador-de-ultimo-acesso.js';
+import { ConvidarUsuario } from './application/usuarios/convidar-usuario.js';
 import { DefinirGruposDoUsuario } from './application/usuarios/definir-grupos-do-usuario.js';
 import { DesativarUsuario } from './application/usuarios/desativar-usuario.js';
+import { LeitorDeGruposDaInstituicao } from './application/usuarios/leitor-de-grupos-da-instituicao.js';
+import { LeitorDeUsuarios } from './application/usuarios/leitor-de-usuarios.js';
+import { ObterUsuario } from './application/usuarios/obter-usuario.js';
+import { ListarUsuarios } from './application/usuarios/listar-usuarios.js';
 import { ReativarUsuario } from './application/usuarios/reativar-usuario.js';
+import { ReenviarConvite } from './application/usuarios/reenviar-convite.js';
 import { RepositorioDeGrupo } from './domain/grupo/grupo.repo.js';
 import { PoliticaDoUltimoAdministrador } from './domain/servicos/politica-do-ultimo-administrador.js';
 import { RepositorioDeUsuario } from './domain/usuario/usuario.repo.js';
 import { LeitorDaAdministracaoKysely } from './infrastructure/administracao/leitor-da-administracao.kysely.js';
 import { TravaDaAdministracaoAdvisory } from './infrastructure/administracao/trava-da-administracao.advisory.js';
 import { LeitorDeGruposKysely } from './infrastructure/grupos/leitor-de-grupos.kysely.js';
+import { EnviadorDeConviteQueRegistra } from './infrastructure/convite/enviador-de-convite.que-registra.js';
+import { GeradorDeTokenDeConviteNode } from './infrastructure/convite/gerador-de-token-de-convite.node.js';
+import { LeitorDeGruposDaInstituicaoKysely } from './infrastructure/usuarios/leitor-de-grupos-da-instituicao.kysely.js';
+import { LeitorDeUsuariosKysely } from './infrastructure/usuarios/leitor-de-usuarios.kysely.js';
 import { GravadorDeTrilha } from './infrastructure/auditoria/gravador-de-trilha.js';
 import { LeitorDeAuditoriaKysely } from './infrastructure/auditoria/leitor-de-auditoria.kysely.js';
 import { CacheDeContextoDeAcesso } from './infrastructure/acesso/cache-de-contexto-de-acesso.js';
@@ -70,6 +83,15 @@ import { GestaoDeUsuariosController } from './interface/http/gestao-de-usuarios.
     ConcederPermissaoAoGrupo,
     RevogarPermissaoDoGrupo,
     RenomearGrupo,
+    { provide: GeradorDeTokenDeConvite, useClass: GeradorDeTokenDeConviteNode },
+    { provide: EnviadorDeConvite, useClass: EnviadorDeConviteQueRegistra },
+    EntregaDeConvite,
+    { provide: LeitorDeGruposDaInstituicao, useClass: LeitorDeGruposDaInstituicaoKysely },
+    { provide: LeitorDeUsuarios, useClass: LeitorDeUsuariosKysely },
+    ConvidarUsuario,
+    ReenviarConvite,
+    ListarUsuarios,
+    ObterUsuario,
     SemeadorDeGruposDeSistema,
     ObterEu,
     InvalidadorDoCacheDeAcesso,
