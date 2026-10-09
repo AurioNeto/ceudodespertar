@@ -5,6 +5,7 @@ const MODULOS_DE_PAGES = '(transversal|financeiro|eventos|estoque|pessoas|sistem
 const UNIDADE_DE_PAGINA = '[A-Z][A-Za-z0-9]*Page';
 const PASTA_DE_UNIDADE_NO_DESTINO = `${SRC}.*/[A-Z][^/]*/|${SRC}[A-Z][^/]*/`;
 const PASTA_DE_MOCKS = `${SRC}(?:mocks|.*/mocks)/`;
+const PASTA_CAMEL_CASE_NA_ORIGEM = `${SRC}.*/[a-z][^/A-Z]*[A-Z][^/]*/|${SRC}[a-z][^/A-Z]*[A-Z][^/]*/`;
 const PROFUNDIDADE_MAXIMA_DE_UNIDADE = 6;
 const LINHA_DE_BASE = 'Linha de base de 09/10/2026, reproduzível com pnpm fronteiras:web.';
 
@@ -214,6 +215,17 @@ export default {
         'Fecha a família unidade-so-pelo-index: as regras cobrem até 6 unidades aninhadas, e a ' +
         '7ª acusa cada import dela.',
       from: { path: `${SRC}.*/[A-Z].*/[A-Z].*/[A-Z].*/[A-Z].*/[A-Z].*/[A-Z].*/[A-Z][^/]*/` },
+      to: { path: '.' },
+    },
+    {
+      name: 'pasta-camel-case',
+      severity: 'error',
+      comment:
+        'Pasta de agrupamento é minúscula e pasta de unidade é PascalCase. Pasta camelCase não é ' +
+        'nenhuma das duas e escaparia da família unidade-so-pelo-index, então a regra acusa cada ' +
+        'import de arquivo dentro dela. Nome de arquivo em camelCase segue livre. Na main de ' +
+        '09/10/2026 não há pasta camelCase.',
+      from: { path: PASTA_CAMEL_CASE_NA_ORIGEM },
       to: { path: '.' },
     },
     {

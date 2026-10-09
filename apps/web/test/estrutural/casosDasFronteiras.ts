@@ -289,6 +289,15 @@ export const CASOS_DAS_FRONTEIRAS = {
       `${NIVEL6}/Nivel6.tsx -> ${RESPOSTA}/Resposta.tsx`,
     ],
   },
+  'pasta-camel-case': {
+    severidade: 'error',
+    acusa: ['pages/financeiro/meuGrupo/total.ts -> react', 'meuAgrupamento/total.ts -> mocks/ids.ts'],
+    permite: [
+      `${RECIBO} -> ${LANCAMENTOS}/components/Paginacao/index.ts`,
+      `${FATURAS}/FaturasPage.dom.test.tsx -> ${FATURAS}/apoioDeTeste.tsx`,
+      'testes/sessaoDeTeste.tsx -> app/sessao/index.ts',
+    ],
+  },
   'producao-global-sem-mock': {
     severidade: 'warn',
     acusa: [
