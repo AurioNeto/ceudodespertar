@@ -95,14 +95,15 @@ describe('linhasDoRecibo de saída', () => {
   });
 
   it('mostrando quem lançou, troca a cerimônia por quem lançou e mantém o resto', () => {
-    expect(comoPares(linhasDoRecibo(lancamento(), { mostrarQuemLancou: true }))).toEqual([
+    const linhas = linhasDoRecibo(lancamento({ registradoPor: 'Bruno Lima' }), { mostrarQuemLancou: true });
+    expect(comoPares(linhas)).toEqual([
       ['Tipo', 'Saída'],
       ['O que foi', 'mercado cerimônia mãe divina'],
       ['Data', '28/08/2026'],
       ['Grupo', 'Cozinha'],
       ['Categoria', 'Alimentação de cerimônia'],
       ['Conta de saída', 'Cora PJ · Pix'],
-      ['Quem lançou', 'Lucia Prado'],
+      ['Quem lançou', 'Bruno Lima'],
       ['Comprovante', 'IMG_2481.jpg'],
     ]);
   });
@@ -179,7 +180,7 @@ describe('linhasDoRecibo de entrada', () => {
   });
 
   it('mostrando quem lançou, troca a cerimônia por quem lançou', () => {
-    const linhas = linhasDoRecibo(entrada(), { mostrarQuemLancou: true });
+    const linhas = linhasDoRecibo(entrada({ registradoPor: 'Bruno Lima' }), { mostrarQuemLancou: true });
     expect(rotulosDe(linhas)).toEqual([
       'Tipo',
       'De onde veio',
@@ -190,30 +191,31 @@ describe('linhasDoRecibo de entrada', () => {
       'Quem lançou',
       'Comprovante',
     ]);
-    expect(valorDa(linhas, 'Quem lançou')).toBe('Lucia Prado');
+    expect(valorDa(linhas, 'Quem lançou')).toBe('Bruno Lima');
   });
 });
 
 describe('linhasDoRecibo de transferência', () => {
   it('troca grupo e categoria por saiu de e entrou em, e mostra o comprovante', () => {
-    expect(comoPares(linhasDoRecibo(transferencia()))).toEqual([
+    expect(comoPares(linhasDoRecibo(transferencia({ conta: 'Nubank' })))).toEqual([
       ['Tipo', 'Transferência entre contas'],
       ['Motivo', 'reforço do caixa da cozinha'],
       ['Data', '02/09/2026'],
-      ['Saiu de', 'Cora PJ'],
+      ['Saiu de', 'Nubank'],
       ['Entrou em', 'Caixa físico'],
       ['Comprovante', 'TED_0902.pdf'],
     ]);
   });
 
   it('mostrando quem lançou, troca o comprovante por quem lançou e situação', () => {
-    expect(comoPares(linhasDoRecibo(transferencia({ status: 'A_CONFERIR' }), { mostrarQuemLancou: true }))).toEqual([
+    const lancada = transferencia({ status: 'A_CONFERIR', conta: 'Nubank', registradoPor: 'Bruno Lima' });
+    expect(comoPares(linhasDoRecibo(lancada, { mostrarQuemLancou: true }))).toEqual([
       ['Tipo', 'Transferência entre contas'],
       ['Motivo', 'reforço do caixa da cozinha'],
       ['Data', '02/09/2026'],
-      ['Saiu de', 'Cora PJ'],
+      ['Saiu de', 'Nubank'],
       ['Entrou em', 'Caixa físico'],
-      ['Quem lançou', 'Lucia Prado'],
+      ['Quem lançou', 'Bruno Lima'],
       ['Situação', 'A conferir'],
     ]);
   });
@@ -261,8 +263,8 @@ describe('rodapeDoRecibo', () => {
   });
 
   it('lançamento a conferir diz quem lançou e que falta a tesouraria', () => {
-    expect(rodapeDoRecibo(lancamento({ status: 'A_CONFERIR', registradoPor: 'Lucia Prado' }))).toBe(
-      'A conferir: lançado por Lucia Prado, ainda sem consolidação da tesouraria.',
+    expect(rodapeDoRecibo(lancamento({ status: 'A_CONFERIR', registradoPor: 'Bruno Lima' }))).toBe(
+      'A conferir: lançado por Bruno Lima, ainda sem consolidação da tesouraria.',
     );
   });
 
