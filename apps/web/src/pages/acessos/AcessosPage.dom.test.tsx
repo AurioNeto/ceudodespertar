@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import type { GrupoId } from '@cdd/contracts';
+import type { GrupoId, UsuarioId } from '@cdd/contracts';
 import { assentar, type TelaMontada } from '../../app/apoioDeTeste';
 import { ATRASO_DA_BUSCA_EM_MS } from './AbaDeUsuarios';
 import {
@@ -191,14 +191,18 @@ describe('Acessos: aba Usuários', () => {
     expect(opcoes).toEqual(['Todos', 'Tesouraria', 'Guardião']);
   });
 
-  it('voltar a Todas tira o filtro da query string', async () => {
-    const { cliente, tela } = await montar();
-    await escolher(tela, 'Situação', 'ATIVO');
+  it('voltar a Todas mostra de novo a lista sem filtro', async () => {
+    const suspensa = usuarioListado({ id: 'u-2' as UsuarioId, nome: 'Joana Suspensa', situacao: 'SUSPENSO' });
+    const { tela } = await montar({
+      usuarios: (parametros) => (parametros.get('situacao') ? pagina([suspensa]) : pagina([usuarioListado()])),
+    });
+    await escolher(tela, 'Situação', 'SUSPENSO');
     await assentar();
+    expect(tela.texto()).not.toContain('Maria das Graças');
     await escolher(tela, 'Situação', '');
     await assentar();
-    const ultima = cliente.chamadasDeUsuarios().at(-1);
-    expect(Object.fromEntries(ultima ?? [])).toEqual({ limite: '50' });
+    expect(tela.texto()).toContain('Maria das Graças');
+    expect(tela.texto()).not.toContain('Joana Suspensa');
   });
 
   it('a busca espera o atraso, usa o texto aparado e reinicia o cursor', async () => {
