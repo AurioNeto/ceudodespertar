@@ -10,6 +10,8 @@ const RAIZ_DO_REPOSITORIO = join(DIRETORIO_DO_TESTE, '..', '..', '..', '..');
 const BINARIO_DEPCRUISE = join(RAIZ_DO_REPOSITORIO, 'node_modules', '.bin', 'depcruise');
 const FIXTURE_POSITIVA = 'apps/web/test/estrutural/fixtures';
 const FIXTURE_NEGATIVA = 'apps/web/test/estrutural/fixtures-negativas';
+const CONFIGURACAO_DO_WEB = '.dependency-cruiser.web.mjs';
+const CONFIGURACAO_DA_CATRACA = '.dependency-cruiser.web.catraca.mjs';
 const LIMITE_DA_SAIDA_EM_BYTES = 64 * 1024 * 1024;
 const TEMPO_DE_CRUZAMENTO_EM_MS = 60_000;
 const REGRAS = Object.keys(CASOS_DAS_FRONTEIRAS) as NomeDaRegra[];
@@ -30,6 +32,12 @@ function cruzar(configuracao: string, caminho: string): ICruiseResult {
 
 function cruzarFixture(fixture: string): ICruiseResult {
   return cruzar(`${fixture}/.dependency-cruiser.mjs`, `${fixture}/apps/web/src`);
+}
+
+function regrasDaConfiguracao(configuracao: string) {
+  const resultado = cruzar(configuracao, `${FIXTURE_NEGATIVA}/apps/web/src`);
+
+  return resultado.summary.ruleSetUsed?.forbidden ?? [];
 }
 
 function nomeDoPacote(caminhoDentroDeNodeModules: string): string {
@@ -136,9 +144,22 @@ describe('fronteiras do web', () => {
   });
 
   it(
+    'a configuração da catraca é a do web com toda regra elevada a error',
+    () => {
+      const regrasDoWeb = regrasDaConfiguracao(CONFIGURACAO_DO_WEB);
+      const regrasDaCatraca = regrasDaConfiguracao(CONFIGURACAO_DA_CATRACA);
+
+      expect(regrasDaCatraca).toEqual(
+        regrasDoWeb.map((regra) => Object.assign({}, regra, { severity: 'error' })),
+      );
+    },
+    TEMPO_DE_CRUZAMENTO_EM_MS,
+  );
+
+  it(
     'apps/web/src não tem violação de severidade error',
     () => {
-      const resultado = cruzar('.dependency-cruiser.web.mjs', 'apps/web/src');
+      const resultado = cruzar(CONFIGURACAO_DO_WEB, 'apps/web/src');
 
       expect(resultado.summary.violations.filter((violacao) => violacao.rule.severity === 'error')).toEqual(
         [],
