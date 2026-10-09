@@ -38,7 +38,11 @@ Arquivos gerados em --saida:
                                             área N com rolagem horizontal (tabela,
                                             carrossel), no passo P: rolada de uma
                                             largura visível por vez até o fim
-  Telas com passo próprio levam o passo no nome: acessos.grupos, inscricaoPublica.pronto.
+  Telas com passo próprio levam o passo no nome: acessos.grupos, acessos.gerenciar,
+  acessos.convidar, inscricaoPublica.pronto.
+  Em acessos.gerenciar e acessos.convidar o painel de ação está aberto (folha no campo,
+  lateral no escritório); a janela cresce até a página caber, então a folha fica ao pé
+  da foto.
 
 Sobra conhecida de rolagem interna: o corpo do app rola por dentro e a captura
 cresce a janela até o conteúdo caber. Nas telas em que um wrapper com
