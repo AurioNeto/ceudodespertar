@@ -166,5 +166,5 @@ export const FIXTURES_DA_API = {
 const STATUS_DE_ERRO_INTERNO = 500;
 
 export const FIXTURES_DE_LISTA_DE_USUARIOS_FORA_DO_AR = {
-  'GET /api/v1/identidade/usuarios': { status: STATUS_DE_ERRO_INTERNO, corpo: { erro: 'ERRO_INTERNO' } },
+  'GET /api/v1/identidade/usuarios': { status: STATUS_DE_ERRO_INTERNO, corpo: { erro: 'ERRO_INTERNO', correlacaoId: 'correlacao-da-captura' } },
 };
