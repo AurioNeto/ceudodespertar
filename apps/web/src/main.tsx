@@ -8,6 +8,7 @@ import { SessaoProvider } from './app/sessao';
 import type { SessaoProviderProps } from './app/sessao';
 import { carregarDemonstracao } from './app/demonstracao';
 import { clienteHttp, credencial, criarClienteDeConsultas, servicoDeEntrada } from './dados';
+import { ClienteHttpProvider } from './dados/ClienteHttpContexto';
 import './styles/global.css';
 
 const clienteDeConsultas = criarClienteDeConsultas();
@@ -44,9 +45,11 @@ void escolherFontesDaSessao().then((fontes) => {
   createRoot(container).render(
     <StrictMode>
       <QueryClientProvider client={clienteDeConsultas}>
-        <SessaoProvider {...fontes}>
-          <RouterProvider router={router} />
-        </SessaoProvider>
+        <ClienteHttpProvider cliente={clienteHttp}>
+          <SessaoProvider {...fontes}>
+            <RouterProvider router={router} />
+          </SessaoProvider>
+        </ClienteHttpProvider>
       </QueryClientProvider>
     </StrictMode>,
   );
