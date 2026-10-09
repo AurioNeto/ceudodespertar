@@ -45,15 +45,15 @@ O dono aprovou as recomendações da proposta em todos os pontos. Quatro decisõ
 
 - Tailwind fica como está por ora. O preflight está ativo (`styles/global.css` importa `tailwindcss`) e reseta `ul`, `ol`, `table`, `input`, `img` e outros elementos. Remover é decisão própria, com captura de telas, fora de qualquer etapa de limpeza.
 - `Portao` só vai para `ds/templates` depois que a prop `volta`, sem uso, sai. O `ds` não pode depender de `react-router`.
-- `FaixaDeDemonstracao` fica em `app/demonstracao/` como UI de app.
+- `FaixaDeDemonstracao` fica em `app/demonstracao/FaixaDeDemonstracao/` como UI de app. Sai de `ds/` na etapa de app/ em subpastas, sem nivelar antes.
 - `mocks/ids.ts` fica em `src/mocks/`, a raiz da demonstração, e não em `lib/`.
 - `iniciais` fica em `lib/formato` até a `MeuPerfilPage` passar a usar o `Avatar`.
 - `RotuloDeCampo` é exportado pelo barrel do `ds`, porque `CampoDeTags` (em `pages/`) o usa.
 - `Th` e `Td` são átomos do `ds` até a adoção do `DataTable`.
 - `SheetOption` vira tipo comum de opção em `ds/fundacao/opcao.ts`: molécula não importa organismo.
 - `eventoDoLink` acompanha `linkDaCerimonia` em `eventos/inscricao/mocks/linkDaCerimonia.ts`.
-- `PERMISSAO_QUE_O_EU_TEM` e `PERMISSAO_QUE_O_EU_NAO_TEM` ficam junto de `criarEu` em `src/testes/sessaoDeTeste.tsx`.
-- `Aviso` e `TomDeAviso`, da entrada, vão para `transversal/entrada/components/Aviso`, no nível do fluxo, sem ciclo com as constantes.
+- `PERMISSAO_QUE_O_EU_TEM`, `PERMISSAO_QUE_O_EU_NAO_TEM`, `Sonda` e `ler` (testes de sessão) ficam junto de `criarEu` em `src/testes/sessaoDeTeste.tsx`. Os testes que os usam se repartem entre `app/sessao` e `pages/transversal/entrada`, então o ancestral comum é `src/`.
+- `Aviso` e `TomDeAviso`, da entrada, vão para `transversal/entrada/components/Aviso`: as duas páginas do fluxo o usam, então mora no menor ancestral.
 - `Layout` é composição de app, fora da escala atômica. `ActionBar` e `ScreenHeader` são moléculas.
 - Testes de hook são `useX.dom.test.ts` (projeto dom do vitest), ou `.dom.test.tsx` quando precisam de JSX.
 - As regras de camada que proíbem `ds/`, `dados/` e `lib/` de importar `testes/` isentam os próprios `*.test.*`.
@@ -65,13 +65,15 @@ O dono aprovou as recomendações da proposta em todos os pontos. Quatro decisõ
 |---|---|---|
 | Regra do ancestral comum (seção 6) | O `ds/` é global por definição: catálogo do Documento 5 §4 e primitivos genéricos que 3 ou mais telas pedem ficam no `ds/` mesmo quando todos os consumidores estão em `pages/`. Exemplos: `Select` (15 áreas, todas em `pages/`), os 7 itens do catálogo usados só pelo `RegistrarLancamentoPage`, e `Th` e `Td` (3 telas do financeiro). | O `ds/` é a única biblioteca de UI global. Descer e subir de volta é churn. Hoje há 29 das cerca de 60 telas do Documento 4, e a régua do Documento 5 conta as telas planejadas. Uma segunda biblioteca global recriaria o problema atual: o `ds/` repete à mão o estilo de rótulo em caixa alta (14 ocorrências de `textTransform: "uppercase"` em `ds/`), porque não pode depender de `components/`. |
 | Código sem consumidor é removido (seção 6.4) | `ConfirmAction`, `DataTable`, `PendencyCard` e `RegimeVocabulary`/`useTermo` ficam no `ds/` sem consumidor, com teste. | `ConfirmAction` e `DataTable` já são re-implementados por telas existentes (`FechamentoPage`; as 3 tabelas com `Th` e `Td`). `PendencyCard` e `RegimeVocabulary` (Documento 1 §4.3) carregam invariantes que as etapas B1 e B2 vão usar. |
-| `ds/` é a única camada global de UI (seção 6) | `app/` tem UI própria do shell: `FaixaDeDemonstracao` em `app/demonstracao/`, `Layout` em `app/shell/` e, depois da divisão, `TelaSemAcesso` em `app/shell/components/`. | A faixa sinaliza o modo de demonstração do app e não é design. O `Layout` filtra o menu por permissão e conta a fila, que é regra de app. Decisão do dono. |
+| `ds/` é a única camada global de UI (seção 6) | `app/` tem UI própria do shell: `FaixaDeDemonstracao` em `app/demonstracao/FaixaDeDemonstracao/`, `Layout` em `app/shell/Layout/` e, depois da divisão, `TelaSemAcesso` em `app/shell/components/TelaSemAcesso/`. | A faixa sinaliza o modo de demonstração do app e não é design. O `Layout` filtra o menu por permissão e conta a fila, que é regra de app. Decisão do dono. |
 | Mock é só dado de demonstração (seção 8.3) | `mocks/ids.ts`, que aplica a marca de tipo às fixtures, fica em `src/mocks/`. | Só a demonstração precisa forjar ids; o código de produção recebe ids da API. Em `lib/` ele viraria utilitário global de produção. Decisão do dono. |
 | Um sistema de estilo só (seção 10.5) | `@import "tailwindcss"` e o `@theme` de `styles/global.css` continuam até decisão própria. | O preflight do Tailwind reseta `ul`, `ol`, `table`, `input`, `img` e outros elementos usados em 22 arquivos, e `base.css` não cobre isso. Remover muda o visual e exige captura. |
 | Gate do merge do #55 e do e2e do B0 (seção 13.5) | Antes do gate, só linhas de import de `app/`, `dados/`, sistema e transversal mudam. Nenhum arquivo dessas pastas é movido, dividido ou tem corpo alterado. | Promover primitivos, mover a fundação e mover telas de demonstração muda o caminho que esses arquivos importam. Esperar o gate pararia todo o plano. |
 | Operação de mover não muda corpo (seção 13.2) | Na etapa `lib/formato por export`, `formatarDinheiro` passa a chamar `formatarValor(centavos / 100)`, para não exportar o `Intl.NumberFormat` privado (BRL) de `lib/formato`. | `formatarValor` fica em `lib` e `formatarDinheiro` desce para `pages/utils`. É o mesmo formatador, com o mesmo resultado, coberto pelos testes de formato da etapa de caracterização de `lib/formato` e `components`. |
 | Regras de camada que proíbem importar `testes/` | `testes/` não está no alvo de `lib-e-folha`, `dados-sem-ui` e `ds-autonomo`. Quem barra é `apoio-de-teste-so-em-teste`, que isenta os `*.test.*`. | Os testes de `lib`, `dados` e `ds` precisam das fábricas de `src/testes` (ex.: a fábrica de `ErroDaApi` em `dados/clienteDeConsultas.test.ts`). Decisão do dono. |
 | `mock-global-so-dados` | Até a etapa de mocks transversais, `src/mocks/financeiro.ts` guarda só o que o Painel usa e importa `contas` de `@/pages/mocks/contas`. É 1 aviso previsto. | `contas` cruza financeiro e eventos e desce na etapa de mocks transversais. As sobras do Painel só descem quando o Painel mudar de pasta, depois do gate. |
+| Hook fora do `ds/` (seção 4.1) | `useDensidade` e o tipo `Density` ficam em `ds/fundacao/`. Hoje nenhum arquivo do `ds/` consome o hook; `app/shell/Layout` e as páginas consomem. | A densidade é token do design system (Documento 5, §3.4): as duas densidades, campo e escritório, são definidas no `ds/`. O hook que lê o token fica com ele. |
+| Renome ao entrar numa unidade (seção 10.1) | O arquivo pode perder o sufixo que repetia o dono (`consultasDeAcessos.ts` → `AcessosPage/consultas.ts`; `comandosDeAcessos.ts` → `comandos.ts`; `mensagemDeErroDeAcessos.ts` → `utils/mensagemDeErro.ts`) ou ganhar o nome da anatomia (`lib/chaveDeIdempotencia.ts` → `hooks/useChaveDeIdempotencia.ts`; `clienteHttp.tsx` → `ClienteHttpProvider/ClienteHttpProvider.tsx`). O conteúdo é idêntico, conferido pelo `conferir-movimento` com o par antigo → novo. `textosDeAcessos.ts` não é renome: reparte-se por export. | Dentro da unidade, o nome do dono já está no caminho. A anatomia (seção 5.1) é o que o leitor procura. |
 
 ---
 
@@ -98,6 +100,7 @@ app/router.tsx ──▶ pages/<modulo>/<Nome>Page/index.ts               (únic
 ```
 
 - `components/` deixa de existir. Cada trecho vai para o nível que lhe cabe (seção 6).
+- Em `app/`, componente React vira unidade (seção 5), com `index.ts`. Módulo sem componente (`rotas.ts`, `telas.ts`, `menu.ts`, `acesso.ts`, `estadoDaSessao.ts`) fica como arquivo na pasta da área, e a área é exposta por `index.ts`.
 - Regras que verificam a direção: `lib-e-folha`, `dados-sem-ui`, `ds-autonomo`, `app-nao-conhece-paginas`, `roteador-so-pelo-index-da-pagina` e `paginas-so-pela-api-publica-do-app` (seção 12).
 
 ---
@@ -111,7 +114,7 @@ Entra no `ds/`:
 1. todo item do catálogo do Documento 5 §4;
 2. todo primitivo genérico, sem regra de domínio, que 3 ou mais telas pedem, contando uso real e re-implementações comprovadas. É a régua do Documento 5.
 
-Não entra no `ds/`: composição de tela, hook, util, constante, mock e apoio de teste. Esses seguem a regra do ancestral comum (seção 6).
+Não entra no `ds/`: composição de tela, hook, util, constante, mock e apoio de teste. Esses seguem a regra do ancestral comum (seção 6), com a exceção declarada de `useDensidade` (seção 2).
 
 Um componente admitido fica no `ds/` mesmo quando todos os consumidores estão em `pages/` ou em uma única tela (exceção declarada, seção 2). Item do catálogo sem consumidor fica no `ds/`, com teste (seção 6.4).
 
@@ -254,28 +257,29 @@ import { FaturasPage } from "@/pages/financeiro/FaturasPage";
 
 ### 5.6 Exemplos reais
 
-Forma pretendida da `AcessosPage`. Ela será confirmada no código mesclado do PR #55, na etapa de mover sistema. Testes de hook seguem a seção 8.1; o nome exato dos arquivos de teste de `useChaveDeIdempotencia` depende do merge (seção 15).
+Forma pretendida da `AcessosPage`. Ela será confirmada no código mesclado do PR #55, na etapa de mover sistema. Os arquivos do #55 usados aqui vêm da branch local, que está à frente do PR publicado (anexo, seção 14). Testes de hook seguem a seção 8.1; o nome exato dos arquivos de teste de `useChaveDeIdempotencia` depende do merge (anexo, seção 14).
 
 ```
 pages/sistema/AcessosPage/
   index.ts, AcessosPage.tsx, AcessosPage.dom.test.tsx, AcoesDeAcessos.dom.test.tsx
   consultas.ts (+ teste)               ex-consultasDeAcessos
   comandos.ts (+ teste)                ex-comandosDeAcessos
-  constantes.ts                        ex-textosDeAcessos (+ Aba, ROTULO_DA_ABA na divisão)
+  constantes.ts                        AVISO_DE_VERSAO_DESATUALIZADA (+ Aba, ROTULO_DA_ABA na divisão)
   apoioDeTeste.tsx
   hooks/  useAcaoNoUsuario.ts, useFocoNoPrimeiroCampoInvalido.ts,
           useChaveDeIdempotencia.ts (+ teste de hook)    ex-lib/chaveDeIdempotencia
   utils/  focarTitulo.ts, mensagemDeErro.ts (+ teste), abasVisiveis.ts (+ teste; divisão)
   components/
-    PainelDeConvite/  SeletorDeGrupos/  ErroDoPainel/
-    AbaDeUsuarios/   {index.ts (+ ATRASO_DA_BUSCA_EM_MS), AbaDeUsuarios.tsx, constantes.ts}
+    PainelDeConvite/ {…, constantes.ts}  SeletorDeGrupos/  ErroDoPainel/ (só na branch local do #55)
+    AbaDeUsuarios/   {index.ts (+ ATRASO_DA_BUSCA_EM_MS), AbaDeUsuarios.tsx, constantes.ts, situacaoDeUsuario.ts}
       hooks/useValorComAtraso.ts                 ex-lib
+      utils/temFiltroAplicado.ts (+ teste)       ex-consultasDeAcessos (só AbaDeUsuarios usa)
       utils/semRepetidos.ts (+ teste)            divisão
       components/
         FiltrosDeUsuarios/
         LinhaDeUsuario/  utils/formatarDataHora.ts (+ teste)   ex-lib/formato
-        PainelDoUsuario/ {…, PainelDoUsuario.dom.test.tsx}
-          components/CampoDeMotivo/  components/AvisoDeAtencao/
+        PainelDoUsuario/ {…, PainelDoUsuario.dom.test.tsx, constantes.ts}
+          components/CampoDeMotivo/ {…, constantes.ts}  components/AvisoDeAtencao/ (só na branch local do #55)
     AbaDeGrupos/
       components/CartaoDeGrupo/                  divisão
 ```
@@ -430,8 +434,9 @@ Fluxo só existe com compartilhamento exclusivo entre telas do mesmo módulo. Fl
 O apoio global fica em `src/testes/`:
 
 - `configurarDom.ts`: efeito global do projeto dom (`IS_REACT_ACT_ENVIRONMENT` e stub de `matchMedia`), por `setupFiles`;
-- `sessaoDeTeste.tsx`: `criarEu`, com `PERMISSAO_QUE_O_EU_TEM` e `PERMISSAO_QUE_O_EU_NAO_TEM`, além de falsos e montagens de sessão (`EntradaFalsa`, `AvisoDeEncerramentoFalso`, `CenarioDeSessao`, `TelaMontada`, `montarComSessao`, entre outros);
+- `sessaoDeTeste.tsx`: `criarEu`, com `PERMISSAO_QUE_O_EU_TEM` e `PERMISSAO_QUE_O_EU_NAO_TEM`, `Sonda` e `ler`, além de falsos e montagens de sessão (`EntradaFalsa`, `AvisoDeEncerramentoFalso`, `CenarioDeSessao`, `TelaMontada`, `montarComSessao`, entre outros);
 - `fabricas.ts`: `erroDaApi`, que unifica as fábricas locais de erro dos testes.
+- `montagem.tsx`: render global sem provider (`montar`, `desmontarTudo`, `elemento`, `todos`, `clicar`). Entra com o #58; o #59 traz o mesmo arquivo.
 
 Apoio colocalizado (`apoioDeTeste.tsx`) segue a regra do ancestral comum e fica no menor ancestral dos testes que o usam.
 
@@ -440,7 +445,7 @@ Apoio colocalizado (`apoioDeTeste.tsx`) segue a regra do ancestral comum e fica 
 
 ### 8.3 Mocks de demonstração
 
-- Mock é só dado de demonstração. Regra de domínio sai para `utils/`, com teste. Mapa de apresentação sai para `constantes.ts`.
+- Mock é só dado de demonstração. Regra de domínio sai para `utils/`, com teste. Mapa de apresentação (rótulo, tom, explicação) sai para `constantes.ts`. Função falsa da demonstração, que imita o que o backend devolverá (`gerarHash`), fica no mock e some com ele.
 - `ds/`, `lib/` e `dados/` nunca importam mock. `src/mocks/` só importa `lib/` e `@cdd/contracts`.
 - Tela com fonte `api` (Acessos, Meu perfil) e as telas de entrada não importam mock. Quando a tela liga no backend, a pasta `mocks/` dela é apagada. A lista de telas de api cresce a cada tela ligada nas etapas B1 a B6.
 - Onde cada mock mora: `<Unidade>/mocks/<nome>.ts` para o de uma tela; `pages/mocks/` para o compartilhado entre telas; `src/mocks/` para a raiz da demonstração (`ids.ts`, `verificacao.ts`).
@@ -520,20 +525,20 @@ apps/web/
     ├── styles/global.css         só a entrada: @import de ../ds/fundacao/** + tailwindcss (exceção)
     ├── app/                      composição e UI do shell (fora da escala atômica)
     │   ├── router.tsx (+ router.dom.test.tsx)       importa só pages/**/<Nome>Page/index.ts
-    │   ├── providers/   index.ts, ClienteHttpProvider.tsx
+    │   ├── providers/   index.ts, ClienteHttpProvider/ {…}
     │   ├── rotas/       index.ts, rotas.ts, destino.ts (+ destino.dom.test.ts),
     │   │                rotasAntigasDaEntrada.tsx (+ .dom.test.tsx)
-    │   ├── sessao/      index.ts, SessaoProvider.tsx (+ .dom.test.tsx), ExigeSessao.tsx (+ .dom.test.tsx),
+    │   ├── sessao/      index.ts, SessaoProvider/ {…}, ExigeSessao/ {…},
     │   │                estadoDaSessao.ts (+ t), hooks/useExisteUsuarioOidc.ts, utils/derivarEstado.ts (+ t)
     │   ├── demonstracao/ index.ts, demonstracao.ts (+ t), sessaoDeDemonstracao.ts, FaixaDeDemonstracao/ {…}
-    │   └── shell/       index.ts, Layout.tsx (+ .dom.test.tsx), menu.ts, rotaAtiva.ts (+ t), telas.ts (+ t), acesso.ts (+ t),
+    │   └── shell/       index.ts, Layout/ {…}, menu.ts, rotaAtiva.ts (+ t), telas.ts (+ t), acesso.ts (+ t),
     │                    hooks/useContagemDoLote.ts, utils/nomeDaTela.ts (+ t), components/TelaSemAcesso/ {…}
     ├── dados/                    index.ts (barrel puro), instancias.ts, caminhosOidc.ts, clienteHttp.ts (+ t),
     │                             clienteDeConsultas.ts (+ t), consultaEComando.ts (+ t), credencial.ts,
     │                             credencialOidc.ts (+ t), erros.ts (+ t), oidc.ts, oidc.dom.test.ts, apoioDeTeste.ts
-    ├── lib/                      formato.ts (+ t): formatarValor, iniciais; numero.ts (+ t)
+    ├── lib/                      formato.ts (+ t): formatarValor; numero.ts (+ t)
     ├── mocks/                    ids.ts, verificacao.ts (filaDeVerificacaoInicial)
-    ├── testes/                   configurarDom.ts (setupFiles), sessaoDeTeste.tsx, fabricas.ts
+    ├── testes/                   configurarDom.ts (setupFiles), sessaoDeTeste.tsx, fabricas.ts, montagem.tsx
     ├── ds/                       DESIGN SYSTEM (global por definição)
     │   ├── index.ts              barrel único
     │   ├── fundacao/             densidade.ts (Density), opcao.ts (SheetOption), estilos.ts (rotuloCaixaAlta),
@@ -555,21 +560,21 @@ apps/web/
     │                             BarraDeContexto, NavInferior}), Portao/ {…}, CorpoDaTela/ {…} (F)
     └── pages/
         ├── components/           CartazSlot/ {…}, PermissoesPorModulo/ {…} (+ utils/permissoesAgrupadas.ts (+ t)),
-        │                         SeloDaAnamnese/ (F), PontosDeAtencao/ (F)
+        │                         SeloDaAnamnese/ (F; tipos.ts), PontosDeAtencao/ (F)
         ├── hooks/                useCarrossel.ts (+ t) (F)
-        ├── utils/                formato.ts (+ t): formatarDinheiro, formatarBRL, formatarLitros, formatarDiaMes, formatarData,
+        ├── utils/                formato.ts (+ t): formatarDinheiro, formatarBRL, formatarInteiro, formatarLitros, formatarDiaMes, formatarData,
         │                         formatarCompetencia, competenciaPorExtenso, pluralizar (+ privados)
         ├── mocks/                relogio.ts (hoje, competenciaAtual), contas.ts (contas, fundoProprio)
         ├── transversal/
         │   ├── PainelPage/ {…}           mocks/{cerimonias, resumoFinanceiro}.ts; components/{CartaoDeSaldo, MovimentoDoMes, AvisoDeLote,
         │   │                             GraficoEstoque (mocks/estoque.ts), CarrosselDeCerimonias (… GraficoResultado), EixoDeCerimonias (F)}
         │   ├── MeuPerfilPage/ {…}        components/PerfilDoEu
-        │   └── entrada/                  fluxo: constantes.ts, components/{MensagemDeEntradaNaTela, Aviso},
+        │   └── entrada/                  fluxo: tipos.ts, components/{MensagemDeEntradaNaTela, Aviso},
         │                                 EntrarPage/ {…}, RetornoPage/ {…}
         ├── financeiro/
         │   ├── mocks/lancamentos.ts      components/CartaoDeFormulario (F)
         │   ├── lancamentos/              fluxo: utils/{recibo, rotulosDoLancamento, totais (F)}.ts, hooks/usePaginacao.ts (F),
-        │   │   │                         components/{Paginacao, ChipDeFiltro (F)}, mocks/grupos.ts (F)
+        │   │   │                         components/{Paginacao, ChipDeFiltro (F)}
         │   │   ├── RegistrarLancamentoPage/ {…}  hooks/useFormularioDeLancamento.ts, mocks/opcoes.ts, components/CampoDeTags, …
         │   │   ├── MeusRegistrosPage/ {…}        mocks/meusLancamentos.ts, …
         │   │   ├── LancamentosPage/ {…}          utils/corDoTipo.ts, …
@@ -581,7 +586,7 @@ apps/web/
         ├── eventos/
         │   ├── components/PainelDeContaEData (F)
         │   ├── AgendaPage/ {…}           mocks/agenda.ts, utils/{rascunhoDeTrabalho, nomeDoMes}.ts,
-        │   │                             components/{CalendarioMensal, DetalheDoTrabalho, FormularioDeTrabalho}, …
+        │   │                             components/{CalendarioMensal, LegendaDeTipos, DetalheDoTrabalho, FormularioDeTrabalho}, …
         │   ├── inscricao/                fluxo: mocks/{eventos, linkDaCerimonia}.ts, utils/valorDaInscricao.ts (F), components/ (F)
         │   │   ├── InscricaoPage/ {…}           mocks/inscricao.ts, …
         │   │   └── InscricaoPublicaPage/ {…}    utils/regraDeAlerta.ts, mocks/inscricaoPublica.ts,
@@ -629,7 +634,6 @@ Todas as regras rodam no depcruise, com configuração `.dependency-cruiser.web.
 | `tela-de-api-sem-mock` | Telas com fonte `api` e o fluxo de entrada inteiro (`transversal/entrada/`, inclusive `constantes.ts` e `components/`) importarem mock | erro | 0 |
 | `apoio-de-teste-so-em-teste` | Código de produção importar `apoioDeTeste`, `src/testes` ou `vitest` | erro | 0 |
 | `camada-cruzada-por-alias` | Atravessar camada, ou módulo dentro de `pages/`, sem alias `@/`. Passa a erro quando chegar a zero | aviso | 290 |
-
 | `pasta-camel-case` | Pasta de agrupamento em camelCase sob `apps/web/src` (agrupamento é minúsculo; unidade é PascalCase), que escaparia das regras de unidade | erro | 0 |
 
 São 32 regras: 25 nomeadas acima e as 7 de `unidade-so-pelo-index`. As contagens são a linha de base de 09/10/2026; os `comment` da configuração apontam para `pnpm fronteiras:web`, que a reproduz.
@@ -652,7 +656,7 @@ São 32 regras: 25 nomeadas acima e as 7 de `unidade-so-pelo-index`. As contagen
 
 ### 12.4 Outros verificadores
 
-- `apps/web/scripts/conferir-movimento.mjs` (criado na etapa Mover ds em níveis, a primeira que precisa dele): em cada renomeação de `git diff -M --name-status`, compara o conteúdo sem as linhas de import e `export … from`. Para declarações repartidas, compara o hash do corpo pelo nome.
+- `apps/web/scripts/conferir-movimento.mjs` (criado na etapa Mover ds em níveis, a primeira que precisa dele): em cada renomeação de `git diff -M --name-status`, compara o conteúdo sem as linhas de import e `export … from`. Para declarações repartidas, compara o hash do corpo pelo nome. Renomes com troca de nome (seção 2) entram como par `antigo → novo` explícito, porque a detecção de similaridade do git pode não os casar.
 - `apps/web/scripts/conferir-estrutura.mjs` (etapa de fronteiras em erro): toda pasta PascalCase tem `<Nome>.tsx`, `index.ts` e teste (falta de teste é aviso até o fim da migração); o módulo de cada tela é o prefixo da primeira permissão em `app/shell/telas.ts`; fluxo sem pasta de tipo compartilhada é acusado; toda `RotaId` tem rota, item em `TELAS` e elemento no router.
 - `pnpm lint` passa a cobrir `apps/web/src` (etapa de fronteiras em erro). As violações antigas vão em PR separado.
 - Captura de telas (seção 13.6), para o efeito visual.
@@ -790,8 +794,8 @@ Divergências são registradas como estão pela caracterização e corrigidas em
 | Divergência | Evidência | Quando corrigir |
 |---|---|---|
 | A soma do `AmountInput` não tira o ponto de milhar; a do hook do lançamento tira. Com `1.200+50`, o campo mostra 51,20 e o registro grava 1.250 | `ds/AmountInput.tsx:24`; `pages/lancamento/useFormularioDeLancamento.ts:75-79` | Leitura única de valor, em PR próprio, depois das caracterizações do `ds` e do fluxo de lançamentos |
-| `"1.500,00"` vira NaN em Empréstimos e Adiantamentos: o valor é recusado como inválido | `EmprestimosPage.tsx:50` e `:96`; `AdiantamentosPage.tsx:502` (`Number(valor.replace(",", "."))`) | Leitura única de valor, depois da caracterização de financeiro I (e das divisões de Faturas e Empréstimos e de Adiantamentos, se já tiverem rodado) |
-| O `{...rest}` do `Button` vem depois de `title`, `onMouseEnter` e `onMouseLeave`. Quem passa `title` apaga o `title` do `blockedReason`; quem passa `onMouseEnter` ou `onMouseLeave` perde o hover | `ds/Button.tsx:59-61` define os handlers e o `title`; `ds/Button.tsx:82` espalha `{...rest}` depois | PR próprio, depois da caracterização do `ds` que registra o comportamento atual |
+| `"1.500,00"` vira NaN em Empréstimos e Adiantamentos: o valor é recusado como inválido. Feitio e Ayahuasca leem litros sem tirar o milhar (`1.500,00` vira 0 e 1,5), e Agenda lê os litros do mesmo jeito | `EmprestimosPage.tsx:50` e `:96`; `AdiantamentosPage.tsx:502` (`Number(valor.replace(",", "."))`); `FeitioPage.tsx:48` e `:398`; `AyahuascaPage.tsx:47`; `AgendaPage.tsx:66` | Leitura única de valor, depois da caracterização de financeiro I (e das divisões de Faturas e Empréstimos e de Adiantamentos, se já tiverem rodado); Feitio, Ayahuasca e Agenda na mesma etapa |
+| O `{...rest}` do `Button` vem depois de `title`, `onMouseEnter` e `onMouseLeave`. Quem passa `title` apaga o `title` do `blockedReason`; quem passa `onMouseEnter` ou `onMouseLeave` perde o hover | `ds/Button.tsx:59-61` define os handlers e o `title`; `ds/Button.tsx:82` espalha `{...rest}` depois | PR próprio, depois de Caracterizar primitivos do ds, que registra o comportamento atual |
 | Os totais tratam o estorno de formas diferentes em 3 telas. Lançamentos exclui os estornados de entradas e de saídas; Meus registros e Fechamento excluem só das saídas | `LancamentosPage.tsx:94-96`; `MeusRegistrosPage.tsx:27-30`; `FechamentoPage.tsx:115-116` | PR próprio, depois da decisão da seção 15 e das caracterizações; antes da composição de totais |
 | Na inscrição pública, dias e refeições nunca mudam. Os setters chegam ao `Participacao`, que não os chama, e o total usa sempre 1 diária e nenhuma refeição | `InscricaoPublicaPage.tsx:72-73`, `:302-305`, `:690` e `:692` | PR próprio, depois da caracterização de inscrição |
 | Na Conciliação, "importado" é sempre `true`: o estado inicial e a única escrita são `true`, então o caminho "Importar extrato" nunca aparece | `ConciliacaoPage.tsx:22`, `:82` e `:233` | PR próprio, depois da caracterização de financeiro II, conferindo o estado inicial no protótipo |
@@ -803,6 +807,7 @@ Divergências são registradas como estão pela caracterização e corrigidas em
 | Códigos de tela colidem no `ScreenHeader`: `F-11` em `MeuPerfilPage.tsx:18` e `AdiantamentosPage.tsx:143`; `F-09` em `PessoasPage.tsx:75` e `FaturasPage.tsx:74` | Evidências citadas | PR de texto, conferindo os códigos no Documento 4. Pode rodar a qualquer momento fora das etapas de mover |
 | O total da inscrição não é duplicata: a interna zera a contribuição de `EQUIPE`; a pública não | `InscricaoPage.tsx:115` e `:120` (`isento = tipo === "EQUIPE"`), contra `InscricaoPublicaPage.tsx:126` | Não é bug. Ao fundir em `inscricao/utils/valorDaInscricao.ts`, entra com parâmetro de isenção e teste para os dois casos |
 | A paginação de Lançamentos e a de Meus registros não são iguais: só Lançamentos limita a página atual ao total de páginas | `LancamentosPage.tsx:90-92` contra `MeusRegistrosPage.tsx:22-24` | Não é bug visível hoje. Ao fundir em `usePaginacao`, entra com teste dos dois casos |
+| O `AppShell` mostra as duas primeiras letras do nome (`slice(0, 2)`); `iniciais()` mostra a inicial do primeiro e do último nome. Com "Ana", o shell mostra "AN" e Meu perfil mostra "A" | `ds/AppShell.tsx:155`; `lib/formato.ts:77-82`; `pages/perfil/MeuPerfilPage.tsx:62` | PR próprio, antes da adoção do `Avatar` no `AppShell` (a adoção muda o texto) |
 
 ---
 

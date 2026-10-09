@@ -15,7 +15,8 @@
   - `fundir`: duplicatas viram uma composição, uma só;
   - `manter`; `criar`.
 - **Etapa**: título da etapa, na seção 13.7 do Documento 8.
-- **(refazer após o #55)**: o arquivo é alterado pelo PR #55, ainda aberto. A linha é refeita a partir do código mesclado.
+- **(refazer após o #55)**: o arquivo é alterado pelo PR #55, ainda aberto. A linha é refeita a partir do código mesclado. Os arquivos do #55 são conferidos na branch local `feat/b0-comandos-de-acessos`, 9 commits à frente do head publicado do PR (seção 14).
+- **(entra com o #58)** / **(entra com o #59)**: o arquivo é criado por um PR de caracterização que ainda não está na main. A linha vale depois que o PR entrar.
 
 Os destinos são agrupados por área: `app/`, `dados/`, `lib/`, `ds/`, `testes/`, raiz de `src/`, `pages/` compartilhado e, depois, cada módulo de `pages/`.
 
@@ -25,41 +26,42 @@ Os destinos são agrupados por área: `app/`, `dados/`, `lib/`, `ds/`, `testes/`
 
 | Origem | Destino | Ação | Etapa |
 |---|---|---|---|
-| `app/acesso.ts` | `app/shell/acesso.ts` | mover | app em subpastas |
-| `app/acesso.test.ts` | `app/shell/acesso.test.ts` | mover | app em subpastas |
-| `app/clienteHttp.tsx` | `app/providers/ClienteHttpProvider.tsx` (+ `app/providers/index.ts`) | mover | app em subpastas |
-| `app/demonstracao.ts` | `app/demonstracao/demonstracao.ts` | mover | app em subpastas |
-| `app/demonstracao.test.ts` | `app/demonstracao/demonstracao.test.ts` | mover | app em subpastas |
-| `app/destino.ts` | `app/rotas/destino.ts` | mover | app em subpastas |
-| `app/destino.dom.test.ts` | `app/rotas/destino.dom.test.ts` | mover | app em subpastas |
-| `app/estadoDaSessao.ts` | `app/sessao/estadoDaSessao.ts` | mover | app em subpastas |
-| `app/estadoDaSessao.test.ts` | `app/sessao/estadoDaSessao.test.ts` | mover | app em subpastas |
-| `app/Layout.tsx` | `app/shell/Layout.tsx` (composição de app, fora da escala atômica) | mover | app em subpastas |
-| `app/Layout.dom.test.tsx` | `app/shell/Layout.dom.test.tsx` | mover | app em subpastas |
-| `app/navegacao.ts`: `Rota`, `ROTAS`, `RotaId`, `ROTAS_PUBLICAS`, `ROTAS_ANTIGAS_DA_ENTRADA` | `app/rotas/rotas.ts` | repartir por export | app em subpastas |
-| `app/navegacao.ts`: `construirNav` | `app/shell/menu.ts` | repartir por export | app em subpastas |
-| `app/navegacao.ts`: `POR_CAMINHO`, `rotaAtiva` | `app/shell/rotaAtiva.ts` | repartir por export | app em subpastas |
-| `app/navegacao.test.ts` (testa só `rotaAtiva`) | `app/shell/rotaAtiva.test.ts` | mover | app em subpastas |
-| `app/rotasAntigasDaEntrada.tsx` | `app/rotas/rotasAntigasDaEntrada.tsx` | mover | app em subpastas |
-| `app/router.tsx` | `app/router.tsx` | manter (só linhas de import mudam nas etapas de telas de demonstração, app em subpastas, mover sistema e mover transversal; ao fim importa só o `index.ts` de cada página) | app em subpastas |
-| `app/router.dom.test.tsx` | `app/router.dom.test.tsx` | manter | app em subpastas |
-| `app/sessao.tsx`: `CHAVE_DO_EU`, `Sessao`, `SessaoProviderProps`, `Contexto`, `SessaoProvider`, `useSessao` (`useSessao` fica com o contexto privado) | `app/sessao/SessaoProvider.tsx` | repartir por export | app em subpastas |
-| `app/sessao.tsx`: `ExigeSessao` | `app/sessao/ExigeSessao.tsx` | repartir por export | app em subpastas |
+| `app/acesso.ts` | `app/shell/acesso.ts` | mover | app/ em subpastas |
+| `app/acesso.test.ts` | `app/shell/acesso.test.ts` | mover | app/ em subpastas |
+| `app/clienteHttp.tsx` | `app/providers/ClienteHttpProvider/ClienteHttpProvider.tsx` (+ `index.ts` da unidade e `app/providers/index.ts`) | mover (renome, seção 2 do Documento 8) | app/ em subpastas |
+| `app/demonstracao.ts` | `app/demonstracao/demonstracao.ts` | mover | app/ em subpastas |
+| `app/demonstracao.test.ts` | `app/demonstracao/demonstracao.test.ts` | mover | app/ em subpastas |
+| `app/destino.ts` | `app/rotas/destino.ts` | mover | app/ em subpastas |
+| `app/destino.dom.test.ts` | `app/rotas/destino.dom.test.ts` | mover | app/ em subpastas |
+| `app/estadoDaSessao.ts` | `app/sessao/estadoDaSessao.ts` | mover | app/ em subpastas |
+| `app/estadoDaSessao.test.ts` | `app/sessao/estadoDaSessao.test.ts` | mover | app/ em subpastas |
+| `app/Layout.tsx` | `app/shell/Layout/Layout.tsx` (+ `index.ts`; composição de app, fora da escala atômica) | mover | app/ em subpastas |
+| `app/Layout.dom.test.tsx` | `app/shell/Layout/Layout.dom.test.tsx` | mover | app/ em subpastas |
+| `app/navegacao.ts`: `Rota`, `ROTAS`, `RotaId`, `ROTAS_PUBLICAS`, `ROTAS_ANTIGAS_DA_ENTRADA` | `app/rotas/rotas.ts` | repartir por export | app/ em subpastas |
+| `app/navegacao.ts`: `construirNav` | `app/shell/menu.ts` | repartir por export | app/ em subpastas |
+| `app/navegacao.ts`: `POR_CAMINHO`, `rotaAtiva` | `app/shell/rotaAtiva.ts` | repartir por export | app/ em subpastas |
+| `app/navegacao.test.ts` (testa só `rotaAtiva`) | `app/shell/rotaAtiva.test.ts` | mover | app/ em subpastas |
+| `app/rotasAntigasDaEntrada.tsx` | `app/rotas/rotasAntigasDaEntrada.tsx` | mover | app/ em subpastas |
+| `app/router.tsx` | `app/router.tsx` | manter (só linhas de import mudam a cada etapa que move uma página, e em app/ em subpastas; ao fim importa só o `index.ts` de cada página) | app/ em subpastas |
+| `app/router.dom.test.tsx` | `app/router.dom.test.tsx` | manter | app/ em subpastas |
+| `app/sessao.tsx`: `CHAVE_DO_EU`, `Sessao`, `SessaoProviderProps`, `Contexto`, `SessaoProvider`, `useSessao` (`useSessao` fica com o contexto privado) | `app/sessao/SessaoProvider/SessaoProvider.tsx` (+ `index.ts`) | repartir por export | app/ em subpastas |
+| `app/sessao.tsx`: `ExigeSessao` | `app/sessao/ExigeSessao/ExigeSessao.tsx` (+ `index.ts`) | repartir por export | app/ em subpastas |
 | `app/sessao.tsx`: `derivarEstado` (sai na divisão) | `app/sessao/utils/derivarEstado.ts` (+ teste) | dividir | Dividir app/shell, sessão e ds |
 | `app/sessao.tsx`: `useExisteUsuarioOidc` (sai na divisão) | `app/sessao/hooks/useExisteUsuarioOidc.ts` | dividir | Dividir app/shell, sessão e ds |
-| `app/sessao.test.tsx` (describe da linha 44) | `app/sessao/SessaoProvider.dom.test.tsx` | repartir por export (por describe) | app em subpastas |
-| `app/sessao.test.tsx` (linha 220) | `app/sessao/ExigeSessao.dom.test.tsx` | repartir por export (por describe) | app em subpastas |
-| `app/sessao.test.tsx` (linha 393) | `app/rotas/rotasAntigasDaEntrada.dom.test.tsx` | repartir por export (por describe) | app em subpastas |
+| `app/sessao.test.tsx` (describe da linha 44) | `app/sessao/SessaoProvider/SessaoProvider.dom.test.tsx` | repartir por export (por describe) | app/ em subpastas |
+| `app/sessao.test.tsx` (linha 220) | `app/sessao/ExigeSessao/ExigeSessao.dom.test.tsx` | repartir por export (por describe) | app/ em subpastas |
+| `app/sessao.test.tsx` (linha 393) | `app/rotas/rotasAntigasDaEntrada.dom.test.tsx` | repartir por export (por describe) | app/ em subpastas |
 | `app/sessao.test.tsx` (linha 276, testes de entrada) | `pages/transversal/entrada/EntrarPage/EntrarPage.dom.test.tsx` | repartir por export (por describe) | Mover transversal |
 | `app/sessao.test.tsx` (linha 366, testes de entrada) | `pages/transversal/entrada/RetornoPage/RetornoPage.dom.test.tsx` | repartir por export (por describe) | Mover transversal |
-| `app/sessao.test.tsx` (`Sonda` e `ler`, privados) | menor ancestral dos testes que os usam | repartir por export | app em subpastas |
-| `app/sessaoDeDemonstracao.ts` | `app/demonstracao/sessaoDeDemonstracao.ts` | mover | app em subpastas |
-| `app/telas.ts` | `app/shell/telas.ts` | mover | app em subpastas |
-| `app/telas.test.ts` | `app/shell/telas.test.ts` | mover | app em subpastas |
+| `app/sessao.test.tsx` (`Sonda`, linha 30, e `ler`, linha 42; privados) | `testes/sessaoDeTeste.tsx` (os testes que os usam se repartem entre `app/sessao` e `pages/transversal/entrada`; ancestral comum: `src/`) | repartir por export | testes/ global e setupFiles |
+| `app/sessaoDeDemonstracao.ts` | `app/demonstracao/sessaoDeDemonstracao.ts` | mover | app/ em subpastas |
+| `app/telas.ts` | `app/shell/telas.ts` | mover | app/ em subpastas |
+| `app/telas.test.ts` | `app/shell/telas.test.ts` | mover | app/ em subpastas |
 | `app/Layout.tsx` (estado sem acesso) | `app/shell/components/TelaSemAcesso/` | dividir | Dividir app/shell, sessão e ds |
 | `app/Layout.tsx` (nome da tela) | `app/shell/utils/nomeDaTela.ts` (+ teste) | dividir | Dividir app/shell, sessão e ds |
 | `app/Layout.tsx` (contagem da fila de demonstração) | `app/shell/hooks/useContagemDoLote.ts` | dividir | Dividir app/shell, sessão e ds |
-| `ds/FaixaDeDemonstracao.tsx` (sai do barrel do `ds`) | `app/demonstracao/FaixaDeDemonstracao/FaixaDeDemonstracao.tsx` | mover | app em subpastas |
+| `ds/FaixaDeDemonstracao.tsx` (fica em `ds/`, sem nivelar, em Mover ds em níveis; sai do barrel do `ds` aqui) | `app/demonstracao/FaixaDeDemonstracao/FaixaDeDemonstracao.tsx` (+ `index.ts`) | mover | app/ em subpastas |
+| `ds/FaixaDeDemonstracao.dom.test.tsx` (entra com o #59) | `app/demonstracao/FaixaDeDemonstracao/FaixaDeDemonstracao.dom.test.tsx` | mover | app/ em subpastas |
 
 ---
 
@@ -69,6 +71,7 @@ Os destinos são agrupados por área: `app/`, `dados/`, `lib/`, `ds/`, `testes/`
 |---|---|---|---|
 | `dados/index.ts` (barrel sem efeito colateral) | `dados/index.ts` | repartir por export | dados/ sem efeito e sem ciclo |
 | `dados/index.ts`: `gerenciadorOidc`, `credencial`, `servicoDeEntrada`, `clienteHttp`, `consulta`, `comando` | `dados/instancias.ts` (importado só por `main.tsx`) | repartir por export | dados/ sem efeito e sem ciclo |
+| `dados/clienteDeConsultas.ts`: `JANELA_DE_FRESCOR_EM_MS` (o #55 a importa do arquivo, fora do barrel; o barrel passa a reexportá-la) | `dados/index.ts` | manter | dados/ sem efeito e sem ciclo |
 | `dados/oidc.ts`: `CAMINHO_DA_ENTRADA`, `CAMINHO_DE_RETORNO`, `CAMINHO_DA_RENOVACAO_SILENCIOSA`, `ESPERA_DA_RENOVACAO_SILENCIOSA_EM_SEGUNDOS`, `ESCOPO_OIDC` (quebra o ciclo `oidc.ts` ↔ `credencialOidc.ts`) | `dados/caminhosOidc.ts` | repartir por export | dados/ sem efeito e sem ciclo |
 | `dados/oidc.ts` (restante) | `dados/oidc.ts` | manter | dados/ sem efeito e sem ciclo |
 | `dados/oidc.dom.test.ts` | `dados/oidc.dom.test.ts` | manter | dados/ sem efeito e sem ciclo |
@@ -83,7 +86,7 @@ Os destinos são agrupados por área: `app/`, `dados/`, `lib/`, `ds/`, `testes/`
 | `dados/consultaEComando.test.ts` | `dados/consultaEComando.test.ts` | manter | dados/ sem efeito e sem ciclo |
 | `dados/erros.ts` | `dados/erros.ts` | manter | dados/ sem efeito e sem ciclo |
 | `dados/erros.test.ts` (novo, para `erroDaResposta`) | `dados/erros.test.ts` | criar | dados/ sem efeito e sem ciclo |
-| `dados/apoioDeTeste.ts` (único consumidor: `credencialOidc.test.ts`) | `dados/apoioDeTeste.ts` | manter | dados/ sem efeito e sem ciclo |
+| `dados/apoioDeTeste.ts` (consumidores: `clienteHttp.test.ts`, `consultaEComando.test.ts` e `credencialOidc.test.ts`) | `dados/apoioDeTeste.ts` | manter | dados/ sem efeito e sem ciclo |
 
 ---
 
@@ -93,11 +96,30 @@ Os destinos são agrupados por área: `app/`, `dados/`, `lib/`, `ds/`, `testes/`
 |---|---|---|---|
 | `lib/formato.ts`: `BRL`, `formatarValor`, `iniciais` | `lib/formato.ts` | manter (repartir por export) | lib/formato por export |
 | `lib/formato.ts`: `formatarDataHora` (com `FUSO_DA_CASA` e `DATA_E_HORA`) | permanece em `lib/formato.ts` até a etapa de mover sistema; depois, ver seção 12 | manter | lib/formato por export |
-| `lib/formato.test.ts`: testes de `iniciais` | `lib/formato.test.ts` | manter | lib/formato por export |
+| `lib/formato.test.ts`: describes de `formatarValor`, `paraData`, `diaDaSemana` e o fuso, exceto o `it` de `formatarData` (seção 4.4) | `lib/formato.test.ts` | manter | lib/formato por export |
 | `lib/formato.ts`: `nomeDoMes` | ver seção 9 (`AgendaPage/utils/nomeDoMes.ts`) | repartir por export | lib/formato por export |
 | `PainelDeRevisao.tsx#paraNumero`, `AyahuascaPage.tsx#paraNumero`, `GerenciarContasModal.tsx#paraNumero` | `lib/numero.ts` (`lerValorDigitado`) | fundir | Leitura única de valor |
 | `useFormularioDeLancamento.ts#somar` (mudança de comportamento: tira o milhar igual nos dois lugares) | `lib/numero.ts` (`lerSoma`) | fundir | Leitura única de valor |
 | novo (testes de milhar, vírgula, soma e vazio) | `lib/numero.test.ts` | criar | Leitura única de valor |
+
+### 3.1 Arquivos com parse de valor (Leitura única de valor)
+
+| Arquivo (linhas) | Parse hoje | Seção 14 do Documento 8 | Destino |
+|---|---|---|---|
+| `ds/AmountInput.tsx:24` | soma sem tirar o milhar | corrige a divergência 1 | `lerSoma` |
+| `pages/lancamento/useFormularioDeLancamento.ts:78` | soma com o milhar tirado (referência) | lado correto da divergência 1 | `lerSoma` |
+| `pages/verificacao/PainelDeRevisao.tsx:36` | tira o milhar | — | `lerValorDigitado` |
+| `pages/ayahuasca/AyahuascaPage.tsx:47` | não tira o milhar: `1.500,00` vira 1,5 | corrige a divergência 2 (mesma causa) | `lerValorDigitado` |
+| `pages/contas/GerenciarContasModal.tsx:40` | tira o milhar | — | `lerValorDigitado` |
+| `pages/emprestimos/EmprestimosPage.tsx:50` e `:96` | `Number` sem tirar o milhar: NaN | corrige a divergência 2 | `lerValorDigitado` |
+| `pages/adiantamentos/AdiantamentosPage.tsx:502` | `Number` sem tirar o milhar: NaN | corrige a divergência 2 | `lerValorDigitado` |
+| `pages/eventos/InscricaoPage.tsx:120` e `:703` | tira o milhar | — | `lerValorDigitado` |
+| `pages/publico/InscricaoPublicaPage.tsx:126` e `:708` | tira o milhar | — | `lerValorDigitado` |
+| `pages/estoque/FeitioPage.tsx:48` e `:398` | `Number` sem tirar o milhar: vira 0 | corrige a divergência 2 (mesma causa) | `lerValorDigitado` |
+| `pages/agenda/AgendaPage.tsx:66` (litros) e `:53` (contribuições) | `:66` não tira o milhar: vira 1,5; `:53` separa a lista por vírgula | `:66` corrige a divergência 2 (mesma causa); `:53` fora da divergência | `:66` `lerValorDigitado`; `:53` decisão própria |
+
+- Os cinco que já tiram o milhar só trocam a chamada, sem mudar valor (`fundir`).
+- [NEEDS VERIFICATION] `AgendaPage.tsx:53` separa a lista de contribuições por vírgula, que também é o separador decimal: `1,5` vira duas contribuições (1 e 5). `lerValorDigitado` não serve a esse campo. Confirmar a intenção na caracterização de eventos e registrar a divergência na seção 14 do Documento 8.
 
 ---
 
@@ -136,11 +158,16 @@ Os destinos são agrupados por área: `app/`, `dados/`, `lib/`, `ds/`, `testes/`
 | `ds/estados.tsx`: `PermissionDenied` | `ds/molecules/PermissionDenied/` | repartir por export | Mover ds em níveis |
 | `ds/estados.tsx`: `SkeletonList` com `Bar`, `LARGURAS`, `LARGURAS_META` e o `<style>` do keyframe (o keyframe fica dentro do `SkeletonList`) | `ds/molecules/SkeletonList/` | repartir por export | Mover ds em níveis |
 | `ds/RegimeVocabulary.tsx` (catálogo sem consumidor, mantido) | `ds/providers/RegimeVocabulary/RegimeVocabulary.tsx` | mover | Mover ds em níveis |
-| `ds/index.ts` (mesma API pública; ganha os primitivos promovidos, `useDensidade` e `Portao`; perde `FaixaDeDemonstracao`) | `ds/index.ts` | manter | Mover ds em níveis |
+| `ds/index.ts` (mesma API pública; reexporta os caminhos novos) (refazer após o #55) | `ds/index.ts` | manter | Mover ds em níveis |
+| `ds/index.ts` (ganha `useDensidade`) | `ds/index.ts` | manter | Mover fundação do ds |
+| `ds/index.ts` (ganha os primitivos promovidos) | `ds/index.ts` | manter | Primitivos para o ds |
+| `ds/index.ts` (ganha `Portao`) | `ds/index.ts` | manter | Portao no ds |
+| `ds/index.ts` (perde `FaixaDeDemonstracao`) | `ds/index.ts` | manter | app/ em subpastas |
 | `ds/PainelDeAcao.tsx` (PR #55) | `ds/organisms/PainelDeAcao/PainelDeAcao.tsx` | mover (refazer após o #55) | Mover ds em níveis |
 | `ds/PainelDeAcao.dom.test.tsx` (PR #55) | `ds/organisms/PainelDeAcao/PainelDeAcao.dom.test.tsx` | mover (refazer após o #55) | Mover ds em níveis |
 | `ds/TextField.dom.test.tsx` (PR #55, só na branch local) | `ds/molecules/TextField/TextField.dom.test.tsx` | mover (refazer após o #55) | Mover ds em níveis |
-| `lib/useDensidade.ts` | `ds/fundacao/useDensidade.ts` (+ `.dom.test.ts`) | mover | Mover fundação do ds |
+| `lib/useDensidade.ts` | `ds/fundacao/useDensidade.ts` | mover | Mover fundação do ds |
+| novo (teste do hook; `lib/` não tem teste dele hoje) | `ds/fundacao/useDensidade.dom.test.ts` | criar | Mover fundação do ds |
 | `styles/marca.css` | `ds/fundacao/marca.css` | mover | Mover fundação do ds |
 | `styles/tokens/base.css` | `ds/fundacao/tokens/base.css` | mover | Mover fundação do ds |
 | `styles/tokens/colors.css` (o #55 altera o arquivo) | `ds/fundacao/tokens/colors.css` | mover (refazer após o #55) | Mover fundação do ds |
@@ -170,7 +197,7 @@ Os destinos são agrupados por área: `app/`, `dados/`, `lib/`, `ds/`, `testes/`
 | `pages/lancamento/RegistrarLancamentoPage.tsx#rotuloLabel`; 12 constantes `rotuloLabel` das páginas; cópias inline do estilo de rótulo | `ds/atoms/Rotulo/` e `ds/fundacao/estilos.ts` (`rotuloCaixaAlta`) | fundir | Rotulo e CorpoDaTela |
 | `components/Blocos.tsx#Th`, `Td` (internos do `DataTable` na adoção) | `ds/organisms/DataTable/` | fundir | Primitivos novos e adoção do catálogo |
 | novo (`Marca` do `Portao`, wordmark do `AppShell`, moldura da inscrição pública) | `ds/atoms/Marca/` | fundir | Primitivos novos e adoção do catálogo |
-| novo (`Recado` de `Blocos`, `entrada/Aviso`, `AvisoDeAtencao` do #55, callouts das telas) | `ds/molecules/Aviso/` | fundir | Primitivos novos e adoção do catálogo |
+| novo (`Recado` de `Blocos`, `entrada/Aviso`, `AvisoDeAtencao` do #55 (só na branch local; refazer após o #55), callouts das telas) | `ds/molecules/Aviso/` | fundir | Primitivos novos e adoção do catálogo |
 | novo (`Leitura` de Meu perfil, Ayahuasca, Pessoas, Contratações e Devoluções) | `ds/molecules/Leitura/` | fundir | Primitivos novos e adoção do catálogo |
 | novo (listas com divisória em Devoluções, Leitos e Feitio) | `ds/molecules/ListaDividida/` | criar | Primitivos novos e adoção do catálogo |
 | novo (botões só de ícone em formulários, revisão, contas, registros, paginação, captura de anexo, sugestões e `TextField`) | `ds/atoms/BotaoDeIcone/` | criar | Primitivos novos e adoção do catálogo |
@@ -185,15 +212,58 @@ Os destinos são agrupados por área: `app/`, `dados/`, `lib/`, `ds/`, `testes/`
 | `ds/estados.tsx`: `Bar` | `ds/molecules/SkeletonList/components/BarraDeEsqueleto/` | dividir | Dividir app/shell, sessão e ds |
 | novo (`CorpoDaTela` aplicado nas 29 telas e em `TelaSemAcesso`) | `ds/templates/CorpoDaTela/` | criar | Rotulo e CorpoDaTela |
 
+### 4.3 Adoções do catálogo
+
+Cada adoção que muda o JSX passa pela captura de telas (seção 13.6 do Documento 8). A adoção do `Avatar` no `AppShell` depende da divergência de iniciais (seção 14 do Documento 8).
+
+| Origem | Destino | Ação | Etapa |
+|---|---|---|---|
+| `pages/fechamento/FechamentoPage.tsx`: bloqueio do período e confirmação de reabertura (`confirmarReabertura`), re-implementados | `ds/molecules/PeriodLock/` e `ds/molecules/ConfirmAction/` | fundir | Primitivos novos e adoção do catálogo |
+| valores em centavos exibidos nas telas (`formatarBRL` e `formatarDinheiro` no JSX; nenhuma página usa `AmountDisplay` hoje) | `ds/atoms/AmountDisplay/` | fundir | Primitivos novos e adoção do catálogo |
+| gavetas de detalhe: `GavetaDeDetalhe` (`LancamentosPage`), `PainelDeRevisao` (`VerificacaoLotePage`), `PainelDeQuebra` (`RelatoriosPage`), `ModalDeMovimento` (`AyahuascaPage`) | `ds/organisms/PainelDeAcao/` (vem do #55, refazer após o #55) | fundir | Primitivos novos e adoção do catálogo |
+| avatar com iniciais: `pages/perfil/MeuPerfilPage.tsx` (`iniciais`) e `ds/AppShell.tsx` (`slice(0, 2)`) | `ds/atoms/Avatar/` | fundir | Primitivos novos e adoção do catálogo |
+| `Cartao` locais: `pages/relatorios/RelatoriosPage.tsx`, `pages/pessoas/PessoasPage.tsx`, `pages/pessoas/AnamnesePage.tsx`, `pages/perfil/MeuPerfilPage.tsx` | `ds/atoms/Cartao/` | fundir | Primitivos novos e adoção do catálogo |
+| `Numero` locais: `pages/relatorios/RelatoriosPage.tsx` e `pages/agenda/DetalheDoTrabalho.tsx` | `ds/molecules/Numero/` | fundir | Primitivos novos e adoção do catálogo |
+| tabelas com `Th` e `Td`: `pages/emprestimos/EmprestimosPage.tsx`, `pages/faturas/FaturasPage.tsx`, `pages/parametros/ParametrosPage.tsx` | `ds/organisms/DataTable/` | fundir | Primitivos novos e adoção do catálogo |
+
+### 4.4 Testes que entram com os PRs de caracterização
+
+Os testes do #58 e do #59 se repartem por describe entre as unidades de destino. O arquivo de origem some quando o último describe sai.
+
+| Origem | Destino | Ação | Etapa |
+|---|---|---|---|
+| `components/Avatar.dom.test.tsx` (entra com o #58) | `ds/atoms/Avatar/Avatar.dom.test.tsx` | mover | Primitivos para o ds |
+| `components/Blocos.dom.test.tsx` (entra com o #58), describe `rotuloCaixaAlta` (teste puro) | `ds/fundacao/estilos.test.ts` | repartir por describe | Primitivos para o ds |
+| `components/Blocos.dom.test.tsx`, describe `Rotulo` | `ds/atoms/Rotulo/Rotulo.dom.test.tsx` | repartir por describe | Primitivos para o ds |
+| `components/Blocos.dom.test.tsx`, describe `Numero` | `ds/molecules/Numero/Numero.dom.test.tsx` | repartir por describe | Primitivos para o ds |
+| `components/Blocos.dom.test.tsx`, describes `Th` e `Td` | `ds/atoms/Th/Th.dom.test.tsx` e `ds/atoms/Td/Td.dom.test.tsx` | repartir por describe | Primitivos para o ds |
+| `components/Blocos.dom.test.tsx`, describes `Recado`, `Cartao` e `BarraDeProporcao` | `ds/molecules/Recado/`, `ds/atoms/Cartao/` e `ds/atoms/BarraDeProporcao/` (`.dom.test.tsx`) | repartir por describe | Primitivos para o ds |
+| `components/Campo.dom.test.tsx` (entra com o #58), describes `RotuloDeCampo`, `Select`, `SeletorDeTipo` e `Interruptor` | `ds/atoms/RotuloDeCampo/`, `ds/molecules/Select/`, `ds/molecules/SeletorDeTipo/` e `ds/atoms/Interruptor/` (`.dom.test.tsx`) | repartir por describe | Primitivos para o ds |
+| `components/Campo.dom.test.tsx`, describe `CampoDeTags` | `pages/financeiro/lancamentos/RegistrarLancamentoPage/components/CampoDeTags/CampoDeTags.dom.test.tsx` | repartir por describe | Mover lancamentos |
+| `lib/recibo.test.ts` (entra com o #58) | `pages/financeiro/lancamentos/utils/recibo.test.ts` | mover | Mover lancamentos |
+| `lib/formato.test.ts` (entra com o #58), describe `iniciais` | `ds/atoms/Avatar/utils/iniciais.test.ts` | repartir por describe | Primitivos novos e adoção do catálogo |
+| `lib/formato.test.ts`, describes `formatarDinheiro`, `formatarBRL`, `formatarInteiro`, `formatarLitros`, `formatarDiaMes`, `formatarCompetencia`, `competenciaPorExtenso`, `pluralizar` e o `it` de `formatarData` no describe de fuso | `pages/utils/formato.test.ts` | repartir por describe (e por `it`, no fuso) | lib/formato por export |
+| `lib/formato.test.ts`, describes `formatarData` e `nomeDoMes` | `pages/utils/formato.test.ts` (`formatarData`) e `pages/eventos/AgendaPage/utils/nomeDoMes.test.ts` | repartir por describe | lib/formato por export |
+| `ds/AmountDisplay.dom.test.tsx` (entra com o #59) | `ds/atoms/AmountDisplay/AmountDisplay.dom.test.tsx` | mover | Mover ds em níveis |
+| `ds/AmountInput.dom.test.tsx` (entra com o #59); a describe de soma caracteriza a divergência 1 | `ds/molecules/AmountInput/AmountInput.dom.test.tsx` | mover | Mover ds em níveis |
+| `ds/Button.dom.test.tsx` (entra com o #59); a describe `{...rest}` caracteriza a divergência da seção 14 do Documento 8 | `ds/atoms/Button/Button.dom.test.tsx` | mover | Mover ds em níveis |
+| `ds/Icon.dom.test.tsx` (entra com o #59) | `ds/atoms/Icon/Icon.dom.test.tsx` | mover | Mover ds em níveis |
+| `ds/Receipt.dom.test.tsx` (entra com o #59) | `ds/organisms/Receipt/Receipt.dom.test.tsx` | mover | Mover ds em níveis |
+| `ds/RecordRow.dom.test.tsx` (entra com o #59) | `ds/molecules/RecordRow/RecordRow.dom.test.tsx` | mover | Mover ds em níveis |
+| `ds/StatusBadge.dom.test.tsx` (entra com o #59) | `ds/atoms/StatusBadge/StatusBadge.dom.test.tsx` | mover | Mover ds em níveis |
+| `ds/estados.dom.test.tsx` (entra com o #59), describes `DomainError`, `EmptyState`, `InfraError`, `PermissionDenied` e `SkeletonList` | `ds/molecules/<Nome>/<Nome>.dom.test.tsx` | repartir por describe | Mover ds em níveis |
+| `ds/estados.dom.test.tsx`, describe `FlowerOfLife` | `ds/atoms/FlowerOfLife/FlowerOfLife.dom.test.tsx` | repartir por describe | Mover ds em níveis |
+
 ---
 
 ## 5. `testes/` (apoio de teste global)
 
 | Origem | Destino | Ação | Etapa |
 |---|---|---|---|
-| `app/apoioDeTeste.tsx`: `IS_REACT_ACT_ENVIRONMENT` e stub de `matchMedia` | `testes/configurarDom.ts` (`setupFiles` do projeto dom) | repartir por export | testes/ global e setupFiles |
-| `app/apoioDeTeste.tsx`: `PERMISSAO_QUE_O_EU_TEM`, `PERMISSAO_QUE_O_EU_NAO_TEM`, `criarEu`, `EntradaFalsa`, `criarEntradaFalsa`, `AvisoDeEncerramentoFalso`, `criarAvisoDeEncerramentoFalso`, `CenarioDeSessao`, `TelaMontada`, `VOLTAS_PARA_ASSENTAR`, `proximoCiclo`, `assentar`, `montarComSessao` (os `PERMISSAO_*` ficam com `criarEu`) | `testes/sessaoDeTeste.tsx` | repartir por export | testes/ global e setupFiles |
-| `app/apoioDeTeste.tsx`: `erroDoEu`, unificado como `erroDaApi` (também usado por `dados/clienteDeConsultas.test.ts` e `app/estadoDaSessao.test.ts`) | `testes/fabricas.ts` | repartir por export | testes/ global e setupFiles |
+| `app/apoioDeTeste.tsx`: `IS_REACT_ACT_ENVIRONMENT` e stub de `matchMedia` | `testes/configurarDom.ts` (`setupFiles` do projeto dom) | repartir por export (refazer após o #55: o arquivo de origem muda) | testes/ global e setupFiles |
+| `app/apoioDeTeste.tsx`: `PERMISSAO_QUE_O_EU_TEM`, `PERMISSAO_QUE_O_EU_NAO_TEM`, `criarEu`, `EntradaFalsa`, `criarEntradaFalsa`, `AvisoDeEncerramentoFalso`, `criarAvisoDeEncerramentoFalso`, `CenarioDeSessao`, `TelaMontada`, `VOLTAS_PARA_ASSENTAR`, `proximoCiclo`, `assentar`, `montarComSessao` (os `PERMISSAO_*` ficam com `criarEu`; `Sonda` e `ler` vêm de `app/sessao.test.tsx`, seção 1) | `testes/sessaoDeTeste.tsx` | repartir por export (refazer após o #55: o #55 altera `montarComSessao`) | testes/ global e setupFiles |
+| `app/apoioDeTeste.tsx`: `erroDoEu`, unificado como `erroDaApi` (também usado por `dados/clienteDeConsultas.test.ts` e `app/estadoDaSessao.test.ts`) | `testes/fabricas.ts` | repartir por export (refazer após o #55: o arquivo de origem muda) | testes/ global e setupFiles |
+| novo (`montagem.tsx`, render global sem provider; entra com o #58 e o #59 traz o mesmo arquivo) | `testes/montagem.tsx` | criar | Caracterizar lib/formato e components |
 
 ---
 
@@ -220,11 +290,13 @@ Os destinos são agrupados por área: `app/`, `dados/`, `lib/`, `ds/`, `testes/`
 | `components/PermissoesPorModulo.tsx` (usado pela `AbaDeGrupos` e pelo `MeuPerfilPage`) | `pages/components/PermissoesPorModulo/PermissoesPorModulo.tsx` | mover | Mocks transversais |
 | `lib/permissoesAgrupadas.ts` (único consumidor: `PermissoesPorModulo`) | `pages/components/PermissoesPorModulo/utils/permissoesAgrupadas.ts` | mover | Mocks transversais |
 | `lib/permissoesAgrupadas.test.ts` | `pages/components/PermissoesPorModulo/utils/permissoesAgrupadas.test.ts` | mover | Mocks transversais |
-| `lib/formato.ts`: `formatarDinheiro` (corpo muda: chama `formatarValor(centavos / 100)`, exceção declarada), `formatarBRL`, `INTEIRO`, `formatarInteiro`, `UM_DECIMAL`, `formatarLitros`, `MESES` (passa a exportado, porque `nomeDoMes` o importa), `DIAS`, `paraData`, `formatarDiaMes`, `formatarData`, `diaDaSemana`, `formatarCompetencia`, `competenciaPorExtenso`, `pluralizar` | `pages/utils/formato.ts` (+ teste) | repartir por export | lib/formato por export |
-| `lib/formato.test.ts` (testes das funções que descem) | `pages/utils/formato.test.ts` | repartir por export | lib/formato por export |
+| `lib/formato.ts`: `formatarDinheiro` (corpo muda: chama `formatarValor(centavos / 100)`, exceção declarada), `formatarBRL`, `INTEIRO`, `formatarInteiro`, `UM_DECIMAL`, `formatarLitros`, `MESES` (passa a exportado, porque `nomeDoMes` o importa), `formatarDiaMes`, `formatarData`, `formatarCompetencia`, `competenciaPorExtenso`, `pluralizar` | `pages/utils/formato.ts` (+ teste) | repartir por export | lib/formato por export |
+| `lib/formato.ts`: `paraData`, `DIAS`, `diaDaSemana` (`diaDaSemana` não tem consumidor de produção: sai no PR de remoção, seção 6.4 do Documento 8; `paraData` e `DIAS` ficam com ele, porque ele os usa; na Limpeza, `paraData` desce para `pages/utils/formato.ts`) | `lib/formato.ts` | manter | Limpeza |
+| `lib/formato.test.ts` (describes que descem, seção 4.4) | `pages/utils/formato.test.ts` | repartir por describe | lib/formato por export |
 | `mocks/sessao.ts`: `hoje`, `competenciaAtual` | `pages/mocks/relogio.ts` | repartir por export | Mocks transversais |
-| `mocks/financeiro.ts`: `contas`, `fundoProprio` (usados por financeiro e eventos) | `pages/mocks/contas.ts` | repartir por export | Mocks transversais |
-| `pages/agenda/DetalheDoTrabalho.tsx`: `TOM_DA_ANAMNESE`, `TEXTO_DA_ANAMNESE`; `pages/pessoas/PessoasPage.tsx`: idem | `pages/components/SeloDaAnamnese/` | fundir | Composições de domínio |
+| `mocks/financeiro.ts`: `contas` (usado por financeiro e eventos) e `fundoProprio` (usado por `ContasEFundoPage` e `PainelPage`) | `pages/mocks/contas.ts` | repartir por export | Mocks transversais |
+| `pages/agenda/DetalheDoTrabalho.tsx`: `TOM_DA_ANAMNESE`, `TEXTO_DA_ANAMNESE`; `pages/pessoas/PessoasPage.tsx`: idem | `pages/components/SeloDaAnamnese/constantes.ts` | fundir | Composições de domínio |
+| `EstadoDaAnamnese` (tipo copiado em `mocks/agenda.ts` e `mocks/pessoas.ts`) | `pages/components/SeloDaAnamnese/tipos.ts` (os mocks importam pelo `index.ts` da unidade) | fundir | Composições de domínio |
 | blocos de Pessoas, Painel e `DetalheDoTrabalho` (pontos de atenção) | `pages/components/PontosDeAtencao/` | fundir | Composições de domínio |
 | `pages/registros/MeusRegistrosPage.tsx#irPara` + `pages/painel/PainelPage.tsx#irPara` | `pages/hooks/useCarrossel.ts` (+ `.dom.test.ts`) | fundir | Composições de domínio |
 | `pages/eventos/DevolucoesPage.tsx`: `HOJE`, `COMPETENCIA_ATUAL`; `pages/eventos/ContratacoesPage.tsx`: `HOJE`; `pages/estoque/FeitioPage.tsx`: `HOJE` (depende da decisão sobre o "hoje" da demonstração) | `pages/mocks/relogio.ts` | fundir | Composições de domínio |
@@ -286,8 +358,8 @@ Os destinos são agrupados por área: `app/`, `dados/`, `lib/`, `ds/`, `testes/`
 | `RegistrarLancamentoPage.tsx`: blocos de recibo, comprovante, sugestões do cupom, classificação em campo, classificação no escritório com reembolso, avisos | `RegistrarLancamentoPage/components/{ReciboDoRegistro, ComprovanteDoLancamento, SugestoesDoCupom, ClassificacaoEmCampo, ClassificacaoNoEscritorio (+ components/Reembolso), AvisosDoRegistro}/` | dividir | Dividir RegistrarLancamento |
 | `useFormularioDeLancamento.ts`: useMemo derivado; `INICIAL`, `SUGESTOES_DO_CUPOM`, `ChaveSugerida` | `RegistrarLancamentoPage/utils/regrasDoLancamento.ts` e `utils/textosPorTipo.ts` (+ testes); `mocks/formularioInicial.ts` e `mocks/sugestoesDoCupom.ts` | dividir | Dividir RegistrarLancamento |
 | `mocks/opcoes.ts`: `rotuloDaOpcao`, `metaDaOpcao` | `RegistrarLancamentoPage/utils/opcao.ts` (+ teste) | repartir por export | Dividir RegistrarLancamento |
-| `LancamentosPage.tsx`: `POR_PAGINA`, `FILTRO_INICIAL`, `OPCOES_PERIODO`, `OPCOES_TIPO`, `OPCOES_STATUS`, `OPCOES_GRUPO`, `CHIPS_TIPO` (+ `opcoesDeGrupo` de `lancamentos/mocks`, fundido na etapa de composições) | `LancamentosPage/constantes.ts`; `mocks/grupos.ts` | dividir | Dividir Lançamentos e Meus registros |
-| `LancamentosPage.tsx`: `GRUPOS`; filtragem e lista; totais; `Total`, `valorTabular`; filtros, resumo, lista, tabela | `LancamentosPage/hooks/useFiltrosDoLivro.ts` e `utils/filtrarLancamentos.ts` (+ testes); `utils/totaisDoPeriodo.ts` (+ teste); `components/{FiltrosDoLivro, ResumoDoPeriodo, ListaDoLivro, TabelaDoLivro (+ components/LinhaDoLivro)}/` | dividir | Dividir Lançamentos e Meus registros |
+| `LancamentosPage.tsx`: `GRUPOS`, `POR_PAGINA`, `FILTRO_INICIAL`, `OPCOES_PERIODO`, `OPCOES_TIPO`, `OPCOES_STATUS`, `OPCOES_GRUPO`, `CHIPS_TIPO` | `LancamentosPage/constantes.ts` | dividir | Dividir Lançamentos e Meus registros |
+| `LancamentosPage.tsx`: filtragem e lista; totais; `Total`, `valorTabular`; filtros, resumo, lista, tabela | `LancamentosPage/hooks/useFiltrosDoLivro.ts` e `utils/filtrarLancamentos.ts` (+ testes); `utils/totaisDoPeriodo.ts` (+ teste); `components/{FiltrosDoLivro, ResumoDoPeriodo, ListaDoLivro, TabelaDoLivro (+ components/LinhaDoLivro)}/` | dividir | Dividir Lançamentos e Meus registros |
 | `LancamentosPage.tsx`: `GavetaDeDetalhe` | `LancamentosPage/components/GavetaDeDetalhe/` (+ `utils/historicoDoLancamento.ts`, `components/HistoricoDoLancamento/`) | dividir | Dividir Lançamentos e Meus registros |
 | `MeusRegistrosPage.tsx`: `Visao`, `POR_PAGINA`, `LARGURA_CARTAO`, `GAP_CARTAO`; `SetaRedonda`, `BotaoLargo`, carrossel; lista simplificada; totais | `MeusRegistrosPage/constantes.ts`; `components/CarrosselDeRecibos/` (+ `components/{SetaRedonda, BotaoLargo, PontosDoCarrossel}`); `components/ListaSimplificada/`; `utils/totaisDosRegistros.ts` (+ teste) | dividir | Dividir Lançamentos e Meus registros |
 | `VerificacaoLotePage.tsx`: `FiltroOrigem`, `FILTROS`; estado e aprovações; `LinhaDaFila`; barra de seleção; filtros de origem | `VerificacaoLotePage/constantes.ts`; `hooks/useFilaDeVerificacao.ts` (+ `.dom.test.ts`); `components/{LinhaDaFila, BarraDeSelecao, FiltrosDeOrigem}/` | dividir | Dividir Verificação de lote |
@@ -302,7 +374,7 @@ Os destinos são agrupados por área: `app/`, `dados/`, `lib/`, `ds/`, `testes/`
 | `mocks/adiantamentos.ts#diasDesde` | `AdiantamentosPage/utils/diasDesde.ts` (+ teste) | repartir por export | Dividir Adiantamentos |
 | `RelatoriosPage.tsx`: `Drill`, `PERIODOS`, `comOpcaoTodos`; recorte, KPIs, linhas do drill; `Cartao`, `Numero`, `Chip`, `CampoDeMes`; seções | `RelatoriosPage/constantes.ts`; `utils/recorte.ts` (+ teste); `components/{Cartao, PainelDeFiltros (+ components/{Chip, CampoDeMes}), CartoesDeKpi, MovimentoPorConta (+ components/Numero), MetasDoFundo, CustoPorCerimonia, GavetaDeRecorte}/` | dividir | Dividir Relatórios |
 | `useRelatorio.ts`: `indice`, `doIndice`, `analisar`, `intervaloDe`, `deslocar`, `rotuloDoPonto`; `somar`, `agrupar`; `textoDoDelta`, `corDoDelta`; `Periodo`, `Comparacao`, `Unidade`, `Filtros`, `FILTROS_LIMPOS`, `Ponto` | `RelatoriosPage/utils/periodo.ts`, `utils/agregacao.ts`, `utils/delta.ts` (+ testes); `tipos.ts`; `constantes.ts` | dividir | Dividir Relatórios |
-| `mocks/relatorios.ts#PALETA` (mapa de apresentação sai do mock) | `RelatoriosPage/constantes.ts` | repartir por export | Dividir Relatórios |
+| `mocks/relatorios.ts#PALETA` (mapa de apresentação sai do mock; só `PainelDeQuebra` usa) | `RelatoriosPage/components/PainelDeQuebra/constantes.ts` | repartir por export | Dividir Relatórios |
 | `GraficoSerie.tsx`: `ItemDaLegenda`; pontos da linha | `GraficoSerie/components/ItemDaLegenda/` e `GraficoSerie/utils/pontosDaLinha.ts` (+ teste) | dividir | Dividir Relatórios |
 | `PainelDeQuebra.tsx`: fatias; vistas | `PainelDeQuebra/utils/fatias.ts` (+ teste) e `components/{VistaEmBarras, VistaEmRosca}/` | dividir | Dividir Relatórios |
 | `FechamentoPage.tsx`: `HISTORICO`; checklist P1 e totais; `ItemDoChecklist`, `ColunaDeResumo`, `rotuloLabel`, `valorGrande`; seções | `FechamentoPage/mocks/historico.ts`; `utils/checklist.ts` (+ teste); `components/{FaixaDoPeriodo (+ components/ColunaDeResumo), ItemDoChecklist, SaldosDoFechamento, AcaoDeFechamento, HistoricoDeFechamentos}/`; `constantes.ts` | dividir | Dividir Fechamento e Conciliação |
@@ -319,8 +391,6 @@ Os destinos são agrupados por área: `app/`, `dados/`, `lib/`, `ds/`, `testes/`
 | `LancamentosPage.tsx` (chips de tipo) + `VerificacaoLotePage.tsx` (filtros de origem) | `pages/financeiro/lancamentos/components/ChipDeFiltro/` | fundir | Composições de domínio |
 | `LancamentosPage.tsx` (paginação) + `MeusRegistrosPage.tsx` (paginação); os dois casos têm teste, porque só Lançamentos limita a página atual | `pages/financeiro/lancamentos/hooks/usePaginacao.ts` (+ `.dom.test.ts`) | fundir | Composições de domínio |
 | totais das duas telas, após as divisões (estorno fica como está até a decisão da seção 15 do Documento 8) | `pages/financeiro/lancamentos/utils/totais.ts` | fundir | Composições de domínio |
-| `opcoesDeGrupo` de `lancamentos/mocks` (fundido na etapa de composições) e `mocks/grupos.ts` | `pages/financeiro/lancamentos/mocks/grupos.ts` | fundir | Composições de domínio |
-
 ---
 
 ## 9. `pages/eventos/`
@@ -338,17 +408,20 @@ Os destinos são agrupados por área: `app/`, `dados/`, `lib/`, `ds/`, `testes/`
 | `mocks/agenda.ts` | `pages/eventos/AgendaPage/mocks/agenda.ts` | mover | Mover eventos |
 | `pages/eventos/ContratacoesPage.tsx` | `pages/eventos/ContratacoesPage/ContratacoesPage.tsx` | mover | Mover eventos |
 | `mocks/contratacoes.ts` | `pages/eventos/ContratacoesPage/mocks/contratacoes.ts` | mover | Mover eventos |
+| `mocks/contratacoes.ts`: `STATUS_ROTULO`, `FORMA_ROTULO`, `FORMA_EXPLICACAO` (mapas de apresentação; só `ContratacoesPage` usa) | `pages/eventos/ContratacoesPage/constantes.ts` | repartir por export | Mover eventos |
 | `pages/eventos/DevolucoesPage.tsx` (1ª permissão `eventos.devolucao.efetivar`; o menu continua em Financeiro) | `pages/eventos/DevolucoesPage/DevolucoesPage.tsx` | mover | Mover eventos |
 | `mocks/devolucoes.ts` | `pages/eventos/DevolucoesPage/mocks/devolucoes.ts` | mover | Mover eventos |
 | `pages/eventos/LeitosPage.tsx` | `pages/eventos/LeitosPage/LeitosPage.tsx` | mover | Mover eventos |
 | `mocks/leitos.ts` | `pages/eventos/LeitosPage/mocks/leitos.ts` | mover | Mover eventos |
+| `mocks/leitos.ts`: `TIPO_LEITO_ROTULO` (mapa de apresentação; só `LeitosPage` usa) | `pages/eventos/LeitosPage/constantes.ts` | repartir por export | Mover eventos |
 | `pages/eventos/InscricaoPage.tsx` | `pages/eventos/inscricao/InscricaoPage/InscricaoPage.tsx` | mover | Mover inscricao |
 | `pages/publico/InscricaoPublicaPage.tsx` (tela pública, no módulo do recurso que cria) | `pages/eventos/inscricao/InscricaoPublicaPage/InscricaoPublicaPage.tsx` | mover | Mover inscricao |
 | `pages/publico/InscricaoPublicaPage.dom.test.tsx` | `pages/eventos/inscricao/InscricaoPublicaPage/InscricaoPublicaPage.dom.test.tsx` | mover | Mover inscricao |
 | `components/Anamnese.tsx`: `BlocoDePergunta`, `Opcao`, `Resposta`, `MotivoDaPergunta` (só a pública consome) | `pages/eventos/inscricao/InscricaoPublicaPage/components/BlocoDePergunta/BlocoDePergunta.tsx` | repartir por export | Mover inscricao |
 | `components/Anamnese.tsx`: `respondida`, `disparaAlerta` | `pages/eventos/inscricao/InscricaoPublicaPage/utils/regraDeAlerta.ts` | repartir por export | Mover inscricao |
 | `mocks/inscricao.ts`: `EventoParaInscricao`, `eventos` (usados pela `InscricaoPage` e pelo mock da pública) | `pages/eventos/inscricao/mocks/eventos.ts` | repartir por export | Mover inscricao |
-| `mocks/inscricao.ts`: `PessoaDoDiretorio`, `diretorio`, `TIPO_ROTULO`, `TIPO_EXPLICACAO`, `CONSAGRA_POR_PADRAO`, `ANAMNESE_ROTULO` | `pages/eventos/inscricao/InscricaoPage/mocks/inscricao.ts` | repartir por export | Mover inscricao |
+| `mocks/inscricao.ts`: `PessoaDoDiretorio`, `diretorio` (dados de demonstração) | `pages/eventos/inscricao/InscricaoPage/mocks/inscricao.ts` | repartir por export | Mover inscricao |
+| `mocks/inscricao.ts`: `TIPO_ROTULO`, `TIPO_EXPLICACAO`, `CONSAGRA_POR_PADRAO`, `ANAMNESE_ROTULO` (mapas fixos; só `InscricaoPage` usa) | `pages/eventos/inscricao/InscricaoPage/constantes.ts` | repartir por export | Mover inscricao |
 | `mocks/inscricaoPublica.ts`: `eventoDoLink`, `linkDaCerimonia` (`eventoDoLink` vai junto com `linkDaCerimonia`; o mock da pública importa do ancestral) | `pages/eventos/inscricao/mocks/linkDaCerimonia.ts` | repartir por export | Mover inscricao |
 | `mocks/inscricaoPublica.ts`: `VERSAO_VIGENTE`, `FORMULARIO_VIGENTE`, `PERGUNTAS_V3`, `CadastroEncontrado`, `formularioInteiro`, `cadastros`, `MODO_RECADO`, `CPFS_DE_EXEMPLO`, `TEXTO_DA_DECLARACAO` | `pages/eventos/inscricao/InscricaoPublicaPage/mocks/inscricaoPublica.ts` | repartir por export | Mover inscricao |
 
@@ -358,7 +431,8 @@ Os destinos são agrupados por área: `app/`, `dados/`, `lib/`, `ds/`, `testes/`
 |---|---|---|---|
 | `AgendaPage.tsx`: `TOM_DA_SITUACAO`, `rotuloDaSituacao`; estado e ações; salvar; navegar mês; `setaDoMes`; lista | `AgendaPage/constantes.ts`; `hooks/useAgenda.ts`; `utils/trabalhoDoRascunho.ts` e `utils/mes.ts` (+ testes); `components/{NavegacaoDoMes, ListaDeTrabalhos}/` | dividir | Dividir Agenda |
 | `mocks/agenda.ts`: `TipoDeTrabalho`, `SituacaoDoTrabalho`, `TarefaDePreparo`, `Trabalho`, `ParticipanteDoTrabalho`; `CORES_POR_TIPO`, `VERSAO_DO_FORMULARIO` | `AgendaPage/tipos.ts` e `constantes.ts` | repartir por export | Dividir Agenda |
-| `CalendarioMensal.tsx`: `DIAS_DA_SEMANA`, `LegendaDeTipos`, células do mês | `CalendarioMensal/constantes.ts`; `components/LegendaDeTipos/`; `utils/celulasDoMes.ts` (+ teste) | dividir | Dividir Agenda |
+| `CalendarioMensal.tsx`: `DIAS_DA_SEMANA`, células do mês | `CalendarioMensal/constantes.ts`; `utils/celulasDoMes.ts` (+ teste) | dividir | Dividir Agenda |
+| `CalendarioMensal.tsx`: `LegendaDeTipos` (só `AgendaPage` usa; `CalendarioMensal` só o define; usa `CORES_POR_TIPO`, que desce para `AgendaPage/constantes.ts` na mesma etapa) | `AgendaPage/components/LegendaDeTipos/LegendaDeTipos.tsx` | repartir por export | Dividir Agenda |
 | `DetalheDoTrabalho.tsx`: `Bloco`, `Numero`, `Meta`, `MESES_CURTOS`, `ORIGENS_DE_MARCACAO`; contagens de participantes | `DetalheDoTrabalho/components/{Bloco, Numero, Meta}/`; `constantes.ts`; `utils/resumoDosParticipantes.ts` (+ teste) | dividir | Dividir Agenda |
 | `FormularioDeTrabalho.tsx`: `entradaDaTarefa`, `BotaoDaTarefa`; mover tarefa | `FormularioDeTrabalho/components/BotaoDaTarefa/`; `utils/moverTarefa.ts` (+ teste) | dividir | Dividir Agenda |
 | `InscricaoPage.tsx`: `TOM_DA_ANAMNESE`, `Pendencia`; 19 `useState` e handlers; pendências; `Bloco`, `EscolhaDoEvento`, `LinkDaCerimonia`, `BuscaDePessoa`, `PessoaEscolhida`, `EstadoDaAnamnese`, `Contribuicao`, `LinhaDeInterruptor`, `Pendencias`, `Fechamento` | `InscricaoPage/constantes.ts` e `tipos.ts`; `hooks/useInscricao.ts` (+ `.dom.test.ts`, reducer); `utils/pendenciasDaInscricao.ts` (+ teste); `components/` | dividir | Dividir Inscrição |
@@ -375,8 +449,6 @@ Os destinos são agrupados por área: `app/`, `dados/`, `lib/`, `ds/`, `testes/`
 | `InscricaoPage.tsx#OpcaoEmLinha` + `InscricaoPublicaPage.tsx` (opção marcável) + `components/Anamnese.tsx#Opcao` | `pages/eventos/inscricao/components/OpcaoMarcavel/` | fundir | Composições de domínio |
 | `InscricaoPage.tsx` (contribuição e total) + `InscricaoPublicaPage.tsx` (total); a interna zera a contribuição de `EQUIPE`, a pública não | `pages/eventos/inscricao/utils/valorDaInscricao.ts` com parâmetro de isenção (+ teste dos dois casos) | fundir | Composições de domínio |
 | `NiveisDeContribuicao`, `ResumoDoDevido`, `DadosParaACasa` (`InscricaoPage` e `InscricaoPublicaPage`) | `pages/eventos/inscricao/components/` | fundir | Composições de domínio |
-| `GraficoEstoque.tsx` (eixo de cerimônias) + `GraficoResultado.tsx` (eixo de cerimônias) | `pages/transversal/PainelPage/components/EixoDeCerimonias/` | fundir | Composições de domínio |
-
 ---
 
 ## 10. `pages/estoque/`
@@ -385,6 +457,7 @@ Os destinos são agrupados por área: `app/`, `dados/`, `lib/`, `ds/`, `testes/`
 |---|---|---|---|
 | `pages/ayahuasca/AyahuascaPage.tsx` (1ª permissão `estoque.saldo.ler`) | `pages/estoque/AyahuascaPage/AyahuascaPage.tsx` | mover | Mover pessoas e estoque |
 | `mocks/ayahuasca.ts` | `pages/estoque/AyahuascaPage/mocks/ayahuasca.ts` | mover | Mover pessoas e estoque |
+| `mocks/ayahuasca.ts`: `rotuloDoMovimento` (mapa de apresentação; só `AyahuascaPage` usa) | `pages/estoque/AyahuascaPage/constantes.ts` | repartir por export | Mover pessoas e estoque |
 | `pages/estoque/FeitioPage.tsx` | `pages/estoque/FeitioPage/FeitioPage.tsx` | mover | Mover pessoas e estoque |
 | `mocks/feitio.ts` | `pages/estoque/FeitioPage/mocks/feitio.ts` | mover | Mover pessoas e estoque |
 | `AyahuascaPage.tsx`: `Aba`, `ModoDoFormulario`, `RascunhoDeMovimento`, `SITUACAO`, `litros`, `valorTabular`, `corDoMovimento`; saldos; erro do formulário; rascunhos; estado e salvar; `Kpi`, `FichaDoLote`, `Dado`, `ModalDeMovimento`; abas | `AyahuascaPage/tipos.ts` e `constantes.ts`; `utils/{saldos, validarMovimento, rascunhoDeMovimento}.ts` (+ testes); `hooks/useEstoqueDeDaime.ts`; `components/{Kpi, AbaDeLotes, AbaDeMovimentos, AbaDeReservas, ModalDeMovimento, FichaDoLote (+ components/Dado)}/` | dividir | Dividir Ayahuasca e Feitio |
@@ -419,35 +492,40 @@ Os destinos são agrupados por área: `app/`, `dados/`, `lib/`, `ds/`, `testes/`
 | `pages/acessos/AcessosPage.dom.test.tsx` | `pages/sistema/AcessosPage/AcessosPage.dom.test.tsx` | mover (refazer após o #55) | Mover sistema |
 | `pages/acessos/AcessosPage.dom.test.tsx` (repartido por aba, com as faixas medidas no código mesclado) | `AbaDeUsuarios.dom.test.tsx` e `AbaDeGrupos.dom.test.tsx` | repartir por export (refazer após o #55) | Dividir sistema, Meu perfil e entrada |
 | `pages/acessos/apoioDeTeste.tsx` (usado pelos testes das duas abas e dos painéis) | `pages/sistema/AcessosPage/apoioDeTeste.tsx` | mover (refazer após o #55) | Mover sistema |
-| `pages/acessos/consultasDeAcessos.ts` | `pages/sistema/AcessosPage/consultas.ts` | mover (refazer após o #55) | Mover sistema |
-| `pages/acessos/consultasDeAcessos.test.ts` | `pages/sistema/AcessosPage/consultas.test.ts` | mover (refazer após o #55) | Mover sistema |
+| `pages/acessos/consultasDeAcessos.ts` (sem `temFiltroAplicado`, linha seguinte; `SEM_FILTRO` só tem consumo de teste: fica até a remoção, seção 6.4 do Documento 8) | `pages/sistema/AcessosPage/consultas.ts` | mover (refazer após o #55) | Mover sistema |
+| `pages/acessos/consultasDeAcessos.ts`: `temFiltroAplicado` (só `AbaDeUsuarios` usa) | `pages/sistema/AcessosPage/components/AbaDeUsuarios/utils/temFiltroAplicado.ts` (+ teste) | repartir por export (refazer após o #55) | Mover sistema |
+| `pages/acessos/consultasDeAcessos.test.ts`: describes `caminhoDaListagemDeUsuarios` e `consulta usuario(id)` | `pages/sistema/AcessosPage/consultas.test.ts` | repartir por describe (refazer após o #55) | Mover sistema |
+| `pages/acessos/consultasDeAcessos.test.ts`: describe `temFiltroAplicado` | `pages/sistema/AcessosPage/components/AbaDeUsuarios/utils/temFiltroAplicado.test.ts` | repartir por describe (refazer após o #55) | Mover sistema |
 | `pages/acessos/AbaDeGrupos.tsx` | `pages/sistema/AcessosPage/components/AbaDeGrupos/AbaDeGrupos.tsx` | mover (refazer após o #55) | Mover sistema |
 | `pages/acessos/AbaDeUsuarios.tsx` (o index exporta também `ATRASO_DA_BUSCA_EM_MS`, usado pelo apoio de teste) | `pages/sistema/AcessosPage/components/AbaDeUsuarios/AbaDeUsuarios.tsx` | mover (refazer após o #55) | Mover sistema |
 | `pages/acessos/FiltrosDeUsuarios.tsx` | `pages/sistema/AcessosPage/components/AbaDeUsuarios/components/FiltrosDeUsuarios/FiltrosDeUsuarios.tsx` | mover (refazer após o #55) | Mover sistema |
 | `pages/acessos/LinhaDeUsuario.tsx` | `pages/sistema/AcessosPage/components/AbaDeUsuarios/components/LinhaDeUsuario/LinhaDeUsuario.tsx` | mover (refazer após o #55) | Mover sistema |
-| `pages/acessos/situacaoDeUsuario.ts` (Filtros, Linha e PainelDoUsuario, todos sob AbaDeUsuarios) | `pages/sistema/AcessosPage/components/AbaDeUsuarios/constantes.ts` | fundir (refazer após o #55) | Mover sistema |
+| `pages/acessos/situacaoDeUsuario.ts` (usado por `FiltrosDeUsuarios`, `LinhaDeUsuario` e `PainelDoUsuario`, todos sob `AbaDeUsuarios`) | `pages/sistema/AcessosPage/components/AbaDeUsuarios/situacaoDeUsuario.ts` | mover (refazer após o #55) | Mover sistema |
 | `pages/acessos/PainelDeConvite.tsx` (aberto pela `AcessosPage`) | `pages/sistema/AcessosPage/components/PainelDeConvite/PainelDeConvite.tsx` | mover (refazer após o #55) | Mover sistema |
 | `pages/acessos/SeletorDeGrupos.tsx` (usado por PainelDeConvite e PainelDoUsuario) | `pages/sistema/AcessosPage/components/SeletorDeGrupos/SeletorDeGrupos.tsx` | mover (refazer após o #55) | Mover sistema |
-| `pages/acessos/ErroDoPainel.tsx` (usado por PainelDeConvite e PainelDoUsuario) | `pages/sistema/AcessosPage/components/ErroDoPainel/ErroDoPainel.tsx` | mover (refazer após o #55) | Mover sistema |
+| `pages/acessos/ErroDoPainel.tsx` (usado por PainelDeConvite e PainelDoUsuario) | `pages/sistema/AcessosPage/components/ErroDoPainel/ErroDoPainel.tsx` | mover (refazer após o #55; só na branch local) | Mover sistema |
 | `pages/acessos/PainelDoUsuario.tsx` (aberto pela `AbaDeUsuarios`) | `pages/sistema/AcessosPage/components/AbaDeUsuarios/components/PainelDoUsuario/PainelDoUsuario.tsx` | mover (refazer após o #55) | Mover sistema |
 | `pages/acessos/PainelDoUsuario.dom.test.tsx` | `.../AbaDeUsuarios/components/PainelDoUsuario/PainelDoUsuario.dom.test.tsx` | mover (refazer após o #55) | Mover sistema |
 | `pages/acessos/CampoDeMotivo.tsx` (só `PainelDoUsuario`) | `.../PainelDoUsuario/components/CampoDeMotivo/CampoDeMotivo.tsx` | mover (refazer após o #55) | Mover sistema |
-| `pages/acessos/AvisoDeAtencao.tsx` (`PainelDoUsuario` e `CampoDeMotivo`) | `.../PainelDoUsuario/components/AvisoDeAtencao/AvisoDeAtencao.tsx` | mover (refazer após o #55) | Mover sistema |
+| `pages/acessos/AvisoDeAtencao.tsx` (`PainelDoUsuario` e `CampoDeMotivo`) | `.../PainelDoUsuario/components/AvisoDeAtencao/AvisoDeAtencao.tsx` | mover (refazer após o #55; só na branch local) | Mover sistema |
 | `pages/acessos/AcoesDeAcessos.dom.test.tsx` (percorre a página com os dois painéis) | `pages/sistema/AcessosPage/AcoesDeAcessos.dom.test.tsx` | mover (refazer após o #55) | Mover sistema |
 | `pages/acessos/comandosDeAcessos.ts` | `pages/sistema/AcessosPage/comandos.ts` | mover (refazer após o #55) | Mover sistema |
 | `pages/acessos/comandosDeAcessos.test.ts` | `pages/sistema/AcessosPage/comandos.test.ts` | mover (refazer após o #55) | Mover sistema |
 | `pages/acessos/focarTitulo.ts` (`AcessosPage` e `AbaDeUsuarios`) | `pages/sistema/AcessosPage/utils/focarTitulo.ts` | mover (refazer após o #55) | Mover sistema |
 | `pages/acessos/mensagemDeErroDeAcessos.ts` (consumidor: `useAcaoNoUsuario`) | `pages/sistema/AcessosPage/utils/mensagemDeErro.ts` | mover (refazer após o #55) | Mover sistema |
 | `pages/acessos/mensagemDeErroDeAcessos.test.ts` | `pages/sistema/AcessosPage/utils/mensagemDeErro.test.ts` | mover (refazer após o #55) | Mover sistema |
-| `pages/acessos/textosDeAcessos.ts` (`CampoDeMotivo`, `PainelDeConvite`, `PainelDoUsuario`, `useAcaoNoUsuario` e `mensagemDeErro`) | `pages/sistema/AcessosPage/constantes.ts` | mover (refazer após o #55) | Mover sistema |
+| `pages/acessos/textosDeAcessos.ts`: `AVISO_DE_VERSAO_DESATUALIZADA` (usado por `useAcaoNoUsuario` e `mensagemDeErro`, ambos de `AcessosPage`) | `pages/sistema/AcessosPage/constantes.ts` | repartir por export (refazer após o #55) | Mover sistema |
+| `pages/acessos/textosDeAcessos.ts`: `CONVITE_REGISTRADO` e `AJUDA_DE_GRUPOS_DO_CONVITE` (só `PainelDeConvite`) | `pages/sistema/AcessosPage/components/PainelDeConvite/constantes.ts` | repartir por export (refazer após o #55) | Mover sistema |
+| `pages/acessos/textosDeAcessos.ts`: `AVISO_LGPD_DO_MOTIVO` e `LIMITE_DO_MOTIVO` (só `CampoDeMotivo`) | `.../PainelDoUsuario/components/CampoDeMotivo/constantes.ts` | repartir por export (refazer após o #55) | Mover sistema |
+| `pages/acessos/textosDeAcessos.ts`: `MOTIVO_OBRIGATORIO` (só `PainelDoUsuario`) | `.../AbaDeUsuarios/components/PainelDoUsuario/constantes.ts` | repartir por export (refazer após o #55) | Mover sistema |
 | `pages/acessos/useAcaoNoUsuario.ts` (`PainelDeConvite` e `PainelDoUsuario`) | `pages/sistema/AcessosPage/hooks/useAcaoNoUsuario.ts` | mover (refazer após o #55) | Mover sistema |
 | `pages/acessos/useFocoNoPrimeiroCampoInvalido.ts` (só na branch local do #55; os dois painéis) | `pages/sistema/AcessosPage/hooks/useFocoNoPrimeiroCampoInvalido.ts` | mover (refazer após o #55) | Mover sistema |
 | `lib/chaveDeIdempotencia.ts` (PR #55; tem hook React, que `lib/` não pode ter) | `pages/sistema/AcessosPage/hooks/useChaveDeIdempotencia.ts` | mover (refazer após o #55) | Mover sistema |
 | `lib/chaveDeIdempotencia.test.ts` (PR #55) | `pages/sistema/AcessosPage/hooks/useChaveDeIdempotencia.test.ts` | mover (refazer após o #55) | Mover sistema |
-| `lib/chaveDeIdempotencia.dom.test.tsx` (PR #55) | `pages/sistema/AcessosPage/hooks/useChaveDeIdempotencia.dom.test.tsx` (nome sob revisão: convenção de hook é `useX.dom.test.ts`; ver seção 14 deste anexo) | mover (refazer após o #55) | Mover sistema |
+| `lib/chaveDeIdempotencia.dom.test.tsx` (PR #55) | `pages/sistema/AcessosPage/hooks/useChaveDeIdempotencia.dom.test.tsx` (`.dom.test.tsx` porque usa JSX, seção 8.1 do Documento 8; nome final no merge, seção 14 deste anexo) | mover (refazer após o #55) | Mover sistema |
 | `lib/useValorComAtraso.ts` (único consumidor: `AbaDeUsuarios`) | `pages/sistema/AcessosPage/components/AbaDeUsuarios/hooks/useValorComAtraso.ts` | mover | Mover sistema |
 | `lib/formato.ts`: `FUSO_DA_CASA`, `DATA_E_HORA`, `formatarDataHora` (único consumidor: `LinhaDeUsuario`) | `pages/sistema/AcessosPage/components/AbaDeUsuarios/components/LinhaDeUsuario/utils/formatarDataHora.ts` | repartir por export | Mover sistema |
-| `lib/formato.test.ts`: testes de `formatarDataHora` | `.../LinhaDeUsuario/utils/formatarDataHora.test.ts` | repartir por export | Mover sistema |
+| `lib/formato.test.ts`: describe de `formatarDataHora` (entra com o #58) | `.../LinhaDeUsuario/utils/formatarDataHora.test.ts` | repartir por describe | Mover sistema |
 
 ### 12.2 Divisões
 
@@ -480,7 +558,9 @@ Os destinos são agrupados por área: `app/`, `dados/`, `lib/`, `ds/`, `testes/`
 | `pages/entrada/Aviso.tsx` (`TomDeAviso` é usado pelas constantes do fluxo, por isso fica no nível do fluxo) | `pages/transversal/entrada/components/Aviso/Aviso.tsx` | mover | Mover transversal |
 | `pages/entrada/EntrarPage.tsx` | `pages/transversal/entrada/EntrarPage/EntrarPage.tsx` | mover | Mover transversal |
 | `pages/entrada/MensagemDeEntradaNaTela.tsx` | `pages/transversal/entrada/components/MensagemDeEntradaNaTela/MensagemDeEntradaNaTela.tsx` | mover | Mover transversal |
-| `pages/entrada/mensagens.ts` | `pages/transversal/entrada/constantes.ts` | mover | Mover transversal |
+| `pages/entrada/mensagens.ts`: `MensagemDeEntrada` (tipo, usado por `EntrarPage` e `MensagemDeEntradaNaTela`) | `pages/transversal/entrada/tipos.ts` | repartir por export | Mover transversal |
+| `pages/entrada/mensagens.ts`: `MENSAGENS_DE_RECUSA`, `MENSAGEM_DE_INDISPONIBILIDADE`, `MENSAGEM_DE_FALHA`, `MENSAGEM_DE_FALHA_AO_INICIAR` (só `EntrarPage` em produção) | `pages/transversal/entrada/EntrarPage/constantes.ts` | repartir por export | Mover transversal |
+| `pages/entrada/mensagens.ts`: `MENSAGEM_DE_ERRO_NO_RETORNO` (só `RetornoPage`) | `pages/transversal/entrada/RetornoPage/constantes.ts` | repartir por export | Mover transversal |
 | `pages/entrada/RetornoPage.tsx` | `pages/transversal/entrada/RetornoPage/RetornoPage.tsx` | mover | Mover transversal |
 
 ### 13.2 Divisões e composições
@@ -504,3 +584,8 @@ Os destinos são agrupados por área: `app/`, `dados/`, `lib/`, `ds/`, `testes/`
 - **Nomes de arquivo nas divisões.** São propostos. A etapa confere no código da época e pode ajustar o nome, nunca a posse.
 - **Mocks com destinos em mais de uma etapa.** `mocks/sessao.ts`, `mocks/financeiro.ts` e `mocks/lancamentos.ts` se repartem em etapas diferentes. Cada parte aparece na linha da própria etapa.
 - **Fábrica `fontesDaSessao`.** É opcional, como indicado na linha de `main.tsx` (seção 6 deste anexo).
+- **Branch local do #55.** `feat/b0-comandos-de-acessos` está 9 commits à frente do head publicado do PR #55 (`c71e315`). `ErroDoPainel`, `AvisoDeAtencao`, `useFocoNoPrimeiroCampoInvalido` e `ds/TextField.dom.test.tsx` só existem na branch local. As linhas com o #55 são conferidas nela e refeitas no merge. `app/apoioDeTeste.tsx` é alterado pelo #55 para importar `JANELA_DE_FRESCOR_EM_MS` de `dados/clienteDeConsultas.ts`, fora do barrel: a linha de `dados/index.ts` (seção 2) o reexporta.
+- **`EstadoDaAnamnese` e `StatusAnamnese`.** O tipo de UI (`em dia`, `vencida`, `ausente`) não é o `StatusAnamnese` de `@cdd/contracts` (`PENDENTE`, `OK`, `VENCIDA`, `NAO_APLICAVEL`). O mapeamento não existe no código e entra quando a tela ligar no backend.
+- **`gerarHash`.** Tratado como função falsa da demonstração, que fica no mock (`mocks/prestacao.ts`), e não como regra de domínio. Confirmar.
+- **`AgendaPage.tsx:53`.** A lista de contribuições separa por vírgula, que também é o decimal. Ver a seção 3.1. Registrar na seção 14 do Documento 8 depois da confirmação.
+- **Iniciais.** O `AppShell` e o Meu perfil calculam iniciais de jeitos diferentes. Ver a seção 14 do Documento 8 antes de adotar o `Avatar` no `AppShell` (seção 4.3).
