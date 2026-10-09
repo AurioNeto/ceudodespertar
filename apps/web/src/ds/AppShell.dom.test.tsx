@@ -9,7 +9,8 @@ import {
   passarMouseSobre,
   tirarMouseDe,
   todos,
-} from '../testes/montagem';
+} from '@/testes/montagem';
+import { errosAoClicar } from './apoioDeTeste';
 import { AppShell, type NavEntry } from './AppShell';
 
 afterEach(desmontarTudo);
@@ -33,18 +34,6 @@ const navInferior = (container: HTMLElement) => elemento(container, 'nav');
 const barraDeContexto = (container: HTMLElement) => elemento(container, 'header');
 const chipDoUsuario = (container: HTMLElement) => elemento<HTMLButtonElement>(container, 'button[title="Meu perfil"]');
 const textosDosFilhos = (pai: HTMLElement) => Array.from(pai.children).map((filho) => filho.textContent);
-
-async function errosAoClicar(alvo: HTMLElement): Promise<string[]> {
-  const erros: string[] = [];
-  const ouvir = (evento: ErrorEvent) => {
-    evento.preventDefault();
-    erros.push(evento.message);
-  };
-  window.addEventListener('error', ouvir);
-  await clicar(alvo);
-  window.removeEventListener('error', ouvir);
-  return erros;
-}
 
 describe('AppShell: estrutura por densidade', () => {
   it('sem densidade vale a de escritório, com coluna lateral de 232px', async () => {

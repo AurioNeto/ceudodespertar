@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { errosAoClicar } from './apoioDeTeste';
 import { RecordRow, type RecordStatus } from './RecordRow';
 import { clicar, desmontarTudo, elemento, montar, passarMouseSobre, tirarMouseDe } from '../testes/montagem';
 
@@ -148,15 +149,11 @@ describe('RecordRow — interação', () => {
   });
 
   it('clique sem onClick — nenhum erro chega ao window', async () => {
-    const errosDoWindow: string[] = [];
-    const registrarErro = (evento: ErrorEvent) => errosDoWindow.push(evento.message);
-    window.addEventListener('error', registrarErro);
     const { container } = await montar(<RecordRow description="Mercado" amount={1} />);
 
-    await clicar(linhaDe(container));
-    window.removeEventListener('error', registrarErro);
+    const erros = await errosAoClicar(linhaDe(container));
 
-    expect(errosDoWindow).toEqual([]);
+    expect(erros).toEqual([]);
   });
 
   it('com onClick — cursor de clique', async () => {

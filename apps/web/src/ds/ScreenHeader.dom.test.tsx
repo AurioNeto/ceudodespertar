@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { botaoComTexto, clicar, desmontarTudo, elemento, montar, todos } from '../testes/montagem';
+import { botaoComTexto, clicar, desmontarTudo, elemento, montar, todos } from '@/testes/montagem';
 import { ScreenHeader } from './ScreenHeader';
 
 afterEach(desmontarTudo);

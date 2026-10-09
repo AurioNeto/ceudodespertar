@@ -1,6 +1,7 @@
 import { act, useState, type ReactNode } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { errosDurante } from './apoioDeTeste';
 import { PainelDeAcao, varianteDoPainel, type VarianteDoPainel } from './PainelDeAcao';
 
 declare global {
@@ -584,19 +585,12 @@ describe('PainelDeAcao: devolução do foco', () => {
   });
 
   it('sem quem abriu na página e sem foco de reserva, fechar não lança erro', async () => {
-    const erros: string[] = [];
-    const ouvir = (evento: ErrorEvent) => {
-      evento.preventDefault();
-      erros.push(evento.message);
-    };
-    window.addEventListener('error', ouvir);
     await montar();
     const gatilho = botao('Abrir');
     gatilho.focus();
     await clicar(gatilho);
     await clicar(botao('Sumir gatilho'));
-    await teclarEsc();
-    window.removeEventListener('error', ouvir);
+    const erros = await errosDurante(teclarEsc);
     expect(dialogo()).toBeNull();
     expect(erros).toEqual([]);
   });

@@ -1,6 +1,6 @@
 import { act } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { clicar, desmontarTudo, elemento, montar, todos } from '../testes/montagem';
+import { clicar, desmontarTudo, elemento, montar, todos } from '@/testes/montagem';
 import { SuggestionChip } from './SuggestionChip';
 
 beforeEach(() => {

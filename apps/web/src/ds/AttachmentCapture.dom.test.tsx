@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { clicar, desmontarTudo, elemento, folhaComTexto, montar, todos } from '../testes/montagem';
+import { clicar, desmontarTudo, elemento, folhaComTexto, montar, todos } from '@/testes/montagem';
+import { errosAoClicar } from './apoioDeTeste';
 import { AttachmentCapture } from './AttachmentCapture';
 
 afterEach(desmontarTudo);
@@ -8,18 +9,6 @@ const DICA = 'Um toque, direto da câmera. Nunca obrigatório.';
 
 const botaoDeCaptura = (container: HTMLElement) => elemento<HTMLButtonElement>(container, 'button');
 const botaoDeRemover = (container: HTMLElement) => elemento<HTMLButtonElement>(container, 'button[title="Remover comprovante"]');
-
-async function errosAoClicar(alvo: HTMLElement): Promise<string[]> {
-  const erros: string[] = [];
-  const ouvir = (evento: ErrorEvent) => {
-    evento.preventDefault();
-    erros.push(evento.message);
-  };
-  window.addEventListener('error', ouvir);
-  await clicar(alvo);
-  window.removeEventListener('error', ouvir);
-  return erros;
-}
 
 describe('AttachmentCapture: sem anexo', () => {
   it('oferece um único botão com o rótulo padrão Comprovante e a dica de um toque', async () => {

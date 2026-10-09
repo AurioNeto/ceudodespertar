@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { afterEach, describe, expect, it } from 'vitest';
-import { desmontarTudo, elemento, montar, todos } from '../testes/montagem';
+import { desmontarTudo, elemento, montar, todos } from '@/testes/montagem';
 import { DataTable, type Column } from './DataTable';
 
 afterEach(desmontarTudo);

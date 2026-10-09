@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { clicar, desmontarTudo, elemento, folhaComTexto, montar, todos } from '../testes/montagem';
+import { clicar, desmontarTudo, elemento, folhaComTexto, montar, todos } from '@/testes/montagem';
 import { DefaultField } from './DefaultField';
 
 afterEach(desmontarTudo);
