@@ -7,6 +7,7 @@ import { useComandosDeAcessos } from './comandosDeAcessos';
 import { SeletorDeGrupos } from './SeletorDeGrupos';
 import { SITUACAO_DE_USUARIO } from './situacaoDeUsuario';
 import { useAcaoNoUsuario } from './useAcaoNoUsuario';
+import { useFocoNoPrimeiroCampoInvalido } from './useFocoNoPrimeiroCampoInvalido';
 
 export interface PainelDoUsuarioProps {
   readonly usuario: UsuarioListado | null;
@@ -52,6 +53,7 @@ function PainelDoUsuarioAberto({
   const [grupos, setGrupos] = useState<readonly GrupoId[]>(() => idsDosGrupos(usuario));
   const [motivo, setMotivo] = useState('');
   const [erroDeMotivo, setErroDeMotivo] = useState<string | undefined>();
+  const { raiz, focarPrimeiroCampoInvalido } = useFocoNoPrimeiroCampoInvalido<HTMLDivElement>();
 
   const { enviando, acaoEmCurso, erro, aviso, enviar } = useAcaoNoUsuario<AcaoDoPainel>({
     usuarioId: usuario.id,
@@ -79,6 +81,7 @@ function PainelDoUsuarioAberto({
     const motivoLimpo = motivo.trim();
     if (!motivoLimpo) {
       setErroDeMotivo(MOTIVO_OBRIGATORIO);
+      focarPrimeiroCampoInvalido();
       return;
     }
     setErroDeMotivo(undefined);
@@ -99,7 +102,7 @@ function PainelDoUsuarioAberto({
       aoFechar={aoFechar}
       focoDeReserva={focoDeReserva}
     >
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
+    <div ref={raiz} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
       {aviso ? (
         <p
           role="status"

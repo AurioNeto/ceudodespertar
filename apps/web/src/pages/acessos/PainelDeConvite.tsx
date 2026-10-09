@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
+import { ConvidarUsuario } from '@cdd/contracts';
 import type { GrupoId, PedidoDeConvite } from '@cdd/contracts';
 import { Button, PainelDeAcao, TextField, type Density, type VarianteDoPainel } from '../../ds';
 import { useChaveDeIdempotencia } from '../../lib/chaveDeIdempotencia';
 import { useComandosDeAcessos } from './comandosDeAcessos';
 import { SeletorDeGrupos } from './SeletorDeGrupos';
+import { useFocoNoPrimeiroCampoInvalido } from './useFocoNoPrimeiroCampoInvalido';
 import { AJUDA_DE_GRUPOS_DO_CONVITE, CONVITE_REGISTRADO } from './textosDeAcessos';
 import { useAcaoNoUsuario } from './useAcaoNoUsuario';
 
@@ -21,7 +23,15 @@ interface ErrosDeCampo {
   readonly email?: string;
 }
 
-const pareceEmail = (valor: string) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(valor);
+function validarConvite(nome: string, email: string): ErrosDeCampo {
+  const resultado = ConvidarUsuario.safeParse({ nome, email });
+  if (resultado.success) return {};
+  const camposInvalidos = new Set(resultado.error.issues.map((problema) => problema.path[0]));
+  return {
+    ...(camposInvalidos.has('nome') ? { nome: 'Informe o nome.' } : {}),
+    ...(camposInvalidos.has('email') ? { email: 'Informe um e-mail válido.' } : {}),
+  };
+}
 
 export function PainelDeConvite({ aberto, ...resto }: PainelDeConviteProps) {
   return aberto ? <PainelDeConviteAberto {...resto} /> : null;
@@ -36,6 +46,7 @@ function PainelDeConviteAberto({ variante, densidade, aoFechar, focoDeReserva }:
   const [grupos, setGrupos] = useState<readonly GrupoId[]>([]);
   const [errosDeCampo, setErrosDeCampo] = useState<ErrosDeCampo>({});
   const [registrado, setRegistrado] = useState(false);
+  const { raiz: formulario, focarPrimeiroCampoInvalido } = useFocoNoPrimeiroCampoInvalido<HTMLFormElement>();
 
   const conclusao = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -46,12 +57,12 @@ function PainelDeConviteAberto({ variante, densidade, aoFechar, focoDeReserva }:
     evento.preventDefault();
     const nomeLimpo = nome.trim();
     const emailLimpo = email.trim().toLowerCase();
-    const erros: ErrosDeCampo = {
-      ...(nomeLimpo ? {} : { nome: 'Informe o nome.' }),
-      ...(pareceEmail(emailLimpo) ? {} : { email: 'Informe um e-mail válido.' }),
-    };
+    const erros = validarConvite(nomeLimpo, emailLimpo);
     setErrosDeCampo(erros);
-    if (erros.nome || erros.email) return;
+    if (erros.nome || erros.email) {
+      focarPrimeiroCampoInvalido();
+      return;
+    }
     const pedido: PedidoDeConvite = {
       nome: nomeLimpo,
       email: emailLimpo,
@@ -71,7 +82,7 @@ function PainelDeConviteAberto({ variante, densidade, aoFechar, focoDeReserva }:
       </Button>
     </div>
   ) : (
-    <form noValidate onSubmit={submeter} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+    <form ref={formulario} noValidate onSubmit={submeter} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
       <TextField
         label="Nome"
         density={densidade}

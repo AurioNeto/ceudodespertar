@@ -599,6 +599,16 @@ describe('Acessos: foco e leitor de tela no painel', () => {
     expect(textos).toEqual([AVISO_LGPD_DO_MOTIVO, '0/500', 'Informe o motivo.']);
   });
 
+  it('motivo vazio marca o campo inválido e leva o foco até ele', async () => {
+    const { tela } = await montar();
+    await abrirGerenciar(tela);
+    botaoDoPainel('Suspender acesso').focus();
+    await clicarNoPainel('Suspender acesso');
+    const campo = campoDoPainel('Motivo');
+    expect(campo.getAttribute('aria-invalid')).toBe('true');
+    expect(document.activeElement).toBe(campo);
+  });
+
   it('o contador só é anunciado perto do limite', async () => {
     const { tela } = await montar();
     await abrirGerenciar(tela);
@@ -617,6 +627,44 @@ describe('Acessos: foco e leitor de tela no painel', () => {
     await clicarNoPainel('Registrar convite');
     expect(textoDoPainel()).toContain('Informe um e-mail válido.');
     expect(cliente.chamadasDeComando()).toHaveLength(0);
+  });
+
+  it.each(['joão@ceu.org', 'a..b@x.com'])('e-mail %s que o contrato recusa é barrado no campo, sem requisição', async (email) => {
+    const { cliente, tela } = await montar();
+    await abrirConvite(tela);
+    await preencherConvite('Ana Souza', email);
+    await clicarNoPainel('Registrar convite');
+    expect(textoDoPainel()).toContain('Informe um e-mail válido.');
+    expect(campoDoPainel('E-mail').getAttribute('aria-invalid')).toBe('true');
+    expect(cliente.chamadasDeComando()).toHaveLength(0);
+  });
+
+  it('com nome e e-mail inválidos, o foco vai ao primeiro campo inválido', async () => {
+    const { tela } = await montar();
+    await abrirConvite(tela);
+    await preencherConvite('   ', 'a@b');
+    botaoDoPainel('Registrar convite').focus();
+    await clicarNoPainel('Registrar convite');
+    expect(document.activeElement).toBe(campoDoPainel('Nome'));
+  });
+
+  it('com só o e-mail inválido, o foco vai ao e-mail', async () => {
+    const { tela } = await montar();
+    await abrirConvite(tela);
+    await preencherConvite('Ana Souza', 'a@b');
+    botaoDoPainel('Registrar convite').focus();
+    await clicarNoPainel('Registrar convite');
+    expect(document.activeElement).toBe(campoDoPainel('E-mail'));
+  });
+
+  it('corrigido o campo, o envio acontece normalmente', async () => {
+    const { cliente, tela } = await montar();
+    await abrirConvite(tela);
+    await preencherConvite('Ana Souza', 'joão@ceu.org');
+    await clicarNoPainel('Registrar convite');
+    await digitarNoPainel('E-mail', 'ana@ceu.org');
+    await clicarNoPainel('Registrar convite');
+    expect(cliente.chamadasDeComando()).toHaveLength(1);
   });
 });
 
