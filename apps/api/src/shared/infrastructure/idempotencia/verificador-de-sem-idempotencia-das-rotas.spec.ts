@@ -63,6 +63,24 @@ class SemIdempotenciaEmRotaDeUsuarioAtivo {
   criar(): void {}
 }
 
+@Controller('identificado-e-com-permissao')
+class SemIdempotenciaEmRotaIdentificadaEComPermissao {
+  @ApenasIdentificado()
+  @RequerPermissao('financeiro.lancamento.registrar')
+  @SemIdempotencia()
+  @Post()
+  criar(): void {}
+}
+
+@Controller('permissao-e-identificado')
+class SemIdempotenciaEmRotaComPermissaoEIdentificada {
+  @RequerPermissao('financeiro.lancamento.registrar')
+  @ApenasIdentificado()
+  @SemIdempotencia()
+  @Post()
+  criar(): void {}
+}
+
 @SemIdempotencia()
 @RequerPermissao('financeiro.lancamento.registrar')
 @Controller('classe-com-permissao')
@@ -123,6 +141,16 @@ describe('VerificadorDeSemIdempotenciaDasRotas', () => {
     ['@RequerAlgumaPermissao', SemIdempotenciaEmRotaComAlgumaPermissao, 'SemIdempotenciaEmRotaComAlgumaPermissao.criar'],
     ['@ApenasUsuarioAtivo', SemIdempotenciaEmRotaDeUsuarioAtivo, 'SemIdempotenciaEmRotaDeUsuarioAtivo.criar'],
     ['@RequerPermissao herdado da classe', SemIdempotenciaNaClasseComPermissao, 'SemIdempotenciaNaClasseComPermissao.criar'],
+    [
+      '@ApenasIdentificado e @RequerPermissao juntas',
+      SemIdempotenciaEmRotaIdentificadaEComPermissao,
+      'SemIdempotenciaEmRotaIdentificadaEComPermissao.criar',
+    ],
+    [
+      '@RequerPermissao e @ApenasIdentificado juntas',
+      SemIdempotenciaEmRotaComPermissaoEIdentificada,
+      'SemIdempotenciaEmRotaComPermissaoEIdentificada.criar',
+    ],
     ['ausência de marca de acesso', SemIdempotenciaSemMarcaDeAcesso, 'SemIdempotenciaSemMarcaDeAcesso.criar'],
   ])('recusa a partida com @SemIdempotencia em rota com %s, nomeando a rota', async (_descricao, controlador, rota) => {
     await expect(subirCom(controlador)).rejects.toThrow(ErroDeSemIdempotenciaEmRotaComInstituicao);
