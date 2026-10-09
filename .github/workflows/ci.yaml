@@ -46,9 +46,17 @@ jobs:
       - name: fronteiras
         run: pnpm fronteiras
 
-      # catraca: falha em violação fora da linha de base versionada (Documento 8, seção 12.2)
+      # catraca: falha em violação fora da linha de base versionada (Documento 8, seção 12.2);
+      # depois, o shrink-only não pode mudar o arquivo: a linha de base é igual às violações atuais
       - name: fronteiras do web
-        run: pnpm fronteiras:web:catraca
+        run: |
+          set -euo pipefail
+          pnpm fronteiras:web:catraca
+          pnpm fronteiras:web:linha-de-base
+          if ! git diff --exit-code -- .dependency-cruiser-known-violations.web.json; then
+            echo "::error::a linha de base tem entrada obsoleta: rode pnpm fronteiras:web:linha-de-base e comite"
+            exit 1
+          fi
 
       - name: testes unitarios de contracts
         run: pnpm --filter @cdd/contracts test
