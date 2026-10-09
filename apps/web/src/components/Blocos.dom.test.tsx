@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { ReactElement } from 'react';
 import { BarraDeProporcao, Cartao, Numero, Recado, Rotulo, Td, Th, rotuloCaixaAlta } from './Blocos';
-import { clicar, desmontarTudo, elemento, montar, todos } from './apoioDeComponentes';
+import { clicar, desmontarTudo, elemento, montar, todos } from '../testes/montagem';
 
 afterEach(desmontarTudo);
 
@@ -50,7 +50,7 @@ describe('Numero', () => {
   it('mostra o rótulo e depois o valor', async () => {
     const tela = await montar(<Numero rotulo="Total" valor="R$ 1.234,56" />);
 
-    expect(tela.texto()).toBe('TotalR$ 1.234,56');
+    expect(tela.container.textContent).toBe('TotalR$ 1.234,56');
   });
 
   it('marca o valor como numérico', async () => {
@@ -62,14 +62,14 @@ describe('Numero', () => {
   it('a nota vem depois do valor', async () => {
     const tela = await montar(<Numero rotulo="Total" valor="10" nota="até 30/09" />);
 
-    expect(tela.texto()).toBe('Total10até 30/09');
+    expect(tela.container.textContent).toBe('Total10até 30/09');
     expect(tela.container.firstElementChild?.children).toHaveLength(3);
   });
 
   it('sem nota não mostra nada além do rótulo e do valor', async () => {
     const tela = await montar(<Numero rotulo="Total" valor="10" />);
 
-    expect(tela.texto()).toBe('Total10');
+    expect(tela.container.textContent).toBe('Total10');
     expect(tela.container.firstElementChild?.children).toHaveLength(2);
   });
 
@@ -224,7 +224,7 @@ describe('Recado', () => {
     const tela = await montar(<Recado texto="Lançamento registrado" onFechar={() => undefined} />);
 
     expect(elemento(tela.container, 'button').textContent).toBe('×');
-    expect(tela.texto()).toBe('Lançamento registrado×');
+    expect(tela.container.textContent).toBe('Lançamento registrado×');
   });
 
   it('fechar chama onFechar uma vez', async () => {
@@ -248,7 +248,7 @@ describe('Recado', () => {
 
     await clicar(elemento(tela.container, 'button'));
 
-    expect(tela.texto()).toContain('Lançamento registrado');
+    expect(tela.container.textContent).toContain('Lançamento registrado');
   });
 
   it('leva um ícone decorativo escondido dos leitores de tela', async () => {
@@ -260,7 +260,7 @@ describe('Recado', () => {
   it('texto vazio mostra só o botão de fechar', async () => {
     const tela = await montar(<Recado texto="" onFechar={() => undefined} />);
 
-    expect(tela.texto()).toBe('×');
+    expect(tela.container.textContent).toBe('×');
   });
 });
 
@@ -399,7 +399,7 @@ describe('BarraDeProporcao', () => {
   it('é uma imagem para os leitores de tela, sem texto visível', async () => {
     const tela = await montar(<BarraDeProporcao parte={5} total={10} />);
 
-    expect(tela.texto()).toBe('');
+    expect(tela.container.textContent).toBe('');
   });
 
   it('o preenchimento usa o tom de confirmado por padrão', async () => {
@@ -417,7 +417,7 @@ describe('BarraDeProporcao', () => {
   it('acompanha parte e total quando eles mudam por fora', async () => {
     const tela = await montar(<BarraDeProporcao parte={1} total={10} />);
 
-    await tela.renderizar(<BarraDeProporcao parte={9} total={10} />);
+    await tela.atualizar(<BarraDeProporcao parte={9} total={10} />);
 
     expect(barra(tela.container).getAttribute('aria-label')).toBe('90% do total');
     expect(preenchimento(tela.container).style.width).toBe('90%');

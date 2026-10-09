@@ -8,7 +8,7 @@ import {
   escolherOpcao,
   montar,
   todos,
-} from './apoioDeComponentes';
+} from '../testes/montagem';
 
 afterEach(desmontarTudo);
 
@@ -93,7 +93,7 @@ describe('Select', () => {
   it('acompanha o value quando ele muda por fora', async () => {
     const tela = await montarSelect({ value: 'a' });
 
-    await tela.renderizar(<Select label="Conta" value="c" options={OPCOES} onChange={() => undefined} />);
+    await tela.atualizar(<Select label="Conta" value="c" options={OPCOES} onChange={() => undefined} />);
 
     expect(elemento<HTMLSelectElement>(tela.container, 'select').value).toBe('c');
   });
@@ -129,13 +129,13 @@ describe('Select', () => {
   it('ignora a meta da opção', async () => {
     const tela = await montarSelect({ options: [{ value: 'a', label: 'Alpha', meta: 'saldo R$ 10,00' }] });
 
-    expect(tela.texto()).not.toContain('saldo R$ 10,00');
+    expect(tela.container.textContent).not.toContain('saldo R$ 10,00');
   });
 
   it('mostra a dica abaixo do select quando ela vem', async () => {
     const tela = await montarSelect({ hint: 'Só contas ativas' });
 
-    expect(tela.texto()).toBe('ContaAlphaBetaGamaSó contas ativas');
+    expect(tela.container.textContent).toBe('ContaAlphaBetaGamaSó contas ativas');
   });
 
   it('com dica o campo tem rótulo, select e dica', async () => {
@@ -147,7 +147,7 @@ describe('Select', () => {
   it('sem dica o campo tem só rótulo e select', async () => {
     const tela = await montarSelect();
 
-    expect(tela.texto()).toBe('ContaAlphaBetaGama');
+    expect(tela.container.textContent).toBe('ContaAlphaBetaGama');
     expect(tela.container.firstElementChild?.children).toHaveLength(2);
   });
 
@@ -219,7 +219,7 @@ describe('SeletorDeTipo', () => {
   it('acompanha o valor quando ele muda por fora', async () => {
     const tela = await montarSeletor({ valor: 'SAIDA' });
 
-    await tela.renderizar(<SeletorDeTipo opcoes={TIPOS} valor="ENTRADA" onEscolher={() => undefined} />);
+    await tela.atualizar(<SeletorDeTipo opcoes={TIPOS} valor="ENTRADA" onEscolher={() => undefined} />);
 
     expect(botaoComTexto(tela.container, 'Entrada').getAttribute('aria-pressed')).toBe('true');
     expect(botaoComTexto(tela.container, 'Saída').getAttribute('aria-pressed')).toBe('false');
@@ -334,7 +334,7 @@ describe('Interruptor', () => {
   it('acompanha o prop quando ele vira ligado', async () => {
     const tela = await montarInterruptor({ ligado: false });
 
-    await tela.renderizar(<Interruptor ligado onAlternar={() => undefined} rotuloAcessivel="Receber avisos" />);
+    await tela.atualizar(<Interruptor ligado onAlternar={() => undefined} rotuloAcessivel="Receber avisos" />);
 
     expect(elemento(tela.container, '[role="switch"]').getAttribute('aria-checked')).toBe('true');
   });
@@ -358,7 +358,7 @@ describe('Interruptor', () => {
   it('não mostra texto, só a bolinha', async () => {
     const tela = await montarInterruptor();
 
-    expect(tela.texto()).toBe('');
+    expect(tela.container.textContent).toBe('');
   });
 });
 
@@ -396,8 +396,8 @@ describe('CampoDeTags', () => {
       'remover categoria Alimentação',
       'remover categoria Limpeza',
     ]);
-    expect(tela.texto()).toContain('Alimentação×');
-    expect(tela.texto()).toContain('Limpeza×');
+    expect(tela.container.textContent).toContain('Alimentação×');
+    expect(tela.container.textContent).toContain('Limpeza×');
   });
 
   it('o botão de remover mostra o sinal ×', async () => {
@@ -409,8 +409,8 @@ describe('CampoDeTags', () => {
   it('mostra a escolhida como veio, sem trocar pelo rótulo da opção', async () => {
     const tela = await montarTags({ escolhidas: ['a'] });
 
-    expect(tela.texto()).toContain('a×');
-    expect(tela.texto()).not.toContain('Alpha×');
+    expect(tela.container.textContent).toContain('a×');
+    expect(tela.container.textContent).not.toContain('Alpha×');
   });
 
   it('remover chama onRemover com o texto da escolhida', async () => {
@@ -444,27 +444,27 @@ describe('CampoDeTags', () => {
   it('sem escolhidas mostra o aviso padrão e nenhum botão de remover', async () => {
     const tela = await montarTags({ escolhidas: [] });
 
-    expect(tela.texto()).toContain('nenhuma escolhida');
+    expect(tela.container.textContent).toContain('nenhuma escolhida');
     expect(botoesDeRemover(tela.container)).toHaveLength(0);
   });
 
   it('sem escolhidas mostra o aviso informado no lugar do padrão', async () => {
     const tela = await montarTags({ escolhidas: [], vazio: 'escolha ao menos uma' });
 
-    expect(tela.texto()).toContain('escolha ao menos uma');
-    expect(tela.texto()).not.toContain('nenhuma escolhida');
+    expect(tela.container.textContent).toContain('escolha ao menos uma');
+    expect(tela.container.textContent).not.toContain('nenhuma escolhida');
   });
 
   it('com escolhidas não mostra o aviso de vazio', async () => {
     const tela = await montarTags({ escolhidas: ['a'] });
 
-    expect(tela.texto()).not.toContain('nenhuma escolhida');
+    expect(tela.container.textContent).not.toContain('nenhuma escolhida');
   });
 
   it('oferece as disponíveis ainda não escolhidas, na ordem, com o sinal de mais', async () => {
     const tela = await montarTags({ escolhidas: ['b'] });
 
-    expect(tela.texto()).toContain('Existentes:');
+    expect(tela.container.textContent).toContain('Existentes:');
     expect(textosDe(botoesDeAdicionar(tela.container))).toEqual(['+ Alpha', '+ Gama']);
   });
 
@@ -495,14 +495,14 @@ describe('CampoDeTags', () => {
   it('com todas as disponíveis escolhidas não mostra a lista de existentes', async () => {
     const tela = await montarTags({ escolhidas: ['a', 'b', 'c'] });
 
-    expect(tela.texto()).not.toContain('Existentes:');
+    expect(tela.container.textContent).not.toContain('Existentes:');
     expect(botoesDeAdicionar(tela.container)).toHaveLength(0);
   });
 
   it('sem disponíveis não mostra a lista de existentes', async () => {
     const tela = await montarTags({ escolhidas: ['a'], disponiveis: [] });
 
-    expect(tela.texto()).not.toContain('Existentes:');
+    expect(tela.container.textContent).not.toContain('Existentes:');
   });
 
   it('escolhida que não está entre as disponíveis aparece mesmo assim', async () => {
@@ -526,7 +526,7 @@ describe('CampoDeTags', () => {
   it('acompanha as escolhidas quando elas mudam por fora', async () => {
     const tela = await montarTags({ escolhidas: [] });
 
-    await tela.renderizar(
+    await tela.atualizar(
       <CampoDeTags
         label="Categoria"
         escolhidas={['c']}
@@ -537,6 +537,6 @@ describe('CampoDeTags', () => {
     );
 
     expect(textosDe(botoesDeAdicionar(tela.container))).toEqual(['+ Alpha', '+ Beta']);
-    expect(tela.texto()).not.toContain('nenhuma escolhida');
+    expect(tela.container.textContent).not.toContain('nenhuma escolhida');
   });
 });
