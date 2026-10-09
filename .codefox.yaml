@@ -207,6 +207,8 @@ learnings:
     note: "Toda escrita que pode tirar administrador — inclusive sobre GRUPO (editar permissões, desativar grupo) — passa por AlteracaoQuePodeTirarAdministrador (efeito 'usuario' ou 'grupo'), que pega a trava advisory por instituição antes da fotografia. Caso de uso de grupo que salvar direto pelo RepositorioDeGrupo zera administradores por write skew; exigir também teste de corrida grupo × usuário."
   - date: "2026-10-08"
     note: "Página dentro do ExigeSessao só renderiza com a sessão ativa (verificando mostra o portão; falha/indisponivel redireciona para /entrar). Estado de carregamento ou erro do /eu dentro da página é ramo morto, e teste que monta a página sem a guarda não prova comportamento de produção."
+  - date: "2026-10-09"
+    note: "O índice grupo_nome_unico (instituicao_id, lower(nome)) não filtra por ativo: grupo excluído continua reservando o nome, e renomear/criar com esse nome responde 409 GRUPO_JA_EXISTE sem que o GET /grupos mostre o conflito. A peça de excluir grupo precisa decidir (índice parcial WHERE ativo, ou liberar o nome na exclusão) e testar."
 
 --- # Ferramentas do /pre-push (monorepo pnpm)
 stack:
