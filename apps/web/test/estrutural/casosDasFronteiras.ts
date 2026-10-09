@@ -231,6 +231,7 @@ export const CASOS_DAS_FRONTEIRAS = {
       'ds/molecules/TextField/TextField.tsx -> ds/atoms/Icon/registro.ts',
       `${FATURAS}/FaturasPage.tsx -> ${TABELA}/index.ts`,
       'ds/atoms/Aviso/Aviso.tsx -> ds/atoms/Avisos/registro.ts',
+      'ds/atoms/Aviso/porUtils.ts -> ds/atoms/Selo/utils/index.ts',
     ],
     permite: [
       `${FATURAS}/FaturasPage.tsx -> ${DETALHE}/index.ts`,
@@ -313,6 +314,14 @@ export const CASOS_DAS_FRONTEIRAS = {
       'testes/sessaoDeTeste.tsx -> app/sessao/index.ts',
     ],
   },
+  'pasta-camel-case-no-destino': {
+    severidade: 'error',
+    acusa: ['pages/financeiro/usaMeuGrupo.ts -> pages/financeiro/meuGrupo/total.ts'],
+    permite: [
+      `${RECIBO} -> ${LANCAMENTOS}/components/Paginacao/index.ts`,
+      'testes/sessaoDeTeste.tsx -> app/sessao/index.ts',
+    ],
+  },
   'producao-global-sem-mock': {
     severidade: 'warn',
     acusa: [
@@ -332,8 +341,12 @@ export const CASOS_DAS_FRONTEIRAS = {
       'mocks/filaDeVerificacao.ts -> dados/index.ts',
       `mocks/filaDeVerificacao.ts -> ${RECIBO}`,
       'mocks/filaDeVerificacao.ts -> testes/sessaoDeTeste.tsx',
+      'mocks/filaDeVerificacao.ts -> react',
     ],
-    permite: ['mocks/filaDeVerificacao.ts -> mocks/ids.ts', 'mocks/filaDeVerificacao.ts -> lib/formato.ts'],
+    permite: [
+      'mocks/filaDeVerificacao.ts -> mocks/ids.ts',
+      'mocks/filaDeVerificacao.ts -> lib/formato.ts',
+    ],
   },
   'tela-de-api-sem-mock': {
     severidade: 'error',

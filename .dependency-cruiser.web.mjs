@@ -5,9 +5,9 @@ const MODULOS_DE_PAGES = '(transversal|financeiro|eventos|estoque|pessoas|sistem
 const UNIDADE_DE_PAGINA = '[A-Z][A-Za-z0-9]*Page';
 const PASTA_DE_UNIDADE_NO_DESTINO = `${SRC}.*/[A-Z][^/]*/|${SRC}[A-Z][^/]*/`;
 const PASTA_DE_MOCKS = `${SRC}(?:mocks|.*/mocks)/`;
-const PASTA_CAMEL_CASE_NA_ORIGEM = `${SRC}.*/[a-z][^/A-Z]*[A-Z][^/]*/|${SRC}[a-z][^/A-Z]*[A-Z][^/]*/`;
+const PASTA_CAMEL_CASE = `${SRC}.*/[a-z][^/A-Z]*[A-Z][^/]*/|${SRC}[a-z][^/A-Z]*[A-Z][^/]*/`;
 const PROFUNDIDADE_MAXIMA_DE_UNIDADE = 6;
-const LINHA_DE_BASE = 'Linha de base de 09/10/2026, reproduzível com pnpm fronteiras:web.';
+const LINHA_DE_BASE = 'Linha de base da main 1812df6 (404 avisos), reproduzível com pnpm fronteiras:web.';
 
 function origemComUnidadesAninhadas(profundidade) {
   const unidadesCapturadas = '[^A-Z]*/[A-Z][^/]*)'.repeat(profundidade);
@@ -223,10 +223,19 @@ export default {
       comment:
         'Pasta de agrupamento é minúscula e pasta de unidade é PascalCase. Pasta camelCase não é ' +
         'nenhuma das duas e escaparia da família unidade-so-pelo-index, então a regra acusa cada ' +
-        'import de arquivo dentro dela. Nome de arquivo em camelCase segue livre. Na main de ' +
-        '09/10/2026 não há pasta camelCase.',
-      from: { path: PASTA_CAMEL_CASE_NA_ORIGEM },
+        'import feito por arquivo dentro dela, e pasta-camel-case-no-destino acusa cada import que ' +
+        'chega nela. Nome de arquivo em camelCase segue livre. Na main 1812df6 não há pasta camelCase.',
+      from: { path: PASTA_CAMEL_CASE },
       to: { path: '.' },
+    },
+    {
+      name: 'pasta-camel-case-no-destino',
+      severity: 'error',
+      comment:
+        'Gêmea de pasta-camel-case pelo lado do destino: pasta camelCase só com arquivos-folha, sem ' +
+        'imports próprios, também é acusada quando alguém de fora importa um arquivo dela.',
+      from: { path: SRC },
+      to: { path: PASTA_CAMEL_CASE },
     },
     {
       name: 'producao-global-sem-mock',
@@ -242,7 +251,7 @@ export default {
       comment:
         `src/mocks é só dado de demonstração e depende só de lib/ e @cdd/contracts. ${LINHA_DE_BASE}`,
       from: { path: `${SRC}mocks/` },
-      to: { path: `${SRC}(app|components|dados|ds|pages|testes)/` },
+      to: { path: [`${SRC}(app|components|dados|ds|pages|testes)/`, 'node_modules/(?!@cdd/contracts/)'] },
     },
     {
       name: 'tela-de-api-sem-mock',
