@@ -1,0 +1,80 @@
+import { useMemo, useState } from 'react';
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
+import type { GrupoId, SituacaoUsuario } from '@cdd/contracts';
+import { Button, EmptyState, InfraError, SkeletonList } from '../../ds';
+import { useValorComAtraso } from '../../lib/useValorComAtraso';
+import { useConsultasDeAcessos, temFiltroAplicado } from './consultasDeAcessos';
+import { FiltrosDeUsuarios } from './FiltrosDeUsuarios';
+import { LinhaDeUsuario } from './LinhaDeUsuario';
+
+export const ATRASO_DA_BUSCA_EM_MS = 300;
+
+export function AbaDeUsuarios() {
+  const consultas = useConsultasDeAcessos();
+  const [buscaDigitada, setBuscaDigitada] = useState('');
+  const [situacao, setSituacao] = useState<SituacaoUsuario | null>(null);
+  const [grupoId, setGrupoId] = useState<GrupoId | null>(null);
+  const busca = useValorComAtraso(buscaDigitada, ATRASO_DA_BUSCA_EM_MS);
+  const filtro = useMemo(() => ({ situacao, grupoId, busca }), [situacao, grupoId, busca]);
+
+  const grupos = useQuery(consultas.grupos());
+  const usuarios = useInfiniteQuery(consultas.usuarios(filtro));
+  const itens = usuarios.data?.pages.flatMap((pagina) => pagina.itens) ?? [];
+
+  return (
+    <>
+      <FiltrosDeUsuarios
+        busca={buscaDigitada}
+        situacao={situacao}
+        grupoId={grupoId}
+        grupos={grupos.data?.itens ?? []}
+        aoMudarBusca={setBuscaDigitada}
+        aoMudarSituacao={setSituacao}
+        aoMudarGrupo={setGrupoId}
+      />
+
+      {usuarios.isPending ? <SkeletonList rows={5} /> : null}
+
+      {usuarios.isError && !usuarios.data ? (
+        <InfraError
+          description="Não foi possível carregar os usuários agora. Tente de novo em instantes."
+          onRetry={() => void usuarios.refetch()}
+        />
+      ) : null}
+
+      {usuarios.data && itens.length === 0 ? (
+        <EmptyState
+          title="Nenhum usuário encontrado"
+          description={
+            temFiltroAplicado(filtro)
+              ? 'Nenhum usuário combina com os filtros escolhidos. Ajuste a busca ou limpe os filtros.'
+              : 'Ainda não há usuários com acesso ao sistema.'
+          }
+        />
+      ) : null}
+
+      {itens.length > 0 ? (
+        <ul aria-label="Usuários" style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {itens.map((usuario) => (
+            <LinhaDeUsuario key={usuario.id} usuario={usuario} />
+          ))}
+        </ul>
+      ) : null}
+
+      {usuarios.isFetchNextPageError ? (
+        <InfraError
+          description="Não foi possível carregar mais usuários."
+          onRetry={() => void usuarios.fetchNextPage()}
+        />
+      ) : null}
+
+      {usuarios.hasNextPage && !usuarios.isFetchNextPageError ? (
+        <div>
+          <Button variant="quiet" disabled={usuarios.isFetchingNextPage} onClick={() => void usuarios.fetchNextPage()}>
+            {usuarios.isFetchingNextPage ? 'Carregando…' : 'Carregar mais'}
+          </Button>
+        </div>
+      ) : null}
+    </>
+  );
+}

@@ -34,6 +34,7 @@ const ACESSO_APROVADO: Record<RotaId, readonly Permissao[]> = {
   feitio: ['estoque.feitio.gerenciar'],
   pessoas: ['pessoas.pessoa.ler'],
   anamnese: ['pessoas.anamnese.ler'],
+  acessos: ['sistema.usuario.gerenciar', 'sistema.grupo.gerenciar'],
   auditoria: ['sistema.auditoria.ler'],
   perfil: [],
 };

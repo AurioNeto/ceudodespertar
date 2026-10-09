@@ -30,6 +30,7 @@ import { AnamnesePage } from '../pages/pessoas/AnamnesePage';
 import { AyahuascaPage } from '../pages/ayahuasca/AyahuascaPage';
 import { FeitioPage } from '../pages/estoque/FeitioPage';
 import { AuditoriaPage } from '../pages/auditoria/AuditoriaPage';
+import { AcessosPage } from '../pages/acessos/AcessosPage';
 import { MeuPerfilPage } from '../pages/perfil/MeuPerfilPage';
 
 export const router = createBrowserRouter([
@@ -68,6 +69,7 @@ export const router = createBrowserRouter([
       { path: ROTAS.anamnese, element: <AnamnesePage /> },
       { path: ROTAS.ayahuasca, element: <AyahuascaPage /> },
       { path: ROTAS.feitio, element: <FeitioPage /> },
+      { path: ROTAS.acessos, element: <AcessosPage /> },
       { path: ROTAS.auditoria, element: <AuditoriaPage /> },
       { path: ROTAS.perfil, element: <MeuPerfilPage /> },
     ],

@@ -118,6 +118,28 @@ describe('acesso por permissão no Layout', () => {
     }
   });
 
+  it.each([
+    ['sistema.usuario.gerenciar'],
+    ['sistema.grupo.gerenciar'],
+  ] as const)('quem tem %s vê Acessos na seção Sistema, antes de Auditoria', async (permissao) => {
+    const tela = await montarLayoutEm(ROTAS.painel, TELAS, [permissao, 'sistema.auditoria.ler']);
+    const menu = tela.container.querySelector('aside nav')?.textContent ?? '';
+    expect(menu).toContain('Sistema');
+    expect(menu.indexOf('Sistema')).toBeLessThan(menu.indexOf('Acessos'));
+    expect(menu.indexOf('Acessos')).toBeLessThan(menu.indexOf('Auditoria'));
+  });
+
+  it('quem não tem permissão de acessos não vê o item no menu', async () => {
+    const tela = await montarLayoutEm(ROTAS.painel, TELAS, REGISTRO);
+    expect(itensDoMenu(tela).join('|')).not.toContain('Acessos');
+  });
+
+  it('a rota de acessos não leva a faixa de demonstração', async () => {
+    const tela = await montarLayoutEm(ROTAS.acessos, TELAS, ['sistema.usuario.gerenciar']);
+    expect(faixas(tela).length).toBe(0);
+    expect(tela.texto()).toContain('conteudo-da-tela');
+  });
+
   it('link direto sem permissão mostra o PermissionDenied, sem faixa e sem a tela', async () => {
     const tela = await montarLayoutEm(ROTAS.lote, TELAS, REGISTRO);
     expect(tela.texto()).toContain('Você não tem acesso a Verificação de lote');

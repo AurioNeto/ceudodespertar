@@ -35,6 +35,7 @@ export const ROTAS = {
   feitio: '/feitio',
   pessoas: '/pessoas',
   anamnese: '/anamnese',
+  acessos: '/acessos',
   auditoria: '/auditoria',
   perfil: '/meu-perfil',
 } as const;
@@ -85,6 +86,7 @@ export const construirNav = (lotePendente: number): readonly NavEntry[] => [
   { id: 'pessoas', label: 'Pessoas', icon: 'users' },
   { id: 'anamnese', label: 'Anamnese', icon: 'clipboard-list' },
   { section: 'Sistema' },
+  { id: 'acessos', label: 'Acessos', icon: 'key-round' },
   { id: 'auditoria', label: 'Auditoria', icon: 'scroll-text' },
 ];
 
