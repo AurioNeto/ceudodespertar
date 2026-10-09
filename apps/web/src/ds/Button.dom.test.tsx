@@ -244,7 +244,7 @@ describe('Button — desabilitado', () => {
     expect(aoClicar).not.toHaveBeenCalled();
   });
 
-  it('disabled com o mouse em cima — não muda fundo nem posição', async () => {
+  it('disabled com o mouse em cima — o React ignora o hover em botão desabilitado, sem mudar fundo nem posição', async () => {
     const { container } = await montar(
       <Button disabled variant="primary">
         Ok
@@ -255,6 +255,24 @@ describe('Button — desabilitado', () => {
 
     const botao = botaoDe(container);
     expect([botao.style.background, botao.style.transform]).toEqual(['var(--bg-sunken)', 'none']);
+  });
+
+  it('hover habilitado e depois fica disabled — volta à posição original e ao visual apagado', async () => {
+    const { container, atualizar } = await montar(<Button variant="primary">Ok</Button>);
+    await passarMouseSobre(botaoDe(container));
+
+    await atualizar(
+      <Button disabled variant="primary">
+        Ok
+      </Button>,
+    );
+
+    const botao = botaoDe(container);
+    expect([botao.style.transform, botao.style.background, botao.style.color]).toEqual([
+      'none',
+      'var(--bg-sunken)',
+      'var(--color-ink-subtle)',
+    ]);
   });
 
   it('disabled sem blockedReason — não envolve o button nem põe title', async () => {
