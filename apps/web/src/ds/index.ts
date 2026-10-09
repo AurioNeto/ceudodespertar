@@ -19,7 +19,7 @@ export { Icon } from './Icon';
 export type { IconName } from './Icon';
 export { PendencyCard } from './PendencyCard';
 export { PainelDeAcao, varianteDoPainel } from './PainelDeAcao';
-export type { PainelDeAcaoProps, VarianteDoPainel } from './PainelDeAcao';
+export type { VarianteDoPainel } from './PainelDeAcao';
 export { PeriodLock } from './PeriodLock';
 export { Receipt } from './Receipt';
 export type { ReceiptLine, ReceiptTone } from './Receipt';

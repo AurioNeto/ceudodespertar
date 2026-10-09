@@ -38,7 +38,6 @@ function Anfitriao({ variante = 'folha', comCampo = true, aoFecharExtra, focoDeR
           aoFecharExtra?.();
           setAberto(false);
         }}
-        rodape={<button type="button">Confirmar</button>}
         {...(focoDeReserva ? { focoDeReserva } : {})}
       >
         {comCampo ? <input aria-label="Motivo" /> : <p>Sem campos</p>}
@@ -173,7 +172,7 @@ describe('PainelDeAcao', () => {
     const focaveis = Array.from(dialogo()?.querySelectorAll<HTMLElement>('button, input') ?? []);
     const primeiro = focaveis[0] as HTMLElement;
     const ultimo = focaveis.at(-1) as HTMLElement;
-    expect(ultimo.textContent).toBe('Confirmar');
+    expect(ultimo.textContent).toBe('Ação interna');
 
     ultimo.focus();
     await teclar(ultimo, 'Tab');

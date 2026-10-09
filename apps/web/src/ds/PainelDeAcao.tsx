@@ -12,7 +12,6 @@ export interface PainelDeAcaoProps {
   descricao?: string;
   variante: VarianteDoPainel;
   aoFechar: () => void;
-  rodape?: ReactNode;
   focoDeReserva?: () => HTMLElement | null;
   children: ReactNode;
 }
@@ -57,7 +56,6 @@ function PainelAberto({
   descricao,
   variante,
   aoFechar,
-  rodape,
   focoDeReserva,
   children,
 }: PainelDeAcaoProps) {
@@ -211,20 +209,6 @@ function PainelAberto({
         <div ref={corpo} style={{ flex: 1, overflow: 'auto', padding: '0 var(--space-5) var(--space-4)' }}>
           {children}
         </div>
-
-        {rodape ? (
-          <div
-            style={{
-              display: 'flex',
-              gap: 'var(--space-3)',
-              justifyContent: 'flex-end',
-              padding: 'var(--space-4) var(--space-5)',
-              borderTop: 'var(--border-hairline)',
-            }}
-          >
-            {rodape}
-          </div>
-        ) : null}
       </div>
     </div>
   );
