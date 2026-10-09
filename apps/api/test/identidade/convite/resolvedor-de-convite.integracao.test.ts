@@ -15,6 +15,7 @@ import { criarBancoDeTeste, derrubarBancoDeTeste } from '../../integracao/banco-
 import type { BancoDeTeste } from '../../integracao/banco-de-teste.js';
 
 const USUARIO_DE_A = '11111111-1111-4111-8111-111111111111';
+const USUARIO_COM_CONVITE_EXPIRADO = '33333333-3333-4333-8333-333333333333';
 const USUARIO_DE_B = '22222222-2222-4222-8222-222222222222';
 const TOKEN_VIGENTE = 'token-vigente-de-a';
 const TOKEN_EXPIRADO = 'token-expirado-de-a';
@@ -76,10 +77,12 @@ describe('resolução do convite pelo hash do token, sem instituição no contex
     banco = await criarBancoDeTeste();
     await semearInstituicoes(banco);
     await semearUsuarioComConvite(banco, INSTITUICAO_A, USUARIO_DE_A, [
-      { token: TOKEN_EXPIRADO, expiraEm: '2020-01-01T00:00:00Z', revogadoEm: '2019-12-31T00:00:00Z' },
       { token: TOKEN_USADO, expiraEm: '2099-01-01T00:00:00Z', usadoEm: '2026-01-01T00:00:00Z' },
       { token: TOKEN_REVOGADO, expiraEm: '2099-01-01T00:00:00Z', revogadoEm: '2026-01-01T00:00:00Z' },
       { token: TOKEN_VIGENTE, expiraEm: '2099-01-01T00:00:00Z' },
+    ]);
+    await semearUsuarioComConvite(banco, INSTITUICAO_A, USUARIO_COM_CONVITE_EXPIRADO, [
+      { token: TOKEN_EXPIRADO, expiraEm: '2020-01-01T00:00:00Z' },
     ]);
     await semearUsuarioComConvite(banco, INSTITUICAO_B, USUARIO_DE_B, [
       { token: TOKEN_DE_B, expiraEm: '2099-01-01T00:00:00Z' },
@@ -115,7 +118,8 @@ describe('resolução do convite pelo hash do token, sem instituição no contex
     ['vazio', ''],
     ['curto', 'ab'],
     ['maiúsculo', sha256Hex(TOKEN_VIGENTE).toUpperCase()],
-    ['com sufixo', `${sha256Hex(TOKEN_VIGENTE)}00`],
+    ['com sufixo hexadecimal', `${sha256Hex(TOKEN_VIGENTE)}00`],
+    ['com sufixo não hexadecimal', `${sha256Hex(TOKEN_VIGENTE)}zz`],
     ['com prefixo do hash real', sha256Hex(TOKEN_VIGENTE).slice(0, 32)],
     ['não hexadecimal', 'z'.repeat(64)],
   ])('hash %s não resolve', async (_descricao, hash) => {
@@ -123,13 +127,13 @@ describe('resolução do convite pelo hash do token, sem instituição no contex
   });
 
   it.each([
-    ['expirado', TOKEN_EXPIRADO],
-    ['usado', TOKEN_USADO],
-    ['revogado', TOKEN_REVOGADO],
-  ])('convite %s ainda devolve só o dono, a validade fica para o domínio', async (_situacao, token) => {
+    ['expirado', TOKEN_EXPIRADO, USUARIO_COM_CONVITE_EXPIRADO],
+    ['usado', TOKEN_USADO, USUARIO_DE_A],
+    ['revogado', TOKEN_REVOGADO, USUARIO_DE_A],
+  ])('convite %s ainda devolve só o dono, a validade fica para o domínio', async (_situacao, token, usuarioId) => {
     expect(await resolvedor.resolver(sha256Hex(token))).toEqual({
       instituicaoId: INSTITUICAO_A,
-      usuarioId: USUARIO_DE_A,
+      usuarioId,
     });
   });
 

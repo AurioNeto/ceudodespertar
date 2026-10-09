@@ -1,4 +1,4 @@
--- verificacoes: 26
+-- verificacoes: 27
 -- B0 · resolvedor do convite (Documento 7 §8): identidade.resolver_convite(hash)
 -- descobre a instituição e o usuário do convite sem instituição no contexto,
 -- e só isso. Molde de 02-resolvedor-de-identidade.sql.
@@ -39,6 +39,9 @@ SELECT verif.confere('resolvedor de convite · o papel não escreve em identidad
   (SELECT count(*) FROM unnest(ARRAY['INSERT', 'UPDATE', 'DELETE', 'TRUNCATE']) AS p(privilegio)
     WHERE has_table_privilege('cdd_resolvedor_identidade', 'identidade.convite', p.privilegio)),
   0::bigint);
+
+SELECT verif.confere('resolvedor de convite · o papel não cria objeto no schema identidade',
+  has_schema_privilege('cdd_resolvedor_identidade', 'identidade', 'CREATE'), false);
 
 SELECT verif.confere('resolvedor de convite · a política de leitura total é só do resolvedor',
   (SELECT array_agg(r.rolname) FROM pg_policy p JOIN pg_roles r ON r.oid = ANY (p.polroles)
