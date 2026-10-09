@@ -162,3 +162,9 @@ export const FIXTURES_DA_API = {
   'GET /api/v1/identidade/usuarios': { itens: USUARIOS, proxima: null },
   'GET /api/v1/identidade/grupos': { itens: GRUPOS },
 };
+
+const STATUS_DE_ERRO_INTERNO = 500;
+
+export const FIXTURES_DE_LISTA_DE_USUARIOS_FORA_DO_AR = {
+  'GET /api/v1/identidade/usuarios': { status: STATUS_DE_ERRO_INTERNO, corpo: { erro: 'ERRO_INTERNO' } },
+};

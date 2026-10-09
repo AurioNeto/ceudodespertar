@@ -32,6 +32,7 @@ export const CAMINHO_DA_API = '/api';
 export const PREFIXO_DA_API = `${CAMINHO_DA_API}/`;
 export const ORIGEM_DA_API_INEXISTENTE = 'http://127.0.0.1:9';
 export const ATRIBUTO_DA_ROLAGEM_HORIZONTAL = 'data-captura-rolagem';
+export const ATRIBUTO_DA_ROLAGEM_DO_PAINEL = 'data-captura-painel';
 
 export const FAMILIAS_DE_FONTE = ['Archivo', 'Public Sans', 'IBM Plex Mono'];
 export const ORIGEM_DAS_FONTES = /^https:\/\/fonts\.(googleapis|gstatic)\.com\//;

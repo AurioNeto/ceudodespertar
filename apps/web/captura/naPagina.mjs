@@ -92,15 +92,38 @@ export const marcarRolagensHorizontais = (atributo) => {
   return comRolagem.length;
 };
 
-export const posicoesDaRolagemHorizontal = (elemento) => {
-  const passo = elemento.clientWidth;
-  const fim = elemento.scrollWidth - elemento.clientWidth;
+export const marcarRolagensVerticaisDoPainel = (atributo) => {
+  const comRolagem = [...document.querySelectorAll('[role="dialog"], [role="dialog"] *')].filter(
+    (elemento) =>
+      ['auto', 'scroll'].includes(getComputedStyle(elemento).overflowY) &&
+      elemento.clientHeight > 0 &&
+      elemento.scrollHeight > elemento.clientHeight,
+  );
+  comRolagem.forEach((elemento, indice) => elemento.setAttribute(atributo, String(indice + 1)));
+  return comRolagem.length;
+};
+
+export const levarRolagensDoPainelAoTopo = () => {
+  document
+    .querySelectorAll('[role="dialog"], [role="dialog"] *')
+    .forEach((elemento) => {
+      if (['auto', 'scroll'].includes(getComputedStyle(elemento).overflowY)) elemento.scrollTop = 0;
+    });
+};
+
+export const posicoesDaRolagem = (elemento, eixo) => {
+  const vertical = eixo === 'vertical';
+  const passo = vertical ? elemento.clientHeight : elemento.clientWidth;
+  const fim = vertical
+    ? elemento.scrollHeight - elemento.clientHeight
+    : elemento.scrollWidth - elemento.clientWidth;
   const posicoes = [];
   for (let posicao = passo; posicao < fim; posicao += passo) posicoes.push(posicao);
   posicoes.push(fim);
   return posicoes;
 };
 
-export const rolarHorizontalPara = (elemento, posicao) => {
-  elemento.scrollLeft = posicao;
+export const rolarPara = (elemento, { eixo, posicao }) => {
+  if (eixo === 'vertical') elemento.scrollTop = posicao;
+  else elemento.scrollLeft = posicao;
 };

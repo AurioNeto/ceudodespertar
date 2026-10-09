@@ -1,4 +1,5 @@
 import { TOKEN_DA_INSCRICAO } from './ambiente.mjs';
+import { FIXTURES_DE_LISTA_DE_USUARIOS_FORA_DO_AR } from './fixturesDaApi.mjs';
 
 const CPF_SEM_CADASTRO = '000.000.000-00';
 const CPF_COM_ANAMNESE_A_ATUALIZAR = '529.187.340-11';
@@ -30,7 +31,10 @@ const PASSOS_DA_INSCRICAO = {
   pronto: [identificarPeloCpf(CPF_COM_ANAMNESE_EM_DIA), declararEContinuar, preencherParticipacaoEEnviar],
 };
 
-const USUARIO_A_GERENCIAR = 'Maria das Graças Souza';
+const USUARIO_ATIVO = 'Maria das Graças Souza';
+const USUARIO_SUSPENSO = 'Pedro Henrique Lima';
+const USUARIO_REVOGADO = 'Carlos Eduardo Nunes';
+const USUARIO_COM_CONVITE_PENDENTE = 'Ana Clara Moreira';
 
 const abrirAbaDeGrupos = (pagina) => pagina.getByRole('button', { name: 'Grupos', exact: true }).click();
 
@@ -39,15 +43,42 @@ const abrirPainelNomeado = async (pagina, botao, tituloDoPainel) => {
   await pagina.getByRole('dialog', { name: tituloDoPainel }).waitFor();
 };
 
-const abrirPainelDoUsuario = (pagina) =>
+const abrirPainelDoUsuario = (nome) => (pagina) =>
   abrirPainelNomeado(
     pagina,
-    pagina.getByRole('button', { name: `Gerenciar acesso de ${USUARIO_A_GERENCIAR}` }),
-    `Gerenciar ${USUARIO_A_GERENCIAR}`,
+    pagina.getByRole('button', { name: `Gerenciar acesso de ${nome}` }),
+    `Gerenciar ${nome}`,
   );
 
 const abrirPainelDeConvite = (pagina) =>
   abrirPainelNomeado(pagina, pagina.getByRole('button', { name: 'Convidar', exact: true }), 'Convidar usuário');
+
+const esperarCampoInvalidoNoPainel = (pagina) =>
+  pagina.getByRole('dialog').locator('[aria-invalid="true"]').first().waitFor();
+
+const abrirPainelDoUsuarioEPedir = (nome, botao) => async (pagina) => {
+  await abrirPainelDoUsuario(nome)(pagina);
+  await pagina.getByRole('button', { name: botao, exact: true }).click();
+  await esperarCampoInvalidoNoPainel(pagina);
+};
+
+const abrirPainelDeConviteSemPreencher = async (pagina) => {
+  await abrirPainelDeConvite(pagina);
+  await pagina.getByRole('button', { name: 'Registrar convite', exact: true }).click();
+  await esperarCampoInvalidoNoPainel(pagina);
+};
+
+const esperarErroDeCarga = (pagina) => pagina.getByRole('button', { name: 'Tentar de novo' }).waitFor();
+
+const PAINEIS_DE_ACESSOS = [
+  { nome: 'acessos.gerenciar', preparar: abrirPainelDoUsuario(USUARIO_ATIVO) },
+  { nome: 'acessos.gerenciar.semMotivo', preparar: abrirPainelDoUsuarioEPedir(USUARIO_ATIVO, 'Suspender acesso') },
+  { nome: 'acessos.gerenciar.suspenso', preparar: abrirPainelDoUsuario(USUARIO_SUSPENSO) },
+  { nome: 'acessos.gerenciar.revogado', preparar: abrirPainelDoUsuario(USUARIO_REVOGADO) },
+  { nome: 'acessos.gerenciar.convite', preparar: abrirPainelDoUsuario(USUARIO_COM_CONVITE_PENDENTE) },
+  { nome: 'acessos.convidar', preparar: abrirPainelDeConvite },
+  { nome: 'acessos.convidar.invalido', preparar: abrirPainelDeConviteSemPreencher },
+];
 
 const executarEmOrdem = (passos) => async (pagina) => {
   for (const passo of passos) await passo(pagina);
@@ -69,8 +100,14 @@ export function montarCatalogoDeTelas({ rotas, publicas }) {
   return [
     ...autenticadas,
     { nome: 'acessos.grupos', caminho: rotas.acessos, sessao: 'ativa', preparar: abrirAbaDeGrupos },
-    { nome: 'acessos.gerenciar', caminho: rotas.acessos, sessao: 'ativa', preparar: abrirPainelDoUsuario },
-    { nome: 'acessos.convidar', caminho: rotas.acessos, sessao: 'ativa', preparar: abrirPainelDeConvite },
+    { nome: 'acessos.erro', caminho: rotas.acessos, sessao: 'ativa', fixtures: FIXTURES_DE_LISTA_DE_USUARIOS_FORA_DO_AR, preparar: esperarErroDeCarga },
+    ...PAINEIS_DE_ACESSOS.map(({ nome, preparar }) => ({
+      nome,
+      caminho: rotas.acessos,
+      sessao: 'ativa',
+      alturaFixa: true,
+      preparar,
+    })),
     { nome: 'entrar', caminho: publicas.entrar, sessao: 'sem-sessao' },
     { nome: 'retorno', caminho: publicas.retorno, sessao: 'retorno-pendente' },
     { nome: 'retorno.recusado', caminho: publicas.retorno, sessao: 'retorno-recusado' },

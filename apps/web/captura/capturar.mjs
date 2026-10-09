@@ -39,11 +39,38 @@ Arquivos gerados em --saida:
                                             área N com rolagem horizontal (tabela,
                                             carrossel), no passo P: rolada de uma
                                             largura visível por vez até o fim
-  Telas com passo próprio levam o passo no nome: acessos.grupos, acessos.gerenciar,
-  acessos.convidar, inscricaoPublica.pronto.
-  Em acessos.gerenciar e acessos.convidar o painel de ação está aberto (folha no campo,
-  lateral no escritório); a janela cresce até a página caber, então a folha fica ao pé
-  da foto.
+  <tela>--<campo|escritorio>--painel-P.png
+                                            só nas telas de painel: cada área com
+                                            rolagem vertical dentro do painel,
+                                            uma altura visível por vez, no passo P
+                                            (a foto de cima, sem rolar, já é o PNG
+                                            da tela; o último passo termina no fim)
+  Telas com passo próprio levam o passo no nome: acessos.grupos, acessos.erro (a lista
+  de usuários responde 500), inscricaoPublica.cadastro, .anamnese, .declaracao,
+  .participacao, .pronto.
+
+Telas de painel (altura fixa): acessos.gerenciar (usuário ativo), acessos.gerenciar.semMotivo
+(Suspender acesso com o Motivo vazio), acessos.gerenciar.suspenso, acessos.gerenciar.revogado,
+acessos.gerenciar.convite (convite pendente), acessos.convidar e acessos.convidar.invalido
+(Registrar convite com os campos vazios). Nenhuma envia comando: abrem o painel e, nas
+duas de validação, clicam no botão com o campo vazio; como só existem fixtures de GET,
+um POST derrubaria a captura.
+Nelas o painel de ação está aberto (folha no campo, lateral no escritório) e a janela
+NÃO cresce: fica no tamanho da densidade (390x844 no campo, 1440x900 no escritório).
+Assim o limite de altura da folha (90dvh) e a rolagem interna aparecem como o usuário
+os vê, e uma regressão na altura muda o PNG. O que rola dentro do painel é paginado
+em --painel-P.png. O fundo atrás do painel sai cortado na janela, como na tela real.
+
+Fixtures por tela: uma tela do catálogo pode trazer "fixtures" (captura/telas.mjs) que
+valem só para ela e vencem as fixtures gerais, com { status, corpo }. Um 5xx assim é
+esperado e não derruba a captura; qualquer outro 5xx derruba.
+
+O que a captura NÃO prova: a comparação é por pixel. Mudança que não altera nenhum
+pixel (papel e nome acessível, ordem de foco, atributos ARIA, estrutura do DOM que
+renderiza igual) passa despercebida; isso fica com os testes de caracterização (*.dom.test.tsx). Também
+não mostra hover, foco nem movimento (a captura desliga animações, tira o foco e
+põe o mouse em 0,0), nem o seletor em folha (BottomSheet), que só a página de
+registrar lançamento abre e nenhuma tela do catálogo abre.
 
 Sobra conhecida de rolagem interna: o corpo do app rola por dentro e a captura
 cresce a janela até o conteúdo caber. Nas telas em que um wrapper com
@@ -53,7 +80,7 @@ faixa (70px em campo, 32px em escritório). A captura imprime
 "aviso: <arquivo>: Npx" para cada foto assim; o valor é o mesmo em toda execução.
 `;
 
-const NOME_DE_ARQUIVO_DA_CAPTURA = /^.+--(campo|escritorio)(--rolagem-\d+-\d+)?\.png$/;
+const NOME_DE_ARQUIVO_DA_CAPTURA = /^.+--(campo|escritorio)(--rolagem-\d+-\d+|--painel-\d+)?\.png$/;
 const BASE_DO_CODIGO_DE_SAIDA_POR_SINAL = 128;
 const SINAIS_DE_ENCERRAMENTO = ['SIGINT', 'SIGTERM'];
 
@@ -133,16 +160,21 @@ function escolherTelas(catalogo, nomes) {
 const nomeDaRolagem = (tela, densidade, { area, passo }) =>
   `${tela.nome}--${densidade.nome}--rolagem-${area}-${passo}.png`;
 
+const nomeDoPassoDoPainel = (tela, densidade, passo) => `${tela.nome}--${densidade.nome}--painel-${passo}.png`;
+
 async function gravarFotos({ saida, tela, densidade, foto }) {
   const arquivo = `${tela.nome}--${densidade.nome}.png`;
   await writeFile(join(saida, arquivo), foto.png);
   await Promise.all(
     foto.rolagens.map((rolagem) => writeFile(join(saida, nomeDaRolagem(tela, densidade, rolagem)), rolagem.png)),
   );
+  await Promise.all(
+    foto.passosDoPainel.map((png, indice) => writeFile(join(saida, nomeDoPassoDoPainel(tela, densidade, indice + 1)), png)),
+  );
   if (foto.sobraDeRolagemEmPx > 0) {
     console.warn(`  aviso: ${arquivo}: ${foto.sobraDeRolagemEmPx}px de rolagem interna ficam abaixo da foto (ver --ajuda)`);
   }
-  return 1 + foto.rolagens.length;
+  return 1 + foto.rolagens.length + foto.passosDoPainel.length;
 }
 
 async function capturarTodas({ navegador, url, telas, saida, ambiente }) {
@@ -155,7 +187,7 @@ async function capturarTodas({ navegador, url, telas, saida, ambiente }) {
         const inicio = performance.now();
         let foto;
         try {
-          foto = await fotografar({ contexto, falhas: ambiente.falhas, url, tela });
+          foto = await fotografar({ contexto, api: ambiente.api, falhas: ambiente.falhas, url, tela });
         } catch (erro) {
           throw new Error(`${arquivo}: ${erro.message}`, { cause: erro });
         }

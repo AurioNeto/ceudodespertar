@@ -1,6 +1,7 @@
 import {
   AGORA_FIXO,
   ALTURA_MAXIMA_DA_PAGINA,
+  ATRIBUTO_DA_ROLAGEM_DO_PAINEL,
   ATRIBUTO_DA_ROLAGEM_HORIZONTAL,
   FUSO,
   IDIOMA,
@@ -8,15 +9,18 @@ import {
   ORIGEM_DAS_FONTES,
   SOSSEGO_DO_DOM_MS,
 } from './ambiente.mjs';
+import { chaveDaRequisicao } from './apiDaCaptura.mjs';
 import { servirFontesDoCache } from './fontes.mjs';
 import {
   esperarDoisQuadros,
   esperarTelaAssentar,
+  levarRolagensDoPainelAoTopo,
   marcarRolagensHorizontais,
+  marcarRolagensVerticaisDoPainel,
   medirExcessoDeRolagem,
+  posicoesDaRolagem,
   refazerOLayoutDoZero,
-  posicoesDaRolagemHorizontal,
-  rolarHorizontalPara,
+  rolarPara,
   semearAleatorio,
   tirarFocoDoElementoAtivo,
 } from './naPagina.mjs';
@@ -77,49 +81,73 @@ async function ajustarAlturaAoConteudo(pagina) {
   }
 }
 
-async function prepararParaFoto(pagina) {
+async function prepararParaFoto(pagina, tela) {
   await pagina.evaluate(tirarFocoDoElementoAtivo);
   await pagina.mouse.move(0, 0);
-  await ajustarAlturaAoConteudo(pagina);
+  if (!tela.alturaFixa) await ajustarAlturaAoConteudo(pagina);
   await pagina.evaluate(refazerOLayoutDoZero);
+  if (tela.alturaFixa) await pagina.evaluate(levarRolagensDoPainelAoTopo);
   await pagina.evaluate(esperarDoisQuadros);
   await aguardarTelaAssentar(pagina);
-  return pagina.evaluate(medirExcessoDeRolagem);
+  return tela.alturaFixa ? 0 : pagina.evaluate(medirExcessoDeRolagem);
+}
+
+async function fotografarPassosDe(pagina, { atributo, eixo, area }) {
+  const elemento = pagina.locator(`[${atributo}="${area}"]`);
+  const posicoes = await elemento.evaluate(posicoesDaRolagem, eixo);
+  const fotos = [];
+  for (const posicao of posicoes) {
+    await elemento.evaluate(rolarPara, { eixo, posicao });
+    await pagina.evaluate(esperarDoisQuadros);
+    fotos.push(await elemento.screenshot({ type: 'png', animations: 'disabled', caret: 'hide' }));
+  }
+  return fotos;
 }
 
 async function fotografarRolagensHorizontais(pagina) {
   const total = await pagina.evaluate(marcarRolagensHorizontais, ATRIBUTO_DA_ROLAGEM_HORIZONTAL);
   const fotos = [];
   for (let area = 1; area <= total; area += 1) {
-    const elemento = pagina.locator(`[${ATRIBUTO_DA_ROLAGEM_HORIZONTAL}="${area}"]`);
-    const posicoes = await elemento.evaluate(posicoesDaRolagemHorizontal);
-    for (const [indice, posicao] of posicoes.entries()) {
-      await elemento.evaluate(rolarHorizontalPara, posicao);
-      await pagina.evaluate(esperarDoisQuadros);
-      const png = await elemento.screenshot({ type: 'png', animations: 'disabled', caret: 'hide' });
-      fotos.push({ area, passo: indice + 1, png });
-    }
+    const passos = await fotografarPassosDe(pagina, { atributo: ATRIBUTO_DA_ROLAGEM_HORIZONTAL, eixo: 'horizontal', area });
+    passos.forEach((png, indice) => fotos.push({ area, passo: indice + 1, png }));
   }
   return fotos;
 }
 
-function observarFalhas(pagina) {
+async function fotografarRolagensDoPainel(pagina, tela) {
+  if (!tela.alturaFixa) return [];
+  const total = await pagina.evaluate(marcarRolagensVerticaisDoPainel, ATRIBUTO_DA_ROLAGEM_DO_PAINEL);
+  const fotos = [];
+  for (let area = 1; area <= total; area += 1) {
+    fotos.push(...(await fotografarPassosDe(pagina, { atributo: ATRIBUTO_DA_ROLAGEM_DO_PAINEL, eixo: 'vertical', area })));
+  }
+  return fotos;
+}
+
+function falhasSimuladasPelaTela(tela) {
+  const respostas = Object.entries(tela.fixtures ?? {});
+  return new Set(respostas.filter(([, { status }]) => status >= PRIMEIRO_STATUS_DE_FALHA_DO_SERVIDOR).map(([chave]) => chave));
+}
+
+function observarFalhas(pagina, simuladas) {
   const falhas = [];
   pagina.on('pageerror', (erro) => falhas.push(`erro não tratado: ${erro.message}`));
   pagina.on('response', (resposta) => {
-    if (resposta.status() >= PRIMEIRO_STATUS_DE_FALHA_DO_SERVIDOR) {
+    const chave = chaveDaRequisicao(resposta.request().method(), new URL(resposta.url()).pathname);
+    if (resposta.status() >= PRIMEIRO_STATUS_DE_FALHA_DO_SERVIDOR && !simuladas.has(chave)) {
       falhas.push(`${resposta.status()} em ${resposta.url()}`);
     }
   });
   return falhas;
 }
 
-export async function fotografar({ contexto, falhas, url, tela }) {
+export async function fotografar({ contexto, api, falhas, url, tela }) {
   const pagina = await contexto.newPage();
-  const falhasDaPagina = observarFalhas(pagina);
+  const falhasDaPagina = observarFalhas(pagina, falhasSimuladasPelaTela(tela));
   try {
     return await conferindoFalhasDaRota(falhas, async () => {
       const sessao = await aplicarSessao(pagina, tela.sessao);
+      if (tela.fixtures) await pagina.route(api.ehDaApi, api.responderComAsFixturesDe(tela.fixtures));
       await pagina.goto(`${url}${tela.caminho}`);
       await pagina.addStyleTag({ content: ESTILO_SEM_MOVIMENTO });
       sessao.conferir();
@@ -128,11 +156,12 @@ export async function fotografar({ contexto, falhas, url, tela }) {
         await tela.preparar(pagina);
         await aguardarTelaAssentar(pagina);
       }
-      const sobraDeRolagemEmPx = await prepararParaFoto(pagina);
+      const sobraDeRolagemEmPx = await prepararParaFoto(pagina, tela);
       if (falhasDaPagina.length > 0) throw new Error(falhasDaPagina.join('; '));
       const png = await pagina.screenshot({ type: 'png', fullPage: true, animations: 'disabled', caret: 'hide' });
       const rolagens = await fotografarRolagensHorizontais(pagina);
-      return { png, rolagens, sobraDeRolagemEmPx };
+      const passosDoPainel = await fotografarRolagensDoPainel(pagina, tela);
+      return { png, rolagens, passosDoPainel, sobraDeRolagemEmPx };
     });
   } finally {
     await pagina.close();
