@@ -638,16 +638,18 @@ Todas as regras rodam no depcruise, com configuração `.dependency-cruiser.web.
 | `pasta-camel-case` | Pasta de agrupamento em camelCase sob `apps/web/src` (agrupamento é minúsculo; unidade é PascalCase), que escaparia das regras de unidade, pelos imports feitos de dentro dela | erro | 0 |
 | `pasta-camel-case-no-destino` | Importar arquivo de pasta camelCase, inclusive pasta só com arquivos-folha | erro | 0 |
 
-São 33 regras: 26 nomeadas acima e as 7 de `unidade-so-pelo-index`. As contagens são a linha de base da main `1812df6`, já com o #55; os `comment` da configuração apontam para `pnpm fronteiras:web`, que a reproduz.
+São 33 regras: 26 nomeadas acima e as 7 de `unidade-so-pelo-index`. As contagens são as da linha de base (arquivo `.dependency-cruiser-known-violations.web.json`, seção 12.2), tirada da main `1812df6`, já com o #55; os `comment` da configuração apontam para `pnpm fronteiras:web`, que lista os mesmos avisos.
 
 ### 12.2 Linha de base
 
 - A linha de base é o arquivo `.dependency-cruiser-known-violations.web.json`, na raiz, ao lado da configuração: 404 avisos e 0 erros, com as contagens por regra da seção 12.1. São 60 avisos de sete regras, 29 do roteador e 315 da regra de alias. Cada entrada é uma regra com a origem e o destino do import. Os imports do apoio de teste já passaram ao alias `@/`.
-- Catraca ligada: `pnpm fronteiras:web:catraca` sai com código diferente de 0 para qualquer violação fora do arquivo, de qualquer severidade. É o passo "fronteiras do web" do CI e a verificação "sem aviso novo" da seção 13.3.
-- A catraca roda `.dependency-cruiser.web.catraca.mjs`, que é a configuração do web com toda regra elevada a erro, junto com `--ignore-known`. A elevação é necessária: o código de saída do depcruise conta só violação de severidade erro e `--ignore-known` não muda isso, então um aviso novo passaria com código 0. O teste estrutural confere a elevação.
+- Catraca ligada: `pnpm fronteiras:web:catraca` sai com código diferente de 0 para qualquer violação fora do arquivo, de qualquer severidade. É a verificação "sem aviso novo" da seção 13.3 e a primeira metade do passo "fronteiras do web" do CI.
+- A catraca roda `.dependency-cruiser.web.catraca.mjs`, que é a configuração do web com toda regra elevada a erro, junto com `--ignore-known`. A elevação é necessária: o código de saída do depcruise conta só violação de severidade erro e `--ignore-known` não muda isso, então um aviso novo passaria com código 0. O teste estrutural confere a elevação, as mesmas opções do depcruise nas duas configurações e o script `fronteiras:web:catraca`.
 - `pnpm fronteiras:web` continua informativo: lista os avisos e só falha por regra em erro.
-- `pnpm fronteiras:web:linha-de-base` regenera o arquivo em modo `shrink-only`: tira as entradas cuja violação sumiu e nunca acrescenta. Quem corrige um aviso roda o comando no mesmo PR e commita o arquivo menor; a catraca só imprime as entradas obsoletas (`stale known violations`) e não falha por elas. O arquivo foi criado uma vez em modo `full`, que acrescenta; não há script para ele.
-- Etapa de mover: a entrada é a regra mais a origem e o destino, então um arquivo movido vira aviso novo, a catraca falha e o `shrink-only` não o absorve. Para o aviso que a etapa não resolve, troque o caminho antigo pelo novo na entrada do arquivo e rode `pnpm fronteiras:web:linha-de-base`, que reordena e tira o que sumiu. O PR não pode aumentar o número de entradas. O aviso de alias some trocando o import por `@/`.
+- `pnpm fronteiras:web:linha-de-base` regenera o arquivo em modo `shrink-only`: tira as entradas cuja violação sumiu e nunca acrescenta. Quem corrige um aviso roda o comando no mesmo PR e commita o arquivo menor. A catraca sozinha só imprime as entradas obsoletas (`stale known violations`) e não falha por elas; quem falha é a segunda metade do passo do CI, que roda o `shrink-only` e confere com `git diff --exit-code` que o arquivo não mudou. Assim a linha de base é sempre igual às violações atuais, e um aviso corrigido não volta sem falhar a catraca. O CI não barra o crescimento por modo `full`: o aumento aparece no diff do arquivo e o revisor o confere.
+- `pnpm fronteiras:web:linha-de-base:regenerar` roda o mesmo comando em modo `full`: reescreve o arquivo com as violações de agora, inclusive as novas. Só entra numa etapa de mover ou numa alta de versão de dependência (os dois itens seguintes); fora delas, só o `shrink-only`.
+- Etapa de mover: a entrada é a regra mais a origem e o destino, então um arquivo movido vira aviso novo, a catraca falha e o `shrink-only` não o absorve. Cada etapa de mover regenera o arquivo com `pnpm fronteiras:web:linha-de-base:regenerar` e commita o resultado. Antes de commitar, confira no diff do arquivo que só há renomes (a entrada sai e entra de novo com o caminho novo, a mesma regra e o mesmo import) e remoções, e que o total de entradas não sobe. Entrada com import que não existia antes da etapa é violação nova: corrija o import, não a linha de base. O aviso de alias some trocando o import por `@/`.
+- Alta de versão de dependência: 5 entradas têm destino em `node_modules/.pnpm/react@<versão>/…` ou `react-dom@<versão>_react@<versão>/…`, porque o depcruise resolve o link do pnpm até o caminho versionado. Uma alta de `react` ou `react-dom` muda esse caminho e a catraca falha sem mudança em `src`. Rode `pnpm fronteiras:web:linha-de-base:regenerar` e confira que o diff só troca o trecho versionado do destino, com o mesmo total. As 5 entradas são de `lib-e-folha` e somem quando `useDensidade`, `useValorComAtraso` e `chaveDeIdempotencia` (com o teste de DOM) saírem de `lib/`, nas etapas de mover.
 - A linha de base é a foto de antes da migração. Cada etapa de mover a reduz, e a etapa de fronteiras em erro fecha a conta.
 
 ### 12.3 Como cada regra é provada
@@ -657,7 +659,7 @@ São 33 regras: 26 nomeadas acima e as 7 de `unidade-so-pelo-index`. As contagen
 - O teste confere: toda regra da configuração tem caso; nenhum import das fixtures fica sem resolver; cada regra acusa exatamente os imports previstos; a negativa tem 0 violações; e `apps/web/src` não tem violação em erro.
 - Toda regex é sem grupo quantificado com quantificador dentro: o depcruise 18.4 recusa regex insegura e aborta a execução inteira.
 - O `tsconfig` da configuração usa caminho absoluto (caminho relativo dá TS5083). Regras que precisam valer também nas fixtures usam o prefixo `(?:^|/)` ou a captura `^(.*apps/web/src…)`.
-- O teste roda no projeto `estrutural` do vitest, dentro de `pnpm --filter @cdd/web test`. O script `fronteiras:web` da raiz roda as regras sobre `apps/web/src`, com passo próprio no CI.
+- O teste roda no projeto `estrutural` do vitest, dentro de `pnpm --filter @cdd/web test`. O script `fronteiras:web:catraca` da raiz roda as regras sobre `apps/web/src` contra a linha de base, com passo próprio no CI.
 
 ### 12.4 Outros verificadores
 
@@ -669,6 +671,8 @@ São 33 regras: 26 nomeadas acima e as 7 de `unidade-so-pelo-index`. As contagen
 ### 12.5 Severidade final
 
 Na etapa de fronteiras em erro, todas as regras viram erro. `camada-cruzada-por-alias` vira erro quando chegar a zero.
+
+Nessa etapa a linha de base chega a zero e a catraca deixa de ter função. Saem a configuração `.dependency-cruiser.web.catraca.mjs`, o arquivo `.dependency-cruiser-known-violations.web.json` e o caso de teste da catraca, junto com os scripts `fronteiras:web:catraca`, `fronteiras:web:linha-de-base` e `fronteiras:web:linha-de-base:regenerar`. O passo "fronteiras do web" do CI e a ferramenta `fronteiras_web` do `.codefox.yaml` passam a rodar `pnpm fronteiras:web`, que já falha por qualquer regra.
 
 ---
 
@@ -693,7 +697,7 @@ Na etapa de fronteiras em erro, todas as regras viram erro. `camada-cruzada-por-
 ### 13.3 Verificação padrão de mover
 
 - `pnpm --filter @cdd/web typecheck`, `test` e `build`;
-- `pnpm fronteiras:web` sem erro e sem aviso novo além dos previstos na etapa;
+- `pnpm fronteiras:web:catraca` sem erro e sem aviso novo, com a linha de base regenerada e o diff conferido (seção 12.2);
 - `node apps/web/scripts/conferir-movimento.mjs`: renomeação sem diferença fora das linhas de import, e declaração repartida com o mesmo hash de corpo;
 - o mesmo número de testes da main.
 
@@ -702,7 +706,7 @@ Na etapa de fronteiras em erro, todas as regras viram erro. `camada-cruzada-por-
 - Os testes de caracterização da tela passam antes e depois, sem edição;
 - a captura nas duas densidades é idêntica entre a main e a branch (`captura` e `captura:comparar`, seção 13.6);
 - `typecheck`, `test` e `build`;
-- `fronteiras:web` sem erro.
+- `pnpm fronteiras:web:catraca` sem erro.
 
 Nenhuma regra, texto ou cálculo muda numa divisão.
 
