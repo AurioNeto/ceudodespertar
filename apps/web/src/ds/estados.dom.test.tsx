@@ -149,6 +149,14 @@ describe('EmptyState', () => {
     expect(elemento(container, 'button').textContent).toBe('Novo lançamento');
   });
 
+  it.each([['string vazia', ''], ['zero', 0], ['falso', false], ['nula', null]])('ação %s — não desenha o contêiner da ação', async (_nome, action) => {
+    const { container: semAcao } = await montar(<EmptyState title="Nada por aqui" />);
+    const { container } = await montar(<EmptyState title="Nada por aqui" action={action} />);
+
+    expect(raizDe(container).children.length).toBe(raizDe(semAcao).children.length);
+    expect(container.textContent).toBe('Nada por aqui');
+  });
+
   it('a ação continua clicável', async () => {
     const aoClicar = vi.fn();
     const { container } = await montar(

@@ -67,8 +67,8 @@ describe('RecordRow — conteúdo', () => {
     expect(container.textContent).toBe(`MercadoR$${SINAL_DE_MENOS}120,00` + 'A conferir');
   });
 
-  it('badges nulo — não desenha o contêiner de selos', async () => {
-    const { container } = await montar(<RecordRow description="Mercado" amount={120} badges={null} />);
+  it.each([['string vazia', ''], ['zero', 0], ['falso', false], ['nulo', null]])('badges %s — não desenha o contêiner de selos', async (_nome, badges) => {
+    const { container } = await montar(<RecordRow description="Mercado" amount={120} badges={badges} />);
 
     expect(linhaDe(container).children.length).toBe(2);
   });
