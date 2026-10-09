@@ -8,7 +8,6 @@ import type {
   GruposDaGestao,
   PaginaDeUsuarios,
   Permissao,
-  SituacaoUsuario,
   UsuarioId,
   UsuarioListado,
 } from '@cdd/contracts';
@@ -135,5 +134,3 @@ export async function esperar(ms: number): Promise<void> {
     await new Promise<void>((resolver) => setTimeout(resolver, ms));
   });
 }
-
-export const situacoes: readonly SituacaoUsuario[] = ['ATIVO', 'CONVITE_PENDENTE', 'SUSPENSO', 'REVOGADO'];
