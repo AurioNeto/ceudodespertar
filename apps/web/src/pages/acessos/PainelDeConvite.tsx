@@ -5,6 +5,7 @@ import type { GrupoId, PedidoDeConvite } from '@cdd/contracts';
 import { Button, PainelDeAcao, TextField, type Density, type VarianteDoPainel } from '../../ds';
 import { useChaveDeIdempotencia } from '../../lib/chaveDeIdempotencia';
 import { useComandosDeAcessos } from './comandosDeAcessos';
+import { ErroDoPainel } from './ErroDoPainel';
 import { SeletorDeGrupos } from './SeletorDeGrupos';
 import { useFocoNoPrimeiroCampoInvalido } from './useFocoNoPrimeiroCampoInvalido';
 import { AJUDA_DE_GRUPOS_DO_CONVITE, CONVITE_REGISTRADO } from './textosDeAcessos';
@@ -106,11 +107,7 @@ function PainelDeConviteAberto({ variante, densidade, aoFechar, focoDeReserva }:
       <p style={{ margin: 0, font: 'var(--text-small)', color: 'var(--text-secondary)' }}>
         {AJUDA_DE_GRUPOS_DO_CONVITE}
       </p>
-      {erro ? (
-        <p role="alert" style={{ margin: 0, font: 'var(--text-small)', color: 'var(--color-attention)' }}>
-          {erro}
-        </p>
-      ) : null}
+      {erro ? <ErroDoPainel>{erro}</ErroDoPainel> : null}
       <div>
         <Button type="submit" density={densidade} aria-disabled={enviando}>
           {enviando ? 'Enviando…' : 'Registrar convite'}

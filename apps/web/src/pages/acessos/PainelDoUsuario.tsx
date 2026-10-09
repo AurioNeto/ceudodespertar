@@ -2,10 +2,13 @@ import { useState } from 'react';
 import type { GrupoId, UsuarioListado } from '@cdd/contracts';
 import { Button, PainelDeAcao, type Density, type VarianteDoPainel } from '../../ds';
 import { useChaveDeIdempotencia } from '../../lib/chaveDeIdempotencia';
+import { AvisoDeAtencao } from './AvisoDeAtencao';
 import { CampoDeMotivo } from './CampoDeMotivo';
 import { useComandosDeAcessos } from './comandosDeAcessos';
+import { ErroDoPainel } from './ErroDoPainel';
 import { SeletorDeGrupos } from './SeletorDeGrupos';
 import { SITUACAO_DE_USUARIO } from './situacaoDeUsuario';
+import { MOTIVO_OBRIGATORIO } from './textosDeAcessos';
 import { useAcaoNoUsuario } from './useAcaoNoUsuario';
 import { useFocoNoPrimeiroCampoInvalido } from './useFocoNoPrimeiroCampoInvalido';
 
@@ -17,8 +20,6 @@ export interface PainelDoUsuarioProps {
   readonly aoAtualizarUsuario: (usuario: UsuarioListado) => void;
   readonly focoDeReserva: () => HTMLElement | null;
 }
-
-const MOTIVO_OBRIGATORIO = 'Informe o motivo.';
 
 type AcaoDeSituacao = 'suspender' | 'reativar';
 type AcaoDoPainel = 'grupos' | AcaoDeSituacao;
@@ -103,27 +104,8 @@ function PainelDoUsuarioAberto({
       focoDeReserva={focoDeReserva}
     >
     <div ref={raiz} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
-      {aviso ? (
-        <p
-          role="status"
-          style={{
-            margin: 0,
-            padding: 'var(--space-3)',
-            font: 'var(--text-small)',
-            color: 'var(--text-primary)',
-            background: 'var(--color-attention-soft)',
-            border: '1px solid var(--color-attention-border)',
-            borderRadius: 'var(--radius)',
-          }}
-        >
-          {aviso}
-        </p>
-      ) : null}
-      {erro ? (
-        <p role="alert" style={{ margin: 0, font: 'var(--text-small)', color: 'var(--color-attention)' }}>
-          {erro}
-        </p>
-      ) : null}
+      {aviso ? <AvisoDeAtencao role="status">{aviso}</AvisoDeAtencao> : null}
+      {erro ? <ErroDoPainel>{erro}</ErroDoPainel> : null}
 
       <section aria-label="Grupos" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
         <SeletorDeGrupos selecionados={grupos} aoMudar={setGrupos} desabilitado={revogado} />

@@ -10,3 +10,5 @@ export const AJUDA_DE_GRUPOS_DO_CONVITE =
   'Sem nenhum grupo escolhido, a pessoa entra com acesso de leitura.';
 
 export const LIMITE_DO_MOTIVO = 500;
+
+export const MOTIVO_OBRIGATORIO = 'Informe o motivo.';
