@@ -1,13 +1,9 @@
 import { Component, type ReactNode } from 'react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { Icon, type IconName } from './Icon';
 import { desmontarTudo, elemento, montar } from '../testes/montagem';
 
 afterEach(desmontarTudo);
-
-beforeEach(() => {
-  vi.spyOn(console, 'error').mockImplementation(() => undefined);
-});
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -123,6 +119,7 @@ describe('Icon — nome para glifo', () => {
 
   it('nome fora do registro — falha ao renderizar, com elemento inválido', async () => {
     const nomeInexistente = 'nao-existe' as IconName;
+    vi.spyOn(console, 'error').mockImplementation(() => undefined);
 
     const { container } = await montar(
       <LimiteDeErro>
