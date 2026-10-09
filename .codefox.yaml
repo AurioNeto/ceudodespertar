@@ -220,10 +220,13 @@ tools:
     paths: ["apps/**/*.ts", "apps/**/*.tsx", "packages/**/*.ts", "**/tsconfig*.json"]
   lint:
     command: "pnpm lint"
-    paths: ["apps/api/**", "packages/contracts/**", ".oxlintrc.json", ".dependency-cruiser.mjs"]
+    paths: ["apps/api/**", "packages/contracts/**", ".oxlintrc.json", ".dependency-cruiser.mjs", ".dependency-cruiser.web*.mjs", "apps/web/test/**"]
   fronteiras:
     command: "pnpm fronteiras"
     paths: ["apps/api/src/**", "packages/contracts/src/**", ".dependency-cruiser.mjs"]
+  fronteiras_web:
+    command: "pnpm fronteiras:web:catraca"
+    paths: ["apps/web/src/**", ".dependency-cruiser.web*.mjs", ".dependency-cruiser-known-violations.web.json", "apps/web/tsconfig*.json", "pnpm-lock.yaml"]
   test_api:
     command: "pnpm --filter @cdd/api test"
     paths: ["apps/api/**", "packages/contracts/**"]
