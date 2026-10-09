@@ -103,6 +103,24 @@ describe('listagem de usuários pela API (Doc 3 §11, Doc 7 §25)', () => {
     }
   }
 
+  async function inserirUsuarios(usuarios: ReadonlyArray<{ id: string; nome: string }>): Promise<void> {
+    await banco.owner.query('begin');
+    try {
+      await banco.owner.query('select set_config($1, $2, true)', [VARIAVEL_DE_SESSAO_DA_INSTITUICAO, INSTITUICAO_A]);
+      for (const { id, nome } of usuarios) {
+        // eslint-disable-next-line no-await-in-loop -- poucas linhas, na ordem
+        await banco.owner.query(
+          `insert into identidade.usuario (id, instituicao_id, nome, email, situacao) values ($1, $2, $3, $4, 'ATIVO')`,
+          [id, INSTITUICAO_A, nome, `${id}@casa.org`],
+        );
+      }
+      await banco.owner.query('commit');
+    } catch (erro) {
+      await banco.owner.query('rollback');
+      throw erro;
+    }
+  }
+
   describe('itens', () => {
     it('traz id, nome, e-mail, situação, grupos com id e nome, versão e ultimoAcessoEm', async () => {
       const { gestao, admin } = await semearCasa();
@@ -182,6 +200,20 @@ describe('listagem de usuários pela API (Doc 3 §11, Doc 7 §25)', () => {
       ]);
       const [primeiraAna, segundaAna] = itens.filter(({ nome }) => nome.toLowerCase() === 'ana');
       expect(primeiraAna!.id < segundaAna!.id).toBe(true);
+    });
+
+    it('com limite 1 ordena por (lower(nome), id) mesmo quando a collation do banco discorda do id', async () => {
+      const idMenor = '00000000-0000-4000-8000-000000000001';
+      const idMaior = '00000000-0000-4000-8000-000000000002';
+      await semearCasa();
+      await inserirUsuarios([
+        { id: idMenor, nome: 'Ana' },
+        { id: idMaior, nome: 'ana' },
+      ]);
+
+      const itens = await percorrerTudo({ limite: 1, busca: 'ana' });
+
+      expect(itens.map(({ id }) => id)).toEqual([idMenor, idMaior]);
     });
 
     it('com limite 2 percorre todos sem repetir nem pular, e a última página não tem próxima', async () => {
