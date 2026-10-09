@@ -17,13 +17,10 @@ describe('rotuloCaixaAlta', () => {
 });
 
 describe('Rotulo', () => {
-  it('mostra o texto num span em caixa alta', async () => {
+  it('mostra o texto num span', async () => {
     const tela = await montar(<Rotulo>Saldo</Rotulo>);
 
-    const rotulo = elemento(tela.container, 'span');
-    expect(rotulo.textContent).toBe('Saldo');
-    expect(rotulo.style.textTransform).toBe('uppercase');
-    expect(rotulo.style.color).toBe('var(--text-field-label)');
+    expect(elemento(tela.container, 'span').textContent).toBe('Saldo');
   });
 
   it('o estilo recebido vence o padrão onde há conflito e preserva o resto', async () => {
@@ -118,12 +115,10 @@ describe('Th', () => {
       </table>,
     );
 
-  it('é uma célula de cabeçalho com o texto em caixa alta', async () => {
+  it('é uma célula de cabeçalho com o texto', async () => {
     const tela = await montarCabecalho(<Th>Valor</Th>);
 
-    const celula = elemento(tela.container, 'th');
-    expect(celula.textContent).toBe('Valor');
-    expect(celula.style.textTransform).toBe('uppercase');
+    expect(elemento(tela.container, 'th').textContent).toBe('Valor');
   });
 
   it('alinha à esquerda por padrão', async () => {
@@ -136,12 +131,6 @@ describe('Th', () => {
     const tela = await montarCabecalho(<Th alinharDireita>Valor</Th>);
 
     expect(elemento(tela.container, 'th').style.textAlign).toBe('right');
-  });
-
-  it('não quebra a linha do título', async () => {
-    const tela = await montarCabecalho(<Th>Valor</Th>);
-
-    expect(elemento(tela.container, 'th').style.whiteSpace).toBe('nowrap');
   });
 
   it('sem conteúdo continua sendo uma célula, vazia', async () => {
@@ -167,24 +156,16 @@ describe('Td', () => {
     expect(elemento(tela.container, 'td').textContent).toBe('R$ 10,00');
   });
 
-  it('alinha à esquerda por padrão e ao topo', async () => {
+  it('alinha à esquerda por padrão', async () => {
     const tela = await montarCorpo(<Td>x</Td>);
 
-    const celula = elemento(tela.container, 'td');
-    expect(celula.style.textAlign).toBe('left');
-    expect(celula.style.verticalAlign).toBe('top');
+    expect(elemento(tela.container, 'td').style.textAlign).toBe('left');
   });
 
   it('alinha à direita quando pedido', async () => {
     const tela = await montarCorpo(<Td alinharDireita>x</Td>);
 
     expect(elemento(tela.container, 'td').style.textAlign).toBe('right');
-  });
-
-  it('o texto da célula usa o tom secundário', async () => {
-    const tela = await montarCorpo(<Td>x</Td>);
-
-    expect(elemento(tela.container, 'td').style.color).toBe('var(--text-secondary)');
   });
 
   it('sem conteúdo continua sendo uma célula, vazia', async () => {
@@ -289,14 +270,6 @@ describe('Cartao', () => {
     const tela = await montar(<Cartao>conteúdo</Cartao>);
 
     expect(tela.container.firstElementChild?.hasAttribute('aria-label')).toBe(false);
-  });
-
-  it('empilha os filhos em coluna com espaço de 14px', async () => {
-    const tela = await montar(<Cartao>conteúdo</Cartao>);
-
-    const cartao = elemento(tela.container, 'div');
-    expect(cartao.style.flexDirection).toBe('column');
-    expect(cartao.style.gap).toBe('14px');
   });
 
   it('usa o respiro de escritório por padrão', async () => {

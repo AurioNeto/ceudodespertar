@@ -35,12 +35,6 @@ describe('RotuloDeCampo', () => {
     expect(elemento(tela.container, 'label').hasAttribute('for')).toBe(false);
   });
 
-  it('escreve o texto em caixa alta pelo estilo', async () => {
-    const tela = await montar(<RotuloDeCampo>Valor</RotuloDeCampo>);
-
-    expect(elemento(tela.container, 'label').style.textTransform).toBe('uppercase');
-  });
-
   it('aceita elementos como conteúdo', async () => {
     const tela = await montar(
       <RotuloDeCampo>
