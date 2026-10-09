@@ -1,6 +1,7 @@
 import {
   AGORA_FIXO,
   ALTURA_MAXIMA_DA_PAGINA,
+  ATRIBUTO_DA_ROLAGEM_HORIZONTAL,
   FUSO,
   IDIOMA,
   LIMITE_DE_ESPERA_MS,
@@ -11,8 +12,10 @@ import { servirFontesDoCache } from './fontes.mjs';
 import {
   esperarDoisQuadros,
   esperarTelaAssentar,
+  marcarRolagensHorizontais,
   medirExcessoDeRolagem,
   refazerOLayoutDoZero,
+  rolarAteOFimHorizontal,
   semearAleatorio,
   tirarFocoDoElementoAtivo,
 } from './naPagina.mjs';
@@ -23,7 +26,7 @@ const PRIMEIRO_STATUS_DE_FALHA_DO_SERVIDOR = 500;
 const ESTILO_SEM_MOVIMENTO =
   '*, *::before, *::after { animation: none !important; transition: none !important; caret-color: transparent !important; scroll-behavior: auto !important; }';
 
-export async function criarContexto(navegador, densidade, pastaDeFontes) {
+export async function criarContexto(navegador, densidade, { pastaDeFontes, api, falhas }) {
   const contexto = await navegador.newContext({
     viewport: densidade.viewport,
     deviceScaleFactor: 1,
@@ -35,8 +38,21 @@ export async function criarContexto(navegador, densidade, pastaDeFontes) {
   });
   await contexto.clock.setFixedTime(AGORA_FIXO);
   await contexto.addInitScript(semearAleatorio);
-  await contexto.route(ORIGEM_DAS_FONTES, servirFontesDoCache(pastaDeFontes));
+  await contexto.route(ORIGEM_DAS_FONTES, servirFontesDoCache(pastaDeFontes, falhas));
+  await contexto.route(api.ehDaApi, api.responder);
   return contexto;
+}
+
+export async function conferindoFalhasDaRota(falhas, acao) {
+  let resultado;
+  try {
+    resultado = await acao();
+  } catch (erro) {
+    falhas.conferir();
+    throw erro;
+  }
+  falhas.conferir();
+  return resultado;
 }
 
 export async function aguardarTelaAssentar(pagina) {
@@ -48,7 +64,7 @@ async function ajustarAlturaAoConteudo(pagina) {
   let excessoAnterior = Infinity;
   for (let tentativa = 0; tentativa < TENTATIVAS_DE_AJUSTE_DA_ALTURA; tentativa += 1) {
     const excesso = await pagina.evaluate(medirExcessoDeRolagem);
-    if (excesso <= 0 || excesso >= excessoAnterior) return;
+    if (excesso <= 0 || excesso >= excessoAnterior) break;
     const { width, height } = pagina.viewportSize();
     const nova = height + excesso;
     if (nova > ALTURA_MAXIMA_DA_PAGINA) {
@@ -67,6 +83,19 @@ async function prepararParaFoto(pagina) {
   await pagina.evaluate(refazerOLayoutDoZero);
   await pagina.evaluate(esperarDoisQuadros);
   await aguardarTelaAssentar(pagina);
+  return pagina.evaluate(medirExcessoDeRolagem);
+}
+
+async function fotografarRolagensHorizontais(pagina) {
+  const total = await pagina.evaluate(marcarRolagensHorizontais, ATRIBUTO_DA_ROLAGEM_HORIZONTAL);
+  const fotos = [];
+  for (let numero = 1; numero <= total; numero += 1) {
+    const area = pagina.locator(`[${ATRIBUTO_DA_ROLAGEM_HORIZONTAL}="${numero}"]`);
+    await area.evaluate(rolarAteOFimHorizontal);
+    await pagina.evaluate(esperarDoisQuadros);
+    fotos.push(await area.screenshot({ type: 'png', animations: 'disabled', caret: 'hide' }));
+  }
+  return fotos;
 }
 
 function observarFalhas(pagina) {
@@ -80,22 +109,26 @@ function observarFalhas(pagina) {
   return falhas;
 }
 
-export async function fotografar({ contexto, url, tela }) {
+export async function fotografar({ contexto, falhas, url, tela }) {
   const pagina = await contexto.newPage();
-  const falhas = observarFalhas(pagina);
+  const falhasDaPagina = observarFalhas(pagina);
   try {
-    const sessao = await aplicarSessao(pagina, tela.sessao);
-    await pagina.goto(`${url}${tela.caminho}`);
-    await pagina.addStyleTag({ content: ESTILO_SEM_MOVIMENTO });
-    sessao.conferir();
-    await aguardarTelaAssentar(pagina);
-    if (tela.preparar) {
-      await tela.preparar(pagina);
+    return await conferindoFalhasDaRota(falhas, async () => {
+      const sessao = await aplicarSessao(pagina, tela.sessao);
+      await pagina.goto(`${url}${tela.caminho}`);
+      await pagina.addStyleTag({ content: ESTILO_SEM_MOVIMENTO });
+      sessao.conferir();
       await aguardarTelaAssentar(pagina);
-    }
-    await prepararParaFoto(pagina);
-    if (falhas.length > 0) throw new Error(falhas.join('; '));
-    return await pagina.screenshot({ type: 'png', fullPage: true, animations: 'disabled', caret: 'hide' });
+      if (tela.preparar) {
+        await tela.preparar(pagina);
+        await aguardarTelaAssentar(pagina);
+      }
+      const sobraDeRolagemEmPx = await prepararParaFoto(pagina);
+      if (falhasDaPagina.length > 0) throw new Error(falhasDaPagina.join('; '));
+      const png = await pagina.screenshot({ type: 'png', fullPage: true, animations: 'disabled', caret: 'hide' });
+      const rolagens = await fotografarRolagensHorizontais(pagina);
+      return { png, rolagens, sobraDeRolagemEmPx };
+    });
   } finally {
     await pagina.close();
   }

@@ -79,3 +79,19 @@ export const importarRotas = async (endereco) => {
   const { ROTAS, ROTAS_PUBLICAS } = await import(endereco);
   return { rotas: { ...ROTAS }, publicas: { ...ROTAS_PUBLICAS } };
 };
+
+export const marcarRolagensHorizontais = (atributo) => {
+  const comRolagem = [...document.body.querySelectorAll('*')].filter(
+    (elemento) =>
+      ['auto', 'scroll'].includes(getComputedStyle(elemento).overflowX) &&
+      elemento.clientWidth > 0 &&
+      elemento.clientHeight > 0 &&
+      elemento.scrollWidth > elemento.clientWidth,
+  );
+  comRolagem.forEach((elemento, indice) => elemento.setAttribute(atributo, String(indice + 1)));
+  return comRolagem.length;
+};
+
+export const rolarAteOFimHorizontal = (elemento) => {
+  elemento.scrollLeft = elemento.scrollWidth;
+};

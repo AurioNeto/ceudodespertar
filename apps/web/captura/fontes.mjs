@@ -30,23 +30,32 @@ const responderComOCache = (rota, { status, tipo, corpo }) =>
     headers: { 'content-type': tipo, 'access-control-allow-origin': '*' },
   });
 
-export function servirFontesDoCache(pasta) {
-  return async (rota) => {
-    const url = rota.request().url();
-    const chave = chaveDaUrl(url);
-    const guardada = await lerDoCache(pasta, chave);
-    if (guardada) return responderComOCache(rota, guardada);
+async function servirFonte(pasta, rota) {
+  const url = rota.request().url();
+  const chave = chaveDaUrl(url);
+  const guardada = await lerDoCache(pasta, chave);
+  if (guardada) return responderComOCache(rota, guardada);
 
-    const resposta = await rota.fetch();
-    if (!resposta.ok()) {
-      throw new Error(`Fonte indisponível e sem cópia local: ${url} respondeu ${resposta.status()}`);
+  const resposta = await rota.fetch();
+  if (!resposta.ok()) {
+    throw new Error(`Fonte indisponível e sem cópia local: ${url} respondeu ${resposta.status()}`);
+  }
+  const nova = {
+    status: resposta.status(),
+    tipo: resposta.headers()['content-type'] ?? 'application/octet-stream',
+    corpo: await resposta.body(),
+  };
+  await guardarNoCache(pasta, chave, nova);
+  return responderComOCache(rota, nova);
+}
+
+export function servirFontesDoCache(pasta, falhas) {
+  return async (rota) => {
+    try {
+      await servirFonte(pasta, rota);
+    } catch (erro) {
+      falhas.registrar(`fonte sem resposta: ${erro.message}`);
+      await rota.abort().catch(() => undefined);
     }
-    const nova = {
-      status: resposta.status(),
-      tipo: resposta.headers()['content-type'] ?? 'application/octet-stream',
-      corpo: await resposta.body(),
-    };
-    await guardarNoCache(pasta, chave, nova);
-    return responderComOCache(rota, nova);
   };
 }

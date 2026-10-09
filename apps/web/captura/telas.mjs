@@ -30,11 +30,16 @@ const PASSOS_DA_INSCRICAO = {
   pronto: [identificarPeloCpf(CPF_COM_ANAMNESE_EM_DIA), declararEContinuar, preencherParticipacaoEEnviar],
 };
 
+const abrirAbaDeGrupos = (pagina) => pagina.getByRole('button', { name: 'Grupos', exact: true }).click();
+
 const executarEmOrdem = (passos) => async (pagina) => {
   for (const passo of passos) await passo(pagina);
 };
 
 export function montarCatalogoDeTelas({ rotas, publicas }) {
+  if (!rotas.acessos) {
+    throw new Error('A rota "acessos" saiu de navegacao.ts; ajuste captura/telas.mjs.');
+  }
   const autenticadas = Object.entries(rotas).map(([nome, caminho]) => ({ nome, caminho, sessao: 'ativa' }));
   const caminhoDaInscricao = publicas.inscricaoPublica.replace(':token', TOKEN_DA_INSCRICAO);
   const passosDaInscricao = Object.entries(PASSOS_DA_INSCRICAO).map(([passo, passos]) => ({
@@ -46,6 +51,7 @@ export function montarCatalogoDeTelas({ rotas, publicas }) {
 
   return [
     ...autenticadas,
+    { nome: 'acessos.grupos', caminho: rotas.acessos, sessao: 'ativa', preparar: abrirAbaDeGrupos },
     { nome: 'entrar', caminho: publicas.entrar, sessao: 'sem-sessao' },
     { nome: 'retorno', caminho: publicas.retorno, sessao: 'retorno-pendente' },
     { nome: 'retorno.recusado', caminho: publicas.retorno, sessao: 'retorno-recusado' },
