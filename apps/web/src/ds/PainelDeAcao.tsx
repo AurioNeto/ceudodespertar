@@ -18,8 +18,8 @@ export interface PainelDeAcaoProps {
 }
 
 const SELETOR_DE_FOCAVEL =
-  'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
-const SELETOR_DE_CAMPO = 'input:not([disabled]), select:not([disabled]), textarea:not([disabled])';
+  'a[href], button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex="-1"])';
+const SELETOR_DE_CAMPO = 'input:not(:disabled), select:not(:disabled), textarea:not(:disabled)';
 const ALVO_MINIMO_DE_TOQUE = 44;
 const LARGURA_LATERAL = 'min(440px, 100vw)';
 

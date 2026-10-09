@@ -273,6 +273,8 @@ describe('Acessos: gerenciar usuário', () => {
     const caixas = Array.from(painelAberto()?.querySelectorAll<HTMLInputElement>('input[type="checkbox"]') ?? []);
     expect(caixas.length).toBeGreaterThan(0);
     expect(caixas.every((c) => c.closest('fieldset')?.disabled)).toBe(true);
+    expect(painelAberto()?.contains(document.activeElement)).toBe(true);
+    expect(document.activeElement).not.toBe(gatilhoDe(tela));
     expect(textoDoPainel()).not.toContain('Salvar grupos');
     expect(textoDoPainel()).not.toContain('Suspender acesso');
     expect(textoDoPainel()).not.toContain('Reativar acesso');
