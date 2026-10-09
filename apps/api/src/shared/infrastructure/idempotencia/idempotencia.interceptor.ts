@@ -15,6 +15,7 @@ import { ErroDeConfiguracaoDeIdempotencia } from './erro-de-configuracao-de-idem
 import { gravarResposta, reivindicarChave } from './chave-de-idempotencia.repositorio.js';
 import type { DadosDaChaveDeIdempotencia } from './chave-de-idempotencia.repositorio.js';
 import { rotaGuardaRespostaSemCorpo } from './resposta-sem-corpo-no-replay.decorator.js';
+import { rotaEhSemIdempotencia } from './sem-idempotencia.decorator.js';
 
 const METODO_QUE_ACEITA_IDEMPOTENCIA = 'POST';
 const NOME_DO_CABECALHO_DE_LOCALIZACAO = 'Location';
@@ -71,7 +72,7 @@ export class IdempotenciaInterceptor implements NestInterceptor {
     const requisicao = contexto.switchToHttp().getRequest<RequisicaoDeIdempotencia>();
     const chave = requisicao.header(NOME_DO_CABECALHO_DE_IDEMPOTENCIA);
 
-    if (chave === undefined || requisicao.method !== METODO_QUE_ACEITA_IDEMPOTENCIA) {
+    if (chave === undefined || requisicao.method !== METODO_QUE_ACEITA_IDEMPOTENCIA || rotaEhSemIdempotencia(contexto)) {
       return proximo.handle();
     }
 

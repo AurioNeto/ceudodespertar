@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { infiniteQueryOptions } from '@tanstack/react-query';
-import type { GrupoId, GruposDaGestao, PaginaDeUsuarios, SituacaoUsuario } from '@cdd/contracts';
+import type { GrupoId, GruposDaGestao, PaginaDeUsuarios, SituacaoUsuario, UsuarioId, UsuarioListado } from '@cdd/contracts';
 import { LIMITE_PADRAO_DA_LISTAGEM_DE_USUARIOS } from '@cdd/contracts';
 import { criarConsulta } from '../../dados/consultaEComando';
 import type { ClienteHttp } from '../../dados/clienteHttp';
@@ -11,6 +11,9 @@ export interface FiltroDaTela {
   readonly grupoId: GrupoId | null;
   readonly busca: string;
 }
+
+export const RAIZ_DAS_CONSULTAS_DE_USUARIOS = ['acessos', 'usuarios'] as const;
+export const RAIZ_DAS_CONSULTAS_DE_GRUPOS = ['acessos', 'grupos'] as const;
 
 export const SEM_FILTRO: FiltroDaTela = { situacao: null, grupoId: null, busca: '' };
 
@@ -33,7 +36,7 @@ export function criarConsultasDeAcessos(cliente: ClienteHttp) {
   return {
     usuarios: (filtro: FiltroDaTela) =>
       infiniteQueryOptions({
-        queryKey: ['acessos', 'usuarios', filtro.situacao, filtro.grupoId, filtro.busca.trim()],
+        queryKey: [...RAIZ_DAS_CONSULTAS_DE_USUARIOS, filtro.situacao, filtro.grupoId, filtro.busca.trim()],
         initialPageParam: null as string | null,
         queryFn: ({ pageParam, signal }) =>
           cliente.requisitar<PaginaDeUsuarios>({
@@ -43,7 +46,9 @@ export function criarConsultasDeAcessos(cliente: ClienteHttp) {
           }),
         getNextPageParam: (pagina) => pagina.proxima,
       }),
-    grupos: () => consulta<GruposDaGestao>('/identidade/grupos', ['acessos', 'grupos']),
+    usuario: (id: UsuarioId) =>
+      consulta<UsuarioListado>(`/identidade/usuarios/${encodeURIComponent(id)}`, [...RAIZ_DAS_CONSULTAS_DE_USUARIOS, 'porId', id]),
+    grupos: () => consulta<GruposDaGestao>('/identidade/grupos', RAIZ_DAS_CONSULTAS_DE_GRUPOS),
   };
 }
 

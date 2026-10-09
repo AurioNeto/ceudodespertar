@@ -6,14 +6,14 @@ import type { ModoDeTransacao } from '../banco/unidade-de-trabalho.js';
 import { CHAVE_DO_MODO_DE_TRANSACAO } from './modo-de-transacao.decorator.js';
 import { CHAVE_DE_SEM_TRANSACAO_NA_BORDA } from './sem-transacao-na-borda.decorator.js';
 
-const METODOS_QUE_MUDAM_ESTADO: ReadonlySet<RequestMethod> = new Set([
+export const METODOS_QUE_MUDAM_ESTADO: ReadonlySet<RequestMethod> = new Set([
   RequestMethod.POST,
   RequestMethod.PUT,
   RequestMethod.PATCH,
   RequestMethod.DELETE,
   RequestMethod.ALL,
 ]);
-const MODOS_GRAVAVEIS: ReadonlySet<ModoDeTransacao | undefined> = new Set(['escrita', 'leitura-que-grava']);
+export const MODOS_GRAVAVEIS: ReadonlySet<ModoDeTransacao | undefined> = new Set(['escrita', 'leitura-que-grava']);
 
 export class ErroDeRotaQueMudaEstadoSemModoGravavel extends Error {
   constructor(rotas: readonly string[]) {
