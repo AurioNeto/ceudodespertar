@@ -52,8 +52,8 @@ O dono aprovou as recomendações da proposta em todos os pontos. Quatro decisõ
 - `Th` e `Td` são átomos do `ds` até a adoção do `DataTable`.
 - `SheetOption` vira tipo comum de opção em `ds/fundacao/opcao.ts`: molécula não importa organismo.
 - `eventoDoLink` acompanha `linkDaCerimonia` em `eventos/inscricao/mocks/linkDaCerimonia.ts`.
-- `PERMISSAO_QUE_O_EU_TEM`, `PERMISSAO_QUE_O_EU_NAO_TEM`, `Sonda` e `ler` (testes de sessão) ficam junto de `criarEu` em `src/testes/sessaoDeTeste.tsx`. Os testes que os usam se repartem entre `app/sessao` e `pages/transversal/entrada`, então o ancestral comum é `src/`.
-- `Aviso` e `TomDeAviso`, da entrada, vão para `transversal/entrada/components/Aviso`: as duas páginas do fluxo o usam, então mora no menor ancestral.
+- `PERMISSAO_QUE_O_EU_TEM`, `PERMISSAO_QUE_O_EU_NAO_TEM`, `Sonda` e `ler` (testes de sessão) ficam junto de `criarEu` em `src/testes/sessaoDeTeste.tsx`. Os testes que os usam se repartem entre `app/sessao` e `pages/transversal/entrada`, então o ancestral comum é `src/`. `ler` hoje lê a tela de uma variável do próprio arquivo de teste e passa a recebê-la por parâmetro (`ler(tela, id)`): mudança só em apoio de teste, declarada na etapa.
+- O `Aviso` da entrada tem um consumidor só, o `MensagemDeEntradaNaTela`, e vai para `transversal/entrada/components/MensagemDeEntradaNaTela/components/Aviso/`. O tipo `TomDeAviso` vai para `transversal/entrada/tipos.ts`, junto de `MensagemDeEntrada`. Na etapa de primitivos novos, o `ds/molecules/Aviso` absorve o componente.
 - `Layout` é composição de app, fora da escala atômica. `ActionBar` e `ScreenHeader` são moléculas.
 - Testes de hook são `useX.dom.test.ts` (projeto dom do vitest), ou `.dom.test.tsx` quando precisam de JSX.
 - As regras de camada que proíbem `ds/`, `dados/` e `lib/` de importar `testes/` isentam os próprios `*.test.*`.
@@ -73,7 +73,8 @@ O dono aprovou as recomendações da proposta em todos os pontos. Quatro decisõ
 | Regras de camada que proíbem importar `testes/` | `testes/` não está no alvo de `lib-e-folha`, `dados-sem-ui` e `ds-autonomo`. Quem barra é `apoio-de-teste-so-em-teste`, que isenta os `*.test.*`. | Os testes de `lib`, `dados` e `ds` precisam das fábricas de `src/testes` (ex.: a fábrica de `ErroDaApi` em `dados/clienteDeConsultas.test.ts`). Decisão do dono. |
 | `mock-global-so-dados` | Até a etapa de mocks transversais, `src/mocks/financeiro.ts` guarda só o que o Painel usa e importa `contas` de `@/pages/mocks/contas`. É 1 aviso previsto. | `contas` cruza financeiro e eventos e desce na etapa de mocks transversais. As sobras do Painel só descem quando o Painel mudar de pasta, depois do gate. |
 | Hook fora do `ds/` (seção 4.1) | `useDensidade` e o tipo `Density` ficam em `ds/fundacao/`. Hoje nenhum arquivo do `ds/` consome o hook; `app/shell/Layout` e as páginas consomem. | A densidade é token do design system (Documento 5, §3.4): as duas densidades, campo e escritório, são definidas no `ds/`. O hook que lê o token fica com ele. |
-| Renome ao entrar numa unidade (seção 10.1) | O arquivo pode perder o sufixo que repetia o dono (`consultasDeAcessos.ts` → `AcessosPage/consultas.ts`; `comandosDeAcessos.ts` → `comandos.ts`; `mensagemDeErroDeAcessos.ts` → `utils/mensagemDeErro.ts`) ou ganhar o nome da anatomia (`lib/chaveDeIdempotencia.ts` → `hooks/useChaveDeIdempotencia.ts`; `clienteHttp.tsx` → `ClienteHttpProvider/ClienteHttpProvider.tsx`). O conteúdo é idêntico, conferido pelo `conferir-movimento` com o par antigo → novo. `textosDeAcessos.ts` não é renome: reparte-se por export. | Dentro da unidade, o nome do dono já está no caminho. A anatomia (seção 5.1) é o que o leitor procura. |
+| Regra do ancestral comum dentro de `app/` (seção 6.1) | Em `app/`, a área (`shell`, `sessao`, `rotas`, `providers`, `demonstracao`) é o nível de posse. Módulos, hooks, utils e componentes internos ficam em `app/<área>/{hooks,utils,components}` mesmo com um só consumidor (ex.: `derivarEstado` e `useExisteUsuarioOidc`, só do `SessaoProvider`; `nomeDaTela`, `useContagemDoLote` e `TelaSemAcesso`, só do `Layout`). | `app/` é composição de app e expõe cada área por um `index.ts`. Descer a regra de app para dentro das pastas de componente a espalharia sem ganho de leitura. |
+| Renome ao entrar numa unidade ou ao repartir (seção 10.1) | O arquivo pode perder o sufixo que repetia o dono (`consultasDeAcessos.ts` → `AcessosPage/consultas.ts`; `comandosDeAcessos.ts` → `comandos.ts`; `mensagemDeErroDeAcessos.ts` → `utils/mensagemDeErro.ts`) ou ganhar o nome da anatomia (`lib/chaveDeIdempotencia.ts` → `hooks/useChaveDeIdempotencia.ts`; `clienteHttp.tsx` → `ClienteHttpProvider/ClienteHttpProvider.tsx`). O conteúdo é idêntico, conferido pelo `conferir-movimento` com o par antigo → novo. `textosDeAcessos.ts` não é renome: reparte-se por export. Teste que acompanha um export repartido toma o nome do módulo de destino (`app/navegacao.test.ts`, que só testa `rotaAtiva`, vira `app/shell/rotaAtiva.test.ts`). | Dentro da unidade, o nome do dono já está no caminho. A anatomia (seção 5.1) é o que o leitor procura. |
 
 ---
 
@@ -257,7 +258,7 @@ import { FaturasPage } from "@/pages/financeiro/FaturasPage";
 
 ### 5.6 Exemplos reais
 
-Forma pretendida da `AcessosPage`. Ela será confirmada no código mesclado do PR #55, na etapa de mover sistema. Os arquivos do #55 usados aqui vêm da branch local, que está à frente do PR publicado (anexo, seção 14). Testes de hook seguem a seção 8.1; o nome exato dos arquivos de teste de `useChaveDeIdempotencia` depende do merge (anexo, seção 14).
+Forma pretendida da `AcessosPage`. Ela será confirmada no código mesclado do PR #55, na etapa de mover sistema. Os arquivos do #55 são conferidos no código mesclado (anexo, seção 14). Testes de hook seguem a seção 8.1; o nome exato dos arquivos de teste de `useChaveDeIdempotencia` depende do merge (anexo, seção 14).
 
 ```
 pages/sistema/AcessosPage/
@@ -270,7 +271,7 @@ pages/sistema/AcessosPage/
           useChaveDeIdempotencia.ts (+ teste de hook)    ex-lib/chaveDeIdempotencia
   utils/  focarTitulo.ts, mensagemDeErro.ts (+ teste), abasVisiveis.ts (+ teste; divisão)
   components/
-    PainelDeConvite/ {…, constantes.ts}  SeletorDeGrupos/  ErroDoPainel/ (só na branch local do #55)
+    PainelDeConvite/ {…, constantes.ts}  SeletorDeGrupos/  ErroDoPainel/
     AbaDeUsuarios/   {index.ts (+ ATRASO_DA_BUSCA_EM_MS), AbaDeUsuarios.tsx, constantes.ts, situacaoDeUsuario.ts}
       hooks/useValorComAtraso.ts                 ex-lib
       utils/temFiltroAplicado.ts (+ teste)       ex-consultasDeAcessos (só AbaDeUsuarios usa)
@@ -279,7 +280,7 @@ pages/sistema/AcessosPage/
         FiltrosDeUsuarios/
         LinhaDeUsuario/  utils/formatarDataHora.ts (+ teste)   ex-lib/formato
         PainelDoUsuario/ {…, PainelDoUsuario.dom.test.tsx, constantes.ts}
-          components/CampoDeMotivo/ {…, constantes.ts}  components/AvisoDeAtencao/ (só na branch local do #55)
+          components/CampoDeMotivo/ {…, constantes.ts}  components/AvisoDeAtencao/
     AbaDeGrupos/
       components/CartaoDeGrupo/                  divisão
 ```
@@ -569,7 +570,7 @@ apps/web/
         │   ├── PainelPage/ {…}           mocks/{cerimonias, resumoFinanceiro}.ts; components/{CartaoDeSaldo, MovimentoDoMes, AvisoDeLote,
         │   │                             GraficoEstoque (mocks/estoque.ts), CarrosselDeCerimonias (… GraficoResultado), EixoDeCerimonias (F)}
         │   ├── MeuPerfilPage/ {…}        components/PerfilDoEu
-        │   └── entrada/                  fluxo: tipos.ts, components/{MensagemDeEntradaNaTela, Aviso},
+        │   └── entrada/                  fluxo: tipos.ts (MensagemDeEntrada, TomDeAviso), components/MensagemDeEntradaNaTela (+ components/Aviso),
         │                                 EntrarPage/ {…}, RetornoPage/ {…}
         ├── financeiro/
         │   ├── mocks/lancamentos.ts      components/CartaoDeFormulario (F)

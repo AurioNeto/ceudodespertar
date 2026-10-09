@@ -53,7 +53,7 @@ Os destinos são agrupados por área: `app/`, `dados/`, `lib/`, `ds/`, `testes/`
 | `app/sessao.test.tsx` (linha 393) | `app/rotas/rotasAntigasDaEntrada.dom.test.tsx` | repartir por export (por describe) | app/ em subpastas |
 | `app/sessao.test.tsx` (linha 276, testes de entrada) | `pages/transversal/entrada/EntrarPage/EntrarPage.dom.test.tsx` | repartir por export (por describe) | Mover transversal |
 | `app/sessao.test.tsx` (linha 366, testes de entrada) | `pages/transversal/entrada/RetornoPage/RetornoPage.dom.test.tsx` | repartir por export (por describe) | Mover transversal |
-| `app/sessao.test.tsx` (`Sonda`, linha 30, e `ler`, linha 42; privados) | `testes/sessaoDeTeste.tsx` (os testes que os usam se repartem entre `app/sessao` e `pages/transversal/entrada`; ancestral comum: `src/`) | repartir por export | testes/ global e setupFiles |
+| `app/sessao.test.tsx` (`Sonda`, linha 30, e `ler`, linha 42; privados) | `testes/sessaoDeTeste.tsx` (os testes que os usam se repartem entre `app/sessao` e `pages/transversal/entrada`; ancestral comum: `src/`). `ler` passa a receber a tela por parâmetro, porque hoje lê a variável `tela` do arquivo | repartir por export (`ler` muda de assinatura, só em apoio de teste) | testes/ global e setupFiles |
 | `app/sessaoDeDemonstracao.ts` | `app/demonstracao/sessaoDeDemonstracao.ts` | mover | app/ em subpastas |
 | `app/telas.ts` | `app/shell/telas.ts` | mover | app/ em subpastas |
 | `app/telas.test.ts` | `app/shell/telas.test.ts` | mover | app/ em subpastas |
@@ -71,7 +71,7 @@ Os destinos são agrupados por área: `app/`, `dados/`, `lib/`, `ds/`, `testes/`
 |---|---|---|---|
 | `dados/index.ts` (barrel sem efeito colateral) | `dados/index.ts` | repartir por export | dados/ sem efeito e sem ciclo |
 | `dados/index.ts`: `gerenciadorOidc`, `credencial`, `servicoDeEntrada`, `clienteHttp`, `consulta`, `comando` | `dados/instancias.ts` (importado só por `main.tsx`) | repartir por export | dados/ sem efeito e sem ciclo |
-| `dados/clienteDeConsultas.ts`: `JANELA_DE_FRESCOR_EM_MS` (o #55 a importa do arquivo, fora do barrel; o barrel passa a reexportá-la) | `dados/index.ts` | manter | dados/ sem efeito e sem ciclo |
+| `dados/clienteDeConsultas.ts`: `JANELA_DE_FRESCOR_EM_MS` (o #55 a importa do arquivo, fora do barrel; o barrel passa a reexportá-la, na mesma etapa que cria `testes/sessaoDeTeste.tsx`) | `dados/index.ts` | manter | testes/ global e setupFiles |
 | `dados/oidc.ts`: `CAMINHO_DA_ENTRADA`, `CAMINHO_DE_RETORNO`, `CAMINHO_DA_RENOVACAO_SILENCIOSA`, `ESPERA_DA_RENOVACAO_SILENCIOSA_EM_SEGUNDOS`, `ESCOPO_OIDC` (quebra o ciclo `oidc.ts` ↔ `credencialOidc.ts`) | `dados/caminhosOidc.ts` | repartir por export | dados/ sem efeito e sem ciclo |
 | `dados/oidc.ts` (restante) | `dados/oidc.ts` | manter | dados/ sem efeito e sem ciclo |
 | `dados/oidc.dom.test.ts` | `dados/oidc.dom.test.ts` | manter | dados/ sem efeito e sem ciclo |
@@ -98,7 +98,8 @@ Os destinos são agrupados por área: `app/`, `dados/`, `lib/`, `ds/`, `testes/`
 | `lib/formato.ts`: `formatarDataHora` (com `FUSO_DA_CASA` e `DATA_E_HORA`) | permanece em `lib/formato.ts` até a etapa de mover sistema; depois, ver seção 12 | manter | lib/formato por export |
 | `lib/formato.test.ts`: describes de `formatarValor`, `paraData`, `diaDaSemana` e o fuso, exceto o `it` de `formatarData` (seção 4.4) | `lib/formato.test.ts` | manter | lib/formato por export |
 | `lib/formato.ts`: `nomeDoMes` | ver seção 9 (`AgendaPage/utils/nomeDoMes.ts`) | repartir por export | lib/formato por export |
-| `PainelDeRevisao.tsx#paraNumero`, `AyahuascaPage.tsx#paraNumero`, `GerenciarContasModal.tsx#paraNumero` | `lib/numero.ts` (`lerValorDigitado`) | fundir | Leitura única de valor |
+| `PainelDeRevisao.tsx#paraNumero`, `GerenciarContasModal.tsx#paraNumero` | `lib/numero.ts` (`lerValorDigitado`) | fundir | Leitura única de valor |
+| `AyahuascaPage.tsx#paraNumero` (mudança de comportamento: passa a tirar o milhar; divergência 2) | `lib/numero.ts` (`lerValorDigitado`) | fundir | Leitura única de valor |
 | `useFormularioDeLancamento.ts#somar` (mudança de comportamento: tira o milhar igual nos dois lugares) | `lib/numero.ts` (`lerSoma`) | fundir | Leitura única de valor |
 | novo (testes de milhar, vírgula, soma e vazio) | `lib/numero.test.ts` | criar | Leitura única de valor |
 
@@ -119,7 +120,7 @@ Os destinos são agrupados por área: `app/`, `dados/`, `lib/`, `ds/`, `testes/`
 | `pages/agenda/AgendaPage.tsx:66` (litros) e `:53` (contribuições) | `:66` não tira o milhar: vira 1,5; `:53` separa a lista por vírgula | `:66` corrige a divergência 2 (mesma causa); `:53` fora da divergência | `:66` `lerValorDigitado`; `:53` decisão própria |
 
 - Os cinco que já tiram o milhar só trocam a chamada, sem mudar valor (`fundir`).
-- [NEEDS VERIFICATION] `AgendaPage.tsx:53` separa a lista de contribuições por vírgula, que também é o separador decimal: `1,5` vira duas contribuições (1 e 5). `lerValorDigitado` não serve a esse campo. Confirmar a intenção na caracterização de eventos e registrar a divergência na seção 14 do Documento 8.
+- A confirmar na caracterização de eventos: `AgendaPage.tsx:53` separa a lista de contribuições por vírgula, que também é o separador decimal: `1,5` vira duas contribuições (1 e 5). `lerValorDigitado` não serve a esse campo. Confirmar a intenção na caracterização de eventos e registrar a divergência na seção 14 do Documento 8.
 
 ---
 
@@ -430,7 +431,8 @@ Os testes do #58 e do #59 se repartem por describe entre as unidades de destino.
 | Origem | Destino | Ação | Etapa |
 |---|---|---|---|
 | `AgendaPage.tsx`: `TOM_DA_SITUACAO`, `rotuloDaSituacao`; estado e ações; salvar; navegar mês; `setaDoMes`; lista | `AgendaPage/constantes.ts`; `hooks/useAgenda.ts`; `utils/trabalhoDoRascunho.ts` e `utils/mes.ts` (+ testes); `components/{NavegacaoDoMes, ListaDeTrabalhos}/` | dividir | Dividir Agenda |
-| `mocks/agenda.ts`: `TipoDeTrabalho`, `SituacaoDoTrabalho`, `TarefaDePreparo`, `Trabalho`, `ParticipanteDoTrabalho`; `CORES_POR_TIPO`, `VERSAO_DO_FORMULARIO` | `AgendaPage/tipos.ts` e `constantes.ts` | repartir por export | Dividir Agenda |
+| `mocks/agenda.ts`: `TipoDeTrabalho`, `SituacaoDoTrabalho`, `TarefaDePreparo`, `Trabalho`, `ParticipanteDoTrabalho`; `CORES_POR_TIPO` | `AgendaPage/tipos.ts` e `constantes.ts` | repartir por export | Dividir Agenda |
+| `mocks/agenda.ts`: `VERSAO_DO_FORMULARIO` (dado da demonstração; único consumidor: `DetalheDoTrabalho`) | `AgendaPage/components/DetalheDoTrabalho/mocks/formulario.ts` | repartir por export | Dividir Agenda |
 | `CalendarioMensal.tsx`: `DIAS_DA_SEMANA`, células do mês | `CalendarioMensal/constantes.ts`; `utils/celulasDoMes.ts` (+ teste) | dividir | Dividir Agenda |
 | `CalendarioMensal.tsx`: `LegendaDeTipos` (só `AgendaPage` usa; `CalendarioMensal` só o define; usa `CORES_POR_TIPO`, que desce para `AgendaPage/constantes.ts` na mesma etapa) | `AgendaPage/components/LegendaDeTipos/LegendaDeTipos.tsx` | repartir por export | Dividir Agenda |
 | `DetalheDoTrabalho.tsx`: `Bloco`, `Numero`, `Meta`, `MESES_CURTOS`, `ORIGENS_DE_MARCACAO`; contagens de participantes | `DetalheDoTrabalho/components/{Bloco, Numero, Meta}/`; `constantes.ts`; `utils/resumoDosParticipantes.ts` (+ teste) | dividir | Dividir Agenda |
@@ -555,7 +557,8 @@ Os testes do #58 e do #59 se repartem por describe entre as unidades de destino.
 | `mocks/financeiro.ts`: `saldoEmCaixa`, `saldoEmBanco`, `saldoConsolidado`, `movimentoDoMes`, `remessasEmLote` | `pages/transversal/PainelPage/mocks/resumoFinanceiro.ts` | repartir por export | Mover transversal |
 | `pages/perfil/MeuPerfilPage.tsx` | `pages/transversal/MeuPerfilPage/MeuPerfilPage.tsx` | mover | Mover transversal |
 | `pages/perfil/MeuPerfilPage.dom.test.tsx` | `pages/transversal/MeuPerfilPage/MeuPerfilPage.dom.test.tsx` | mover | Mover transversal |
-| `pages/entrada/Aviso.tsx` (`TomDeAviso` é usado pelas constantes do fluxo, por isso fica no nível do fluxo) | `pages/transversal/entrada/components/Aviso/Aviso.tsx` | mover | Mover transversal |
+| `pages/entrada/Aviso.tsx`: `Aviso` (único consumidor: `MensagemDeEntradaNaTela`) | `pages/transversal/entrada/components/MensagemDeEntradaNaTela/components/Aviso/Aviso.tsx` | repartir por export | Mover transversal |
+| `pages/entrada/Aviso.tsx`: `TomDeAviso` (tipo de `MensagemDeEntrada`, do fluxo) | `pages/transversal/entrada/tipos.ts` | repartir por export | Mover transversal |
 | `pages/entrada/EntrarPage.tsx` | `pages/transversal/entrada/EntrarPage/EntrarPage.tsx` | mover | Mover transversal |
 | `pages/entrada/MensagemDeEntradaNaTela.tsx` | `pages/transversal/entrada/components/MensagemDeEntradaNaTela/MensagemDeEntradaNaTela.tsx` | mover | Mover transversal |
 | `pages/entrada/mensagens.ts`: `MensagemDeEntrada` (tipo, usado por `EntrarPage` e `MensagemDeEntradaNaTela`) | `pages/transversal/entrada/tipos.ts` | repartir por export | Mover transversal |
@@ -586,6 +589,6 @@ Os testes do #58 e do #59 se repartem por describe entre as unidades de destino.
 - **Fábrica `fontesDaSessao`.** É opcional, como indicado na linha de `main.tsx` (seção 6 deste anexo).
 - **Branch local do #55.** `feat/b0-comandos-de-acessos` está 9 commits à frente do head publicado do PR #55 (`c71e315`). `ErroDoPainel`, `AvisoDeAtencao`, `useFocoNoPrimeiroCampoInvalido` e `ds/TextField.dom.test.tsx` só existem na branch local. As linhas com o #55 são conferidas nela e refeitas no merge. `app/apoioDeTeste.tsx` é alterado pelo #55 para importar `JANELA_DE_FRESCOR_EM_MS` de `dados/clienteDeConsultas.ts`, fora do barrel: a linha de `dados/index.ts` (seção 2) o reexporta.
 - **`EstadoDaAnamnese` e `StatusAnamnese`.** O tipo de UI (`em dia`, `vencida`, `ausente`) não é o `StatusAnamnese` de `@cdd/contracts` (`PENDENTE`, `OK`, `VENCIDA`, `NAO_APLICAVEL`). O mapeamento não existe no código e entra quando a tela ligar no backend.
-- **`gerarHash`.** Tratado como função falsa da demonstração, que fica no mock (`mocks/prestacao.ts`), e não como regra de domínio. Confirmar.
+- **`gerarHash`.** Tratado como função falsa da demonstração, que fica no mock (`mocks/prestacao.ts`), e não como regra de domínio: é um hex aleatório (`mocks/prestacao.ts:180-181`), sem regra de negócio.
 - **`AgendaPage.tsx:53`.** A lista de contribuições separa por vírgula, que também é o decimal. Ver a seção 3.1. Registrar na seção 14 do Documento 8 depois da confirmação.
 - **Iniciais.** O `AppShell` e o Meu perfil calculam iniciais de jeitos diferentes. Ver a seção 14 do Documento 8 antes de adotar o `Avatar` no `AppShell` (seção 4.3).
