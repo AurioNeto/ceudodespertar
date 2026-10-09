@@ -60,7 +60,7 @@ export class LeitorDeUsuariosKysely extends LeitorDeUsuarios {
           ),
           sql<string>`lower(${sql.ref('usuario.nome')})`.as('chave_de_nome'),
           sql<GrupoResumido[]>`coalesce((
-            select json_agg(json_build_object('id', grupo.id, 'nome', grupo.nome) order by grupo.nome, grupo.id)
+            select json_agg(json_build_object('id', grupo.id, 'nome', grupo.nome) order by lower(grupo.nome), grupo.id)
               from identidade.usuario_grupo atribuicao
               join identidade.grupo grupo on grupo.id = atribuicao.grupo_id
              where atribuicao.usuario_id = ${sql.ref('usuario.id')}
