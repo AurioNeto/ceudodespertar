@@ -12,6 +12,9 @@ export interface FiltroDaTela {
   readonly busca: string;
 }
 
+export const RAIZ_DAS_CONSULTAS_DE_USUARIOS = ['acessos', 'usuarios'] as const;
+export const RAIZ_DAS_CONSULTAS_DE_GRUPOS = ['acessos', 'grupos'] as const;
+
 export const SEM_FILTRO: FiltroDaTela = { situacao: null, grupoId: null, busca: '' };
 
 export const temFiltroAplicado = (filtro: FiltroDaTela): boolean =>
@@ -33,7 +36,7 @@ export function criarConsultasDeAcessos(cliente: ClienteHttp) {
   return {
     usuarios: (filtro: FiltroDaTela) =>
       infiniteQueryOptions({
-        queryKey: ['acessos', 'usuarios', filtro.situacao, filtro.grupoId, filtro.busca.trim()],
+        queryKey: [...RAIZ_DAS_CONSULTAS_DE_USUARIOS, filtro.situacao, filtro.grupoId, filtro.busca.trim()],
         initialPageParam: null as string | null,
         queryFn: ({ pageParam, signal }) =>
           cliente.requisitar<PaginaDeUsuarios>({
@@ -44,8 +47,8 @@ export function criarConsultasDeAcessos(cliente: ClienteHttp) {
         getNextPageParam: (pagina) => pagina.proxima,
       }),
     usuario: (id: UsuarioId) =>
-      consulta<UsuarioListado>(`/identidade/usuarios/${encodeURIComponent(id)}`, ['acessos', 'usuarios', 'porId', id]),
-    grupos: () => consulta<GruposDaGestao>('/identidade/grupos', ['acessos', 'grupos']),
+      consulta<UsuarioListado>(`/identidade/usuarios/${encodeURIComponent(id)}`, [...RAIZ_DAS_CONSULTAS_DE_USUARIOS, 'porId', id]),
+    grupos: () => consulta<GruposDaGestao>('/identidade/grupos', RAIZ_DAS_CONSULTAS_DE_GRUPOS),
   };
 }
 

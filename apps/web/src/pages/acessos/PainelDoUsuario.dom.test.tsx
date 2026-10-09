@@ -3,8 +3,9 @@ import { createRoot, type Root } from 'react-dom/client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { GrupoId, UsuarioId, UsuarioListado } from '@cdd/contracts';
-import { assentar } from '../../app/apoioDeTeste';
+import { assentar, criarAvisoDeEncerramentoFalso, criarEntradaFalsa, criarEu } from '../../app/apoioDeTeste';
 import { ClienteHttpProvider } from '../../app/clienteHttp';
+import { SessaoProvider } from '../../app/sessao';
 import { ErroDaApi } from '../../dados/erros';
 import {
   alternarGrupoNoPainel,
@@ -19,6 +20,10 @@ import {
   usuarioListado,
 } from './apoioDeTeste';
 import { PainelDoUsuario } from './PainelDoUsuario';
+
+const entradaFalsa = criarEntradaFalsa(true);
+const { aoEncerrar } = criarAvisoDeEncerramentoFalso();
+const buscarEu = () => Promise.resolve(criarEu());
 
 const JOAO = usuarioListado();
 const MARIA = usuarioListado({
@@ -64,9 +69,11 @@ async function montar(comando: () => Promise<unknown>, usuario = JOAO): Promise<
   await act(async () =>
     raiz.render(
       <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
-        <ClienteHttpProvider cliente={cliente}>
-          <Anfitriao inicial={usuario} registro={registro} />
-        </ClienteHttpProvider>
+        <SessaoProvider entrada={entradaFalsa} aoEncerrar={aoEncerrar} buscarEu={buscarEu}>
+          <ClienteHttpProvider cliente={cliente}>
+            <Anfitriao inicial={usuario} registro={registro} />
+          </ClienteHttpProvider>
+        </SessaoProvider>
       </QueryClientProvider>,
     ),
   );

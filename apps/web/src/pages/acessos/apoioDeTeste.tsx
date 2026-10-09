@@ -2,6 +2,7 @@ import { act } from 'react';
 import { vi } from 'vitest';
 import type {
   CodigoGrupo,
+  Eu,
   DataHora,
   GrupoDaGestao,
   GrupoId,
@@ -103,11 +104,12 @@ export const PERMISSAO_DE_GRUPOS: Permissao = 'sistema.grupo.gerenciar';
 export async function montarAcessos(
   cliente: ClienteHttp,
   permissoes: readonly Permissao[] = [PERMISSAO_DE_USUARIOS, PERMISSAO_DE_GRUPOS],
+  buscarEu: () => Promise<Eu> = () => Promise.resolve(criarEu({ permissoes: [...permissoes] })),
 ): Promise<TelaMontada> {
   return montarComSessao(
     {
       entrada: criarEntradaFalsa(true),
-      buscarEu: () => Promise.resolve(criarEu({ permissoes: [...permissoes] })),
+      buscarEu,
     },
     <ClienteHttpProvider cliente={cliente}>
       <AcessosPage />

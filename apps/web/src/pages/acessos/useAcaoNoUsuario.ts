@@ -2,7 +2,12 @@ import { useEffect, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import type { UsuarioId, UsuarioListado } from '@cdd/contracts';
 import { ErroDaApi } from '../../dados/erros';
-import { useConsultasDeAcessos } from './consultasDeAcessos';
+import { CHAVE_DO_EU, useSessao } from '../../app/sessao';
+import {
+  RAIZ_DAS_CONSULTAS_DE_GRUPOS,
+  RAIZ_DAS_CONSULTAS_DE_USUARIOS,
+  useConsultasDeAcessos,
+} from './consultasDeAcessos';
 import { mensagemDeErro } from './mensagemDeErroDeAcessos';
 import { AVISO_DE_VERSAO_DESATUALIZADA } from './textosDeAcessos';
 
@@ -11,15 +16,13 @@ export interface OpcoesDaAcaoNoUsuario {
   readonly aoRecarregar?: (usuario: UsuarioListado) => void;
 }
 
-const CHAVE_DAS_CONSULTAS_DE_USUARIOS = ['acessos', 'usuarios'] as const;
-const CHAVE_DAS_CONSULTAS_DE_GRUPOS = ['acessos', 'grupos'] as const;
-
 const ehVersaoDesatualizada = (erro: unknown): boolean =>
   erro instanceof ErroDaApi && erro.codigo === 'VERSAO_DESATUALIZADA';
 
 export function useAcaoNoUsuario<Acao extends string>({ usuarioId, aoRecarregar }: OpcoesDaAcaoNoUsuario) {
   const clienteDeConsultas = useQueryClient();
   const consultas = useConsultasDeAcessos();
+  const { usuario: usuarioLogado } = useSessao();
   const emEnvio = useRef(false);
   const montado = useRef(false);
   const [acaoEmCurso, setAcaoEmCurso] = useState<Acao | null>(null);
@@ -35,7 +38,7 @@ export function useAcaoNoUsuario<Acao extends string>({ usuarioId, aoRecarregar 
 
   const recarregarUsuario = async (id: UsuarioId) => {
     const recarregado = await clienteDeConsultas.fetchQuery({ ...consultas.usuario(id), staleTime: 0 });
-    void clienteDeConsultas.invalidateQueries({ queryKey: CHAVE_DAS_CONSULTAS_DE_USUARIOS });
+    void clienteDeConsultas.invalidateQueries({ queryKey: RAIZ_DAS_CONSULTAS_DE_USUARIOS });
     if (!montado.current) return;
     aoRecarregar?.(recarregado);
     setAviso(AVISO_DE_VERSAO_DESATUALIZADA);
@@ -53,6 +56,14 @@ export function useAcaoNoUsuario<Acao extends string>({ usuarioId, aoRecarregar 
     if (montado.current) setErro(mensagemDeErro(falha));
   };
 
+  const atualizarTelasEmSegundoPlano = () => {
+    void clienteDeConsultas.invalidateQueries({ queryKey: RAIZ_DAS_CONSULTAS_DE_USUARIOS });
+    void clienteDeConsultas.invalidateQueries({ queryKey: RAIZ_DAS_CONSULTAS_DE_GRUPOS });
+    if (usuarioId !== null && usuarioId === usuarioLogado?.id) {
+      void clienteDeConsultas.invalidateQueries({ queryKey: CHAVE_DO_EU });
+    }
+  };
+
   const enviar = async <Saida,>(acao: Acao, operacao: () => Promise<Saida>, aoSucesso: (saida: Saida) => void) => {
     if (emEnvio.current) return;
     emEnvio.current = true;
@@ -61,10 +72,7 @@ export function useAcaoNoUsuario<Acao extends string>({ usuarioId, aoRecarregar 
     setAviso(null);
     try {
       const saida = await operacao();
-      await Promise.all([
-        clienteDeConsultas.invalidateQueries({ queryKey: CHAVE_DAS_CONSULTAS_DE_USUARIOS }),
-        clienteDeConsultas.invalidateQueries({ queryKey: CHAVE_DAS_CONSULTAS_DE_GRUPOS }),
-      ]);
+      atualizarTelasEmSegundoPlano();
       if (montado.current) aoSucesso(saida);
     } catch (falha) {
       await tratarFalha(falha);

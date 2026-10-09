@@ -1,7 +1,7 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { act } from 'react';
-import type { GrupoId, PedidoDeConvite, UsuarioConvidado, UsuarioId } from '@cdd/contracts';
-import { assentar, type TelaMontada } from '../../app/apoioDeTeste';
+import type { Eu, GrupoId, PedidoDeConvite, UsuarioConvidado, UsuarioId } from '@cdd/contracts';
+import { assentar, criarEu, type TelaMontada } from '../../app/apoioDeTeste';
 import { ErroDaApi, ErroDeRede } from '../../dados/erros';
 import {
   PERMISSAO_DE_USUARIOS,
@@ -68,9 +68,13 @@ function roteiro(sobrescritas: Partial<RoteiroDoCliente> = {}): RoteiroDoCliente
   };
 }
 
-async function montar(sobrescritas: Partial<RoteiroDoCliente> = {}, permissoes = [PERMISSAO_DE_USUARIOS]) {
+async function montar(
+  sobrescritas: Partial<RoteiroDoCliente> = {},
+  permissoes = [PERMISSAO_DE_USUARIOS],
+  buscarEu?: () => Promise<Eu>,
+) {
   const cliente = criarClienteFalso(roteiro(sobrescritas));
-  const tela = await montarAcessos(cliente, permissoes);
+  const tela = await montarAcessos(cliente, permissoes, buscarEu);
   montadas.push(tela);
   return { cliente, tela };
 }
@@ -818,5 +822,58 @@ describe('Acessos: contagem de usuários por grupo', () => {
     await digitarNoPainel('Motivo', 'deixou a tesouraria');
     await clicarNoPainel('Suspender acesso');
     expect(tela.container.querySelector('ul[aria-label="Usuários"]')?.textContent).toContain('Maria Atualizada');
+  });
+});
+
+describe('Acessos: depois do sucesso', () => {
+  const suspenderMaria = async (tela: TelaMontada) => {
+    await abrirGerenciar(tela);
+    await digitarNoPainel('Motivo', 'deixou a tesouraria');
+    await clicarNoPainel('Suspender acesso');
+  };
+
+  it('fecha o painel sem esperar a lista recarregar, que continua e atualiza a tela depois', async () => {
+    const recarga = adiar<ReturnType<typeof pagina>>();
+    let leituras = 0;
+    const { tela } = await montar({
+      usuarios: () => (++leituras === 1 ? pagina([USUARIO_ATIVO]) : recarga.promessa),
+      comando: () => situacaoAlterada('SUSPENSO', 2),
+    });
+    await suspenderMaria(tela);
+    expect(leituras).toBe(2);
+    expect(painelAberto()).toBeNull();
+    expect(tela.container.querySelector('ul[aria-label="Usuários"]')?.textContent).toContain('Ativo');
+
+    await act(async () => recarga.resolver(pagina([usuarioListado({ situacao: 'SUSPENSO', versao: 2 })])));
+    await assentar();
+    expect(tela.container.querySelector('ul[aria-label="Usuários"]')?.textContent).toContain('Suspenso');
+  });
+
+  it('agir sobre o próprio usuário recarrega as permissões da sessão', async () => {
+    const buscarEu = vi.fn(() => Promise.resolve(criarEu({ permissoes: [PERMISSAO_DE_USUARIOS] })));
+    const { tela } = await montar({ comando: () => situacaoAlterada('SUSPENSO', 2) }, [PERMISSAO_DE_USUARIOS], buscarEu);
+    expect(buscarEu).toHaveBeenCalledTimes(1);
+    await suspenderMaria(tela);
+    expect(buscarEu).toHaveBeenCalledTimes(2);
+  });
+
+  it('agir sobre outra pessoa não recarrega as permissões da sessão', async () => {
+    const buscarEu = vi.fn(() => Promise.resolve(criarEu({ permissoes: [PERMISSAO_DE_USUARIOS] })));
+    const { tela } = await montar(
+      { usuarios: () => pagina([OUTRO_USUARIO]), comando: () => situacaoAlterada('SUSPENSO', 2) },
+      [PERMISSAO_DE_USUARIOS],
+      buscarEu,
+    );
+    await abrirPeloGatilho(gatilhoDe(tela, 'João Lima'));
+    await digitarNoPainel('Motivo', 'deixou a tesouraria');
+    await clicarNoPainel('Suspender acesso');
+    expect(painelAberto()).toBeNull();
+    expect(buscarEu).toHaveBeenCalledTimes(1);
+  });
+
+  it('SEM_PERMISSAO mostra que a permissão acabou e mantém o painel aberto', async () => {
+    const { tela } = await montar({ comando: () => new ErroDaApi({ status: 403, codigo: 'SEM_PERMISSAO' }) });
+    await suspenderMaria(tela);
+    expect(painelAberto()?.querySelector('[role="alert"]')?.textContent).toBe('Você não tem mais permissão para esta ação.');
   });
 });
