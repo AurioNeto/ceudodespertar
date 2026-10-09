@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import {
   competenciaPorExtenso,
   diaDaSemana,
@@ -33,6 +33,10 @@ const MESES_POR_EXTENSO = [
 ] as const;
 
 const mesesNumerados = MESES_POR_EXTENSO.map((nome, indice) => [indice, nome] as const);
+
+const FUSO_PADRAO_DOS_TESTES = 'UTC';
+const FUSO_DE_SAO_PAULO = 'America/Sao_Paulo';
+const MINUTOS_DE_SAO_PAULO_ATRAS_DE_UTC = 180;
 
 describe('formatarValor', () => {
   it.each([
@@ -431,5 +435,31 @@ describe('formatarDataHora', () => {
 
   it.each([['abc'], ['']])('texto %j que não é data lança RangeError', (iso) => {
     expect(() => formatarDataHora(iso)).toThrow(RangeError);
+  });
+});
+
+describe('datas lidas com o fuso local atrás de UTC', () => {
+  beforeAll(() => {
+    process.env['TZ'] = FUSO_DE_SAO_PAULO;
+  });
+
+  afterAll(() => {
+    process.env['TZ'] = FUSO_PADRAO_DOS_TESTES;
+  });
+
+  it('o fuso local do teste está três horas atrás de UTC', () => {
+    expect(new Date(2026, 8, 5).getTimezoneOffset()).toBe(MINUTOS_DE_SAO_PAULO_ATRAS_DE_UTC);
+  });
+
+  it('paraData lê o dia como meia-noite local, sem escorregar para o dia anterior', () => {
+    expect(paraData('2026-09-05').getHours()).toBe(0);
+  });
+
+  it('formatarData mostra o mesmo dia que veio no texto', () => {
+    expect(formatarData('2026-09-05')).toBe('05/09/2026');
+  });
+
+  it('diaDaSemana mostra o dia da semana da data que veio no texto', () => {
+    expect(diaDaSemana('2026-10-09')).toBe('sexta');
   });
 });
