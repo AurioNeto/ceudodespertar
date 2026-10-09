@@ -642,8 +642,12 @@ São 33 regras: 26 nomeadas acima e as 7 de `unidade-so-pelo-index`. As contagen
 
 ### 12.2 Linha de base
 
-- Na main `1812df6`, já com o #55: 404 avisos e 0 erros. São 60 avisos de sete regras, 29 do roteador e 315 da regra de alias.
-- Ainda não há catraca: um aviso novo não falha o CI, e nas etapas de mover "sem aviso novo" é conferido à mão (seção 13.3). A catraca entra logo depois do merge do #57, do #58 e do #59 (seção 15). Nesse PR, os imports do apoio de teste passam ao alias `@/`, que entra no vitest com o #57; `depcruise-baseline` gera os avisos conhecidos e o CI roda com `--ignore-known`.
+- A linha de base é o arquivo `.dependency-cruiser-known-violations.web.json`, na raiz, ao lado da configuração: 404 avisos e 0 erros, com as contagens por regra da seção 12.1. São 60 avisos de sete regras, 29 do roteador e 315 da regra de alias. Cada entrada é uma regra com a origem e o destino do import. Os imports do apoio de teste já passaram ao alias `@/`.
+- Catraca ligada: `pnpm fronteiras:web:catraca` sai com código diferente de 0 para qualquer violação fora do arquivo, de qualquer severidade. É o passo "fronteiras do web" do CI e a verificação "sem aviso novo" da seção 13.3.
+- A catraca roda `.dependency-cruiser.web.catraca.mjs`, que é a configuração do web com toda regra elevada a erro, junto com `--ignore-known`. A elevação é necessária: o código de saída do depcruise conta só violação de severidade erro e `--ignore-known` não muda isso, então um aviso novo passaria com código 0. O teste estrutural confere a elevação.
+- `pnpm fronteiras:web` continua informativo: lista os avisos e só falha por regra em erro.
+- `pnpm fronteiras:web:linha-de-base` regenera o arquivo em modo `shrink-only`: tira as entradas cuja violação sumiu e nunca acrescenta. Quem corrige um aviso roda o comando no mesmo PR e commita o arquivo menor; a catraca só imprime as entradas obsoletas (`stale known violations`) e não falha por elas. O arquivo foi criado uma vez em modo `full`, que acrescenta; não há script para ele.
+- Etapa de mover: a entrada é a regra mais a origem e o destino, então um arquivo movido vira aviso novo, a catraca falha e o `shrink-only` não o absorve. Para o aviso que a etapa não resolve, troque o caminho antigo pelo novo na entrada do arquivo e rode `pnpm fronteiras:web:linha-de-base`, que reordena e tira o que sumiu. O PR não pode aumentar o número de entradas. O aviso de alias some trocando o import por `@/`.
 - A linha de base é a foto de antes da migração. Cada etapa de mover a reduz, e a etapa de fronteiras em erro fecha a conta.
 
 ### 12.3 Como cada regra é provada
@@ -783,7 +787,7 @@ Títulos na ordem de leitura. Dependências por título.
 | Limpeza | Composições de domínio | — |
 | Rotas lazy | Fronteiras em erro | — |
 | Remover o Tailwind | Harness de captura de telas | — |
-| Catraca de avisos | Fronteiras no depcruise; Caracterizar lib/formato e components; Caracterizar primitivos do ds | — |
+| Catraca de avisos (concluída, seção 12.2) | Fronteiras no depcruise; Caracterizar lib/formato e components; Caracterizar primitivos do ds | — |
 
 Etapas de divisão de telas de demonstração (de Dividir RegistrarLancamento a Dividir Pessoas e Anamnese) podem andar com o gate fechado. A etapa de leitura única de valor depende das caracterizações das 10 telas que fazem leitura de valor (primitivos do ds, fluxo de lançamentos, financeiro I, eventos, inscrição e pessoas e estoque).
 
@@ -826,7 +830,7 @@ Respondidas pelo dono em 09/10/2026. Cada uma vira correção em PR próprio, de
 | Que data a demonstração usa como "hoje"? | `2026-09-02`, uma data só, em `pages/mocks/relogio.ts`. Devoluções, Contratações e Feitio passam a usá-la: prazos e "dias esperando" mudam nelas. É a mesma data do relógio da captura de telas | Composição de domínio |
 | O que fazer com o Tailwind? | Remover em etapa própria: as regras do preflight de que as telas dependem vão para `ds/fundacao/tokens/base.css`, o plugin e o `@theme` saem, e a captura nas duas densidades prova que nada mudou | Etapa "Remover o Tailwind", depois do harness de captura |
 | O cartão "Acesso ao sistema" da ficha de Pessoas (`PessoasPage.tsx:398-444`) repete a gestão de acesso da tela Acessos. O que fazer? | Fica como demonstração até Pessoas ligar no backend (B4); então vira link para Acessos, para não haver dois lugares que concedem acesso. A decisão sobre dados de saúde (08/10) não cobre este cartão | Na ligação de Pessoas ao backend |
-| Ligar a catraca de avisos das fronteiras no CI? | Sim: `depcruise-baseline` gera os avisos conhecidos e o CI roda com `--ignore-known`, então aviso novo falha o PR. A linha de base só cai; cada etapa de mover a regenera | PR próprio, logo depois do merge do #57, do #58 e do #59, com os imports do apoio de teste já pelo alias `@/` |
+| Ligar a catraca de avisos das fronteiras no CI? | Sim: `depcruise-baseline` gera os avisos conhecidos e o CI roda com `--ignore-known`, então aviso novo falha o PR. A linha de base só cai; cada etapa de mover a regenera | Feito em PR próprio, depois do merge do #57, do #58 e do #59, com os imports do apoio de teste já pelo alias `@/`; o mecanismo está na seção 12.2 |
 | Como a Agenda lê "Contribuições sugeridas"? | Só valores inteiros em reais, separados por vírgula, como o placeholder ("40, 60, 90"). Valor com centavos é recusado com mensagem no campo; hoje `45,50` vira 45 e 50 | PR próprio, depois da caracterização de eventos |
 
 Pendência de redação: o Documento 5 ainda não lista os primitivos admitidos em pt-BR (tabela da seção 4.3, coluna "Catálogo" = não). Ele está em `project/uploads/CDD - System/CDD-v2_2-05-sistema-de-design.md` e não foi alterado; o apêndice com os primitivos em pt-BR entra em PR próprio.
