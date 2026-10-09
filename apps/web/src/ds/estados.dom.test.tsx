@@ -299,10 +299,12 @@ describe('SkeletonList', () => {
     expect(largurasDasBarras(cartoesDe(container)[indice] as Element)).toEqual([titulo, meta]);
   });
 
-  it('declara os keyframes cdd-sh', async () => {
+  it('declara os keyframes cdd-sh e a barra os usa na animação', async () => {
     const { container } = await montar(<SkeletonList rows={1} />);
 
+    const barra = elemento<HTMLElement>(container, ':scope > div > div > div');
     expect(elemento(container, 'style').textContent).toContain('@keyframes cdd-sh');
+    expect(barra.style.animation).toBe('cdd-sh 1.3s ease infinite');
   });
 
   it('não escreve texto visível — o único texto é a declaração da animação', async () => {
