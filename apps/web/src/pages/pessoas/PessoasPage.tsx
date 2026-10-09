@@ -1,11 +1,10 @@
 import { useState } from 'react';
-import type { Permissao } from '@cdd/contracts';
 import { Button, Icon, ScreenHeader, StatusBadge, type BadgeTone } from '../../ds';
-import { Interruptor, Select, SeletorDeTipo } from '../../components/Campo';
+import { Avatar } from '../../components/Avatar';
+import { Select } from '../../components/Campo';
 import { useDensidade } from '../../lib/useDensidade';
-import { iniciais, pluralizar } from '../../lib/formato';
+import { pluralizar } from '../../lib/formato';
 import {
-  CATALOGO_DE_PERMISSOES,
   acessosIniciais,
   gruposIniciais,
   pessoasIniciais,
@@ -15,8 +14,6 @@ import {
   type PessoaDaCasa,
   type SituacaoDeAcesso,
 } from '../../mocks/pessoas';
-
-type Aba = 'pessoas' | 'acesso' | 'grupos';
 
 const TOM_DA_ANAMNESE: Record<EstadoDaAnamnese, BadgeTone> = {
   'em dia': 'confirmed',
@@ -47,11 +44,8 @@ export function PessoasPage() {
   const densidade = useDensidade();
   const campo = densidade === 'field';
 
-  const [aba, setAba] = useState<Aba>('pessoas');
   const [pessoas, setPessoas] = useState<readonly PessoaDaCasa[]>(pessoasIniciais);
   const [acessos, setAcessos] = useState<Record<number, AcessoAoSistema>>({ ...acessosIniciais });
-  const [grupos, setGrupos] = useState<readonly GrupoDeAcesso[]>(gruposIniciais);
-  const [grupoSelecionado, setGrupoSelecionado] = useState('tesouraria');
   const [busca, setBusca] = useState('');
   const [filtro, setFiltro] = useState('todos');
   const [fichaId, setFichaId] = useState<number | null>(null);
@@ -75,23 +69,6 @@ export function PessoasPage() {
     (id) => !pessoas.find((p) => p.id === Number(id))?.ativa,
   ).length;
 
-  const grupoEmFoco = grupos.find((g) => g.id === grupoSelecionado) ?? grupos[0]!;
-  const contarNoGrupo = (nome: string) => Object.values(acessos).filter((a) => a.grupo === nome).length;
-
-  const alternarPermissao = (grupoId: string, permissao: Permissao) =>
-    setGrupos((lista) =>
-      lista.map((g) =>
-        g.id === grupoId
-          ? {
-              ...g,
-              permissoes: g.permissoes.includes(permissao)
-                ? g.permissoes.filter((p) => p !== permissao)
-                : [...g.permissoes, permissao],
-            }
-          : g,
-      ),
-    );
-
   return (
     <>
       <ScreenHeader
@@ -100,11 +77,9 @@ export function PessoasPage() {
         subtitle={campo ? undefined : 'Quem é da casa e quem entra no sistema — dois eixos, um cadastro só'}
         density={densidade}
         actions={
-          aba === 'pessoas' ? (
-            <Button iconName="user-plus" onClick={() => setMensagem('Formulário de nova pessoa — cadastro e convite.')}>
-              Nova pessoa
-            </Button>
-          ) : undefined
+          <Button iconName="user-plus" onClick={() => setMensagem('Formulário de nova pessoa — cadastro e convite.')}>
+            Nova pessoa
+          </Button>
         }
       />
 
@@ -137,21 +112,7 @@ export function PessoasPage() {
           </div>
         ) : null}
 
-        <SeletorDeTipo
-          opcoes={[
-            { valor: 'pessoas', label: 'Pessoas da casa' },
-            { valor: 'acesso', label: 'Acesso ao sistema' },
-            { valor: 'grupos', label: 'Grupos e permissões' },
-          ]}
-          valor={aba}
-          onEscolher={(a) => {
-            setAba(a);
-            setFichaId(null);
-          }}
-          densidade={densidade}
-        />
-
-        {aba === 'pessoas' && !ficha ? (
+        {!ficha ? (
           <>
             <div
               style={{
@@ -249,11 +210,11 @@ export function PessoasPage() {
           </>
         ) : null}
 
-        {aba === 'pessoas' && ficha ? (
+        {ficha ? (
           <FichaDaPessoa
             pessoa={ficha}
             acesso={acessos[ficha.id] ?? null}
-            grupos={grupos}
+            grupos={gruposIniciais}
             onVoltar={() => setFichaId(null)}
             onAviso={setMensagem}
             onInativar={() => {
@@ -290,216 +251,8 @@ export function PessoasPage() {
             }}
           />
         ) : null}
-
-        {aba === 'acesso' ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            <p style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>
-              Todo acesso nasce de um cadastro da casa: papel de domínio e permissão são eixos independentes.
-            </p>
-            {Object.entries(acessos).map(([idTexto, a]) => {
-              const id = Number(idTexto);
-              const pessoa = pessoas.find((p) => p.id === id);
-              if (!pessoa) return null;
-              const info = ACESSO[a.situacao];
-
-              return (
-                <div
-                  key={id}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 12,
-                    flexWrap: 'wrap',
-                    padding: '11px 14px',
-                    border: 'var(--border-hairline)',
-                    borderRadius: 'var(--radius)',
-                    background: 'var(--bg-card)',
-                  }}
-                >
-                  <Avatar nome={pessoa.nome} />
-                  <span style={{ flex: '1 1 200px', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
-                    <span style={{ font: 'var(--text-body-strong)', color: 'var(--text-primary)' }}>{pessoa.nome}</span>
-                    <span style={{ font: 'var(--text-small)', color: 'var(--text-meta)' }}>
-                      {a.email} · último acesso {a.ultimoAcesso}
-                    </span>
-                  </span>
-
-                  <select
-                    value={a.grupo}
-                    onChange={(e) => {
-                      setAcessos((atual) => ({ ...atual, [id]: { ...atual[id]!, grupo: e.target.value } }));
-                      setMensagem('Grupo de permissão atualizado.');
-                    }}
-                    aria-label={`grupo de ${pessoa.nome}`}
-                    style={{
-                      minHeight: 38,
-                      border: '1px solid var(--color-line-strong)',
-                      background: 'var(--bg-card)',
-                      borderRadius: 'var(--radius-sm)',
-                      padding: '6px 10px',
-                      font: 'var(--text-small)',
-                      color: 'var(--text-primary)',
-                    }}
-                  >
-                    {grupos.map((g) => (
-                      <option key={g.id} value={g.nome}>
-                        {g.nome}
-                      </option>
-                    ))}
-                  </select>
-
-                  <StatusBadge tone={info.tone}>{info.label}</StatusBadge>
-
-                  <span style={{ display: 'flex', gap: 8, width: 270, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
-                    {a.situacao === 'convite' ? (
-                      <Button variant="quiet" onClick={() => setMensagem(`Convite reenviado para ${a.email}.`)}>
-                        Reenviar
-                      </Button>
-                    ) : null}
-                    <Button
-                      variant="quiet"
-                      onClick={() => {
-                        const nova: SituacaoDeAcesso = a.situacao === 'suspenso' ? 'ativo' : 'suspenso';
-                        setAcessos((atual) => ({ ...atual, [id]: { ...atual[id]!, situacao: nova } }));
-                        setMensagem(
-                          nova === 'suspenso'
-                            ? 'Acesso suspenso. A pessoa continua no cadastro da casa.'
-                            : 'Acesso reativado.',
-                        );
-                      }}
-                    >
-                      {a.situacao === 'suspenso' ? 'Reativar' : 'Suspender'}
-                    </Button>
-                    <Button
-                      variant="quiet"
-                      onClick={() => {
-                        setAcessos((atual) => {
-                          const copia = { ...atual };
-                          delete copia[id];
-                          return copia;
-                        });
-                        setMensagem('Acesso revogado. O histórico do que essa pessoa lançou continua intacto.');
-                      }}
-                    >
-                      Revogar
-                    </Button>
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        ) : null}
-
-        {aba === 'grupos' ? (
-          <div style={{ display: 'grid', gridTemplateColumns: campo ? 'minmax(0,1fr)' : '260px minmax(0,1fr)', gap: 16 }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {grupos.map((g) => {
-                const on = g.id === grupoSelecionado;
-                return (
-                  <button
-                    key={g.id}
-                    type="button"
-                    onClick={() => setGrupoSelecionado(g.id)}
-                    style={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: 3,
-                      padding: '11px 13px',
-                      border: `1px solid ${on ? 'var(--color-royal-border)' : 'var(--color-line)'}`,
-                      background: on ? 'var(--color-royal-soft)' : 'var(--bg-card)',
-                      borderRadius: 'var(--radius)',
-                      cursor: 'pointer',
-                      textAlign: 'left',
-                    }}
-                  >
-                    <span
-                      style={{
-                        font: 'var(--text-body-strong)',
-                        color: on ? 'var(--color-royal-deep)' : 'var(--text-primary)',
-                      }}
-                    >
-                      {g.nome}
-                    </span>
-                    <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>{g.descricao}</span>
-                    <span style={{ font: 'var(--text-small)', color: 'var(--text-meta)' }}>
-                      {pluralizar(contarNoGrupo(g.nome), 'pessoa no grupo', 'pessoas no grupo')}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-
-            <div
-              style={{
-                background: 'var(--bg-card)',
-                border: 'var(--border-hairline)',
-                borderRadius: 'var(--radius-lg)',
-                padding: '16px 18px',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 12,
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap' }}>
-                <span style={{ font: 'var(--text-title-sm)', color: 'var(--text-title)' }}>{grupoEmFoco.nome}</span>
-                <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>
-                  {grupoEmFoco.permissoes.length} de {CATALOGO_DE_PERMISSOES.length} permissões
-                </span>
-              </div>
-
-              {CATALOGO_DE_PERMISSOES.map((p) => {
-                const ligada = grupoEmFoco.permissoes.includes(p.codigo);
-                return (
-                  <div
-                    key={p.codigo}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 14,
-                      padding: '10px 0',
-                      borderBottom: 'var(--border-hairline)',
-                    }}
-                  >
-                    <span style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
-                      <span style={{ font: 'var(--text-body)', color: 'var(--text-primary)' }}>{p.rotulo}</span>
-                      <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>{p.explicacao}</span>
-                      <code style={{ font: 'var(--text-code)', color: 'var(--text-meta)', background: 'transparent', padding: 0 }}>
-                        {p.codigo}
-                      </code>
-                    </span>
-                    <Interruptor
-                      ligado={ligada}
-                      onAlternar={() => alternarPermissao(grupoEmFoco.id, p.codigo)}
-                      rotuloAcessivel={`${p.rotulo} no grupo ${grupoEmFoco.nome}`}
-                    />
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        ) : null}
       </div>
     </>
-  );
-}
-
-function Avatar({ nome }: { nome: string }) {
-  return (
-    <span
-      style={{
-        width: 34,
-        height: 34,
-        flex: '0 0 auto',
-        borderRadius: 'var(--radius-sm)',
-        background: 'var(--color-royal-soft)',
-        color: 'var(--color-royal-deep)',
-        display: 'grid',
-        placeItems: 'center',
-        font: '700 12px var(--font-data)',
-      }}
-    >
-      {iniciais(nome)}
-    </span>
   );
 }
 
