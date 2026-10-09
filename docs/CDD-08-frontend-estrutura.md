@@ -2,7 +2,7 @@
 
 ## Documento 8 — Estrutura do front-end (apps/web)
 
-**Versão 1.0** · outubro/2026 · Status: aceito pelo dono em 09/10/2026; decisões em aberto na seção 15
+**Versão 1.0** · outubro/2026 · Status: aceito pelo dono em 09/10/2026; decisões de comportamento e texto na seção 15
 
 > Pressupõe o Documento 1 (Arquitetura), o Documento 4 (Mapa de telas) e o Documento 5 (Sistema de design, §4, em `project/uploads/CDD - System/CDD-v2_2-05-sistema-de-design.md`). Os [Documentos 6](CDD-06-plano-do-backend.md) e [7](CDD-07-backend-arquitetura-e-banco.md) tratam do backend e não se aplicam aqui.
 > O mapeamento arquivo a arquivo da migração está no [anexo temporário](CDD-08-anexo-mapa-de-migracao.md). Este documento é a convenção. O anexo sai do repositório quando a migração terminar.
@@ -24,7 +24,7 @@
 **Não decide**
 
 - o comportamento das telas. Regras de negócio, textos e cálculos não mudam numa migração estrutural. Divergências encontradas são registradas (seção 14) e corrigidas em PR próprio;
-- a remoção do Tailwind, os totais com estorno, os textos divergentes, a data de "hoje" da demonstração e o cartão de acesso da ficha de Pessoas (seção 15);
+- as correções de comportamento e de texto: as decisões estão na seção 15, e cada correção vai em PR próprio;
 - o conteúdo do Documento 5, que não é reescrito;
 - o backend.
 
@@ -43,7 +43,7 @@ O dono aprovou as recomendações da proposta em todos os pontos. Quatro decisõ
 
 **Ajustes aceitos nas revisões de conformidade e de viabilidade**
 
-- Tailwind fica como está por ora. O preflight está ativo (`styles/global.css` importa `tailwindcss`) e reseta `ul`, `ol`, `table`, `input`, `img` e outros elementos. Remover é decisão própria, com captura de telas, fora de qualquer etapa de limpeza.
+- O Tailwind sai em etapa própria (seção 15). Até lá fica como está: o preflight está ativo (`styles/global.css` importa `tailwindcss`) e reseta `ul`, `ol`, `table`, `input`, `img` e outros elementos, então a remoção leva essas regras para o `base.css` e é provada pela captura de telas, fora de qualquer etapa de limpeza.
 - `Portao` só vai para `ds/templates` depois que a prop `volta`, sem uso, sai. O `ds` não pode depender de `react-router`.
 - `FaixaDeDemonstracao` fica em `app/demonstracao/FaixaDeDemonstracao/` como UI de app. Sai de `ds/` na etapa de app/ em subpastas, sem nivelar antes.
 - `mocks/ids.ts` fica em `src/mocks/`, a raiz da demonstração, e não em `lib/`.
@@ -67,7 +67,7 @@ O dono aprovou as recomendações da proposta em todos os pontos. Quatro decisõ
 | Código sem consumidor é removido (seção 6.4) | `ConfirmAction`, `DataTable`, `PendencyCard` e `RegimeVocabulary`/`useTermo` ficam no `ds/` sem consumidor, com teste. | `ConfirmAction` e `DataTable` já são re-implementados por telas existentes (`FechamentoPage`; as 3 tabelas com `Th` e `Td`). `PendencyCard` e `RegimeVocabulary` (Documento 1 §4.3) carregam invariantes que as etapas B1 e B2 vão usar. |
 | `ds/` é a única camada global de UI (seção 6) | `app/` tem UI própria do shell: `FaixaDeDemonstracao` em `app/demonstracao/FaixaDeDemonstracao/`, `Layout` em `app/shell/Layout/` e, depois da divisão, `TelaSemAcesso` em `app/shell/components/TelaSemAcesso/`. | A faixa sinaliza o modo de demonstração do app e não é design. O `Layout` filtra o menu por permissão e conta a fila, que é regra de app. Decisão do dono. |
 | Mock é só dado de demonstração (seção 8.3) | `mocks/ids.ts`, que aplica a marca de tipo às fixtures, fica em `src/mocks/`. | Só a demonstração precisa forjar ids; o código de produção recebe ids da API. Em `lib/` ele viraria utilitário global de produção. Decisão do dono. |
-| Um sistema de estilo só (seção 10.5) | `@import "tailwindcss"` e o `@theme` de `styles/global.css` continuam até decisão própria. | O preflight do Tailwind reseta `ul`, `ol`, `table`, `input`, `img` e outros elementos usados em 22 arquivos, e `base.css` não cobre isso. Remover muda o visual e exige captura. |
+| Um sistema de estilo só (seção 10.5) | `@import "tailwindcss"` e o `@theme` de `styles/global.css` continuam até a etapa "Remover o Tailwind". | O preflight do Tailwind reseta `ul`, `ol`, `table`, `input`, `img` e outros elementos usados em 22 arquivos, e `base.css` não cobre isso. Remover muda o visual e exige captura. |
 | Gate do merge do #55 e do e2e do B0 (seção 13.5) | Antes do gate, só linhas de import de `app/`, `dados/`, sistema e transversal mudam. Nenhum arquivo dessas pastas é movido, dividido ou tem corpo alterado. | Promover primitivos, mover a fundação e mover telas de demonstração muda o caminho que esses arquivos importam. Esperar o gate pararia todo o plano. |
 | Operação de mover não muda corpo (seção 13.2) | Na etapa `lib/formato por export`, `formatarDinheiro` passa a chamar `formatarValor(centavos / 100)`, para não exportar o `Intl.NumberFormat` privado (BRL) de `lib/formato`. | `formatarValor` fica em `lib` e `formatarDinheiro` desce para `pages/utils`. É o mesmo formatador, com o mesmo resultado, coberto pelos testes de formato da etapa de caracterização de `lib/formato` e `components`. |
 | Regras de camada que proíbem importar `testes/` | `testes/` não está no alvo de `lib-e-folha`, `dados-sem-ui` e `ds-autonomo`. Quem barra é `apoio-de-teste-so-em-teste`, que isenta os `*.test.*`. | Os testes de `lib`, `dados` e `ds` precisam das fábricas de `src/testes` (ex.: a fábrica de `ErroDaApi` em `dados/clienteDeConsultas.test.ts`). Decisão do dono. |
@@ -507,7 +507,7 @@ Regras: `camada-cruzada-por-alias` (aviso, passa a erro quando zerar) e `ds-so-p
 
 - Variáveis CSS dos tokens e estilo inline, com cor sempre por `var(--…)`.
 - Tokens, marca e keyframes globais ficam em `ds/fundacao/`. `styles/global.css` é só a entrada.
-- O Tailwind segue importado, com o preflight ativo, até decisão própria (seção 15).
+- O Tailwind segue importado, com o preflight ativo, até a etapa "Remover o Tailwind" (seção 15).
 
 ---
 
@@ -643,7 +643,7 @@ São 32 regras: 25 nomeadas acima e as 7 de `unidade-so-pelo-index`. As contagen
 
 - Na main: 359 avisos e 0 erros. São 40 avisos de sete regras, 29 do roteador e 290 da regra de alias.
 - Com o #55 mesclado, a linha de base sobe para cerca de 400 avisos (400 na branch publicada em 09/10/2026), ainda com 0 erros.
-- Não há catraca de avisos por ora: um aviso novo não falha o CI. Nas etapas de mover, "sem aviso novo" é conferido à mão (seção 13.3). A catraca (`depcruise-baseline` com `--ignore-known`) fica para depois do merge do #55.
+- Até o merge do #55 não há catraca: um aviso novo não falha o CI, e nas etapas de mover "sem aviso novo" é conferido à mão (seção 13.3). Logo depois do merge, a catraca entra (seção 15): `depcruise-baseline` gera os avisos conhecidos e o CI roda com `--ignore-known`.
 - A linha de base é a foto de antes da migração. Cada etapa de mover a reduz, e a etapa de fronteiras em erro fecha a conta.
 
 ### 12.3 Como cada regra é provada
@@ -776,13 +776,14 @@ Títulos na ordem de leitura. Dependências por título.
 | Dividir Painel | Caracterizar sistema e transversal; Harness; Dividir sistema, Meu perfil e entrada | herdado |
 | Dividir app/shell, sessão e ds | Fronteiras em erro; Caracterizar o restante do ds; Harness; Dividir Painel | herdado |
 | Leitura única de valor | Caracterizar primitivos do ds; Caracterizar fluxo lancamentos; Caracterizar financeiro I; Caracterizar eventos; Caracterizar inscrição; Caracterizar pessoas e estoque | — |
-| Correções de comportamento | Caracterização da tela correspondente (seção 14) | decisão do dono para divergências de regra e texto |
+| Correções de comportamento | Caracterização da tela correspondente (seções 14 e 15) | — |
 | Rotulo e CorpoDaTela | Todas as etapas de divisão; Harness | — |
 | Primitivos novos e adoção do catálogo | Rotulo e CorpoDaTela | — |
-| Composições de domínio | Primitivos novos e adoção do catálogo | decisão do dono sobre textos e regras divergentes |
+| Composições de domínio | Primitivos novos e adoção do catálogo | — |
 | Limpeza | Composições de domínio | — |
 | Rotas lazy | Fronteiras em erro | — |
-| Tailwind | Harness de captura de telas | decisão do dono sobre o Tailwind |
+| Remover o Tailwind | Harness de captura de telas | — |
+| Catraca de avisos | Fronteiras no depcruise | merge do #55 |
 
 Etapas de divisão de telas de demonstração (de Dividir RegistrarLancamento a Dividir Pessoas e Anamnese) podem andar com o gate fechado. A etapa de leitura única de valor depende das caracterizações das 10 telas que fazem leitura de valor (primitivos do ds, fluxo de lançamentos, financeiro I, eventos, inscrição e pessoas e estoque).
 
@@ -797,29 +798,35 @@ Divergências são registradas como estão pela caracterização e corrigidas em
 | A soma do `AmountInput` não tira o ponto de milhar; a do hook do lançamento tira. Com `1.200+50`, o campo mostra 51,20 e o registro grava 1.250 | `ds/AmountInput.tsx:24`; `pages/lancamento/useFormularioDeLancamento.ts:75-79` | Leitura única de valor, em PR próprio, depois das caracterizações do `ds` e do fluxo de lançamentos |
 | `"1.500,00"` vira NaN em Empréstimos e Adiantamentos: o valor é recusado como inválido. Feitio e Ayahuasca leem litros sem tirar o milhar (`1.500,00` vira 0 e 1,5), e Agenda lê os litros do mesmo jeito | `EmprestimosPage.tsx:50` e `:96`; `AdiantamentosPage.tsx:502` (`Number(valor.replace(",", "."))`); `FeitioPage.tsx:48` e `:398`; `AyahuascaPage.tsx:47`; `AgendaPage.tsx:66` | Leitura única de valor, depois da caracterização de financeiro I (e das divisões de Faturas e Empréstimos e de Adiantamentos, se já tiverem rodado); Feitio, Ayahuasca e Agenda na mesma etapa |
 | O `{...rest}` do `Button` vem depois de `title`, `onMouseEnter` e `onMouseLeave`. Quem passa `title` apaga o `title` do `blockedReason`; quem passa `onMouseEnter` ou `onMouseLeave` perde o hover | `ds/Button.tsx:59-61` define os handlers e o `title`; `ds/Button.tsx:82` espalha `{...rest}` depois | PR próprio, depois de Caracterizar primitivos do ds, que registra o comportamento atual |
-| Os totais tratam o estorno de formas diferentes em 3 telas. Lançamentos exclui os estornados de entradas e de saídas; Meus registros e Fechamento excluem só das saídas | `LancamentosPage.tsx:94-96`; `MeusRegistrosPage.tsx:27-30`; `FechamentoPage.tsx:115-116` | PR próprio, depois da decisão da seção 15 e das caracterizações; antes da composição de totais |
+| Os totais tratam o estorno de formas diferentes em 3 telas. Lançamentos exclui os estornados de entradas e de saídas; Meus registros e Fechamento excluem só das saídas | `LancamentosPage.tsx:94-96`; `MeusRegistrosPage.tsx:27-30`; `FechamentoPage.tsx:115-116` | PR próprio, depois das caracterizações; antes da composição de totais. Decisão: fora de entradas e de saídas (seção 15) |
 | Na inscrição pública, dias e refeições nunca mudam. Os setters chegam ao `Participacao`, que não os chama, e o total usa sempre 1 diária e nenhuma refeição | `InscricaoPublicaPage.tsx:72-73`, `:302-305`, `:690` e `:692` | PR próprio, depois da caracterização de inscrição |
 | Na Conciliação, "importado" é sempre `true`: o estado inicial e a única escrita são `true`, então o caminho "Importar extrato" nunca aparece | `ConciliacaoPage.tsx:22`, `:82` e `:233` | PR próprio, depois da caracterização de financeiro II, conferindo o estado inicial no protótipo |
 | `disparaAlerta` ignora `MAIOR_QUE` e compara texto com valor numérico ou booleano. `IGUAL` com valor numérico nunca dispara; `DIFERENTE` com valor numérico sempre dispara | `components/Anamnese.tsx:15-23`; `packages/contracts/src/pessoas.ts:60-61` | PR próprio, depois da caracterização de `components` |
 | O `GerenciarContasModal` ignora sem avisar o salvar com nome vazio | `GerenciarContasModal.tsx:60-70`: `return` antes de `onSalvarConta` e `onSalvarFundo`, sem mensagem | PR próprio, depois da caracterização de financeiro I |
-| O rótulo do valor da transferência diverge: "Quanto transferir" no registro e "Quanto transferiu" na revisão | `useFormularioDeLancamento.ts:193`; `PainelDeRevisao.tsx:162` | Depois da decisão de texto (seção 15), no vocabulário único da composição de domínio |
-| O ícone da conta diverge: a tela usa `wallet`, `credit-card` (para `PESSOAL_DE_TERCEIRO`) ou `landmark`; o modal usa `wallet` ou `landmark` | `ContasEFundoPage.tsx:32-33`; `GerenciarContasModal.tsx:176` | Depois da decisão de texto (seção 15) |
-| A demonstração tem três "hoje": `2026-09-02` em `mocks/sessao.ts:6`; `11/09/2026` em `DevolucoesPage.tsx:24`, `ContratacoesPage.tsx:39` e `FeitioPage.tsx:30`; e `new Date(2026, 8, 11)` em `DevolucoesPage.tsx:163` | Evidências citadas | Composição de domínio, depois da decisão do dono (seção 15) |
+| O rótulo do valor da transferência diverge: "Quanto transferir" no registro e "Quanto transferiu" na revisão | `useFormularioDeLancamento.ts:193`; `PainelDeRevisao.tsx:162` | No vocabulário único da composição de domínio. Decisão: "Quanto transferiu" (seção 15) |
+| O ícone da conta diverge: a tela usa `wallet`, `credit-card` (para `PESSOAL_DE_TERCEIRO`) ou `landmark`; o modal usa `wallet` ou `landmark` | `ContasEFundoPage.tsx:32-33`; `GerenciarContasModal.tsx:176` | PR próprio, depois da caracterização de financeiro I. Decisão: os 3 casos nas duas telas (seção 15) |
+| A demonstração tem três "hoje": `2026-09-02` em `mocks/sessao.ts:6`; `11/09/2026` em `DevolucoesPage.tsx:24`, `ContratacoesPage.tsx:39` e `FeitioPage.tsx:30`; e `new Date(2026, 8, 11)` em `DevolucoesPage.tsx:163` | Evidências citadas | Composição de domínio. Decisão: `2026-09-02`, uma data só (seção 15) |
 | Códigos de tela colidem no `ScreenHeader`: `F-11` em `MeuPerfilPage.tsx:18` e `AdiantamentosPage.tsx:143`; `F-09` em `PessoasPage.tsx:75` e `FaturasPage.tsx:74` | Evidências citadas | PR de texto, conferindo os códigos no Documento 4. Pode rodar a qualquer momento fora das etapas de mover |
 | O total da inscrição não é duplicata: a interna zera a contribuição de `EQUIPE`; a pública não | `InscricaoPage.tsx:115` e `:120` (`isento = tipo === "EQUIPE"`), contra `InscricaoPublicaPage.tsx:126` | Não é bug. Ao fundir em `inscricao/utils/valorDaInscricao.ts`, entra com parâmetro de isenção e teste para os dois casos |
 | A paginação de Lançamentos e a de Meus registros não são iguais: só Lançamentos limita a página atual ao total de páginas | `LancamentosPage.tsx:90-92` contra `MeusRegistrosPage.tsx:22-24` | Não é bug visível hoje. Ao fundir em `usePaginacao`, entra com teste dos dois casos |
 | O `AppShell` mostra as duas primeiras letras do nome (`slice(0, 2)`); `iniciais()` mostra a inicial do primeiro e do último nome. Com "Ana", o shell mostra "AN" e Meu perfil mostra "A" | `ds/AppShell.tsx:155`; `lib/formato.ts:77-82`; `pages/perfil/MeuPerfilPage.tsx:62` | PR próprio, antes da adoção do `Avatar` no `AppShell` (a adoção muda o texto) |
+| "Contribuições sugeridas" da Agenda separa a lista por vírgula, que também é o decimal: `45,50` vira duas contribuições (45 e 50) | `pages/agenda/AgendaPage.tsx:52-53`; placeholder `"40, 60, 90"` em `FormularioDeTrabalho.tsx:165` | PR próprio, depois da caracterização de eventos. Decisão: só inteiros, valor com centavos recusado com mensagem (seção 15) |
 
 ---
 
-## 15. Decisões pendentes
+## 15. Decisões do dono sobre comportamento e texto
 
-| Pergunta | Opções | Recomendação | Estado |
-|---|---|---|---|
-| Totais com estorno: qual regra vale para Lançamentos, Meus registros e Fechamento? | (a) estornado fica fora de entradas e de saídas, como em Lançamentos hoje; (b) estornado fica fora só das saídas, como em Meus registros e Fechamento hoje | (a): o estorno anula o lançamento. Conferir no Documento 2 antes. Até a decisão, os testes registram as três telas como estão | Pendente |
-| Textos divergentes: rótulo do valor da transferência e ícone da conta | Rótulo: "Quanto transferiu" nas duas telas, "Quanto transferir" nas duas, ou manter os dois. Ícone: 3 casos (`wallet`, `credit-card`, `landmark`) também no modal, ou 2 casos nas duas telas | "Quanto transferiu", no mesmo tempo verbal de "Quanto entrou" e "Quanto foi". Ícone com os 3 casos nas duas telas, porque o modal lista as mesmas contas | Pendente |
-| Qual "hoje" a demonstração usa? | Uma data só em `pages/mocks/relogio.ts`, `2026-09-02` (de `mocks/sessao`); ou `2026-09-11` (de Devoluções, Contratações e Feitio); ou manter as três | Uma data só em `pages/mocks/relogio.ts`. A composição de domínio lista o que muda em cada tela com cada opção antes da escolha, porque prazos e "dias esperando" dos mocks mudam junto | Pendente |
-| Remover o Tailwind? | Remover em etapa própria, com as regras do preflight usadas pelas telas levadas para `ds/fundacao/tokens/base.css` e captura de todas as telas nas duas densidades; manter como está; adotar as utilidades como sistema de estilo | Recomendação da proposta: remover na etapa própria, depois do harness de captura. Hoje não há classe utilitária do Tailwind em `src` (as 3 `className` são próprias), mas o preflight está ativo e reseta elementos usados em 22 arquivos | Mantido por ora (decisão do dono). Remover é decisão própria |
-| O cartão "Acesso ao sistema" da ficha de Pessoas (`PessoasPage.tsx:398-444`) repete a gestão de acesso da tela Acessos. O que fazer? | Manter como está (demonstração); trocar por link para Acessos quando Pessoas ligar no backend; remover | Manter até Pessoas ligar no backend. Então trocar por link para Acessos, para não haver dois lugares que concedem acesso. A decisão sobre dados de saúde (08/10) não cobre este cartão | Pendente |
+Respondidas pelo dono em 09/10/2026. Cada uma vira correção em PR próprio, depois da caracterização da tela, nunca dentro de etapa estrutural (seção 14).
+
+| Pergunta | Decisão | Onde entra |
+|---|---|---|
+| Como o lançamento estornado conta nos totais de Lançamentos, Meus registros e Fechamento? | Fica fora de entradas e de saídas, como em Lançamentos hoje: o estorno anula o lançamento (Documento 2, L2). Meus registros e Fechamento mudam de total | PR próprio, depois das caracterizações do fluxo de lançamentos e de financeiro II; antes da composição de totais |
+| Qual rótulo do valor da transferência vale no registro e na revisão? | "Quanto transferiu", no mesmo tempo verbal de "Quanto entrou" e "Quanto foi". O formulário de registro muda | Vocabulário único da composição de domínio |
+| Que ícone a conta mostra na tela e no modal de contas? | Os 3 casos nas duas: `wallet` (caixa), `credit-card` (conta pessoal de terceiro) e `landmark` (banco). O modal muda | PR próprio, depois da caracterização de financeiro I |
+| Que data a demonstração usa como "hoje"? | `2026-09-02`, uma data só, em `pages/mocks/relogio.ts`. Devoluções, Contratações e Feitio passam a usá-la: prazos e "dias esperando" mudam nelas. É a mesma data do relógio da captura de telas | Composição de domínio |
+| O que fazer com o Tailwind? | Remover em etapa própria: as regras do preflight de que as telas dependem vão para `ds/fundacao/tokens/base.css`, o plugin e o `@theme` saem, e a captura nas duas densidades prova que nada mudou | Etapa "Remover o Tailwind", depois do harness de captura |
+| O cartão "Acesso ao sistema" da ficha de Pessoas (`PessoasPage.tsx:398-444`) repete a gestão de acesso da tela Acessos. O que fazer? | Fica como demonstração até Pessoas ligar no backend (B4); então vira link para Acessos, para não haver dois lugares que concedem acesso. A decisão sobre dados de saúde (08/10) não cobre este cartão | Na ligação de Pessoas ao backend |
+| Ligar a catraca de avisos das fronteiras no CI? | Sim, depois do merge do #55: `depcruise-baseline` gera os avisos conhecidos e o CI roda com `--ignore-known`, então aviso novo falha o PR. A linha de base só cai; cada etapa de mover a regenera | PR próprio, logo depois do merge do #55 |
+| Como a Agenda lê "Contribuições sugeridas"? | Só valores inteiros em reais, separados por vírgula, como o placeholder ("40, 60, 90"). Valor com centavos é recusado com mensagem no campo; hoje `45,50` vira 45 e 50 | PR próprio, depois da caracterização de eventos |
 
 Pendência de redação: o Documento 5 ainda não lista os primitivos admitidos em pt-BR (tabela da seção 4.3, coluna "Catálogo" = não). Ele mora fora do repositório (`project/uploads/`) e não foi alterado; o apêndice entra quando os documentos de desenho forem versionados.

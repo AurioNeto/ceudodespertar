@@ -117,10 +117,10 @@ Os destinos são agrupados por área: `app/`, `dados/`, `lib/`, `ds/`, `testes/`
 | `pages/eventos/InscricaoPage.tsx:120` e `:703` | tira o milhar | — | `lerValorDigitado` |
 | `pages/publico/InscricaoPublicaPage.tsx:126` e `:708` | tira o milhar | — | `lerValorDigitado` |
 | `pages/estoque/FeitioPage.tsx:48` e `:398` | `Number` sem tirar o milhar: vira 0 | corrige a divergência 2 (mesma causa) | `lerValorDigitado` |
-| `pages/agenda/AgendaPage.tsx:66` (litros) e `:53` (contribuições) | `:66` não tira o milhar: vira 1,5; `:53` separa a lista por vírgula | `:66` corrige a divergência 2 (mesma causa); `:53` fora da divergência | `:66` `lerValorDigitado`; `:53` decisão própria |
+| `pages/agenda/AgendaPage.tsx:66` (litros) e `:53` (contribuições) | `:66` não tira o milhar: vira 1,5; `:53` separa a lista por vírgula | `:66` corrige a divergência 2 (mesma causa); `:53` fora da divergência | `:66` `lerValorDigitado`; `:53` fora desta etapa (Documento 8, seção 15: só inteiros) |
 
 - Os cinco que já tiram o milhar só trocam a chamada, sem mudar valor (`fundir`).
-- A confirmar na caracterização de eventos: `AgendaPage.tsx:53` separa a lista de contribuições por vírgula, que também é o separador decimal: `1,5` vira duas contribuições (1 e 5). `lerValorDigitado` não serve a esse campo. Confirmar a intenção na caracterização de eventos e registrar a divergência na seção 14 do Documento 8.
+- `AgendaPage.tsx:53` separa a lista de contribuições por vírgula, que também é o separador decimal. `lerValorDigitado` não serve a esse campo. Decisão do dono: só valores inteiros, com o valor com centavos recusado (Documento 8, seções 14 e 15), em PR próprio depois da caracterização de eventos.
 
 ---
 
@@ -279,7 +279,7 @@ Os testes do #58 e do #59 se repartem por describe entre as unidades de destino.
 | `main.tsx`: `fontesReais`, `escolherFontesDaSessao` (opcional: fábrica que recebe as instâncias) | `app/sessao/fontesDaSessao.ts` (+ teste) | dividir | Dividir app/shell, sessão e ds |
 | `silencioso.ts` (usa `criarGerenciadorOidc` do barrel de dados) | `silencioso.ts` | manter | dados/ sem efeito e sem ciclo |
 | `env.d.ts` | `env.d.ts` | manter | Fronteiras no depcruise |
-| `styles/global.css` (só a entrada; `@import` apontam para `../ds/fundacao/`, na mesma ordem; Tailwind mantido) | `styles/global.css` | manter | Mover fundação do ds |
+| `styles/global.css` (só a entrada; `@import` apontam para `../ds/fundacao/`, na mesma ordem; Tailwind mantido até a etapa "Remover o Tailwind") | `styles/global.css` | manter | Mover fundação do ds |
 
 ---
 
@@ -300,7 +300,7 @@ Os testes do #58 e do #59 se repartem por describe entre as unidades de destino.
 | `EstadoDaAnamnese` (tipo copiado em `mocks/agenda.ts` e `mocks/pessoas.ts`) | `pages/components/SeloDaAnamnese/tipos.ts` (os mocks importam pelo `index.ts` da unidade) | fundir | Composições de domínio |
 | blocos de Pessoas, Painel e `DetalheDoTrabalho` (pontos de atenção) | `pages/components/PontosDeAtencao/` | fundir | Composições de domínio |
 | `pages/registros/MeusRegistrosPage.tsx#irPara` + `pages/painel/PainelPage.tsx#irPara` | `pages/hooks/useCarrossel.ts` (+ `.dom.test.ts`) | fundir | Composições de domínio |
-| `pages/eventos/DevolucoesPage.tsx`: `HOJE`, `COMPETENCIA_ATUAL`; `pages/eventos/ContratacoesPage.tsx`: `HOJE`; `pages/estoque/FeitioPage.tsx`: `HOJE` (depende da decisão sobre o "hoje" da demonstração) | `pages/mocks/relogio.ts` | fundir | Composições de domínio |
+| `pages/eventos/DevolucoesPage.tsx`: `HOJE`, `COMPETENCIA_ATUAL`; `pages/eventos/ContratacoesPage.tsx`: `HOJE`; `pages/estoque/FeitioPage.tsx`: `HOJE` (passam a usar `2026-09-02`, decisão do dono; prazos e "dias esperando" mudam nessas telas) | `pages/mocks/relogio.ts` | fundir | Composições de domínio |
 
 ---
 
@@ -391,7 +391,7 @@ Os testes do #58 e do #59 se repartem por describe entre as unidades de destino.
 | `EmprestimosPage.tsx` (container de formulário), `AdiantamentosPage.tsx` (idem), `FaturasPage.tsx` (idem) | `pages/financeiro/components/CartaoDeFormulario/` | fundir | Composições de domínio |
 | `LancamentosPage.tsx` (chips de tipo) + `VerificacaoLotePage.tsx` (filtros de origem) | `pages/financeiro/lancamentos/components/ChipDeFiltro/` | fundir | Composições de domínio |
 | `LancamentosPage.tsx` (paginação) + `MeusRegistrosPage.tsx` (paginação); os dois casos têm teste, porque só Lançamentos limita a página atual | `pages/financeiro/lancamentos/hooks/usePaginacao.ts` (+ `.dom.test.ts`) | fundir | Composições de domínio |
-| totais das duas telas, após as divisões (estorno fica como está até a decisão da seção 15 do Documento 8) | `pages/financeiro/lancamentos/utils/totais.ts` | fundir | Composições de domínio |
+| totais das duas telas, após as divisões (o estorno fica como está até o PR de correção; decisão: fora de entradas e de saídas, seção 15 do Documento 8) | `pages/financeiro/lancamentos/utils/totais.ts` | fundir | Composições de domínio |
 ---
 
 ## 9. `pages/eventos/`
@@ -590,5 +590,5 @@ Os testes do #58 e do #59 se repartem por describe entre as unidades de destino.
 - **Branch local do #55.** `feat/b0-comandos-de-acessos` está 9 commits à frente do head publicado do PR #55 (`c71e315`). `ErroDoPainel`, `AvisoDeAtencao`, `useFocoNoPrimeiroCampoInvalido` e `ds/TextField.dom.test.tsx` só existem na branch local. As linhas com o #55 são conferidas nela e refeitas no merge. `app/apoioDeTeste.tsx` é alterado pelo #55 para importar `JANELA_DE_FRESCOR_EM_MS` de `dados/clienteDeConsultas.ts`, fora do barrel: a linha de `dados/index.ts` (seção 2) o reexporta.
 - **`EstadoDaAnamnese` e `StatusAnamnese`.** O tipo de UI (`em dia`, `vencida`, `ausente`) não é o `StatusAnamnese` de `@cdd/contracts` (`PENDENTE`, `OK`, `VENCIDA`, `NAO_APLICAVEL`). O mapeamento não existe no código e entra quando a tela ligar no backend.
 - **`gerarHash`.** Tratado como função falsa da demonstração, que fica no mock (`mocks/prestacao.ts`), e não como regra de domínio: é um hex aleatório (`mocks/prestacao.ts:180-181`), sem regra de negócio.
-- **`AgendaPage.tsx:53`.** A lista de contribuições separa por vírgula, que também é o decimal. Ver a seção 3.1. Registrar na seção 14 do Documento 8 depois da confirmação.
+- **`AgendaPage.tsx:53`.** Decidido: só inteiros (Documento 8, seção 15). Ver a seção 3.1.
 - **Iniciais.** O `AppShell` e o Meu perfil calculam iniciais de jeitos diferentes. Ver a seção 14 do Documento 8 antes de adotar o `Avatar` no `AppShell` (seção 4.3).
