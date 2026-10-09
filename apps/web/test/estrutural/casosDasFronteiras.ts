@@ -22,6 +22,12 @@ const ACESSOS = 'pages/sistema/AcessosPage';
 const PAINEL = 'pages/transversal/PainelPage';
 const ENTRADA = 'pages/transversal/entrada';
 const ENTRAR = `${ENTRADA}/EntrarPage`;
+const RECIBO = `${LANCAMENTOS}/utils/recibo.ts`;
+const RESERVA_DE_EVENTOS = 'pages/eventos/utils/reserva.ts';
+const SALDO_DE_ESTOQUE = 'pages/estoque/utils/saldo.ts';
+const CADASTRO_DE_PESSOAS = 'pages/pessoas/utils/cadastro.ts';
+const PERMISSAO_DE_SISTEMA = 'pages/sistema/utils/permissao.ts';
+const NAVEGACAO_TRANSVERSAL = 'pages/transversal/utils/navegacao.ts';
 
 export const CASOS_DAS_FRONTEIRAS = {
   'web-sem-ciclo': {
@@ -37,12 +43,27 @@ export const CASOS_DAS_FRONTEIRAS = {
   },
   'lib-e-folha': {
     severidade: 'warn',
-    acusa: ['lib/impuro.ts -> react', 'lib/impuro.ts -> ds/index.ts', 'lib/impuro.ts -> mocks/ids.ts'],
+    acusa: [
+      'lib/impuro.ts -> react',
+      'lib/impuro.ts -> ds/index.ts',
+      'lib/impuro.ts -> mocks/ids.ts',
+      'lib/impuro.ts -> app/sessao/index.ts',
+      'lib/impuro.ts -> components/Rodape/index.ts',
+      'lib/impuro.ts -> dados/index.ts',
+      `lib/impuro.ts -> ${RECIBO}`,
+    ],
     permite: ['lib/formato.test.ts -> testes/fabricas.ts', 'lib/formato.ts -> lib/numero.ts'],
   },
   'dados-sem-ui': {
     severidade: 'error',
-    acusa: ['dados/clienteHttp.ts -> ds/index.ts', 'dados/demonstracao.ts -> pages/mocks/relogio.ts'],
+    acusa: [
+      'dados/clienteHttp.ts -> ds/index.ts',
+      'dados/demonstracao.ts -> pages/mocks/relogio.ts',
+      'dados/x.ts -> react',
+      'dados/x.ts -> app/sessao/index.ts',
+      'dados/x.ts -> components/Rodape/index.ts',
+      'dados/x.ts -> mocks/ids.ts',
+    ],
     permite: ['dados/erros.test.ts -> testes/fabricas.ts', 'dados/clienteHttp.ts -> lib/formato.ts'],
   },
   'ds-autonomo': {
@@ -50,6 +71,10 @@ export const CASOS_DAS_FRONTEIRAS = {
     acusa: [
       'ds/templates/Portao/Portao.tsx -> react-router-dom',
       'ds/templates/Portao/Portao.tsx -> app/sessao/index.ts',
+      'ds/templates/Portao/Portao.tsx -> components/Rodape/index.ts',
+      'ds/templates/Portao/Portao.tsx -> dados/index.ts',
+      'ds/templates/Portao/Portao.tsx -> mocks/ids.ts',
+      `ds/templates/Portao/Portao.tsx -> ${RECIBO}`,
     ],
     permite: [
       'ds/atoms/Button/Button.dom.test.tsx -> testes/configurarDom.ts',
@@ -65,18 +90,27 @@ export const CASOS_DAS_FRONTEIRAS = {
     severidade: 'error',
     acusa: [
       'ds/fundacao/ruim.ts -> ds/atoms/Button/index.ts',
+      'ds/fundacao/ruim.ts -> ds/molecules/TextField/index.ts',
+      'ds/fundacao/ruim.ts -> ds/templates/Portao/index.ts',
       'ds/providers/RegimeVocabulary/RegimeVocabulary.tsx -> ds/organisms/PainelDeAcao/index.ts',
     ],
     permite: ['ds/providers/RegimeVocabulary/RegimeVocabulary.tsx -> ds/fundacao/densidade.ts'],
   },
   'ds-atomo-nao-sobe': {
     severidade: 'error',
-    acusa: ['ds/atoms/Button/Button.tsx -> ds/molecules/TextField/index.ts'],
+    acusa: [
+      'ds/atoms/Button/Button.tsx -> ds/molecules/TextField/index.ts',
+      'ds/atoms/Button/Button.tsx -> ds/organisms/PainelDeAcao/index.ts',
+      'ds/atoms/Button/Button.tsx -> ds/templates/Portao/index.ts',
+    ],
     permite: ['ds/atoms/Button/Button.tsx -> ds/atoms/Icon/index.ts'],
   },
   'ds-molecula-nao-sobe': {
     severidade: 'error',
-    acusa: ['ds/molecules/TextField/TextField.tsx -> ds/organisms/PainelDeAcao/index.ts'],
+    acusa: [
+      'ds/molecules/TextField/TextField.tsx -> ds/organisms/PainelDeAcao/index.ts',
+      'ds/molecules/TextField/TextField.tsx -> ds/templates/Portao/index.ts',
+    ],
     permite: ['ds/molecules/TextField/TextField.tsx -> ds/atoms/Icon/index.ts'],
   },
   'ds-organismo-nao-sobe': {
@@ -146,9 +180,13 @@ export const CASOS_DAS_FRONTEIRAS = {
     acusa: [
       `${FATURAS}/FaturasPage.tsx -> ${DEVOLUCOES}/index.ts`,
       `${PAINEL}/PainelPage.tsx -> ${FATURAS}/index.ts`,
+      `${RESERVA_DE_EVENTOS} -> ${SALDO_DE_ESTOQUE}`,
+      `${SALDO_DE_ESTOQUE} -> ${CADASTRO_DE_PESSOAS}`,
+      `${CADASTRO_DE_PESSOAS} -> ${PERMISSAO_DE_SISTEMA}`,
+      `${PERMISSAO_DE_SISTEMA} -> ${NAVEGACAO_TRANSVERSAL}`,
     ],
     permite: [
-      `${LANCAMENTOS}/RegistrarLancamentoPage/RegistrarLancamentoPage.tsx -> ${LANCAMENTOS}/utils/recibo.ts`,
+      `${LANCAMENTOS}/RegistrarLancamentoPage/RegistrarLancamentoPage.tsx -> ${RECIBO}`,
       `${DEVOLUCOES}/DevolucoesPage.tsx -> pages/mocks/relogio.ts`,
       `${FATURAS}/FaturasPage.tsx -> pages/components/CartazSlot/index.ts`,
     ],
@@ -156,12 +194,12 @@ export const CASOS_DAS_FRONTEIRAS = {
   'compartilhado-nao-importa-tela': {
     severidade: 'error',
     acusa: [
-      `${LANCAMENTOS}/utils/recibo.ts -> ${LANCAMENTOS}/RegistrarLancamentoPage/index.ts`,
+      `${RECIBO} -> ${LANCAMENTOS}/RegistrarLancamentoPage/index.ts`,
       `pages/components/CartazSlot/CartazSlot.tsx -> ${PAINEL}/index.ts`,
       `pages/mocks/relogio.ts -> ${FATURAS}/index.ts`,
     ],
     permite: [
-      `${LANCAMENTOS}/utils/recibo.ts -> ${LANCAMENTOS}/components/Paginacao/index.ts`,
+      `${RECIBO} -> ${LANCAMENTOS}/components/Paginacao/index.ts`,
       'pages/components/CartazSlot/CartazSlot.tsx -> pages/utils/formato.ts',
     ],
   },
@@ -170,6 +208,10 @@ export const CASOS_DAS_FRONTEIRAS = {
     acusa: [
       `pages/components/CartazSlot/CartazSlot.tsx -> ${PAINEL}/index.ts`,
       `pages/mocks/relogio.ts -> ${FATURAS}/index.ts`,
+      `pages/hooks/useReserva.ts -> ${RESERVA_DE_EVENTOS}`,
+      `pages/utils/permissoes.ts -> ${SALDO_DE_ESTOQUE}`,
+      `pages/utils/permissoes.ts -> ${CADASTRO_DE_PESSOAS}`,
+      `pages/utils/permissoes.ts -> ${PERMISSAO_DE_SISTEMA}`,
     ],
     permite: [
       `${DEVOLUCOES}/DevolucoesPage.tsx -> pages/mocks/relogio.ts`,
@@ -249,12 +291,24 @@ export const CASOS_DAS_FRONTEIRAS = {
   },
   'producao-global-sem-mock': {
     severidade: 'warn',
-    acusa: ['lib/impuro.ts -> mocks/ids.ts', 'dados/demonstracao.ts -> pages/mocks/relogio.ts'],
+    acusa: [
+      'lib/impuro.ts -> mocks/ids.ts',
+      'dados/demonstracao.ts -> pages/mocks/relogio.ts',
+      'dados/x.ts -> mocks/ids.ts',
+      'ds/templates/Portao/Portao.tsx -> mocks/ids.ts',
+    ],
     permite: ['app/shell/Layout.tsx -> mocks/filaDeVerificacao.ts'],
   },
   'mock-global-so-dados': {
     severidade: 'warn',
-    acusa: ['mocks/filaDeVerificacao.ts -> ds/index.ts'],
+    acusa: [
+      'mocks/filaDeVerificacao.ts -> ds/index.ts',
+      'mocks/filaDeVerificacao.ts -> app/sessao/index.ts',
+      'mocks/filaDeVerificacao.ts -> components/Rodape/index.ts',
+      'mocks/filaDeVerificacao.ts -> dados/index.ts',
+      `mocks/filaDeVerificacao.ts -> ${RECIBO}`,
+      'mocks/filaDeVerificacao.ts -> testes/sessaoDeTeste.tsx',
+    ],
     permite: ['mocks/filaDeVerificacao.ts -> mocks/ids.ts', 'mocks/filaDeVerificacao.ts -> lib/formato.ts'],
   },
   'tela-de-api-sem-mock': {
@@ -263,7 +317,10 @@ export const CASOS_DAS_FRONTEIRAS = {
       `${ACESSOS}/AcessosPage.tsx -> ${ACESSOS}/mocks/x.ts`,
       `${ACESSOS}/AcessosPage.tsx -> mocks/ids.ts`,
       'pages/acessos/legado.tsx -> mocks/ids.ts',
+      'pages/perfil/legado.tsx -> mocks/ids.ts',
+      'pages/entrada/legado.tsx -> mocks/ids.ts',
       `${ENTRADA}/constantes.ts -> mocks/ids.ts`,
+      'pages/transversal/MeuPerfilPage/MeuPerfilPage.tsx -> mocks/ids.ts',
     ],
     permite: [
       `${ACESSOS}/AcessosPage.tsx -> ${ACESSOS}/utils/abas.ts`,
@@ -277,6 +334,8 @@ export const CASOS_DAS_FRONTEIRAS = {
       `${FATURAS}/FaturasPage.tsx -> ${FATURAS}/apoioDeTeste.tsx`,
       'app/shell/Layout.tsx -> testes/sessaoDeTeste.tsx',
       'app/shell/Layout.tsx -> vitest',
+      'app/shell/Layout.tsx -> @vitest/expect',
+      'mocks/filaDeVerificacao.ts -> testes/sessaoDeTeste.tsx',
     ],
     permite: [
       `${FATURAS}/FaturasPage.dom.test.tsx -> ${FATURAS}/apoioDeTeste.tsx`,
