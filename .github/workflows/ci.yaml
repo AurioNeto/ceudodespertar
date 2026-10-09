@@ -46,6 +46,10 @@ jobs:
       - name: fronteiras
         run: pnpm fronteiras
 
+      # modo de aviso: só regra de severidade error falha o passo; os avisos são a linha de base da migração
+      - name: fronteiras do web
+        run: pnpm fronteiras:web
+
       - name: testes unitarios de contracts
         run: pnpm --filter @cdd/contracts test
 
