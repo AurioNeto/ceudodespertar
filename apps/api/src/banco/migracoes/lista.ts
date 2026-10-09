@@ -7,6 +7,7 @@ import { MigracaoB0005OutboxPorAgregado } from './b0-005-outbox-por-agregado/mig
 import { MigracaoB0006OutboxEsgotados } from './b0-006-outbox-esgotados/migracao.js';
 import { MigracaoB0007IdempotenciaExpurgo } from './b0-007-idempotencia-expurgo/migracao.js';
 import { MigracaoB0008AuditoriaGrupoEditado } from './b0-008-auditoria-grupo-editado/migracao.js';
+import { MigracaoB0009UsuarioGrupoPorGrupo } from './b0-009-usuario-grupo-por-grupo/migracao.js';
 
 export const MIGRACOES_DO_CDD = [
   { name: 'b0-000-esquemas', class: MigracaoB0000Esquemas },
@@ -18,4 +19,5 @@ export const MIGRACOES_DO_CDD = [
   { name: 'b0-006-outbox-esgotados', class: MigracaoB0006OutboxEsgotados },
   { name: 'b0-007-idempotencia-expurgo', class: MigracaoB0007IdempotenciaExpurgo },
   { name: 'b0-008-auditoria-grupo-editado', class: MigracaoB0008AuditoriaGrupoEditado },
+  { name: 'b0-009-usuario-grupo-por-grupo', class: MigracaoB0009UsuarioGrupoPorGrupo },
 ];

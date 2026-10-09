@@ -18,7 +18,7 @@ import type { AmbienteDaIdentidade } from './apoio.js';
 const DEPOIS = new Date('2026-03-02T10:00:00.000Z');
 const CODIGO_DE_VIOLACAO_DE_RLS = '42501';
 const CODIGO_DE_VIOLACAO_DE_CHAVE_ESTRANGEIRA = '23503';
-const CHAVE_ESTRANGEIRA_DO_GRUPO_DO_USUARIO = 'usuario_grupo_instituicao_id_grupo_id_fkey';
+const CHAVE_ESTRANGEIRA_DO_GRUPO_DO_USUARIO = 'usuario_grupo_grupo_fk';
 
 describe('isolamento por instituição da persistência da identidade', () => {
   let banco: BancoDeTeste;

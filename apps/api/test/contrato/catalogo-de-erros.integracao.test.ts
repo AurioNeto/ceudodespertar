@@ -74,4 +74,31 @@ describe('FiltroGlobalDeErros · violação real de restrição nomeada (integra
     expect(capturada.status).toBe(409);
     expect(capturada.corpo).toStrictEqual({ erro: 'EMAIL_JA_CADASTRADO', correlacaoId });
   });
+
+  it('usuario_grupo apontando para grupo que não existe na instituição vira GRUPO_INEXISTENTE pelo filtro', async () => {
+    await semearInstituicaoEUsuario(banco, 'membro@casa.example');
+    const { rows } = await banco.app.query<{ id: string }>('select id from identidade.usuario limit 1');
+    const usuarioId = rows[0]!.id;
+
+    const violacao = await banco.app
+      .query('insert into identidade.usuario_grupo (instituicao_id, usuario_id, grupo_id, atribuido_por) values ($1, $2, $3, $2)', [
+        INSTITUICAO,
+        usuarioId,
+        randomUUID(),
+      ])
+      .catch((erro: unknown) => erro);
+
+    expect(violacao).toMatchObject({ code: '23503', constraint: 'usuario_grupo_grupo_fk' });
+
+    const filtro = new FiltroGlobalDeErros();
+    const capturada: RespostaCapturada = {};
+    const correlacaoId = randomUUID();
+
+    ContextoDaRequisicao.executar({ correlacaoId }, () => {
+      filtro.catch(violacao, hostFalso(capturada));
+    });
+
+    expect(capturada.status).toBe(404);
+    expect(capturada.corpo).toStrictEqual({ erro: 'GRUPO_INEXISTENTE', correlacaoId });
+  });
 });

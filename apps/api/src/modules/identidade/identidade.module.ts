@@ -8,6 +8,10 @@ import { TrilhaDeAuditoria } from './application/auditoria/trilha-de-auditoria.j
 import { AlteracaoQuePodeTirarAdministrador } from './application/administracao/alteracao-que-pode-tirar-administrador.js';
 import { LeitorDaAdministracao } from './application/administracao/leitor-da-administracao.js';
 import { TravaDaAdministracao } from './application/administracao/trava-da-administracao.js';
+import { ConcederPermissaoAoGrupo } from './application/grupos/conceder-permissao-ao-grupo.js';
+import { LeitorDeGrupos } from './application/grupos/leitor-de-grupos.js';
+import { RenomearGrupo } from './application/grupos/renomear-grupo.js';
+import { RevogarPermissaoDoGrupo } from './application/grupos/revogar-permissao-do-grupo.js';
 import { EntregaDeConvite } from './application/convite/entrega-de-convite.js';
 import { EnviadorDeConvite } from './application/convite/enviador-de-convite.js';
 import { GeradorDeTokenDeConvite } from './application/convite/gerador-de-token-de-convite.js';
@@ -28,6 +32,7 @@ import { PoliticaDoUltimoAdministrador } from './domain/servicos/politica-do-ult
 import { RepositorioDeUsuario } from './domain/usuario/usuario.repo.js';
 import { LeitorDaAdministracaoKysely } from './infrastructure/administracao/leitor-da-administracao.kysely.js';
 import { TravaDaAdministracaoAdvisory } from './infrastructure/administracao/trava-da-administracao.advisory.js';
+import { LeitorDeGruposKysely } from './infrastructure/grupos/leitor-de-grupos.kysely.js';
 import { EnviadorDeConviteQueRegistra } from './infrastructure/convite/enviador-de-convite.que-registra.js';
 import { GeradorDeTokenDeConviteNode } from './infrastructure/convite/gerador-de-token-de-convite.node.js';
 import { LeitorDeGruposDaInstituicaoKysely } from './infrastructure/usuarios/leitor-de-grupos-da-instituicao.kysely.js';
@@ -45,11 +50,12 @@ import { RepositorioDeUsuarioMikroOrm } from './infrastructure/persistencia/repo
 import { SemeadorDeGruposDeSistema } from './infrastructure/persistencia/semeador-de-grupos-de-sistema.js';
 import { AuditoriaController } from './interface/http/auditoria.controller.js';
 import { EuController } from './interface/http/eu.controller.js';
+import { GestaoDeGruposController } from './interface/http/gestao-de-grupos.controller.js';
 import { GestaoDeUsuariosController } from './interface/http/gestao-de-usuarios.controller.js';
 
 @Module({
   imports: [BancoModule, EventosModule],
-  controllers: [EuController, AuditoriaController, GestaoDeUsuariosController],
+  controllers: [EuController, AuditoriaController, GestaoDeUsuariosController, GestaoDeGruposController],
   providers: [
     { provide: Relogio, useClass: RelogioDoSistema },
     {
@@ -73,6 +79,10 @@ import { GestaoDeUsuariosController } from './interface/http/gestao-de-usuarios.
     DesativarUsuario,
     ReativarUsuario,
     DefinirGruposDoUsuario,
+    { provide: LeitorDeGrupos, useClass: LeitorDeGruposKysely },
+    ConcederPermissaoAoGrupo,
+    RevogarPermissaoDoGrupo,
+    RenomearGrupo,
     { provide: GeradorDeTokenDeConvite, useClass: GeradorDeTokenDeConviteNode },
     { provide: EnviadorDeConvite, useClass: EnviadorDeConviteQueRegistra },
     EntregaDeConvite,
