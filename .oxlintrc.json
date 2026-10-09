@@ -10,6 +10,8 @@
   },
   "ignorePatterns": [
     "apps/api/test/estrutural/fixtures/**",
+    "apps/web/test/estrutural/fixtures/**",
+    "apps/web/test/estrutural/fixtures-negativas/**",
     "apps/api/src/shared/infrastructure/banco/banco-cdd.gerado.ts"
   ],
   "env": {

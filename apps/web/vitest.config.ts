@@ -1,3 +1,4 @@
+import { fileURLToPath, URL } from 'node:url';
 import { defaultClientConditions } from 'vite';
 import { defineConfig } from 'vitest/config';
 
@@ -12,6 +13,9 @@ export default defineConfig({
     },
   },
   resolve: {
+    alias: {
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
+    },
     conditions: [CONDICAO_FONTE, ...defaultClientConditions],
   },
   test: {
@@ -31,6 +35,14 @@ export default defineConfig({
           name: 'dom',
           environment: 'jsdom',
           include: ['src/**/*.test.tsx', 'src/**/*.dom.test.ts'],
+        },
+      },
+      {
+        extends: true,
+        test: {
+          name: 'estrutural',
+          environment: 'node',
+          include: ['test/estrutural/*.test.ts'],
         },
       },
     ],
