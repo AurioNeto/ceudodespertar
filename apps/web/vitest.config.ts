@@ -1,6 +1,8 @@
 import { defaultClientConditions } from 'vite';
 import { defineConfig } from 'vitest/config';
 
+process.env['TZ'] = 'UTC';
+
 const CONDICAO_FONTE = '@cdd/fonte';
 
 export default defineConfig({
