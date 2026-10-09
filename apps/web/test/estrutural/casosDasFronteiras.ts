@@ -14,7 +14,8 @@ const LANCAMENTOS = 'pages/financeiro/lancamentos';
 const INSCRICAO = 'pages/eventos/inscricao/InscricaoPublicaPage';
 const PASSO = `${INSCRICAO}/components/PassoAnamnese`;
 const HERDADAS = `${PASSO}/components/Herdadas`;
-const RESPOSTA = `${PASSO}/components/BlocoDePergunta/components/Resposta`;
+const BLOCO = `${PASSO}/components/BlocoDePergunta`;
+const RESPOSTA = `${BLOCO}/components/Resposta`;
 const NIVEL5 = `${RESPOSTA}/components/Nivel5`;
 const NIVEL6 = `${NIVEL5}/components/Nivel6`;
 const NIVEL7 = `${NIVEL6}/components/Nivel7`;
@@ -23,6 +24,7 @@ const PAINEL = 'pages/transversal/PainelPage';
 const ENTRADA = 'pages/transversal/entrada';
 const ENTRAR = `${ENTRADA}/EntrarPage`;
 const RECIBO = `${LANCAMENTOS}/utils/recibo.ts`;
+const CARTAZ_SLOT = 'pages/components/CartazSlot/index.ts';
 const RESERVA_DE_EVENTOS = 'pages/eventos/utils/reserva.ts';
 const SALDO_DE_ESTOQUE = 'pages/estoque/utils/saldo.ts';
 const CADASTRO_DE_PESSOAS = 'pages/pessoas/utils/cadastro.ts';
@@ -188,7 +190,7 @@ export const CASOS_DAS_FRONTEIRAS = {
     permite: [
       `${LANCAMENTOS}/RegistrarLancamentoPage/RegistrarLancamentoPage.tsx -> ${RECIBO}`,
       `${DEVOLUCOES}/DevolucoesPage.tsx -> pages/mocks/relogio.ts`,
-      `${FATURAS}/FaturasPage.tsx -> pages/components/CartazSlot/index.ts`,
+      `${FATURAS}/FaturasPage.tsx -> ${CARTAZ_SLOT}`,
     ],
   },
   'compartilhado-nao-importa-tela': {
@@ -243,6 +245,7 @@ export const CASOS_DAS_FRONTEIRAS = {
       `${DETALHE}/DetalheDaFatura.tsx -> ${CARTAO}/index.ts`,
       `${DETALHE}/DetalheDaFatura.tsx -> ${FATURAS}/utils/fatura.ts`,
       `${DETALHE}/DetalheDaFatura.tsx -> ${TABELA}/index.ts`,
+      `${PASSO}/PassoAnamnese.tsx -> ${CARTAZ_SLOT}`,
     ],
   },
   'unidade-so-pelo-index-3': {
@@ -254,6 +257,8 @@ export const CASOS_DAS_FRONTEIRAS = {
     permite: [
       `${TABELA}/TabelaDeCompras.tsx -> ${CARTAO}/index.ts`,
       `${TABELA}/TabelaDeCompras.tsx -> ${FATURAS}/utils/fatura.ts`,
+      `${BLOCO}/BlocoDePergunta.tsx -> ${HERDADAS}/index.ts`,
+      `${BLOCO}/BlocoDePergunta.tsx -> ${CARTAZ_SLOT}`,
     ],
   },
   'unidade-so-pelo-index-4': {
@@ -262,6 +267,8 @@ export const CASOS_DAS_FRONTEIRAS = {
     permite: [
       `${RESPOSTA}/Resposta.tsx -> ${HERDADAS}/index.ts`,
       `${RESPOSTA}/Resposta.tsx -> ${INSCRICAO}/utils/regraDeAlerta.ts`,
+      `${RESPOSTA}/Resposta.tsx -> ${BLOCO}/utils/pergunta.ts`,
+      `${RESPOSTA}/Resposta.tsx -> ${CARTAZ_SLOT}`,
     ],
   },
   'unidade-so-pelo-index-5': {
@@ -271,6 +278,10 @@ export const CASOS_DAS_FRONTEIRAS = {
       `${NIVEL5}/Nivel5.tsx -> ${HERDADAS}/index.ts`,
       `${NIVEL5}/Nivel5.tsx -> ${RESPOSTA}/index.ts`,
       `${NIVEL5}/Nivel5.tsx -> ${NIVEL6}/index.ts`,
+      `${NIVEL5}/Nivel5.tsx -> ${RESPOSTA}/utils/resposta.ts`,
+      `${NIVEL5}/Nivel5.tsx -> ${BLOCO}/utils/pergunta.ts`,
+      `${NIVEL5}/Nivel5.tsx -> ${INSCRICAO}/utils/regraDeAlerta.ts`,
+      `${NIVEL5}/Nivel5.tsx -> ${CARTAZ_SLOT}`,
     ],
   },
   'unidade-so-pelo-index-6': {
@@ -279,6 +290,10 @@ export const CASOS_DAS_FRONTEIRAS = {
     permite: [
       `${NIVEL6}/Nivel6.tsx -> ${HERDADAS}/index.ts`,
       `${NIVEL6}/Nivel6.tsx -> ${RESPOSTA}/Resposta.tsx`,
+      `${NIVEL6}/Nivel6.tsx -> ${NIVEL5}/utils/nivel.ts`,
+      `${NIVEL6}/Nivel6.tsx -> ${BLOCO}/utils/pergunta.ts`,
+      `${NIVEL6}/Nivel6.tsx -> ${INSCRICAO}/utils/regraDeAlerta.ts`,
+      `${NIVEL6}/Nivel6.tsx -> ${CARTAZ_SLOT}`,
     ],
   },
   'unidade-ate-6-niveis': {
