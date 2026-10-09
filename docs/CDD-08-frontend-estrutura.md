@@ -55,7 +55,7 @@ O dono aprovou as recomendações da proposta em todos os pontos. Quatro decisõ
 - `PERMISSAO_QUE_O_EU_TEM` e `PERMISSAO_QUE_O_EU_NAO_TEM` ficam junto de `criarEu` em `src/testes/sessaoDeTeste.tsx`.
 - `Aviso` e `TomDeAviso`, da entrada, vão para `transversal/entrada/components/Aviso`, no nível do fluxo, sem ciclo com as constantes.
 - `Layout` é composição de app, fora da escala atômica. `ActionBar` e `ScreenHeader` são moléculas.
-- Testes de hook são `useX.dom.test.ts` (projeto dom do vitest).
+- Testes de hook são `useX.dom.test.ts` (projeto dom do vitest), ou `.dom.test.tsx` quando precisam de JSX.
 - As regras de camada que proíbem `ds/`, `dados/` e `lib/` de importar `testes/` isentam os próprios `*.test.*`.
 - A subárvore da `AcessosPage` segue o código do PR #55, ainda aberto. Ela será refeita a partir do código mesclado, na hora de mover.
 
@@ -115,7 +115,14 @@ Não entra no `ds/`: composição de tela, hook, util, constante, mock e apoio d
 
 Um componente admitido fica no `ds/` mesmo quando todos os consumidores estão em `pages/` ou em uma única tela (exceção declarada, seção 2). Item do catálogo sem consumidor fica no `ds/`, com teste (seção 6.4).
 
-> [NEEDS VERIFICATION] A tabela que liga as categorias do Documento 5 §4 (Estrutura, Dado, Domínio, Estado) aos níveis atômicos não consta da especificação desta convenção. Está pendente de redação (seção 15). Não foi inferida aqui.
+As categorias do Documento 5 §4 dizem o papel do componente; o nível atômico diz como ele é composto. Uma não deriva da outra:
+
+| Categoria (Documento 5 §4) | Componentes e nível |
+|---|---|
+| Estrutura | `AppShell` (template); `ScreenHeader` e `ActionBar` (moléculas); `BottomSheet` e `WorkQueue`/`WorkQueueItem` (organismos; a fila ainda não existe no código) |
+| Dado | `AmountDisplay` e `StatusBadge` (átomos); `AmountInput`, `RecordRow`, `SuggestionChip`, `DefaultField` e `AttachmentCapture` (moléculas); `Receipt` e `DataTable` (organismos) |
+| Domínio | `RegimeVocabulary` (provider, base); `ConfirmAction`, `PeriodLock` e `TwoAxisGuard` (moléculas); `PendencyCard` (organismo) |
+| Estado | `SkeletonList`, `EmptyState`, `InfraError`, `DomainError` e `PermissionDenied` (moléculas) |
 
 ### 4.2 Níveis
 
@@ -411,13 +418,12 @@ Fluxo só existe com compartilhamento exclusivo entre telas do mesmo módulo. Fl
 | Sujeito | Arquivo de teste (ao lado do sujeito) | Projeto do vitest |
 |---|---|---|
 | Componente | `<Nome>.dom.test.tsx` | dom |
-| Hook | `useX.dom.test.ts` | dom |
+| Hook | `useX.dom.test.ts` (`useX.dom.test.tsx` quando o teste precisa de JSX) | dom |
 | Util pura | `x.test.ts` | logica |
 | Fronteiras e estrutura | `apps/web/test/estrutural/fronteiras.test.ts` | estrutural (node), criado na etapa de fronteiras no depcruise |
 
-- Toda unidade nova tem teste.
-- > [NEEDS VERIFICATION] O nome do projeto `logica` vem da especificação. A configuração atual do vitest não foi conferida para este documento.
-- > [NEEDS VERIFICATION] A especificação diz que a falta de teste é aviso durante a migração, mas não define a regra que a acusa. Hoje nenhuma regra de fronteira verifica a presença de teste.
+- Os projetos são escolhidos pelo sufixo, em `apps/web/vitest.config.ts`: `logica` roda `src/**/*.test.ts` em node, exceto `*.dom.test.ts`; `dom` roda `src/**/*.test.tsx` e `src/**/*.dom.test.ts` em jsdom. Mudar arquivo de pasta não muda o projeto.
+- Toda unidade nova tem teste. Durante a migração, unidade sem teste é aviso do `conferir-estrutura.mjs` (seção 12.4); ao fim dela, erro.
 
 ### 8.2 Apoio de teste
 
@@ -505,7 +511,8 @@ Legenda: `{…}` = `index.ts` + `<Nome>.tsx` + `<Nome>.dom.test.tsx`. `(+ t)` = 
 
 ```
 apps/web/
-├── test/estrutural/              fronteiras.test.ts, fixtures/<regra>/…, fixtures-negativas/…
+├── test/estrutural/              fronteiras.test.ts, casosDasFronteiras.ts, fixtures/apps/web/src/…, fixtures-negativas/apps/web/src/…
+├── captura/                      captura de telas (seção 13.6); saida/ fica fora do git
 ├── scripts/                      conferir-movimento.mjs, conferir-estrutura.mjs
 └── src/
     ├── main.tsx                  raiz de composição; único importador de dados/instancias.ts
@@ -598,7 +605,7 @@ Todas as regras rodam no depcruise, com configuração `.dependency-cruiser.web.
 | Regra | O que proíbe | Severidade inicial | Linha de base (main) |
 |---|---|:--:|:--:|
 | `web-sem-ciclo` | Ciclo no grafo de `apps/web/src`, inclusive por `import type` | aviso | 2 |
-| `lib-e-folha` | `lib/` importar outra camada ou React | aviso | 5 (8 com o #55) |
+| `lib-e-folha` | `lib/` importar outra camada ou React | aviso | 5 |
 | `dados-sem-ui` | `dados/` importar UI ou React | erro | 0 |
 | `ds-autonomo` | `ds/` importar `app`, `components`, `dados`, `mocks`, `pages` ou `react-router` | erro | 0 |
 | `ds-so-pelo-barrel` | Fora do `ds/`, importar qualquer caminho do `ds/` que não seja `ds/index.ts` | erro | 0 |
@@ -606,11 +613,11 @@ Todas as regras rodam no depcruise, com configuração `.dependency-cruiser.web.
 | `ds-atomo-nao-sobe` | Átomos importarem moléculas, organismos ou templates | erro | 0 |
 | `ds-molecula-nao-sobe` | Moléculas importarem organismos ou templates | erro | 0 |
 | `ds-organismo-nao-sobe` | Organismos importarem templates | erro | 0 |
-| `dados-so-pelo-barrel` | Fora de `dados/`, importar arquivo que não seja `index.ts` ou `instancias.ts` | aviso | 14 (25 com o #55) |
+| `dados-so-pelo-barrel` | Fora de `dados/`, importar arquivo que não seja `index.ts` ou `instancias.ts` | aviso | 14 |
 | `instancias-so-no-main` | Importar `dados/instancias.ts` fora de `main.tsx` | erro | 0 |
 | `app-nao-conhece-paginas` | `app/` importar `pages/`, exceto `router.tsx` e testes | aviso | 1 |
 | `roteador-so-pelo-index-da-pagina` | `router.tsx` importar `pages/` por outro caminho que não o `index.ts` de uma `*Page/` | aviso | 29 |
-| `paginas-so-pela-api-publica-do-app` | `pages/` importar `app/` fora de `sessao`, `rotas`, `providers` e `demonstracao` (pelo `index.ts`) | aviso | 16 (22 com o #55) |
+| `paginas-so-pela-api-publica-do-app` | `pages/` importar `app/` fora de `sessao`, `rotas`, `providers` e `demonstracao` (pelo `index.ts`) | aviso | 16 |
 | `pagina-nao-importa-pagina` | Uma `*Page/` importar outra | erro | 0 |
 | `modulo-nao-importa-modulo` | Um módulo importar outro | erro | 0 |
 | `compartilhado-nao-importa-tela` | Nível compartilhado de `pages/` importar uma `*Page/` | erro | 0 |
@@ -619,31 +626,34 @@ Todas as regras rodam no depcruise, com configuração `.dependency-cruiser.web.
 | `unidade-ate-6-niveis` | Sétima unidade aninhada | erro | 0 |
 | `producao-global-sem-mock` | `ds/`, `lib/` ou `dados/` importar mock | aviso | 1 |
 | `mock-global-so-dados` | `src/mocks/` importar `app`, `components`, `dados`, `ds`, `pages` ou `testes` | aviso | 1 |
-| `tela-de-api-sem-mock` | Telas com fonte `api` e telas de entrada importarem mock | erro | 0 |
+| `tela-de-api-sem-mock` | Telas com fonte `api` e o fluxo de entrada inteiro (`transversal/entrada/`, inclusive `constantes.ts` e `components/`) importarem mock | erro | 0 |
 | `apoio-de-teste-so-em-teste` | Código de produção importar `apoioDeTeste`, `src/testes` ou `vitest` | erro | 0 |
-| `camada-cruzada-por-alias` | Atravessar camada, ou módulo dentro de `pages/`, sem alias `@/`. Passa a erro quando chegar a zero | aviso | 290 (315 com o #55) |
+| `camada-cruzada-por-alias` | Atravessar camada, ou módulo dentro de `pages/`, sem alias `@/`. Passa a erro quando chegar a zero | aviso | 290 |
 
-São 31 regras: 24 nomeadas acima e as 7 de `unidade-so-pelo-index`.
+| `pasta-camel-case` | Pasta de agrupamento em camelCase sob `apps/web/src` (agrupamento é minúsculo; unidade é PascalCase), que escaparia das regras de unidade | erro | 0 |
+
+São 32 regras: 25 nomeadas acima e as 7 de `unidade-so-pelo-index`. As contagens são a linha de base de 09/10/2026; os `comment` da configuração apontam para `pnpm fronteiras:web`, que a reproduz.
 
 ### 12.2 Linha de base
 
 - Na main: 359 avisos e 0 erros. São 40 avisos de sete regras, 29 do roteador e 290 da regra de alias.
-- Com o #55 mesclado, a linha de base passa a 404 (89 fora da regra de alias e 315 da regra de alias). Os números foram medidos numa branch local do #55.
+- Com o #55 mesclado, a linha de base sobe para cerca de 400 avisos (400 na branch publicada em 09/10/2026), ainda com 0 erros.
+- Não há catraca de avisos por ora: um aviso novo não falha o CI. Nas etapas de mover, "sem aviso novo" é conferido à mão (seção 13.3). A catraca (`depcruise-baseline` com `--ignore-known`) fica para depois do merge do #55.
 - A linha de base é a foto de antes da migração. Cada etapa de mover a reduz, e a etapa de fronteiras em erro fecha a conta.
 
 ### 12.3 Como cada regra é provada
 
-- Cada regra tem fixture positiva e negativa em `apps/web/test/estrutural/fixtures/<regra>/` e `fixtures-negativas/`, no molde de `apps/api/test/estrutural`.
-- O caso positivo precisa violar a regra do próprio caso. A negativa não pode violar nenhuma regra em erro.
-- O teste filtra pelo nome da regra. Um import relativo entre camadas também acende `camada-cruzada-por-alias`, então o teste compara só a regra do caso.
-- Segundo a especificação, cada regra carregou sozinha no depcruise 18.4.0 (exit 0), contra `apps/web/src` e contra a fixture.
+- No molde de `apps/api/test/estrutural`, mas com duas árvores só: `fixtures/apps/web/src/…` (imports que violam) e `fixtures-negativas/apps/web/src/…` (imports permitidos). Cada árvore tem `tsconfig.json` próprio, para o `@/` resolver dentro dela. São 2 execuções do depcruise em vez de uma por regra.
+- `casosDasFronteiras.ts` lista, por regra, a severidade prevista e o conjunto exato de imports `origem -> destino` que a fixture positiva deve acusar e que a negativa deve liberar.
+- O teste confere: toda regra da configuração tem caso; nenhum import das fixtures fica sem resolver; cada regra acusa exatamente os imports previstos; a negativa tem 0 violações; e `apps/web/src` não tem violação em erro.
+- Toda regex é sem grupo quantificado com quantificador dentro: o depcruise 18.4 recusa regex insegura e aborta a execução inteira.
 - O `tsconfig` da configuração usa caminho absoluto (caminho relativo dá TS5083). Regras que precisam valer também nas fixtures usam o prefixo `(?:^|/)` ou a captura `^(.*apps/web/src…)`.
-- Script `fronteiras:web` na raiz, com passo no CI.
+- O teste roda no projeto `estrutural` do vitest, dentro de `pnpm --filter @cdd/web test`. O script `fronteiras:web` da raiz roda as regras sobre `apps/web/src`, com passo próprio no CI.
 
 ### 12.4 Outros verificadores
 
-- `apps/web/scripts/conferir-movimento.mjs`: em cada renomeação de `git diff -M --name-status`, compara o conteúdo sem as linhas de import e `export … from`. Para declarações repartidas, compara o hash do corpo pelo nome.
-- `apps/web/scripts/conferir-estrutura.mjs` (etapa de fronteiras em erro): toda pasta PascalCase tem `<Nome>.tsx` e `index.ts`; o módulo de cada tela é o prefixo da primeira permissão em `app/shell/telas.ts`; fluxo sem pasta de tipo compartilhada é acusado; toda `RotaId` tem rota, item em `TELAS` e elemento no router.
+- `apps/web/scripts/conferir-movimento.mjs` (criado na etapa Mover ds em níveis, a primeira que precisa dele): em cada renomeação de `git diff -M --name-status`, compara o conteúdo sem as linhas de import e `export … from`. Para declarações repartidas, compara o hash do corpo pelo nome.
+- `apps/web/scripts/conferir-estrutura.mjs` (etapa de fronteiras em erro): toda pasta PascalCase tem `<Nome>.tsx`, `index.ts` e teste (falta de teste é aviso até o fim da migração); o módulo de cada tela é o prefixo da primeira permissão em `app/shell/telas.ts`; fluxo sem pasta de tipo compartilhada é acusado; toda `RotaId` tem rota, item em `TELAS` e elemento no router.
 - `pnpm lint` passa a cobrir `apps/web/src` (etapa de fronteiras em erro). As violações antigas vão em PR separado.
 - Captura de telas (seção 13.6), para o efeito visual.
 
@@ -681,7 +691,7 @@ Na etapa de fronteiras em erro, todas as regras viram erro. `camada-cruzada-por-
 ### 13.4 Verificação padrão de divisão
 
 - Os testes de caracterização da tela passam antes e depois, sem edição;
-- a captura nas duas densidades é idêntica (`pnpm --filter @cdd/web captura`);
+- a captura nas duas densidades é idêntica entre a main e a branch (`captura` e `captura:comparar`, seção 13.6);
 - `typecheck`, `test` e `build`;
 - `fronteiras:web` sem erro.
 
@@ -696,11 +706,14 @@ A cadeia de dependências transmite esses gates: as etapas de divisão de sistem
 
 ### 13.6 Captura de telas
 
-- O harness sobe o vite em desenvolvimento com `VITE_SESSAO_DE_DEMONSTRACAO=1`, congela o relógio com `page.clock` e usa dois viewports: de campo (até 900 px, a consulta de `useDensidade`) e de escritório.
-- São 29 rotas: as 26 do `Layout`, `/entrar`, `/entrar/retorno` e `/i/qualquer-token`. Gera PNG e compara por pixel.
-- Comandos, criados pela etapa de harness: `pnpm --filter @cdd/web captura -- --saida <dir>` e `pnpm --filter @cdd/web captura:comparar -- <dirA> <dirB>`.
-- Critério: duas execuções seguidas na main dão capturas idênticas nas 29 rotas e nas 2 densidades. Uma mudança proposital de 1 px numa tela acusa diferença.
-- Por que o relógio é congelado: há 14 usos de `new Date()` e `Date.now()` nas páginas. Sem relógio congelado, a captura oscila. A fonte web também precisa estar carregada antes do disparo.
+- O script (`apps/web/captura/`) sobe o Vite em desenvolvimento com a sessão de demonstração, congela o relógio em 2026-09-02 e usa dois viewports: campo (390 × 844, dentro da consulta de 900 px do `useDensidade`) e escritório (1440 × 900).
+- Cobre as 26 rotas do `Layout`, a aba de grupos de Acessos, a entrada (`/entrar` e o retorno, inclusive o recusado) e a inscrição pública com os passos do assistente: 36 telas em 2 densidades. Cada área com rolagem horizontal ganha fotos extras, uma por largura visível (`<tela>--<densidade>--rolagem-N-P.png`).
+- Não precisa de API nem de `.env`: toda requisição `/api` é respondida por fixtures de `captura/fixturesDaApi.mjs`, e uma requisição sem fixture derruba a captura. O proxy do Vite aponta para uma porta sem ninguém.
+- Comandos: `pnpm --filter @cdd/web captura --saida <dir>` (opções `--so <telas>`, `--url <servidor>`; `--ajuda` lista tudo) e `pnpm --filter @cdd/web captura:comparar <dirA> <dirB>`, que compara byte a byte e sai com código diferente de 0 se alguma foto mudou ou faltou.
+- Antes e depois: gerar a base na main e a captura na branch, na mesma máquina, com o mesmo script; depois comparar.
+- Critério: duas execuções seguidas no mesmo código dão fotos idênticas, inclusive com a máquina carregada. Uma mudança visual proposital acusa diferença.
+- Por que o relógio é congelado: há 14 usos de `new Date()` e `Date.now()` nas páginas. As fontes do Google ficam em cache local (`~/.cache/cdd-captura/fontes`) e são carregadas antes da foto.
+- Limites: só o estado inicial de cada tela e os passos catalogados em `captura/telas.mjs` são fotografados; painéis e modais que abrem por clique entram no catálogo quando uma etapa for mexer neles. Telas com wrapper `min-height: 100%` abaixo de uma faixa de aviso deixam a área vazia final fora da foto, e a captura avisa.
 - A captura roda antes de qualquer divisão de view. Toda divisão de view depende do harness.
 
 ### 13.7 Etapas
@@ -713,8 +726,9 @@ Títulos na ordem de leitura. Dependências por título.
 | Fronteiras no depcruise | Convenção escrita | — |
 | Caracterizar lib/formato e components | — | — |
 | Harness de captura de telas | — | — |
-| Caracterizar o ds | — | merge do #55 só para `BottomSheet` e `ScreenHeader`; os demais componentes podem começar já |
-| Mover ds em níveis | Fronteiras no depcruise; Caracterizar o ds | merge do #55 |
+| Caracterizar primitivos do ds (`Button`, `StatusBadge`, `AmountDisplay`, `AmountInput`, `Icon`, `RecordRow`, `Receipt`, estados e `FaixaDeDemonstracao`) | — | — |
+| Caracterizar o restante do ds (`BottomSheet`, `TextField`, `ScreenHeader`, `PainelDeAcao` e os componentes de domínio) | Caracterizar primitivos do ds | merge do #55 |
+| Mover ds em níveis | Fronteiras no depcruise; Caracterizar o restante do ds | merge do #55 |
 | Primitivos para o ds | Caracterizar lib/formato e components; Mover ds em níveis | — |
 | Mover fundação do ds | Primitivos para o ds | — |
 | Mover financeiro I | Mover fundação do ds | — |
@@ -755,8 +769,8 @@ Títulos na ordem de leitura. Dependências por título.
 | Dividir Pessoas e Anamnese | Caracterizar pessoas e estoque; Harness; Dividir Ayahuasca e Feitio | — |
 | Dividir sistema, Meu perfil e entrada | Caracterizar sistema e transversal; Harness; Dividir Pessoas e Anamnese; Fronteiras em erro | herdado: e2e do B0 e ajustes do login |
 | Dividir Painel | Caracterizar sistema e transversal; Harness; Dividir sistema, Meu perfil e entrada | herdado |
-| Dividir app/shell, sessão e ds | Fronteiras em erro; Caracterizar o ds; Harness; Dividir Painel | herdado |
-| Leitura única de valor | Caracterizar o ds; Caracterizar fluxo lancamentos; Caracterizar financeiro I; Caracterizar eventos; Caracterizar inscrição; Caracterizar pessoas e estoque | — |
+| Dividir app/shell, sessão e ds | Fronteiras em erro; Caracterizar o restante do ds; Harness; Dividir Painel | herdado |
+| Leitura única de valor | Caracterizar primitivos do ds; Caracterizar fluxo lancamentos; Caracterizar financeiro I; Caracterizar eventos; Caracterizar inscrição; Caracterizar pessoas e estoque | — |
 | Correções de comportamento | Caracterização da tela correspondente (seção 14) | decisão do dono para divergências de regra e texto |
 | Rotulo e CorpoDaTela | Todas as etapas de divisão; Harness | — |
 | Primitivos novos e adoção do catálogo | Rotulo e CorpoDaTela | — |
@@ -765,7 +779,7 @@ Títulos na ordem de leitura. Dependências por título.
 | Rotas lazy | Fronteiras em erro | — |
 | Tailwind | Harness de captura de telas | decisão do dono sobre o Tailwind |
 
-Etapas de divisão de telas de demonstração (de Dividir RegistrarLancamento a Dividir Pessoas e Anamnese) podem andar com o gate fechado. A etapa de leitura única de valor depende das caracterizações das 10 telas que fazem leitura de valor (`Caracterizar o ds`, fluxo de lançamentos, financeiro I, eventos, inscrição e pessoas e estoque).
+Etapas de divisão de telas de demonstração (de Dividir RegistrarLancamento a Dividir Pessoas e Anamnese) podem andar com o gate fechado. A etapa de leitura única de valor depende das caracterizações das 10 telas que fazem leitura de valor (primitivos do ds, fluxo de lançamentos, financeiro I, eventos, inscrição e pessoas e estoque).
 
 ---
 
@@ -802,10 +816,4 @@ Divergências são registradas como estão pela caracterização e corrigidas em
 | Remover o Tailwind? | Remover em etapa própria, com as regras do preflight usadas pelas telas levadas para `ds/fundacao/tokens/base.css` e captura de todas as telas nas duas densidades; manter como está; adotar as utilidades como sistema de estilo | Recomendação da proposta: remover na etapa própria, depois do harness de captura. Hoje não há classe utilitária do Tailwind em `src` (as 3 `className` são próprias), mas o preflight está ativo e reseta elementos usados em 22 arquivos | Mantido por ora (decisão do dono). Remover é decisão própria |
 | O cartão "Acesso ao sistema" da ficha de Pessoas (`PessoasPage.tsx:398-444`) repete a gestão de acesso da tela Acessos. O que fazer? | Manter como está (demonstração); trocar por link para Acessos quando Pessoas ligar no backend; remover | Manter até Pessoas ligar no backend. Então trocar por link para Acessos, para não haver dois lugares que concedem acesso. A decisão sobre dados de saúde (08/10) não cobre este cartão | Pendente |
 
-Pendências de redação desta convenção:
-
-- A tabela de categorias do Documento 5 §4 (Estrutura, Dado, Domínio, Estado) × níveis atômicos: citada pela especificação, sem conteúdo. Não foi inferida.
-- O apêndice do Documento 5 com os primitivos admitidos em pt-BR: não feito nesta entrega. O Documento 5 não foi alterado.
-- A regra que acuse unidade sem teste: a especificação diz que a falta é aviso, mas não define a regra (seção 8.1).
-- O nome do projeto `logica` do vitest: conferir na configuração (seção 8.1).
-- Testes de `useChaveDeIdempotencia`: o mapeamento mantém extensões de teste de componente para um hook. A convenção de hook é `useX.dom.test.ts` (seção 2). Ajustar no merge do #55 (anexo).
+Pendência de redação: o Documento 5 ainda não lista os primitivos admitidos em pt-BR (tabela da seção 4.3, coluna "Catálogo" = não). Ele mora fora do repositório (`project/uploads/`) e não foi alterado; o apêndice entra quando os documentos de desenho forem versionados.

@@ -499,7 +499,7 @@ Os destinos são agrupados por área: `app/`, `dados/`, `lib/`, `ds/`, `testes/`
 
 ## 14. Pendências do mapeamento
 
-- **Testes de hook da `AcessosPage`.** O mapeamento mantém `.dom.test.tsx` para `useChaveDeIdempotencia`, enquanto a convenção pede `useX.dom.test.ts`. A linha fica marcada, e o nome é confirmado no merge do #55. [NEEDS VERIFICATION]
+- **Testes de hook da `AcessosPage`.** O teste de `useChaveDeIdempotencia` que o #55 traz é `.dom.test.tsx` porque usa JSX, o que a convenção admite (Documento 8, seção 8.1). O nome final é confirmado no merge do #55.
 - **Linhas "refazer após o #55".** Os destinos são os da convenção. Os caminhos finais dependem do código mesclado.
 - **Nomes de arquivo nas divisões.** São propostos. A etapa confere no código da época e pode ajustar o nome, nunca a posse.
 - **Mocks com destinos em mais de uma etapa.** `mocks/sessao.ts`, `mocks/financeiro.ts` e `mocks/lancamentos.ts` se repartem em etapas diferentes. Cada parte aparece na linha da própria etapa.
