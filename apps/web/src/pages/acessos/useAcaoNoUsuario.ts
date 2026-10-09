@@ -51,7 +51,7 @@ export function useAcaoNoUsuario({ usuarioId, aoRecarregar }: OpcoesDaAcaoNoUsua
     setAviso(null);
     try {
       const saida = await operacao();
-      void clienteDeConsultas.invalidateQueries({ queryKey: CHAVE_DAS_CONSULTAS_DE_USUARIOS });
+      await clienteDeConsultas.invalidateQueries({ queryKey: CHAVE_DAS_CONSULTAS_DE_USUARIOS });
       aoSucesso(saida);
     } catch (falha) {
       await tratarFalha(falha);

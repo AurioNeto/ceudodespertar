@@ -5,13 +5,12 @@ import { useDensidade } from '../../lib/useDensidade';
 import { useSessao } from '../../app/sessao';
 import { AbaDeGrupos } from './AbaDeGrupos';
 import { AbaDeUsuarios } from './AbaDeUsuarios';
+import { focarTitulo } from './focarTitulo';
 import { PainelDeConvite } from './PainelDeConvite';
 
 type Aba = 'usuarios' | 'grupos';
 
 const ROTULO_DA_ABA: Record<Aba, string> = { usuarios: 'Usuários', grupos: 'Grupos' };
-
-const focarTitulo = () => document.querySelector<HTMLElement>('h1');
 
 export function AcessosPage() {
   const densidade = useDensidade();

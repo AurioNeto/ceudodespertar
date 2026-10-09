@@ -116,9 +116,10 @@ describe('Acessos: aba Usuários', () => {
     expect(tela.container.querySelector('ul[aria-label="Usuários"] > li')?.textContent).toContain(rotulo);
   });
 
-  it('não oferece ações por linha', async () => {
+  it('oferece uma única ação por linha: gerenciar o acesso', async () => {
     const { tela } = await montar();
-    expect(tela.container.querySelectorAll('ul[aria-label="Usuários"] button')).toHaveLength(0);
+    const botoes = Array.from(tela.container.querySelectorAll('ul[aria-label="Usuários"] button'));
+    expect(botoes.map((b) => b.getAttribute('aria-label'))).toEqual(['Gerenciar acesso de Maria das Graças']);
   });
 
   it('a primeira chamada pede o limite padrão sem cursor nem filtros', async () => {
