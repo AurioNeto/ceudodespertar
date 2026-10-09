@@ -6,6 +6,7 @@ const UNIDADE_DE_PAGINA = '[A-Z][A-Za-z0-9]*Page';
 const PASTA_DE_UNIDADE_NO_DESTINO = `${SRC}.*/[A-Z][^/]*/|${SRC}[A-Z][^/]*/`;
 const PASTA_DE_MOCKS = `${SRC}(?:mocks|.*/mocks)/`;
 const PROFUNDIDADE_MAXIMA_DE_UNIDADE = 6;
+const LINHA_DE_BASE = 'Linha de base de 09/10/2026, reproduzível com pnpm fronteiras:web.';
 
 function origemComUnidadesAninhadas(profundidade) {
   const unidadesCapturadas = '[^A-Z]*/[A-Z][^/]*)'.repeat(profundidade);
@@ -57,9 +58,7 @@ export default {
       name: 'web-sem-ciclo',
       severity: 'warn',
       comment:
-        'Nenhum ciclo no grafo do web; com tsPreCompilationDeps, import type conta. Linha de base na ' +
-        'main de 09/10/2026: 2 avisos, pages/contas/ContasEFundoPage.tsx ↔ GerenciarContasModal.tsx e ' +
-        'dados/credencialOidc.ts ↔ dados/oidc.ts, que fecha por um import type.',
+        `Nenhum ciclo no grafo do web; com tsPreCompilationDeps, import type conta. ${LINHA_DE_BASE}`,
       from: { path: SRC },
       to: { circular: true },
     },
@@ -68,9 +67,7 @@ export default {
       severity: 'warn',
       comment:
         'lib/ só tem função pura: não importa outra camada nem React. testes/ fica fora do alvo; quem ' +
-        'barra apoio de teste em código de produção é apoio-de-teste-so-em-teste. Linha de base na main ' +
-        'de 09/10/2026: 5 avisos, lib/recibo.ts → ds e mocks, lib/useDensidade.ts → ds e react, ' +
-        'lib/useValorComAtraso.ts → react.',
+        `barra apoio de teste em código de produção é apoio-de-teste-so-em-teste. ${LINHA_DE_BASE}`,
       from: { path: `${SRC}lib/` },
       to: { path: `${SRC}(app|components|dados|ds|mocks|pages)/|node_modules/react(-dom)?/` },
     },
@@ -131,9 +128,8 @@ export default {
       name: 'dados-so-pelo-barrel',
       severity: 'warn',
       comment:
-        'Fora de dados/, só dados/index.ts; o main.tsx também importa dados/instancias.ts. Linha de ' +
-        'base na main de 09/10/2026: 14 avisos, 9 em app/, 4 em pages/acessos e 1 em silencioso.ts, ' +
-        'para dados/{erros,oidc,clienteHttp,consultaEComando}.ts.',
+        'Fora de dados/, só dados/index.ts; o main.tsx também importa dados/instancias.ts. ' +
+        LINHA_DE_BASE,
       from: { path: SRC, pathNot: `${SRC}dados/` },
       to: { path: `${SRC}dados/`, pathNot: `${SRC}dados/(index|instancias)[.]ts$` },
     },
@@ -151,8 +147,7 @@ export default {
       name: 'app-nao-conhece-paginas',
       severity: 'warn',
       comment:
-        'Só o roteador, e os testes de app/, conhecem páginas. Linha de base na main de 09/10/2026: ' +
-        '1 aviso, app/sessao.tsx → pages/entrada/Portao.tsx.',
+        `Só o roteador, e os testes de app/, conhecem páginas. ${LINHA_DE_BASE}`,
       from: { path: `${SRC}app/`, pathNot: `${SRC}app/router[.]tsx$|[.]test[.]tsx?$` },
       to: { path: `${SRC}pages/` },
     },
@@ -161,7 +156,7 @@ export default {
       severity: 'warn',
       comment:
         'O roteador importa a unidade de página pelo index.ts dela, o que habilita React.lazy por rota. ' +
-        'Linha de base na main de 09/10/2026: 29 avisos, um por página importada em app/router.tsx.',
+        LINHA_DE_BASE,
       from: { path: `${SRC}app/router[.]tsx$` },
       to: { path: `${SRC}pages/`, pathNot: `${SRC}pages/.*/${UNIDADE_DE_PAGINA}/index[.]ts$` },
     },
@@ -170,9 +165,7 @@ export default {
       severity: 'warn',
       comment:
         'Tela usa sessão, rotas, cliente HTTP e a faixa de demonstração só pela API pública de app/: ' +
-        'app/{sessao,rotas,providers,demonstracao}/index.ts. Linha de base na main de 09/10/2026: ' +
-        '16 avisos, 5 em pages/acessos, 5 em pages/entrada, 2 em pages/perfil e 1 em cada um de ' +
-        'pages/fechamento, pages/lancamento, pages/painel e pages/publico.',
+        `app/{sessao,rotas,providers,demonstracao}/index.ts. ${LINHA_DE_BASE}`,
       from: { path: `${SRC}pages/` },
       to: {
         path: `${SRC}app/`,
@@ -227,8 +220,7 @@ export default {
       name: 'producao-global-sem-mock',
       severity: 'warn',
       comment:
-        'ds, lib e dados nunca leem dado de demonstração. Linha de base na main de 09/10/2026: ' +
-        '1 aviso, lib/recibo.ts → mocks/lancamentos.ts.',
+        `ds, lib e dados nunca leem dado de demonstração. ${LINHA_DE_BASE}`,
       from: { path: `${SRC}(ds|lib|dados)/` },
       to: { path: PASTA_DE_MOCKS },
     },
@@ -236,8 +228,7 @@ export default {
       name: 'mock-global-so-dados',
       severity: 'warn',
       comment:
-        'src/mocks é só dado de demonstração e depende só de lib/ e @cdd/contracts. Linha de base na ' +
-        'main de 09/10/2026: 1 aviso, mocks/opcoes.ts → ds/index.ts.',
+        `src/mocks é só dado de demonstração e depende só de lib/ e @cdd/contracts. ${LINHA_DE_BASE}`,
       from: { path: `${SRC}mocks/` },
       to: { path: `${SRC}(app|components|dados|ds|pages|testes)/` },
     },
@@ -278,9 +269,8 @@ export default {
       severity: 'warn',
       comment:
         'Atravessar camada, ou módulo dentro de pages/, só com o alias "@/…"; caminho relativo só ' +
-        'dentro da camada ou do módulo. O alias só resolve com o tsConfig em caminho absoluto. Linha de ' +
-        'base na main de 09/10/2026: 290 avisos, pages → lib 66, → mocks 51, → components 48, → ds 42 ' +
-        'e → app 16, app → pages 33 e 34 entre as demais camadas.',
+        'dentro da camada ou do módulo. O alias só resolve com o tsConfig em caminho absoluto. ' +
+        LINHA_DE_BASE,
       from: { path: '^(.*apps/web/src/(?:pages/[a-z]+|[a-z]+))/' },
       to: { path: SRC, pathNot: '^$1/', dependencyTypesNot: ['aliased'] },
     },
