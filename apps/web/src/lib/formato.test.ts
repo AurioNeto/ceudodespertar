@@ -429,6 +429,10 @@ describe('formatarDataHora', () => {
     expect(formatarDataHora('2026-10-09T14:30:00-03:00')).toBe('09/10/2026 14:30');
   });
 
+  it('usa o fuso nomeado da casa, com o horário de verão de antes de 2019', () => {
+    expect(formatarDataHora('2018-12-01T12:00:00Z')).toBe('01/12/2018 10:00');
+  });
+
   it('data sem hora é lida como meia-noite UTC e aparece como 21:00 do dia anterior', () => {
     expect(formatarDataHora('2026-10-09')).toBe('08/10/2026 21:00');
   });
@@ -461,5 +465,9 @@ describe('datas lidas com o fuso local atrás de UTC', () => {
 
   it('diaDaSemana mostra o dia da semana da data que veio no texto', () => {
     expect(diaDaSemana('2026-10-09')).toBe('sexta');
+  });
+
+  it('formatarDataHora continua lendo a data sem hora como meia-noite UTC', () => {
+    expect(formatarDataHora('2026-10-09')).toBe('08/10/2026 21:00');
   });
 });
