@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { Avatar } from './Avatar';
-import { desmontarTudo, montar } from '../testes/montagem';
+import { desmontarTudo, montar } from '@/testes/montagem';
 
 afterEach(desmontarTudo);
 

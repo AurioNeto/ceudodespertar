@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { ReactElement } from 'react';
 import { BarraDeProporcao, Cartao, Numero, Recado, Rotulo, Td, Th, rotuloCaixaAlta } from './Blocos';
-import { clicar, desmontarTudo, elemento, montar, todos } from '../testes/montagem';
+import { clicar, desmontarTudo, elemento, montar, todos } from '@/testes/montagem';
 
 afterEach(desmontarTudo);
 
