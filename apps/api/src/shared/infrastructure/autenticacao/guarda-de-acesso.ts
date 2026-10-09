@@ -9,7 +9,7 @@ import {
   provedorDeIdentidadeIndisponivel,
   semPermissao,
 } from './erros-de-acesso.js';
-import { lerMarcasProprias } from './marcas-de-acesso.js';
+import { marcaEfetivaDaRota } from './marcas-de-acesso.js';
 import type { MarcaDeAcesso } from './marcas-de-acesso.js';
 import { guardarContexto, guardarIdentidade } from './requisicao-autenticada.js';
 import type { RequisicaoHttp, RespostaHttp } from './requisicao-autenticada.js';
@@ -58,8 +58,7 @@ export class GuardaDeAcesso implements CanActivate {
   }
 
   private marcaDaRota(contexto: ExecutionContext): MarcaDeAcesso {
-    const doMetodo = lerMarcasProprias(contexto.getHandler());
-    const marcas = doMetodo.length > 0 ? doMetodo : lerMarcasProprias(contexto.getClass());
+    const marcas = marcaEfetivaDaRota(contexto.getHandler(), contexto.getClass());
     const [unica] = marcas;
     if (marcas.length !== 1 || unica === undefined) {
       this.log.error(

@@ -14,6 +14,7 @@ import { ProvedorDeContextoDeInstituicao } from '../../src/shared/infrastructure
 import { ModoDeTransacao } from '../../src/shared/infrastructure/http/modo-de-transacao.decorator.js';
 import { FiltroDeErrosModule } from '../../src/shared/infrastructure/http/filtro-de-erros.module.js';
 import { RespostaSemCorpoNoReplay } from '../../src/shared/infrastructure/idempotencia/resposta-sem-corpo-no-replay.decorator.js';
+import { SemIdempotencia } from '../../src/shared/infrastructure/idempotencia/sem-idempotencia.decorator.js';
 import { IdempotenciaInterceptor } from '../../src/shared/infrastructure/idempotencia/idempotencia.interceptor.js';
 import { erroDeDominio } from '../../src/shared/kernel/erro-de-dominio.js';
 import { err, ok } from '../../src/shared/kernel/result.js';
@@ -106,6 +107,14 @@ class ControladorDeProva {
     resposta.status(STATUS_CRIADO);
     resposta.setHeader('Location', `/pessoas/${chamadasDoHandler}`);
     return { chamada: chamadasDoHandler, cpf: CPF_DEVOLVIDO };
+  }
+
+  @Post('sem-idempotencia')
+  @SemIdempotencia()
+  async semIdempotencia() {
+    chamadasDoHandler += 1;
+    await registrarEfeito();
+    return { chamada: chamadasDoHandler };
   }
 
   @Post('result-de-erro')
@@ -281,6 +290,29 @@ describe('IdempotenciaInterceptor sobre HTTP real, com borda e idempotência reg
       expect(segunda).toStrictEqual(primeira);
       expect(chamadasDoHandler).toBe(1);
       expect(await contar('shared.outbox')).toBe(efeitosAntes + 1);
+    });
+  });
+
+  describe('rota marcada com SemIdempotencia', () => {
+    it('ignora a chave: cada chamada executa o handler, produz efeito e nada é gravado em chave_de_idempotencia', async () => {
+      const chave = randomUUID();
+      const efeitosAntes = await contar('shared.outbox');
+      const chavesAntes = await contar('shared.chave_de_idempotencia');
+
+      const primeira = await postar('/sem-idempotencia', chave);
+      const segunda = await postar('/sem-idempotencia', chave);
+
+      expect(primeira.status).toBe(201);
+      expect(segunda.status).toBe(201);
+      expect(chamadasDoHandler).toBe(2);
+      expect(await contar('shared.outbox')).toBe(efeitosAntes + 2);
+      expect(await contar('shared.chave_de_idempotencia')).toBe(chavesAntes);
+    });
+
+    it('ignora até a chave malformada, sem responder 400', async () => {
+      const resposta = await postar('/sem-idempotencia', 'k'.repeat(TAMANHO_DE_CHAVE_LONGA_DEMAIS));
+
+      expect(resposta.status).toBe(201);
     });
   });
 

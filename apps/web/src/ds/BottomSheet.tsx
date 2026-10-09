@@ -34,7 +34,7 @@ export function BottomSheet({
       style={{
         position: 'absolute',
         inset: 0,
-        background: 'rgba(59,38,23,.38)',
+        background: 'var(--bg-scrim)',
         display: 'flex',
         alignItems: 'flex-end',
         zIndex: 40,
