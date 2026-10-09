@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./apps/web/src/*"],
+      "@vitest/expect": ["../../../../../node_modules/.pnpm/node_modules/@vitest/expect"]
+    }
+  }
+}
