@@ -307,6 +307,15 @@ describe('Interruptor', () => {
     expect(onAlternar).toHaveBeenCalledTimes(1);
   });
 
+  it('ligado, clicar também chama onAlternar uma vez, para poder desligar', async () => {
+    const onAlternar = vi.fn();
+    const tela = await montarInterruptor({ ligado: true, onAlternar });
+
+    await clicar(elemento(tela.container, '[role="switch"]'));
+
+    expect(onAlternar).toHaveBeenCalledTimes(1);
+  });
+
   it('cada clique chama onAlternar de novo, mesmo sem o valor mudar por fora', async () => {
     const onAlternar = vi.fn();
     const tela = await montarInterruptor({ onAlternar });
