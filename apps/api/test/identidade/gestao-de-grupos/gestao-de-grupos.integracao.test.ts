@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import type { GrupoId } from '@cdd/contracts';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { Grupo } from '../../../src/modules/identidade/domain/grupo/grupo.js';
+import { VARIAVEL_DE_SESSAO_DA_INSTITUICAO } from '../../../src/shared/infrastructure/banco/unidade-de-trabalho.mikro-orm.js';
 import { comContexto, INSTITUICAO_A, INSTITUICAO_B, semearInstituicoes } from '../../eventos/apoio.js';
 import { criarBancoDeTeste, derrubarBancoDeTeste } from '../../integracao/banco-de-teste.js';
 import type { BancoDeTeste } from '../../integracao/banco-de-teste.js';
@@ -73,6 +74,26 @@ describe('gestão de grupos pela API (Doc 3 §11, Doc 7 §25)', () => {
     const grupo = novoGrupoNomeado('Administração de B', PERMISSOES_DA_ADMINISTRACAO);
     await semearUsuarios(aplicacao, INSTITUICAO_B, [grupo], [usuarioAtivoEm(ADMIN_DE_B, [grupo])]);
     return { grupo };
+  }
+
+  async function gravarPermissaoForaDoCatalogoDoCodigo(grupoId: GrupoId, codigo: string): Promise<void> {
+    await banco.owner.query('begin');
+    try {
+      await banco.owner.query('select set_config($1, $2, true)', [VARIAVEL_DE_SESSAO_DA_INSTITUICAO, INSTITUICAO_A]);
+      await banco.owner.query('insert into identidade.permissao (codigo, modulo, descricao) values ($1, $2, $3)', [
+        codigo,
+        'legada',
+        'Fora do catálogo do código',
+      ]);
+      await banco.owner.query(
+        'insert into identidade.grupo_permissao (instituicao_id, grupo_id, permissao) values ($1, $2, $3)',
+        [INSTITUICAO_A, grupoId, codigo],
+      );
+      await banco.owner.query('commit');
+    } catch (erro) {
+      await banco.owner.query('rollback');
+      throw erro;
+    }
   }
 
   const estadoDe = (id: GrupoId) => estadoDoGrupo(banco, INSTITUICAO_A, id);
@@ -209,16 +230,20 @@ describe('gestão de grupos pela API (Doc 3 §11, Doc 7 §25)', () => {
       );
     });
 
-    it('escrita em grupo excluído responde 404 GRUPO_INEXISTENTE nas três rotas', async () => {
+    it.each([
+      ['a versão que o cliente tinha antes da exclusão', 'anterior'],
+      ['a versão atual do banco', 'atual'],
+    ] as const)('escrita em grupo excluído com %s responde 404 GRUPO_INEXISTENTE nas três rotas', async (_descricao, momento) => {
       await semearCasa();
       const excluido = novoGrupoNomeado('Excluído', [PERMISSAO_DA_LEITURA]);
       await semearUsuarios(aplicacao, INSTITUICAO_A, [excluido], [usuarioAtivoEm('sub-qualquer', [])]);
+      const versaoAnteriorDaExclusao = (await estadoDe(excluido.id)).versao;
       await comContexto(INSTITUICAO_A, async () => {
         const grupo = (await aplicacao.grupos.porId(excluido.id))!;
         grupo.excluir(0, AUTOR, new Date());
         await aplicacao.grupos.salvar(grupo);
       });
-      const { versao } = await estadoDe(excluido.id);
+      const versao = momento === 'anterior' ? versaoAnteriorDaExclusao : (await estadoDe(excluido.id)).versao;
 
       await esperarRecusaSemEfeitos(
         excluido.id,
@@ -562,6 +587,16 @@ describe('gestão de grupos pela API (Doc 3 §11, Doc 7 §25)', () => {
           },
         ],
       });
+    });
+
+    it('omite a permissão gravada no banco que não pertence ao catálogo do código', async () => {
+      const { leitura } = await semearCasa();
+      await gravarPermissaoForaDoCatalogoDoCodigo(leitura.id, 'legada.coisa.fazer');
+
+      const resposta = await aplicacao.pedirComo(ADMIN, ROTA_GRUPOS);
+
+      const { itens } = (await resposta.json()) as { itens: { id: string; permissoes: string[] }[] };
+      expect(itens.find(({ id }) => id === leitura.id)!.permissoes).toEqual([PERMISSAO_DA_LEITURA]);
     });
 
     it('ordena por nome sem distinguir maiúsculas de minúsculas mesmo com collation binária', async () => {

@@ -7,7 +7,8 @@ import { ok, type Result } from '../../../../shared/kernel/result.js';
 import type { Grupo } from '../../domain/grupo/grupo.js';
 import { RepositorioDeGrupo } from '../../domain/grupo/grupo.repo.js';
 import type { AcessoDoUsuario } from '../acesso-do-usuario.js';
-import { conferirVersao, salvarSeAlterado } from '../conferir-versao.js';
+import { salvarSeAlterado } from '../conferir-versao.js';
+import { conferirGrupoExistenteEVersao } from './conferir-grupo-existente-e-versao.js';
 
 export interface ComandoDeRenomeacaoDoGrupo {
   readonly grupoId: GrupoId;
@@ -43,7 +44,7 @@ export class RenomearGrupo {
     return this.unidadeDeTrabalho.transacao(
       'escrita',
       async (): Promise<Result<DadosDoGrupoRenomeado, ErroDeDominio>> => {
-        const encontrado = conferirVersao(await this.grupos.porId(comando.grupoId), comando.versaoEsperada);
+        const encontrado = conferirGrupoExistenteEVersao(await this.grupos.porId(comando.grupoId), comando.versaoEsperada);
         if (encontrado.tipo === 'erro') return encontrado;
         const grupo = encontrado.valor;
 

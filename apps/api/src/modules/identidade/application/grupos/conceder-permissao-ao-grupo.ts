@@ -6,7 +6,8 @@ import type { ErroDeDominio } from '../../../../shared/kernel/erro-de-dominio.js
 import { ok, type Result } from '../../../../shared/kernel/result.js';
 import { RepositorioDeGrupo } from '../../domain/grupo/grupo.repo.js';
 import type { AcessoDoUsuario } from '../acesso-do-usuario.js';
-import { conferirVersao, salvarSeAlterado } from '../conferir-versao.js';
+import { salvarSeAlterado } from '../conferir-versao.js';
+import { conferirGrupoExistenteEVersao } from './conferir-grupo-existente-e-versao.js';
 import type { ComandoSobrePermissaoDoGrupo } from './comando-sobre-permissao-do-grupo.js';
 
 @Injectable()
@@ -24,7 +25,7 @@ export class ConcederPermissaoAoGrupo {
     return this.unidadeDeTrabalho.transacao(
       'escrita',
       async (): Promise<Result<PermissoesDoGrupoAlteradas, ErroDeDominio>> => {
-        const encontrado = conferirVersao(await this.grupos.porId(comando.grupoId), comando.versaoEsperada);
+        const encontrado = conferirGrupoExistenteEVersao(await this.grupos.porId(comando.grupoId), comando.versaoEsperada);
         if (encontrado.tipo === 'erro') return encontrado;
         const grupo = encontrado.valor;
 

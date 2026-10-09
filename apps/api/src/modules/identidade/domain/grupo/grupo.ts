@@ -77,12 +77,17 @@ export class Grupo extends RaizDeAgregado<GrupoId> {
     return [...this.#permissoes].toSorted();
   }
 
+  conferirExistencia(): Result<void, ErroDeDominio> {
+    return this.#ativo ? ok() : err(erroDeDominio('GRUPO_INEXISTENTE'));
+  }
+
   possui(permissao: Permissao): boolean {
     return this.#permissoes.has(permissao);
   }
 
   renomear(nome: string, descricao: string, autorId: UsuarioId, em: Date): Result<void, ErroDeDominio> {
-    if (!this.#ativo) return err(erroDeDominio('GRUPO_INEXISTENTE'));
+    const existente = this.conferirExistencia();
+    if (existente.tipo === 'erro') return existente;
     if (nome === this.#nome && descricao === this.#descricao) return ok();
     const evento = grupoRenomeado(this.id, em, {
       nomeAnterior: this.#nome,
@@ -123,7 +128,8 @@ export class Grupo extends RaizDeAgregado<GrupoId> {
     if (!Number.isInteger(usuariosAtivos) || usuariosAtivos < 0) {
       throw new RangeError(`quantidade de usuários ativos inválida: ${usuariosAtivos}`);
     }
-    if (!this.#ativo) return err(erroDeDominio('GRUPO_INEXISTENTE'));
+    const existente = this.conferirExistencia();
+    if (existente.tipo === 'erro') return existente;
     if (this.#protegido) return err(erroDeDominio('GRUPO_PROTEGIDO'));
     if (usuariosAtivos > 0) return err(erroDeDominio('GRUPO_COM_USUARIOS_ATIVOS', { usuariosAtivos }));
     this.#ativo = false;
@@ -132,7 +138,8 @@ export class Grupo extends RaizDeAgregado<GrupoId> {
   }
 
   private validarAlteracaoDePermissao(permissao: string): Result<Permissao, ErroDeDominio> {
-    if (!this.#ativo) return err(erroDeDominio('GRUPO_INEXISTENTE'));
+    const existente = this.conferirExistencia();
+    if (existente.tipo === 'erro') return existente;
     if (!ehPermissaoDoCatalogo(permissao)) return err(permissaoInexistente(permissao));
     return ok(permissao);
   }
