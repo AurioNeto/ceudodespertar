@@ -37,6 +37,14 @@ export default defineConfig({
           include: ['src/**/*.test.tsx', 'src/**/*.dom.test.ts'],
         },
       },
+      {
+        extends: true,
+        test: {
+          name: 'estrutural',
+          environment: 'node',
+          include: ['test/estrutural/*.test.ts'],
+        },
+      },
     ],
   },
 });
