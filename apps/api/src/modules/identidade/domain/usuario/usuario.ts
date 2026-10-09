@@ -181,7 +181,8 @@ export class Usuario extends RaizDeAgregado<UsuarioId> {
   }
 
   reenviarConvite(novoHash: string, novaExpiraEm: Date, por: UsuarioId, em: Date): Result<void, ErroDeDominio> {
-    if (this._situacao !== 'CONVITE_PENDENTE') return err(erroDaSituacao(this._situacao, 'CONVITE_JA_USADO'));
+    if (this._situacao === 'ATIVO') return err(erroDeDominio('CONVITE_JA_USADO'));
+    if (this._situacao !== 'CONVITE_PENDENTE') return err(erroDaSituacaoDoAlvo(this._situacao));
 
     const novoConvite = Convite.criar(novoHash, novaExpiraEm, por, em);
     if (this._convite !== null) this._convitesSubstituidos.push(this._convite.revogar(em));
