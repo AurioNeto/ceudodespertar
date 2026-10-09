@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { DomainError, EmptyState, FlowerOfLife, InfraError, PermissionDenied, SkeletonList } from './estados';
-import { clicar, desmontarTudo, elemento, montar } from './apoioDeRender';
+import { clicar, desmontarTudo, elemento, montar } from '../testes/montagem';
 
 afterEach(desmontarTudo);
 

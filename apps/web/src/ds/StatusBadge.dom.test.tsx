@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { StatusBadge, type BadgeTone } from './StatusBadge';
-import { desmontarTudo, elemento, montar } from './apoioDeRender';
+import { desmontarTudo, elemento, montar } from '../testes/montagem';
 
 afterEach(desmontarTudo);
 

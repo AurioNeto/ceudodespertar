@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { Button, type ButtonVariant } from './Button';
-import { clicar, desmontarTudo, elemento, montar, passarMouseSobre, tirarMouseDe } from './apoioDeRender';
+import { clicar, desmontarTudo, elemento, montar, passarMouseSobre, tirarMouseDe } from '../testes/montagem';
 
 afterEach(desmontarTudo);
 

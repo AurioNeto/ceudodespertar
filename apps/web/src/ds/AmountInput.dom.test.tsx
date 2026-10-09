@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { useState } from 'react';
 import { AmountInput } from './AmountInput';
-import { desmontarTudo, digitar, elemento, montar } from './apoioDeRender';
+import { desmontarTudo, digitar, elemento, montar } from '../testes/montagem';
 
 afterEach(desmontarTudo);
 

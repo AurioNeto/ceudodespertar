@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { FaixaDeDemonstracao, TEXTO_DA_FAIXA_DE_DEMONSTRACAO } from './FaixaDeDemonstracao';
-import { desmontarTudo, elemento, montar } from './apoioDeRender';
+import { desmontarTudo, elemento, montar } from '../testes/montagem';
 
 afterEach(desmontarTudo);
 

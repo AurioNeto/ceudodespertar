@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { Receipt, type ReceiptTone } from './Receipt';
-import { desmontarTudo, elemento, folhaComTexto, montar } from './apoioDeRender';
+import { desmontarTudo, elemento, folhaComTexto, montar } from '../testes/montagem';
 
 afterEach(desmontarTudo);
 
