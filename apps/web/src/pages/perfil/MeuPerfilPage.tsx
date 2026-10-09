@@ -4,7 +4,7 @@ import { Button, ScreenHeader } from '../../ds';
 import { useDensidade } from '../../lib/useDensidade';
 import { iniciais } from '../../lib/formato';
 import { useSessao } from '../../app/sessao';
-import { agruparPermissoes } from './permissoesAgrupadas';
+import { agruparPermissoes } from '../../lib/permissoesAgrupadas';
 
 const rotuloLabel = {
   font: 'var(--text-label)',
