@@ -16,9 +16,12 @@ import { criarEntradaFalsa, criarEu, montarComSessao, type TelaMontada } from '.
 import type { ClienteHttp, OpcoesDeRequisicao } from '../../dados/clienteHttp';
 import { ClienteHttpProvider } from '../../app/clienteHttp';
 import { ErroDaApi } from '../../dados/erros';
+import { ATRASO_DA_BUSCA_EM_MS } from './AbaDeUsuarios';
 import { AcessosPage } from './AcessosPage';
 
-export const ESPERA_ALEM_DO_ATRASO_DA_BUSCA_EM_MS = 400;
+const FOLGA_DA_ESPERA_EM_MS = 100;
+
+export const ESPERA_ALEM_DO_ATRASO_DA_BUSCA_EM_MS = ATRASO_DA_BUSCA_EM_MS + FOLGA_DA_ESPERA_EM_MS;
 
 export function usuarioListado(sobrescritas: Partial<UsuarioListado> = {}): UsuarioListado {
   return {

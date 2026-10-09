@@ -5,6 +5,7 @@ import { Select } from '../../components/Campo';
 import { SITUACAO_DE_USUARIO } from './situacaoDeUsuario';
 
 const TODAS = '';
+const TAMANHO_MAXIMO_DA_BUSCA = 200;
 
 export interface FiltrosDeUsuariosProps {
   readonly busca: string;
@@ -34,6 +35,7 @@ export function FiltrosDeUsuarios({
         label="Buscar"
         type="search"
         placeholder="nome ou e-mail"
+        maxLength={TAMANHO_MAXIMO_DA_BUSCA}
         value={busca}
         onChange={(evento) => aoMudarBusca(evento.target.value)}
         style={{ flex: '1 1 240px' }}

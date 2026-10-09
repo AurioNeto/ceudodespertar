@@ -4,13 +4,11 @@ import { Avatar } from '../../components/Avatar';
 import { formatarDataHora } from '../../lib/formato';
 import { SITUACAO_DE_USUARIO } from './situacaoDeUsuario';
 
-export const TEXTO_SEM_ACESSO_ANTERIOR = 'nunca acessou';
-
 export function LinhaDeUsuario({ usuario }: { usuario: UsuarioListado }) {
   const situacao = SITUACAO_DE_USUARIO[usuario.situacao];
   const ultimoAcesso = usuario.ultimoAcessoEm
-    ? `Último acesso ${formatarDataHora(usuario.ultimoAcessoEm)}`
-    : `Último acesso: ${TEXTO_SEM_ACESSO_ANTERIOR}`;
+    ? `Último acesso: ${formatarDataHora(usuario.ultimoAcessoEm)}`
+    : 'Último acesso: nunca';
 
   return (
     <li

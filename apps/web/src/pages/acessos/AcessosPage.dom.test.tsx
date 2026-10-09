@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import type { GrupoId } from '@cdd/contracts';
 import { assentar, type TelaMontada } from '../../app/apoioDeTeste';
+import { ATRASO_DA_BUSCA_EM_MS } from './AbaDeUsuarios';
 import {
   ESPERA_ALEM_DO_ATRASO_DA_BUSCA_EM_MS,
   PERMISSAO_DE_GRUPOS,
@@ -17,7 +18,6 @@ import {
   usuarioListado,
 } from './apoioDeTeste';
 import type { RoteiroDoCliente } from './apoioDeTeste';
-import { TEXTO_SEM_ACESSO_ANTERIOR } from './LinhaDeUsuario';
 
 const montadas: TelaMontada[] = [];
 
@@ -100,11 +100,11 @@ describe('Acessos: aba Usuários', () => {
     expect(linhas).toHaveLength(2);
     expect(linhas[0]?.textContent).toContain('Maria das Graças');
     expect(linhas[0]?.textContent).toContain('maria@cdd.local');
-    expect(linhas[0]?.textContent).toContain('09/10/2026 14:30');
+    expect(linhas[0]?.textContent).toContain('Último acesso: 09/10/2026 14:30');
     expect(linhas[0]?.textContent).toContain('Tesouraria');
     expect(linhas[0]?.textContent).toContain('Ativo');
     expect(linhas[0]?.textContent).toContain('MG');
-    expect(linhas[1]?.textContent).toContain(TEXTO_SEM_ACESSO_ANTERIOR);
+    expect(linhas[1]?.textContent).toContain('Último acesso: nunca');
     expect(linhas[1]?.textContent).toContain('Convite pendente');
   });
 
@@ -159,6 +159,8 @@ describe('Acessos: aba Usuários', () => {
     await tela.clicar('Carregar mais');
     expect(tela.texto()).toContain('Não foi possível carregar mais usuários');
     expect(tela.texto()).toContain('Maria das Graças');
+    expect(tela.texto()).toContain('Tentar de novo');
+    expect(tela.texto()).not.toContain('Carregar mais');
     falhar = false;
     await tela.clicar('Tentar de novo');
     expect(tela.texto()).toContain('Zélia Costa');
@@ -223,6 +225,49 @@ describe('Acessos: aba Usuários', () => {
     await esperar(ESPERA_ALEM_DO_ATRASO_DA_BUSCA_EM_MS);
     await assentar();
     expect(cliente.chamadasDeUsuarios().map((p) => p.get('busca'))).toEqual([null, 'ana']);
+  });
+
+  it('teclas mais rápidas que o atraso viram uma única chamada com a busca final', async () => {
+    const { cliente, tela } = await montar();
+    const intervaloEntreTeclas = ATRASO_DA_BUSCA_EM_MS / 3;
+    for (const texto of ['a', 'an', 'ana', 'ana ', 'ana s']) {
+      await digitar(tela, 'Buscar', texto);
+      await esperar(intervaloEntreTeclas);
+    }
+    await esperar(ESPERA_ALEM_DO_ATRASO_DA_BUSCA_EM_MS);
+    await assentar();
+    expect(cliente.chamadasDeUsuarios().map((p) => p.get('busca'))).toEqual([null, 'ana s']);
+  });
+
+  it('o campo de busca limita o texto ao máximo aceito pelo contrato', async () => {
+    const { tela } = await montar();
+    expect(campoPorRotulo<HTMLInputElement>(tela, 'Buscar').maxLength).toBe(200);
+  });
+
+  it('item repetido entre páginas aparece uma vez, pela primeira ocorrência', async () => {
+    const { tela } = await montar({
+      usuarios: (parametros) =>
+        parametros.get('depois') === 'c1'
+          ? pagina([usuarioListado({ nome: 'Maria Repetida' }), usuarioListado({ id: 'u-3' as never, nome: 'Zélia Costa' })])
+          : pagina([usuarioListado()], 'c1'),
+    });
+    await tela.clicar('Carregar mais');
+    const linhas = Array.from(tela.container.querySelectorAll('ul[aria-label="Usuários"] > li'));
+    expect(linhas).toHaveLength(2);
+    expect(linhas[0]?.textContent).toContain('Maria das Graças');
+    expect(tela.texto()).not.toContain('Maria Repetida');
+    expect(tela.texto()).toContain('Zélia Costa');
+  });
+
+  it('vazio só com a busca filtrando fala em filtros e não em lista vazia', async () => {
+    const { tela } = await montar({
+      usuarios: (parametros) => (parametros.get('busca') ? pagina([]) : pagina([usuarioListado()])),
+    });
+    await digitar(tela, 'Buscar', 'ninguém');
+    await esperar(ESPERA_ALEM_DO_ATRASO_DA_BUSCA_EM_MS);
+    await assentar();
+    expect(tela.texto()).toContain('combina com os filtros');
+    expect(tela.texto()).not.toContain('Ainda não há usuários');
   });
 
   it('carregando mostra o esqueleto e nenhuma linha', async () => {

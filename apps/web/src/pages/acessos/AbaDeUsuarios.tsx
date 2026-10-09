@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
-import type { GrupoId, SituacaoUsuario } from '@cdd/contracts';
+import type { GrupoId, SituacaoUsuario, UsuarioId, UsuarioListado } from '@cdd/contracts';
 import { Button, EmptyState, InfraError, SkeletonList } from '../../ds';
 import { useValorComAtraso } from '../../lib/useValorComAtraso';
 import { useConsultasDeAcessos, temFiltroAplicado } from './consultasDeAcessos';
@@ -8,6 +8,15 @@ import { FiltrosDeUsuarios } from './FiltrosDeUsuarios';
 import { LinhaDeUsuario } from './LinhaDeUsuario';
 
 export const ATRASO_DA_BUSCA_EM_MS = 300;
+
+function semRepetidos(usuarios: readonly UsuarioListado[]): readonly UsuarioListado[] {
+  const vistos = new Set<UsuarioId>();
+  return usuarios.filter((usuario) => {
+    if (vistos.has(usuario.id)) return false;
+    vistos.add(usuario.id);
+    return true;
+  });
+}
 
 export function AbaDeUsuarios() {
   const consultas = useConsultasDeAcessos();
@@ -19,7 +28,7 @@ export function AbaDeUsuarios() {
 
   const grupos = useQuery(consultas.grupos());
   const usuarios = useInfiniteQuery(consultas.usuarios(filtro));
-  const itens = usuarios.data?.pages.flatMap((pagina) => pagina.itens) ?? [];
+  const itens = useMemo(() => semRepetidos(usuarios.data?.pages.flatMap((pagina) => pagina.itens) ?? []), [usuarios.data]);
 
   return (
     <>
