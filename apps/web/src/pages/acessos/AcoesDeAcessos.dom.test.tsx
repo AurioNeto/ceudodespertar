@@ -362,7 +362,6 @@ describe('Acessos: gerenciar usuário', () => {
 
   it('409 recarrega o usuário por id, mantém o painel aberto com o estado novo e o motivo, avisa e não reenvia', async () => {
     const usuarioNovo = usuarioListado({
-      situacao: 'SUSPENSO',
       versao: 2,
       grupos: [{ id: 'g-2' as GrupoId, nome: 'Secretaria' }],
     });
@@ -379,10 +378,54 @@ describe('Acessos: gerenciar usuário', () => {
     expect(cliente.chamadasDeComando()).toHaveLength(1);
     expect(painelAberto()).not.toBeNull();
     expect(painelAberto()?.querySelector('[role="status"]')?.textContent).toBe(AVISO_DE_VERSAO_DESATUALIZADA);
-    expect(textoDoPainel()).toContain('Reativar acesso');
-    expect(textoDoPainel()).not.toContain('Suspender acesso');
+    expect(textoDoPainel()).toContain('Suspender acesso');
     expect(campoDoPainel<HTMLTextAreaElement>('Motivo').value).toBe('deixou a tesouraria');
     expect(gruposMarcadosNoPainel()).toEqual(['Secretaria']);
+  });
+
+  it('409 que troca Suspender por Reativar limpa o motivo digitado e não o grava na trilha', async () => {
+    const { cliente, tela } = await montar({
+      usuario: () => usuarioListado({ situacao: 'SUSPENSO', versao: 2 }),
+      comando: () => new ErroDaApi({ status: 409, codigo: 'VERSAO_DESATUALIZADA' }),
+    });
+    await abrirGerenciar(tela);
+    await digitarNoPainel('Motivo', 'deixou a tesouraria');
+    await clicarNoPainel('Suspender acesso');
+
+    expect(textoDoPainel()).toContain('Reativar acesso');
+    expect(campoDoPainel<HTMLTextAreaElement>('Motivo').value).toBe('');
+    await clicarNoPainel('Reativar acesso');
+    expect(textoDoPainel()).toContain('Informe o motivo.');
+    expect(cliente.chamadasDeComando()).toHaveLength(1);
+  });
+
+  it('409 que troca Reativar por Suspender também limpa o motivo digitado', async () => {
+    const { cliente, tela } = await montar({
+      usuarios: () => pagina([USUARIO_SUSPENSO]),
+      usuario: () => usuarioListado({ situacao: 'ATIVO', versao: 4 }),
+      comando: () => new ErroDaApi({ status: 409, codigo: 'VERSAO_DESATUALIZADA' }),
+    });
+    await abrirGerenciar(tela);
+    await digitarNoPainel('Motivo', 'voltou à tesouraria');
+    await clicarNoPainel('Reativar acesso');
+
+    expect(campoDoPainel<HTMLTextAreaElement>('Motivo').value).toBe('');
+    await clicarNoPainel('Suspender acesso');
+    expect(cliente.chamadasDeComando()).toHaveLength(1);
+  });
+
+  it('409 que deixa o usuário sem ação de situação remove o campo de motivo e os botões', async () => {
+    const { tela } = await montar({
+      usuario: () => usuarioListado({ situacao: 'REVOGADO', versao: 2 }),
+      comando: () => new ErroDaApi({ status: 409, codigo: 'VERSAO_DESATUALIZADA' }),
+    });
+    await abrirGerenciar(tela);
+    await digitarNoPainel('Motivo', 'deixou a tesouraria');
+    await clicarNoPainel('Suspender acesso');
+
+    expect(painelAberto()?.querySelector('textarea')).toBeNull();
+    expect(textoDoPainel()).not.toContain('Suspender acesso');
+    expect(textoDoPainel()).not.toContain('Reativar acesso');
   });
 
   it('depois do 409 o novo envio usa a versão recarregada e uma chave nova', async () => {

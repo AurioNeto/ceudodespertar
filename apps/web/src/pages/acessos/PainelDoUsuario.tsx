@@ -19,6 +19,14 @@ export interface PainelDoUsuarioProps {
 
 const MOTIVO_OBRIGATORIO = 'Informe o motivo.';
 
+type AcaoDeSituacao = 'suspender' | 'reativar';
+
+const acaoDeSituacaoDisponivel = (usuario: UsuarioListado): AcaoDeSituacao | null => {
+  if (usuario.situacao === 'ATIVO') return 'suspender';
+  if (usuario.situacao === 'SUSPENSO') return 'reativar';
+  return null;
+};
+
 const idsDosGrupos = (usuario: UsuarioListado): GrupoId[] => usuario.grupos.map((grupo) => grupo.id);
 
 export function PainelDoUsuario({ usuario, ...resto }: PainelDoUsuarioProps) {
@@ -49,12 +57,14 @@ function PainelDoUsuarioAberto({
     aoRecarregar: (recarregado) => {
       aoAtualizarUsuario(recarregado);
       setGrupos(idsDosGrupos(recarregado));
+      if (acaoDeSituacaoDisponivel(recarregado) !== acaoDeSituacaoDisponivel(usuario)) {
+        setMotivo('');
+      }
     },
   });
 
   const revogado = usuario.situacao === 'REVOGADO';
-  const podeSuspender = usuario.situacao === 'ATIVO';
-  const podeReativar = usuario.situacao === 'SUSPENSO';
+  const acaoDeSituacao = acaoDeSituacaoDisponivel(usuario);
   const situacao = SITUACAO_DE_USUARIO[usuario.situacao];
 
   const salvarGrupos = () =>
@@ -63,7 +73,7 @@ function PainelDoUsuarioAberto({
       aoFechar,
     );
 
-  const mudarSituacao = (acao: 'suspender' | 'reativar') => {
+  const mudarSituacao = (acao: AcaoDeSituacao) => {
     const motivoLimpo = motivo.trim();
     if (!motivoLimpo) {
       setErroDeMotivo(MOTIVO_OBRIGATORIO);
@@ -128,17 +138,17 @@ function PainelDoUsuarioAberto({
         <p style={{ margin: 0, font: 'var(--text-body)', color: 'var(--text-primary)' }}>
           Situação atual: <strong>{situacao.rotulo}</strong>
         </p>
-        {podeSuspender || podeReativar ? (
+        {acaoDeSituacao ? (
           <>
             <CampoDeMotivo valor={motivo} aoMudar={setMotivo} erro={erroDeMotivo} densidade={densidade} />
             <div>
               <Button
-                variant={podeSuspender ? 'ghost' : 'primary'}
+                variant={acaoDeSituacao === 'suspender' ? 'ghost' : 'primary'}
                 density={densidade}
                 aria-disabled={enviando}
-                onClick={() => mudarSituacao(podeSuspender ? 'suspender' : 'reativar')}
+                onClick={() => mudarSituacao(acaoDeSituacao)}
               >
-                {podeSuspender ? 'Suspender acesso' : 'Reativar acesso'}
+                {acaoDeSituacao === 'suspender' ? 'Suspender acesso' : 'Reativar acesso'}
               </Button>
             </div>
           </>
