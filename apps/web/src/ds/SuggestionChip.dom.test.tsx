@@ -186,10 +186,10 @@ describe('SuggestionChip: nunca aplica sozinha', () => {
 
 describe('SuggestionChip: densidade', () => {
   it.each([
-    ['sem densidade, vale a de campo', undefined, 'var(--target-field)', '0px 6px 0px 14px'],
-    ['campo', 'field', 'var(--target-field)', '0px 6px 0px 14px'],
-    ['escritório', 'office', 'var(--target-office)', '0px 4px 0px 12px'],
-  ] as const)('%s: altura mínima %s e respiro %s', async (_nome, densidade, altura, respiro) => {
+    { nome: 'sem densidade, vale a de campo', densidade: undefined, altura: 'var(--target-field)', respiro: '0px 6px 0px 14px' },
+    { nome: 'campo', densidade: 'field', altura: 'var(--target-field)', respiro: '0px 6px 0px 14px' },
+    { nome: 'escritório', densidade: 'office', altura: 'var(--target-office)', respiro: '0px 4px 0px 12px' },
+  ] as const)('$nome: altura mínima $altura e respiro $respiro', async ({ densidade, altura, respiro }) => {
     const { container } = await montar(
       densidade ? <SuggestionChip density={densidade}>Cora PJ</SuggestionChip> : <SuggestionChip>Cora PJ</SuggestionChip>,
     );

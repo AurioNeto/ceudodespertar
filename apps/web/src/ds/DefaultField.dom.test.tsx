@@ -88,10 +88,10 @@ describe('DefaultField: editar em um toque', () => {
 
 describe('DefaultField: densidade', () => {
   it.each([
-    ['sem densidade, vale a de campo', undefined, 'var(--target-field)'],
-    ['campo', 'field', 'var(--target-field)'],
-    ['escritório', 'office', 'var(--target-office)'],
-  ] as const)('%s: altura mínima %s', async (_nome, densidade, altura) => {
+    { nome: 'sem densidade, vale a de campo', densidade: undefined, altura: 'var(--target-field)' },
+    { nome: 'campo', densidade: 'field', altura: 'var(--target-field)' },
+    { nome: 'escritório', densidade: 'office', altura: 'var(--target-office)' },
+  ] as const)('$nome: altura mínima $altura', async ({ densidade, altura }) => {
     const { container } = await montar(
       densidade ? <DefaultField label="Conta" value="Cora PJ" density={densidade} /> : <DefaultField label="Conta" value="Cora PJ" />,
     );

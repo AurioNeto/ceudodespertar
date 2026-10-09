@@ -136,10 +136,10 @@ describe('ScreenHeader: ações', () => {
 
 describe('ScreenHeader: densidade', () => {
   it.each([
-    ['sem densidade, vale a de escritório', undefined, '21px 24px 20px'],
-    ['escritório', 'office', '21px 24px 20px'],
-    ['campo, mais compacto', 'field', '17px 20px 16px'],
-  ] as const)('%s: respiro interno de %s', async (_nome, densidade, respiro) => {
+    { nome: 'sem densidade, vale a de escritório', densidade: undefined, respiro: '21px 24px 20px' },
+    { nome: 'escritório', densidade: 'office', respiro: '21px 24px 20px' },
+    { nome: 'campo, mais compacto', densidade: 'field', respiro: '17px 20px 16px' },
+  ] as const)('$nome: respiro interno de $respiro', async ({ densidade, respiro }) => {
     const { container } = await montar(
       densidade ? <ScreenHeader title="Acessos" density={densidade} /> : <ScreenHeader title="Acessos" />,
     );

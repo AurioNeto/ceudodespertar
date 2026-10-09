@@ -178,19 +178,19 @@ describe('AttachmentCapture: troca entre os dois estados', () => {
 
 describe('AttachmentCapture: densidade', () => {
   it.each([
-    ['sem densidade, vale a de campo', undefined, 'var(--target-field)'],
-    ['campo', 'field', 'var(--target-field)'],
-    ['escritório', 'office', 'var(--target-office)'],
-  ] as const)('sem anexo, %s: altura mínima %s', async (_nome, densidade, altura) => {
+    { nome: 'sem densidade, vale a de campo', densidade: undefined, altura: 'var(--target-field)' },
+    { nome: 'campo', densidade: 'field', altura: 'var(--target-field)' },
+    { nome: 'escritório', densidade: 'office', altura: 'var(--target-office)' },
+  ] as const)('sem anexo, $nome: altura mínima $altura', async ({ densidade, altura }) => {
     const { container } = await montar(densidade ? <AttachmentCapture density={densidade} /> : <AttachmentCapture />);
     expect(botaoDeCaptura(container).style.minHeight).toBe(altura);
   });
 
   it.each([
-    ['sem densidade, vale a de campo', undefined, 'var(--target-field)'],
-    ['campo', 'field', 'var(--target-field)'],
-    ['escritório', 'office', 'var(--target-office)'],
-  ] as const)('com anexo, %s: altura mínima %s', async (_nome, densidade, altura) => {
+    { nome: 'sem densidade, vale a de campo', densidade: undefined, altura: 'var(--target-field)' },
+    { nome: 'campo', densidade: 'field', altura: 'var(--target-field)' },
+    { nome: 'escritório', densidade: 'office', altura: 'var(--target-office)' },
+  ] as const)('com anexo, $nome: altura mínima $altura', async ({ densidade, altura }) => {
     const { container } = await montar(
       densidade ? <AttachmentCapture filename="nota.jpg" density={densidade} /> : <AttachmentCapture filename="nota.jpg" />,
     );

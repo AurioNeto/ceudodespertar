@@ -203,10 +203,10 @@ describe('TextField: controle', () => {
   });
 
   it.each([
-    ['sem densidade, vale a de escritório', undefined, 'var(--target-office)', '10px', '13px'],
-    ['escritório', 'office', 'var(--target-office)', '10px', '13px'],
-    ['campo, com alvo de toque maior', 'field', 'var(--target-field)', '12px', '14px'],
-  ] as const)('%s: altura mínima %s e respiro %s em cima e %s à esquerda', async (_nome, density, altura, cima, esquerda) => {
+    { nome: 'sem densidade, vale a de escritório', density: undefined, altura: 'var(--target-office)', cima: '10px', esquerda: '13px' },
+    { nome: 'escritório', density: 'office', altura: 'var(--target-office)', cima: '10px', esquerda: '13px' },
+    { nome: 'campo, com alvo de toque maior', density: 'field', altura: 'var(--target-field)', cima: '12px', esquerda: '14px' },
+  ] as const)('$nome: altura mínima $altura e respiro $cima em cima e $esquerda à esquerda', async ({ density, altura, cima, esquerda }) => {
     await montar(density ? { density } : {});
     expect(campo().style.minHeight).toBe(altura);
     expect(campo().style.paddingTop).toBe(cima);
@@ -331,20 +331,20 @@ describe('TextField: ação do campo', () => {
   });
 
   it.each([
-    ['escritório', 'office', '36px'],
-    ['campo', 'field', '42px'],
-  ] as const)('em %s o botão mede %s', async (_nome, density, medida) => {
+    { nome: 'escritório', density: 'office', medida: '36px' },
+    { nome: 'campo', density: 'field', medida: '42px' },
+  ] as const)('em $nome o botão mede $medida', async ({ density, medida }) => {
     await montar({ action: acao(), density });
     expect(botaoDaAcao().style.width).toBe(medida);
     expect(botaoDaAcao().style.height).toBe(medida);
   });
 
   it.each([
-    ['só ação em escritório', { action: acao() }, '46px'],
-    ['só ação em campo', { action: acao(), density: 'field' as const }, '52px'],
-    ['só sufixo', { suffix: 'R$' }, '64px'],
-    ['sufixo e ação juntos, vale o do sufixo', { suffix: 'R$', action: acao() }, '64px'],
-  ] as const)('o texto reserva espaço à direita: %s deixa %s', async (_nome, props, espaco) => {
+    { nome: 'só ação em escritório', props: { action: acao() }, espaco: '46px' },
+    { nome: 'só ação em campo', props: { action: acao(), density: 'field' as const }, espaco: '52px' },
+    { nome: 'só sufixo', props: { suffix: 'R$' }, espaco: '64px' },
+    { nome: 'sufixo e ação juntos, vale o do sufixo', props: { suffix: 'R$', action: acao() }, espaco: '64px' },
+  ] as const)('o texto reserva espaço à direita: $nome deixa $espaco', async ({ props, espaco }) => {
     await montar(props);
     expect(campo().style.paddingRight).toBe(espaco);
   });
