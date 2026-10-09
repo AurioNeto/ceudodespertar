@@ -271,6 +271,13 @@ describe('Acessos: gerenciar usuário', () => {
     expect(tela.container.querySelector('ul[aria-label="Grupos de Maria das Graças"]')?.textContent).toBe('Secretaria');
   });
 
+  it('o bloco de grupos é anunciado só pela legenda do fieldset, sem nome duplicado na seção', async () => {
+    const { tela } = await montar();
+    await abrirGerenciar(tela);
+    expect(painelAberto()?.querySelector('fieldset legend')?.textContent).toBe('Grupos');
+    expect(painelAberto()?.querySelector('[aria-label="Grupos"]')).toBeNull();
+  });
+
   it('usuário REVOGADO só tem os grupos para leitura e nenhuma ação de situação', async () => {
     const { cliente, tela } = await montar({ usuarios: () => pagina([usuarioListado({ situacao: 'REVOGADO' })]) });
     await abrirGerenciar(tela);

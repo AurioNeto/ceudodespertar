@@ -107,7 +107,7 @@ function PainelDoUsuarioAberto({
       {aviso ? <AvisoDeAtencao role="status">{aviso}</AvisoDeAtencao> : null}
       {erro ? <ErroDoPainel>{erro}</ErroDoPainel> : null}
 
-      <section aria-label="Grupos" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+      <section style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
         <SeletorDeGrupos selecionados={grupos} aoMudar={setGrupos} desabilitado={revogado} />
         {revogado ? (
           <p style={{ margin: 0, font: 'var(--text-small)', color: 'var(--text-secondary)' }}>
