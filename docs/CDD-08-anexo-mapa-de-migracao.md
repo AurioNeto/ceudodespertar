@@ -15,7 +15,7 @@
   - `fundir`: duplicatas viram uma composição, uma só;
   - `manter`; `criar`.
 - **Etapa**: título da etapa, na seção 13.7 do Documento 8.
-- **(refazer após o #55)**: o arquivo é alterado pelo PR #55, ainda aberto. A linha é refeita a partir do código mesclado. Os arquivos do #55 são conferidos na branch local `feat/b0-comandos-de-acessos`, 9 commits à frente do head publicado do PR (seção 14).
+- **(do #55)**: o arquivo veio do PR #55 ou foi alterado por ele. O #55 foi mesclado em 09/10/2026 (`1812df6`), e as linhas foram conferidas no head mesclado (`25722ea`).
 - **(entra com o #58)** / **(entra com o #59)**: o arquivo é criado por um PR de caracterização que ainda não está na main. A linha vale depois que o PR entrar.
 
 Os destinos são agrupados por área: `app/`, `dados/`, `lib/`, `ds/`, `testes/`, raiz de `src/`, `pages/` compartilhado e, depois, cada módulo de `pages/`.
@@ -142,13 +142,13 @@ Os destinos são agrupados por área: `app/`, `dados/`, `lib/`, `ds/`, `testes/`
 | `ds/PeriodLock.tsx` | `ds/molecules/PeriodLock/PeriodLock.tsx` | mover | Mover ds em níveis |
 | `ds/Receipt.tsx` | `ds/organisms/Receipt/Receipt.tsx` | mover | Mover ds em níveis |
 | `ds/RecordRow.tsx` | `ds/molecules/RecordRow/RecordRow.tsx` | mover | Mover ds em níveis |
-| `ds/ScreenHeader.tsx` | `ds/molecules/ScreenHeader/ScreenHeader.tsx` (o #55 altera o arquivo) | mover (refazer após o #55) | Mover ds em níveis |
+| `ds/ScreenHeader.tsx` | `ds/molecules/ScreenHeader/ScreenHeader.tsx` (o #55 alterou o arquivo) | mover (do #55) | Mover ds em níveis |
 | `ds/StatusBadge.tsx` | `ds/atoms/StatusBadge/StatusBadge.tsx` | mover | Mover ds em níveis |
 | `ds/SuggestionChip.tsx` | `ds/molecules/SuggestionChip/SuggestionChip.tsx` | mover | Mover ds em níveis |
-| `ds/TextField.tsx` | `ds/molecules/TextField/TextField.tsx` (o #55 altera o arquivo) | mover (refazer após o #55) | Mover ds em níveis |
+| `ds/TextField.tsx` | `ds/molecules/TextField/TextField.tsx` (o #55 alterou o arquivo) | mover (do #55) | Mover ds em níveis |
 | `ds/TwoAxisGuard.tsx` | `ds/molecules/TwoAxisGuard/TwoAxisGuard.tsx` | mover | Mover ds em níveis |
 | `ds/AppShell.tsx` (`NavItem` e as regiões viram `components/` na divisão) | `ds/templates/AppShell/AppShell.tsx` | mover | Mover ds em níveis |
-| `ds/BottomSheet.tsx`: `BottomSheet` (o #55 altera o arquivo) | `ds/organisms/BottomSheet/BottomSheet.tsx` | repartir por export (refazer após o #55) | Mover ds em níveis |
+| `ds/BottomSheet.tsx`: `BottomSheet` (o #55 alterou o arquivo) | `ds/organisms/BottomSheet/BottomSheet.tsx` | repartir por export (do #55) | Mover ds em níveis |
 | `ds/BottomSheet.tsx`: `SheetOption` (molécula não importa organismo) | `ds/fundacao/opcao.ts` | repartir por export | Mover ds em níveis |
 | `ds/Button.tsx`: `Button` | `ds/atoms/Button/Button.tsx` | repartir por export | Mover ds em níveis |
 | `ds/Button.tsx`: `Density` (base de todos os níveis e de `useDensidade`) | `ds/fundacao/densidade.ts` | repartir por export | Mover ds em níveis |
@@ -159,19 +159,19 @@ Os destinos são agrupados por área: `app/`, `dados/`, `lib/`, `ds/`, `testes/`
 | `ds/estados.tsx`: `PermissionDenied` | `ds/molecules/PermissionDenied/` | repartir por export | Mover ds em níveis |
 | `ds/estados.tsx`: `SkeletonList` com `Bar`, `LARGURAS`, `LARGURAS_META` e o `<style>` do keyframe (o keyframe fica dentro do `SkeletonList`) | `ds/molecules/SkeletonList/` | repartir por export | Mover ds em níveis |
 | `ds/RegimeVocabulary.tsx` (catálogo sem consumidor, mantido) | `ds/providers/RegimeVocabulary/RegimeVocabulary.tsx` | mover | Mover ds em níveis |
-| `ds/index.ts` (mesma API pública; reexporta os caminhos novos) (refazer após o #55) | `ds/index.ts` | manter | Mover ds em níveis |
+| `ds/index.ts` (mesma API pública; reexporta os caminhos novos) (do #55) | `ds/index.ts` | manter | Mover ds em níveis |
 | `ds/index.ts` (ganha `useDensidade`) | `ds/index.ts` | manter | Mover fundação do ds |
 | `ds/index.ts` (ganha os primitivos promovidos) | `ds/index.ts` | manter | Primitivos para o ds |
 | `ds/index.ts` (ganha `Portao`) | `ds/index.ts` | manter | Portao no ds |
 | `ds/index.ts` (perde `FaixaDeDemonstracao`) | `ds/index.ts` | manter | app/ em subpastas |
-| `ds/PainelDeAcao.tsx` (PR #55) | `ds/organisms/PainelDeAcao/PainelDeAcao.tsx` | mover (refazer após o #55) | Mover ds em níveis |
-| `ds/PainelDeAcao.dom.test.tsx` (PR #55) | `ds/organisms/PainelDeAcao/PainelDeAcao.dom.test.tsx` | mover (refazer após o #55) | Mover ds em níveis |
-| `ds/TextField.dom.test.tsx` (PR #55, só na branch local) | `ds/molecules/TextField/TextField.dom.test.tsx` | mover (refazer após o #55) | Mover ds em níveis |
+| `ds/PainelDeAcao.tsx` (PR #55) | `ds/organisms/PainelDeAcao/PainelDeAcao.tsx` | mover (do #55) | Mover ds em níveis |
+| `ds/PainelDeAcao.dom.test.tsx` (PR #55) | `ds/organisms/PainelDeAcao/PainelDeAcao.dom.test.tsx` | mover (do #55) | Mover ds em níveis |
+| `ds/TextField.dom.test.tsx` (do #55) | `ds/molecules/TextField/TextField.dom.test.tsx` | mover (do #55) | Mover ds em níveis |
 | `lib/useDensidade.ts` | `ds/fundacao/useDensidade.ts` | mover | Mover fundação do ds |
 | novo (teste do hook; `lib/` não tem teste dele hoje) | `ds/fundacao/useDensidade.dom.test.ts` | criar | Mover fundação do ds |
 | `styles/marca.css` | `ds/fundacao/marca.css` | mover | Mover fundação do ds |
 | `styles/tokens/base.css` | `ds/fundacao/tokens/base.css` | mover | Mover fundação do ds |
-| `styles/tokens/colors.css` (o #55 altera o arquivo) | `ds/fundacao/tokens/colors.css` | mover (refazer após o #55) | Mover fundação do ds |
+| `styles/tokens/colors.css` (o #55 alterou o arquivo) | `ds/fundacao/tokens/colors.css` | mover (do #55) | Mover fundação do ds |
 | `styles/tokens/fonts.css` | `ds/fundacao/tokens/fonts.css` | mover | Mover fundação do ds |
 | `styles/tokens/spacing.css` | `ds/fundacao/tokens/spacing.css` | mover | Mover fundação do ds |
 | `styles/tokens/typography.css` | `ds/fundacao/tokens/typography.css` | mover | Mover fundação do ds |
@@ -198,7 +198,7 @@ Os destinos são agrupados por área: `app/`, `dados/`, `lib/`, `ds/`, `testes/`
 | `pages/lancamento/RegistrarLancamentoPage.tsx#rotuloLabel`; 12 constantes `rotuloLabel` das páginas; cópias inline do estilo de rótulo | `ds/atoms/Rotulo/` e `ds/fundacao/estilos.ts` (`rotuloCaixaAlta`) | fundir | Rotulo e CorpoDaTela |
 | `components/Blocos.tsx#Th`, `Td` (internos do `DataTable` na adoção) | `ds/organisms/DataTable/` | fundir | Primitivos novos e adoção do catálogo |
 | novo (`Marca` do `Portao`, wordmark do `AppShell`, moldura da inscrição pública) | `ds/atoms/Marca/` | fundir | Primitivos novos e adoção do catálogo |
-| novo (`Recado` de `Blocos`, `entrada/Aviso`, `AvisoDeAtencao` do #55 (só na branch local; refazer após o #55), callouts das telas) | `ds/molecules/Aviso/` | fundir | Primitivos novos e adoção do catálogo |
+| novo (`Recado` de `Blocos`, `entrada/Aviso`, `AvisoDeAtencao` do #55 (do #55), callouts das telas) | `ds/molecules/Aviso/` | fundir | Primitivos novos e adoção do catálogo |
 | novo (`Leitura` de Meu perfil, Ayahuasca, Pessoas, Contratações e Devoluções) | `ds/molecules/Leitura/` | fundir | Primitivos novos e adoção do catálogo |
 | novo (listas com divisória em Devoluções, Leitos e Feitio) | `ds/molecules/ListaDividida/` | criar | Primitivos novos e adoção do catálogo |
 | novo (botões só de ícone em formulários, revisão, contas, registros, paginação, captura de anexo, sugestões e `TextField`) | `ds/atoms/BotaoDeIcone/` | criar | Primitivos novos e adoção do catálogo |
@@ -221,7 +221,7 @@ Cada adoção que muda o JSX passa pela captura de telas (seção 13.6 do Docume
 |---|---|---|---|
 | `pages/fechamento/FechamentoPage.tsx`: bloqueio do período e confirmação de reabertura (`confirmarReabertura`), re-implementados | `ds/molecules/PeriodLock/` e `ds/molecules/ConfirmAction/` | fundir | Primitivos novos e adoção do catálogo |
 | valores em centavos exibidos nas telas (`formatarBRL` e `formatarDinheiro` no JSX; nenhuma página usa `AmountDisplay` hoje) | `ds/atoms/AmountDisplay/` | fundir | Primitivos novos e adoção do catálogo |
-| gavetas de detalhe: `GavetaDeDetalhe` (`LancamentosPage`), `PainelDeRevisao` (`VerificacaoLotePage`), `PainelDeQuebra` (`RelatoriosPage`), `ModalDeMovimento` (`AyahuascaPage`) | `ds/organisms/PainelDeAcao/` (vem do #55, refazer após o #55) | fundir | Primitivos novos e adoção do catálogo |
+| gavetas de detalhe: `GavetaDeDetalhe` (`LancamentosPage`), `PainelDeRevisao` (`VerificacaoLotePage`), `PainelDeQuebra` (`RelatoriosPage`), `ModalDeMovimento` (`AyahuascaPage`) | `ds/organisms/PainelDeAcao/` (do #55) | fundir | Primitivos novos e adoção do catálogo |
 | avatar com iniciais: `pages/perfil/MeuPerfilPage.tsx` (`iniciais`) e `ds/AppShell.tsx` (`slice(0, 2)`) | `ds/atoms/Avatar/` | fundir | Primitivos novos e adoção do catálogo |
 | `Cartao` locais: `pages/relatorios/RelatoriosPage.tsx`, `pages/pessoas/PessoasPage.tsx`, `pages/pessoas/AnamnesePage.tsx`, `pages/perfil/MeuPerfilPage.tsx` | `ds/atoms/Cartao/` | fundir | Primitivos novos e adoção do catálogo |
 | `Numero` locais: `pages/relatorios/RelatoriosPage.tsx` e `pages/agenda/DetalheDoTrabalho.tsx` | `ds/molecules/Numero/` | fundir | Primitivos novos e adoção do catálogo |
@@ -261,9 +261,9 @@ Os testes do #58 e do #59 se repartem por describe entre as unidades de destino.
 
 | Origem | Destino | Ação | Etapa |
 |---|---|---|---|
-| `app/apoioDeTeste.tsx`: `IS_REACT_ACT_ENVIRONMENT` e stub de `matchMedia` | `testes/configurarDom.ts` (`setupFiles` do projeto dom) | repartir por export (refazer após o #55: o arquivo de origem muda) | testes/ global e setupFiles |
-| `app/apoioDeTeste.tsx`: `PERMISSAO_QUE_O_EU_TEM`, `PERMISSAO_QUE_O_EU_NAO_TEM`, `criarEu`, `EntradaFalsa`, `criarEntradaFalsa`, `AvisoDeEncerramentoFalso`, `criarAvisoDeEncerramentoFalso`, `CenarioDeSessao`, `TelaMontada`, `VOLTAS_PARA_ASSENTAR`, `proximoCiclo`, `assentar`, `montarComSessao` (os `PERMISSAO_*` ficam com `criarEu`; `Sonda` e `ler` vêm de `app/sessao.test.tsx`, seção 1) | `testes/sessaoDeTeste.tsx` | repartir por export (refazer após o #55: o #55 altera `montarComSessao`) | testes/ global e setupFiles |
-| `app/apoioDeTeste.tsx`: `erroDoEu`, unificado como `erroDaApi` (também usado por `dados/clienteDeConsultas.test.ts` e `app/estadoDaSessao.test.ts`) | `testes/fabricas.ts` | repartir por export (refazer após o #55: o arquivo de origem muda) | testes/ global e setupFiles |
+| `app/apoioDeTeste.tsx`: `IS_REACT_ACT_ENVIRONMENT` e stub de `matchMedia` | `testes/configurarDom.ts` (`setupFiles` do projeto dom) | repartir por export (do #55, que alterou o arquivo de origem) | testes/ global e setupFiles |
+| `app/apoioDeTeste.tsx`: `PERMISSAO_QUE_O_EU_TEM`, `PERMISSAO_QUE_O_EU_NAO_TEM`, `criarEu`, `EntradaFalsa`, `criarEntradaFalsa`, `AvisoDeEncerramentoFalso`, `criarAvisoDeEncerramentoFalso`, `CenarioDeSessao`, `TelaMontada`, `VOLTAS_PARA_ASSENTAR`, `proximoCiclo`, `assentar`, `montarComSessao` (os `PERMISSAO_*` ficam com `criarEu`; `Sonda` e `ler` vêm de `app/sessao.test.tsx`, seção 1) | `testes/sessaoDeTeste.tsx` | repartir por export (do #55, que alterou `montarComSessao`) | testes/ global e setupFiles |
+| `app/apoioDeTeste.tsx`: `erroDoEu`, unificado como `erroDaApi` (também usado por `dados/clienteDeConsultas.test.ts` e `app/estadoDaSessao.test.ts`) | `testes/fabricas.ts` | repartir por export (do #55, que alterou o arquivo de origem) | testes/ global e setupFiles |
 | novo (`montagem.tsx`, render global sem provider; entra com o #58 e o #59 traz o mesmo arquivo) | `testes/montagem.tsx` | criar | Caracterizar lib/formato e components |
 
 ---
@@ -484,47 +484,47 @@ Os testes do #58 e do #59 se repartem por describe entre as unidades de destino.
 
 ## 12. `pages/sistema/`
 
-### 12.1 Telas, mocks e aba de acessos (refazer após o #55)
+### 12.1 Telas, mocks e aba de acessos (do #55)
 
 | Origem | Destino | Ação | Etapa |
 |---|---|---|---|
 | `pages/auditoria/AuditoriaPage.tsx` | `pages/sistema/AuditoriaPage/AuditoriaPage.tsx` | mover | Mover sistema |
 | `mocks/auditoria.ts` | `pages/sistema/AuditoriaPage/mocks/auditoria.ts` | mover | Mover sistema |
-| `pages/acessos/AcessosPage.tsx` | `pages/sistema/AcessosPage/AcessosPage.tsx` | mover (refazer após o #55) | Mover sistema |
-| `pages/acessos/AcessosPage.dom.test.tsx` | `pages/sistema/AcessosPage/AcessosPage.dom.test.tsx` | mover (refazer após o #55) | Mover sistema |
-| `pages/acessos/AcessosPage.dom.test.tsx` (repartido por aba, com as faixas medidas no código mesclado) | `AbaDeUsuarios.dom.test.tsx` e `AbaDeGrupos.dom.test.tsx` | repartir por export (refazer após o #55) | Dividir sistema, Meu perfil e entrada |
-| `pages/acessos/apoioDeTeste.tsx` (usado pelos testes das duas abas e dos painéis) | `pages/sistema/AcessosPage/apoioDeTeste.tsx` | mover (refazer após o #55) | Mover sistema |
-| `pages/acessos/consultasDeAcessos.ts` (sem `temFiltroAplicado`, linha seguinte; `SEM_FILTRO` só tem consumo de teste: fica até a remoção, seção 6.4 do Documento 8) | `pages/sistema/AcessosPage/consultas.ts` | mover (refazer após o #55) | Mover sistema |
-| `pages/acessos/consultasDeAcessos.ts`: `temFiltroAplicado` (só `AbaDeUsuarios` usa) | `pages/sistema/AcessosPage/components/AbaDeUsuarios/utils/temFiltroAplicado.ts` (+ teste) | repartir por export (refazer após o #55) | Mover sistema |
-| `pages/acessos/consultasDeAcessos.test.ts`: describes `caminhoDaListagemDeUsuarios` e `consulta usuario(id)` | `pages/sistema/AcessosPage/consultas.test.ts` | repartir por describe (refazer após o #55) | Mover sistema |
-| `pages/acessos/consultasDeAcessos.test.ts`: describe `temFiltroAplicado` | `pages/sistema/AcessosPage/components/AbaDeUsuarios/utils/temFiltroAplicado.test.ts` | repartir por describe (refazer após o #55) | Mover sistema |
-| `pages/acessos/AbaDeGrupos.tsx` | `pages/sistema/AcessosPage/components/AbaDeGrupos/AbaDeGrupos.tsx` | mover (refazer após o #55) | Mover sistema |
-| `pages/acessos/AbaDeUsuarios.tsx` (o index exporta também `ATRASO_DA_BUSCA_EM_MS`, usado pelo apoio de teste) | `pages/sistema/AcessosPage/components/AbaDeUsuarios/AbaDeUsuarios.tsx` | mover (refazer após o #55) | Mover sistema |
-| `pages/acessos/FiltrosDeUsuarios.tsx` | `pages/sistema/AcessosPage/components/AbaDeUsuarios/components/FiltrosDeUsuarios/FiltrosDeUsuarios.tsx` | mover (refazer após o #55) | Mover sistema |
-| `pages/acessos/LinhaDeUsuario.tsx` | `pages/sistema/AcessosPage/components/AbaDeUsuarios/components/LinhaDeUsuario/LinhaDeUsuario.tsx` | mover (refazer após o #55) | Mover sistema |
-| `pages/acessos/situacaoDeUsuario.ts` (usado por `FiltrosDeUsuarios`, `LinhaDeUsuario` e `PainelDoUsuario`, todos sob `AbaDeUsuarios`) | `pages/sistema/AcessosPage/components/AbaDeUsuarios/situacaoDeUsuario.ts` | mover (refazer após o #55) | Mover sistema |
-| `pages/acessos/PainelDeConvite.tsx` (aberto pela `AcessosPage`) | `pages/sistema/AcessosPage/components/PainelDeConvite/PainelDeConvite.tsx` | mover (refazer após o #55) | Mover sistema |
-| `pages/acessos/SeletorDeGrupos.tsx` (usado por PainelDeConvite e PainelDoUsuario) | `pages/sistema/AcessosPage/components/SeletorDeGrupos/SeletorDeGrupos.tsx` | mover (refazer após o #55) | Mover sistema |
-| `pages/acessos/ErroDoPainel.tsx` (usado por PainelDeConvite e PainelDoUsuario) | `pages/sistema/AcessosPage/components/ErroDoPainel/ErroDoPainel.tsx` | mover (refazer após o #55; só na branch local) | Mover sistema |
-| `pages/acessos/PainelDoUsuario.tsx` (aberto pela `AbaDeUsuarios`) | `pages/sistema/AcessosPage/components/AbaDeUsuarios/components/PainelDoUsuario/PainelDoUsuario.tsx` | mover (refazer após o #55) | Mover sistema |
-| `pages/acessos/PainelDoUsuario.dom.test.tsx` | `.../AbaDeUsuarios/components/PainelDoUsuario/PainelDoUsuario.dom.test.tsx` | mover (refazer após o #55) | Mover sistema |
-| `pages/acessos/CampoDeMotivo.tsx` (só `PainelDoUsuario`) | `.../PainelDoUsuario/components/CampoDeMotivo/CampoDeMotivo.tsx` | mover (refazer após o #55) | Mover sistema |
-| `pages/acessos/AvisoDeAtencao.tsx` (`PainelDoUsuario` e `CampoDeMotivo`) | `.../PainelDoUsuario/components/AvisoDeAtencao/AvisoDeAtencao.tsx` | mover (refazer após o #55; só na branch local) | Mover sistema |
-| `pages/acessos/AcoesDeAcessos.dom.test.tsx` (percorre a página com os dois painéis) | `pages/sistema/AcessosPage/AcoesDeAcessos.dom.test.tsx` | mover (refazer após o #55) | Mover sistema |
-| `pages/acessos/comandosDeAcessos.ts` | `pages/sistema/AcessosPage/comandos.ts` | mover (refazer após o #55) | Mover sistema |
-| `pages/acessos/comandosDeAcessos.test.ts` | `pages/sistema/AcessosPage/comandos.test.ts` | mover (refazer após o #55) | Mover sistema |
-| `pages/acessos/focarTitulo.ts` (`AcessosPage` e `AbaDeUsuarios`) | `pages/sistema/AcessosPage/utils/focarTitulo.ts` | mover (refazer após o #55) | Mover sistema |
-| `pages/acessos/mensagemDeErroDeAcessos.ts` (consumidor: `useAcaoNoUsuario`) | `pages/sistema/AcessosPage/utils/mensagemDeErro.ts` | mover (refazer após o #55) | Mover sistema |
-| `pages/acessos/mensagemDeErroDeAcessos.test.ts` | `pages/sistema/AcessosPage/utils/mensagemDeErro.test.ts` | mover (refazer após o #55) | Mover sistema |
-| `pages/acessos/textosDeAcessos.ts`: `AVISO_DE_VERSAO_DESATUALIZADA` (usado por `useAcaoNoUsuario` e `mensagemDeErro`, ambos de `AcessosPage`) | `pages/sistema/AcessosPage/constantes.ts` | repartir por export (refazer após o #55) | Mover sistema |
-| `pages/acessos/textosDeAcessos.ts`: `CONVITE_REGISTRADO` e `AJUDA_DE_GRUPOS_DO_CONVITE` (só `PainelDeConvite`) | `pages/sistema/AcessosPage/components/PainelDeConvite/constantes.ts` | repartir por export (refazer após o #55) | Mover sistema |
-| `pages/acessos/textosDeAcessos.ts`: `AVISO_LGPD_DO_MOTIVO` e `LIMITE_DO_MOTIVO` (só `CampoDeMotivo`) | `.../PainelDoUsuario/components/CampoDeMotivo/constantes.ts` | repartir por export (refazer após o #55) | Mover sistema |
-| `pages/acessos/textosDeAcessos.ts`: `MOTIVO_OBRIGATORIO` (só `PainelDoUsuario`) | `.../AbaDeUsuarios/components/PainelDoUsuario/constantes.ts` | repartir por export (refazer após o #55) | Mover sistema |
-| `pages/acessos/useAcaoNoUsuario.ts` (`PainelDeConvite` e `PainelDoUsuario`) | `pages/sistema/AcessosPage/hooks/useAcaoNoUsuario.ts` | mover (refazer após o #55) | Mover sistema |
-| `pages/acessos/useFocoNoPrimeiroCampoInvalido.ts` (só na branch local do #55; os dois painéis) | `pages/sistema/AcessosPage/hooks/useFocoNoPrimeiroCampoInvalido.ts` | mover (refazer após o #55) | Mover sistema |
-| `lib/chaveDeIdempotencia.ts` (PR #55; tem hook React, que `lib/` não pode ter) | `pages/sistema/AcessosPage/hooks/useChaveDeIdempotencia.ts` | mover (refazer após o #55) | Mover sistema |
-| `lib/chaveDeIdempotencia.test.ts` (PR #55) | `pages/sistema/AcessosPage/hooks/useChaveDeIdempotencia.test.ts` | mover (refazer após o #55) | Mover sistema |
-| `lib/chaveDeIdempotencia.dom.test.tsx` (PR #55) | `pages/sistema/AcessosPage/hooks/useChaveDeIdempotencia.dom.test.tsx` (`.dom.test.tsx` porque usa JSX, seção 8.1 do Documento 8; nome final no merge, seção 14 deste anexo) | mover (refazer após o #55) | Mover sistema |
+| `pages/acessos/AcessosPage.tsx` | `pages/sistema/AcessosPage/AcessosPage.tsx` | mover (do #55) | Mover sistema |
+| `pages/acessos/AcessosPage.dom.test.tsx` | `pages/sistema/AcessosPage/AcessosPage.dom.test.tsx` | mover (do #55) | Mover sistema |
+| `pages/acessos/AcessosPage.dom.test.tsx` (repartido por aba, com as faixas medidas no código mesclado) | `AbaDeUsuarios.dom.test.tsx` e `AbaDeGrupos.dom.test.tsx` | repartir por export (do #55) | Dividir sistema, Meu perfil e entrada |
+| `pages/acessos/apoioDeTeste.tsx` (usado pelos testes das duas abas e dos painéis) | `pages/sistema/AcessosPage/apoioDeTeste.tsx` | mover (do #55) | Mover sistema |
+| `pages/acessos/consultasDeAcessos.ts` (sem `temFiltroAplicado`, linha seguinte; `SEM_FILTRO` só tem consumo de teste: fica até a remoção, seção 6.4 do Documento 8) | `pages/sistema/AcessosPage/consultas.ts` | mover (do #55) | Mover sistema |
+| `pages/acessos/consultasDeAcessos.ts`: `temFiltroAplicado` (só `AbaDeUsuarios` usa) | `pages/sistema/AcessosPage/components/AbaDeUsuarios/utils/temFiltroAplicado.ts` (+ teste) | repartir por export (do #55) | Mover sistema |
+| `pages/acessos/consultasDeAcessos.test.ts`: describes `caminhoDaListagemDeUsuarios` e `consulta usuario(id)` | `pages/sistema/AcessosPage/consultas.test.ts` | repartir por describe (do #55) | Mover sistema |
+| `pages/acessos/consultasDeAcessos.test.ts`: describe `temFiltroAplicado` | `pages/sistema/AcessosPage/components/AbaDeUsuarios/utils/temFiltroAplicado.test.ts` | repartir por describe (do #55) | Mover sistema |
+| `pages/acessos/AbaDeGrupos.tsx` | `pages/sistema/AcessosPage/components/AbaDeGrupos/AbaDeGrupos.tsx` | mover (do #55) | Mover sistema |
+| `pages/acessos/AbaDeUsuarios.tsx` (o index exporta também `ATRASO_DA_BUSCA_EM_MS`, usado pelo apoio de teste) | `pages/sistema/AcessosPage/components/AbaDeUsuarios/AbaDeUsuarios.tsx` | mover (do #55) | Mover sistema |
+| `pages/acessos/FiltrosDeUsuarios.tsx` | `pages/sistema/AcessosPage/components/AbaDeUsuarios/components/FiltrosDeUsuarios/FiltrosDeUsuarios.tsx` | mover (do #55) | Mover sistema |
+| `pages/acessos/LinhaDeUsuario.tsx` | `pages/sistema/AcessosPage/components/AbaDeUsuarios/components/LinhaDeUsuario/LinhaDeUsuario.tsx` | mover (do #55) | Mover sistema |
+| `pages/acessos/situacaoDeUsuario.ts` (usado por `FiltrosDeUsuarios`, `LinhaDeUsuario` e `PainelDoUsuario`, todos sob `AbaDeUsuarios`) | `pages/sistema/AcessosPage/components/AbaDeUsuarios/situacaoDeUsuario.ts` | mover (do #55) | Mover sistema |
+| `pages/acessos/PainelDeConvite.tsx` (aberto pela `AcessosPage`) | `pages/sistema/AcessosPage/components/PainelDeConvite/PainelDeConvite.tsx` | mover (do #55) | Mover sistema |
+| `pages/acessos/SeletorDeGrupos.tsx` (usado por PainelDeConvite e PainelDoUsuario) | `pages/sistema/AcessosPage/components/SeletorDeGrupos/SeletorDeGrupos.tsx` | mover (do #55) | Mover sistema |
+| `pages/acessos/ErroDoPainel.tsx` (usado por PainelDeConvite e PainelDoUsuario) | `pages/sistema/AcessosPage/components/ErroDoPainel/ErroDoPainel.tsx` | mover (do #55) | Mover sistema |
+| `pages/acessos/PainelDoUsuario.tsx` (aberto pela `AbaDeUsuarios`) | `pages/sistema/AcessosPage/components/AbaDeUsuarios/components/PainelDoUsuario/PainelDoUsuario.tsx` | mover (do #55) | Mover sistema |
+| `pages/acessos/PainelDoUsuario.dom.test.tsx` | `.../AbaDeUsuarios/components/PainelDoUsuario/PainelDoUsuario.dom.test.tsx` | mover (do #55) | Mover sistema |
+| `pages/acessos/CampoDeMotivo.tsx` (só `PainelDoUsuario`) | `.../PainelDoUsuario/components/CampoDeMotivo/CampoDeMotivo.tsx` | mover (do #55) | Mover sistema |
+| `pages/acessos/AvisoDeAtencao.tsx` (`PainelDoUsuario` e `CampoDeMotivo`) | `.../PainelDoUsuario/components/AvisoDeAtencao/AvisoDeAtencao.tsx` | mover (do #55) | Mover sistema |
+| `pages/acessos/AcoesDeAcessos.dom.test.tsx` (percorre a página com os dois painéis) | `pages/sistema/AcessosPage/AcoesDeAcessos.dom.test.tsx` | mover (do #55) | Mover sistema |
+| `pages/acessos/comandosDeAcessos.ts` | `pages/sistema/AcessosPage/comandos.ts` | mover (do #55) | Mover sistema |
+| `pages/acessos/comandosDeAcessos.test.ts` | `pages/sistema/AcessosPage/comandos.test.ts` | mover (do #55) | Mover sistema |
+| `pages/acessos/focarTitulo.ts` (`AcessosPage` e `AbaDeUsuarios`) | `pages/sistema/AcessosPage/utils/focarTitulo.ts` | mover (do #55) | Mover sistema |
+| `pages/acessos/mensagemDeErroDeAcessos.ts` (consumidor: `useAcaoNoUsuario`) | `pages/sistema/AcessosPage/utils/mensagemDeErro.ts` | mover (do #55) | Mover sistema |
+| `pages/acessos/mensagemDeErroDeAcessos.test.ts` | `pages/sistema/AcessosPage/utils/mensagemDeErro.test.ts` | mover (do #55) | Mover sistema |
+| `pages/acessos/textosDeAcessos.ts`: `AVISO_DE_VERSAO_DESATUALIZADA` (usado por `useAcaoNoUsuario` e `mensagemDeErro`, ambos de `AcessosPage`) | `pages/sistema/AcessosPage/constantes.ts` | repartir por export (do #55) | Mover sistema |
+| `pages/acessos/textosDeAcessos.ts`: `CONVITE_REGISTRADO` e `AJUDA_DE_GRUPOS_DO_CONVITE` (só `PainelDeConvite`) | `pages/sistema/AcessosPage/components/PainelDeConvite/constantes.ts` | repartir por export (do #55) | Mover sistema |
+| `pages/acessos/textosDeAcessos.ts`: `AVISO_LGPD_DO_MOTIVO` e `LIMITE_DO_MOTIVO` (só `CampoDeMotivo`) | `.../PainelDoUsuario/components/CampoDeMotivo/constantes.ts` | repartir por export (do #55) | Mover sistema |
+| `pages/acessos/textosDeAcessos.ts`: `MOTIVO_OBRIGATORIO` (só `PainelDoUsuario`) | `.../AbaDeUsuarios/components/PainelDoUsuario/constantes.ts` | repartir por export (do #55) | Mover sistema |
+| `pages/acessos/useAcaoNoUsuario.ts` (`PainelDeConvite` e `PainelDoUsuario`) | `pages/sistema/AcessosPage/hooks/useAcaoNoUsuario.ts` | mover (do #55) | Mover sistema |
+| `pages/acessos/useFocoNoPrimeiroCampoInvalido.ts` (do #55; os dois painéis) | `pages/sistema/AcessosPage/hooks/useFocoNoPrimeiroCampoInvalido.ts` | mover (do #55) | Mover sistema |
+| `lib/chaveDeIdempotencia.ts` (PR #55; tem hook React, que `lib/` não pode ter) | `pages/sistema/AcessosPage/hooks/useChaveDeIdempotencia.ts` | mover (do #55) | Mover sistema |
+| `lib/chaveDeIdempotencia.test.ts` (PR #55) | `pages/sistema/AcessosPage/hooks/useChaveDeIdempotencia.test.ts` | mover (do #55) | Mover sistema |
+| `lib/chaveDeIdempotencia.dom.test.tsx` (PR #55) | `pages/sistema/AcessosPage/hooks/useChaveDeIdempotencia.dom.test.tsx` (`.dom.test.tsx` porque usa JSX, seção 8.1 do Documento 8; nome final no merge, seção 14 deste anexo) | mover (do #55) | Mover sistema |
 | `lib/useValorComAtraso.ts` (único consumidor: `AbaDeUsuarios`) | `pages/sistema/AcessosPage/components/AbaDeUsuarios/hooks/useValorComAtraso.ts` | mover | Mover sistema |
 | `lib/formato.ts`: `FUSO_DA_CASA`, `DATA_E_HORA`, `formatarDataHora` (único consumidor: `LinhaDeUsuario`) | `pages/sistema/AcessosPage/components/AbaDeUsuarios/components/LinhaDeUsuario/utils/formatarDataHora.ts` | repartir por export | Mover sistema |
 | `lib/formato.test.ts`: describe de `formatarDataHora` (entra com o #58) | `.../LinhaDeUsuario/utils/formatarDataHora.test.ts` | repartir por describe | Mover sistema |
@@ -533,9 +533,9 @@ Os testes do #58 e do #59 se repartem por describe entre as unidades de destino.
 
 | Origem | Destino | Ação | Etapa |
 |---|---|---|---|
-| `AcessosPage.tsx`: `Aba`, `ROTULO_DA_ABA`, abas por permissão (refazer após o #55) | `AcessosPage/constantes.ts` e `utils/abasVisiveis.ts` (+ teste) | dividir | Dividir sistema, Meu perfil e entrada |
-| `AbaDeUsuarios.tsx`: `semRepetidos`; `ATRASO_DA_BUSCA_EM_MS` (refazer após o #55) | `AbaDeUsuarios/utils/semRepetidos.ts` (+ teste); `AbaDeUsuarios/constantes.ts` | dividir | Dividir sistema, Meu perfil e entrada |
-| `AbaDeGrupos.tsx`: `CartaoDeGrupo` (refazer após o #55) | `AbaDeGrupos/components/CartaoDeGrupo/` | dividir | Dividir sistema, Meu perfil e entrada |
+| `AcessosPage.tsx`: `Aba`, `ROTULO_DA_ABA`, abas por permissão (do #55) | `AcessosPage/constantes.ts` e `utils/abasVisiveis.ts` (+ teste) | dividir | Dividir sistema, Meu perfil e entrada |
+| `AbaDeUsuarios.tsx`: `semRepetidos`; `ATRASO_DA_BUSCA_EM_MS` (do #55) | `AbaDeUsuarios/utils/semRepetidos.ts` (+ teste); `AbaDeUsuarios/constantes.ts` | dividir | Dividir sistema, Meu perfil e entrada |
+| `AbaDeGrupos.tsx`: `CartaoDeGrupo` (do #55) | `AbaDeGrupos/components/CartaoDeGrupo/` | dividir | Dividir sistema, Meu perfil e entrada |
 | `AuditoriaPage.tsx`: `hora`, `dia`, `MS_MINUTO`, `rotularDia`; `Acesso`, `ContrapesoDaGovernanca`, `GrupoDeAcesso`, `agruparAcessos`, `rajada`, `GrupoDeAcessos`, `LinhaDeAcesso` | `AuditoriaPage/utils/instante.ts` (+ teste); `components/Acesso/` (+ `components/{ContrapesoDaGovernanca, GrupoDeAcessos (+ components/LinhaDeAcesso)}`, `utils/{agruparAcessos, rajada}.ts` com testes) | dividir | Dividir sistema, Meu perfil e entrada |
 | `AuditoriaPage.tsx`: `Visao`, `Agrupamento`, `TODOS`; `mocks/auditoria.ts`: `FEICAO`, `EXIGE_REGISTRO_EXTRA`, `CONTEXTO_ROTULO` | `AuditoriaPage/constantes.ts` e `tipos.ts` | dividir | Dividir sistema, Meu perfil e entrada |
 | `AuditoriaPage.tsx`: `Trilha`, `NotaDeImutabilidade`, `LinhaDaTrilha`, `RodapeDaTrilha`; `mocks/auditoria.ts#autoresDaTrilha` | `AuditoriaPage/components/Trilha/` (+ `components/{NotaDeImutabilidade, LinhaDaTrilha, RodapeDaTrilha}`, `utils/autoresDaTrilha.ts`) | dividir | Dividir sistema, Meu perfil e entrada |
@@ -582,12 +582,11 @@ Os testes do #58 e do #59 se repartem por describe entre as unidades de destino.
 
 ## 14. Pendências do mapeamento
 
-- **Testes de hook da `AcessosPage`.** O teste de `useChaveDeIdempotencia` que o #55 traz é `.dom.test.tsx` porque usa JSX, o que a convenção admite (Documento 8, seção 8.1). O nome final é confirmado no merge do #55.
-- **Linhas "refazer após o #55".** Os destinos são os da convenção. Os caminhos finais dependem do código mesclado.
+- **Testes de hook da `AcessosPage`.** O teste de `useChaveDeIdempotencia` que o #55 traz é `.dom.test.tsx` porque usa JSX, o que a convenção admite (Documento 8, seção 8.1). Na main ficam `lib/chaveDeIdempotencia.dom.test.tsx` e `lib/chaveDeIdempotencia.test.ts`, que acompanham o hook e o util.
 - **Nomes de arquivo nas divisões.** São propostos. A etapa confere no código da época e pode ajustar o nome, nunca a posse.
 - **Mocks com destinos em mais de uma etapa.** `mocks/sessao.ts`, `mocks/financeiro.ts` e `mocks/lancamentos.ts` se repartem em etapas diferentes. Cada parte aparece na linha da própria etapa.
 - **Fábrica `fontesDaSessao`.** É opcional, como indicado na linha de `main.tsx` (seção 6 deste anexo).
-- **Branch local do #55.** `feat/b0-comandos-de-acessos` está 9 commits à frente do head publicado do PR #55 (`c71e315`). `ErroDoPainel`, `AvisoDeAtencao`, `useFocoNoPrimeiroCampoInvalido` e `ds/TextField.dom.test.tsx` só existem na branch local. As linhas com o #55 são conferidas nela e refeitas no merge. `app/apoioDeTeste.tsx` é alterado pelo #55 para importar `JANELA_DE_FRESCOR_EM_MS` de `dados/clienteDeConsultas.ts`, fora do barrel: a linha de `dados/index.ts` (seção 2) o reexporta.
+- **#55 mesclado.** Mesclado em 09/10/2026 (`1812df6`). `ErroDoPainel`, `AvisoDeAtencao`, `useFocoNoPrimeiroCampoInvalido` e `ds/TextField.dom.test.tsx` estão na main. `app/apoioDeTeste.tsx` importa `JANELA_DE_FRESCOR_EM_MS` de `dados/clienteDeConsultas.ts`, fora do barrel: a linha de `dados/index.ts` (seção 2) o reexporta.
 - **`EstadoDaAnamnese` e `StatusAnamnese`.** O tipo de UI (`em dia`, `vencida`, `ausente`) não é o `StatusAnamnese` de `@cdd/contracts` (`PENDENTE`, `OK`, `VENCIDA`, `NAO_APLICAVEL`). O mapeamento não existe no código e entra quando a tela ligar no backend.
 - **`gerarHash`.** Tratado como função falsa da demonstração, que fica no mock (`mocks/prestacao.ts`), e não como regra de domínio: é um hex aleatório (`mocks/prestacao.ts:180-181`), sem regra de negócio.
 - **`AgendaPage.tsx:53`.** Decidido: só inteiros (Documento 8, seção 15). Ver a seção 3.1.

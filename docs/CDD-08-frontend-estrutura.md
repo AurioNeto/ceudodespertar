@@ -57,7 +57,7 @@ O dono aprovou as recomendações da proposta em todos os pontos. Quatro decisõ
 - `Layout` é composição de app, fora da escala atômica. `ActionBar` e `ScreenHeader` são moléculas.
 - Testes de hook são `useX.dom.test.ts` (projeto dom do vitest), ou `.dom.test.tsx` quando precisam de JSX.
 - As regras de camada que proíbem `ds/`, `dados/` e `lib/` de importar `testes/` isentam os próprios `*.test.*`.
-- A subárvore da `AcessosPage` segue o código do PR #55, ainda aberto. Ela será refeita a partir do código mesclado, na hora de mover.
+- A subárvore da `AcessosPage` segue o código do PR #55, mesclado em 09/10/2026. O anexo foi conferido no código mesclado.
 
 **Exceções declaradas**
 
@@ -68,7 +68,7 @@ O dono aprovou as recomendações da proposta em todos os pontos. Quatro decisõ
 | `ds/` é a única camada global de UI (seção 6) | `app/` tem UI própria do shell: `FaixaDeDemonstracao` em `app/demonstracao/FaixaDeDemonstracao/`, `Layout` em `app/shell/Layout/` e, depois da divisão, `TelaSemAcesso` em `app/shell/components/TelaSemAcesso/`. | A faixa sinaliza o modo de demonstração do app e não é design. O `Layout` filtra o menu por permissão e conta a fila, que é regra de app. Decisão do dono. |
 | Mock é só dado de demonstração (seção 8.3) | `mocks/ids.ts`, que aplica a marca de tipo às fixtures, fica em `src/mocks/`. | Só a demonstração precisa forjar ids; o código de produção recebe ids da API. Em `lib/` ele viraria utilitário global de produção. Decisão do dono. |
 | Um sistema de estilo só (seção 10.5) | `@import "tailwindcss"` e o `@theme` de `styles/global.css` continuam até a etapa "Remover o Tailwind". | O preflight do Tailwind reseta `ul`, `ol`, `table`, `input`, `img` e outros elementos usados em 22 arquivos, e `base.css` não cobre isso. Remover muda o visual e exige captura. |
-| Gate do merge do #55 e do e2e do B0 (seção 13.5) | Antes do gate, só linhas de import de `app/`, `dados/`, sistema e transversal mudam. Nenhum arquivo dessas pastas é movido, dividido ou tem corpo alterado. | Promover primitivos, mover a fundação e mover telas de demonstração muda o caminho que esses arquivos importam. Esperar o gate pararia todo o plano. |
+| Gate do e2e do B0 (seção 13.5) | Antes do gate, só linhas de import de `app/`, `dados/`, sistema e transversal mudam. Nenhum arquivo dessas pastas é movido, dividido ou tem corpo alterado. | Promover primitivos, mover a fundação e mover telas de demonstração muda o caminho que esses arquivos importam. Esperar o gate pararia todo o plano. |
 | Operação de mover não muda corpo (seção 13.2) | Na etapa `lib/formato por export`, `formatarDinheiro` passa a chamar `formatarValor(centavos / 100)`, para não exportar o `Intl.NumberFormat` privado (BRL) de `lib/formato`. | `formatarValor` fica em `lib` e `formatarDinheiro` desce para `pages/utils`. É o mesmo formatador, com o mesmo resultado, coberto pelos testes de formato da etapa de caracterização de `lib/formato` e `components`. |
 | Regras de camada que proíbem importar `testes/` | `testes/` não está no alvo de `lib-e-folha`, `dados-sem-ui` e `ds-autonomo`. Quem barra é `apoio-de-teste-so-em-teste`, que isenta os `*.test.*`. | Os testes de `lib`, `dados` e `ds` precisam das fábricas de `src/testes` (ex.: a fábrica de `ErroDaApi` em `dados/clienteDeConsultas.test.ts`). Decisão do dono. |
 | `mock-global-so-dados` | Até a etapa de mocks transversais, `src/mocks/financeiro.ts` guarda só o que o Painel usa e importa `contas` de `@/pages/mocks/contas`. É 1 aviso previsto. | `contas` cruza financeiro e eventos e desce na etapa de mocks transversais. As sobras do Painel só descem quando o Painel mudar de pasta, depois do gate. |
@@ -258,7 +258,7 @@ import { FaturasPage } from "@/pages/financeiro/FaturasPage";
 
 ### 5.6 Exemplos reais
 
-Forma pretendida da `AcessosPage`. Ela será confirmada no código mesclado do PR #55, na etapa de mover sistema. Os arquivos do #55 são conferidos no código mesclado (anexo, seção 14). Testes de hook seguem a seção 8.1; o nome exato dos arquivos de teste de `useChaveDeIdempotencia` depende do merge (anexo, seção 14).
+Forma pretendida da `AcessosPage`, conferida no código mesclado do #55. Testes de hook seguem a seção 8.1; o teste de `useChaveDeIdempotencia` usa JSX e fica `.dom.test.tsx` (anexo, seção 14).
 
 ```
 pages/sistema/AcessosPage/
@@ -642,8 +642,8 @@ São 32 regras: 25 nomeadas acima e as 7 de `unidade-so-pelo-index`. As contagen
 ### 12.2 Linha de base
 
 - Na main: 359 avisos e 0 erros. São 40 avisos de sete regras, 29 do roteador e 290 da regra de alias.
-- Com o #55 mesclado, a linha de base sobe para cerca de 400 avisos (400 na branch publicada em 09/10/2026), ainda com 0 erros.
-- Até o merge do #55 não há catraca: um aviso novo não falha o CI, e nas etapas de mover "sem aviso novo" é conferido à mão (seção 13.3). Logo depois do merge, a catraca entra (seção 15): `depcruise-baseline` gera os avisos conhecidos e o CI roda com `--ignore-known`.
+- Com o #55 (mesclado em 09/10/2026), a main passa a 404 avisos e 0 erros.
+- Ainda não há catraca: um aviso novo não falha o CI, e nas etapas de mover "sem aviso novo" é conferido à mão (seção 13.3). A catraca entra logo depois do merge do #57, do #58 e do #59 (seção 15). Nesse PR, os imports do apoio de teste passam ao alias `@/`, que entra no vitest com o #57; `depcruise-baseline` gera os avisos conhecidos e o CI roda com `--ignore-known`.
 - A linha de base é a foto de antes da migração. Cada etapa de mover a reduz, e a etapa de fronteiras em erro fecha a conta.
 
 ### 12.3 Como cada regra é provada
@@ -704,7 +704,7 @@ Nenhuma regra, texto ou cálculo muda numa divisão.
 
 ### 13.5 Gates
 
-- **Merge do #55**: antes da etapa de mover ds em níveis. Os arquivos que o #55 altera não são tocados até o merge.
+- **Merge do #55**: era o gate da etapa Mover ds em níveis. Cumprido em 09/10/2026.
 - **e2e do B0 e ajustes do login mesclados**: antes de qualquer mudança de pasta em `app/`, `dados/`, sistema e transversal. Antes desse gate, só linhas de import dessas pastas mudam (exceção declarada, seção 2).
 
 A cadeia de dependências transmite esses gates: as etapas de divisão de sistema, transversal e app/shell só andam depois dele.
@@ -732,8 +732,8 @@ Títulos na ordem de leitura. Dependências por título.
 | Caracterizar lib/formato e components | — | — |
 | Harness de captura de telas | — | — |
 | Caracterizar primitivos do ds (`Button`, `StatusBadge`, `AmountDisplay`, `AmountInput`, `Icon`, `RecordRow`, `Receipt`, estados e `FaixaDeDemonstracao`) | — | — |
-| Caracterizar o restante do ds (`BottomSheet`, `TextField`, `ScreenHeader`, `PainelDeAcao` e os componentes de domínio) | Caracterizar primitivos do ds | merge do #55 |
-| Mover ds em níveis | Fronteiras no depcruise; Caracterizar o restante do ds | merge do #55 |
+| Caracterizar o restante do ds (`BottomSheet`, `TextField`, `ScreenHeader`, `PainelDeAcao` e os componentes de domínio) | Caracterizar primitivos do ds | — |
+| Mover ds em níveis | Fronteiras no depcruise; Caracterizar o restante do ds | — |
 | Primitivos para o ds | Caracterizar lib/formato e components; Mover ds em níveis | — |
 | Mover fundação do ds | Primitivos para o ds | — |
 | Mover financeiro I | Mover fundação do ds | — |
@@ -783,7 +783,7 @@ Títulos na ordem de leitura. Dependências por título.
 | Limpeza | Composições de domínio | — |
 | Rotas lazy | Fronteiras em erro | — |
 | Remover o Tailwind | Harness de captura de telas | — |
-| Catraca de avisos | Fronteiras no depcruise | merge do #55 |
+| Catraca de avisos | Fronteiras no depcruise; Caracterizar lib/formato e components; Caracterizar primitivos do ds | — |
 
 Etapas de divisão de telas de demonstração (de Dividir RegistrarLancamento a Dividir Pessoas e Anamnese) podem andar com o gate fechado. A etapa de leitura única de valor depende das caracterizações das 10 telas que fazem leitura de valor (primitivos do ds, fluxo de lançamentos, financeiro I, eventos, inscrição e pessoas e estoque).
 
@@ -826,7 +826,7 @@ Respondidas pelo dono em 09/10/2026. Cada uma vira correção em PR próprio, de
 | Que data a demonstração usa como "hoje"? | `2026-09-02`, uma data só, em `pages/mocks/relogio.ts`. Devoluções, Contratações e Feitio passam a usá-la: prazos e "dias esperando" mudam nelas. É a mesma data do relógio da captura de telas | Composição de domínio |
 | O que fazer com o Tailwind? | Remover em etapa própria: as regras do preflight de que as telas dependem vão para `ds/fundacao/tokens/base.css`, o plugin e o `@theme` saem, e a captura nas duas densidades prova que nada mudou | Etapa "Remover o Tailwind", depois do harness de captura |
 | O cartão "Acesso ao sistema" da ficha de Pessoas (`PessoasPage.tsx:398-444`) repete a gestão de acesso da tela Acessos. O que fazer? | Fica como demonstração até Pessoas ligar no backend (B4); então vira link para Acessos, para não haver dois lugares que concedem acesso. A decisão sobre dados de saúde (08/10) não cobre este cartão | Na ligação de Pessoas ao backend |
-| Ligar a catraca de avisos das fronteiras no CI? | Sim, depois do merge do #55: `depcruise-baseline` gera os avisos conhecidos e o CI roda com `--ignore-known`, então aviso novo falha o PR. A linha de base só cai; cada etapa de mover a regenera | PR próprio, logo depois do merge do #55 |
+| Ligar a catraca de avisos das fronteiras no CI? | Sim: `depcruise-baseline` gera os avisos conhecidos e o CI roda com `--ignore-known`, então aviso novo falha o PR. A linha de base só cai; cada etapa de mover a regenera | PR próprio, logo depois do merge do #57, do #58 e do #59, com os imports do apoio de teste já pelo alias `@/` |
 | Como a Agenda lê "Contribuições sugeridas"? | Só valores inteiros em reais, separados por vírgula, como o placeholder ("40, 60, 90"). Valor com centavos é recusado com mensagem no campo; hoje `45,50` vira 45 e 50 | PR próprio, depois da caracterização de eventos |
 
 Pendência de redação: o Documento 5 ainda não lista os primitivos admitidos em pt-BR (tabela da seção 4.3, coluna "Catálogo" = não). Ele mora fora do repositório (`project/uploads/`) e não foi alterado; o apêndice entra quando os documentos de desenho forem versionados.
