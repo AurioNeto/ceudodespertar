@@ -39,6 +39,25 @@ class SemIdempotenciaNaClasseIdentificada {
   criar(): void {}
 }
 
+@RequerPermissao('financeiro.lancamento.registrar')
+@Controller('classe-com-permissao-e-metodo-identificado')
+class ClasseComPermissaoEMetodoIdentificadoSemIdempotencia {
+  @ApenasIdentificado()
+  @SemIdempotencia()
+  @Post()
+  criar(): void {}
+}
+
+@SemIdempotencia()
+@Controller('publico-com-metodo-auxiliar')
+class SemIdempotenciaNaClasseComMetodoAuxiliar {
+  @Publico()
+  @Post()
+  criar(): void {}
+
+  auxiliar(): void {}
+}
+
 @Controller('com-permissao')
 class SemIdempotenciaEmRotaComPermissao {
   @RequerPermissao('financeiro.lancamento.registrar')
@@ -132,6 +151,11 @@ describe('VerificadorDeSemIdempotenciaDasRotas', () => {
     ['@Publico no método', SemIdempotenciaEmRotaPublica],
     ['@ApenasIdentificado herdado da classe', SemIdempotenciaNaClasseIdentificada],
     ['rota com permissão sem a marca de idempotência', RotaComPermissaoSemMarcaDeIdempotencia],
+    [
+      '@ApenasIdentificado no método sobrepondo @RequerPermissao da classe',
+      ClasseComPermissaoEMetodoIdentificadoSemIdempotencia,
+    ],
+    ['método sem rota num controller com @SemIdempotencia na classe', SemIdempotenciaNaClasseComMetodoAuxiliar],
   ])('aceita a partida com %s', async (_descricao, controlador) => {
     await expect(subirCom(controlador)).resolves.toBeUndefined();
   });
