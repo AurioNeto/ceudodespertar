@@ -38,7 +38,7 @@ export const pessoasIniciais: readonly PessoaDaCasa[] = [
  * o nome do grupo. Aqui cada código ganha o rótulo e a explicação que a tela
  * mostra a quem monta o grupo.
  */
-export const CATALOGO_DE_PERMISSOES: readonly { codigo: Permissao; rotulo: string; explicacao: string }[] = [
+const CATALOGO_DE_PERMISSOES: readonly { codigo: Permissao; rotulo: string; explicacao: string }[] = [
   {
     codigo: 'financeiro.lancamento.registrar',
     rotulo: 'Registrar lançamentos',

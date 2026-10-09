@@ -4,14 +4,8 @@ import { Button, ScreenHeader } from '../../ds';
 import { useDensidade } from '../../lib/useDensidade';
 import { iniciais } from '../../lib/formato';
 import { useSessao } from '../../app/sessao';
-import { agruparPermissoes } from './permissoesAgrupadas';
-
-const rotuloLabel = {
-  font: 'var(--text-label)',
-  textTransform: 'uppercase',
-  letterSpacing: 'var(--tracking-label)',
-  color: 'var(--text-field-label)',
-} as const;
+import { Rotulo } from '../../components/Blocos';
+import { PermissoesPorModulo } from '../../components/PermissoesPorModulo';
 
 export function MeuPerfilPage() {
   const densidade = useDensidade();
@@ -48,7 +42,6 @@ interface PerfilDoEuProps {
 }
 
 function PerfilDoEu({ eu, campo, aoSair }: PerfilDoEuProps) {
-  const modulos = agruparPermissoes(eu.permissoes);
   return (
     <>
       <Cartao>
@@ -93,35 +86,12 @@ function PerfilDoEu({ eu, campo, aoSair }: PerfilDoEuProps) {
 
       <Cartao>
         <span style={{ font: 'var(--text-body-strong)', color: 'var(--text-primary)' }}>Minhas permissões</span>
-        {modulos.length === 0 ? (
-          <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>
-            Nenhuma permissão concedida ao seu acesso.
-          </span>
-        ) : (
-          modulos.map((modulo) => (
-            <section
-              key={modulo.modulo}
-              aria-label={`Permissões de ${modulo.modulo}`}
-              style={{ display: 'flex', flexDirection: 'column', gap: 6 }}
-            >
-              <span style={rotuloLabel}>{modulo.modulo}</span>
-              <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 6 }}>
-                {modulo.permissoes.map((permissao) => (
-                  <li key={permissao.codigo} style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                    {permissao.descricao ? (
-                      <span style={{ font: 'var(--text-body)', color: 'var(--text-primary)' }}>
-                        {permissao.descricao}
-                      </span>
-                    ) : null}
-                    <span style={{ font: 'var(--text-code)', fontSize: 11, color: 'var(--text-meta)' }}>
-                      {permissao.codigo}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          ))
-        )}
+        <PermissoesPorModulo
+          codigos={eu.permissoes}
+          mostrarCodigo
+          vazio="Nenhuma permissão concedida ao seu acesso."
+          rotuloAcessivel={(modulo) => `Permissões de ${modulo}`}
+        />
       </Cartao>
 
       <Cartao>
@@ -162,7 +132,7 @@ function Cartao({ children }: { children: ReactNode }) {
 function Leitura({ rotulo, valor, nota }: { rotulo: string; valor: string; nota?: string }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-      <span style={rotuloLabel}>{rotulo}</span>
+      <Rotulo>{rotulo}</Rotulo>
       <span style={{ font: 'var(--text-body)', color: 'var(--text-primary)' }}>{valor}</span>
       {nota ? <span style={{ font: 'var(--text-small)', color: 'var(--text-meta)' }}>{nota}</span> : null}
     </div>
