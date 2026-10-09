@@ -1,5 +1,6 @@
 import type { CodigoDeErro } from '@cdd/contracts';
 import { ErroDaApi, ErroDeRede } from '../../dados/erros';
+import { AVISO_DE_VERSAO_DESATUALIZADA } from './textosDeAcessos';
 
 export const MENSAGEM_GENERICA_DE_ACESSOS = 'Não foi possível concluir agora. Tente de novo em instantes.';
 export const MENSAGEM_DE_REDE_DE_ACESSOS =
@@ -10,8 +11,7 @@ export const MENSAGEM_DE_INDISPONIBILIDADE_DE_ACESSOS =
 const MENSAGENS_POR_CODIGO: Partial<Record<CodigoDeErro, string>> = {
   ULTIMO_ADMINISTRADOR:
     'Este é o último administrador ativo. Mantenha ao menos uma pessoa com acesso de administração antes de continuar.',
-  VERSAO_DESATUALIZADA:
-    'Outra pessoa alterou este usuário enquanto você editava. Os dados foram atualizados; revise e confirme de novo.',
+  VERSAO_DESATUALIZADA: AVISO_DE_VERSAO_DESATUALIZADA,
   SITUACAO_DO_USUARIO_NAO_PERMITE: 'A situação atual deste usuário não permite esta ação.',
   CONVITE_JA_USADO: 'Este convite já foi usado; o usuário já ativou o acesso.',
   GRUPO_INEXISTENTE: 'Um dos grupos escolhidos não existe mais. Atualize a lista de grupos e escolha de novo.',

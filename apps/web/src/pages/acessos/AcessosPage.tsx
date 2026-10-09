@@ -1,14 +1,17 @@
 import { useState } from 'react';
-import { ScreenHeader } from '../../ds';
+import { Button, ScreenHeader } from '../../ds';
 import { SeletorDeTipo } from '../../components/Campo';
 import { useDensidade } from '../../lib/useDensidade';
 import { useSessao } from '../../app/sessao';
 import { AbaDeGrupos } from './AbaDeGrupos';
 import { AbaDeUsuarios } from './AbaDeUsuarios';
+import { PainelDeConvite } from './PainelDeConvite';
 
 type Aba = 'usuarios' | 'grupos';
 
 const ROTULO_DA_ABA: Record<Aba, string> = { usuarios: 'Usuários', grupos: 'Grupos' };
+
+const focarTitulo = () => document.querySelector<HTMLElement>('h1');
 
 export function AcessosPage() {
   const densidade = useDensidade();
@@ -21,6 +24,9 @@ export function AcessosPage() {
   const [abaEscolhida, setAbaEscolhida] = useState<Aba>('usuarios');
   const aba = abasVisiveis.includes(abaEscolhida) ? abaEscolhida : abasVisiveis[0];
 
+  const [conviteAberto, setConviteAberto] = useState(false);
+  const variante = campo ? 'folha' : 'lateral';
+
   if (!aba) return null;
 
   return (
@@ -29,6 +35,13 @@ export function AcessosPage() {
         title="Acessos"
         subtitle={campo ? undefined : 'Quem entra no sistema e o que cada grupo pode fazer'}
         density={densidade}
+        actions={
+          podeGerenciarUsuarios ? (
+            <Button density={densidade} iconName="user-plus" aria-haspopup="dialog" onClick={() => setConviteAberto(true)}>
+              Convidar
+            </Button>
+          ) : undefined
+        }
       />
       <div
         style={{
@@ -49,6 +62,15 @@ export function AcessosPage() {
         ) : null}
         {aba === 'usuarios' ? <AbaDeUsuarios /> : <AbaDeGrupos />}
       </div>
+      {podeGerenciarUsuarios ? (
+        <PainelDeConvite
+          aberto={conviteAberto}
+          variante={variante}
+          densidade={densidade}
+          aoFechar={() => setConviteAberto(false)}
+          focoDeReserva={focarTitulo}
+        />
+      ) : null}
     </>
   );
 }

@@ -40,7 +40,7 @@ export function ScreenHeader({ code, title, subtitle, actions, density = 'office
             {code}
           </div>
         ) : null}
-        <h1 style={{ font: 'var(--text-display)', letterSpacing: 'var(--tracking-display)', color: 'var(--text-title)' }}>
+        <h1 tabIndex={-1} style={{ font: 'var(--text-display)', letterSpacing: 'var(--tracking-display)', color: 'var(--text-title)' }}>
           {title}
         </h1>
         {subtitle ? (
