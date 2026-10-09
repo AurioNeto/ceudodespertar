@@ -185,10 +185,12 @@ export const CASOS_DAS_FRONTEIRAS = {
     acusa: [
       'ds/molecules/TextField/TextField.tsx -> ds/atoms/Icon/registro.ts',
       `${FATURAS}/FaturasPage.tsx -> ${TABELA}/index.ts`,
+      'ds/atoms/Aviso/Aviso.tsx -> ds/atoms/Avisos/registro.ts',
     ],
     permite: [
       `${FATURAS}/FaturasPage.tsx -> ${DETALHE}/index.ts`,
       'ds/molecules/TextField/TextField.tsx -> ds/atoms/Icon/index.ts',
+      'ds/atoms/Aviso/Aviso.tsx -> ds/atoms/Avisos/index.ts',
     ],
   },
   'unidade-so-pelo-index-2': {

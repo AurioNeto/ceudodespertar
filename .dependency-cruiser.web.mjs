@@ -16,7 +16,7 @@ function origemComUnidadesAninhadas(profundidade) {
 function destinoLivreParaAsUnidadesDaOrigem(profundidade) {
   return Array.from(
     { length: profundidade + 1 },
-    (_, indice) => `^$${indice + 1}[^A-Z]*/(?:[A-Z][^/]*/index[.]ts|[^/]*)$`,
+    (_, indice) => `^$${indice + 1}/(?:[^A-Z]*/|)(?:[A-Z][^/]*/index[.]ts|[^/]*)$`,
   ).join('|');
 }
 
@@ -34,8 +34,9 @@ function regraDeUnidadeSoPeloIndex(profundidade) {
       'subárvore. De fora da unidade de destino, só se entra pelo index.ts do topo dela, o que vale ' +
       'também para irmão, primo e neto. Dentro da subárvore o acesso é livre, inclusive aos utils/ ' +
       'e mocks/ dos ancestrais. A regra captura o caminho de cada unidade da origem e aceita o destino ' +
-      'quando o resto do caminho, depois de uma delas ou da raiz, não tem pasta PascalCase ou tem uma ' +
-      `só, como última pasta, com index.ts. Variante: ${origem}. Na main de 09/10/2026 não há pasta ` +
+      'quando o resto do caminho, depois da pasta inteira de uma delas ou da raiz, não tem pasta ' +
+      'PascalCase ou tem uma só, como última pasta, com index.ts; Avisos não é a unidade Aviso. ' +
+      `Variante: ${origem}. Na main de 09/10/2026 não há pasta ` +
       'de unidade: só a fixture prova.',
     from: { path: origemComUnidadesAninhadas(profundidade) },
     to: {
