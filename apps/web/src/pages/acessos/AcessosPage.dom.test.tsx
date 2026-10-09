@@ -343,6 +343,7 @@ describe('Acessos: aba Grupos', () => {
     const financeiro = tela.container.querySelector('section[aria-label="Permissões de financeiro do grupo Tesouraria"]');
     const eventos = tela.container.querySelector('section[aria-label="Permissões de eventos do grupo Tesouraria"]');
     expect(financeiro?.textContent).toContain('Registrar lançamento');
+    expect(financeiro?.textContent).not.toContain('financeiro.lancamento.registrar');
     expect(financeiro?.textContent).toContain('Ler contas e saldos');
     expect(financeiro?.textContent).not.toContain('Criar evento');
     expect(eventos?.textContent).toContain('Criar evento');
