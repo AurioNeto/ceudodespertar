@@ -43,7 +43,7 @@ function aparar(segmento: string): string {
 function ficaForaDoPrefixo(caminhoRelativo: string, foraDoPrefixo: readonly RotaForaDoPrefixo[]): boolean {
   return foraDoPrefixo.some(({ path }) => {
     const [raiz = ''] = path.split('*');
-    return caminhoRelativo.startsWith(aparar(raiz));
+    return caminhoRelativo.startsWith(`${aparar(raiz)}/`);
   });
 }
 

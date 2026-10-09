@@ -130,6 +130,35 @@ class UsuarioAtivoNoEuController {
   rota(): void {}
 }
 
+@Controller('saude')
+class PostPublicoNaSaudeController {
+  @Publico()
+  @Post('viva')
+  rota(): void {}
+}
+
+@Controller('eu')
+class PublicoNoEuController {
+  @Publico()
+  @Get()
+  rota(): void {}
+}
+
+@ModoDeTransacao('escrita')
+@Controller('modo-na-classe')
+class ModoNaClasseController {
+  @ApenasIdentificado()
+  @Get()
+  rota(): void {}
+}
+
+@Controller('saude-admin')
+class SaudeAdminController {
+  @Publico()
+  @Get('viva')
+  rota(): void {}
+}
+
 @Controller('sem-rotas')
 class SemRotasController {}
 
@@ -146,6 +175,10 @@ const PLANTADOS_COM_VIOLACAO: readonly Type[] = [
   ClasseComPermissaoController,
   FilhoSemMarcaPropriaController,
   PublicoForaDaTabelaController,
+  PostPublicoNaSaudeController,
+  PublicoNoEuController,
+  ModoNaClasseController,
+  SaudeAdminController,
 ];
 
 const PLANTADOS_SEM_VIOLACAO: readonly Type[] = [
@@ -203,6 +236,12 @@ describe('T30 — controllers plantados', () => {
         'escrita-sem-permissao | POST /api/v1/classe-com-permissao',
         'sem-permissao-fora-da-tabela | POST /api/v1/classe-com-permissao',
         'sem-permissao-fora-da-tabela | GET /api/v1/qualquer',
+        'escrita-sem-permissao | POST /saude/viva',
+        'sem-permissao-fora-da-tabela | POST /saude/viva',
+        'sem-permissao-fora-da-tabela | GET /api/v1/eu',
+        'escrita-sem-permissao | GET /api/v1/modo-na-classe',
+        'sem-permissao-fora-da-tabela | GET /api/v1/modo-na-classe',
+        'sem-permissao-fora-da-tabela | GET /api/v1/saude-admin/viva',
       ].toSorted(),
     );
   });
