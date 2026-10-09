@@ -47,6 +47,7 @@ describe('reenviar convite pela API (Doc 3 §11, Doc 7 §25)', () => {
   });
 
   afterEach(async () => {
+    await enviador.aguardarSondas();
     await aplicacao.encerrar();
     await derrubarBancoDeTeste(banco);
   });

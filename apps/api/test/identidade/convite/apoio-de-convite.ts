@@ -30,6 +30,16 @@ export class EnviadorQueGuardaEnvios extends EnviadorDeConvite {
     this.instantaneosDoBanco.push(this.usuariosVisiveisNoBanco(convite));
     return this.falharCom === undefined ? Promise.resolve() : Promise.reject(this.falharCom);
   }
+
+  async aguardarSondas(): Promise<void> {
+    let aguardadas = 0;
+    while (aguardadas < this.instantaneosDoBanco.length) {
+      const total = this.instantaneosDoBanco.length;
+      // eslint-disable-next-line no-await-in-loop -- novas sondas podem surgir enquanto se aguarda
+      await Promise.allSettled(this.instantaneosDoBanco.slice(aguardadas, total));
+      aguardadas = total;
+    }
+  }
 }
 
 export function enviadorQueSondaOBanco(banco: BancoDeTeste, instituicaoId: string): EnviadorQueGuardaEnvios {
