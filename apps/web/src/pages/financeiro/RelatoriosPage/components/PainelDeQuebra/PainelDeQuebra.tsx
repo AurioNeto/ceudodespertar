@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { formatarValor } from '../../lib/formato';
+import { formatarValor } from '@/lib/formato';
 import { PALETA } from '../../mocks/relatorios';
 
 const RAIO = 60;

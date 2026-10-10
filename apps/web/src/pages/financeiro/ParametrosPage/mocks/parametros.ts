@@ -1,6 +1,6 @@
 import type { CategoriaId, Dinheiro, Natureza, RegimeDaUnidade, TipoCategoria, UnidadeId } from '@cdd/contracts';
 import { reais } from '@cdd/contracts';
-import { id } from './ids';
+import { id } from '@/mocks/ids';
 
 /**
  * Plano de contas, unidades e parâmetros da instituição.

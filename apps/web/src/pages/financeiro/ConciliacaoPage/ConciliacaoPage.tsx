@@ -13,7 +13,7 @@ import {
   Recado,
   Rotulo,
 } from '@/ds';
-import { formatarData, formatarDinheiro, pluralizar } from '../../lib/formato';
+import { formatarData, formatarDinheiro, pluralizar } from '@/lib/formato';
 import {
   contasComExtrato,
   importacao,
@@ -21,7 +21,7 @@ import {
   linhasSozinhas as linhasIniciais,
   motivosDeIgnorar,
   sugestoes as sugestoesIniciais,
-} from '../../mocks/conciliacao';
+} from './mocks/conciliacao';
 
 export function ConciliacaoPage() {
   const densidade = useDensidade();

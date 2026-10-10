@@ -5,7 +5,7 @@ import {
   baseDoRelatorio,
   type LinhaDoRelatorio,
   type TipoNoRelatorio,
-} from '../../mocks/relatorios';
+} from '../mocks/relatorios';
 
 export type Periodo = 'mes' | 'trimestre' | 'ano' | 'personalizado';
 export type Comparacao = 'anterior' | 'ano_passado' | 'nenhum';

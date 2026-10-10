@@ -10,7 +10,7 @@ const cenario = vi.hoisted(() => ({
   categorias: (reaisDoMock: Registros): Registros => reaisDoMock,
 }));
 
-vi.mock('@/mocks/parametros', async (importarOriginal) => {
+vi.mock('@/pages/financeiro/ParametrosPage/mocks/parametros', async (importarOriginal) => {
   const original = await importarOriginal<{ unidades: Registros; categorias: Registros }>();
   return {
     ...original,
