@@ -191,6 +191,7 @@ describe('aceite do convite contra o Keycloak e o Mailpit reais — ciclo de vid
     convidada.perfilAntesDeSuspender = instantaneoDoPerfil(await keycloak.usuarioPorId(idNoKeycloak));
     const { accessToken } = await entrar(convidada.email, SENHA_DA_CONVIDADA);
     const refreshVivo = await keycloak.renovar(convidada.refreshAntigo);
+    const sessoesAntes = await keycloak.sessoesDoUsuario(idNoKeycloak);
 
     const status = await comoGestor('POST', `/identidade/usuarios/${convidada.id}/desativar`, convidada.id, {
       motivo: 'aceite contra o Keycloak real',
@@ -200,7 +201,13 @@ describe('aceite do convite contra o Keycloak e o Mailpit reais — ciclo de vid
       const resposta = await keycloak.renovar(textoDe(refreshVivo.corpo['refresh_token']));
       return resposta.status === 200 ? undefined : resposta;
     });
+    const sessoesDepois = await aguardarAte('sessões do usuário encerradas pelo despachante', async () => {
+      const sessoes = await keycloak.sessoesDoUsuario(idNoKeycloak);
+      return sessoes.length === 0 ? sessoes : undefined;
+    });
 
+    expect(sessoesAntes.length).toBeGreaterThan(0);
+    expect(sessoesDepois).toEqual([]);
     expect(convidada.perfilAntesDeSuspender['attributes']).toEqual({ locale: ['pt-BR'] });
     expect(refreshVivo.status).toBe(200);
     expect(status).toBe(200);

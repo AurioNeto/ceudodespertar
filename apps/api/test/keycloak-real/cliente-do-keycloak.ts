@@ -155,6 +155,12 @@ export class ClienteDoKeycloak {
     return (await resposta.json()) as UsuarioDoKeycloak;
   }
 
+  async sessoesDoUsuario(id: string): Promise<unknown[]> {
+    const resposta = await this.admin(`/users/${id}/sessions`);
+    if (!resposta.ok) throw new Error(`GET /users/{id}/sessions respondeu ${resposta.status}`);
+    return (await resposta.json()) as unknown[];
+  }
+
   async definirAtributosDoPerfil(id: string, atributos: Record<string, string[]>): Promise<void> {
     const { userProfileMetadata: _metadados, ...representacao } = (await this.usuarioPorId(id)) as UsuarioDoKeycloak & {
       userProfileMetadata?: unknown;
