@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { clicar, desmontarTudo, montar, todos } from '@/testes/montagem';
-import { CalendarioMensal, LegendaDeTipos } from './CalendarioMensal';
+import { CalendarioMensal } from './CalendarioMensal';
 import {
   chipDoCalendario,
   chipsDoCalendario,
@@ -210,27 +210,5 @@ describe('CalendarioMensal: chips dos trabalhos', () => {
     await clicar(chipDoCalendario(container, 'Qualquer'));
 
     expect(aoAbrir).toHaveBeenCalledExactlyOnceWith(9);
-  });
-});
-
-describe('LegendaDeTipos', () => {
-  it('legenda — os cinco tipos na ordem do mapa de cores', async () => {
-    const { container } = await montar(<LegendaDeTipos />);
-
-    expect(container.textContent).toBe('ConcentraçãoTrabalho de curaFeitioBailadoReunião do corpo');
-  });
-
-  it('legenda — cada tipo traz o quadradinho na mesma cor do chip', async () => {
-    const { container } = await montar(<LegendaDeTipos />);
-
-    const cores = todos<HTMLSpanElement>(container, 'span[style*="width: 10px"]').map((quadrado) => quadrado.style.background);
-
-    expect(cores).toEqual([
-      'oklch(0.52 0.13 265)',
-      'oklch(0.64 0.12 155)',
-      'oklch(0.72 0.13 90)',
-      'oklch(0.58 0.15 25)',
-      'oklch(0.62 0.11 205)',
-    ]);
   });
 });

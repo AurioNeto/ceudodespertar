@@ -129,6 +129,23 @@ describe('AgendaPage: calendário do mês', () => {
     expect(texto.endsWith('ConcentraçãoTrabalho de curaFeitioBailadoReunião do corpo')).toBe(true);
   });
 
+  it('legenda — cada tipo traz o quadradinho na mesma cor do chip, na ordem do mapa de cores', async () => {
+    const { container } = await montar(<AgendaPage />);
+
+    const legenda = todos<HTMLSpanElement>(container, 'span[style*="width: 10px"]').map((quadrado) => [
+      quadrado.parentElement?.textContent,
+      quadrado.style.background,
+    ]);
+
+    expect(legenda).toEqual([
+      ['Concentração', 'oklch(0.52 0.13 265)'],
+      ['Trabalho de cura', 'oklch(0.64 0.12 155)'],
+      ['Feitio', 'oklch(0.72 0.13 90)'],
+      ['Bailado', 'oklch(0.58 0.15 25)'],
+      ['Reunião do corpo', 'oklch(0.62 0.11 205)'],
+    ]);
+  });
+
   it('mês anterior — vai para agosto, com uma cerimônia (singular) e sem destaque de hoje', async () => {
     const { container } = await montar(<AgendaPage />);
 
@@ -440,6 +457,32 @@ describe('AgendaPage: duplicar e cancelar', () => {
     expect(container.textContent).toContain(`cdd.app/preparo/${ID_DO_TRABALHO_CRIADO_NO_AGORA_FIXO}-05set`);
   });
 
+  it('duplicar a cerimônia realizada de agosto — a cópia nasce com custo lançado e contribuições recebidas zerados', async () => {
+    const { container } = await montar(<AgendaPage />);
+    await clicar(mesAnterior(container));
+    await abrirDetalhe(container, 'Mãe Divina');
+
+    await clicar(botaoComTexto(container, 'Duplicar'));
+
+    expect(textoDoNumero(container, 'Custo lançado')).toBe('Custo lançado0,00');
+    expect(textoDoNumero(container, 'Contribuições recebidas')).toBe('Contribuições recebidas0,00');
+  });
+
+  it('duplicar a cerimônia realizada de agosto — a original segue Realizada, com o custo lançado e as contribuições que tinha', async () => {
+    const { container } = await montar(<AgendaPage />);
+    await clicar(mesAnterior(container));
+    await abrirDetalhe(container, 'Mãe Divina');
+    await clicar(botaoComTexto(container, 'Duplicar'));
+    await clicar(botaoComTexto(container, 'Voltar para a agenda'));
+
+    await clicar(chipsDoCalendario(container)[0]!);
+
+    expect(container.textContent).toContain('22/08 · Mãe Divina');
+    expect(container.textContent).toContain('Realizada');
+    expect(textoDoNumero(container, 'Custo lançado')).toBe('Custo lançado1.288,40');
+    expect(textoDoNumero(container, 'Contribuições recebidas')).toBe('Contribuições recebidas940,00');
+  });
+
   it('duplicar — a cópia fica na mesma data da original: o calendário mostra dois chips no dia 5', async () => {
     const { container } = await montar(<AgendaPage />);
     await abrirDetalhe(container, 'Mãe Divina');
@@ -503,6 +546,24 @@ describe('AgendaPage: duplicar e cancelar', () => {
     expect(item.textContent).toBe(
       '05/09Mãe Divina20:00 às 04:00 · Salão principal · Aurio Neto9 LCancelada',
     );
+  });
+
+  it('cancelar — só a cerimônia aberta passa a Cancelada: as outras cinco seguem com a situação que tinham', async () => {
+    const { container } = await montar(<AgendaPage />);
+    await abrirDetalhe(container, 'Mãe Divina');
+    await clicar(botaoComTexto(container, 'Cancelar'));
+    await clicar(botaoComTexto(container, 'Voltar para a agenda'));
+
+    await abrirLista(container);
+
+    expect(textosDaLista(container)).toEqual([
+      '22/08Mãe Divina20:00 às 04:00 · Salão principal · Aurio Neto8 LRealizada',
+      '05/09Mãe Divina20:00 às 04:00 · Salão principal · Aurio Neto9 LCancelada',
+      '12/09Reunião do corpo instrutivo19:00 às 21:00 · Secretaria · Lucia PradoPlanejada',
+      '19/09Trabalho de cura20:00 às 02:00 · Salão principal · Aurio Neto6 LPlanejada',
+      '27/09Bailado de São Miguel19:00 às 05:00 · Salão principal · Aurio Neto14 LPlanejada',
+      '03/10Feitio de dezembro — preparação07:00 às 18:00 · Casa de feitio · Chico AguiarPlanejada',
+    ]);
   });
 });
 
@@ -587,6 +648,18 @@ describe('AgendaPage: nova cerimônia', () => {
 
     expect(mesNaTela(container)).toBe('março de 2027');
     expect(nomesPorDiaNoCalendario(container)).toEqual({ '10': ['Cerimônia de 2027'] });
+  });
+
+  it.each([
+    { data: '15/12/2025', diaEMes: '15/12', nome: 'Cerimônia de 2025', lugar: 'primeiro', posicao: 0 },
+    { data: '10/01/2027', diaEMes: '10/01', nome: 'Cerimônia de 2027', lugar: 'último', posicao: 6 },
+  ])('cerimônia de $data — a lista ordena pelo ano antes do mês: ela fica em $lugar', async ({ data, diaEMes, nome, posicao }) => {
+    const { container } = await montar(<AgendaPage />);
+    await preencherEEnviarNovaCerimonia(container, { nome, data });
+
+    await abrirLista(container);
+
+    expect(textosDaLista(container)[posicao]).toContain(`${diaEMes}${nome}`);
   });
 
   it('mesmo mês em outro ano — a contagem do mês é por mês e ano, e não soma as cerimônias de setembro de 2026', async () => {

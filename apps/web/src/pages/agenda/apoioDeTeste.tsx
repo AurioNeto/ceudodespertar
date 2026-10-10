@@ -1,7 +1,7 @@
 import { act } from 'react';
 import { vi } from 'vitest';
-import type { Trabalho } from '@/mocks/agenda';
 import { elemento, todos } from '@/testes/montagem';
+import type { DetalheDoTrabalhoProps } from './DetalheDoTrabalho';
 
 export type DensidadeDeTeste = 'office' | 'field';
 
@@ -90,7 +90,9 @@ export const clicarVezes = (alvo: HTMLElement, vezes: number): Promise<void> =>
     Promise.resolve(),
   );
 
-export const umTrabalho = (sobrescritas: Partial<Trabalho> = {}): Trabalho => ({
+type TrabalhoDeTeste = DetalheDoTrabalhoProps['trabalho'];
+
+export const umTrabalho = (sobrescritas: Partial<TrabalhoDeTeste> = {}): TrabalhoDeTeste => ({
   id: 7,
   nome: 'Trabalho de teste',
   tipo: 'Concentração',
