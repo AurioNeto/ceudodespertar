@@ -241,7 +241,7 @@ describe('aplicação real (AppModule) contra o banco', () => {
       expect(linha?.ultimo_acesso_em).toBeInstanceOf(Date);
     });
 
-    it('usuário que deixou de estar ativo recebe 401 com o desafio Bearer', async () => {
+    it('T26 · usuário que deixou de estar ativo recebe 401 com o desafio Bearer', async () => {
       await pedir('GET', '/api/v1/prova/protegida', { sujeito: SUJEITO_DA_MARIA });
       await banco.owner.query('begin');
       await banco.owner.query("select set_config('app.instituicao_id', $1, true)", [INSTITUICAO_A]);

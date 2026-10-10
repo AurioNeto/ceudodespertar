@@ -423,7 +423,7 @@ describe('guarda de acesso', () => {
     });
 
     it.each(['USUARIO_DESCONHECIDO', 'USUARIO_CONVITE_PENDENTE', 'USUARIO_SUSPENSO', 'USUARIO_REVOGADO'] as const)(
-      'situação %s responde 401 com o código do resolvedor e o desafio Bearer',
+      'T26 · situação %s responde 401 com o código do resolvedor e o desafio Bearer',
       async (codigo) => {
         fake.recusarCom(codigo);
 
@@ -585,7 +585,7 @@ describe('guarda de acesso', () => {
     });
 
     it.each(['USUARIO_DESCONHECIDO', 'USUARIO_CONVITE_PENDENTE', 'USUARIO_SUSPENSO', 'USUARIO_REVOGADO'] as const)(
-      'recusa de situação %s responde 401 com o próprio código',
+      'T26 · recusa de situação %s responde 401 com o próprio código',
       async (codigo) => {
         fake.recusarCom(codigo);
 
@@ -620,7 +620,7 @@ describe('guarda de acesso', () => {
       expect((await pedir('/alguma', await bearer(chaves))).status).toBe(403);
     });
 
-    it('com recusa de situação responde 401 com o código', async () => {
+    it('T26 · com recusa de situação responde 401 com o código', async () => {
       fake.recusarCom('USUARIO_REVOGADO');
 
       const resposta = await pedir('/alguma', await bearer(chaves));
