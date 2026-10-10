@@ -11,6 +11,7 @@ import {
 import type { ProgramaAnalisavel } from './motor-de-programa.js';
 import {
   ARQUIVOS_QUE_PODEM_AJUSTAR_A_SESSAO,
+  ARQUIVOS_QUE_ENCERRAM_TRANSACAO_EM_SQL_CRU,
   EXCECOES_DE_ROTA_FORA_DO_NEST,
   EXCECOES_DE_SQL_INDETERMINADO,
   MEMBROS_DE_ESCRITA,
@@ -35,7 +36,7 @@ export interface Violacao {
   readonly simbolo: string;
 }
 
-export type CategoriaDeAchado = 'escrita' | 'set-config' | 'rota-fora-do-nest';
+export type CategoriaDeAchado = 'escrita' | 'set-config' | 'transacao-em-sql' | 'rota-fora-do-nest';
 
 export interface Achado {
   readonly arquivo: string;
@@ -62,7 +63,9 @@ const RECIPIENTES_DE_USE: ReadonlySet<string> = new Set([
 ]);
 
 const VERBOS_DE_ESCRITA_SQL = /^(insert|update|delete|merge|truncate|create|alter|drop|grant|revoke|copy|call|do|reindex|vacuum|comment)$/;
-const VERBOS_DE_CONTROLE_SQL = /^(savepoint|release|rollback|commit|begin|start|end|abort)$/;
+const VERBOS_DE_PONTO_DE_SALVAMENTO_SQL = /^(savepoint|release)$/;
+const VERBOS_DE_TRANSACAO_SQL = /^(commit|begin|start|end|abort)$/;
+const ROLLBACK_PARA_PONTO_DE_SALVAMENTO = /^\s*rollback(\s+(work|transaction))?\s+to\b/i;
 const VERBOS_DE_LEITURA_SQL = /^(select|values|table|explain|show)$/;
 const DML_DENTRO_DE_WITH = /\b(insert|update|delete|merge)\b/i;
 const VERBOS_DE_SESSAO_SQL = /^(set|reset)$/;
@@ -70,17 +73,41 @@ const MEMBROS_QUE_EXECUTAM_SQL: ReadonlySet<string> = new Set(['execute', 'execu
 const MEMBROS_QUE_EXPOEM_O_SERVIDOR: ReadonlySet<string> = new Set(['getInstance', 'getHttpServer']);
 const CHAMADA_DE_SET_CONFIG = /\bset_config\b/i;
 const PROFUNDIDADE_MAXIMA_DE_CONSTANTE = 8;
+const MARCA_DE_INTERPOLACAO = '?';
 
-type CategoriaDeSql = 'leitura' | 'fragmento' | 'escrita' | 'controle' | 'set' | 'set-config';
+type CategoriaDeSql = 'leitura' | 'fragmento' | 'escrita' | 'controle' | 'transacao' | 'set' | 'set-config';
 
 function semComentarios(sql: string): string {
-  return sql.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/--[^\n]*/g, ' ');
+  let limpo = '';
+  let aspas: string | undefined;
+  let indice = 0;
+  while (indice < sql.length) {
+    const caractere = sql.charAt(indice);
+    const doisCaracteres = sql.slice(indice, indice + 2);
+    if (aspas === undefined && doisCaracteres === '--') {
+      const fimDaLinha = sql.indexOf('\n', indice);
+      indice = fimDaLinha === -1 ? sql.length : fimDaLinha;
+      limpo += ' ';
+      continue;
+    }
+    if (aspas === undefined && doisCaracteres === '/*') {
+      const fimDoBloco = sql.indexOf('*/', indice + 2);
+      indice = fimDoBloco === -1 ? sql.length : fimDoBloco + 2;
+      limpo += ' ';
+      continue;
+    }
+    if (caractere === "'" || caractere === '"') aspas = aspas === caractere ? undefined : (aspas ?? caractere);
+    limpo += caractere;
+    indice += 1;
+  }
+  return limpo;
 }
 
 const GRAVIDADE_DA_CATEGORIA: readonly CategoriaDeSql[] = [
   'fragmento',
   'leitura',
   'controle',
+  'transacao',
   'escrita',
   'set',
   'set-config',
@@ -108,19 +135,23 @@ function categoriaDaInstrucao(instrucao: string): CategoriaDeSql {
   if (VERBOS_DE_SESSAO_SQL.test(verbo)) return 'set';
   if (VERBOS_DE_ESCRITA_SQL.test(verbo)) return 'escrita';
   if (verbo === 'with') return DML_DENTRO_DE_WITH.test(instrucao) ? 'escrita' : 'leitura';
-  if (VERBOS_DE_CONTROLE_SQL.test(verbo)) return 'controle';
+  if (VERBOS_DE_PONTO_DE_SALVAMENTO_SQL.test(verbo)) return 'controle';
+  if (verbo === 'rollback') return ROLLBACK_PARA_PONTO_DE_SALVAMENTO.test(instrucao) ? 'controle' : 'transacao';
+  if (VERBOS_DE_TRANSACAO_SQL.test(verbo)) return 'transacao';
   if (VERBOS_DE_LEITURA_SQL.test(verbo)) return 'leitura';
   return 'fragmento';
 }
 
-function categoriaDoSql(texto: string): CategoriaDeSql {
+function categoriasDoSql(texto: string): readonly CategoriaDeSql[] {
   const limpo = semComentarios(texto);
-  if (CHAMADA_DE_SET_CONFIG.test(limpo)) return 'set-config';
-  return instrucoesDe(limpo)
-    .map(categoriaDaInstrucao)
-    .reduce((pior, categoria) =>
-      GRAVIDADE_DA_CATEGORIA.indexOf(categoria) > GRAVIDADE_DA_CATEGORIA.indexOf(pior) ? categoria : pior,
-    );
+  const chamaSetConfig: readonly CategoriaDeSql[] = CHAMADA_DE_SET_CONFIG.test(limpo) ? ['set-config'] : [];
+  return [...instrucoesDe(limpo).map(categoriaDaInstrucao), ...chamaSetConfig];
+}
+
+function maisGrave(categorias: readonly CategoriaDeSql[]): CategoriaDeSql {
+  return categorias.reduce((pior, categoria) =>
+    GRAVIDADE_DA_CATEGORIA.indexOf(categoria) > GRAVIDADE_DA_CATEGORIA.indexOf(pior) ? categoria : pior,
+  );
 }
 
 function textoLiteral(checker: ts.TypeChecker, expressao: ts.Expression, profundidade = 0): string | undefined {
@@ -171,7 +202,7 @@ function textoDeConstante(checker: ts.TypeChecker, identificador: ts.Identifier,
 
 function textoDoTemplateMarcado(modelo: ts.TemplateLiteral): string {
   if (ts.isNoSubstitutionTemplateLiteral(modelo)) return modelo.text;
-  return modelo.head.text + modelo.templateSpans.map((trecho) => `?${trecho.literal.text}`).join('');
+  return modelo.head.text + modelo.templateSpans.map((trecho) => `${MARCA_DE_INTERPOLACAO}${trecho.literal.text}`).join('');
 }
 
 function semParenteses(no: ts.Node): ts.Node {
@@ -190,8 +221,11 @@ function ehExecucaoDireta(no: ts.Node): boolean {
   return false;
 }
 
-function comecaComInterpolacao(modelo: ts.TemplateLiteral): boolean {
-  return ts.isTemplateExpression(modelo) && semComentarios(modelo.head.text).trim() === '';
+function algumaInstrucaoComecaComInterpolacao(modelo: ts.TemplateLiteral): boolean {
+  if (!ts.isTemplateExpression(modelo)) return false;
+  return instrucoesDe(semComentarios(textoDoTemplateMarcado(modelo))).some((instrucao) =>
+    instrucao.trimStart().startsWith(MARCA_DE_INTERPOLACAO),
+  );
 }
 
 function ehCaminhoDeRota(checker: ts.TypeChecker, argumento: ts.Expression | undefined): boolean {
@@ -322,7 +356,7 @@ class Coletor {
     const simbolo = simboloResolvido(this.checker, marcado.tag);
     const ehSqlDoKysely = simbolo !== undefined && simbolo.getName() === 'sql' && declaradoEm(simbolo, PACOTE_KYSELY);
     if (!ehSqlDoKysely) return;
-    const indeterminado = comecaComInterpolacao(marcado.template) && this.ehExecutado(marcado);
+    const indeterminado = algumaInstrucaoComecaComInterpolacao(marcado.template) && this.ehExecutado(marcado);
     const texto = indeterminado ? undefined : textoDoTemplateMarcado(marcado.template);
     this.avaliarSql(marcado, 'sql', texto);
   }
@@ -334,8 +368,13 @@ class Coletor {
       if (EXCECOES_DE_SQL_INDETERMINADO[this.relativo] === undefined) this.violar(no, 'sql-indeterminado', origem);
       return;
     }
-    const categoria = categoriaDoSql(texto);
-    if (categoria === 'escrita') this.achar('escrita', `sql:${origem}`);
+    const categorias = categoriasDoSql(texto);
+    const categoria = maisGrave(categorias);
+    if (categorias.includes('escrita')) this.achar('escrita', `sql:${origem}`);
+    if (categorias.includes('transacao')) this.achar('transacao-em-sql', 'transacao');
+    if (categorias.includes('transacao') && zona !== 'leitura' && !this.podeControlarTransacaoEmSqlCru()) {
+      this.violar(no, 'so-no-banco', 'sql:transacao');
+    }
     const mexeNaSessao = categoria === 'set' || categoria === 'set-config';
     if (mexeNaSessao) this.achar('set-config', categoria);
     if (mexeNaSessao && !this.podeAjustarASessao()) {
@@ -360,6 +399,12 @@ class Coletor {
       if (ehUso && ehExecucaoDireta(candidato)) executado = true;
     });
     return executado;
+  }
+
+  private podeControlarTransacaoEmSqlCru(): boolean {
+    return (
+      this.relativo.startsWith(PASTA_DO_BANCO) || ARQUIVOS_QUE_ENCERRAM_TRANSACAO_EM_SQL_CRU.includes(this.relativo)
+    );
   }
 
   private podeAjustarASessao(): boolean {
@@ -391,8 +436,7 @@ class Coletor {
     const simbolo = simboloDoUso(this.checker, identificador);
     if (simbolo === undefined || !declaradoEm(simbolo, PACOTES_HTTP)) return;
     this.achar('rota-fora-do-nest', identificador.text);
-    const excecoes = EXCECOES_DE_ROTA_FORA_DO_NEST[this.relativo] ?? [];
-    if (!excecoes.includes(identificador.text)) this.violar(identificador, 'rota-fora-do-nest', identificador.text);
+    this.violar(identificador, 'rota-fora-do-nest', identificador.text);
   }
 }
 

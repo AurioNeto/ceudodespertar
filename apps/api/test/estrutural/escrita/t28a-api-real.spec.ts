@@ -24,6 +24,7 @@ const ACHADOS_CONHECIDOS = [
   { arquivo: 'modules/identidade/infrastructure/auditoria/gravador-de-trilha.ts', achado: 'escrita:insertInto' },
   { arquivo: 'shared/infrastructure/eventos/despachante.ts', achado: 'escrita:sql:execute' },
   { arquivo: 'shared/infrastructure/eventos/despachante.ts', achado: 'set-config:set-config' },
+  { arquivo: 'shared/infrastructure/eventos/despachante.ts', achado: 'transacao-em-sql:transacao' },
   { arquivo: 'shared/infrastructure/banco/unidade-de-trabalho.mikro-orm.ts', achado: 'set-config:set-config' },
   { arquivo: 'composicao/aplicacao.ts', achado: 'rota-fora-do-nest:use' },
 ] as const;

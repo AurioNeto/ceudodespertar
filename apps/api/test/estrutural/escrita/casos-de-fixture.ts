@@ -118,7 +118,7 @@ export const CASOS_POSITIVOS: readonly CasoDeFixture[] = [
       'leitura-fora-da-allowlist',
       'sql:escrita',
       'sql:escrita',
-      'sql:controle',
+      'sql:transacao',
     ).concat(esperar('modules/m/infrastructure/leitor-r.kysely.ts', 'sql-indeterminado', 'sql')),
   },
   {
@@ -146,8 +146,8 @@ export const CASOS_POSITIVOS: readonly CasoDeFixture[] = [
     violacoes: esperar(
       'modules/m/infrastructure/leitor-q.kysely.ts',
       'leitura-fora-da-allowlist',
-      'sql:controle',
-      'sql:controle',
+      'sql:transacao',
+      'sql:transacao',
     ).concat(esperar('modules/m/infrastructure/leitor-q.kysely.ts', 'sql-indeterminado', 'sql', 'sql')),
   },
   {
@@ -164,6 +164,46 @@ export const CASOS_POSITIVOS: readonly CasoDeFixture[] = [
       'getInstance',
       'getInstance',
     ),
+  },
+  {
+    caso: 'transacao-completa-em-sql-fora-do-banco',
+    violacoes: esperar(
+      'modules/m/infrastructure/transacao-sql.ts',
+      'so-no-banco',
+      ...Array<string>(8).fill('sql:transacao'),
+    ),
+  },
+  {
+    caso: 'transacao-completa-em-sql-no-mikro-orm',
+    violacoes: esperar('modules/m/infrastructure/encerrar.ts', 'so-no-banco', 'sql:transacao', 'sql:transacao', 'sql:transacao').concat(
+      esperar('modules/m/infrastructure/encerrar.ts', 'set-config-restrito', 'set'),
+    ),
+  },
+  {
+    caso: 'transacao-em-leitor-com-ponto-de-salvamento',
+    violacoes: esperar(
+      'modules/m/infrastructure/leitor-t.kysely.ts',
+      'leitura-fora-da-allowlist',
+      'sql:controle',
+      'sql:controle',
+      'sql:controle',
+      'sql:transacao',
+      'sql:transacao',
+    ),
+  },
+  {
+    caso: 'instrucao-seguinte-comeca-com-interpolacao',
+    violacoes: esperar('modules/m/infrastructure/leitor-p.kysely.ts', 'sql-indeterminado', 'sql', 'sql', 'sql'),
+  },
+  {
+    caso: 'aspas-com-marca-de-comentario',
+    violacoes: esperar(
+      'modules/m/infrastructure/leitor-a.kysely.ts',
+      'leitura-fora-da-allowlist',
+      'sql:escrita',
+      'sql:escrita',
+      'sql:escrita',
+    ).concat(esperar('modules/m/infrastructure/leitor-a.kysely.ts', 'sql-indeterminado', 'sql')),
   },
 ];
 
@@ -182,4 +222,7 @@ export const CASOS_NEGATIVOS: readonly CasoDeFixture[] = [
   { caso: 'controle-de-transacao-em-sql', violacoes: [] },
   { caso: 'http-adapter-sem-caminho', violacoes: [] },
   { caso: 'template-com-interpolacao-nao-executado', violacoes: [] },
+  { caso: 'ponto-de-salvamento-fora-do-banco', violacoes: [] },
+  { caso: 'transacao-no-despachante', violacoes: [], achados: achar('transacao-em-sql', 'transacao', 'transacao') },
+  { caso: 'transacao-no-banco', violacoes: [], achados: achar('transacao-em-sql', 'transacao', 'transacao', 'transacao') },
 ];

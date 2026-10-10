@@ -17,6 +17,10 @@ export const PASTA_DO_BANCO = 'shared/infrastructure/banco/';
 
 export const ARQUIVOS_QUE_PODEM_AJUSTAR_A_SESSAO: readonly string[] = ['shared/infrastructure/eventos/despachante.ts'];
 
+export const ARQUIVOS_QUE_ENCERRAM_TRANSACAO_EM_SQL_CRU: readonly string[] = [
+  'shared/infrastructure/eventos/despachante.ts',
+];
+
 export const MEMBROS_SO_DO_BANCO: ReadonlySet<string> = new Set([
   'fork',
   'transactional',
