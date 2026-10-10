@@ -191,6 +191,15 @@ describe('EnviadorDeConviteKeycloak', () => {
     expect(servidor.chamadasA('PUT', `${CAMINHO_DOS_USUARIOS}/${ID_EXISTENTE}/execute-actions-email`)).toHaveLength(1);
   });
 
+  it('no 409, adota o usuário cujo e-mail difere só por forma decomposta', async () => {
+    convite = { ...convite, email: 'jos\u00e9@casa.org' };
+    adotarUsuarioExistente([{ id: ID_EXISTENTE, email: 'jose\u0301@casa.org' }]);
+
+    await enviar();
+
+    expect(servidor.chamadasA('PUT', `${CAMINHO_DOS_USUARIOS}/${ID_EXISTENTE}/execute-actions-email`)).toHaveLength(1);
+  });
+
   it('codifica o e-mail com sinal de mais na busca', async () => {
     convite = { ...convite, email: 'maria+convite@casa.org' };
     adotarUsuarioExistente([{ id: ID_EXISTENTE, email: 'maria+convite@casa.org' }]);
@@ -226,6 +235,7 @@ describe('EnviadorDeConviteKeycloak', () => {
   it.each([
     ['lista vazia', []],
     ['e-mail diferente', [{ id: ID_EXISTENTE, email: 'outra@casa.org' }]],
+    ['e-mail em largura total', [{ id: ID_EXISTENTE, email: 'ｍａｒｉａ@casa.org' }]],
     ['forma inválida', { erro: true }],
   ])('no 409 sem usuário correspondente (%s), recusa em definitivo', async (_caso, usuarios) => {
     adotarUsuarioExistente(usuarios);

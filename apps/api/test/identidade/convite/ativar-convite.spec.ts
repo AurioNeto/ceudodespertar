@@ -363,6 +363,7 @@ describe('AtivarConvite', () => {
       ['e-mail de outra pessoa', 'joao@casa.org'],
       ['e-mail ausente no provedor', undefined],
       ['e-mail com sufixo', `${EMAIL}.br`],
+      ['e-mail em largura total', 'ｍａｒｉａ@casa.org'],
     ])('%s: CONVITE_DE_OUTRO_SUJEITO, sem gravar e sem consumir o convite', async (_descricao, email) => {
       const usuario = usuarioPendente();
       const { ativar, conferidor, repositorio } = montar({ usuario });

@@ -17,8 +17,8 @@ describe('normalizarEmail', () => {
     expect(normalizarEmail(decomposto)).toBe(normalizarEmail(composto));
   });
 
-  it('aplica compatibilidade (NFKC) a formas de largura total', () => {
-    expect(normalizarEmail('ｍａｒｉａ@casa.org')).toBe('maria@casa.org');
+  it('não equipara formas de largura total (compatibilidade) ao e-mail comum', () => {
+    expect(normalizarEmail('ｍａｒｉａ@casa.org')).not.toBe(normalizarEmail('maria@casa.org'));
   });
 
   it('não remove espaços do meio', () => {

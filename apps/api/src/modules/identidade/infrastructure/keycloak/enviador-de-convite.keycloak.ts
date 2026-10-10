@@ -1,6 +1,7 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { z } from 'zod';
 import { Relogio } from '../../../../shared/infrastructure/relogio.js';
+import { normalizarEmail } from '../../application/convite/normalizar-email.js';
 import { EnviadorDeConvite } from '../../application/convite/enviador-de-convite.js';
 import type { ConviteParaEnviar } from '../../application/convite/enviador-de-convite.js';
 import { ResolvedorDeSujeito } from '../../application/convite/resolvedor-de-sujeito.js';
@@ -61,7 +62,7 @@ export class EnviadorDeConviteKeycloak extends EnviadorDeConvite {
     });
     const encontrados = UsuariosEncontrados.safeParse(busca.json());
     const existente = encontrados.success
-      ? encontrados.data.find(({ email }) => email?.toLowerCase() === convite.email.toLowerCase())
+      ? encontrados.data.find(({ email }) => email !== undefined && normalizarEmail(email) === normalizarEmail(convite.email))
       : undefined;
     if (existente === undefined) throw new KeycloakRecusou(STATUS_USUARIO_JA_EXISTE);
 
