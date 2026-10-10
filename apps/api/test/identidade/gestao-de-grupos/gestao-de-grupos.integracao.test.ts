@@ -377,7 +377,7 @@ describe('gestão de grupos pela API (Doc 3 §11, Doc 7 §25)', () => {
     });
   });
 
-  describe('isolamento entre instituições (Doc 3 §11, T23)', () => {
+  describe('T23 · isolamento entre instituições (Doc 3 §11)', () => {
     it('administrador de A com id de grupo de B recebe 404 em cada rota e nada muda em B', async () => {
       await semearCasa();
       const { grupo: grupoDeB } = await semearCasaDeB();
@@ -409,7 +409,7 @@ describe('gestão de grupos pela API (Doc 3 §11, Doc 7 §25)', () => {
     });
   });
 
-  describe('último administrador pelo caminho do grupo (Doc 3 §11, T25)', () => {
+  describe('T25 · último administrador pelo caminho do grupo (Doc 3 §11)', () => {
     it.each(PERMISSOES_DA_ADMINISTRACAO)(
       'revogar %s do único grupo que a tem responde 422 ULTIMO_ADMINISTRADOR com estado, trilha e outbox inalterados',
       async (permissao) => {
@@ -458,7 +458,7 @@ describe('gestão de grupos pela API (Doc 3 §11, Doc 7 §25)', () => {
     });
   });
 
-  describe('corrida grupo × usuário (Doc 3 §11, T25)', () => {
+  describe('T25 · corrida grupo × usuário (Doc 3 §11)', () => {
     async function administradoresAtivosCom(permissao: string): Promise<number> {
       const [linha] = await consultarNaInstituicao<{ total: number }>(
         banco,

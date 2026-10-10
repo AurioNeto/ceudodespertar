@@ -129,7 +129,7 @@ describe('contexto de acesso e GET /api/v1/eu (etapa B0)', () => {
       ['CONVITE_PENDENTE', 'USUARIO_CONVITE_PENDENTE'],
       ['SUSPENSO', 'USUARIO_SUSPENSO'],
       ['REVOGADO', 'USUARIO_REVOGADO'],
-    ])('situação %s responde 401 %s', async (situacao, codigo) => {
+    ])('T26 · situação %s responde 401 %s', async (situacao, codigo) => {
       await subir();
       const { usuario } = await semearMariaNaCasaA();
       await executarNaInstituicao(banco, INSTITUICAO_A, 'update identidade.usuario set situacao = $2 where id = $1', [
@@ -143,7 +143,7 @@ describe('contexto de acesso e GET /api/v1/eu (etapa B0)', () => {
       expect(await lerCodigoDeErro(resposta)).toBe(codigo);
     });
 
-    it('suspenso por SQL, sem evento, dentro do TTL: /eu recusa 401 USUARIO_SUSPENSO, esquece o cache e a próxima rota protegida também recusa', async () => {
+    it('T26 · suspenso por SQL, sem evento, dentro do TTL: /eu recusa 401 USUARIO_SUSPENSO, esquece o cache e a próxima rota protegida também recusa', async () => {
       await subir();
       const { usuario } = await semearMariaNaCasaA();
       expect((await aplicacao.pedirComo(SUJEITO_DE_A, ROTA_PROTEGIDA_POR_PERMISSAO)).status).toBe(200);

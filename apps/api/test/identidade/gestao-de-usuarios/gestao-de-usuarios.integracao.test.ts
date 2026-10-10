@@ -306,7 +306,7 @@ describe('gestão de usuários pela API (Doc 3 §11, Doc 7 §25)', () => {
     });
   });
 
-  describe('último administrador (Doc 3 §11, T25)', () => {
+  describe('T25 · último administrador (Doc 3 §11)', () => {
     async function esperarUltimoAdministrador(
       alvoId: UsuarioId,
       executar: () => Promise<{ status: number; corpo: Record<string, unknown> }>,

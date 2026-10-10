@@ -79,7 +79,7 @@ describe('obter usuário pela API (Doc 7 §25)', () => {
     expect(corpo.grupos).toEqual([]);
   });
 
-  it('id de outra instituição dá 404 RECURSO_NAO_ENCONTRADO (T23)', async () => {
+  it('T23 · id de outra instituição dá 404 RECURSO_NAO_ENCONTRADO', async () => {
     await semearCasa();
     const adminDeB = await semearCasaDeB();
 

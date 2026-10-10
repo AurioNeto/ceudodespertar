@@ -359,7 +359,7 @@ describe('listagem de usuários pela API (Doc 3 §11, Doc 7 §25)', () => {
     });
   });
 
-  describe('autorização e isolamento (T23)', () => {
+  describe('T23 · autorização e isolamento', () => {
     it('sem sistema.usuario.gerenciar dá 403 SEM_PERMISSAO', async () => {
       await semearCasa();
 
