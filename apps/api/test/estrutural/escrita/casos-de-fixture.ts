@@ -258,6 +258,35 @@ export const CASOS_POSITIVOS: readonly CasoDeFixture[] = [
     caso: 'pg-modulo-de-saude-alem-do-end',
     violacoes: esperar('shared/infrastructure/saude/saude.module.ts', 'fora-da-persistencia', 'query'),
   },
+  {
+    caso: 'sql-por-tag-ou-valor-indireto-em-leitor',
+    violacoes: esperar(
+      'modules/m/infrastructure/leitor-e.kysely.ts',
+      'leitura-fora-da-allowlist',
+      'sql:escrita',
+      'sql:escrita',
+      'sql:escrita',
+      'sql:transacao',
+    ).concat(esperar('modules/m/infrastructure/leitor-e.kysely.ts', 'sql-indeterminado', 'sql', 'raw', 'execute')),
+  },
+  {
+    caso: 'sql-por-tag-ou-valor-indireto-na-infra',
+    violacoes: esperar('modules/m/infrastructure/ajustar-tag.ts', 'set-config-restrito', 'set-config')
+      .concat(esperar('modules/m/infrastructure/ajustar-tag.ts', 'so-no-banco', 'sql:transacao'))
+      .concat(esperar('modules/m/infrastructure/ajustar-tag.ts', 'sql-indeterminado', 'sql')),
+  },
+  {
+    caso: 'sql-raw-emendado-no-meio-de-palavra',
+    violacoes: esperar(
+      'modules/m/infrastructure/leitor-m.kysely.ts',
+      'leitura-fora-da-allowlist',
+      'sql:transacao',
+      'sql:transacao',
+      'sql:fora-da-allowlist',
+    )
+      .concat(esperar('modules/m/infrastructure/leitor-m.kysely.ts', 'set-config-restrito', 'set-config', 'set'))
+      .concat(esperar('modules/m/infrastructure/leitor-m.kysely.ts', 'sql-indeterminado', 'raw')),
+  },
 ];
 
 export const CASOS_NEGATIVOS: readonly CasoDeFixture[] = [

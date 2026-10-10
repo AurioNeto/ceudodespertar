@@ -219,9 +219,38 @@ function textoDeConstante(checker: ts.TypeChecker, identificador: ts.Identifier,
   return ehConstanteComValor ? textoLiteral(checker, declaracao.initializer, profundidade + 1) : undefined;
 }
 
-function textoDoTemplateMarcado(modelo: ts.TemplateLiteral): string {
+function ehChamadaDeRawDoKysely(checker: ts.TypeChecker, expressao: ts.Expression): expressao is ts.CallExpression {
+  if (!ts.isCallExpression(expressao)) return false;
+  const declaracao = checker.getResolvedSignature(expressao)?.declaration;
+  const nome = declaracao === undefined ? undefined : ts.getNameOfDeclaration(declaracao);
+  return (
+    declaracao !== undefined &&
+    nome !== undefined &&
+    ts.isIdentifier(nome) &&
+    nome.text === 'raw' &&
+    PACOTE_KYSELY.test(declaracao.getSourceFile().fileName)
+  );
+}
+
+function semParentesesInternos(expressao: ts.Expression): ts.Expression {
+  let atual = expressao;
+  while (ts.isParenthesizedExpression(atual)) atual = atual.expression;
+  return atual;
+}
+
+function textoDaInterpolacao(checker: ts.TypeChecker, expressao: ts.Expression): string {
+  const interna = semParentesesInternos(expressao);
+  const argumento = ehChamadaDeRawDoKysely(checker, interna) ? interna.arguments[0] : undefined;
+  const literal = argumento === undefined ? undefined : textoLiteral(checker, argumento);
+  return literal ?? MARCA_DE_INTERPOLACAO;
+}
+
+function textoDoTemplateMarcado(checker: ts.TypeChecker, modelo: ts.TemplateLiteral): string {
   if (ts.isNoSubstitutionTemplateLiteral(modelo)) return modelo.text;
-  return modelo.head.text + modelo.templateSpans.map((trecho) => `${MARCA_DE_INTERPOLACAO}${trecho.literal.text}`).join('');
+  return (
+    modelo.head.text +
+    modelo.templateSpans.map((trecho) => `${textoDaInterpolacao(checker, trecho.expression)}${trecho.literal.text}`).join('')
+  );
 }
 
 function semParenteses(no: ts.Node): ts.Node {
@@ -240,11 +269,8 @@ function ehExecucaoDireta(no: ts.Node): boolean {
   return false;
 }
 
-function algumaInstrucaoComecaComInterpolacao(modelo: ts.TemplateLiteral): boolean {
-  if (!ts.isTemplateExpression(modelo)) return false;
-  return instrucoesDe(semComentarios(textoDoTemplateMarcado(modelo))).some((instrucao) =>
-    instrucao.trimStart().startsWith(MARCA_DE_INTERPOLACAO),
-  );
+function algumaInstrucaoComecaComInterpolacao(textoDoModelo: string): boolean {
+  return instrucoesDe(semComentarios(textoDoModelo)).some((instrucao) => instrucao.trimStart().startsWith(MARCA_DE_INTERPOLACAO));
 }
 
 function textoDoArgumento(argumento: ts.Expression): ts.Expression {
@@ -256,6 +282,24 @@ function textoDoArgumento(argumento: ts.Expression): ts.Expression {
     }
   }
   return argumento;
+}
+
+function naturezaDoValorDeSql(simbolo: ts.Symbol): 'raiz' | 'membro' | undefined {
+  const nome = simbolo.getName();
+  const ehValor = (simbolo.flags & ts.SymbolFlags.Value) !== 0;
+  if (ehValor && nome === 'sql' && declaradoEm(simbolo, PACOTE_KYSELY)) return 'raiz';
+  const ehRawDoKysely = nome === 'raw' && declaradoEm(simbolo, PACOTE_KYSELY);
+  const ehExecuteDoOrm = nome === 'execute' && declaradoEm(simbolo, PACOTE_MIKRO_ORM);
+  const ehQueryDoPg = nome === 'query' && declaradoEm(simbolo, PACOTE_PG);
+  return ehRawDoKysely || ehExecuteDoOrm || ehQueryDoPg ? 'membro' : undefined;
+}
+
+function ehUsoDiretoDeSql(expressao: ts.Expression, ehRaiz: boolean): boolean {
+  const alvo = semParenteses(expressao);
+  const pai = alvo.parent;
+  if (ts.isCallExpression(pai) && pai.expression === alvo) return true;
+  if (ts.isTaggedTemplateExpression(pai) && pai.tag === alvo) return true;
+  return ehRaiz && ts.isPropertyAccessExpression(pai) && pai.expression === alvo;
 }
 
 function ehCaminhoDeRota(checker: ts.TypeChecker, argumento: ts.Expression | undefined): boolean {
@@ -321,6 +365,7 @@ class Coletor {
   analisar(): void {
     percorrer(this.arquivoDoPrograma, (no) => {
       if (ts.isIdentifier(no)) this.usoDeIdentificador(no);
+      if (ts.isIdentifier(no)) this.valorDeSqlSemChamada(no);
       if (ts.isIdentifier(no) && MEMBROS_QUE_EXPOEM_O_SERVIDOR.has(no.text)) this.acessoAoServidor(no);
       if (ts.isElementAccessExpression(no)) this.usoPorIndice(no);
       if (ts.isCallExpression(no)) {
@@ -382,29 +427,46 @@ class Coletor {
   }
 
   private sqlDeChamada(chamada: ts.CallExpression): void {
-    const nomeDoCallee = nomeDoMembro(chamada);
     const primeiro = chamada.arguments[0];
-    if (nomeDoCallee === undefined || primeiro === undefined) return;
-    const simbolo = simboloResolvido(this.checker, nomeDoCallee);
-    if (simbolo === undefined) return;
-    const ehExecutarSqlDoOrm =
-      (nomeDoCallee.text === 'execute' && declaradoEm(simbolo, PACOTE_MIKRO_ORM)) ||
-      (nomeDoCallee.text === 'query' && declaradoEm(simbolo, PACOTE_PG));
-    const ehSqlCru = nomeDoCallee.text === 'raw' && declaradoEm(simbolo, PACOTES_DE_DADOS);
-    if (!ehExecutarSqlDoOrm && !ehSqlCru) return;
+    const membro = this.membroDeSqlChamado(chamada);
+    if (membro === undefined || primeiro === undefined) return;
+    const ehExecutarSqlDoBanco = membro !== 'raw';
     const texto = textoLiteral(this.checker, textoDoArgumento(primeiro));
-    const executado = () => ehExecutarSqlDoOrm || this.ehExecutado(chamada);
-    this.avaliarSql(chamada, nomeDoCallee.text, texto, executado);
+    const executado = () => ehExecutarSqlDoBanco || this.ehExecutado(chamada);
+    this.avaliarSql(chamada, membro, texto, executado);
+  }
+
+  private membroDeSqlChamado(chamada: ts.CallExpression): 'execute' | 'query' | 'raw' | undefined {
+    const declaracao = this.checker.getResolvedSignature(chamada)?.declaration;
+    const nome = declaracao === undefined ? undefined : ts.getNameOfDeclaration(declaracao);
+    if (declaracao === undefined || nome === undefined || !ts.isIdentifier(nome)) return undefined;
+    const arquivo = declaracao.getSourceFile().fileName;
+    if (nome.text === 'execute' && PACOTE_MIKRO_ORM.test(arquivo)) return 'execute';
+    if (nome.text === 'query' && PACOTE_PG.test(arquivo)) return 'query';
+    if (nome.text === 'raw' && PACOTE_KYSELY.test(arquivo)) return 'raw';
+    return undefined;
+  }
+
+  private ehTagDoKysely(marcado: ts.TaggedTemplateExpression): boolean {
+    const declaracao = this.checker.getResolvedSignature(marcado)?.declaration;
+    return declaracao !== undefined && PACOTE_KYSELY.test(declaracao.getSourceFile().fileName);
+  }
+
+  private valorDeSqlSemChamada(identificador: ts.Identifier): void {
+    if (zonaDoArquivo(this.relativo) === 'fora' || estaEmPosicaoDeTipo(identificador)) return;
+    const simbolo = simboloDoUso(this.checker, identificador);
+    const natureza = simbolo === undefined ? undefined : naturezaDoValorDeSql(simbolo);
+    if (natureza === undefined) return;
+    const pai = identificador.parent;
+    const expressao = ts.isPropertyAccessExpression(pai) && pai.name === identificador ? pai : identificador;
+    if (!ehUsoDiretoDeSql(expressao, natureza === 'raiz')) this.violar(identificador, 'sql-indeterminado', identificador.text);
   }
 
   private sqlDeTemplateMarcado(marcado: ts.TaggedTemplateExpression): void {
-    if (!ts.isIdentifier(marcado.tag)) return;
-    const simbolo = simboloResolvido(this.checker, marcado.tag);
-    const ehSqlDoKysely = simbolo !== undefined && simbolo.getName() === 'sql' && declaradoEm(simbolo, PACOTE_KYSELY);
-    if (!ehSqlDoKysely) return;
-    const indeterminado = algumaInstrucaoComecaComInterpolacao(marcado.template) && this.ehExecutado(marcado);
-    const texto = indeterminado ? undefined : textoDoTemplateMarcado(marcado.template);
-    this.avaliarSql(marcado, 'sql', texto, () => this.ehExecutado(marcado));
+    if (!this.ehTagDoKysely(marcado)) return;
+    const modelo = textoDoTemplateMarcado(this.checker, marcado.template);
+    const indeterminado = algumaInstrucaoComecaComInterpolacao(modelo) && this.ehExecutado(marcado);
+    this.avaliarSql(marcado, 'sql', indeterminado ? undefined : modelo, () => this.ehExecutado(marcado));
   }
 
   private avaliarSql(no: ts.Node, origem: string, texto: string | undefined, executado: () => boolean): void {
