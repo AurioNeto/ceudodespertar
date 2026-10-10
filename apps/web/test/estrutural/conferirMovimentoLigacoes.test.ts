@@ -130,6 +130,14 @@ const conferirComOBarrelDoBotao = (novoBarrel: string): Resultado =>
     repositorio.escrever({ 'ds/atoms/Botao/index.ts': novoBarrel }),
   );
 
+const PREFIXO_DA_DIFERENCA = 'DIFERENÇA ';
+
+const diferencasDe = (resultado: Resultado): string[] =>
+  resultado.erro
+    .split('\n')
+    .filter((linha) => linha.startsWith(PREFIXO_DA_DIFERENCA))
+    .map((linha) => linha.slice(PREFIXO_DA_DIFERENCA.length));
+
 const falhou = (resultado: Resultado): void => {
   expect(resultado.codigo).toBe(CODIGO_DE_FALHA);
 };
@@ -163,10 +171,88 @@ describe('conferir-movimento: ligações', { timeout: TEMPO_DO_CENARIO_EM_MS }, 
       );
     });
 
-    it('passa quando o import type vira import com type no nome', () => {
-      passou(
-        conferirComATela(trocar(TELA, "import type { Campo } from '../ds';", "import { type Campo } from '../ds';")),
+    it('falha quando o import type vira import com type no nome, que deixa um import de efeito', () => {
+      const resultado = conferirComATela(
+        trocar(TELA, "import type { Campo } from '../ds';", "import { type Campo } from '../ds';"),
       );
+
+      falhou(resultado);
+      expect(diferencasDe(resultado)).toEqual([
+        importNovo('pages/Tela.ts', `import de efeito <- ${emSrc('ds/index.ts')}`),
+      ]);
+    });
+
+    it('falha quando o import com type no nome vira import type, que tira o import de efeito', () => {
+      const resultado = executarCenario({
+        base: {
+          ...BASE_DO_DS,
+          'pages/Tela.ts': trocar(TELA, "import type { Campo } from '../ds';", "import { type Campo } from '../ds';"),
+        },
+        depois: (repositorio) => {
+          moverOBotao(repositorio);
+          repositorio.escrever({ 'pages/Tela.ts': TELA });
+        },
+      });
+
+      falhou(resultado);
+      expect(diferencasDe(resultado)).toEqual([
+        importPerdido('pages/Tela.ts', `import de efeito <- ${emSrc('ds/index.ts')}`),
+      ]);
+    });
+
+    it('falha quando o import {} from vira import type {} from', () => {
+      const base = trocar(TELA, "import type { Campo } from '../ds';", "import {} from '../ds';");
+      const resultado = executarCenario({
+        base: { ...BASE_DO_DS, 'pages/Tela.ts': base },
+        depois: (repositorio) => {
+          moverOBotao(repositorio);
+          repositorio.escrever({ 'pages/Tela.ts': trocar(base, "import {} from '../ds';", "import type {} from '../ds';") });
+        },
+      });
+
+      falhou(resultado);
+      expect(diferencasDe(resultado)).toEqual([
+        importPerdido('pages/Tela.ts', `import de efeito <- ${emSrc('ds/index.ts')}`),
+      ]);
+    });
+
+    it('passa quando o import de tipo se junta ao import de valor com type no nome', () => {
+      passou(
+        conferirComATela(
+          trocar(
+            trocar(TELA, "import type { Campo } from '../ds';\n", ''),
+            "import { Botao } from '../ds';",
+            "import { Botao, type Campo } from '../ds';",
+          ),
+        ),
+      );
+    });
+
+    it('passa quando o import padrão e o import de tipo do mesmo módulo viram um só', () => {
+      const separados = codigo(
+        "import padrao from '../lib/padrao';",
+        "import type { Tipo } from '../lib/padrao';",
+        '',
+        'export const usar = (valor: Tipo): string => padrao() + String(valor);',
+      );
+      const juntos = codigo(
+        "import padrao, { type Tipo } from '../lib/padrao';",
+        '',
+        'export const usar = (valor: Tipo): string => padrao() + String(valor);',
+      );
+      const padrao = codigo(
+        'export type Tipo = number;',
+        'export default function padrao(): string {',
+        "  return 'padrao';",
+        '}',
+      );
+
+      const resultado = executarCenario({
+        base: { 'lib/padrao.ts': padrao, 'pages/Usa.ts': separados },
+        depois: (repositorio) => repositorio.escrever({ 'pages/Usa.ts': juntos }),
+      });
+
+      passou(resultado);
     });
 
     it('passa quando o consumidor muda de lugar e ajusta os caminhos', () => {

@@ -50,12 +50,24 @@ function ligacoesDeNomes(leitor, clausula, modulo) {
   ];
 }
 
+const importaSoTiposComTypeNoNome = ({ isTypeOnly, name, namedBindings }) =>
+  !isTypeOnly &&
+  !name &&
+  ts.isNamedImports(namedBindings) &&
+  namedBindings.elements.every((elemento) => elemento.isTypeOnly);
+
 function ligacoesDeImportacao(leitor, arquivo, statement) {
   const modulo = leitor.resolver(statement.moduleSpecifier.text, arquivo);
+  const { importClause } = statement;
+  const efeito = ligacao('efeito', undefined, false, alvoDoModuloResolvido(modulo));
 
-  return statement.importClause
-    ? ligacoesDeNomes(leitor, statement.importClause, modulo)
-    : [ligacao('efeito', undefined, false, alvoDoModuloResolvido(modulo))];
+  if (!importClause) {
+    return [efeito];
+  }
+
+  const nomes = ligacoesDeNomes(leitor, importClause, modulo);
+
+  return importaSoTiposComTypeNoNome(importClause) ? [...nomes, efeito] : nomes;
 }
 
 const ehRequireDeModulo = (statement) =>
