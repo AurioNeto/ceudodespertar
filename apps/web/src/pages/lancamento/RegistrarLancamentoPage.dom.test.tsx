@@ -1,3 +1,4 @@
+import { act } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   botaoComTexto,
@@ -13,7 +14,7 @@ import {
 import { RegistrarLancamentoPage } from './RegistrarLancamentoPage';
 
 const sessao = vi.hoisted(() => ({ permissoes: new Set<string>() }));
-vi.mock('../../app/sessao', () => ({ useSessao: () => ({ pode: (permissao: string) => sessao.permissoes.has(permissao) }) }));
+vi.mock('@/app/sessao', () => ({ useSessao: () => ({ pode: (permissao: string) => sessao.permissoes.has(permissao) }) }));
 
 const PERMISSAO_DE_CONSOLIDAR = 'financeiro.lancamento.confirmar';
 const TEXTO_DA_CAPTURA = 'Anexar comprovanteUm toque, direto da câmera. Nunca obrigatório.';
@@ -33,6 +34,25 @@ function usarDensidade(densidade: Densidade) {
     addEventListener: () => undefined,
     removeEventListener: () => undefined,
   }));
+}
+
+function usarDensidadeQueMuda(inicial: Densidade) {
+  let atual = inicial;
+  const ouvintes = new Set<() => void>();
+  vi.stubGlobal('matchMedia', (consulta: string) => ({
+    media: consulta,
+    get matches() {
+      return atual === 'field';
+    },
+    addEventListener: (_tipo: string, ouvinte: () => void) => ouvintes.add(ouvinte),
+    removeEventListener: (_tipo: string, ouvinte: () => void) => ouvintes.delete(ouvinte),
+  }));
+  return async (proxima: Densidade) => {
+    atual = proxima;
+    await act(async () => {
+      ouvintes.forEach((ouvinte) => ouvinte());
+    });
+  };
 }
 
 beforeEach(() => {
@@ -500,6 +520,19 @@ describe('RegistrarLancamentoPage: troca de tipo', () => {
     expect(container.textContent).toContain('Enquanto isso não se resolve, dá para salvar como rascunho — nada se perde.');
   });
 
+  it('transferência com destino igual à origem — só o select de destino ganha a borda de atenção', async () => {
+    const { container } = await montar(<RegistrarLancamentoPage />);
+    await escolherTipo(container, 'Transferência');
+    const bordas = () =>
+      ['Conta de origem', 'Conta de destino'].map((rotulo) => campoRotulado<HTMLSelectElement>(container, rotulo).style.border);
+    const antes = bordas();
+
+    await escolherOpcao(campoRotulado<HTMLSelectElement>(container, 'Conta de destino'), 'cora');
+
+    expect(antes).toEqual(['1px solid var(--color-line-strong)', '1px solid var(--color-line-strong)']);
+    expect(bordas()).toEqual(['1px solid var(--color-line-strong)', '1px solid var(--color-attention)']);
+  });
+
   it('categorias escolhidas na saída — ir para transferência e voltar não as perde', async () => {
     const { container } = await montar(<RegistrarLancamentoPage />);
     await escolherCategoriaExistente(container, 'Transporte');
@@ -772,6 +805,65 @@ describe('RegistrarLancamentoPage: reembolso a uma pessoa', () => {
       'Cerimônia',
     ]);
     expect(elemento(container, '[role="switch"]').getAttribute('aria-checked')).toBe('false');
+  });
+
+  it('saída — ligar e desligar a chave pelo próprio interruptor devolve a pergunta e tira o campo da pessoa', async () => {
+    const { container } = await montar(<RegistrarLancamentoPage />);
+    const chave = elemento(container, '[role="switch"]');
+
+    await clicar(chave);
+    const ligada = chave.getAttribute('aria-checked');
+    await clicar(chave);
+
+    expect(ligada).toBe('true');
+    expect(chave.getAttribute('aria-checked')).toBe('false');
+    expect(container.textContent).toContain('Alguém do corpo adiantou do próprio bolso?');
+    expect(container.textContent).not.toContain('Vira conta a pagar');
+    expect(container.textContent).not.toContain('Quem adiantou o dinheiro');
+  });
+
+  it('escritório — o campo Quem adiantou o dinheiro tem o alvo de toque do escritório', async () => {
+    const { container } = await montar(<RegistrarLancamentoPage />);
+    await clicar(elemento(container, '[role="switch"]'));
+
+    expect(botaoDoCampoPadrao(container, 'Quem adiantou o dinheiro').style.minHeight).toBe('var(--target-office)');
+  });
+
+  it('ligado no escritório e a tela passa para campo — o campo Reembolso a entra no fim dos padrões, e a chave some', async () => {
+    const passarPara = usarDensidadeQueMuda('office');
+    const { container } = await montar(<RegistrarLancamentoPage />);
+    await clicar(elemento(container, '[role="switch"]'));
+
+    await passarPara('field');
+
+    expect(camposPadrao(container)).toEqual([
+      ['Competência', '08/2026', 'mês corrente'],
+      ['Conta de saída', 'Cora PJ', 'mais usada'],
+      ['Grupo', 'Chácara (Infraestrutura)', 'último lançamento'],
+      ['Categoria', '— escolher —', 'em branco'],
+      ['Forma de pagamento', 'Pix', 'padrão da conta'],
+      ['Cerimônia vinculada', 'Nenhuma — gasto da casa', 'sem vínculo'],
+      ['Reembolso a', 'Lucia Prado', 'conta a pagar'],
+    ]);
+    expect(container.querySelector('[role="switch"]')).toBeNull();
+  });
+
+  it('em campo com o reembolso ligado antes — tocar em Reembolso a abre a folha das pessoas e escolher uma troca o valor', async () => {
+    const passarPara = usarDensidadeQueMuda('office');
+    const { container } = await montar(<RegistrarLancamentoPage />);
+    await clicar(elemento(container, '[role="switch"]'));
+    await passarPara('field');
+    await abrirCampoPadrao(container, 'Reembolso a');
+    const folha = folhaAberta(container, 'Quem adiantou o dinheiro') as HTMLElement;
+
+    await clicar(opcaoDaFolha(folha, 'Wilson Prado'));
+
+    expect(lerCampoPadrao(botaoDoCampoPadrao(container, 'Reembolso a'))).toEqual([
+      'Reembolso a',
+      'Wilson Prado',
+      'conta a pagar',
+    ]);
+    expect(folhaAberta(container, 'Quem adiantou o dinheiro')).toBeNull();
   });
 
   it('campo — não existe a chave de reembolso, então o campo da pessoa nunca aparece', async () => {

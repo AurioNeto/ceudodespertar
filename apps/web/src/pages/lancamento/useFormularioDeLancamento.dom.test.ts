@@ -1,7 +1,7 @@
 import { act, createElement } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { desmontarTudo, montar } from '@/testes/montagem';
-import { SUGESTOES_DO_CUPOM, useFormularioDeLancamento } from './useFormularioDeLancamento';
+import { useFormularioDeLancamento } from './useFormularioDeLancamento';
 
 type Formulario = ReturnType<typeof useFormularioDeLancamento>;
 
@@ -590,7 +590,7 @@ describe('useFormularioDeLancamento: sugestões do cupom', () => {
     const { formulario, agir } = await montarFormulario();
     await agir((f) => {
       f.alterar('anexo', 'IMG.jpg');
-      f.alternarCategoria(SUGESTOES_DO_CUPOM.categoria);
+      f.alternarCategoria('Alimentação de cerimônia');
     });
 
     await agir((f) => f.aceitarSugestao('categoria'));
