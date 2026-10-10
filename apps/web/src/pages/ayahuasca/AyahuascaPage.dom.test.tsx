@@ -111,11 +111,14 @@ const modalAberto = (container: HTMLElement) => container.querySelector('button[
 
 const tituloDoModal = (container: HTMLElement) => textosDasFolhas(painelDoModal(container))[0];
 
-const linhasDeMovimento = (container: HTMLElement) => {
+const elementosDeMovimento = (container: HTMLElement) => {
   const ancora = folhasDe(container).find((folha) => /^\d\d\/\d\d\/\d{4}/.test(folha.textContent ?? ''));
   const linha = ancora?.closest('div');
-  return Array.from(linha?.parentElement?.children ?? []).map((filho) => filho.textContent);
+  return Array.from(linha?.parentElement?.children ?? []) as HTMLElement[];
 };
+
+const linhasDeMovimento = (container: HTMLElement) =>
+  elementosDeMovimento(container).map((linha) => linha.textContent);
 
 const reservaDe = (container: HTMLElement, nome: string) => {
   const titulo = folhaComTexto(container, 'span', nome);
@@ -602,6 +605,18 @@ describe('AyahuascaPage: aba Movimentos', () => {
     ]);
   });
 
+  it('escritório — cada linha leva o filete embaixo, menos a última', async () => {
+    const container = await montarAyahuasca();
+
+    await abrirAba(container, 'Movimentos');
+
+    const filetes = elementosDeMovimento(container).map((linha) => linha.style.borderBottom);
+    expect(filetes).toEqual([
+      ...Array(7).fill('var(--border-hairline)'),
+      '0px',
+    ]);
+  });
+
   it('campo — mostra o destino em cima e data, tipo e lote embaixo, sem o responsável', async () => {
     definirDensidade('field');
     const container = await montarAyahuasca();
@@ -695,6 +710,17 @@ describe('AyahuascaPage: aba Reservas', () => {
     expect(botaoPresente(container, 'Liberar')).toBe(true);
     expect(folhaComTexto<HTMLSpanElement>(reservaDe(container, 'Trabalho de cura'), 'span', 'Sem reserva').style.color).toBe(COR.pendente);
     expect(todos(container, 'button').filter((botao) => botao.textContent === 'Reservar')).toHaveLength(2);
+  });
+
+  it('reserva feita — o cartão leva a borda lateral verde; sem reserva, a borda é a linha forte', async () => {
+    const container = await montarAyahuasca();
+
+    await abrirAba(container, 'Reservas');
+
+    expect([
+      reservaDe(container, 'Mãe Divina').style.borderLeft,
+      reservaDe(container, 'Trabalho de cura').style.borderLeft,
+    ]).toEqual([`3px solid ${COR.confirmado}`, `3px solid ${COR.linhaForte}`]);
   });
 
   it('Reservar — avisa com os litros e o trabalho, e soma ao Reservado e tira do Livre', async () => {
@@ -895,6 +921,7 @@ describe('AyahuascaPage: modal de entrada de feitio', () => {
     { nome: 'negativo', digitado: '-3' },
     { nome: 'texto que não é número', digitado: 'abc' },
     { nome: 'só espaços', digitado: '   ' },
+    { nome: 'prefixo hexadecimal (0x10)', digitado: '0x10' },
   ])('litros $nome — continua pedindo os litros e Salvar fica desabilitado', async ({ digitado }) => {
     const container = await montarAyahuasca();
     await abrirEntradaDeFeitio(container);
@@ -923,7 +950,7 @@ describe('AyahuascaPage: modal de entrada de feitio', () => {
     { nome: 'ponto decimal', digitado: '12.5', esperado: '12,5 L' },
     { nome: 'decimal sem a parte inteira', digitado: ',5', esperado: '0,5 L' },
     { nome: 'texto depois do número', digitado: '9L', esperado: '9,0 L' },
-    { nome: 'ponto de milhar com vírgula (1.500,00 vira 1,5)', digitado: '1.500,00', esperado: '1,5 L' },
+    { nome: 'milhar com vírgula (1.500,00)', digitado: '1.500,00', esperado: '1,5 L' },
   ])('litros com $nome — o lote nasce com $esperado', async ({ digitado, esperado }) => {
     const container = await montarAyahuasca();
 
