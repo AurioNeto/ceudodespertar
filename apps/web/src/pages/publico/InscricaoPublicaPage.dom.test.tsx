@@ -99,6 +99,9 @@ function campoRotulado<T extends HTMLElement>(container: HTMLElement, rotulo: st
 const campoPorPlaceholder = (container: HTMLElement, placeholder: string) =>
   elemento<HTMLInputElement>(container, `input[placeholder="${placeholder}"]`);
 
+const temIcone = (origem: ParentNode | null, nome: string) => origem?.querySelector(`svg.lucide-${nome}`) != null;
+const linhaDoRodape = (container: HTMLElement, frase: string) => folhaComTexto(container, 'span', frase).parentElement;
+
 async function digitarEmCaixa(caixa: HTMLTextAreaElement, valor: string) {
   const definirValor = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value')?.set;
   await act(async () => {
@@ -386,13 +389,13 @@ describe('InscricaoPublicaPage: cadastro de quem a casa não conhece', () => {
   });
 
   it.each([
-    { nome: '', nascimento: '', telefone: '', falta: 'Falta nome completo, data de nascimento, telefone.' },
-    { nome: 'Maria', nascimento: '', telefone: '', falta: 'Falta data de nascimento, telefone.' },
-    { nome: 'Maria', nascimento: '01/02/1990', telefone: '', falta: 'Falta telefone.' },
-    { nome: '   ', nascimento: '01/02/1990', telefone: '1', falta: 'Falta nome completo.' },
-    { nome: 'Maria', nascimento: '   ', telefone: '1', falta: 'Falta data de nascimento.' },
-    { nome: 'Maria', nascimento: '01/02/1990', telefone: '   ', falta: 'Falta telefone.' },
-  ])('nome "$nome", nascimento "$nascimento", telefone "$telefone" — bloqueia e diz: $falta', async ({ nome, nascimento, telefone, falta }) => {
+    { caso: 'tudo em branco', nome: '', nascimento: '', telefone: '', falta: 'Falta nome completo, data de nascimento, telefone.' },
+    { caso: 'só o nome', nome: 'Maria', nascimento: '', telefone: '', falta: 'Falta data de nascimento, telefone.' },
+    { caso: 'nome e nascimento', nome: 'Maria', nascimento: '01/02/1990', telefone: '', falta: 'Falta telefone.' },
+    { caso: 'nome só com espaços', nome: '   ', nascimento: '01/02/1990', telefone: '1', falta: 'Falta nome completo.' },
+    { caso: 'nascimento só com espaços', nome: 'Maria', nascimento: '   ', telefone: '1', falta: 'Falta data de nascimento.' },
+    { caso: 'telefone só com espaços', nome: 'Maria', nascimento: '01/02/1990', telefone: '   ', falta: 'Falta telefone.' },
+  ])('$caso — bloqueia o Continuar e diz o que falta', async ({ nome, nascimento, telefone, falta }) => {
     const container = await abrir();
     await identificar(container, CPF_SEM_CADASTRO);
 
@@ -548,6 +551,19 @@ describe('InscricaoPublicaPage: anamnese', () => {
     expect(textoDe(container).includes(textoHerdado)).toBe(false);
   });
 
+  it('Clarice — a seta do botão das herdadas aponta para a direita fechada e para baixo aberta', async () => {
+    const container = await abrir();
+    await identificar(container, CPF_DE_CLARICE);
+    const setas = () =>
+      ['chevron-right', 'chevron-down'].map((nome) => temIcone(botaoComTexto(container, '2 respostas suas que a casa já tem'), nome));
+    const fechada = setas();
+
+    await clicar(botaoComTexto(container, '2 respostas suas que a casa já tem'));
+
+    expect(fechada).toEqual([true, false]);
+    expect(setas()).toEqual([false, true]);
+  });
+
   it('Clarice com as herdadas abertas — mostra o texto da pergunta e a resposta de cada uma', async () => {
     const container = await abrir();
     await identificar(container, CPF_DE_CLARICE);
@@ -592,17 +608,19 @@ describe('InscricaoPublicaPage: anamnese', () => {
     expect(textoDe(container)).not.toContain('respostas suas que a casa já tem');
   });
 
-  it('sem resposta alguma — o rodapé diz que o que for respondido fica guardado neste aparelho', async () => {
+  it('sem resposta alguma — o rodapé diz que o que for respondido fica guardado neste aparelho, com o ícone de celular', async () => {
     const container = await abrir();
     await identificar(container, CPF_DE_EDUARDO);
 
-    expect(textoDe(container)).toContain('Pode fechar e voltar depois. O que você responder fica guardado neste aparelho.');
+    const linha = linhaDoRodape(container, 'Pode fechar e voltar depois. O que você responder fica guardado neste aparelho.');
+
+    expect([temIcone(linha, 'smartphone'), temIcone(linha, 'circle-check')]).toEqual([true, false]);
   });
 
   it.each([
     { respondidas: 1, frase: '1 resposta guardada. Pode fechar e voltar depois — nada se perde.' },
     { respondidas: 2, frase: '2 respostas guardadas. Pode fechar e voltar depois — nada se perde.' },
-  ])('$respondidas respondida(s) — o rodapé conta: $frase', async ({ respondidas, frase }) => {
+  ])('$respondidas respondida(s) — o rodapé conta as respostas guardadas e troca o celular pelo check', async ({ respondidas, frase }) => {
     const container = await abrir();
     await identificar(container, CPF_DE_EDUARDO);
 
@@ -610,6 +628,10 @@ describe('InscricaoPublicaPage: anamnese', () => {
     if (respondidas === 2) await responder(container, GESTACAO, 'Não');
 
     expect(textoDe(container)).toContain(frase);
+    expect([temIcone(linhaDoRodape(container, frase), 'circle-check'), temIcone(linhaDoRodape(container, frase), 'smartphone')]).toEqual([
+      true,
+      false,
+    ]);
   });
 
   it('resposta de texto só com espaços — não entra na contagem das guardadas', async () => {
@@ -661,6 +683,19 @@ describe('InscricaoPublicaPage: declaração por cerimônia', () => {
     );
     expect(botaoContinuar(container).disabled).toBe(true);
     expect(botaoContinuar(container).title).toBe('Marque a declaração acima para seguir.');
+  });
+
+  it('declaração — o marcador leva o ícone de check só enquanto está marcada', async () => {
+    const container = await abrir();
+    await identificar(container, CPF_DE_HELENA);
+    const declaracao = elemento<HTMLButtonElement>(container, 'button[role="checkbox"]');
+    const antes = temIcone(declaracao, 'check');
+
+    await clicar(declaracao);
+    const marcada = temIcone(declaracao, 'check');
+    await clicar(declaracao);
+
+    expect([antes, marcada, temIcone(declaracao, 'check')]).toEqual([false, true, false]);
   });
 
   it('declaração marcada — libera Continuar, e desmarcar de novo bloqueia', async () => {
@@ -852,6 +887,25 @@ describe('InscricaoPublicaPage: participação, valor e total', () => {
       'R$ 90,00 / dia',
     ]);
     expect(opcoes.map(marcado)).toEqual([true, false, false, false]);
+    expect(opcoes.map((opcao) => opcao.textContent)).toEqual([
+      'Não vai dormir na casaVai embora depois do trabalho.sem custo',
+      'Colchonete próprio na igrejaGrátis. Não entra na contribuição nem gera lançamento — a casa só precisa saber quem fica.sem custo',
+      'Beliche no dormitórioPago à parte por quem usa a acomodação.R$ 50,00 / dia',
+      'QuartoPago à parte por quem usa a acomodação.R$ 90,00 / dia',
+    ]);
+  });
+
+  it('hospedagem — só a opção marcada leva o ícone de check no marcador', async () => {
+    const container = await chegarEmParticipacaoComoHelena();
+    const rotulos = ['Não vai dormir na casa', 'Colchonete próprio na igreja', 'Beliche no dormitório', 'Quarto'];
+    const icones = () =>
+      rotulos.map((rotulo) => temIcone(elemento<HTMLButtonElement>(container, `button[aria-label="${rotulo}"]`), 'check'));
+    const antes = icones();
+
+    await escolherHospedagem(container, 'Quarto');
+
+    expect(antes).toEqual([true, false, false, false]);
+    expect(icones()).toEqual([false, false, false, true]);
   });
 
   it('hospedagem sem custo — não mostra a linha de acomodação', async () => {
@@ -932,6 +986,7 @@ describe('InscricaoPublicaPage: participação, valor e total', () => {
 
   it.each([
     { digitado: '1.500,50', total: 'R$ 1.500,50' },
+    { digitado: '1.500.000,00', total: 'R$ 1.500.000,00' },
     { digitado: '160,5', total: 'R$ 160,50' },
     { digitado: '0', total: 'R$ 0,00' },
     { digitado: '1.5', total: 'R$ 15,00' },
@@ -1200,4 +1255,44 @@ describe('InscricaoPublicaPage: densidade', () => {
 
     expect(folhaComTexto(container, 'span', 'R$ 210,00 combinados.')).toBeDefined();
   });
+
+  it.each([
+    { campo: false, minimo: '' },
+    { campo: true, minimo: 'var(--target-field)' },
+  ])('campo=$campo — níveis e hospedagens só ganham alvo mínimo em campo', async ({ campo, minimo }) => {
+    definirDensidade(campo);
+    const container = await chegarEmParticipacaoComoHelena();
+    const botoes = [
+      ...['Social', 'Sustentável', 'Próspero'].map((nivel) => botaoDoNivel(container, nivel)),
+      ...['Não vai dormir na casa', 'Colchonete próprio na igreja', 'Beliche no dormitório', 'Quarto'].map((rotulo) =>
+        elemento<HTMLButtonElement>(container, `button[aria-label="${rotulo}"]`),
+      ),
+    ];
+
+    expect(botoes.map((botao) => botao.style.minHeight)).toEqual(Array(7).fill(minimo));
+  });
+
+  it.each([
+    { campo: false, minimo: 'var(--target-office)' },
+    { campo: true, minimo: 'var(--target-field)' },
+  ])('campo=$campo — contribuição, contato de emergência e restrições usam o alvo $minimo', async ({ campo, minimo }) => {
+    definirDensidade(campo);
+    const container = await chegarEmParticipacaoComoHelena();
+
+    const alvos = ['Quanto você vai contribuir', 'Contato de emergência', 'Restrições alimentares'].map(
+      (rotulo) => campoRotulado<HTMLInputElement>(container, rotulo).style.minHeight,
+    );
+
+    expect(alvos).toEqual([minimo, minimo, minimo]);
+  });
+
+  it.each([{ campo: false }, { campo: true }])(
+    'campo=$campo — Não tenho nenhuma fica no alvo de escritório, sem acompanhar a densidade',
+    async ({ campo }) => {
+      definirDensidade(campo);
+      const container = await chegarEmParticipacaoComoClarice();
+
+      expect(botaoComTexto(container, 'Não tenho nenhuma').style.minHeight).toBe('var(--target-office)');
+    },
+  );
 });
