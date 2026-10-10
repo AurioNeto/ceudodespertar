@@ -1,7 +1,7 @@
 import type { ItemNaFila, LancamentoId } from '@cdd/contracts';
 import { dataLocal, reais } from '@cdd/contracts';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { botaoComTexto, clicar, desmontarTudo, digitar, elemento, montar, todos } from '@/testes/montagem';
+import { botaoComTexto, clicar, desmontarTudo, digitar, elemento, folhaComTexto, montar, todos } from '@/testes/montagem';
 import { PainelDeRevisao } from './PainelDeRevisao';
 import { campoComRotulo, digitarNaCaixa, rotulosDosCampos } from './apoioDeTeste';
 
@@ -93,6 +93,18 @@ describe('PainelDeRevisao: o que mostra do item', () => {
 
     expect(container.textContent).toContain('Revisar lançamento');
     expect(container.textContent).toContain(texto);
+  });
+
+  it.each([
+    { confianca: 'ALTA' as const, texto: 'Alta confiança', tom: 'confirmed' },
+    { confianca: 'MEDIA' as const, texto: 'Média confiança', tom: 'suggest' },
+    { confianca: 'BAIXA' as const, texto: 'Baixa confiança', tom: 'pending' },
+  ])('confiança $confianca — o selo do cabeçalho fica no tom $tom', async ({ confianca, texto, tom }) => {
+    const { container } = await montarPainel({ ...SAIDA, confianca }).montagem;
+
+    const selo = folhaComTexto<HTMLSpanElement>(container, 'span', texto);
+
+    expect([selo.style.color, selo.style.background]).toEqual([`var(--color-${tom})`, `var(--color-${tom}-soft)`]);
   });
 
   it.each([

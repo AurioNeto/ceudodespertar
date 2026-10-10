@@ -13,7 +13,7 @@ import {
 type Transformacao = (lista: readonly ItemNaFila[]) => readonly ItemNaFila[];
 
 const fila = vi.hoisted(() => ({ transformar: ((lista) => lista) as Transformacao }));
-vi.mock('../../mocks/verificacao', async (importarOriginal) => {
+vi.mock('@/mocks/verificacao', async (importarOriginal) => {
   const original = await importarOriginal<{ filaDeVerificacaoInicial: readonly ItemNaFila[] }>();
   return {
     ...original,
@@ -55,6 +55,12 @@ const MOTIVOS_SEM_ALTA_CONFIANCA = [
   'TED — Hidro Serviços',
   'contribuições da cerimônia de agosto',
 ];
+
+const MOTIVOS_FORA_DA_FILA_DESIGUAL = new Set([
+  'TED — Hidro Serviços',
+  'gasolina para buscar mantimentos',
+  'contribuições da cerimônia de agosto',
+]);
 
 const FILA_INICIAL = [
   ['mercado cerimônia mãe divina', '28/08/2026 · Foto de comprovante · Lucia Prado · Alimentação de cerimônia', 'Alta confiança', `${SINAL_DE_SAIDA}187,40`],
@@ -171,6 +177,22 @@ describe('VerificacaoLotePage: cabeçalho e linhas da fila', () => {
     expect(tabelaDaFila(container)).toEqual(FILA_INICIAL);
   });
 
+  it.each([
+    { motivo: 'mercado cerimônia mãe divina', texto: 'Alta confiança', tom: 'confirmed' },
+    { motivo: 'gasolina para buscar mantimentos', texto: 'Média confiança', tom: 'suggest' },
+    { motivo: 'PIX recebido — Antônio Vieira', texto: 'Baixa confiança', tom: 'pending' },
+  ])('linha $motivo — o selo diz $texto no tom $tom', async ({ motivo, texto, tom }) => {
+    const { container } = await montar(<VerificacaoLotePage />);
+
+    const selo = linhaDoMotivo(container, motivo).children[3] as HTMLElement;
+
+    expect([selo.textContent, selo.style.color, selo.style.background]).toEqual([
+      texto,
+      `var(--color-${tom})`,
+      `var(--color-${tom}-soft)`,
+    ]);
+  });
+
   it('a transferência — a meta mostra origem e destino no lugar da categoria, e o valor não leva sinal', async () => {
     const { container } = await montar(<VerificacaoLotePage />);
 
@@ -227,6 +249,52 @@ describe('VerificacaoLotePage: filtro por origem', () => {
       ['Extrato (4)', 'false'],
       ['Registro rápido (4)', 'false'],
     ]);
+  });
+
+  it.each([
+    {
+      filtro: 'Todas',
+      esperado: [
+        ['Todas (9)', 'true'],
+        ['Comprovantes (4)', 'false'],
+        ['Extrato (3)', 'false'],
+        ['Registro rápido (2)', 'false'],
+      ],
+    },
+    {
+      filtro: 'Comprovantes',
+      esperado: [
+        ['Todas (9)', 'false'],
+        ['Comprovantes (4)', 'true'],
+        ['Extrato (3)', 'false'],
+        ['Registro rápido (2)', 'false'],
+      ],
+    },
+    {
+      filtro: 'Extrato',
+      esperado: [
+        ['Todas (9)', 'false'],
+        ['Comprovantes (4)', 'false'],
+        ['Extrato (3)', 'true'],
+        ['Registro rápido (2)', 'false'],
+      ],
+    },
+    {
+      filtro: 'Registro rápido',
+      esperado: [
+        ['Todas (9)', 'false'],
+        ['Comprovantes (4)', 'false'],
+        ['Extrato (3)', 'false'],
+        ['Registro rápido (2)', 'true'],
+      ],
+    },
+  ])('com o filtro $filtro ativo — as quatro contagens seguem as da fila inteira, não as do filtro', async ({ filtro, esperado }) => {
+    fila.transformar = (lista) => lista.filter((item) => !MOTIVOS_FORA_DA_FILA_DESIGUAL.has(item.motivo));
+    const { container } = await montar(<VerificacaoLotePage />);
+
+    await escolherFiltro(container, filtro);
+
+    expect(filtrosDeOrigem(container)).toEqual(esperado);
   });
 
   it.each([
@@ -291,6 +359,21 @@ describe('VerificacaoLotePage: seleção', () => {
     expect(marcada).toEqual(['selecionar Enel — conta de luz']);
     expect(rotuloComUma).toBe('1 selecionado');
     expect(rotuloDaSelecao(container)).toBeNull();
+  });
+
+  it('linha marcada — ganha o fundo e a borda royal, e as outras seguem no fundo do cartão; desmarcar devolve', async () => {
+    const { container } = await montar(<VerificacaoLotePage />);
+    const comFundoRoyal = () =>
+      linhasDaFila(container)
+        .filter((linha) => linha.style.background === 'var(--color-royal-soft)')
+        .map((linha) => [lerLinha(linha)[0], linha.style.border]);
+
+    await marcar(container, 'Enel — conta de luz');
+    const marcada = comFundoRoyal();
+    await marcar(container, 'Enel — conta de luz');
+
+    expect(marcada).toEqual([['Enel — conta de luz', '1px solid var(--color-royal-border)']]);
+    expect(comFundoRoyal()).toEqual([]);
   });
 
   it('marcar duas linhas — a barra diz 2 selecionados', async () => {
@@ -535,6 +618,14 @@ describe('VerificacaoLotePage: aprovar todos de alta confiança', () => {
     expect(mensagem(container)).toBe('1 lançamento de alta confiança aprovado.');
   });
 
+  it('um único item na fila — a linha de selecionar todos e o botão de alta confiança continuam, com a contagem 1', async () => {
+    fila.transformar = (lista) => lista.slice(0, 1);
+    const { container } = await montar(<VerificacaoLotePage />);
+
+    expect(caixaDeTodos(container)?.checked).toBe(false);
+    expect(botaoDeAltaConfianca(container)?.textContent).toBe('Aprovar todos de alta confiança (1)');
+  });
+
   it('com seleção de uma de alta e uma de média — a de alta sai da seleção junto, e a de média continua selecionada', async () => {
     const { container } = await montar(<VerificacaoLotePage />);
     await marcarVarios(container, ['mercado cerimônia mãe divina', 'gasolina para buscar mantimentos']);
@@ -557,9 +648,40 @@ describe('VerificacaoLotePage: fila vazia', () => {
 
     expect(container.textContent).toContain('Nada nessa fila');
     expect(container.textContent).toContain('Tudo que chegou pela captura automática já foi conferido.');
-    expect(filtrosDeOrigem(container).slice(0, 2)).toEqual([
+    expect(filtrosDeOrigem(container)).toEqual([
       ['Todas (8)', 'false'],
       ['Comprovantes (0)', 'true'],
+      ['Extrato (4)', 'false'],
+      ['Registro rápido (4)', 'false'],
+    ]);
+  });
+
+  it('filtro sem itens com o resto da fila cheio — a linha de selecionar todos e o botão de alta confiança continuam na tela', async () => {
+    const { container } = await montar(<VerificacaoLotePage />);
+    await escolherFiltro(container, 'Comprovantes');
+    await clicar(caixaDeTodos(container) as HTMLInputElement);
+    await aprovarSelecionados(container);
+
+    expect(container.textContent).toContain('Selecionar todos visíveis');
+    expect(caixaDeTodos(container)?.checked).toBe(false);
+    expect(botaoDeAltaConfianca(container)?.textContent).toBe('Aprovar todos de alta confiança (4)');
+    expect(botaoDeAltaConfianca(container)?.disabled).toBe(false);
+  });
+
+  it('filtro sem itens — Aprovar todos de alta confiança consolida as quatro de outras origens que a tela não mostra', async () => {
+    const { container } = await montar(<VerificacaoLotePage />);
+    await escolherFiltro(container, 'Comprovantes');
+    await clicar(caixaDeTodos(container) as HTMLInputElement);
+    await aprovarSelecionados(container);
+
+    await aprovarAltaConfianca(container);
+
+    expect(mensagem(container)).toBe('4 lançamentos de alta confiança aprovados.');
+    expect(filtrosDeOrigem(container)).toEqual([
+      ['Todas (4)', 'false'],
+      ['Comprovantes (0)', 'true'],
+      ['Extrato (2)', 'false'],
+      ['Registro rápido (2)', 'false'],
     ]);
   });
 
