@@ -1,6 +1,6 @@
 import type { Dinheiro, EventoId, FormaDePagamento, StatusContratacao } from '@cdd/contracts';
 import { reais } from '@cdd/contracts';
-import { id } from './ids';
+import { id } from '@/mocks/ids';
 
 /**
  * `E-13` — o que a Munay faz fora de casa.
@@ -136,25 +136,6 @@ export const contratacoes: readonly ContratacaoNaTela[] = [
     devolucaoDevida: { valor: reais(1800), situacao: 'Na fila da tesouraria, em Devoluções a pagar' },
   },
 ];
-
-export const STATUS_ROTULO: Record<StatusContratacao, string> = {
-  PROPOSTA: 'Proposta',
-  CONFIRMADA: 'Confirmada',
-  REALIZADA: 'Realizada',
-  CANCELADA: 'Cancelada',
-};
-
-export const FORMA_ROTULO: Record<FormaDePagamento, string> = {
-  ANTECIPADO: 'Antecipado',
-  NO_ATO: 'No ato',
-  FATURADO: 'Faturado',
-};
-
-export const FORMA_EXPLICACAO: Record<FormaDePagamento, string> = {
-  ANTECIPADO: 'Combinado para antes do trabalho.',
-  NO_ATO: 'Recebido no dia, na hora.',
-  FATURADO: 'A receber depois do trabalho, na data combinada.',
-};
 
 /** Munay é MEI — o teto é parâmetro da unidade, e muda por lei. */
 export const munay = {

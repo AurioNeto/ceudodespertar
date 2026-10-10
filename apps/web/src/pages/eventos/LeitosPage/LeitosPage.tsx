@@ -14,7 +14,7 @@ import {
   Recado,
   Rotulo,
 } from '@/ds';
-import { pluralizar } from '../../lib/formato';
+import { pluralizar } from '@/lib/formato';
 import {
   alocacaoInicial,
   conflitoDeAgenda,
@@ -23,9 +23,9 @@ import {
   foraDoMapa,
   hospedes,
   liberadoPorCancelamento,
-  TIPO_LEITO_ROTULO,
   type NoiteId,
-} from '../../mocks/leitos';
+} from './mocks/leitos';
+import { TIPO_LEITO_ROTULO } from './constantes';
 
 /**
  * `E-10` · Mapa de leitos e `E-15` · Cadastro — Doc 4 §7 e Doc 2 §2.6.

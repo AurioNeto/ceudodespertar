@@ -15,16 +15,14 @@ import {
   Recado,
   Rotulo,
 } from '@/ds';
-import { formatarBRL, pluralizar } from '../../lib/formato';
-import { contas } from '../../mocks/financeiro';
+import { formatarBRL, pluralizar } from '@/lib/formato';
+import { contas } from '@/mocks/financeiro';
 import {
   contratacoes as contratacoesIniciais,
-  FORMA_EXPLICACAO,
-  FORMA_ROTULO,
   munay,
-  STATUS_ROTULO,
   type ContratacaoNaTela,
-} from '../../mocks/contratacoes';
+} from './mocks/contratacoes';
+import { FORMA_EXPLICACAO, FORMA_ROTULO, STATUS_ROTULO } from './constantes';
 
 /**
  * `E-13` · Contratações — Doc 4 §7 e Doc 2 §2.3.

@@ -1,12 +1,8 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { botaoComTexto, clicar, desmontarTudo, digitar, elemento, escolherOpcao, montar, todos } from '@/testes/montagem';
-import {
-  FormularioDeTrabalho,
-  rascunhoDe,
-  rascunhoVazio,
-  type RascunhoDeTrabalho,
-} from './FormularioDeTrabalho';
-import { botaoPeloRotuloAcessivel, campoDoRotulo, digitarEmTextarea, umTrabalho } from './apoioDeTeste';
+import { FormularioDeTrabalho } from './FormularioDeTrabalho';
+import { rascunhoDe, rascunhoVazio, type RascunhoDeTrabalho } from '../../utils/rascunhoDeTrabalho';
+import { botaoPeloRotuloAcessivel, campoDoRotulo, digitarEmTextarea, umTrabalho } from '../../apoioDeTeste';
 
 afterEach(desmontarTudo);
 

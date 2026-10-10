@@ -1,0 +1,1 @@
+export { DevolucoesPage } from './DevolucoesPage';

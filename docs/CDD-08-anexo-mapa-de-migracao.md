@@ -444,7 +444,7 @@ Os testes do #58, do #59, do #61 e do #62 se repartem por describe entre as unid
 | `pages/agenda/AgendaPage.dom.test.tsx` (entra com o #85) | `pages/eventos/AgendaPage/AgendaPage.dom.test.tsx` | mover | Mover eventos |
 | `pages/agenda/CalendarioMensal.tsx` | `pages/eventos/AgendaPage/components/CalendarioMensal/CalendarioMensal.tsx` | mover | Mover eventos |
 | `pages/agenda/CalendarioMensal.dom.test.tsx` (entra com o #85) | `pages/eventos/AgendaPage/components/CalendarioMensal/CalendarioMensal.dom.test.tsx` | mover | Mover eventos |
-| `pages/agenda/DetalheDoTrabalho.tsx` | `pages/eventos/AgendaPage/components/DetalheDoTrabalho/DetalheDoTrabalho.tsx` | mover | Mover eventos |
+| `pages/agenda/DetalheDoTrabalho.tsx` | `pages/eventos/AgendaPage/components/DetalheDoTrabalho/DetalheDoTrabalho.tsx` (+ `index.ts` com `export * from`, que leva os dois exports do arquivo: `DetalheDoTrabalho`, para a `AgendaPage`, e `DetalheDoTrabalhoProps`, para o `apoioDeTeste.tsx`; o conferir-movimento acusa `export type { DetalheDoTrabalhoProps }` como exportação nova) | mover | Mover eventos |
 | `pages/agenda/DetalheDoTrabalho.dom.test.tsx` (entra com o #85) | `pages/eventos/AgendaPage/components/DetalheDoTrabalho/DetalheDoTrabalho.dom.test.tsx` | mover | Mover eventos |
 | `pages/agenda/FormularioDeTrabalho.tsx` (componente) | `pages/eventos/AgendaPage/components/FormularioDeTrabalho/FormularioDeTrabalho.tsx` | repartir por export | Mover eventos |
 | `pages/agenda/FormularioDeTrabalho.tsx`: `rascunhoVazio`, `rascunhoDe`, `RascunhoDeTrabalho` (a `AgendaPage` também os usa) | `pages/eventos/AgendaPage/utils/rascunhoDeTrabalho.ts` | repartir por export | Mover eventos |

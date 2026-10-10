@@ -11,12 +11,12 @@ import {
   itensDaListaDoCartao,
   recadoDaTela,
   textoDaFolhaPai,
-} from './apoioDeTeste';
+} from '../apoioDeTeste';
 
 const cenario = vi.hoisted(() => ({ solicitadasEm: undefined as readonly string[] | undefined }));
 
-vi.mock('@/mocks/devolucoes', async (importarOriginal) => {
-  const original = await importarOriginal<typeof import('@/mocks/devolucoes')>();
+vi.mock('@/pages/eventos/DevolucoesPage/mocks/devolucoes', async (importarOriginal) => {
+  const original = await importarOriginal<typeof import('@/pages/eventos/DevolucoesPage/mocks/devolucoes')>();
   return {
     ...original,
     get fila() {

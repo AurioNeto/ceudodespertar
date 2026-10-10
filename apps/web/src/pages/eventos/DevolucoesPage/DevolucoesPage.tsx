@@ -13,9 +13,9 @@ import {
   Recado,
   Rotulo,
 } from '@/ds';
-import { formatarBRL, formatarCompetencia, pluralizar } from '../../lib/formato';
-import { contas } from '../../mocks/financeiro';
-import { fila as filaInicial, faltaramSemPedir, pagas as pagasIniciais, type DevolucaoNaFila } from '../../mocks/devolucoes';
+import { formatarBRL, formatarCompetencia, pluralizar } from '@/lib/formato';
+import { contas } from '@/mocks/financeiro';
+import { fila as filaInicial, faltaramSemPedir, pagas as pagasIniciais, type DevolucaoNaFila } from './mocks/devolucoes';
 
 /**
  * `E-09` · Devoluções a pagar — Doc 4 §7 e Doc 2 §2.9.

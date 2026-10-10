@@ -1,6 +1,6 @@
 import { Button, Icon, StatusBadge, type BadgeTone, Interruptor } from '@/ds';
-import { CartazSlot } from '../../components/CartazSlot';
-import { formatarValor } from '../../lib/formato';
+import { CartazSlot } from '@/components/CartazSlot';
+import { formatarValor } from '@/lib/formato';
 import {
   CORES_POR_TIPO,
   VERSAO_DO_FORMULARIO,

@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { ContratacaoNaTela } from '@/mocks/contratacoes';
+import type { ContratacaoNaTela } from '@/pages/eventos/ContratacoesPage/mocks/contratacoes';
 import { botaoComTexto, clicar, desmontarTudo, digitar, elemento, escolherOpcao, montar, todos } from '@/testes/montagem';
 import { ContratacoesPage } from './ContratacoesPage';
 import {
@@ -11,12 +11,12 @@ import {
   folhaComTextoExato,
   recadoDaTela,
   textoDaFolhaPai,
-} from './apoioDeTeste';
+} from '../apoioDeTeste';
 
 const cenario = vi.hoisted(() => ({ primeira: undefined as Partial<ContratacaoNaTela> | undefined }));
 
-vi.mock('@/mocks/contratacoes', async (importarOriginal) => {
-  const original = await importarOriginal<typeof import('@/mocks/contratacoes')>();
+vi.mock('@/pages/eventos/ContratacoesPage/mocks/contratacoes', async (importarOriginal) => {
+  const original = await importarOriginal<typeof import('@/pages/eventos/ContratacoesPage/mocks/contratacoes')>();
   return {
     ...original,
     get contratacoes() {
