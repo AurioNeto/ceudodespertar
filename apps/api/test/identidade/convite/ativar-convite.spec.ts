@@ -43,6 +43,7 @@ class RelogioAjustavel extends Relogio {
 
 class Diario {
   readonly eventos: string[] = [];
+  transacoesAbertas = 0;
 
   registrar(evento: string): void {
     this.eventos.push(evento);
@@ -90,7 +91,11 @@ class UnidadeFalsa extends UnidadeDeTrabalho {
   transacao<T>(modo: ModoDeTransacao, fn: (contexto: ContextoDaTransacao) => Promise<T>): Promise<T> {
     this.modos.push(modo);
     this.diario.registrar(`transacao(${modo}, contexto=${this.diario.instituicaoVigente()})`);
-    return fn({} as ContextoDaTransacao);
+    this.diario.transacoesAbertas += 1;
+    return fn({} as ContextoDaTransacao).finally(() => {
+      this.diario.transacoesAbertas -= 1;
+      this.diario.registrar(`fim(${modo})`);
+    });
   }
 }
 
@@ -98,7 +103,7 @@ class RepositorioFalso extends RepositorioDeUsuario {
   readonly salvos: Usuario[] = [];
 
   constructor(
-    private readonly usuario: Usuario | undefined,
+    public usuario: Usuario | undefined,
     private readonly diario: Diario,
   ) {
     super();
@@ -122,6 +127,7 @@ class RepositorioFalso extends RepositorioDeUsuario {
 
 class ConferidorFalso extends ConferidorDeSujeito {
   readonly consultados: string[] = [];
+  readonly transacoesAbertasNasConsultas: number[] = [];
   resposta: () => Promise<string | undefined> = () => Promise.resolve(EMAIL);
 
   constructor(private readonly diario: Diario) {
@@ -130,6 +136,7 @@ class ConferidorFalso extends ConferidorDeSujeito {
 
   emailDo(sujeito: string): Promise<string | undefined> {
     this.consultados.push(sujeito);
+    this.transacoesAbertasNasConsultas.push(this.diario.transacoesAbertas);
     this.diario.registrar('conferir');
     return this.resposta();
   }
@@ -145,14 +152,23 @@ function usuarioPendente(convite: Convite | null = Convite.criar(HASH_DO_TOKEN, 
   return usuarioEm('CONVITE_PENDENTE', convite);
 }
 
-function usuarioEm(situacao: SituacaoUsuario, convite: Convite | null, subjectId: string | null = null): Usuario {
+function usuarioComEmail(email: string): Usuario {
+  return usuarioEm('CONVITE_PENDENTE', Convite.criar(HASH_DO_TOKEN, EXPIRA_EM, AUTOR, CRIADO_EM), null, email);
+}
+
+function usuarioEm(
+  situacao: SituacaoUsuario,
+  convite: Convite | null,
+  subjectId: string | null = null,
+  email: string = EMAIL,
+): Usuario {
   return Usuario.reconstituir(
     {
       id: USUARIO_ID,
       pessoaId: null,
       subjectId,
       nome: 'Maria Silva',
-      email: EMAIL,
+      email,
       situacao,
       grupos: [],
       ativadoEm: null,
@@ -204,26 +220,38 @@ describe('AtivarConvite', () => {
     expect(resolvedor.hashesRecebidos).toEqual([HASH_DO_TOKEN]);
   });
 
-  it('segue a ordem: resolver, entrar na instituição e abrir a escrita, carregar, conferir no provedor, salvar', async () => {
+  it('segue a ordem: resolver, ler e avaliar em transação curta, conferir fora dela, abrir a escrita, recarregar e salvar', async () => {
     const { ativar, diario } = montar({ usuario: usuarioPendente() });
 
     await ativar.executar({ token: TOKEN, sujeito: SUJEITO });
 
     expect(diario.eventos).toEqual([
       'resolver(contexto=undefined)',
+      `transacao(leitura, contexto=${INSTITUICAO})`,
+      `porId(contexto=${INSTITUICAO})`,
+      'fim(leitura)',
+      'conferir',
       `transacao(escrita, contexto=${INSTITUICAO})`,
       `porId(contexto=${INSTITUICAO})`,
-      'conferir',
       `salvar(contexto=${INSTITUICAO})`,
+      'fim(escrita)',
     ]);
   });
 
-  it('abre a transação de escrita uma única vez, dentro do contexto da instituição do convite', async () => {
+  it('o provedor é consultado com nenhuma transação aberta', async () => {
+    const { ativar, conferidor } = montar({ usuario: usuarioPendente() });
+
+    await ativar.executar({ token: TOKEN, sujeito: SUJEITO });
+
+    expect(conferidor.transacoesAbertasNasConsultas).toEqual([0]);
+  });
+
+  it('abre uma transação de leitura e uma de escrita, ambas dentro do contexto da instituição do convite', async () => {
     const { ativar, unidade } = montar({ usuario: usuarioPendente() });
 
     await ativar.executar({ token: TOKEN, sujeito: SUJEITO });
 
-    expect(unidade.modos).toEqual(['escrita']);
+    expect(unidade.modos).toEqual(['leitura', 'escrita']);
   });
 
   it('o instante de ativação vem do relógio injetado', async () => {
@@ -320,6 +348,18 @@ describe('AtivarConvite', () => {
     });
 
     it.each([
+      ['espaços nas pontas', EMAIL, `  ${EMAIL} `],
+      ['maiúsculas no e-mail do convite', 'MARIA@Casa.ORG', EMAIL],
+      ['forma decomposta no provedor', 'jos\u00e9@casa.org', 'jose\u0301@casa.org'],
+      ['forma composta no provedor', 'jose\u0301@casa.org', 'jos\u00e9@casa.org'],
+    ])('aceita %s', async (_descricao, emailDoConvite, emailNoProvedor) => {
+      const { ativar, conferidor } = montar({ usuario: usuarioComEmail(emailDoConvite) });
+      conferidor.resposta = () => Promise.resolve(emailNoProvedor);
+
+      expect(ehOk(await ativar.executar({ token: TOKEN, sujeito: SUJEITO }))).toBe(true);
+    });
+
+    it.each([
       ['e-mail de outra pessoa', 'joao@casa.org'],
       ['e-mail ausente no provedor', undefined],
       ['e-mail com sufixo', `${EMAIL}.br`],
@@ -355,6 +395,78 @@ describe('AtivarConvite', () => {
       conferidor.resposta = () => Promise.reject(new TypeError('falha de programação'));
 
       await expect(ativar.executar({ token: TOKEN, sujeito: SUJEITO })).rejects.toThrow(TypeError);
+    });
+  });
+
+  describe('reavaliação na escrita: o estado pode mudar enquanto o provedor responde', () => {
+    const conviteUsado = Convite.criar(HASH_DO_TOKEN, EXPIRA_EM, AUTOR, CRIADO_EM).usar(CRIADO_EM);
+
+    it('convite revogado por reenvio durante a conferência: CONVITE_INVALIDO, nada é gravado', async () => {
+      const usuario = usuarioPendente();
+      const { ativar, conferidor, repositorio } = montar({ usuario });
+      conferidor.resposta = () => {
+        usuario.reenviarConvite('e'.repeat(64), EXPIRA_EM, AUTOR, CRIADO_EM);
+        return Promise.resolve(EMAIL);
+      };
+
+      expect(codigoDe(await ativar.executar({ token: TOKEN, sujeito: SUJEITO }))).toBe('CONVITE_INVALIDO');
+      expect(repositorio.salvos).toEqual([]);
+      expect(usuario.situacao).toBe('CONVITE_PENDENTE');
+      expect(usuario.subjectId).toBeNull();
+    });
+
+    it('outro sub ativou durante a conferência: CONVITE_JA_USADO, nada é gravado', async () => {
+      const { ativar, conferidor, repositorio } = montar({ usuario: usuarioPendente() });
+      conferidor.resposta = () => {
+        repositorio.usuario = usuarioEm('ATIVO', conviteUsado, 'sub-de-outra-pessoa');
+        return Promise.resolve(EMAIL);
+      };
+
+      expect(codigoDe(await ativar.executar({ token: TOKEN, sujeito: SUJEITO }))).toBe('CONVITE_JA_USADO');
+      expect(repositorio.salvos).toEqual([]);
+    });
+
+    it('o mesmo sub ativou durante a conferência: 200 idempotente, sem segunda gravação', async () => {
+      const { ativar, conferidor, repositorio } = montar({ usuario: usuarioPendente() });
+      conferidor.resposta = () => {
+        repositorio.usuario = usuarioEm('ATIVO', conviteUsado, SUJEITO);
+        return Promise.resolve(EMAIL);
+      };
+
+      expect(await ativar.executar({ token: TOKEN, sujeito: SUJEITO })).toEqual({ tipo: 'ok', valor: { situacao: 'ATIVO' } });
+      expect(repositorio.salvos).toEqual([]);
+    });
+
+    it('usuário suspenso durante a conferência: USUARIO_SUSPENSO, nada é gravado', async () => {
+      const { ativar, conferidor, repositorio } = montar({ usuario: usuarioPendente() });
+      conferidor.resposta = () => {
+        repositorio.usuario = usuarioEm('SUSPENSO', conviteUsado, SUJEITO);
+        return Promise.resolve(EMAIL);
+      };
+
+      expect(codigoDe(await ativar.executar({ token: TOKEN, sujeito: SUJEITO }))).toBe('USUARIO_SUSPENSO');
+      expect(repositorio.salvos).toEqual([]);
+    });
+
+    it('usuário removido durante a conferência: CONVITE_INVALIDO', async () => {
+      const { ativar, conferidor, repositorio } = montar({ usuario: usuarioPendente() });
+      conferidor.resposta = () => {
+        repositorio.usuario = undefined;
+        return Promise.resolve(EMAIL);
+      };
+
+      expect(codigoDe(await ativar.executar({ token: TOKEN, sujeito: SUJEITO }))).toBe('CONVITE_INVALIDO');
+    });
+
+    it('convite que expira durante a conferência: CONVITE_EXPIRADO, nada é gravado', async () => {
+      const { ativar, conferidor, repositorio, relogio } = montar({ usuario: usuarioPendente() });
+      conferidor.resposta = () => {
+        relogio.instante = new Date(EXPIRA_EM.getTime() + 1);
+        return Promise.resolve(EMAIL);
+      };
+
+      expect(codigoDe(await ativar.executar({ token: TOKEN, sujeito: SUJEITO }))).toBe('CONVITE_EXPIRADO');
+      expect(repositorio.salvos).toEqual([]);
     });
   });
 

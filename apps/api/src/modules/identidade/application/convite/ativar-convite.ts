@@ -7,9 +7,11 @@ import { erroDeDominio } from '../../../../shared/kernel/erro-de-dominio.js';
 import type { ErroDeDominio } from '../../../../shared/kernel/erro-de-dominio.js';
 import { err, ok } from '../../../../shared/kernel/result.js';
 import type { Result } from '../../../../shared/kernel/result.js';
+import type { DesfechoDaAvaliacaoDeAtivacao, Usuario } from '../../domain/usuario/usuario.js';
 import { RepositorioDeUsuario } from '../../domain/usuario/usuario.repo.js';
 import { ConferidorDeSujeito, ProvedorDeIdentidadeIndisponivel } from './conferidor-de-sujeito.js';
 import { GeradorDeTokenDeConvite } from './gerador-de-token-de-convite.js';
+import { normalizarEmail } from './normalizar-email.js';
 import { ResolvedorDeConvite } from './resolvedor-de-convite.js';
 
 export interface ComandoDeAtivacao {
@@ -18,6 +20,11 @@ export interface ComandoDeAtivacao {
 }
 
 type ResultadoDaAtivacao = Result<UsuarioAtivado, ErroDeDominio>;
+
+interface AvaliacaoCarregada {
+  readonly usuario: Usuario;
+  readonly desfecho: DesfechoDaAvaliacaoDeAtivacao;
+}
 
 const USUARIO_ATIVADO: UsuarioAtivado = { situacao: 'ATIVO' };
 
@@ -37,28 +44,37 @@ export class AtivarConvite {
     const dono = await this.convites.resolver(hash);
     if (dono === undefined) return err(erroDeDominio('CONVITE_INVALIDO'));
 
-    return emContextoDaInstituicao(dono.instituicaoId, () =>
-      this.unidadeDeTrabalho.transacao('escrita', () => this.ativarNaInstituicao(dono.usuarioId, hash, sujeito)),
-    );
+    return emContextoDaInstituicao(dono.instituicaoId, () => this.ativarNaInstituicao(dono.usuarioId, hash, sujeito));
   }
 
-  private async ativarNaInstituicao(
-    usuarioId: UsuarioId,
-    hash: string,
-    sujeito: string,
-  ): Promise<ResultadoDaAtivacao> {
-    const usuario = await this.usuarios.porId(usuarioId);
-    if (usuario === undefined) return err(erroDeDominio('CONVITE_INVALIDO'));
+  private async ativarNaInstituicao(usuarioId: UsuarioId, hash: string, sujeito: string): Promise<ResultadoDaAtivacao> {
+    const previa = await this.unidadeDeTrabalho.transacao('leitura', () =>
+      this.avaliarAtivacao(usuarioId, hash, sujeito),
+    );
+    if (previa.tipo === 'erro') return previa;
+    if (previa.valor.desfecho === 'JA_ATIVADO_PELO_MESMO_SUJEITO') return ok(USUARIO_ATIVADO);
 
-    const agora = this.relogio.agora();
-    const avaliacao = usuario.avaliarAtivacao(hash, sujeito, agora);
-    if (avaliacao.tipo === 'erro') return avaliacao;
-    if (avaliacao.valor === 'JA_ATIVADO_PELO_MESMO_SUJEITO') return ok(USUARIO_ATIVADO);
-
-    const conferencia = await this.conferirEmailDoSujeito(usuario.email, sujeito);
+    const conferencia = await this.conferirEmailDoSujeito(previa.valor.usuario.email, sujeito);
     if (conferencia.tipo === 'erro') return conferencia;
 
-    const ativado = usuario.ativar(hash, sujeito, agora);
+    return this.unidadeDeTrabalho.transacao('escrita', () => this.ativarSeAindaValido(usuarioId, hash, sujeito));
+  }
+
+  private async avaliarAtivacao(usuarioId: UsuarioId, hash: string, sujeito: string): Promise<Result<AvaliacaoCarregada, ErroDeDominio>> {
+    const usuario = await this.usuarios.porId(usuarioId);
+    if (usuario === undefined) return err(erroDeDominio('CONVITE_INVALIDO'));
+    const avaliacao = usuario.avaliarAtivacao(hash, sujeito, this.relogio.agora());
+    if (avaliacao.tipo === 'erro') return avaliacao;
+    return ok({ usuario, desfecho: avaliacao.valor });
+  }
+
+  private async ativarSeAindaValido(usuarioId: UsuarioId, hash: string, sujeito: string): Promise<ResultadoDaAtivacao> {
+    const atual = await this.avaliarAtivacao(usuarioId, hash, sujeito);
+    if (atual.tipo === 'erro') return atual;
+    if (atual.valor.desfecho === 'JA_ATIVADO_PELO_MESMO_SUJEITO') return ok(USUARIO_ATIVADO);
+
+    const { usuario } = atual.valor;
+    const ativado = usuario.ativar(hash, sujeito, this.relogio.agora());
     if (ativado.tipo === 'erro') return ativado;
     await this.usuarios.salvar(usuario);
     return ok(USUARIO_ATIVADO);
@@ -67,7 +83,7 @@ export class AtivarConvite {
   private async conferirEmailDoSujeito(emailDoConvite: string, sujeito: string): Promise<Result<void, ErroDeDominio>> {
     try {
       const emailNoProvedor = await this.conferidor.emailDo(sujeito);
-      return emailNoProvedor?.toLowerCase() === emailDoConvite.toLowerCase()
+      return emailNoProvedor !== undefined && normalizarEmail(emailNoProvedor) === normalizarEmail(emailDoConvite)
         ? ok()
         : err(erroDeDominio('CONVITE_DE_OUTRO_SUJEITO'));
     } catch (erro) {

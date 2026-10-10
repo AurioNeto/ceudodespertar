@@ -312,16 +312,17 @@ describe('POST /api/v1/eu/ativacao — ativação do convite com Postgres real',
     expect(resposta.corpo.erro).toBe('USUARIO_SUSPENSO');
   });
 
-  it('duas ativações simultâneas do mesmo convite: uma 200 e a outra 409 VERSAO_DESATUALIZADA, com uma única gravação', async () => {
+  it('duas ativações simultâneas do mesmo convite e sub: nunca 500, a perdedora é 200 idempotente ou 409 VERSAO_DESATUALIZADA, com uma única gravação', async () => {
     const { id, token } = await convidar(EMAIL_DA_MARIA);
     conferidor.segurarAte(2);
 
-    const [primeira, segunda] = await Promise.all([ativar(SUJEITO_DA_MARIA, token), ativar(SUJEITO_DA_MARIA, token)]);
+    const respostas = await Promise.all([ativar(SUJEITO_DA_MARIA, token), ativar(SUJEITO_DA_MARIA, token)]);
 
-    const status = [primeira.status, segunda.status].toSorted();
-    expect(status).toEqual([200, 409]);
-    const perdedora = primeira.status === 409 ? primeira : segunda;
-    expect(perdedora.corpo.erro).toBe('VERSAO_DESATUALIZADA');
+    for (const { status, corpo } of respostas) {
+      expect(status === 200 || status === 409).toBe(true);
+      if (status === 409) expect(corpo.erro).toBe('VERSAO_DESATUALIZADA');
+    }
+    expect(respostas.some(({ status }) => status === 200)).toBe(true);
     expect(await estadoNoBanco(id)).toMatchObject({ situacao: 'ATIVO', subject_id: SUJEITO_DA_MARIA, versao: 2 });
     expect(await trilhaDeAtivacao(id)).toBe(1);
     expect(await eventosDeAtivacaoNoOutbox(id)).toBe(1);
