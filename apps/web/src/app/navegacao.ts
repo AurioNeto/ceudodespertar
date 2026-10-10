@@ -1,11 +1,6 @@
 import type { NavEntry } from '../ds';
 import { CAMINHO_DA_ENTRADA, CAMINHO_DE_RETORNO } from '../dados/oidc';
 
-/**
- * O menu como ficou depois das iterações do design: "Conferência" virou
- * "Verificação de lote" dentro de Financeiro, e Pessoas ganhou seção própria.
- * Meu perfil não é item de menu — abre pelo chip do usuário no rodapé do rail.
- */
 export interface Rota {
   id: string;
   caminho: string;
