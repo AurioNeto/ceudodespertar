@@ -41,6 +41,8 @@ export interface DadosDoUsuario {
   readonly convite: Convite | null;
 }
 
+export type DesfechoDaAvaliacaoDeAtivacao = 'ATIVAR' | 'JA_ATIVADO_PELO_MESMO_SUJEITO';
+
 export interface AtribuicaoDeGrupo {
   readonly grupoId: GrupoId;
   readonly por: UsuarioId;
@@ -189,6 +191,24 @@ export class Usuario extends RaizDeAgregado<UsuarioId> {
     this._convite = novoConvite;
     this.registrarOperacao('USUARIO_CONVIDADO', em, { autorId: por, email: this._email });
     return ok();
+  }
+
+  avaliarAtivacao(
+    hashApresentado: string,
+    subjectId: string,
+    em: Date,
+  ): Result<DesfechoDaAvaliacaoDeAtivacao, ErroDeDominio> {
+    const convite = this._convite;
+    if (convite === null || convite.hashDoToken !== hashApresentado || convite.revogadoEm !== null) {
+      return err(erroDeDominio('CONVITE_INVALIDO'));
+    }
+    if (this._situacao === 'CONVITE_PENDENTE') {
+      const conviteValido = convite.validar(hashApresentado, em);
+      return conviteValido.tipo === 'erro' ? conviteValido : ok('ATIVAR');
+    }
+    if (this._situacao !== 'ATIVO') return err(erroDaSituacaoInativa(this._situacao));
+    const jaAtivadoPeloMesmoSujeito = convite.usadoEm !== null && this._subjectId === subjectId;
+    return jaAtivadoPeloMesmoSujeito ? ok('JA_ATIVADO_PELO_MESMO_SUJEITO') : err(erroDeDominio('CONVITE_JA_USADO'));
   }
 
   ativar(hashApresentado: string, subjectId: string, em: Date): Result<void, ErroDeDominio> {
