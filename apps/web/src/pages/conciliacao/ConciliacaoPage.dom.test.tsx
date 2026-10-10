@@ -250,6 +250,17 @@ describe('ConciliacaoPage: coluna de linhas do banco sem lançamento', () => {
     expect(contagemDaColuna(container, TITULO_DAS_LINHAS)).toBe('5');
   });
 
+  it('Voltar com outro motivo escolhido — o motivo fica para a próxima linha aberta, sem voltar ao primeiro', async () => {
+    const { container } = await montar(<ConciliacaoPage />);
+    await clicar(botaoComTexto(cartaoDaLinha(container, 'TARIFA PACOTE'), 'Ignorar'));
+    await escolherOpcao(seletorDe(cartaoDaLinha(container, 'TARIFA PACOTE'), 'Motivo'), MOTIVOS[2] as string);
+    await clicar(botaoComTexto(cartaoDaLinha(container, 'TARIFA PACOTE'), 'Voltar'));
+
+    await clicar(botaoComTexto(cartaoDaLinha(container, 'NETFLIX.COM'), 'Ignorar'));
+
+    expect(seletorDe(cartaoDaLinha(container, 'NETFLIX.COM'), 'Motivo').value).toBe(MOTIVOS[2]);
+  });
+
   it('abrir o motivo de outra linha — fecha o da primeira: só uma linha em ignorar por vez', async () => {
     const { container } = await montar(<ConciliacaoPage />);
     await clicar(botaoComTexto(cartaoDaLinha(container, 'NETFLIX.COM'), 'Ignorar'));
