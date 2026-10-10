@@ -31,18 +31,31 @@ async function abrirFaturaDeSetembro(container: HTMLElement) {
   await clicar(botaoDaFatura);
 }
 
+const COR_DO_SELO_PENDENTE = 'var(--color-pending)';
+const FUNDO_DO_SELO_PENDENTE = 'var(--color-pending-soft)';
+
+const selosPendentesDaLinha = (linha: HTMLElement) =>
+  todos<HTMLSpanElement>(linha, 'span').filter((span) => span.style.color === COR_DO_SELO_PENDENTE);
+
 describe('FaturasPage: selo das compras a conferir', () => {
-  it('compra a conferir — leva o selo com o texto A conferir', async () => {
+  it('compra a conferir — leva um único selo com o texto exato A conferir, no tom pendente', async () => {
     const { container } = await montar(<FaturasPage />);
     await abrirFaturaDeSetembro(container);
 
-    expect(linhaDaCompra(container, 'aluguel de betoneira').textContent).toContain('A conferir');
+    const selos = selosPendentesDaLinha(linhaDaCompra(container, 'aluguel de betoneira'));
+
+    expect(selos.map((selo) => [selo.textContent, selo.style.color, selo.style.background])).toEqual([
+      ['A conferir', COR_DO_SELO_PENDENTE, FUNDO_DO_SELO_PENDENTE],
+    ]);
   });
 
-  it('compra já confirmada — não leva o selo', async () => {
+  it('compra já confirmada — não leva selo nenhum e o texto A conferir não aparece na linha', async () => {
     const { container } = await montar(<FaturasPage />);
     await abrirFaturaDeSetembro(container);
 
-    expect(linhaDaCompra(container, 'mercado do trabalho de setembro').textContent).not.toContain('A conferir');
+    const linha = linhaDaCompra(container, 'mercado do trabalho de setembro');
+
+    expect(selosPendentesDaLinha(linha)).toHaveLength(0);
+    expect(linha.textContent).not.toContain('A conferir');
   });
 });
