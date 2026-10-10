@@ -97,7 +97,7 @@ export function extrairTestes(arquivo: string, conteudo: string): readonly Teste
 
 export function contemIdComLimites(titulo: string, id: string): boolean {
   const idEscapado = id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  return new RegExp(`(?<![A-Za-z0-9])${idEscapado}(?![A-Za-z0-9])`).test(titulo);
+  return new RegExp(`^${idEscapado}(?![A-Za-z0-9])`).test(titulo);
 }
 
 function mencionaId(teste: TesteExtraido, id: string): boolean {

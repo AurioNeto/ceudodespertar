@@ -154,9 +154,12 @@ describe('M2 · id com limites', () => {
     { titulo: 'T16a · x', id: 'T16', casa: false },
     { titulo: 'T16', id: 'T16a', casa: false },
     { titulo: 'T29(d) · x', id: 'T29', casa: true },
-    { titulo: 'isolamento (T23)', id: 'T23', casa: true },
+    { titulo: 'isolamento (T23)', id: 'T23', casa: false },
+    { titulo: 'T5 · editar o gerado em T4', id: 'T4', casa: false },
+    { titulo: 'T5 · editar o gerado em T4', id: 'T5', casa: true },
     { titulo: 'T123 · x', id: 'T23', casa: false },
     { titulo: 'XT23 · x', id: 'T23', casa: false },
+    { titulo: 'x T23 · y', id: 'T23', casa: false },
     { titulo: 'T26 · Keycloak · x', id: 'T26 · Keycloak', casa: true },
   ])('"$titulo" — busca de $id — casa: $casa', ({ titulo, id, casa }) => {
     expect(contemIdComLimites(titulo, id)).toBe(casa);

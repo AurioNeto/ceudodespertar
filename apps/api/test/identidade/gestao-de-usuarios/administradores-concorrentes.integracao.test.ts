@@ -17,7 +17,7 @@ const MOTIVO = 'afastamento temporário';
 const desativarDe = (id: string) => `${ROTA_USUARIOS}/${id}/desativar`;
 const gruposDe = (id: string) => `${ROTA_USUARIOS}/${id}/grupos`;
 
-describe('administradores concorrentes (Doc 3 §11, T25; Doc 7 §25)', () => {
+describe('T25 · administradores concorrentes (Doc 3 §11; Doc 7 §25)', () => {
   let banco: BancoDeTeste;
   let aplicacao: AplicacaoDeAcesso;
   let trava: ApoioDaTrava;

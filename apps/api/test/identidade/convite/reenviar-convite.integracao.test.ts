@@ -184,7 +184,7 @@ describe('reenviar convite pela API (Doc 3 §11, Doc 7 §25)', () => {
     });
   });
 
-  describe('isolamento por instituição (T23)', () => {
+  describe('T23 · isolamento por instituição', () => {
     it('id de usuário de outra instituição dá 404 RECURSO_NAO_ENCONTRADO e nada muda nela', async () => {
       await semearCasaComConvidado();
       await semearGruposDeSistema(aplicacao, INSTITUICAO_B);
