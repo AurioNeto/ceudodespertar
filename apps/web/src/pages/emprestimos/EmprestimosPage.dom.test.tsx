@@ -122,6 +122,11 @@ const tituloDoDetalhe = (container: HTMLElement) => {
 
 const abrirFormularioDeDevolucao = (container: HTMLElement) => clicar(botaoComTexto(container, 'Registrar devolução'));
 
+const formularioDeDevolucaoAberto = (container: HTMLElement) =>
+  folhasComTexto(container, 'Registrar o que voltou').length +
+    folhasComTexto(container, 'Registrar o que a casa devolveu').length >
+  0;
+
 async function devolver(container: HTMLElement, valor: string) {
   await abrirFormularioDeDevolucao(container);
   await digitar(campoPeloRotulo(container, 'Valor'), valor);
@@ -499,6 +504,15 @@ describe('EmprestimosPage: registrar devolução', () => {
     expect(folhasComTexto(container, 'Registrar o que voltou')).toHaveLength(0);
   });
 
+  it('devolução registrada — o formulário reaberto não guarda o valor da devolução anterior', async () => {
+    const { container } = await montar(<EmprestimosPage />);
+    await devolver(container, '100');
+
+    await abrirFormularioDeDevolucao(container);
+
+    expect(campoPeloRotulo(container, 'Valor').value).toBe('');
+  });
+
   it('devolução de todo o saldo — quita o empréstimo, com o recado de quitado e sem ação', async () => {
     const { container } = await montar(<EmprestimosPage />);
 
@@ -565,6 +579,7 @@ describe('EmprestimosPage: registrar devolução', () => {
     await digitar(campoPeloRotulo(container, 'Valor'), '2000');
 
     await abrirEmprestimo(container, 'Marta Neto');
+    expect(formularioDeDevolucaoAberto(container)).toBe(false);
     await abrirFormularioDeDevolucao(container);
 
     expect(campoPeloRotulo(container, 'Valor').value).toBe('2000');
@@ -574,10 +589,13 @@ describe('EmprestimosPage: registrar devolução', () => {
   it('escolher outro empréstimo — fecha o formulário e limpa o recado', async () => {
     const { container } = await montar(<EmprestimosPage />);
     await devolver(container, '100');
+    await abrirFormularioDeDevolucao(container);
+    expect(formularioDeDevolucaoAberto(container)).toBe(true);
     expect(recadoMostrado(container)).not.toBeNull();
 
     await abrirEmprestimo(container, 'Marta Neto');
 
+    expect(formularioDeDevolucaoAberto(container)).toBe(false);
     expect(recadoMostrado(container)).toBeNull();
   });
 
@@ -726,6 +744,18 @@ describe('EmprestimosPage: novo empréstimo', () => {
     expect(recadoMostrado(container)).toBe(
       'Empréstimo registrado. A entrada de 750,25 é transferência de Chico Aguiar, não receita.',
     );
+  });
+
+  it('novo empréstimo com a data apagada — é aceito e o detalhe mostra 01/01/1900', async () => {
+    const { container } = await montar(<EmprestimosPage />);
+    await abrirNovoEmprestimo(container);
+    await digitar(campoPeloRotulo(container, 'Valor'), '300');
+    await digitar(campoPeloRotulo(container, 'Data'), '');
+    await digitar(campoPeloRotulo(container, 'Motivo'), 'adiantar a feira');
+
+    await clicar(botaoComTexto(container, 'Registrar empréstimo'));
+
+    expect(folhasComTexto(container, 'A casa emprestou em 01/01/1900 · adiantar a feira')).toHaveLength(1);
   });
 
   it('empréstimo novo — não tem devolução: mostra o estado vazio da tabela e a contagem zerada', async () => {
