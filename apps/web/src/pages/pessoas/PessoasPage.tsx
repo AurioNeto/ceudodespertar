@@ -1,7 +1,5 @@
 import { useState } from 'react';
-import { Button, Icon, ScreenHeader, StatusBadge, type BadgeTone, useDensidade } from '../../ds';
-import { Avatar } from '../../components/Avatar';
-import { Select } from '../../components/Campo';
+import { Button, Icon, ScreenHeader, StatusBadge, type BadgeTone, useDensidade, Avatar, Select } from '@/ds';
 import { pluralizar } from '../../lib/formato';
 import {
   acessosIniciais,

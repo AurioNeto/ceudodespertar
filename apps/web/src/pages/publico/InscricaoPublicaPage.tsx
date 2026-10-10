@@ -1,9 +1,18 @@
 import { useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import type { Hospedagem, NivelDeContribuicao, Refeicao } from '@cdd/contracts';
-import { Button, FaixaDeDemonstracao, FlowerOfLife, Icon, StatusBadge, TextField, useDensidade } from '../../ds';
+import {
+  Button,
+  FaixaDeDemonstracao,
+  FlowerOfLife,
+  Icon,
+  StatusBadge,
+  TextField,
+  useDensidade,
+  Cartao,
+  Rotulo,
+} from '@/ds';
 import { BlocoDePergunta, disparaAlerta, respondida } from '../../components/Anamnese';
-import { Cartao, Rotulo } from '../../components/Blocos';
 import { formatarBRL, formatarDinheiro, pluralizar } from '../../lib/formato';
 import {
   cadastros,

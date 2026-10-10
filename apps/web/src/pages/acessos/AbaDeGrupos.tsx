@@ -1,7 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import type { GrupoDaGestao } from '@cdd/contracts';
-import { EmptyState, InfraError, SkeletonList, StatusBadge } from '../../ds';
-import { Cartao } from '../../components/Blocos';
+import { EmptyState, InfraError, SkeletonList, StatusBadge, Cartao } from '@/ds';
 import { PermissoesPorModulo } from '../../components/PermissoesPorModulo';
 import { pluralizar } from '../../lib/formato';
 import { useConsultasDeAcessos } from './consultasDeAcessos';

@@ -1,5 +1,4 @@
-import { Button, Icon, StatusBadge, type BadgeTone } from '../../ds';
-import { Interruptor } from '../../components/Campo';
+import { Button, Icon, StatusBadge, type BadgeTone, Interruptor } from '@/ds';
 import { CartazSlot } from '../../components/CartazSlot';
 import { formatarValor } from '../../lib/formato';
 import {

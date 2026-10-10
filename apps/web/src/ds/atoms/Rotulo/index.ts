@@ -1,0 +1,1 @@
+export { Rotulo } from './Rotulo';

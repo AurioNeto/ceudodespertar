@@ -1,4 +1,4 @@
-import { iniciais } from '../lib/formato';
+import { iniciais } from '@/lib/formato';
 
 export function Avatar({ nome }: { nome: string }) {
   return (

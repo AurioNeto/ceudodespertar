@@ -1,7 +1,15 @@
 import { useState } from 'react';
 import type { Conta, ContaId, Fundo, FundoId } from '@cdd/contracts';
-import { Button, Icon, ScreenHeader, StatusBadge, type BadgeTone, type IconName, useDensidade } from '@/ds';
-import { SeletorDeTipo } from '@/components/Campo';
+import {
+  Button,
+  Icon,
+  ScreenHeader,
+  StatusBadge,
+  type BadgeTone,
+  type IconName,
+  useDensidade,
+  SeletorDeTipo,
+} from '@/ds';
 import { formatarDiaMes, formatarDinheiro, pluralizar } from '@/lib/formato';
 import { contas as contasIniciais, fundos as fundosIniciais, fundoProprio } from '@/mocks/financeiro';
 import { GerenciarContasModal } from './components/GerenciarContasModal';

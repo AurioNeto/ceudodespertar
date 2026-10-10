@@ -1,7 +1,6 @@
 import type { Pergunta, PerguntaPendente } from '@cdd/contracts';
-import { Icon, StatusBadge } from '../ds';
-import { TextField } from '../ds';
-import { Cartao } from './Blocos';
+import { Icon, StatusBadge, Cartao } from '@/ds';
+import { TextField } from '@/ds';
 
 /**
  * As peças de responder anamnese. Vivem fora da tela porque a leitura da

@@ -18,9 +18,12 @@ import {
   type ReceiptTone,
   type SheetOption,
   useDensidade,
-} from '../../ds';
+  Select,
+  SeletorDeTipo,
+  Interruptor,
+} from '@/ds';
 import { useSessao } from '../../app/sessao';
-import { CampoDeTags, Select, SeletorDeTipo, Interruptor } from '../../components/Campo';
+import { CampoDeTags } from '../../components/Campo';
 import {
   opcoesDeCategoria,
   opcoesDeCerimonia,

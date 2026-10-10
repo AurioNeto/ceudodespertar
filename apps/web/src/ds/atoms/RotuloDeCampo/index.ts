@@ -1,0 +1,1 @@
+export { RotuloDeCampo } from './RotuloDeCampo';

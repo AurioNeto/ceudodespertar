@@ -1,9 +1,20 @@
 import { useState } from 'react';
 import type { ReactNode } from 'react';
 import type { StatusContratacao } from '@cdd/contracts';
-import { Button, Icon, ScreenHeader, StatusBadge, TextField, type BadgeTone, useDensidade } from '../../ds';
-import { Select } from '../../components/Campo';
-import { Cartao, Numero, Recado, Rotulo } from '../../components/Blocos';
+import {
+  Button,
+  Icon,
+  ScreenHeader,
+  StatusBadge,
+  TextField,
+  type BadgeTone,
+  useDensidade,
+  Select,
+  Cartao,
+  Numero,
+  Recado,
+  Rotulo,
+} from '@/ds';
 import { formatarBRL, pluralizar } from '../../lib/formato';
 import { contas } from '../../mocks/financeiro';
 import {

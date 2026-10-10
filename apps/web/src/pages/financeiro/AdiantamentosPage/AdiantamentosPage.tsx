@@ -2,9 +2,22 @@ import { useState } from 'react';
 import type { ReactNode } from 'react';
 import type { Adiantamento, AdiantamentoId, ContaId, LancamentoId, PessoaId, StatusAdiantamento } from '@cdd/contracts';
 import { dataLocal, reais } from '@cdd/contracts';
-import { Button, EmptyState, Icon, ScreenHeader, StatusBadge, TextField, TwoAxisGuard, type BadgeTone, useDensidade } from '@/ds';
-import { Select } from '@/components/Campo';
-import { Cartao, Numero, Recado, Rotulo } from '@/components/Blocos';
+import {
+  Button,
+  EmptyState,
+  Icon,
+  ScreenHeader,
+  StatusBadge,
+  TextField,
+  TwoAxisGuard,
+  type BadgeTone,
+  useDensidade,
+  Select,
+  Cartao,
+  Numero,
+  Recado,
+  Rotulo,
+} from '@/ds';
 import { formatarData, formatarDinheiro, pluralizar } from '@/lib/formato';
 import { id as marcarId } from '@/mocks/ids';
 import {

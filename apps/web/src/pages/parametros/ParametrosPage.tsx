@@ -1,8 +1,19 @@
 import { useState } from 'react';
 import type { CategoriaId, RegimeDaUnidade } from '@cdd/contracts';
-import { Button, Icon, ScreenHeader, StatusBadge, useDensidade } from '../../ds';
-import { Select, SeletorDeTipo } from '../../components/Campo';
-import { Cartao, Recado, Rotulo, Td, Th } from '../../components/Blocos';
+import {
+  Button,
+  Icon,
+  ScreenHeader,
+  StatusBadge,
+  useDensidade,
+  Select,
+  SeletorDeTipo,
+  Cartao,
+  Recado,
+  Rotulo,
+  Td,
+  Th,
+} from '@/ds';
 import { formatarDinheiro, pluralizar } from '../../lib/formato';
 import {
   categorias as categoriasIniciais,
