@@ -384,7 +384,7 @@ function TabelaDeCompras({ fatura, campo, total }: { fatura: Fatura; campo: bool
                   <span style={{ color: 'var(--text-primary)' }}>{c.motivo}</span>
                   <span style={{ display: 'flex', alignItems: 'center', gap: 7, flexWrap: 'wrap' }}>
                     <span style={{ color: 'var(--text-meta)' }}>{c.categoria}</span>
-                    {c.status === 'A_CONFERIR' ? <StatusBadge tone="pending" /> : null}
+                    {c.status === 'A_CONFERIR' ? <StatusBadge tone="pending">A conferir</StatusBadge> : null}
                   </span>
                 </span>
               </Td>

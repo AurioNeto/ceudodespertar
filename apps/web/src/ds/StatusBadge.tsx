@@ -2,18 +2,18 @@ import type { CSSProperties, ReactNode } from 'react';
 
 export type BadgeTone = 'pending' | 'confirmed' | 'attention' | 'neutral' | 'suggest' | 'royal';
 
-const TONES: Record<BadgeTone, { bg: string; fg: string; label: string }> = {
-  pending: { bg: 'var(--color-pending-soft)', fg: 'var(--color-pending)', label: 'A conferir' },
-  confirmed: { bg: 'var(--color-confirmed-soft)', fg: 'var(--color-confirmed)', label: 'Confirmado' },
-  attention: { bg: 'var(--color-attention-soft)', fg: 'var(--color-attention)', label: 'Aguardando resposta' },
-  neutral: { bg: 'var(--color-neutral-soft)', fg: 'var(--color-neutral)', label: 'Estornado' },
-  suggest: { bg: 'var(--color-suggest-soft)', fg: 'var(--color-suggest)', label: 'Sugestão' },
-  royal: { bg: 'var(--color-royal-soft)', fg: 'var(--color-royal-ink)', label: 'Conciliado' },
+const TONES: Record<BadgeTone, { bg: string; fg: string }> = {
+  pending: { bg: 'var(--color-pending-soft)', fg: 'var(--color-pending)' },
+  confirmed: { bg: 'var(--color-confirmed-soft)', fg: 'var(--color-confirmed)' },
+  attention: { bg: 'var(--color-attention-soft)', fg: 'var(--color-attention)' },
+  neutral: { bg: 'var(--color-neutral-soft)', fg: 'var(--color-neutral)' },
+  suggest: { bg: 'var(--color-suggest-soft)', fg: 'var(--color-suggest)' },
+  royal: { bg: 'var(--color-royal-soft)', fg: 'var(--color-royal-ink)' },
 };
 
 export interface StatusBadgeProps {
   tone?: BadgeTone;
-  children?: ReactNode;
+  children: ReactNode;
   count?: number;
   style?: CSSProperties;
 }
@@ -35,7 +35,7 @@ export function StatusBadge({ tone = 'pending', children, count, style }: Status
         ...style,
       }}
     >
-      {children ?? t.label}
+      {children}
       {count != null ? (
         <span data-numeric style={{ font: '600 11.5px var(--font-data)', opacity: 0.75 }}>
           {count}
