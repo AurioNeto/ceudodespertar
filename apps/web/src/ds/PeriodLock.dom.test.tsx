@@ -34,6 +34,19 @@ const bloqueioReabrivel = (props: ComoReabrivel = {}) => (
   />
 );
 
+const bloqueioDaCompetencia = (competencia: string, onReopen: (reopenReason: string) => void) => (
+  <PeriodLock
+    key={competencia}
+    title={`Período ${competencia} está fechado`}
+    reason={RAZAO}
+    canReopen
+    reopenLabel={ACAO_DE_REABRIR}
+    reopenReasonLabel={ROTULO_DO_MOTIVO}
+    reopenReasonRequiredNote={AVISO_DE_MOTIVO_OBRIGATORIO}
+    onReopen={onReopen}
+  />
+);
+
 const caixaDoMotivo = (origem: ParentNode) => elemento<HTMLTextAreaElement>(origem, 'textarea');
 const botaoDeReabrir = (origem: ParentNode) => botaoComTexto(origem, ACAO_DE_REABRIR);
 
@@ -380,15 +393,48 @@ describe('PeriodLock: o motivo da reabertura', () => {
     expect(aoReabrir.mock.calls[0]).toEqual([MOTIVO]);
   });
 
-  it('um onReopen que chega depois é o que recebe o motivo', async () => {
+  it('no mesmo período, outro onReopen mantém o motivo e o mais recente é o chamado', async () => {
     const primeiro = vi.fn();
     const segundo = vi.fn();
     const montado = await montar(bloqueioReabrivel({ onReopen: primeiro }));
     await digitarNoMotivo(caixaDoMotivo(montado.container), MOTIVO);
     await montado.atualizar(bloqueioReabrivel({ onReopen: segundo }));
+    expect(caixaDoMotivo(montado.container).value).toBe(MOTIVO);
     await clicar(botaoDeReabrir(montado.container));
     expect(primeiro).not.toHaveBeenCalled();
     expect(segundo.mock.calls[0]).toEqual([MOTIVO]);
+  });
+});
+
+describe('PeriodLock: o motivo não passa de um período para o seguinte', () => {
+  it('trocar a key ao trocar de período começa o seguinte com campo vazio e botão desabilitado', async () => {
+    const montado = await montar(bloqueioDaCompetencia('07/2026', vi.fn()));
+    await digitarNoMotivo(caixaDoMotivo(montado.container), MOTIVO);
+    await montado.atualizar(bloqueioDaCompetencia('06/2026', vi.fn()));
+    expect(caixaDoMotivo(montado.container).value).toBe('');
+    expect(botaoDeReabrir(montado.container).disabled).toBe(true);
+    expect(folhaComTexto(montado.container, 'span', AVISO_DE_MOTIVO_OBRIGATORIO)).toBeTruthy();
+  });
+
+  it('o motivo de julho não chega ao handler de junho, e junho só recebe o que for escrito para junho', async () => {
+    const julho = vi.fn();
+    const junho = vi.fn();
+    const montado = await montar(bloqueioDaCompetencia('07/2026', julho));
+    await digitarNoMotivo(caixaDoMotivo(montado.container), MOTIVO);
+    await montado.atualizar(bloqueioDaCompetencia('06/2026', junho));
+    await clicar(botaoDeReabrir(montado.container));
+    expect(junho).not.toHaveBeenCalled();
+    await digitarNoMotivo(caixaDoMotivo(montado.container), 'Junho entrou sem a nota de abril.');
+    await clicar(botaoDeReabrir(montado.container));
+    expect(junho.mock.calls).toEqual([['Junho entrou sem a nota de abril.']]);
+    expect(julho).not.toHaveBeenCalled();
+  });
+
+  it('com a mesma key, renderizar de novo não zera o motivo', async () => {
+    const montado = await montar(bloqueioDaCompetencia('07/2026', vi.fn()));
+    await digitarNoMotivo(caixaDoMotivo(montado.container), MOTIVO);
+    await montado.atualizar(bloqueioDaCompetencia('07/2026', vi.fn()));
+    expect(caixaDoMotivo(montado.container).value).toBe(MOTIVO);
   });
 });
 
