@@ -652,8 +652,9 @@ describe('AgendaPage: nova cerimônia', () => {
 
   it.each([
     { data: '15/12/2025', diaEMes: '15/12', nome: 'Cerimônia de 2025', lugar: 'primeiro', posicao: 0 },
+    { data: '01/09/2026', diaEMes: '01/09', nome: 'Cerimônia do dia 1', lugar: 'segundo', posicao: 1 },
     { data: '10/01/2027', diaEMes: '10/01', nome: 'Cerimônia de 2027', lugar: 'último', posicao: 6 },
-  ])('cerimônia de $data — a lista ordena pelo ano antes do mês: ela fica em $lugar', async ({ data, diaEMes, nome, posicao }) => {
+  ])('cerimônia de $data — a lista ordena pelo ano, depois pelo mês e depois pelo dia: ela fica em $lugar', async ({ data, diaEMes, nome, posicao }) => {
     const { container } = await montar(<AgendaPage />);
     await preencherEEnviarNovaCerimonia(container, { nome, data });
 
