@@ -59,6 +59,7 @@ describe('ambientePermiteSeedDemo', () => {
     ['http://127.0.0.2:8080'],
     ['http://0.0.0.0:8080'],
     ['http://localhostx:8080'],
+    ['http://localhost.:8080'],
     ['https://auth.exemplo.com'],
     ['nao é url'],
     [''],
@@ -72,6 +73,7 @@ describe('ambientePermiteSeedDemo', () => {
     ['postgres://u:s@postgres:5432/cdd'],
     ['postgres://u:s@db.interno:5432/cdd'],
     ['postgres://u:s@evil.com/localhost'],
+    ['postgres://u:s@localhost.:5432/cdd'],
     ['nao é url'],
     [''],
   ])('recusa banco fora do loopback %s', (urlDoBanco) => {
