@@ -634,15 +634,15 @@ Todas as regras rodam no depcruise, com configuração `.dependency-cruiser.web.
 | `mock-global-so-dados` | `src/mocks/` importar `app`, `components`, `dados`, `ds`, `pages`, `testes` ou biblioteca externa que não seja `@cdd/contracts` | aviso | 1 |
 | `tela-de-api-sem-mock` | Telas com fonte `api` e o fluxo de entrada inteiro (`transversal/entrada/`, inclusive `constantes.ts` e `components/`) importarem mock | erro | 0 |
 | `apoio-de-teste-so-em-teste` | Código de produção importar `apoioDeTeste`, `src/testes` ou `vitest` | erro | 0 |
-| `camada-cruzada-por-alias` | Atravessar camada, ou módulo dentro de `pages/`, sem alias `@/`. Passa a erro quando chegar a zero | aviso | 315 |
+| `camada-cruzada-por-alias` | Atravessar camada, ou módulo dentro de `pages/`, sem alias `@/`. Passa a erro quando chegar a zero | aviso | 313 |
 | `pasta-camel-case` | Pasta de agrupamento em camelCase sob `apps/web/src` (agrupamento é minúsculo; unidade é PascalCase), que escaparia das regras de unidade, pelos imports feitos de dentro dela | erro | 0 |
 | `pasta-camel-case-no-destino` | Importar arquivo de pasta camelCase, inclusive pasta só com arquivos-folha | erro | 0 |
 
-São 33 regras: 26 nomeadas acima e as 7 de `unidade-so-pelo-index`. As contagens são as da linha de base (arquivo `.dependency-cruiser-known-violations.web.json`, seção 12.2), tirada da main `1812df6`, já com o #55; os `comment` da configuração apontam para `pnpm fronteiras:web`, que lista os mesmos avisos.
+São 33 regras: 26 nomeadas acima e as 7 de `unidade-so-pelo-index`. As contagens são as da linha de base (arquivo `.dependency-cruiser-known-violations.web.json`, seção 12.2), regenerada na etapa Mover ds em níveis, em que `AmountDisplay` e `AmountInput` passaram a importar `@/lib/formato` e saíram 2 avisos de alias; os `comment` da configuração apontam para `pnpm fronteiras:web`, que lista os mesmos avisos.
 
 ### 12.2 Linha de base
 
-- A linha de base é o arquivo `.dependency-cruiser-known-violations.web.json`, na raiz, ao lado da configuração: 404 avisos e 0 erros, com as contagens por regra da seção 12.1. São 60 avisos de sete regras, 29 do roteador e 315 da regra de alias. Cada entrada é uma regra com a origem e o destino do import. Os imports do apoio de teste já passaram ao alias `@/`.
+- A linha de base é o arquivo `.dependency-cruiser-known-violations.web.json`, na raiz, ao lado da configuração: 402 avisos e 0 erros, com as contagens por regra da seção 12.1. São 60 avisos de sete regras, 29 do roteador e 313 da regra de alias. Cada entrada é uma regra com a origem e o destino do import. Os imports do apoio de teste já passaram ao alias `@/`.
 - Catraca ligada: `pnpm fronteiras:web:catraca` sai com código diferente de 0 para qualquer violação fora do arquivo, de qualquer severidade. É a verificação "sem aviso novo" da seção 13.3 e a primeira metade do passo "fronteiras do web" do CI.
 - A catraca roda `.dependency-cruiser.web.catraca.mjs`, que é a configuração do web com toda regra elevada a erro, junto com `--ignore-known`. A elevação é necessária: o código de saída do depcruise conta só violação de severidade erro e `--ignore-known` não muda isso, então um aviso novo passaria com código 0. O teste estrutural confere a elevação, as mesmas opções do depcruise nas duas configurações e o script `fronteiras:web:catraca`.
 - `pnpm fronteiras:web` continua informativo: lista os avisos e só falha por regra em erro.
@@ -663,7 +663,16 @@ São 33 regras: 26 nomeadas acima e as 7 de `unidade-so-pelo-index`. As contagen
 
 ### 12.4 Outros verificadores
 
-- `apps/web/scripts/conferir-movimento.mjs` (criado na etapa Mover ds em níveis, a primeira que precisa dele): em cada renomeação de `git diff -M --name-status`, compara o conteúdo sem as linhas de import e `export … from`. Para declarações repartidas, compara o hash do corpo pelo nome. Renomes com troca de nome (seção 2) entram como par `antigo → novo` explícito, porque a detecção de similaridade do git pode não os casar.
+- `apps/web/scripts/conferir-movimento.mjs` (criado na etapa Mover ds em níveis, a primeira que precisa dele) prova que uma etapa de mover só troca caminhos. Compara o HEAD com o merge-base da base (padrão `origin/main`), só em `apps/web/src` e só pelo que está commitado: com mudança não commitada em `apps/web/src`, sai com código 1. A leitura é do compilador do TypeScript, com o tsconfig do web lido do próprio commit. Prova:
+  - renomeação de `git diff -M` sem diferença fora das linhas de import e de `export … from`, statement a statement. Dentro de cada statement, o módulo alvo de cada `import()`, `typeof import` e `vi.mock` entra na comparação na ordem em que aparece, e trocar dois alvos falha. Arquivo que não é código tem de manter os bytes;
+  - declaração de topo repartida entre arquivos: reaparece uma vez, com o mesmo nome e o mesmo hash de corpo. O `export` e o nome ficam fora do hash; o comentário dentro do corpo e os alvos de módulo entram. Não há declaração nova nem perdida; `describe`, `it` e `test` se identificam pelo título;
+  - arquivo novo só passa se recebeu declarações de uma origem ou se é `index.ts` só com `export … from`;
+  - cada ligação de import (nome, alias, `type`, namespace, default, efeito, `import x = require`) e cada referência de módulo (`import()`, `typeof import`, `vi.mock`) continua apontando para a mesma declaração ou módulo, passando pelo mapa de renomeações e repartições. Import pelo barrel e pelo caminho direto da mesma declaração valem igual; pacote externo compara pelo especificador. `import { type X }` conta como import de efeito, porque com `verbatimModuleSyntax` emite `import {} from`, e por isso difere de `import type { X }`;
+  - cada arquivo, barrels incluídos, exporta os mesmos nomes apontando para as mesmas declarações. O `index.ts` novo de unidade só reexporta nomes que a base já exportava, com o mesmo alvo. Arquivo apagado sem destino perde as suas ligações, e isso é acusado.
+
+  Não prova: a ordem das linhas de import e de `export … from` (trocar dois imports com efeito colateral passa); comentário junto dessas linhas ou fora do corpo de declaração repartida; ajudante de teste repetido e idêntico a um da base, em arquivo de teste movido; `export { type X } from` no lugar de `export type { X } from`, sem caso hoje em `src`; `import()` e `vi.mock` com argumento que não é literal, `require()` solto e `import.meta.glob`; o caminho de import de css e de alias não resolvido, comparado como texto; consumidores fora de `apps/web/src`, que o typecheck cobre; e o comportamento em tempo de execução.
+
+  Renomes com troca de nome (seção 2), que a similaridade do git pode não casar, entram por `--pares <arquivo.json>`, com `arquivos: [{ de, para }]` e `declaracoes: [{ de: { arquivo, nome }, para: { arquivo, nome } }]`. O par só vale se a origem some e o destino aparece, e o corpo e as ligações dele continuam provados. A saída é `ok, … ligações conferidas` com código 0, ou uma linha `DIFERENÇA` por ocorrência com código 1; `--ajuda` imprime as regras.
 - `apps/web/scripts/conferir-estrutura.mjs` (etapa de fronteiras em erro): toda pasta PascalCase tem `<Nome>.tsx`, `index.ts` e teste (falta de teste é aviso até o fim da migração); todo `*.tsx` PascalCase de produção fora de `<Nome>/<Nome>.tsx` é acusado, exceto `main.tsx` e `router.tsx`; o módulo de cada tela é o prefixo da primeira permissão em `app/shell/telas.ts`; fluxo sem pasta de tipo compartilhada é acusado; toda `RotaId` tem rota, item em `TELAS` e elemento no router.
 - `pnpm lint` passa a cobrir `apps/web/src` (etapa de fronteiras em erro). As violações antigas vão em PR separado.
 - Captura de telas (seção 13.6), para o efeito visual.
@@ -698,7 +707,7 @@ Nessa etapa a linha de base chega a zero e a catraca deixa de ter função. Saem
 
 - `pnpm --filter @cdd/web typecheck`, `test` e `build`;
 - `pnpm fronteiras:web:catraca` sem erro e sem aviso novo, com a linha de base regenerada e o diff conferido (seção 12.2);
-- `node apps/web/scripts/conferir-movimento.mjs`: renomeação sem diferença fora das linhas de import, e declaração repartida com o mesmo hash de corpo;
+- `node apps/web/scripts/conferir-movimento.mjs`, com tudo commitado: renomeação sem diferença fora das linhas de import, declaração repartida com o mesmo hash de corpo, e cada import, referência de módulo e exportação apontando para a mesma declaração (seção 12.4);
 - o mesmo número de testes da main.
 
 ### 13.4 Verificação padrão de divisão
@@ -746,7 +755,7 @@ Títulos na ordem de leitura. Dependências por título.
 | Harness de captura de telas | — | — |
 | Caracterizar primitivos do ds (`Button`, `StatusBadge`, `AmountDisplay`, `AmountInput`, `Icon`, `RecordRow`, `Receipt`, estados e `FaixaDeDemonstracao`) | — | — |
 | Caracterizar o restante do ds (`BottomSheet`, `TextField`, `ScreenHeader`, `PainelDeAcao` e os componentes de domínio) | Caracterizar primitivos do ds | — |
-| Mover ds em níveis | Fronteiras no depcruise; Caracterizar o restante do ds | — |
+| Mover ds em níveis (concluída) | Fronteiras no depcruise; Caracterizar o restante do ds | — |
 | Primitivos para o ds | Caracterizar lib/formato e components; Mover ds em níveis | — |
 | Mover fundação do ds | Primitivos para o ds | — |
 | Mover financeiro I | Mover fundação do ds | — |

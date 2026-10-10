@@ -231,7 +231,7 @@ Cada adoção que muda o JSX passa pela captura de telas (seção 13.6 do Docume
 
 ### 4.4 Testes que entram com os PRs de caracterização
 
-Os testes do #58 e do #59 se repartem por describe entre as unidades de destino. O arquivo de origem some quando o último describe sai.
+Os testes do #58, do #59, do #61 e do #62 se repartem por describe entre as unidades de destino. O arquivo de origem some quando o último describe sai.
 
 | Origem | Destino | Ação | Etapa |
 |---|---|---|---|
@@ -256,6 +256,20 @@ Os testes do #58 e do #59 se repartem por describe entre as unidades de destino.
 | `ds/StatusBadge.dom.test.tsx` (entra com o #59) | `ds/atoms/StatusBadge/StatusBadge.dom.test.tsx` | mover | Mover ds em níveis |
 | `ds/estados.dom.test.tsx` (entra com o #59), describes `DomainError`, `EmptyState`, `InfraError`, `PermissionDenied` e `SkeletonList` | `ds/molecules/<Nome>/<Nome>.dom.test.tsx` | repartir por describe | Mover ds em níveis |
 | `ds/estados.dom.test.tsx`, describe `FlowerOfLife` | `ds/atoms/FlowerOfLife/FlowerOfLife.dom.test.tsx` | repartir por describe | Mover ds em níveis |
+| `ds/ActionBar.dom.test.tsx` (entra com o #61) | `ds/molecules/ActionBar/ActionBar.dom.test.tsx` | mover | Mover ds em níveis |
+| `ds/AttachmentCapture.dom.test.tsx` (entra com o #61) | `ds/molecules/AttachmentCapture/AttachmentCapture.dom.test.tsx` | mover | Mover ds em níveis |
+| `ds/BottomSheet.dom.test.tsx` (entra com o #61) | `ds/organisms/BottomSheet/BottomSheet.dom.test.tsx` | mover | Mover ds em níveis |
+| `ds/DataTable.dom.test.tsx` (entra com o #61) | `ds/organisms/DataTable/DataTable.dom.test.tsx` | mover | Mover ds em níveis |
+| `ds/DefaultField.dom.test.tsx` (entra com o #61) | `ds/molecules/DefaultField/DefaultField.dom.test.tsx` | mover | Mover ds em níveis |
+| `ds/ScreenHeader.dom.test.tsx` (entra com o #61) | `ds/molecules/ScreenHeader/ScreenHeader.dom.test.tsx` | mover | Mover ds em níveis |
+| `ds/SuggestionChip.dom.test.tsx` (entra com o #61) | `ds/molecules/SuggestionChip/SuggestionChip.dom.test.tsx` | mover | Mover ds em níveis |
+| `ds/AppShell.dom.test.tsx` (entra com o #61) | `ds/templates/AppShell/AppShell.dom.test.tsx` | mover | Mover ds em níveis |
+| `ds/ConfirmAction.dom.test.tsx` (entra com o #62) | `ds/molecules/ConfirmAction/ConfirmAction.dom.test.tsx` | mover | Mover ds em níveis |
+| `ds/PendencyCard.dom.test.tsx` (entra com o #62) | `ds/organisms/PendencyCard/PendencyCard.dom.test.tsx` | mover | Mover ds em níveis |
+| `ds/PeriodLock.dom.test.tsx` (entra com o #62) | `ds/molecules/PeriodLock/PeriodLock.dom.test.tsx` | mover | Mover ds em níveis |
+| `ds/RegimeVocabulary.dom.test.tsx` (entra com o #62) | `ds/providers/RegimeVocabulary/RegimeVocabulary.dom.test.tsx` | mover | Mover ds em níveis |
+| `ds/TwoAxisGuard.dom.test.tsx` (entra com o #62) | `ds/molecules/TwoAxisGuard/TwoAxisGuard.dom.test.tsx` | mover | Mover ds em níveis |
+| `ds/apoioDeTeste.tsx` (ancestral comum dos testes em `atoms`, `molecules`, `organisms` e `templates`) | `ds/apoioDeTeste.tsx` | manter | Mover ds em níveis |
 
 ---
 
