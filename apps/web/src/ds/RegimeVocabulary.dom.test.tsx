@@ -146,7 +146,9 @@ describe('RegimeVocabulary: regime fora do contrato', () => {
 
   const REGIMES_FORA_DO_CONTRATO: ReadonlyArray<[string, unknown]> = [
     ['um regime de outra versão', 'ATACADO'],
-    ['o nome certo em minúsculas', 'contribuicao'],
+    ['CONTRIBUICAO em minúsculas', 'contribuicao'],
+    ['COMERCIAL em minúsculas', 'comercial'],
+    ['COMERCIAL com espaços em volta', ' COMERCIAL '],
     ['texto vazio', ''],
     ['um nome herdado de Object', 'constructor'],
     ['null', null],
