@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import type { CodigoGrupo, GrupoId, GrupoResumido, UsuarioId } from '@cdd/contracts';
 import { EntregaDeConvite } from '../../../src/modules/identidade/application/convite/entrega-de-convite.js';
 import { EnviadorDeConvite } from '../../../src/modules/identidade/application/convite/enviador-de-convite.js';
@@ -24,6 +25,10 @@ export class GeradorFixo extends GeradorDeTokenDeConvite {
   gerar(): TokenDeConvite {
     this.sequencia += 1;
     return { token: `${TOKEN_EM_CLARO}-${this.sequencia}`, hash: String(this.sequencia).padStart(64, 'a') };
+  }
+
+  hashDe(token: string): string {
+    return createHash('sha256').update(token).digest('hex');
   }
 }
 

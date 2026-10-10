@@ -11,7 +11,7 @@ import type { IdentidadeAutenticada } from '../../../../shared/infrastructure/au
 import { UnidadeDeTrabalho } from '../../../../shared/infrastructure/banco/unidade-de-trabalho.js';
 import { CacheDeContextoDeAcesso } from './cache-de-contexto-de-acesso.js';
 import type { DonoDoAcesso, ResultadoDoAcesso } from './cache-de-contexto-de-acesso.js';
-import { emContextoDaInstituicao } from './contexto-da-instituicao.js';
+import { emContextoDaInstituicao } from '../../../../shared/infrastructure/contexto-da-instituicao.js';
 import { CODIGO_DE_RECUSA_POR_SITUACAO, gruposAtivosDoUsuario, permissoesEfetivasDosGrupos } from './consultas-de-acesso.js';
 
 @Injectable()

@@ -29,6 +29,7 @@ import type { EnviadorQueGuardaEnvios } from './apoio-de-convite.js';
 const ADMIN = 'sub-admin';
 const ADMIN_DE_B = 'sub-admin-de-b';
 const ATIVO = 'sub-ativo';
+const INTERVALO_MINIMO_DO_REENVIO_EM_MS = 60_000;
 const PEDIDO = { nome: 'Maria Silva', email: 'maria@casa.org' };
 
 const reenviarDe = (id: string) => `${ROTA_USUARIOS}/${id}/convite/reenviar`;
@@ -52,7 +53,7 @@ describe('reenviar convite pela API (Doc 3 §11, Doc 7 §25)', () => {
     await derrubarBancoDeTeste(banco);
   });
 
-  async function semearCasaComConvidado() {
+  async function semearCasaComConvidado({ intervaloJaPassou = true } = {}) {
     await semearGruposDeSistema(aplicacao, INSTITUICAO_A);
     const gestao = novoGrupoNomeado('Gestão da casa', ['sistema.usuario.gerenciar']);
     const admin = usuarioAtivoEm(ADMIN, [gestao]);
@@ -60,6 +61,7 @@ describe('reenviar convite pela API (Doc 3 §11, Doc 7 §25)', () => {
     await semearUsuarios(aplicacao, INSTITUICAO_A, [gestao], [admin, ativo]);
     const convite = await escrever(aplicacao, ADMIN, ROTA_USUARIOS, { corpo: PEDIDO });
     await vi.waitFor(() => expect(enviador.enviados).toHaveLength(1));
+    if (intervaloJaPassou) aplicacao.relogio.avancarEmMs(INTERVALO_MINIMO_DO_REENVIO_EM_MS);
     return { admin, ativo, convidadoId: convite.corpo.id as UsuarioId };
   }
 
@@ -130,6 +132,48 @@ describe('reenviar convite pela API (Doc 3 §11, Doc 7 §25)', () => {
     expect(replay).toEqual(primeira);
     expect(await efeitosGravados(banco, INSTITUICAO_A)).toEqual(efeitos);
     expect(enviador.enviados).toHaveLength(2);
+  });
+
+  describe('intervalo mínimo entre reenvios', () => {
+    const reenviarComCabecalhos = (id: string, versao: number) =>
+      aplicacao.pedirComo(ADMIN, reenviarDe(id), { metodo: 'POST', corpo: {}, cabecalhos: { 'if-match': String(versao) } });
+
+    it('segundo reenvio seguido dá 429 CONVITE_REENVIADO_RECENTEMENTE com Retry-After, sem gravar nem enviar', async () => {
+      const { convidadoId } = await semearCasaComConvidado();
+      await reenviar(convidadoId, 1);
+      await vi.waitFor(() => expect(enviador.enviados).toHaveLength(2));
+      aplicacao.relogio.avancarEmMs(15_000);
+      const antes = await efeitosGravados(banco, INSTITUICAO_A);
+
+      const resposta = await reenviarComCabecalhos(convidadoId, 2);
+
+      expect(resposta.status).toBe(429);
+      expect(resposta.headers.get('retry-after')).toBe('45');
+      expect(await resposta.json()).toMatchObject({ erro: 'CONVITE_REENVIADO_RECENTEMENTE', detalhes: { retryAfterSegundos: 45 } });
+      expect(await efeitosGravados(banco, INSTITUICAO_A)).toEqual(antes);
+      expect(await estadoDoUsuario(banco, INSTITUICAO_A, convidadoId)).toMatchObject({ versao: 2 });
+      expect(enviador.enviados).toHaveLength(2);
+    });
+
+    it('recusado logo após o convite, antes de qualquer espera', async () => {
+      const { convidadoId } = await semearCasaComConvidado({ intervaloJaPassou: false });
+
+      const resposta = await reenviarComCabecalhos(convidadoId, 1);
+
+      expect(resposta.status).toBe(429);
+      expect(resposta.headers.get('retry-after')).toBe('60');
+      expect(enviador.enviados).toHaveLength(1);
+    });
+
+    it('passados os 60 s do convite vigente o reenvio volta a valer', async () => {
+      const { convidadoId } = await semearCasaComConvidado();
+      await reenviar(convidadoId, 1);
+      aplicacao.relogio.avancarEmMs(INTERVALO_MINIMO_DO_REENVIO_EM_MS);
+
+      const resposta = await reenviar(convidadoId, 2);
+
+      expect(resposta).toEqual({ status: 200, corpo: { versao: 3 } });
+    });
   });
 
   describe('If-Match', () => {

@@ -1,6 +1,8 @@
 import { CODIGOS_DE_ERRO } from '@cdd/contracts';
 import type { CodigoDeErro } from '@cdd/contracts';
 
+export const CHAVE_DE_ESPERA_EM_SEGUNDOS = 'retryAfterSegundos';
+
 export interface ErroDeDominio {
   readonly codigo: CodigoDeErro;
   readonly detalhes?: Record<string, unknown>;

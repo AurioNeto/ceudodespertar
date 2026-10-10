@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { ContextoDaRequisicao } from '../../../../shared/infrastructure/contexto-da-requisicao.js';
+import { ContextoDaRequisicao } from './contexto-da-requisicao.js';
 
 export function emContextoDaInstituicao<T>(instituicaoId: string, fn: () => T): T {
   const correlacaoId = ContextoDaRequisicao.atual()?.correlacaoId ?? randomUUID();

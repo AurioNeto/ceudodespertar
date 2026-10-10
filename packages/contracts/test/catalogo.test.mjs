@@ -209,12 +209,27 @@ test('DesativarUsuario e ReativarUsuario exigem motivo entre 1 e 500 caracteres'
   assert.equal(ReativarUsuario.safeParse({ motivo: '   ' }).success, false);
 });
 
-test('AtivarConvite exige token não vazio', () => {
-  assert.equal(AtivarConvite.safeParse({ token: 'a1b2c3' }).success, true);
-  assert.equal(AtivarConvite.safeParse({ token: '' }).success, false);
+const CONVITE_DE_43_CARACTERES = 'aB3_-'.repeat(8) + 'aB3';
+
+test('AtivarConvite aceita o token de 32 bytes em base64url, com os 64 símbolos do alfabeto', () => {
+  assert.equal(CONVITE_DE_43_CARACTERES.length, 43);
+  assert.equal(AtivarConvite.safeParse({ convite: CONVITE_DE_43_CARACTERES }).success, true);
 });
 
-test('AtivarConvite recusa token acima de 512 caracteres', () => {
-  assert.equal(AtivarConvite.safeParse({ token: 'a'.repeat(512) }).success, true);
-  assert.equal(AtivarConvite.safeParse({ token: 'a'.repeat(513) }).success, false);
+test('AtivarConvite recusa token que não tem exatamente 43 caracteres', () => {
+  assert.equal(AtivarConvite.safeParse({ convite: CONVITE_DE_43_CARACTERES.slice(1) }).success, false);
+  assert.equal(AtivarConvite.safeParse({ convite: `${CONVITE_DE_43_CARACTERES}a` }).success, false);
+  assert.equal(AtivarConvite.safeParse({ convite: '' }).success, false);
+});
+
+test('AtivarConvite recusa caractere fora do alfabeto base64url, espaço e quebra de linha', () => {
+  for (const intruso of ['+', '/', '=', ' ', '\n', '.']) {
+    assert.equal(AtivarConvite.safeParse({ convite: `${CONVITE_DE_43_CARACTERES.slice(1)}${intruso}` }).success, false);
+  }
+  assert.equal(AtivarConvite.safeParse({ convite: `${CONVITE_DE_43_CARACTERES}\n` }).success, false);
+});
+
+test('AtivarConvite exige o campo convite e não aceita o nome antigo token', () => {
+  assert.equal(AtivarConvite.safeParse({}).success, false);
+  assert.equal(AtivarConvite.safeParse({ token: CONVITE_DE_43_CARACTERES }).success, false);
 });

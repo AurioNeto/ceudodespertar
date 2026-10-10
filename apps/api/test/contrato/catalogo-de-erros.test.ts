@@ -91,6 +91,7 @@ describe('catálogo de erros — contrato (Documento 7 §12)', () => {
       GRUPO_PROTEGIDO: 409,
       GRUPO_JA_EXISTE: 409,
       CONVITE_JA_PENDENTE: 409,
+      CONVITE_REENVIADO_RECENTEMENTE: 429,
       CORPO_GRANDE_DEMAIS: 413,
       VERSAO_DESATUALIZADA: 409,
       VERSAO_OBRIGATORIA: 428,

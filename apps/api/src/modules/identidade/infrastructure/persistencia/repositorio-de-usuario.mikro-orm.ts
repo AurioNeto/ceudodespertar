@@ -4,6 +4,8 @@ import type { EntityManager } from '@mikro-orm/postgresql';
 import type { GrupoId, PessoaId, SituacaoUsuario, UsuarioId } from '@cdd/contracts';
 import { UnidadeDeTrabalho } from '../../../../shared/infrastructure/banco/unidade-de-trabalho.js';
 import { RepositorioDoOutbox } from '../../../../shared/infrastructure/eventos/repositorio-do-outbox.js';
+import { ehErroDeBanco } from '../../../../shared/infrastructure/banco/classificacao-de-erros-do-banco.js';
+import { erroDeDominio, ErroDeDominioException } from '../../../../shared/kernel/erro-de-dominio.js';
 import { gerarUuidV7 } from '../../../../shared/kernel/ids.js';
 import { GravadorDeTrilha } from '../auditoria/gravador-de-trilha.js';
 import { Convite } from '../../domain/usuario/convite.js';
@@ -15,12 +17,21 @@ import { instituicaoDoContexto } from './instituicao-do-contexto.js';
 
 const NOME_DO_AGREGADO = 'Usuario';
 const CODIFICACAO_DO_HASH = 'hex';
+const SQLSTATE_VIOLACAO_DE_UNICIDADE = '23505';
+const RESTRICAO_DO_SUJEITO_UNICO = 'usuario_subject_id_key';
 
 export class ErroDeGrupoSemAtribuicao extends Error {
   constructor(usuarioId: UsuarioId) {
     super(`grupo do usuário ${usuarioId} sem registro de quem atribuiu`);
     this.name = 'ErroDeGrupoSemAtribuicao';
   }
+}
+
+function traduzirViolacaoDoSujeitoUnico(erro: unknown): never {
+  const sujeitoJaVinculado =
+    ehErroDeBanco(erro) && erro.code === SQLSTATE_VIOLACAO_DE_UNICIDADE && erro.constraint === RESTRICAO_DO_SUJEITO_UNICO;
+  if (sujeitoJaVinculado) throw new ErroDeDominioException(erroDeDominio('SUJEITO_JA_VINCULADO'));
+  throw erro;
 }
 
 function hashParaBytes(hash: string): Buffer {
@@ -117,20 +128,22 @@ export class RepositorioDeUsuarioMikroOrm extends RepositorioDeUsuario {
     return this.unidadeDeTrabalho.transacao('escrita', async (contexto) => {
       const eventos = usuario.retirarEventos();
       await this.trilha.gravarEventos(contexto, eventos);
-      const atualizadas = await contexto.em.nativeUpdate(
-        UsuarioEntidade,
-        { id: usuario.id, versao: usuario.versao },
-        {
-          subjectId: usuario.subjectId,
-          pessoaId: usuario.pessoaId,
-          nome: usuario.nome,
-          email: usuario.email,
-          situacao: usuario.situacao,
-          ativadoEm: usuario.ativadoEm,
-          suspensoEm: usuario.suspensoEm,
-          versao: usuario.versao + 1,
-        },
-      );
+      const atualizadas = await contexto.em
+        .nativeUpdate(
+          UsuarioEntidade,
+          { id: usuario.id, versao: usuario.versao },
+          {
+            subjectId: usuario.subjectId,
+            pessoaId: usuario.pessoaId,
+            nome: usuario.nome,
+            email: usuario.email,
+            situacao: usuario.situacao,
+            ativadoEm: usuario.ativadoEm,
+            suspensoEm: usuario.suspensoEm,
+            versao: usuario.versao + 1,
+          },
+        )
+        .catch(traduzirViolacaoDoSujeitoUnico);
       if (atualizadas === 0) throw OptimisticLockError.lockFailed(NOME_DO_AGREGADO);
       await this.gravarConvites(contexto.em, usuario, instituicaoId);
       await this.gravarGrupos(contexto.em, usuario, instituicaoId);

@@ -5,7 +5,7 @@ import { subirAplicacaoEDescobrirRotas } from './aplicacao-real.js';
 import type { AplicacaoDescoberta } from './aplicacao-real.js';
 import { rotasRegistradasNoExpress } from './descobrir-rotas.js';
 import type { Descoberta } from './descobrir-rotas.js';
-import { PISO_DE_ROTAS, ROTA_DE_USUARIO_ATIVO, ROTAS_SEM_PERMISSAO } from './politica-de-rotas.js';
+import { PISO_DE_ROTAS, ROTA_DE_ATIVACAO_DO_CONVITE, ROTA_DE_USUARIO_ATIVO, ROTAS_SEM_PERMISSAO } from './politica-de-rotas.js';
 import { verificarRotas } from './verificar-rotas.js';
 
 describe('T30 — rotas reais da aplicação', () => {
@@ -27,7 +27,7 @@ describe('T30 — rotas reais da aplicação', () => {
       rotasSemPermissao: ROTAS_SEM_PERMISSAO,
       rotaDeUsuarioAtivo: ROTA_DE_USUARIO_ATIVO,
       pisoDeRotas: PISO_DE_ROTAS,
-      rotasObrigatorias: [ROTA_DE_USUARIO_ATIVO],
+      rotasObrigatorias: [ROTA_DE_USUARIO_ATIVO, ROTA_DE_ATIVACAO_DO_CONVITE],
     });
 
     expect(violacoes).toEqual([]);

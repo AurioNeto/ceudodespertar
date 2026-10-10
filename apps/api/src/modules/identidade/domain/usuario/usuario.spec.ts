@@ -241,7 +241,7 @@ describe('Usuario.reenviarConvite', () => {
     const usuario = convidado();
 
     usuario.reenviarConvite(NOVO_HASH, NOVA_EXPIRA_EM, ADMIN_ID, DEPOIS);
-    usuario.reenviarConvite('hash-3', NOVA_EXPIRA_EM, ADMIN_ID, DEPOIS);
+    usuario.reenviarConvite('hash-3', NOVA_EXPIRA_EM, ADMIN_ID, new Date(DEPOIS.getTime() + 60_000));
 
     expect(usuario.convitesSubstituidos.map((convite) => convite.hashDoToken)).toEqual([HASH, NOVO_HASH]);
   });
@@ -283,6 +283,64 @@ describe('Usuario.reenviarConvite', () => {
     expect(usuario.convite?.hashDoToken).toBe(HASH);
     expect(usuario.convitesSubstituidos).toEqual([]);
     expect(usuario.retirarEventos()).toEqual([]);
+  });
+});
+
+describe('Usuario.reenviarConvite — intervalo mínimo', () => {
+  const MS_POR_SEGUNDO = 1_000;
+  const aposSegundos = (segundos: number) => new Date(AGORA.getTime() + segundos * MS_POR_SEGUNDO);
+  const detalhesDe = (resultado: Result<unknown, ErroDeDominio>) => (resultado.tipo === 'erro' ? resultado.erro.detalhes : undefined);
+
+  it('recusa aos 59 s e não altera o usuário', () => {
+    const usuario = convidado();
+    usuario.retirarEventos();
+
+    const resultado = usuario.reenviarConvite(NOVO_HASH, NOVA_EXPIRA_EM, ADMIN_ID, aposSegundos(59));
+
+    expect(codigoDe(resultado)).toBe('CONVITE_REENVIADO_RECENTEMENTE');
+    expect(usuario.convite?.hashDoToken).toBe(HASH);
+    expect(usuario.convitesSubstituidos).toEqual([]);
+    expect(usuario.retirarEventos()).toEqual([]);
+  });
+
+  it('aceita aos 60 s exatos', () => {
+    const expiraEm = aposSegundos(24 * 3_600);
+
+    expect(ehOk(convidado().reenviarConvite(NOVO_HASH, expiraEm, ADMIN_ID, aposSegundos(60)))).toBe(true);
+  });
+
+  it.each([
+    [59, 1],
+    [30, 30],
+    [0, 60],
+  ])('aos %i s informa %i s restantes', (decorridos, restantes) => {
+    const resultado = convidado().reenviarConvite(NOVO_HASH, NOVA_EXPIRA_EM, ADMIN_ID, aposSegundos(decorridos));
+
+    expect(detalhesDe(resultado)).toEqual({ retryAfterSegundos: restantes });
+  });
+
+  it.each([
+    [30_500, 30],
+    [59_001, 1],
+  ])('arredonda para cima: aos %i ms informa %i s', (decorridoEmMs, restantes) => {
+    const resultado = convidado().reenviarConvite(NOVO_HASH, NOVA_EXPIRA_EM, ADMIN_ID, new Date(AGORA.getTime() + decorridoEmMs));
+
+    expect(detalhesDe(resultado)).toEqual({ retryAfterSegundos: restantes });
+  });
+
+  it('relógio anterior ao convite não passa de 60 s de espera', () => {
+    const resultado = convidado().reenviarConvite(NOVO_HASH, NOVA_EXPIRA_EM, ADMIN_ID, aposSegundos(-600));
+
+    expect(detalhesDe(resultado)).toEqual({ retryAfterSegundos: 60 });
+  });
+
+  it('mede a partir do convite vigente, não do primeiro', () => {
+    const usuario = convidado();
+    usuario.reenviarConvite(NOVO_HASH, NOVA_EXPIRA_EM, ADMIN_ID, DEPOIS);
+
+    const resultado = usuario.reenviarConvite('hash-3', NOVA_EXPIRA_EM, ADMIN_ID, new Date(DEPOIS.getTime() + 10_000));
+
+    expect(detalhesDe(resultado)).toEqual({ retryAfterSegundos: 50 });
   });
 });
 
@@ -358,6 +416,87 @@ describe('Usuario.ativar', () => {
     expect(usuario.situacao).toBe(situacao);
     expect(usuario.subjectId).toBe(SUBJECT);
     expect(usuario.retirarEventos()).toEqual([]);
+  });
+});
+
+describe('Usuario.avaliarAtivacao', () => {
+  const conviteUsado = Convite.criar(HASH, EXPIRA_EM, ADMIN_ID, AGORA).usar(AGORA);
+
+  it('convite vigente de usuário pendente manda ativar e não muda o usuário', () => {
+    const usuario = convidado();
+    usuario.retirarEventos();
+
+    const resultado = usuario.avaliarAtivacao(HASH, SUBJECT, DEPOIS);
+
+    expect(resultado).toEqual({ tipo: 'ok', valor: 'ATIVAR' });
+    expect(usuario.situacao).toBe('CONVITE_PENDENTE');
+    expect(usuario.subjectId).toBeNull();
+    expect(usuario.retirarEventos()).toEqual([]);
+  });
+
+  it('no instante exato da expiração ainda manda ativar, e um milissegundo depois dá CONVITE_EXPIRADO', () => {
+    const usuario = convidado();
+
+    expect(usuario.avaliarAtivacao(HASH, SUBJECT, EXPIRA_EM)).toEqual({ tipo: 'ok', valor: 'ATIVAR' });
+    expect(codigoDe(usuario.avaliarAtivacao(HASH, SUBJECT, new Date(EXPIRA_EM.getTime() + 1)))).toBe(
+      'CONVITE_EXPIRADO',
+    );
+  });
+
+  it.each([
+    ['sem convite', null, 'CONVITE_PENDENTE', HASH],
+    ['hash diferente do convite', Convite.criar(HASH, EXPIRA_EM, ADMIN_ID, AGORA), 'CONVITE_PENDENTE', 'x'],
+    ['convite revogado', Convite.criar(HASH, EXPIRA_EM, ADMIN_ID, AGORA).revogar(AGORA), 'CONVITE_PENDENTE', HASH],
+    ['hash diferente em usuário suspenso', conviteUsado, 'SUSPENSO', 'x'],
+    ['hash diferente em usuário ativo', conviteUsado, 'ATIVO', 'x'],
+    ['convite revogado em usuário revogado', conviteUsado.revogar(AGORA), 'REVOGADO', HASH],
+  ] as const)('%s dá CONVITE_INVALIDO antes de olhar a situação', (_descricao, convite, situacao, hash) => {
+    expect(codigoDe(emSituacao(situacao, convite).avaliarAtivacao(hash, SUBJECT, DEPOIS))).toBe('CONVITE_INVALIDO');
+  });
+
+  it('convite já usado por usuário pendente dá CONVITE_JA_USADO', () => {
+    expect(codigoDe(emSituacao('CONVITE_PENDENTE', conviteUsado).avaliarAtivacao(HASH, SUBJECT, DEPOIS))).toBe(
+      'CONVITE_JA_USADO',
+    );
+  });
+
+  it('convite expirado de usuário pendente dá CONVITE_EXPIRADO', () => {
+    expect(codigoDe(convidado().avaliarAtivacao(HASH, SUBJECT, NOVA_EXPIRA_EM))).toBe('CONVITE_EXPIRADO');
+  });
+
+  it('usuário ativo com o convite já usado pelo mesmo sujeito é idempotente, mesmo depois de expirado', () => {
+    const usuario = emSituacao('ATIVO', conviteUsado);
+
+    expect(usuario.avaliarAtivacao(HASH, SUBJECT, NOVA_EXPIRA_EM)).toEqual({
+      tipo: 'ok',
+      valor: 'JA_ATIVADO_PELO_MESMO_SUJEITO',
+    });
+    expect(usuario.retirarEventos()).toEqual([]);
+  });
+
+  it('usuário ativo com o convite já usado por outro sujeito dá CONVITE_JA_USADO', () => {
+    expect(codigoDe(emSituacao('ATIVO', conviteUsado).avaliarAtivacao(HASH, 'outro-sub', DEPOIS))).toBe(
+      'CONVITE_JA_USADO',
+    );
+  });
+
+  it('usuário ativo com convite não usado dá CONVITE_JA_USADO mesmo para o mesmo sujeito', () => {
+    expect(codigoDe(ativo().avaliarAtivacao(HASH, SUBJECT, DEPOIS))).toBe('CONVITE_JA_USADO');
+  });
+
+  it.each([
+    ['SUSPENSO', 'USUARIO_SUSPENSO'],
+    ['REVOGADO', 'USUARIO_REVOGADO'],
+  ] as const)('usuário %s dá %s, até para o mesmo sujeito', (situacao, codigo) => {
+    expect(codigoDe(emSituacao(situacao, conviteUsado).avaliarAtivacao(HASH, SUBJECT, DEPOIS))).toBe(codigo);
+  });
+
+  it('o hash antigo dá CONVITE_INVALIDO depois do reenvio', () => {
+    const usuario = convidado();
+    usuario.reenviarConvite(NOVO_HASH, NOVA_EXPIRA_EM, ADMIN_ID, DEPOIS);
+
+    expect(codigoDe(usuario.avaliarAtivacao(HASH, SUBJECT, DEPOIS))).toBe('CONVITE_INVALIDO');
+    expect(usuario.avaliarAtivacao(NOVO_HASH, SUBJECT, DEPOIS)).toEqual({ tipo: 'ok', valor: 'ATIVAR' });
   });
 });
 

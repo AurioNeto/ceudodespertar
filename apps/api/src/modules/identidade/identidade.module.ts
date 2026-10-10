@@ -14,6 +14,8 @@ import { ConcederPermissaoAoGrupo } from './application/grupos/conceder-permissa
 import { LeitorDeGrupos } from './application/grupos/leitor-de-grupos.js';
 import { RenomearGrupo } from './application/grupos/renomear-grupo.js';
 import { RevogarPermissaoDoGrupo } from './application/grupos/revogar-permissao-do-grupo.js';
+import { AtivarConvite } from './application/convite/ativar-convite.js';
+import { ConferidorDeSujeito } from './application/convite/conferidor-de-sujeito.js';
 import { EntregaDeConvite } from './application/convite/entrega-de-convite.js';
 import { EnviadorDeConvite } from './application/convite/enviador-de-convite.js';
 import { GeradorDeTokenDeConvite } from './application/convite/gerador-de-token-de-convite.js';
@@ -47,6 +49,7 @@ import {
   configuracaoDoConviteDe,
   configuracaoDoKeycloakDe,
 } from './infrastructure/keycloak/configuracao-do-keycloak.js';
+import { ConferidorDeSujeitoKeycloak } from './infrastructure/keycloak/conferidor-de-sujeito.keycloak.js';
 import { EnviadorDeConviteKeycloak } from './infrastructure/keycloak/enviador-de-convite.keycloak.js';
 import { LeitorDeGruposDaInstituicaoKysely } from './infrastructure/usuarios/leitor-de-grupos-da-instituicao.kysely.js';
 import { LeitorDeUsuariosKysely } from './infrastructure/usuarios/leitor-de-usuarios.kysely.js';
@@ -110,12 +113,14 @@ import { GestaoDeUsuariosController } from './interface/http/gestao-de-usuarios.
     ClienteAdminDoKeycloak,
     { provide: ResolvedorDeSujeito, useClass: ResolvedorDeSujeitoKysely },
     { provide: EnviadorDeConvite, useClass: EnviadorDeConviteKeycloak },
+    { provide: ConferidorDeSujeito, useClass: ConferidorDeSujeitoKeycloak },
     EntregaDeConvite,
     { provide: ResolvedorDeConvite, useClass: ResolvedorDeConviteKysely },
     { provide: LeitorDeGruposDaInstituicao, useClass: LeitorDeGruposDaInstituicaoKysely },
     { provide: LeitorDeUsuarios, useClass: LeitorDeUsuariosKysely },
     ConvidarUsuario,
     ReenviarConvite,
+    AtivarConvite,
     ListarUsuarios,
     ObterUsuario,
     SemeadorDeGruposDeSistema,

@@ -4,6 +4,7 @@ import { METHOD_METADATA } from '@nestjs/common/internal';
 import { DiscoveryService, MetadataScanner, Reflector } from '@nestjs/core';
 import type { ModoDeTransacao } from '../banco/unidade-de-trabalho.js';
 import { CHAVE_DO_MODO_DE_TRANSACAO } from './modo-de-transacao.decorator.js';
+import { CHAVE_DE_SEM_IDEMPOTENCIA } from '../idempotencia/sem-idempotencia.decorator.js';
 import { CHAVE_DE_SEM_TRANSACAO_NA_BORDA } from './sem-transacao-na-borda.decorator.js';
 
 export const METODOS_QUE_MUDAM_ESTADO: ReadonlySet<RequestMethod> = new Set([
@@ -29,7 +30,7 @@ export class ErroDeRotaQueMudaEstadoSemTransacao extends Error {
   constructor(rotas: readonly string[]) {
     super(
       `rotas que mudam estado marcadas com @SemTransacaoNaBorda: ${rotas.join(', ')} — ` +
-        'rota que muda estado não pode dispensar a transação da borda',
+        'rota que muda estado só pode dispensar a transação da borda quando também é @SemIdempotencia',
     );
     this.name = 'ErroDeRotaQueMudaEstadoSemTransacao';
   }
@@ -72,6 +73,12 @@ export class VerificadorDeModoDeTransacaoDasRotas implements OnModuleInit {
     }
   }
 
+  private ehSemIdempotencia(handler: Function, controlador: Type): boolean {
+    return (
+      this.reflector.getAllAndOverride<boolean | undefined>(CHAVE_DE_SEM_IDEMPOTENCIA, [handler, controlador]) === true
+    );
+  }
+
   private rotasInvalidasDe(controlador: Type): RotaInvalida[] {
     const prototipo = controlador.prototype as Record<string, Function>;
     return this.scanner.getAllMethodNames(prototipo).flatMap<RotaInvalida>((nomeDoMetodo) => {
@@ -83,7 +90,9 @@ export class VerificadorDeModoDeTransacaoDasRotas implements OnModuleInit {
         handler,
         controlador,
       ]);
-      if (semTransacao === true) return [{ tipo: 'semTransacao' as const, rota }];
+      if (semTransacao === true) {
+        return this.ehSemIdempotencia(handler, controlador) ? [] : [{ tipo: 'semTransacao' as const, rota }];
+      }
       const modo = this.reflector.getAllAndOverride<ModoDeTransacao | undefined>(CHAVE_DO_MODO_DE_TRANSACAO, [
         handler,
         controlador,
