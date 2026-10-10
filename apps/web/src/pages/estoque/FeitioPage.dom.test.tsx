@@ -11,6 +11,22 @@ import {
 } from '@/testes/montagem';
 import { FeitioPage } from './FeitioPage';
 
+const fila = vi.hoisted(() => ({ confirmados: null as boolean[] | null }));
+
+vi.mock('@/mocks/feitio', async (importOriginal) => {
+  const original = await importOriginal<Record<string, any>>();
+  return {
+    ...original,
+    get emAndamento() {
+      const feitio = original.emAndamento;
+      const confirmados = fila.confirmados;
+      return confirmados
+        ? { ...feitio, custos: feitio.custos.map((custo: object, i: number) => ({ ...custo, confirmado: confirmados[i] })) }
+        : feitio;
+    },
+  };
+});
+
 type Densidade = 'office' | 'field';
 
 function definirDensidade(densidade: Densidade) {
@@ -28,6 +44,7 @@ beforeEach(() => {
 
 afterEach(async () => {
   await desmontarTudo();
+  fila.confirmados = null;
   vi.useRealTimers();
   vi.unstubAllGlobals();
 });
@@ -95,6 +112,12 @@ const caixaDoLoteProduzido = (container: HTMLElement) => {
   const rotuloDoLote = folhasDe(container).find((folha) => folha.textContent === 'Lote 09/2026');
   return rotuloDoLote?.parentElement ?? null;
 };
+
+const glifoDe = (icone: Element | null) =>
+  Array.from(icone?.classList ?? []).find((classe) => classe.startsWith('lucide-'));
+
+const gradeDosCampos = (container: HTMLElement) =>
+  todos<HTMLDivElement>(painelDeConclusao(container), 'div').find((div) => div.style.gridTemplateColumns !== '');
 
 const barrasDeComparacao = (container: HTMLElement) =>
   todos<HTMLDivElement>(cartaoDe(container, 'Fazer ou comprar'), 'div').filter((barra) =>
@@ -350,7 +373,7 @@ describe('FeitioPage: Concluir o feitio', () => {
     { nome: 'negativo', digitado: '-5' },
     { nome: 'texto que não é número', digitado: 'muito' },
     { nome: 'número com texto depois (9L)', digitado: '9L' },
-    { nome: 'ponto de milhar com vírgula (1.500,00 vira 0)', digitado: '1.500,00' },
+    { nome: 'milhar com vírgula (1.500,00)', digitado: '1.500,00' },
     { nome: 'só espaços', digitado: '   ' },
   ])('litros $nome — contam como zero: o botão fica desabilitado e não há prévia', async ({ digitado }) => {
     const container = await montarFeitio();
@@ -369,6 +392,7 @@ describe('FeitioPage: Concluir o feitio', () => {
     { nome: 'ponto decimal', digitado: '40.5', previa: '40,5 L' },
     { nome: 'decimal sem a parte inteira', digitado: ',5', previa: '0,5 L' },
     { nome: 'inteiro', digitado: '40', previa: '40,0 L' },
+    { nome: 'prefixo hexadecimal (0x10)', digitado: '0x10', previa: '16,0 L' },
   ])('litros com $nome — libera o botão e mostra a prévia com $previa', async ({ digitado, previa }) => {
     const container = await montarFeitio();
     await abrirConclusao(container);
@@ -474,6 +498,51 @@ describe('FeitioPage: Concluir o feitio', () => {
   });
 });
 
+describe('FeitioPage: aviso de custo parcial com outra fila de verificação', () => {
+  it('um lançamento só na fila — o aviso usa o singular e confirma o resto', async () => {
+    fila.confirmados = [true, true, true, false];
+
+    const container = await montarFeitio();
+
+    expect(container.textContent).toContain(
+      '1 lançamento ainda na fila de verificação. O custo por litro que sair daqui é parcial: R$ 15.200,00 confirmados de R$ 15.460,00 registrados.',
+    );
+  });
+
+  it('três lançamentos na fila e um confirmado — o aviso conta os três', async () => {
+    fila.confirmados = [true, false, false, false];
+
+    const container = await montarFeitio();
+
+    expect(container.textContent).toContain(
+      '3 lançamentos ainda na fila de verificação. O custo por litro que sair daqui é parcial: R$ 13.800,00 confirmados de R$ 15.460,00 registrados.',
+    );
+  });
+
+  it('nenhum lançamento na fila — o aviso de custo parcial não aparece', async () => {
+    fila.confirmados = [true, true, true, true];
+
+    const container = await montarFeitio();
+
+    expect(container.textContent).not.toContain('ainda na fila de verificação');
+    expect(container.textContent).not.toContain('parcial');
+  });
+});
+
+describe('FeitioPage: painel de conclusão por densidade', () => {
+  it.each([
+    { nome: 'escritório', densidade: 'office' as const, colunas: 'repeat(3, 1fr)' },
+    { nome: 'campo', densidade: 'field' as const, colunas: '1fr' },
+  ])('$nome — a grade dos três campos usa as colunas $colunas', async ({ densidade, colunas }) => {
+    definirDensidade(densidade);
+    const container = await montarFeitio();
+
+    await abrirConclusao(container);
+
+    expect(gradeDosCampos(container)?.style.gridTemplateColumns).toBe(colunas);
+  });
+});
+
 describe('FeitioPage: feitio concluído', () => {
   it('Concluir e criar o lote — mostra o recado com os litros, a força e o custo por litro', async () => {
     const container = await montarFeitio();
@@ -519,6 +588,14 @@ describe('FeitioPage: feitio concluído', () => {
     ]);
   });
 
+  it('Concluir — a caixa do lote abre com o ícone de check, antes do código do lote', async () => {
+    const container = await montarFeitio();
+
+    await concluirComLitros(container, '40');
+
+    expect(glifoDe((caixaDoLoteProduzido(container) as HTMLElement).firstElementChild)).toBe('lucide-circle-check');
+  });
+
   it('Concluir — o custo por litro ganha o número, sobre os litros produzidos, no verde de confirmado', async () => {
     const container = await montarFeitio();
 
@@ -562,6 +639,45 @@ describe('FeitioPage: feitio concluído', () => {
     const larguras = barrasDeComparacao(container).map((barra) => barra.style.width);
     expect(parseFloat(larguras[0] as string)).toBeCloseTo(92.02, 2);
     expect(larguras[1]).toBe('100%');
+  });
+
+  it('Concluir com litros em hexadecimal (0x10) — o recado e a caixa do lote usam 16,0 L, como o painel', async () => {
+    const container = await montarFeitio();
+
+    await concluirComLitros(container, '0x10');
+
+    expect(textoDoRecado(container)).toContain('16,0 L de força 2 entraram no estoque como Lote 09/2026. Custo apurado de R$ 966,25 por litro.');
+    expect(textosDasFolhas(caixaDoLoteProduzido(container) as HTMLElement)[1]).toBe('16,0 L');
+  });
+
+  it('Concluir com litros fracionados (42,5) — o recado divide o gasto pelos litros sem arredondar', async () => {
+    const container = await montarFeitio();
+
+    await concluirComLitros(container, '42,5');
+
+    expect(textoDoRecado(container)).toBe(
+      'Feitio de setembro concluído: 42,5 L de força 2 entraram no estoque como Lote 09/2026. Custo apurado de R$ 363,76 por litro.',
+    );
+  });
+
+  it('Concluir com litros fracionados (42,5) — o número Custo por litro divide o gasto pelos litros sem arredondar', async () => {
+    const container = await montarFeitio();
+
+    await concluirComLitros(container, '42,5');
+
+    expect(numero(container, 'Custo por litro')).toEqual(['Custo por litro', 'R$ 363,76', 'sobre 42,5 L']);
+  });
+
+  it('Concluir com litros fracionados (42,5) — a comparação usa o mesmo custo por litro e a economia sobre 42,5 L', async () => {
+    const container = await montarFeitio();
+
+    await concluirComLitros(container, '42,5');
+
+    const cartao = cartaoDe(container, 'Fazer ou comprar');
+    expect(textosDasFolhas(cartao)[2]).toBe('R$ 363,76/L');
+    expect(cartao.textContent).toContain(
+      'Fazer saiu R$ 56,24 mais barato por litro — R$ 2.390,00 no total deste feitio.',
+    );
   });
 
   it('Concluir com custo por litro acima do preço de fora — a frase continua dizendo "mais barato", com valores negativos', async () => {
