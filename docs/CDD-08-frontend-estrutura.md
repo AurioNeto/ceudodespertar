@@ -764,7 +764,7 @@ Títulos na ordem de leitura. Dependências por título.
 | Mover eventos (concluída) | Mover lancamentos | — |
 | Mover inscricao (concluída) | Mover eventos | — |
 | Mover pessoas e estoque (concluída) | Mover inscricao | — |
-| Mocks transversais | Mover pessoas e estoque | — |
+| Mocks transversais (concluída) | Mover pessoas e estoque | — |
 | lib/formato por export | Mocks transversais | — |
 | Caracterizar fluxo lancamentos (concluída, #82) | — | — |
 | Caracterizar financeiro I (concluída, #83) | — | — |
