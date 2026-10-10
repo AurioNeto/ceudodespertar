@@ -8,6 +8,7 @@ import { RepositorioDeUsuario } from '../../domain/usuario/usuario.repo.js';
 import { conferirVersao, salvarSeAlterado } from '../conferir-versao.js';
 import type { AcessoDoUsuario } from '../acesso-do-usuario.js';
 import type { SituacaoAlterada } from './desativar-usuario.js';
+import { LiberacaoDiretaDoAcesso } from './liberacao-direta-do-acesso.js';
 
 export interface ComandoDeReativacao {
   readonly usuarioId: UsuarioId;
@@ -21,10 +22,11 @@ export class ReativarUsuario {
     private readonly unidadeDeTrabalho: UnidadeDeTrabalho,
     private readonly usuarios: RepositorioDeUsuario,
     private readonly relogio: Relogio,
+    private readonly liberacao: LiberacaoDiretaDoAcesso,
   ) {}
 
   executar(acesso: AcessoDoUsuario, comando: ComandoDeReativacao): Promise<Result<SituacaoAlterada, ErroDeDominio>> {
-    return this.unidadeDeTrabalho.transacao('escrita', async (): Promise<Result<SituacaoAlterada, ErroDeDominio>> => {
+    return this.unidadeDeTrabalho.transacao('escrita', async (contexto): Promise<Result<SituacaoAlterada, ErroDeDominio>> => {
       const encontrado = conferirVersao(await this.usuarios.porId(comando.usuarioId), comando.versaoEsperada);
       if (encontrado.tipo === 'erro') return encontrado;
       const usuario = encontrado.valor;
@@ -32,7 +34,9 @@ export class ReativarUsuario {
       const reativado = usuario.reativar(acesso.usuarioId, comando.motivo, this.relogio.agora());
       if (reativado.tipo === 'erro') return reativado;
 
-      return ok({ situacao: usuario.situacao, versao: await salvarSeAlterado(this.usuarios, usuario) });
+      const versao = await salvarSeAlterado(this.usuarios, usuario);
+      this.liberacao.depoisDoCommit(contexto, { usuarioId: comando.usuarioId, instituicaoId: acesso.instituicaoId });
+      return ok({ situacao: usuario.situacao, versao });
     });
   }
 }

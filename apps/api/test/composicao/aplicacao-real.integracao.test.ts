@@ -7,6 +7,8 @@ import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } 
 import { criarAplicacao } from '../../src/composicao/aplicacao.js';
 import { AppModule } from '../../src/composicao/app.module.js';
 import { EnviadorDeConvite } from '../../src/modules/identidade/application/convite/enviador-de-convite.js';
+import { ControleDeAcessoNoProvedor } from '../../src/modules/identidade/application/usuarios/controle-de-acesso-no-provedor.js';
+import { ControleDeAcessoNoProvedorKeycloak } from '../../src/modules/identidade/infrastructure/keycloak/controle-de-acesso-no-provedor.keycloak.js';
 import { EnviadorDeConviteKeycloak } from '../../src/modules/identidade/infrastructure/keycloak/enviador-de-convite.keycloak.js';
 import { RepositorioDeUsuario } from '../../src/modules/identidade/domain/usuario/usuario.repo.js';
 import { SemeadorDeGruposDeSistema } from '../../src/modules/identidade/public-api.js';
@@ -22,6 +24,7 @@ import type { ChavesDeTeste } from '../autenticacao/chaves-de-teste.js';
 import { ServidorDeJwks } from '../autenticacao/servidor-de-jwks.js';
 import { comContexto, INSTITUICAO_A, INSTITUICAO_B, semearInstituicoes } from '../eventos/apoio.js';
 import { novoUsuarioAtivo } from '../identidade/acesso/ambiente-http.js';
+import { CAMINHO_DOS_USUARIOS, ServidorKeycloakFalso } from '../identidade/keycloak/servidor-keycloak-falso.js';
 import { AUTOR, consultarNaInstituicao } from '../identidade/apoio.js';
 import { criarBancoDeTeste, derrubarBancoDeTeste } from '../integracao/banco-de-teste.js';
 import type { BancoDeTeste } from '../integracao/banco-de-teste.js';
@@ -113,6 +116,8 @@ class ServidorDeJwksEmLocalhost extends ServidorDeJwks {
 describe('aplicação real (AppModule) contra o banco', () => {
   let chaves: ChavesDeTeste;
   let servidor: ServidorDeJwksEmLocalhost;
+  let keycloak: ServidorKeycloakFalso;
+  let urlDoKeycloak: string;
   let banco: BancoDeTeste;
   let app: INestApplication;
   let origem: string;
@@ -122,10 +127,13 @@ describe('aplicação real (AppModule) contra o banco', () => {
     chaves = await criarChavesDeTeste();
     servidor = new ServidorDeJwksEmLocalhost(chaves.conjunto);
     await servidor.iniciar();
+    keycloak = new ServidorKeycloakFalso();
+    urlDoKeycloak = (await keycloak.iniciar()).replace('127.0.0.1', 'localhost');
   });
 
   afterAll(async () => {
     await servidor.derrubar();
+    await keycloak.derrubar();
   });
 
   beforeEach(async () => {
@@ -137,6 +145,11 @@ describe('aplicação real (AppModule) contra o banco', () => {
     vi.stubEnv('BANCO_URL', urlDoAppPara(banco));
     vi.stubEnv('BANCO_POOL_MAXIMO', '5');
     vi.stubEnv('LOG_NIVEL', 'fatal');
+    vi.stubEnv('KEYCLOAK_URL_BASE', urlDoKeycloak);
+    vi.stubEnv('KEYCLOAK_REALM', 'cdd');
+    keycloak.requisicoes.length = 0;
+    keycloak.definir('PUT', `${CAMINHO_DOS_USUARIOS}/${SUJEITO_DA_MARIA}`, { status: 204 });
+    keycloak.definir('POST', `${CAMINHO_DOS_USUARIOS}/${SUJEITO_DA_MARIA}/logout`, { status: 204 });
     app = await criarAplicacao(AppComRotasDeProva);
     await app.listen(0, '127.0.0.1');
     origem = `http://127.0.0.1:${(app.getHttpServer().address() as AddressInfo).port}`;
@@ -283,6 +296,21 @@ describe('aplicação real (AppModule) contra o banco', () => {
       );
       expect(entregues.rows).toStrictEqual([{ tipo: 'USUARIO_SUSPENSO', publicado: true, consumido: true }]);
     });
+
+    it('a suspensão chega ao Keycloak pelo consumidor real: desabilita e depois derruba as sessões', async () => {
+      await comContexto(INSTITUICAO_A, async () => {
+        const repositorio = app.get(RepositorioDeUsuario);
+        const carregado = await repositorio.porId(usuario.id);
+        carregado!.desativar(AUTOR, 'afastamento', new Date());
+        await repositorio.salvar(carregado!);
+      });
+      await app.get(Despachante).executarCiclo();
+
+      const caminho = `${CAMINHO_DOS_USUARIOS}/${SUJEITO_DA_MARIA}`;
+      expect(
+        keycloak.requisicoes.filter(({ caminho: c }) => c.startsWith(caminho)).map(({ metodo, caminho: c }) => `${metodo} ${c}`),
+      ).toEqual([`PUT ${caminho}`, `POST ${caminho}/logout`]);
+    });
   });
 
   describe('rotas públicas e requisição sem instituição', () => {
@@ -315,6 +343,12 @@ describe('aplicação real (AppModule) contra o banco', () => {
   describe('envio de convite', () => {
     it('a composição real entrega os convites pelo adaptador do Keycloak', () => {
       expect(app.get(EnviadorDeConvite)).toBeInstanceOf(EnviadorDeConviteKeycloak);
+    });
+  });
+
+  describe('suspensão e reativação no provedor', () => {
+    it('a composição real aplica o estado do usuário pelo adaptador do Keycloak', () => {
+      expect(app.get(ControleDeAcessoNoProvedor)).toBeInstanceOf(ControleDeAcessoNoProvedorKeycloak);
     });
   });
 });
