@@ -695,6 +695,17 @@ describe('AnamnesePage: Publicar versão', () => {
     expect(botaoPresente(container, 'Copiar link público')).toBe(true);
   });
 
+  it('publicar o rascunho — Copiar link público passa a avisar com o endereço da v4, não o da v3', async () => {
+    const container = await montarAnamnese();
+    await publicarRascunhoV4(container);
+
+    await clicar(botaoComTexto(container, 'Copiar link público'));
+
+    expect(textoDoAviso(container)).toBe(
+      'Link público copiado: cdd.app/anamnese/v4 — quem responde não precisa de conta.',
+    );
+  });
+
   it('publicar o rascunho — acrescenta ao histórico "Publicada por Aurio Neto." em 02/09/2026', async () => {
     const container = await montarAnamnese();
 
