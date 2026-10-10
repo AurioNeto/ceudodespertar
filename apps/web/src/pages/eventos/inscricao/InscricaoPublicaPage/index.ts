@@ -1,0 +1,1 @@
+export { InscricaoPublicaPage } from './InscricaoPublicaPage';

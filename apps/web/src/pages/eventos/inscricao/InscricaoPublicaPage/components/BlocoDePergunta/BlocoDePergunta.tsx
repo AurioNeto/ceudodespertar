@@ -1,25 +1,13 @@
 import type { Pergunta, PerguntaPendente } from '@cdd/contracts';
 import { Icon, StatusBadge, Cartao } from '@/ds';
 import { TextField } from '@/ds';
+import { disparaAlerta } from '../../utils/regraDeAlerta';
 
 /**
  * As peças de responder anamnese. Vivem fora da tela porque a leitura da
  * resposta (`P-05`) vai precisar das mesmas perguntas com o mesmo desenho, e
  * porque a regra de alerta é a mesma aqui e lá.
  */
-
-/** Uma pergunta respondida é uma pergunta com valor não vazio. RA4 mora aqui. */
-export const respondida = (v: string | undefined): boolean => (v ?? '').trim().length > 0;
-
-export function disparaAlerta(p: Pergunta, valor: string | undefined): string | null {
-  const regra = p.regraDeAlerta;
-  if (!regra || !respondida(valor)) return null;
-  const v = valor!.trim();
-  if (regra.quando === 'PREENCHIDO') return regra.mensagem;
-  if (regra.quando === 'IGUAL') return v === regra.valor ? regra.mensagem : null;
-  if (regra.quando === 'DIFERENTE') return v !== regra.valor ? regra.mensagem : null;
-  return null;
-}
 
 export function Opcao({
   rotulo,

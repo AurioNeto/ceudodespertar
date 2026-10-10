@@ -762,7 +762,7 @@ Títulos na ordem de leitura. Dependências por título.
 | Mover financeiro II (concluída) | Mover financeiro I | — |
 | Mover lancamentos (concluída) | Mover financeiro II | — |
 | Mover eventos (concluída) | Mover lancamentos | — |
-| Mover inscricao | Mover eventos | — |
+| Mover inscricao (concluída) | Mover eventos | — |
 | Mover pessoas e estoque | Mover inscricao | — |
 | Mocks transversais | Mover pessoas e estoque | — |
 | lib/formato por export | Mocks transversais | — |

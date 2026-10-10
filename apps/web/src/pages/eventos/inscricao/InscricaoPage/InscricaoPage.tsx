@@ -22,17 +22,11 @@ import {
   Recado,
   Rotulo,
 } from '@/ds';
-import { formatarBRL, formatarDinheiro, pluralizar } from '../../lib/formato';
-import {
-  ANAMNESE_ROTULO,
-  CONSAGRA_POR_PADRAO,
-  diretorio,
-  eventos,
-  TIPO_EXPLICACAO,
-  TIPO_ROTULO,
-  type PessoaDoDiretorio,
-} from '../../mocks/inscricao';
-import { linkDaCerimonia } from '../../mocks/inscricaoPublica';
+import { formatarBRL, formatarDinheiro, pluralizar } from '@/lib/formato';
+import { ANAMNESE_ROTULO, CONSAGRA_POR_PADRAO, TIPO_EXPLICACAO, TIPO_ROTULO } from './constantes';
+import { diretorio, type PessoaDoDiretorio } from './mocks/inscricao';
+import { eventos } from '../mocks/eventos';
+import { linkDaCerimonia } from '../mocks/linkDaCerimonia';
 
 /**
  * `E-06` · Inscrição — Doc 4 §7 e Doc 2 §2.4.

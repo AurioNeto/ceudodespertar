@@ -1,0 +1,1 @@
+export { BlocoDePergunta } from './BlocoDePergunta';

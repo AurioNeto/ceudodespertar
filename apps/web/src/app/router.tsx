@@ -5,7 +5,7 @@ import { rotasAntigasDaEntrada } from './rotasAntigasDaEntrada';
 import { ExigeSessao } from './sessao';
 import { EntrarPage } from '../pages/entrada/EntrarPage';
 import { RetornoPage } from '../pages/entrada/RetornoPage';
-import { InscricaoPublicaPage } from '../pages/publico/InscricaoPublicaPage';
+import { InscricaoPublicaPage } from '@/pages/eventos/inscricao/InscricaoPublicaPage';
 import { PainelPage } from '../pages/painel/PainelPage';
 import { RegistrarLancamentoPage } from '@/pages/financeiro/lancamentos/RegistrarLancamentoPage';
 import { MeusRegistrosPage } from '@/pages/financeiro/lancamentos/MeusRegistrosPage';
@@ -21,7 +21,7 @@ import { PrestacaoDeContasPage } from '@/pages/financeiro/PrestacaoDeContasPage'
 import { ConciliacaoPage } from '@/pages/financeiro/ConciliacaoPage';
 import { ParametrosPage } from '@/pages/financeiro/ParametrosPage';
 import { AgendaPage } from '@/pages/eventos/AgendaPage';
-import { InscricaoPage } from '../pages/eventos/InscricaoPage';
+import { InscricaoPage } from '@/pages/eventos/inscricao/InscricaoPage';
 import { DevolucoesPage } from '@/pages/eventos/DevolucoesPage';
 import { LeitosPage } from '@/pages/eventos/LeitosPage';
 import { ContratacoesPage } from '@/pages/eventos/ContratacoesPage';

@@ -1,6 +1,5 @@
 import type {
   FormularioId,
-  LinkDeInscricao,
   ModoDePreenchimento,
   Pergunta,
   PerguntaId,
@@ -8,9 +7,7 @@ import type {
   PessoaId,
   RespostaHerdada,
 } from '@cdd/contracts';
-import { dataLocal } from '@cdd/contracts';
-import { id } from './ids';
-import { eventos } from './inscricao';
+import { id } from '@/mocks/ids';
 
 /**
  * Inscrição pelo link da cerimônia — o que a pessoa recebe no WhatsApp.
@@ -33,19 +30,6 @@ const q = (n: string) => id<PerguntaId>(n);
 
 export const VERSAO_VIGENTE = 3;
 export const FORMULARIO_VIGENTE = id<FormularioId>('form-anamnese-v3');
-
-/** A cerimônia deste link. O primeiro evento do mock de `E-06`. */
-export const eventoDoLink = eventos[0]!;
-
-export const linkDaCerimonia: LinkDeInscricao = {
-  eventoId: eventoDoLink.id,
-  token: 'lua-cheia-1209-7k3f',
-  url: 'ceudodespertar.org/i/lua-cheia-1209-7k3f',
-  criadoEm: dataLocal('2026-08-14'),
-  inscricoesAbertas: true,
-  aberturas: 96,
-  inscricoesPeloLink: 34,
-};
 
 const p = (
   perguntaId: string,

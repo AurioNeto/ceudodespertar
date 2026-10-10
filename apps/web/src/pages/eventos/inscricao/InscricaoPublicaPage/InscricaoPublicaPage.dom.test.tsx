@@ -2,8 +2,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { MemoryRouter } from 'react-router-dom';
-import { TEXTO_DA_FAIXA_DE_DEMONSTRACAO } from '../../ds';
-import '../../app/apoioDeTeste';
+import { TEXTO_DA_FAIXA_DE_DEMONSTRACAO } from '@/ds';
+import '@/app/apoioDeTeste';
 import {
   botaoComTexto,
   clicar,
