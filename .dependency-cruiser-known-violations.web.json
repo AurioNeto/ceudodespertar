@@ -414,34 +414,6 @@
   },
   {
     "type": "dependency",
-    "from": "apps/web/src/components/PermissoesPorModulo.tsx",
-    "to": "apps/web/src/lib/permissoesAgrupadas.ts",
-    "unresolvedTo": "../lib/permissoesAgrupadas",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/acessos/AbaDeGrupos.tsx",
-    "to": "apps/web/src/components/PermissoesPorModulo.tsx",
-    "unresolvedTo": "../../components/PermissoesPorModulo",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
     "from": "apps/web/src/pages/acessos/AbaDeGrupos.tsx",
     "to": "apps/web/src/lib/formato.ts",
     "unresolvedTo": "../../lib/formato",
@@ -979,20 +951,6 @@
   },
   {
     "type": "dependency",
-    "from": "apps/web/src/pages/auditoria/AuditoriaPage.tsx",
-    "to": "apps/web/src/mocks/sessao.ts",
-    "unresolvedTo": "../../mocks/sessao",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
     "from": "apps/web/src/pages/entrada/Aviso.tsx",
     "to": "apps/web/src/ds/index.ts",
     "unresolvedTo": "../../ds",
@@ -1219,20 +1177,6 @@
   {
     "type": "dependency",
     "from": "apps/web/src/pages/painel/PainelPage.tsx",
-    "to": "apps/web/src/components/CartazSlot.tsx",
-    "unresolvedTo": "../../components/CartazSlot",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/painel/PainelPage.tsx",
     "to": "apps/web/src/ds/index.ts",
     "unresolvedTo": "../../ds",
     "dependencyTypes": [
@@ -1333,20 +1277,6 @@
     "from": "apps/web/src/pages/perfil/MeuPerfilPage.tsx",
     "to": "apps/web/src/app/sessao.tsx",
     "unresolvedTo": "../../app/sessao",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/perfil/MeuPerfilPage.tsx",
-    "to": "apps/web/src/components/PermissoesPorModulo.tsx",
-    "unresolvedTo": "../../components/PermissoesPorModulo",
     "dependencyTypes": [
       "local",
       "import"
@@ -1782,6 +1712,23 @@
     "rule": {
       "severity": "error",
       "name": "lib-e-folha"
+    }
+  },
+  {
+    "type": "dependency",
+    "from": "apps/web/src/mocks/financeiro.ts",
+    "to": "apps/web/src/pages/mocks/contas.ts",
+    "unresolvedTo": "@/pages/mocks/contas",
+    "dependencyTypes": [
+      "aliased",
+      "aliased-tsconfig",
+      "aliased-tsconfig-paths",
+      "local",
+      "import"
+    ],
+    "rule": {
+      "severity": "error",
+      "name": "mock-global-so-dados"
     }
   },
   {
