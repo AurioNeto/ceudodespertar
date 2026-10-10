@@ -515,6 +515,18 @@ describe('ContratacoesPage: confirmar a proposta', () => {
 
     expect(campoDoRotulo<HTMLSelectElement>(cartaoDaContratacao(container, LUZ_DO_NORTE), 'Conta').value).toBe('nubank');
   });
+
+  it('conta escolhida e recebimento confirmado — o painel de outro cartão abre com a mesma conta', async () => {
+    const { container } = await montar(<ContratacoesPage />);
+    await confirmarProposta(container, LUZ_DO_NORTE);
+    await registrarRecebimento(container, ESTRELA_GUIA);
+    await escolherOpcao(campoDoRotulo<HTMLSelectElement>(cartaoDaContratacao(container, ESTRELA_GUIA), 'Conta'), 'itau');
+    await confirmarRecebimento(container, ESTRELA_GUIA);
+
+    await registrarRecebimento(container, LUZ_DO_NORTE);
+
+    expect(campoDoRotulo<HTMLSelectElement>(cartaoDaContratacao(container, LUZ_DO_NORTE), 'Conta').value).toBe('itau');
+  });
 });
 
 describe('ContratacoesPage: densidade', () => {

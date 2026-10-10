@@ -272,6 +272,17 @@ describe('DevolucoesPage: painel de pagamento', () => {
 
     expect(campoDoRotulo<HTMLSelectElement>(cartaoDaFila(container, OTAVIO), 'Conta').value).toBe('especie');
   });
+
+  it('conta escolhida e devolução confirmada — o painel de outro cartão abre com a mesma conta', async () => {
+    const { container } = await montar(<DevolucoesPage />);
+    await abrirPainel(container, CARLOS, 'R$ 210,00');
+    await escolherOpcao(campoDoRotulo<HTMLSelectElement>(cartaoDaFila(container, CARLOS), 'Conta'), 'especie');
+    await confirmar(cartaoDaFila(container, CARLOS));
+
+    await abrirPainel(container, OTAVIO, 'R$ 540,00');
+
+    expect(campoDoRotulo<HTMLSelectElement>(cartaoDaFila(container, OTAVIO), 'Conta').value).toBe('especie');
+  });
 });
 
 describe('DevolucoesPage: confirmar a devolução', () => {
