@@ -57,6 +57,15 @@ describe('T28a · api · fixtures de escrita só pela persistência', () => {
     programa = abrirPrograma(TSCONFIG_DA_API, arquivos, (caminho) => arquivos.includes(caminho));
   }, TEMPO_MAXIMO_DA_ABERTURA_EM_MS);
 
+  it('pasta de fixtures — casos registrados — cobre exatamente os diretórios existentes', () => {
+    const existentes = readdirSync(PASTA_DOS_CASOS, { withFileTypes: true })
+      .filter((entrada) => entrada.isDirectory())
+      .map((entrada) => entrada.name);
+    const registrados = [...CASOS_POSITIVOS, ...CASOS_NEGATIVOS].map((caso) => caso.caso);
+
+    expect(registrados.toSorted()).toEqual(existentes.toSorted());
+  });
+
   it.each([...CASOS_POSITIVOS, ...CASOS_NEGATIVOS].map((caso) => ({ caso: caso.caso })))(
     'fixture $caso — resolução de módulos — nenhum import fica sem resolver',
     ({ caso }) => {

@@ -111,6 +111,32 @@ export const CASOS_POSITIVOS: readonly CasoDeFixture[] = [
     caso: 'rota-use-fora-da-excecao',
     violacoes: esperar('composicao/outra.ts', 'rota-fora-do-nest', 'use'),
   },
+  {
+    caso: 'raw-escrita-em-leitor',
+    violacoes: esperar(
+      'modules/m/infrastructure/leitor-r.kysely.ts',
+      'leitura-fora-da-allowlist',
+      'sql:escrita',
+      'sql:escrita',
+      'sql:controle',
+    ).concat(esperar('modules/m/infrastructure/leitor-r.kysely.ts', 'sql-indeterminado', 'sql')),
+  },
+  {
+    caso: 'raw-ajusta-sessao-fora-do-banco',
+    violacoes: esperar('modules/m/infrastructure/sessao.ts', 'set-config-restrito', 'set', 'set', 'set'),
+  },
+  {
+    caso: 'instancia-do-servidor-http',
+    violacoes: esperar('modules/m/interface/http/instancia.ts', 'rota-fora-do-nest', 'getInstance', 'getInstance'),
+  },
+  {
+    caso: 'adaptador-express-instanciado',
+    violacoes: esperar('modules/m/interface/http/express.ts', 'rota-fora-do-nest', 'get', 'use'),
+  },
+  {
+    caso: 'rota-use-com-caminho-na-excecao',
+    violacoes: esperar('composicao/aplicacao.ts', 'rota-fora-do-nest', 'use'),
+  },
 ];
 
 export const CASOS_NEGATIVOS: readonly CasoDeFixture[] = [

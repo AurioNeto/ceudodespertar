@@ -51,20 +51,10 @@ export interface Relatorio {
 const PACOTES_DE_DADOS = /\/node_modules\/(kysely|@mikro-orm\/[^/]+)\//;
 const PACOTE_KYSELY = /\/node_modules\/kysely\//;
 const PACOTE_MIKRO_ORM = /\/node_modules\/@mikro-orm\/[^/]+\//;
-const PACOTES_HTTP = /\/node_modules\/(@nestjs\/(common|core|platform-express)|@types\/express[^/]*|express|fastify)\//;
+const PACOTES_HTTP = /\/node_modules\/@nestjs\/(common|core)\//;
 
 const VERBOS_HTTP: ReadonlySet<string> = new Set(['get', 'post', 'put', 'patch', 'delete', 'all']);
-const RECIPIENTES_DE_VERBO: ReadonlySet<string> = new Set([
-  'HttpServer',
-  'AbstractHttpAdapter',
-  'ExpressAdapter',
-  'FastifyAdapter',
-  'Application',
-  'Router',
-  'IRouter',
-  'Express',
-  'FastifyInstance',
-]);
+const RECIPIENTES_DE_VERBO: ReadonlySet<string> = new Set(['HttpServer', 'AbstractHttpAdapter']);
 const RECIPIENTES_DE_USE: ReadonlySet<string> = new Set([
   ...RECIPIENTES_DE_VERBO,
   'INestApplication',
@@ -75,6 +65,8 @@ const VERBOS_DE_ESCRITA_SQL = /^(insert|update|delete|merge|truncate|create|alte
 const VERBOS_DE_CONTROLE_SQL = /^(savepoint|release|rollback|commit|begin|start|end|abort)$/;
 const VERBOS_DE_LEITURA_SQL = /^(select|values|table|explain|show)$/;
 const DML_DENTRO_DE_WITH = /\b(insert|update|delete|merge)\b/i;
+const VERBOS_DE_SESSAO_SQL = /^(set|reset)$/;
+const MEMBROS_QUE_EXECUTAM_SQL: ReadonlySet<string> = new Set(['execute', 'executeTakeFirst', 'executeTakeFirstOrThrow']);
 const CHAMADA_DE_SET_CONFIG = /\bset_config\b/i;
 const PROFUNDIDADE_MAXIMA_DE_CONSTANTE = 8;
 
@@ -87,10 +79,10 @@ function semComentarios(sql: string): string {
 function categoriaDoSql(texto: string, ehInstrucao: boolean): CategoriaDeSql {
   const limpo = semComentarios(texto);
   if (CHAMADA_DE_SET_CONFIG.test(limpo)) return 'set-config';
-  if (!ehInstrucao) return 'fragmento';
   const verbo = /^\s*(\w+)/.exec(limpo)?.[1]?.toLowerCase() ?? '';
-  if (verbo === 'set') return 'set';
+  if (VERBOS_DE_SESSAO_SQL.test(verbo)) return 'set';
   if (VERBOS_DE_ESCRITA_SQL.test(verbo)) return 'escrita';
+  if (!ehInstrucao) return 'fragmento';
   if (verbo === 'with') return DML_DENTRO_DE_WITH.test(limpo) ? 'escrita' : 'leitura';
   if (VERBOS_DE_CONTROLE_SQL.test(verbo)) return 'controle';
   if (VERBOS_DE_LEITURA_SQL.test(verbo)) return 'leitura';
@@ -146,6 +138,21 @@ function textoDeConstante(checker: ts.TypeChecker, identificador: ts.Identifier,
 function textoDoTemplateMarcado(modelo: ts.TemplateLiteral): string {
   if (ts.isNoSubstitutionTemplateLiteral(modelo)) return modelo.text;
   return modelo.head.text + modelo.templateSpans.map((trecho) => `?${trecho.literal.text}`).join('');
+}
+
+function ehExecutadoComoInstrucao(no: ts.Node): boolean {
+  const pai = no.parent;
+  if (ts.isPropertyAccessExpression(pai) && pai.expression === no) {
+    const chamada = pai.parent;
+    return ts.isCallExpression(chamada) && chamada.expression === pai && MEMBROS_QUE_EXECUTAM_SQL.has(pai.name.text);
+  }
+  if (!ts.isCallExpression(pai) || !pai.arguments.includes(no as ts.Expression)) return false;
+  const nome = nomeDoMembro(pai);
+  return nome !== undefined && nome.text === 'executeQuery';
+}
+
+function comecaComInterpolacao(modelo: ts.TemplateLiteral): boolean {
+  return ts.isTemplateExpression(modelo) && semComentarios(modelo.head.text).trim() === '';
 }
 
 function ehCaminhoDeRota(checker: ts.TypeChecker, argumento: ts.Expression | undefined): boolean {
@@ -267,7 +274,7 @@ class Coletor {
     const ehSqlCru = nomeDoCallee.text === 'raw' && declaradoEm(simbolo, PACOTES_DE_DADOS);
     if (!ehExecutarSqlDoOrm && !ehSqlCru) return;
     const texto = textoLiteral(this.checker, primeiro);
-    this.avaliarSql(chamada, nomeDoCallee.text, texto, ehExecutarSqlDoOrm);
+    this.avaliarSql(chamada, nomeDoCallee.text, texto, ehExecutarSqlDoOrm || ehExecutadoComoInstrucao(chamada));
   }
 
   private sqlDeTemplateMarcado(marcado: ts.TaggedTemplateExpression): void {
@@ -275,7 +282,9 @@ class Coletor {
     const simbolo = simboloResolvido(this.checker, marcado.tag);
     const ehSqlDoKysely = simbolo !== undefined && simbolo.getName() === 'sql' && declaradoEm(simbolo, PACOTE_KYSELY);
     if (!ehSqlDoKysely) return;
-    this.avaliarSql(marcado, 'sql', textoDoTemplateMarcado(marcado.template), true);
+    const indeterminado = comecaComInterpolacao(marcado.template) && ehExecutadoComoInstrucao(marcado);
+    const texto = indeterminado ? undefined : textoDoTemplateMarcado(marcado.template);
+    this.avaliarSql(marcado, 'sql', texto, true);
   }
 
   private avaliarSql(no: ts.Node, origem: string, texto: string | undefined, ehInstrucao: boolean): void {
@@ -304,6 +313,10 @@ class Coletor {
   private rotaForaDoNest(chamada: ts.CallExpression): void {
     const nome = nomeDoMembro(chamada);
     if (nome === undefined || nome === chamada.expression) return;
+    if (nome.text === 'getInstance') {
+      this.instanciaDoServidor(chamada, nome);
+      return;
+    }
     const ehUse = nome.text === 'use';
     if (!ehUse && !VERBOS_HTTP.has(nome.text)) return;
     const simbolo = this.checker.getSymbolAtLocation(nome);
@@ -316,6 +329,15 @@ class Coletor {
       recipientes.has(recipiente);
     if (!ehDoServidorHttp) return;
     if (!ehUse && !ehCaminhoDeRota(this.checker, chamada.arguments[0])) return;
+    this.achar('rota-fora-do-nest', nome.text);
+    const excecoes = EXCECOES_DE_ROTA_FORA_DO_NEST[this.relativo] ?? [];
+    const comCaminho = ehCaminhoDeRota(this.checker, chamada.arguments[0]);
+    if (!excecoes.includes(nome.text) || comCaminho) this.violar(chamada, 'rota-fora-do-nest', nome.text);
+  }
+
+  private instanciaDoServidor(chamada: ts.CallExpression, nome: ts.Identifier): void {
+    const simbolo = this.checker.getSymbolAtLocation(nome);
+    if (simbolo === undefined || !declaradoEm(simbolo, PACOTES_HTTP)) return;
     this.achar('rota-fora-do-nest', nome.text);
     const excecoes = EXCECOES_DE_ROTA_FORA_DO_NEST[this.relativo] ?? [];
     if (!excecoes.includes(nome.text)) this.violar(chamada, 'rota-fora-do-nest', nome.text);
