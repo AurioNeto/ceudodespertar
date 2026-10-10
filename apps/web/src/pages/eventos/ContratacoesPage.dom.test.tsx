@@ -29,9 +29,8 @@ vi.mock('@/mocks/contratacoes', async (importarOriginal) => {
 
 vi.mock('@/mocks/financeiro', async (importarOriginal) => {
   const original = await importarOriginal<typeof import('@/mocks/financeiro')>();
-  const [cora, especie, ...demais] = original.contas;
-  const contaEncerrada = Object.assign({}, especie, { id: 'encerrada', nome: 'Conta encerrada', ativa: false });
-  return { ...original, contas: [cora, especie, contaEncerrada, ...demais] };
+  const contas = original.contas.map((conta) => ((conta.id as string) === 'especie' ? Object.assign({}, conta, { ativa: false }) : conta));
+  return { ...original, contas };
 });
 
 beforeEach(() => {
@@ -330,13 +329,13 @@ describe('ContratacoesPage: registrar recebimento', () => {
     );
   });
 
-  it('conta — oferece as quatro contas ativas, na ordem', async () => {
+  it('conta — oferece as três contas ativas na ordem, sem a Espécie que o mock deste arquivo inativa', async () => {
     const { container } = await montar(<ContratacoesPage />);
     await registrarRecebimento(container, ESTRELA_GUIA);
 
     const opcoes = todos<HTMLOptionElement>(campoDoRotulo(cartaoDaContratacao(container, ESTRELA_GUIA), 'Conta'), 'option');
 
-    expect(opcoes.map((opcao) => opcao.textContent)).toEqual(['Cora PJ', 'Espécie', 'Nubank Paty', 'Itaú Munay']);
+    expect(opcoes.map((opcao) => opcao.textContent)).toEqual(['Cora PJ', 'Nubank Paty', 'Itaú Munay']);
   });
 
   it('painel aberto — troca o botão Registrar recebimento por Confirmar o recebimento e Cancelar', async () => {

@@ -29,9 +29,8 @@ vi.mock('@/mocks/devolucoes', async (importarOriginal) => {
 
 vi.mock('@/mocks/financeiro', async (importarOriginal) => {
   const original = await importarOriginal<typeof import('@/mocks/financeiro')>();
-  const [cora, especie, ...demais] = original.contas;
-  const contaEncerrada = Object.assign({}, especie, { id: 'encerrada', nome: 'Conta encerrada', ativa: false });
-  return { ...original, contas: [cora, especie, contaEncerrada, ...demais] };
+  const contas = original.contas.map((conta) => ((conta.id as string) === 'nubank' ? Object.assign({}, conta, { ativa: false }) : conta));
+  return { ...original, contas };
 });
 
 beforeEach(() => {
@@ -186,7 +185,7 @@ describe('DevolucoesPage: painel de pagamento', () => {
     expect(cartao.textContent).toContain('A data de caixa, não a da solicitação.');
   });
 
-  it('conta — oferece as quatro contas ativas, na ordem', async () => {
+  it('conta — oferece as três contas ativas na ordem, sem a Nubank Paty que o mock deste arquivo inativa', async () => {
     const { container } = await montar(<DevolucoesPage />);
     await abrirPainel(container, CARLOS, 'R$ 210,00');
 
@@ -195,7 +194,6 @@ describe('DevolucoesPage: painel de pagamento', () => {
     expect(opcoes.map((opcao) => [opcao.value, opcao.textContent])).toEqual([
       ['cora', 'Cora PJ'],
       ['especie', 'Espécie'],
-      ['nubank', 'Nubank Paty'],
       ['itau', 'Itaú Munay'],
     ]);
   });
