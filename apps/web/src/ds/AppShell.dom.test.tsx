@@ -10,6 +10,7 @@ import {
   passarMouseSobre,
   tirarMouseDe,
   todos,
+  type Montado,
 } from '@/testes/montagem';
 import { errosAoClicar, glifoDe } from './apoioDeTeste';
 import { AppShell, type NavEntry } from './AppShell';
@@ -630,14 +631,23 @@ describe('AppShell: navegação inferior em campo', () => {
 });
 
 describe('AppShell: menu de campo', () => {
-  const montarComMenu = (props: {
+  interface PropsDoMenu {
     nav?: readonly NavEntry[];
     activeId?: string;
     onNavigate?: (id: string) => void;
     onUserClick?: () => void;
-  }) =>
+  }
+
+  const montarComMenu = (props: PropsDoMenu) =>
     montar(
       <AppShell {...IDENTIDADE} user={USUARIA} density="field" {...props}>
+        conteúdo
+      </AppShell>,
+    );
+
+  const passarParaEscritorio = (montado: Montado, props: PropsDoMenu) =>
+    montado.atualizar(
+      <AppShell {...IDENTIDADE} user={USUARIA} density="office" {...props}>
         conteúdo
       </AppShell>,
     );
@@ -894,5 +904,36 @@ describe('AppShell: menu de campo', () => {
       </AppShell>,
     );
     expect(dialogoDoMenu()).toBeNull();
+  });
+
+  describe('quando a troca de densidade tira o botão Menu de debaixo do foco', () => {
+    const emCampoComMenuAberto = async (props: PropsDoMenu) => {
+      const montado = await montarComMenu(props);
+      await abrirMenu(montado.container);
+      return montado;
+    };
+
+    it('o foco vai para o item ativo da lateral', async () => {
+      const props = { nav: NAV, activeId: 'acessos', onUserClick: vi.fn() };
+      const montado = await emCampoComMenuAberto(props);
+      await passarParaEscritorio(montado, props);
+      expect(document.activeElement).toBe(botaoComTexto(navLateral(montado.container), 'Acessos'));
+    });
+
+    it('sem item ativo o foco vai para o primeiro item da navegação', async () => {
+      const props = { nav: NAV, onUserClick: vi.fn() };
+      const montado = await emCampoComMenuAberto(props);
+      await passarParaEscritorio(montado, props);
+      expect(document.activeElement).toBe(botaoComTexto(navLateral(montado.container), 'Painel'));
+    });
+
+    it('sem itens na navegação o foco vai para a área principal, que aceita foco por programa e não por Tab', async () => {
+      const props = { onUserClick: vi.fn() };
+      const montado = await emCampoComMenuAberto(props);
+      await passarParaEscritorio(montado, props);
+      const principal = elemento(montado.container, 'main');
+      expect(principal.tabIndex).toBe(-1);
+      expect(document.activeElement).toBe(principal);
+    });
   });
 });

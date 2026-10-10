@@ -1,4 +1,4 @@
-import { Fragment, useId, useState } from 'react';
+import { Fragment, useId, useRef, useState } from 'react';
 import type { CSSProperties, MouseEvent, ReactNode } from 'react';
 import { Icon, type IconName } from './Icon';
 import { PainelDeAcao } from './PainelDeAcao';
@@ -61,6 +61,16 @@ function useMenuDeCampo(campo: boolean, ativo: string | undefined) {
   };
 }
 
+function useDestinoDoFocoDeReserva() {
+  const lateral = useRef<HTMLElement>(null);
+  const principal = useRef<HTMLElement>(null);
+  const destino = () =>
+    lateral.current?.querySelector<HTMLElement>('[aria-current="page"]') ??
+    lateral.current?.querySelector<HTMLElement>('nav button') ??
+    principal.current;
+  return { lateral, principal, destino };
+}
+
 export interface AppShellBrand {
   lines: readonly string[];
   tagline: string;
@@ -107,6 +117,7 @@ export function AppShell({
   const foraDaBarra = agruparForaDaBarra(nav, ITENS_NA_BARRA_DE_CAMPO);
   const temMenu = foraDaBarra.length > 0 || onUserClick !== undefined;
   const menu = useMenuDeCampo(field, activeId);
+  const foco = useDestinoDoFocoDeReserva();
 
   return (
     <div
@@ -123,6 +134,7 @@ export function AppShell({
     >
       {field ? null : (
         <aside
+          ref={foco.lateral}
           style={{
             background: 'var(--bg-rail)',
             borderRight: '1px solid var(--color-line-strong)',
@@ -250,7 +262,12 @@ export function AppShell({
           desta caixa, então o desenho se mantém parado enquanto o conteúdo
           corre por cima — textura de papel, não plano de fundo em movimento.
         */}
-        <main className="cdd-papel-estampado" style={{ flex: 1, minWidth: 0, minHeight: 0, overflow: 'auto' }}>
+        <main
+          ref={foco.principal}
+          tabIndex={-1}
+          className="cdd-papel-estampado"
+          style={{ flex: 1, minWidth: 0, minHeight: 0, overflow: 'auto' }}
+        >
           {children}
         </main>
 
@@ -279,6 +296,7 @@ export function AppShell({
         onNavigate={onNavigate}
         onUserClick={onUserClick}
         aoFechar={menu.fechar}
+        focoDeReserva={foco.destino}
       />
     </div>
   );
@@ -411,9 +429,20 @@ interface MenuDeCampoProps {
   onNavigate: ((id: string) => void) | undefined;
   onUserClick: (() => void) | undefined;
   aoFechar: () => void;
+  focoDeReserva: () => HTMLElement | null;
 }
 
-function MenuDeCampo({ aberto, grupos, activeId, user, userLabel, onNavigate, onUserClick, aoFechar }: MenuDeCampoProps) {
+function MenuDeCampo({
+  aberto,
+  grupos,
+  activeId,
+  user,
+  userLabel,
+  onNavigate,
+  onUserClick,
+  aoFechar,
+  focoDeReserva,
+}: MenuDeCampoProps) {
   const navegarPara = (id: string) => {
     onNavigate?.(id);
     aoFechar();
@@ -424,7 +453,7 @@ function MenuDeCampo({ aberto, grupos, activeId, user, userLabel, onNavigate, on
   };
 
   return (
-    <PainelDeAcao aberto={aberto} titulo="Menu" variante="folha" aoFechar={aoFechar}>
+    <PainelDeAcao aberto={aberto} titulo="Menu" variante="folha" aoFechar={aoFechar} focoDeReserva={focoDeReserva}>
       <nav style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         {grupos.map((grupo) => (
           <GrupoNoMenu key={grupo.posicao} grupo={grupo} activeId={activeId} onNavigate={navegarPara} />
