@@ -757,12 +757,12 @@ Títulos na ordem de leitura. Dependências por título.
 | Mover pessoas e estoque | Mover inscricao | — |
 | Mocks transversais | Mover pessoas e estoque | — |
 | lib/formato por export | Mocks transversais | — |
-| Caracterizar fluxo lancamentos | Mover lancamentos | — |
-| Caracterizar financeiro I | Mover financeiro I | — |
-| Caracterizar financeiro II | Mover financeiro II | — |
-| Caracterizar eventos | Mover eventos | — |
-| Caracterizar inscrição | Mover inscricao | — |
-| Caracterizar pessoas e estoque | Mover pessoas e estoque | — |
+| Caracterizar fluxo lancamentos (concluída, #82) | — | — |
+| Caracterizar financeiro I (concluída, #83) | — | — |
+| Caracterizar financeiro II (concluída, #84) | — | — |
+| Caracterizar eventos (concluída, #85) | — | — |
+| Caracterizar inscrição (concluída, #86) | — | — |
+| Caracterizar pessoas e estoque (concluída, #87) | — | — |
 | testes/ global e setupFiles | lib/formato por export | e2e do B0 e ajustes do login |
 | app/ em subpastas | testes/ global e setupFiles | e2e do B0 e ajustes do login |
 | dados/ sem efeito e sem ciclo | app/ em subpastas | e2e do B0 e ajustes do login |
@@ -798,7 +798,7 @@ Títulos na ordem de leitura. Dependências por título.
 | Remover o Tailwind | Harness de captura de telas | — |
 | Catraca de avisos (concluída, seção 12.2) | Fronteiras no depcruise; Caracterizar lib/formato e components; Caracterizar primitivos do ds | — |
 
-Etapas de divisão de telas de demonstração (de Dividir RegistrarLancamento a Dividir Pessoas e Anamnese) podem andar com o gate fechado. A etapa de leitura única de valor depende das caracterizações das 10 telas que fazem leitura de valor (primitivos do ds, fluxo de lançamentos, financeiro I, eventos, inscrição e pessoas e estoque).
+Etapas de divisão de telas de demonstração (de Dividir RegistrarLancamento a Dividir Pessoas e Anamnese) podem andar com o gate fechado. As seis caracterizações de telas de demonstração rodaram antes das etapas de mover do grupo, por decisão do dono (seção 15): os testes ficam ao lado das telas, nos caminhos de hoje, e cada etapa de mover os leva junto com a tela (anexo). A etapa de leitura única de valor depende das caracterizações das 10 telas que fazem leitura de valor (primitivos do ds, fluxo de lançamentos, financeiro I, eventos, inscrição e pessoas e estoque).
 
 ---
 
@@ -890,5 +890,48 @@ Respondidas pelo dono em 09/10/2026 e em 10/10/2026. Cada uma vira correção em
 | O cartão "Acesso ao sistema" da ficha de Pessoas (`PessoasPage.tsx:398-444`) repete a gestão de acesso da tela Acessos. O que fazer? | Fica como demonstração até Pessoas ligar no backend (B4); então vira link para Acessos, para não haver dois lugares que concedem acesso. A decisão sobre dados de saúde (08/10) não cobre este cartão | Na ligação de Pessoas ao backend |
 | Ligar a catraca de avisos das fronteiras no CI? | Sim: os avisos conhecidos ficam numa linha de base versionada e aviso novo falha o PR. A linha de base só cai; cada etapa de mover a regenera | Feito em PR próprio, depois do merge do #57, do #58 e do #59, com os imports do apoio de teste já pelo alias `@/`; o mecanismo está na seção 12.2 |
 | Como a Agenda lê "Contribuições sugeridas"? | Só valores inteiros em reais, separados por vírgula, como o placeholder ("40, 60, 90"). Valor com centavos é recusado com mensagem no campo; hoje `45,50` vira 45 e 50 | PR próprio, depois da caracterização de eventos |
+| As caracterizações das telas de demonstração esperam as etapas de mover de cada grupo (seção 13.7)? (10/10/2026) | Não: rodam já, em paralelo, com os testes ao lado das telas nos caminhos de hoje. Cada etapa de mover leva os testes junto com a tela | Feito no #82 a #87; dependências na seção 13.7 e destinos no anexo |
+| Registro de lançamento com valor vazio ou zero: bloqueia ou grava a conferir (Documento 2, L1, contra Documento 4, F-01)? (10/10/2026) | Bloqueia o envio, com mensagem no campo (L1: valor maior que zero). Valor negativo é defeito: o Documento 4 já o veta e a tela hoje o aceita | PR próprio, depois da caracterização do fluxo de lançamentos (#82) |
+| Meus registros mostra totais, conta e categoria? (10/10/2026) | Não: segue o Documento 4, F-02, sem agregação, sem conta e sem categoria. É o que separa `ler_proprios` de `ler` | PR próprio, depois da caracterização do fluxo de lançamentos (#82) |
+| O "Desfazer nos próximos 2 minutos" do recibo e o "salvar como rascunho" do período fechado existem? (10/10/2026) | Não por enquanto: o texto sai das telas até haver comando no backend; fica o "registrar outro" do Documento 4, F-01 | PR próprio, depois da caracterização do fluxo de lançamentos (#82) |
+| Em campo, o registro edita data, fornecedor, unidade e a chave de reembolso? (10/10/2026) | Sim, por folha, como pede o Documento 4, F-01 ("padrões todos editáveis") | PR próprio, depois da caracterização do fluxo de lançamentos (#82) |
+| Aprovar selecionados e Aprovar todos de alta confiança valem para a fila inteira ou para o que o filtro mostra? Consolidam item de período fechado? (10/10/2026) | Valem só para o que o filtro mostra, e nunca consolidam item de período fechado (Documento 2, L5) | PR próprio, depois da caracterização do fluxo de lançamentos (#82) |
+| Aceitar a sugestão do cupom para uma categoria já escolhida mantém ou desmarca? As sugestões aparecem em Entrada e Transferência? (10/10/2026) | Mantém, como o "Aceitar as N". As sugestões do cupom aparecem só em Saída | PR próprio, depois da caracterização do fluxo de lançamentos (#82) |
+| Qual código de tela vale: o da tabela do Documento 4 ou o que as telas mostram hoje? (10/10/2026) | O da tabela do Documento 4 (seção 14, códigos de tela) | PR de texto que confere os códigos no Documento 4 |
+| A reserva do fundo pode passar do fundo próprio? Valor zero ou negativo é aceito? (10/10/2026) | Não: o painel avisa e bloqueia, e o Livre não fica negativo. Valor zero ou negativo é recusado | PR próprio, depois da caracterização de financeiro I (#83) |
+| As datas de pagamento, de devolução, de novo empréstimo, de despesa e de ressarcimento podem ficar vazias? (10/10/2026) | Não: a tela mostra "Informe a data" no campo e não registra | PR próprio, depois da caracterização de financeiro I (#83) |
+| "Conciliada ontem" e "posição de hoje, 09:12" em Contas e fundo são texto fixo? (10/10/2026) | Não: vêm da data da última conciliação (do mock agora, do backend depois) | PR próprio, depois da caracterização de financeiro I (#83) |
+| Ao voltar a um cartão em Faturas, abre a fatura a pagar ou a primeira não paga? (10/10/2026) | A primeira não paga, a mesma regra de quando troca de cartão | PR próprio, depois da caracterização de financeiro I (#83) |
+| Na leitura de valor, "1.500" sem vírgula vale mil e quinhentos ou um e meio? "1e3" e "12abc" são aceitos? (10/10/2026) | Vírgula é decimal e ponto é milhar: "1.500" vale mil e quinhentos. "1e3" e "12abc" são recusados | Leitura única de valor |
+| Depois de registrar uma devolução, um ressarcimento ou um pagamento, a data e a conta escolhidas continuam no formulário seguinte? (10/10/2026) | A data volta a hoje; a conta escolhida fica | PR próprio, depois da caracterização de financeiro I (#83) |
+| Registrar um empréstimo com o formulário de devolução aberto fecha a devolução? (10/10/2026) | Sim: fecha a devolução e limpa o valor digitado nela | PR próprio, depois da caracterização de financeiro I (#83) |
+| Com valor a ressarcir só de hoje, o resumo de Adiantamentos diz "nada pendente"? (10/10/2026) | Não: diz "o mais antigo é de hoje" | PR próprio, depois da caracterização de financeiro I (#83) |
+| A gaveta "Movimento da conta" de Relatórios mostra o total líquido ou a soma bruta? O aviso "a conferir" separa entradas de saídas? (10/10/2026) | O total líquido, igual ao número clicado. O aviso separa entradas de saídas | PR próprio, depois da caracterização de financeiro II (#84) |
+| O contador "Sem par" da Conciliação conta o quê? (10/10/2026) | As linhas do banco e os lançamentos sem par. As sugestões ficam fora, porque já têm par proposto | PR próprio, depois da caracterização de financeiro II (#84) |
+| Ao dar linha de relatório a uma categoria, a lista respeita a natureza da categoria? (10/10/2026) | Sim, e abre sem linha escolhida, em vez de "Receita de contribuição" | PR próprio, depois da caracterização de financeiro II (#84) |
+| O Fechamento bloqueia por lançamento a conferir na competência (Documento 2, P1) e por competência anterior aberta (P4), e mostra o hash (P2)? (10/10/2026) | P1 e P4 já no protótipo. O hash (P2) fica para a ligação ao backend | PR próprio, depois da caracterização de financeiro II (#84); o hash na ligação do fechamento ao backend |
+| No período personalizado de Relatórios, "03/26" vale março de 2026? Um intervalo com De depois de Até avisa? (10/10/2026) | Sim aos dois: "03/26" é março de 2026, e De depois de Até mostra aviso e não soma nada | PR próprio, depois da caracterização de financeiro II (#84) |
+| Na Conciliação, o motivo de ignorar escolhido numa linha vale para a próxima linha aberta, mesmo depois de Voltar? (10/10/2026) | Não: o motivo recomeça a cada linha, e Voltar descarta o escolhido | PR próprio, depois da caracterização de financeiro II (#84) |
+| Devolução: o efeito no financeiro é estorno do lançamento original ou lançamento de saída (Documento 2, DV4)? (10/10/2026) | Lançamento de saída, como manda o DV4; o texto da tela muda | PR próprio, depois da caracterização de eventos (#85) |
+| Estorno de competência já fechada entra no mês corrente ou segue o Documento 2, L9? Qual é a competência atual da demonstração? (10/10/2026) | Segue o L9. A competência atual da demonstração é 2026-09 | PR próprio, depois da caracterização de eventos (#85) |
+| Em Contratações, o valor recebido soma no faturamento do ano e na barra do teto do MEI? (10/10/2026) | Sim, nos dois | PR próprio, depois da caracterização de eventos (#85) |
+| Em Contratações, qual é a conta padrão do recebimento? (10/10/2026) | A conta padrão é personalizável e começa com Cora PJ | PR próprio, depois da caracterização de eventos (#85) |
+| Na Agenda e em Leitos, quem só lê (GOV, TES) vê as ações de escrita? (10/10/2026) | Não: as ações de escrita ficam escondidas, como no padrão de permissão por ação (seção 14, padrões que atravessam telas) | PR próprio, depois da caracterização de eventos (#85) |
+| As datas digitadas na Agenda, em Devoluções e em Contratações são validadas? (10/10/2026) | Sim: formato dd/mm/aaaa; data vazia ou impossível é recusada com mensagem no campo | PR próprio, depois da caracterização de eventos (#85) |
+| Depois de confirmar uma devolução ou um recebimento, a conta escolhida continua? Editar a data de uma cerimônia para outro mês leva o calendário a esse mês? (10/10/2026) | Sim aos dois: a conta continua, e editar leva ao mês novo, como criar já faz | PR próprio, depois da caracterização de eventos (#85) |
+| Na inscrição, quem é da equipe e dorme em quarto pago ou come na Jornada paga acomodação e refeição? (10/10/2026) | Sim: a isenção é só da contribuição, e o fechamento mostra o valor devido | PR próprio, depois da caracterização da inscrição (#86) |
+| Com a contribuição em branco e acomodação ou refeição marcadas, o total mostra só "A combinar"? (10/10/2026) | Não: mostra o custo já conhecido mais o que falta, por exemplo "R$ 90,00 + a combinar" | PR próprio, depois da caracterização da inscrição (#86) |
+| Na inscrição pública, o ponto de atenção de uma resposta herdada vai para o acolhimento? (10/10/2026) | Sim, junto com os das respostas novas | PR próprio, depois da caracterização da inscrição (#86) |
+| O link público de inscrição atende criança? (10/10/2026) | Não: só adultos; a criança é inscrita pela casa, com responsável (Documento 2, IN2). O CPF passa a ser validado com dígito verificador, e a data de nascimento ganha formato | PR próprio, depois da caracterização da inscrição (#86) |
+| A autorização do responsável vale por evento? Quem pode ser responsável? "Criança estelar" vale para qualquer idade? (10/10/2026) | A autorização vale por evento; o responsável vem de `responsavelDe`; "Criança estelar" é só para menor de idade | PR próprio, depois da caracterização da inscrição (#86) |
+| As diárias, o nível e o valor passam de uma pessoa para a próxima e de um evento para o outro? (10/10/2026) | Não: as diárias recomeçam em 1 depois de trocar a pessoa, trocar o evento, salvar como pendente e confirmar; nível e valor recomeçam ao trocar de evento | PR próprio, depois da caracterização da inscrição (#86) |
+| Os botões e seletores da inscrição com alvo de 44px também em campo passam a 56px? (10/10/2026) | Sim, como pede o Documento 5 (`CDD-v2_2-05-sistema-de-design.md:166`) | PR próprio, depois da caracterização da inscrição (#86) |
+| O cartão do link da cerimônia segue o evento marcado? O link é um por evento? (10/10/2026) | Sim aos dois | PR próprio, depois da caracterização da inscrição (#86) |
+| Inativar uma pessoa que tem acesso suspende o acesso? (10/10/2026) | Sim, pelo comando de suspensão da identidade, com aviso na confirmação | Na ligação de Pessoas ao backend (B4) |
+| Quantas casas decimais tem o saldo do lote de ayahuasca? Litros com 2 casas são aceitos? (10/10/2026) | Duas casas; 0,25 é aceito | PR próprio, depois da caracterização de pessoas e estoque (#87) |
+| O lote que sai da quarentena volta ao estado de antes? Dois lotes podem ter o mesmo código? (10/10/2026) | Volta ao estado de antes; o código é único por instituição | PR próprio, depois da caracterização de pessoas e estoque (#87) |
+| A Anamnese terá "descartar rascunho" e a tela de impacto antes de publicar (Documento 4, P-07)? (10/10/2026) | "Descartar rascunho" entra já; a tela de impacto vem junto da B4 | PR próprio, depois da caracterização de pessoas e estoque (#87); a tela de impacto na B4 |
+| Qual é o texto da comparação quando o feitio sai mais caro que comprar? (10/10/2026) | "Fazer saiu R$ 1.126,00 mais caro" (com o valor do feitio) | PR próprio, depois da caracterização de pessoas e estoque (#87) |
+| Na Anamnese, o formulário de nova pergunta com texto digitado passa para o rascunho seguinte depois de publicar? (10/10/2026) | Não: o formulário fecha ao publicar | PR próprio, depois da caracterização de pessoas e estoque (#87) |
 
 Pendência de redação: o Documento 5 ainda não lista os primitivos admitidos em pt-BR (tabela da seção 4.3, coluna "Catálogo" = não). Ele está em `project/uploads/CDD - System/CDD-v2_2-05-sistema-de-design.md` e não foi alterado; o apêndice com os primitivos em pt-BR entra em PR próprio.
