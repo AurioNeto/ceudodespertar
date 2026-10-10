@@ -1,0 +1,1 @@
+export { Recado } from './Recado';

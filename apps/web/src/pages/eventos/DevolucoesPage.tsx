@@ -1,8 +1,18 @@
 import { useState } from 'react';
 import type { ReactNode } from 'react';
-import { Button, Icon, ScreenHeader, StatusBadge, TextField, useDensidade } from '../../ds';
-import { Select } from '../../components/Campo';
-import { Cartao, Numero, Recado, Rotulo } from '../../components/Blocos';
+import {
+  Button,
+  Icon,
+  ScreenHeader,
+  StatusBadge,
+  TextField,
+  useDensidade,
+  Select,
+  Cartao,
+  Numero,
+  Recado,
+  Rotulo,
+} from '@/ds';
 import { formatarBRL, formatarCompetencia, pluralizar } from '../../lib/formato';
 import { contas } from '../../mocks/financeiro';
 import { fila as filaInicial, faltaramSemPedir, pagas as pagasIniciais, type DevolucaoNaFila } from '../../mocks/devolucoes';

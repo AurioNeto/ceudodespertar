@@ -1,9 +1,24 @@
 import { useMemo, useState } from 'react';
 import type { Conta, ContaId, Fatura, StatusFatura } from '@cdd/contracts';
 import { dataLocal } from '@cdd/contracts';
-import { Button, DomainError, EmptyState, Icon, ScreenHeader, StatusBadge, TextField, type BadgeTone, useDensidade } from '@/ds';
-import { Select } from '@/components/Campo';
-import { Cartao, Numero, Recado, Rotulo, Td, Th } from '@/components/Blocos';
+import {
+  Button,
+  DomainError,
+  EmptyState,
+  Icon,
+  ScreenHeader,
+  StatusBadge,
+  TextField,
+  type BadgeTone,
+  useDensidade,
+  Select,
+  Cartao,
+  Numero,
+  Recado,
+  Rotulo,
+  Td,
+  Th,
+} from '@/ds';
 import { competenciaPorExtenso, formatarData, formatarDinheiro, pluralizar } from '@/lib/formato';
 import { cartoes, contasPagadoras, faturas as faturasIniciais, totalDaFatura } from './mocks/faturas';
 import { hoje } from '@/mocks/sessao';

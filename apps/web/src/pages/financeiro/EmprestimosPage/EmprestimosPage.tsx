@@ -2,9 +2,25 @@ import { useState } from 'react';
 import type { DevolucaoEmprestimoId, DirecaoEmprestimo, Emprestimo, EmprestimoId, PessoaId } from '@cdd/contracts';
 import { dataLocal, reais } from '@cdd/contracts';
 import { id as marcarId } from '@/mocks/ids';
-import { Button, DomainError, EmptyState, Icon, ScreenHeader, StatusBadge, TextField, useDensidade } from '@/ds';
-import { Select, SeletorDeTipo } from '@/components/Campo';
-import { BarraDeProporcao, Cartao, Numero, Recado, Rotulo, Td, Th } from '@/components/Blocos';
+import {
+  Button,
+  DomainError,
+  EmptyState,
+  Icon,
+  ScreenHeader,
+  StatusBadge,
+  TextField,
+  useDensidade,
+  Select,
+  SeletorDeTipo,
+  BarraDeProporcao,
+  Cartao,
+  Numero,
+  Recado,
+  Rotulo,
+  Td,
+  Th,
+} from '@/ds';
 import { formatarData, formatarDinheiro, pluralizar } from '@/lib/formato';
 import {
   contasDeEmprestimo,

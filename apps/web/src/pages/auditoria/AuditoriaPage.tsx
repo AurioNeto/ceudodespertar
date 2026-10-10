@@ -1,9 +1,18 @@
 import { useMemo, useState } from 'react';
 import type { CSSProperties } from 'react';
 import type { OperacaoAuditada, RegistroDeAcesso, RegistroDeAuditoria } from '@cdd/contracts';
-import { EmptyState, Icon, ScreenHeader, StatusBadge, useDensidade } from '../../ds';
-import { Select, SeletorDeTipo } from '../../components/Campo';
-import { Cartao, Numero, Rotulo } from '../../components/Blocos';
+import {
+  EmptyState,
+  Icon,
+  ScreenHeader,
+  StatusBadge,
+  useDensidade,
+  Select,
+  SeletorDeTipo,
+  Cartao,
+  Numero,
+  Rotulo,
+} from '@/ds';
 import { formatarData, pluralizar } from '../../lib/formato';
 import { hoje } from '../../mocks/sessao';
 import {

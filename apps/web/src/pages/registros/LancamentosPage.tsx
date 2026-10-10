@@ -1,8 +1,7 @@
 import { useMemo, useState } from 'react';
 import type { LancamentoNaLista } from '@cdd/contracts';
-import { Button, Icon, Receipt, RecordRow, ScreenHeader, StatusBadge, EmptyState, useDensidade } from '../../ds';
+import { Button, Icon, Receipt, RecordRow, ScreenHeader, StatusBadge, EmptyState, useDensidade, Select } from '@/ds';
 import { Paginacao } from '../../components/Paginacao';
-import { Select } from '../../components/Campo';
 import { formatarData, formatarDiaMes, formatarDinheiro, pluralizar } from '../../lib/formato';
 import { estadoDaLinha, linhasDoRecibo, naturezaDoTipo, rodapeDoRecibo, tomDoRecibo } from '../../lib/recibo';
 import { corDoTipo, lancamentos, rotuloDaSituacao, rotuloDoTipo } from '../../mocks/lancamentos';

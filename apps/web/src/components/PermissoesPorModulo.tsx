@@ -1,6 +1,6 @@
 import type { Permissao } from '@cdd/contracts';
 import { agruparPermissoes } from '../lib/permissoesAgrupadas';
-import { Rotulo } from './Blocos';
+import { Rotulo } from '@/ds';
 
 export interface PermissoesPorModuloProps {
   readonly codigos: readonly Permissao[];

@@ -1,9 +1,8 @@
 import type { ReactNode } from 'react';
 import type { Eu } from '@cdd/contracts';
-import { Button, ScreenHeader, useDensidade } from '../../ds';
+import { Button, ScreenHeader, useDensidade, Rotulo } from '@/ds';
 import { iniciais } from '../../lib/formato';
 import { useSessao } from '../../app/sessao';
-import { Rotulo } from '../../components/Blocos';
 import { PermissoesPorModulo } from '../../components/PermissoesPorModulo';
 
 export function MeuPerfilPage() {

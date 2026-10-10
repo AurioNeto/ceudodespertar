@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { Button, Icon, ScreenHeader, StatusBadge, type BadgeTone, useDensidade } from '../../ds';
-import { SeletorDeTipo } from '../../components/Campo';
+import { Button, Icon, ScreenHeader, StatusBadge, type BadgeTone, useDensidade, SeletorDeTipo } from '@/ds';
 import { nomeDoMes, pluralizar } from '../../lib/formato';
 import {
   CORES_POR_TIPO,

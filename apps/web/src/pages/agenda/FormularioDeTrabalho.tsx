@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { Button, Icon, TextField } from '../../ds';
-import { Select } from '../../components/Campo';
+import { Button, Icon, TextField, Select } from '@/ds';
 import { CORES_POR_TIPO, type TarefaDePreparo, type TipoDeTrabalho, type Trabalho } from '../../mocks/agenda';
 
 export interface RascunhoDeTrabalho {

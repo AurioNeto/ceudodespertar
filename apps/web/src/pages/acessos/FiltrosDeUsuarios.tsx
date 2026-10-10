@@ -1,7 +1,6 @@
 import type { GrupoDaGestao, GrupoId, SituacaoUsuario } from '@cdd/contracts';
 import { SITUACOES_DE_USUARIO } from '@cdd/contracts';
-import { TextField } from '../../ds';
-import { Select } from '../../components/Campo';
+import { TextField, Select } from '@/ds';
 import { SITUACAO_DE_USUARIO } from './situacaoDeUsuario';
 
 const TODAS = '';

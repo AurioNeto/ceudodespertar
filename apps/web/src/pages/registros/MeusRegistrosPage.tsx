@@ -1,7 +1,6 @@
 import { useState } from 'react';
-import { Receipt, RecordRow, ScreenHeader, useDensidade } from '../../ds';
+import { Receipt, RecordRow, ScreenHeader, useDensidade, SeletorDeTipo } from '@/ds';
 import { Paginacao } from '../../components/Paginacao';
-import { SeletorDeTipo } from '../../components/Campo';
 import { formatarData, formatarDinheiro, pluralizar } from '../../lib/formato';
 import { estadoDaLinha, linhasDoRecibo, naturezaDoTipo, rodapeDoRecibo, tomDoRecibo } from '../../lib/recibo';
 import { meusLancamentos, rotuloDoTipo } from '../../mocks/lancamentos';
