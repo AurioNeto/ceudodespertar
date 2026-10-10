@@ -1,6 +1,21 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import type { LancamentoAConciliar } from '@cdd/contracts';
 import { botaoComTexto, clicar, desmontarTudo, elemento, escolherOpcao, montar, todos } from '@/testes/montagem';
 import { ConciliacaoPage } from './ConciliacaoPage';
+
+const cenario = vi.hoisted(() => ({
+  lancamentos: (itens: readonly LancamentoAConciliar[]): readonly LancamentoAConciliar[] => itens,
+}));
+
+vi.mock('@/mocks/conciliacao', async (importarOriginal) => {
+  const original = await importarOriginal<{ lancamentosSozinhos: readonly LancamentoAConciliar[] }>();
+  return {
+    ...original,
+    get lancamentosSozinhos() {
+      return cenario.lancamentos(original.lancamentosSozinhos);
+    },
+  };
+});
 
 const MENOS = '− ';
 
@@ -40,7 +55,10 @@ function fixarDensidade(campo: boolean) {
   }));
 }
 
-beforeEach(() => fixarDensidade(false));
+beforeEach(() => {
+  fixarDensidade(false);
+  cenario.lancamentos = (itens) => itens;
+});
 
 afterEach(async () => {
   await desmontarTudo();
@@ -441,6 +459,36 @@ describe('ConciliacaoPage: coluna de lançamentos sem linha no banco', () => {
     const { container } = await montar(<ConciliacaoPage />);
 
     expect(todos(coluna(container, TITULO_DOS_LANCAMENTOS), 'button')).toHaveLength(0);
+  });
+});
+
+describe('ConciliacaoPage: coluna de lançamentos sem linha, com a lista de demonstração trocada', () => {
+  it('nenhum lançamento sobrando — troca a lista pelo estado de que todo lançamento encontrou sua linha', async () => {
+    cenario.lancamentos = () => [];
+
+    const { container } = await montar(<ConciliacaoPage />);
+
+    expect(coluna(container, TITULO_DOS_LANCAMENTOS).textContent).toContain('Nada sobrando do lado do sistema');
+    expect(coluna(container, TITULO_DOS_LANCAMENTOS).textContent).toContain('Todo lançamento encontrou sua linha.');
+    expect(contagemDaColuna(container, TITULO_DOS_LANCAMENTOS)).toBe('0');
+  });
+
+  it('nenhum lançamento sobrando — as outras colunas e o Sem par continuam como estavam', async () => {
+    cenario.lancamentos = () => [];
+
+    const { container } = await montar(<ConciliacaoPage />);
+
+    expect(indicadores(container)).toEqual(['8', '3', '0', '0']);
+    expect([contagemDaColuna(container, TITULO_DAS_LINHAS), contagemDaColuna(container, TITULO_DAS_SUGESTOES)]).toEqual(['5', '3']);
+  });
+
+  it('um único lançamento sobrando — mostra o cartão dele, sem o estado vazio', async () => {
+    cenario.lancamentos = (itens) => itens.slice(0, 1);
+
+    const { container } = await montar(<ConciliacaoPage />);
+
+    expect(textosDaColuna(container, TITULO_DOS_LANCAMENTOS)).toEqual([`28/08mercado cerimônia mãe divina${MENOS}187,40Cora PJ · Aurio Neto`]);
+    expect(contagemDaColuna(container, TITULO_DOS_LANCAMENTOS)).toBe('1');
   });
 });
 
