@@ -428,6 +428,16 @@ describe('ParametrosPage: trocar a linha de uma categoria que já tem linha', ()
 
     expect(seletorDe(linhaDaCategoria(container, 'Administrativo'), 'Linha de relatório').value).toBe('Administrativo');
   });
+
+  it('a linha escolhida ao trocar uma categoria não vaza para uma sem linha: Escolher linha começa pela primeira da lista', async () => {
+    const { container } = await montar(<ParametrosPage />);
+    await clicar(elemento<HTMLButtonElement>(linhaDaCategoria(container, 'Combustível'), 'button'));
+    await escolherOpcao(seletorDe(linhaDaCategoria(container, 'Combustível'), 'Linha de relatório'), 'Manutenção');
+
+    await clicar(botaoComTexto(linhaDaCategoria(container, 'Investimento na Lojinha'), 'Escolher linha'));
+
+    expect(seletorDe(linhaDaCategoria(container, 'Investimento na Lojinha'), 'Linha de relatório').value).toBe('Receita de contribuição');
+  });
 });
 
 describe('ParametrosPage: categoria inativa sem linha de relatório', () => {
