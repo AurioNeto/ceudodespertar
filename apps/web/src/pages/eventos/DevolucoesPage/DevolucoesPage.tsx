@@ -13,7 +13,7 @@ import {
   Recado,
   Rotulo,
 } from '@/ds';
-import { formatarBRL, formatarCompetencia, pluralizar } from '@/lib/formato';
+import { formatarBRL, formatarCompetencia, pluralizar } from '@/pages/utils/formato';
 import { contas } from '@/pages/mocks/contas';
 import { fila as filaInicial, faltaramSemPedir, pagas as pagasIniciais, type DevolucaoNaFila } from './mocks/devolucoes';
 

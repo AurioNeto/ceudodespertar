@@ -19,7 +19,7 @@ import {
   Td,
   Th,
 } from '@/ds';
-import { competenciaPorExtenso, formatarData, formatarDinheiro, pluralizar } from '@/lib/formato';
+import { competenciaPorExtenso, formatarData, formatarDinheiro, pluralizar } from '@/pages/utils/formato';
 import { cartoes, contasPagadoras, faturas as faturasIniciais, totalDaFatura } from './mocks/faturas';
 import { hoje } from '@/pages/mocks/relogio';
 

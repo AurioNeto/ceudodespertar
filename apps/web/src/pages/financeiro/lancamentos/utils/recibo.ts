@@ -1,7 +1,7 @@
 import type { LancamentoNaLista } from '@cdd/contracts';
 import type { ReceiptLine, ReceiptTone, RecordStatus } from '@/ds';
 import type { NaturezaVisual } from '@/ds';
-import { formatarData } from '@/lib/formato';
+import { formatarData } from '@/pages/utils/formato';
 import { rotuloDaSituacao, rotuloDoTipo } from './rotulosDoLancamento';
 
 export const tomDoRecibo = (tipo: LancamentoNaLista['tipo']): ReceiptTone =>

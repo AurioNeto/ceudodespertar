@@ -10,7 +10,7 @@ import {
   Interruptor,
   Select,
 } from '@/ds';
-import { pluralizar } from '@/lib/formato';
+import { pluralizar } from '@/pages/utils/formato';
 import {
   TIPOS_DE_PERGUNTA,
   versoesIniciais,

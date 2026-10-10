@@ -14,7 +14,7 @@ import {
   Recado,
   Rotulo,
 } from '@/ds';
-import { pluralizar } from '@/lib/formato';
+import { pluralizar } from '@/pages/utils/formato';
 import {
   alocacaoInicial,
   conflitoDeAgenda,

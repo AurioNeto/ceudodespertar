@@ -10,7 +10,7 @@ import {
   useDensidade,
   SeletorDeTipo,
 } from '@/ds';
-import { formatarDiaMes, formatarDinheiro, pluralizar } from '@/lib/formato';
+import { formatarDiaMes, formatarDinheiro, pluralizar } from '@/pages/utils/formato';
 import { contas as contasIniciais, fundoProprio } from '@/pages/mocks/contas';
 import { fundos as fundosIniciais } from './mocks/fundos';
 import { GerenciarContasModal } from './components/GerenciarContasModal';

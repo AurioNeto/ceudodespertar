@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Button, Icon, ScreenHeader, useDensidade, Select } from '@/ds';
-import { formatarValor, pluralizar } from '@/lib/formato';
+import { formatarValor } from '@/lib/formato';
+import { pluralizar } from '@/pages/utils/formato';
 import {
   CATEGORIAS_DE_ENTRADA,
   CATEGORIAS_DE_SAIDA,

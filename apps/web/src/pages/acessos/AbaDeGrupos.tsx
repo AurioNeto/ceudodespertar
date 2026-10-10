@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import type { GrupoDaGestao } from '@cdd/contracts';
 import { EmptyState, InfraError, SkeletonList, StatusBadge, Cartao } from '@/ds';
 import { PermissoesPorModulo } from '@/pages/components/PermissoesPorModulo';
-import { pluralizar } from '../../lib/formato';
+import { pluralizar } from '@/pages/utils/formato';
 import { useConsultasDeAcessos } from './consultasDeAcessos';
 
 export function AbaDeGrupos() {

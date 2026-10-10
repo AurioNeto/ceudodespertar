@@ -21,7 +21,7 @@ import {
   formatarDiaMes,
   formatarLitros,
   pluralizar,
-} from '../../lib/formato';
+} from '@/pages/utils/formato';
 import { GraficoEstoque } from './GraficoEstoque';
 import { GraficoResultado } from './GraficoResultado';
 import { CartazSlot } from '@/pages/components/CartazSlot';

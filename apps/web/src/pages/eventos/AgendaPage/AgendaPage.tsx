@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Button, Icon, ScreenHeader, StatusBadge, type BadgeTone, useDensidade, SeletorDeTipo } from '@/ds';
-import { nomeDoMes, pluralizar } from '@/lib/formato';
+import { pluralizar } from '@/pages/utils/formato';
 import {
   CORES_POR_TIPO,
   trabalhosIniciais,
@@ -10,6 +10,7 @@ import {
 import { CalendarioMensal, LegendaDeTipos } from './components/CalendarioMensal';
 import { DetalheDoTrabalho } from './components/DetalheDoTrabalho';
 import { FormularioDeTrabalho } from './components/FormularioDeTrabalho';
+import { nomeDoMes } from './utils/nomeDoMes';
 import { rascunhoDe, rascunhoVazio, type RascunhoDeTrabalho } from './utils/rascunhoDeTrabalho';
 
 const TOM_DA_SITUACAO: Record<SituacaoDoTrabalho, BadgeTone> = {

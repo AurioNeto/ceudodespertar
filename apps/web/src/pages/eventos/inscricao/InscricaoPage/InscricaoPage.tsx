@@ -22,7 +22,7 @@ import {
   Recado,
   Rotulo,
 } from '@/ds';
-import { formatarBRL, formatarDinheiro, pluralizar } from '@/lib/formato';
+import { formatarBRL, formatarDinheiro, pluralizar } from '@/pages/utils/formato';
 import { ANAMNESE_ROTULO, CONSAGRA_POR_PADRAO, TIPO_EXPLICACAO, TIPO_ROTULO } from './constantes';
 import { diretorio, type PessoaDoDiretorio } from './mocks/inscricao';
 import { eventos } from '../mocks/eventos';

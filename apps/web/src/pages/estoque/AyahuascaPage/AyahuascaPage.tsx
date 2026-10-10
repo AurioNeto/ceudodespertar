@@ -10,7 +10,7 @@ import {
   Select,
   SeletorDeTipo,
 } from '@/ds';
-import { formatarLitros, pluralizar } from '@/lib/formato';
+import { formatarLitros, pluralizar } from '@/pages/utils/formato';
 import {
   lotesIniciais,
   movimentosIniciais,

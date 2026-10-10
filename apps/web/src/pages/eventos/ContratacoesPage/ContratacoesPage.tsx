@@ -15,7 +15,7 @@ import {
   Recado,
   Rotulo,
 } from '@/ds';
-import { formatarBRL, pluralizar } from '@/lib/formato';
+import { formatarBRL, pluralizar } from '@/pages/utils/formato';
 import { contas } from '@/pages/mocks/contas';
 import {
   contratacoes as contratacoesIniciais,
