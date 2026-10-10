@@ -16,7 +16,7 @@ Provado, com a leitura feita pelo compilador do TypeScript:
      import(), import type e vi.mock apontando para o mesmo módulo dentro da mesma declaração;
   2. declarações de topo repartidas entre arquivos com o mesmo nome e o mesmo hash de corpo, sem
      declaração nova nem perdida (o modificador export não entra no hash; o módulo alvo de cada import(),
-     import type e vi.mock da declaração entra);
+     import type e vi.mock da declaração entra); o que fica no mesmo arquivo mantém a ordem;
   3. cada ligação de import (nome, alias, type, namespace, efeito, require) e cada referência de módulo
      (import(), import type, vi.mock) continua apontando para a mesma declaração ou módulo, resolvida
      pelo tsconfig do web, seguindo reexports e passando pelo mapa de renomeações e repartições; o
@@ -27,9 +27,11 @@ Provado, com a leitura feita pelo compilador do TypeScript:
      uma declaração privada só passa a ser exportada se outro arquivo do HEAD a importa;
   5. o index.ts novo só reexporta nomes que a base já exportava, com o mesmo alvo.
 
+Arquivo que não é código tem de manter os bytes: trocar o caminho de um @import de css falha.
+
 Não provado: a ordem das linhas de import e de export ... from; comentários que acompanham essas linhas
-ou que ficam fora do corpo de declarações repartidas; caminhos de arquivos que não são código (a ligação
-por import de css e por alias não resolvido compara o texto do caminho); import() e vi.mock com argumento
+ou que ficam fora do corpo de declarações repartidas; a ligação por import de css e por alias não
+resolvido, que compara o texto do caminho; import() e vi.mock com argumento
 que não é literal, require() fora de import x = require(), import.meta.glob; ajudante de teste repetido
 e idêntico a um ajudante de teste da base, em arquivo de teste movido; export { type X } from no lugar de
 export type { X } from, que também emite export {} from; o comportamento em tempo de execução e tudo

@@ -89,10 +89,14 @@ function lerEntrada(leitor, entrada) {
   };
 }
 
+const estaEmOrdemCrescente = (indices) =>
+  indices.every((indice, posicao) => posicao === 0 || indice > indices[posicao - 1]);
+
 function casarNoLugar({ base, head }) {
   const disponiveis = agruparPorChave(base);
   const casadosDaBase = new Set();
   const casadosDoHead = new Set();
+  const posicoesNaBase = [];
 
   for (const item of head) {
     const candidato = disponiveis.get(chaveDe(item))?.shift();
@@ -100,12 +104,14 @@ function casarNoLugar({ base, head }) {
     if (candidato) {
       casadosDaBase.add(candidato);
       casadosDoHead.add(item);
+      posicoesNaBase.push(base.indexOf(candidato));
     }
   }
 
   return {
     livresDaBase: base.filter((item) => !casadosDaBase.has(item)),
     livresDoHead: head.filter((item) => !casadosDoHead.has(item)),
+    mudouDeOrdem: !estaEmOrdemCrescente(posicoesNaBase),
   };
 }
 
@@ -180,7 +186,12 @@ function casarDeclaracoes(leitor, entradas, paresDeDeclaracao, registrar) {
   const correspondencias = [];
 
   for (const lida of lidas) {
-    const { livresDaBase, livresDoHead } = casarNoLugar(lida);
+    const { livresDaBase, livresDoHead, mudouDeOrdem } = casarNoLugar(lida);
+
+    if (mudouDeOrdem) {
+      registrar(`ordem dos statements de topo mudou: ${lida.entrada.para}`, lida.entrada.para);
+    }
+
     livresDaBase.forEach((item) => baseLivre.add(item));
     livresDoHead.forEach((item) => headLivre.add(item));
   }

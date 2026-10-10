@@ -405,6 +405,42 @@ describe('conferir-movimento', { timeout: TEMPO_DO_CENARIO_EM_MS }, () => {
       expect(resultado.erro).toContain(`declaração nova: NOVA (${emSrc('utilitarios.ts')})`);
     });
 
+    it('falha quando o arquivo que fica no lugar troca a ordem de dois statements de topo', () => {
+      const registro = (primeiro: string, segundo: string): string =>
+        codigo(
+          'const registrados: string[] = [];',
+          'const registrar = (nome: string): number => registrados.push(nome);',
+          '',
+          `registrar('${primeiro}');`,
+          `registrar('${segundo}');`,
+          '',
+          'export const lista = registrados;',
+        );
+      const resultado = executarCenario({
+        base: { 'registro.ts': registro('primeiro', 'segundo') },
+        depois: (repositorio) => repositorio.escrever({ 'registro.ts': registro('segundo', 'primeiro') }),
+      });
+
+      expect(resultado.codigo).toBe(CODIGO_DE_FALHA);
+      expect(resultado.erro).toContain(`ordem dos statements de topo mudou: ${emSrc('registro.ts')}`);
+    });
+
+    it('passa quando o arquivo que fica no lugar perde a declaração do meio para outro arquivo', () => {
+      const resultado = executarCenario({
+        base: {
+          'numeros.ts': codigo('export const UM = 1;', 'export const DOIS = 2;', 'export const TRES = 3;'),
+        },
+        depois: (repositorio) =>
+          repositorio.escrever({
+            'numeros.ts': codigo('export const UM = 1;', 'export const TRES = 3;'),
+            'dois.ts': codigo('export const DOIS = 2;'),
+          }),
+      });
+
+      expect(resultado.erro).toBe('');
+      expect(resultado.codigo).toBe(CODIGO_DE_SUCESSO);
+    });
+
     it('falha quando a declaração é copiada para outro arquivo e continua no original', () => {
       const resultado = executarCenario({
         base: { 'soma.ts': SOMA, 'utilitarios.ts': UTILITARIOS },
@@ -891,6 +927,8 @@ describe('conferir-movimento', { timeout: TEMPO_DO_CENARIO_EM_MS }, () => {
       expect(resultado.saida.replaceAll(/\s+/g, ' ')).toContain(
         'ajudante de teste repetido e idêntico a um ajudante de teste da base, em arquivo de teste movido',
       );
+      expect(resultado.saida).toContain('o que fica no mesmo arquivo mantém a ordem');
+      expect(resultado.saida).toContain('trocar o caminho de um @import de css falha');
     });
 
     it('conta as diferenças e sai com 1 quando falha', () => {
