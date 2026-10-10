@@ -241,7 +241,7 @@ describe('Usuario.reenviarConvite', () => {
     const usuario = convidado();
 
     usuario.reenviarConvite(NOVO_HASH, NOVA_EXPIRA_EM, ADMIN_ID, DEPOIS);
-    usuario.reenviarConvite('hash-3', NOVA_EXPIRA_EM, ADMIN_ID, DEPOIS);
+    usuario.reenviarConvite('hash-3', NOVA_EXPIRA_EM, ADMIN_ID, new Date(DEPOIS.getTime() + 60_000));
 
     expect(usuario.convitesSubstituidos.map((convite) => convite.hashDoToken)).toEqual([HASH, NOVO_HASH]);
   });
@@ -283,6 +283,64 @@ describe('Usuario.reenviarConvite', () => {
     expect(usuario.convite?.hashDoToken).toBe(HASH);
     expect(usuario.convitesSubstituidos).toEqual([]);
     expect(usuario.retirarEventos()).toEqual([]);
+  });
+});
+
+describe('Usuario.reenviarConvite — intervalo mínimo', () => {
+  const MS_POR_SEGUNDO = 1_000;
+  const aposSegundos = (segundos: number) => new Date(AGORA.getTime() + segundos * MS_POR_SEGUNDO);
+  const detalhesDe = (resultado: Result<unknown, ErroDeDominio>) => (resultado.tipo === 'erro' ? resultado.erro.detalhes : undefined);
+
+  it('recusa aos 59 s e não altera o usuário', () => {
+    const usuario = convidado();
+    usuario.retirarEventos();
+
+    const resultado = usuario.reenviarConvite(NOVO_HASH, NOVA_EXPIRA_EM, ADMIN_ID, aposSegundos(59));
+
+    expect(codigoDe(resultado)).toBe('CONVITE_REENVIADO_RECENTEMENTE');
+    expect(usuario.convite?.hashDoToken).toBe(HASH);
+    expect(usuario.convitesSubstituidos).toEqual([]);
+    expect(usuario.retirarEventos()).toEqual([]);
+  });
+
+  it('aceita aos 60 s exatos', () => {
+    const expiraEm = aposSegundos(24 * 3_600);
+
+    expect(ehOk(convidado().reenviarConvite(NOVO_HASH, expiraEm, ADMIN_ID, aposSegundos(60)))).toBe(true);
+  });
+
+  it.each([
+    [59, 1],
+    [30, 30],
+    [0, 60],
+  ])('aos %i s informa %i s restantes', (decorridos, restantes) => {
+    const resultado = convidado().reenviarConvite(NOVO_HASH, NOVA_EXPIRA_EM, ADMIN_ID, aposSegundos(decorridos));
+
+    expect(detalhesDe(resultado)).toEqual({ retryAfterSegundos: restantes });
+  });
+
+  it.each([
+    [30_500, 30],
+    [59_001, 1],
+  ])('arredonda para cima: aos %i ms informa %i s', (decorridoEmMs, restantes) => {
+    const resultado = convidado().reenviarConvite(NOVO_HASH, NOVA_EXPIRA_EM, ADMIN_ID, new Date(AGORA.getTime() + decorridoEmMs));
+
+    expect(detalhesDe(resultado)).toEqual({ retryAfterSegundos: restantes });
+  });
+
+  it('relógio anterior ao convite não passa de 60 s de espera', () => {
+    const resultado = convidado().reenviarConvite(NOVO_HASH, NOVA_EXPIRA_EM, ADMIN_ID, aposSegundos(-600));
+
+    expect(detalhesDe(resultado)).toEqual({ retryAfterSegundos: 60 });
+  });
+
+  it('mede a partir do convite vigente, não do primeiro', () => {
+    const usuario = convidado();
+    usuario.reenviarConvite(NOVO_HASH, NOVA_EXPIRA_EM, ADMIN_ID, DEPOIS);
+
+    const resultado = usuario.reenviarConvite('hash-3', NOVA_EXPIRA_EM, ADMIN_ID, new Date(DEPOIS.getTime() + 10_000));
+
+    expect(detalhesDe(resultado)).toEqual({ retryAfterSegundos: 50 });
   });
 });
 

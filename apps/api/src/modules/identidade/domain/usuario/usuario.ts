@@ -186,6 +186,9 @@ export class Usuario extends RaizDeAgregado<UsuarioId> {
     if (this._situacao === 'ATIVO') return err(erroDeDominio('CONVITE_JA_USADO'));
     if (this._situacao !== 'CONVITE_PENDENTE') return err(erroDaSituacaoDoAlvo(this._situacao));
 
+    const intervaloRespeitado = this._convite?.validarReenvio(em) ?? ok();
+    if (intervaloRespeitado.tipo === 'erro') return intervaloRespeitado;
+
     const novoConvite = Convite.criar(novoHash, novaExpiraEm, por, em);
     if (this._convite !== null) this._convitesSubstituidos.push(this._convite.revogar(em));
     this._convite = novoConvite;

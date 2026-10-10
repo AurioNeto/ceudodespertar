@@ -78,6 +78,51 @@ describe('FiltroGlobalDeErros', () => {
     expect(capturada.cabecalhos).toBeUndefined();
   });
 
+  it('429 de domínio leva Retry-After em segundos inteiros a partir do dado do erro', () => {
+    const correlacaoId = randomUUID();
+
+    comCorrelacaoId(correlacaoId, () => {
+      filtro.catch(
+        new ErroDeDominioException(erroDeDominio('CONVITE_REENVIADO_RECENTEMENTE', { retryAfterSegundos: 42 })),
+        hostFalso(capturada),
+      );
+    });
+
+    expect(capturada.status).toBe(429);
+    expect(capturada.cabecalhos).toStrictEqual({ 'Retry-After': '42' });
+    expect(capturada.corpo).toStrictEqual({
+      erro: 'CONVITE_REENVIADO_RECENTEMENTE',
+      detalhes: { retryAfterSegundos: 42 },
+      correlacaoId,
+    });
+  });
+
+  it.each([[undefined], [{}], [{ retryAfterSegundos: 0 }], [{ retryAfterSegundos: 1.5 }], [{ retryAfterSegundos: '30' }]])(
+    '429 sem espera válida (%j) não emite Retry-After',
+    (detalhes) => {
+      comCorrelacaoId(randomUUID(), () => {
+        filtro.catch(
+          new ErroDeDominioException(erroDeDominio('CONVITE_REENVIADO_RECENTEMENTE', detalhes)),
+          hostFalso(capturada),
+        );
+      });
+
+      expect(capturada.status).toBe(429);
+      expect(capturada.cabecalhos).toBeUndefined();
+    },
+  );
+
+  it('só o 429 emite Retry-After, mesmo com o dado presente', () => {
+    comCorrelacaoId(randomUUID(), () => {
+      filtro.catch(
+        new ErroDeDominioException(erroDeDominio('PERIODO_FECHADO', { retryAfterSegundos: 42 })),
+        hostFalso(capturada),
+      );
+    });
+
+    expect(capturada.cabecalhos).toBeUndefined();
+  });
+
   it('erro de domínio (Result.err) responde com o status do mapa e o código', () => {
     const correlacaoId = randomUUID();
 
