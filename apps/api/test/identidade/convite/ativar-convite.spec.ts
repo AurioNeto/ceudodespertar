@@ -253,11 +253,11 @@ describe('AtivarConvite', () => {
     });
 
     it.each([
-      ['convite revogado', Convite.criar(HASH_DO_TOKEN, EXPIRA_EM, AUTOR, CRIADO_EM).revogar(CRIADO_EM), 'CONVITE_INVALIDO'],
-      ['hash diferente do convite vigente', Convite.criar('f'.repeat(64), EXPIRA_EM, AUTOR, CRIADO_EM), 'CONVITE_INVALIDO'],
-      ['usuário sem convite', null, 'CONVITE_INVALIDO'],
-      ['convite já usado', Convite.criar(HASH_DO_TOKEN, EXPIRA_EM, AUTOR, CRIADO_EM).usar(CRIADO_EM), 'CONVITE_JA_USADO'],
-    ] as const)('%s: %s sem provedor e sem gravar', async (_descricao, convite, codigo) => {
+      ['convite revogado', 'CONVITE_INVALIDO', Convite.criar(HASH_DO_TOKEN, EXPIRA_EM, AUTOR, CRIADO_EM).revogar(CRIADO_EM)],
+      ['hash diferente do convite vigente', 'CONVITE_INVALIDO', Convite.criar('f'.repeat(64), EXPIRA_EM, AUTOR, CRIADO_EM)],
+      ['usuário sem convite', 'CONVITE_INVALIDO', null],
+      ['convite já usado', 'CONVITE_JA_USADO', Convite.criar(HASH_DO_TOKEN, EXPIRA_EM, AUTOR, CRIADO_EM).usar(CRIADO_EM)],
+    ] as const)('%s: %s sem provedor e sem gravar', async (_descricao, codigo, convite) => {
       const { ativar, conferidor, repositorio } = montar({ usuario: usuarioPendente(convite) });
 
       expect(codigoDe(await ativar.executar({ token: TOKEN, sujeito: SUJEITO }))).toBe(codigo);
