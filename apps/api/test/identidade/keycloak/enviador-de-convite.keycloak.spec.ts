@@ -100,6 +100,15 @@ describe('EnviadorDeConviteKeycloak', () => {
     });
   });
 
+  it('nome com espaços repetidos — separa o primeiro nome e junta o resto com um espaço só', async () => {
+    convite = { ...convite, nome: '  Ana   Maria  Souza ' };
+
+    await enviar();
+
+    const [criacao] = servidor.chamadasA('POST', CAMINHO_DOS_USUARIOS);
+    expect(JSON.parse(criacao!.corpo)).toMatchObject({ firstName: 'Ana', lastName: 'Maria Souza' });
+  });
+
   it('envia o e-mail de ações com a URL exata, client_id do convite e redirect_uri para /entrar', async () => {
     await enviar();
 
