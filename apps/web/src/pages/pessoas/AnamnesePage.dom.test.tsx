@@ -111,6 +111,14 @@ const interruptor = (container: HTMLElement, rotulo: string) =>
 const botaoPresente = (container: HTMLElement, texto: string) =>
   todos<HTMLButtonElement>(container, 'button').some((botao) => botao.textContent?.trim() === texto);
 
+const CONTROLES_DA_PERGUNTA = ['subir', 'descer', 'remover'] as const;
+
+const medidasDosControlesDaPrimeiraPergunta = (container: HTMLElement) =>
+  CONTROLES_DA_PERGUNTA.map((controle) => {
+    const botao = controleDaPergunta(container, 0, controle);
+    return [botao.style.width, botao.style.height];
+  });
+
 async function montarAnamnese() {
   const montado = await montar(<AnamnesePage />);
   return montado.container;
@@ -470,7 +478,7 @@ describe('AnamnesePage: ordem e remoção de perguntas no rascunho', () => {
     expect(titulosDasPerguntas(container)).toEqual(PERGUNTAS_DA_V4);
   });
 
-  it('subir e descer — levam junto o selo e a regra de alerta da pergunta', async () => {
+  it('descer a primeira pergunta — leva junto o selo e a regra de alerta dela', async () => {
     const container = await montarAnamnese();
     await abrirVersao(container, 'v4');
 
@@ -482,6 +490,18 @@ describe('AnamnesePage: ordem e remoção de perguntas no rascunho', () => {
       'Sim ou não',
       'Obrigatória',
       'ponto de atenção quando: resposta sim',
+    ]);
+  });
+
+  it('subir a segunda pergunta — leva junto o tipo e a regra de alerta dela, e a primeira desce com o selo e a regra', async () => {
+    const container = await montarAnamnese();
+    await abrirVersao(container, 'v4');
+
+    await clicar(controleDaPergunta(container, 1, 'subir'));
+
+    expect(perguntasDaVersaoAberta(container).slice(0, 2)).toEqual([
+      ['01', 'Quais medicações e doses?', 'Texto longo', 'ponto de atenção quando: qualquer resposta com antidepressivo'],
+      ['02', 'Você faz uso de medicação contínua?', 'Sim ou não', 'Obrigatória', 'ponto de atenção quando: resposta sim'],
     ]);
   });
 
@@ -655,6 +675,21 @@ describe('AnamnesePage: nova pergunta no rascunho', () => {
 
     expect(formularioNaPublicada).toBe(0);
     expect(campoRotulado(container, 'Pergunta').value).toBe('Texto que ficou pela metade');
+  });
+
+  it('formulário aberto, publicar e Novo rascunho — o rascunho novo abre com o formulário e o texto digitado na v4', async () => {
+    const container = await montarAnamnese();
+    await abrirFormularioDeNovaPergunta(container);
+    await digitar(campoRotulado(container, 'Pergunta'), 'Texto da v4');
+
+    await clicar(botaoComTexto(container, 'Publicar versão'));
+    const formularioNaPublicada = todos(container, 'input').length;
+    await clicar(botaoComTexto(container, 'Novo rascunho'));
+
+    expect(formularioNaPublicada).toBe(0);
+    expect(tituloDaVersaoAberta(container)).toBe('Anamnese do corpo · v5');
+    expect(campoRotulado(container, 'Pergunta').value).toBe('Texto da v4');
+    expect(botaoPresente(container, 'Adicionar pergunta')).toBe(false);
   });
 });
 
@@ -959,6 +994,21 @@ describe('AnamnesePage: regras de validade e exigência', () => {
     expect(container.textContent).not.toContain('não confirma inscrição');
   });
 
+  it('religar a exigência — volta o interruptor e o texto de quem não confirma inscrição', async () => {
+    const container = await montarAnamnese();
+    await clicar(interruptor(container, 'Exigir anamnese em dia para confirmar presença'));
+
+    await clicar(interruptor(container, 'Exigir anamnese em dia para confirmar presença'));
+
+    expect(
+      interruptor(container, 'Exigir anamnese em dia para confirmar presença').getAttribute('aria-checked'),
+    ).toBe('true');
+    expect(
+      folhaComTexto(container, 'span', 'quem está vencido ou sem resposta não confirma inscrição'),
+    ).toBeTruthy();
+    expect(container.textContent).not.toContain('a confirmação passa mesmo com anamnese pendente');
+  });
+
   it('as regras — valem para a tela toda: continuam como estavam depois de trocar de versão', async () => {
     const container = await montarAnamnese();
     await escolherOpcao(campoRotulado<HTMLSelectElement>(container, 'Anamnese vale por'), '6');
@@ -1054,9 +1104,11 @@ describe('AnamnesePage: alvo de toque por densidade', () => {
     const container = await montarAnamnese();
     await abrirVersao(container, 'v4');
 
-    const subir = controleDaPergunta(container, 0, 'subir');
-
-    expect([subir.style.width, subir.style.height]).toEqual(['32px', '32px']);
+    expect(medidasDosControlesDaPrimeiraPergunta(container)).toEqual([
+      ['32px', '32px'],
+      ['32px', '32px'],
+      ['32px', '32px'],
+    ]);
   });
 
   it('campo — o campo da pergunta nova usa o alvo de escritório', async () => {
