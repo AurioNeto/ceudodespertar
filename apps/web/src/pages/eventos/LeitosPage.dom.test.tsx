@@ -445,6 +445,18 @@ describe('LeitosPage: alocar', () => {
     expect(folhaComTextoExato(container, '4')!.style.color).toBe('var(--color-pending)');
   });
 
+  it('uma pessoa só sem leito — o número 1 continua na cor pendente', async () => {
+    const { container } = await montar(<LeitosPage />);
+    await alocar(container, 'Beliche 1 · inferior', NOITE_24, 'Helena Duarte');
+    await alocar(container, 'Beliche 1 · inferior', NOITE_25, 'Helena Duarte');
+    await alocar(container, 'Beliche 2 · superior', NOITE_24, 'Sérgio Bittencourt');
+    await alocar(container, 'Beliche 2 · superior', NOITE_25, 'Sérgio Bittencourt');
+    await alocar(container, 'Beliche 2 · inferior', NOITE_25, 'Clarice Fontes');
+
+    expect(numero(container, 'Ainda sem leito')).toBe('Ainda sem leito1pessoas que pediram beliche ou quarto');
+    expect(folhaComTextoExato(container, '1')!.style.color).toBe('var(--color-pending)');
+  });
+
   it('Ainda sem leito zerado — o número volta à cor padrão', async () => {
     const { container } = await montar(<LeitosPage />);
     await alocarTodosOsHospedes(container);
@@ -621,6 +633,20 @@ describe('LeitosPage: cadastro de dormitórios e leitos', () => {
     expect(linhaDoLeito(container, 'Beliche 3 · superior').firstElementChild!.textContent).toBe('Beliche 3 · superiorinativo');
     expect(botoesDeAlocarDoLeito(container, 'Beliche 3 · superior')).toHaveLength(0);
     expect(textosDasCelulas(container, 'Beliche 3 · superior')).toEqual(['', '']);
+    expect(cartaoDoDormitorio(container, 'Dormitório 2').textContent).toContain('Dormitório 25 leitos ativos');
+  });
+
+  it('leito inativado — o nome e o tipo ficam esmaecidos na grade, e os dos leitos ativos não', async () => {
+    const { container } = await montar(<LeitosPage />);
+    await abrirCadastro(container);
+    await clicar(botaoComTexto(linhasDoCadastro(container, 'Beliche 3 · superior'), 'Inativar'));
+
+    await abrirMapa(container);
+
+    const opacidades = ['Beliche 3 · superior', 'Beliche 3 · inferior'].map(
+      (leito) => (linhaDoLeito(container, leito).firstElementChild as HTMLElement).style.opacity,
+    );
+    expect(opacidades).toEqual(['0.5', '1']);
   });
 
   it('Acrescentar leito — abre o formulário com Identificação em branco e o tipo Beliche inferior', async () => {
@@ -825,5 +851,23 @@ describe('LeitosPage: densidade', () => {
     const grade = campoDoRotulo(container, 'Identificação').parentElement!.parentElement!.parentElement as HTMLElement;
     expect([corpo.style.padding, corpo.style.maxWidth]).toEqual([padding, larguraMaxima]);
     expect(grade.style.gridTemplateColumns).toBe(formulario);
+  });
+});
+
+describe('LeitosPage: permissões', () => {
+  it('sem sessão nenhuma — o mapa oferece alocar e liberar: a tela não consulta permissão por ação', async () => {
+    const { container } = await montar(<LeitosPage />);
+
+    expect(botaoDeAlocar(container, 'Beliche 2 · inferior', NOITE_24).disabled).toBe(false);
+    expect(botaoDeLiberar(container, 'Beliche 1 · superior', NOITE_24, 'Ana Beatriz Cordeiro').disabled).toBe(false);
+  });
+
+  it('sem sessão nenhuma — a aba de cadastro abre e oferece Acrescentar leito e Inativar habilitados', async () => {
+    const { container } = await montar(<LeitosPage />);
+
+    await abrirCadastro(container);
+
+    expect(botaoComTexto(cartaoDoDormitorio(container, 'Dormitório 2'), 'Acrescentar leito').disabled).toBe(false);
+    expect(botaoComTexto(linhasDoCadastro(container, 'Beliche 3 · superior'), 'Inativar').disabled).toBe(false);
   });
 });

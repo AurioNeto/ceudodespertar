@@ -449,6 +449,16 @@ describe('ContratacoesPage: confirmar a proposta', () => {
     expect(numero(container, 'Em proposta')).toBe('Em proposta0ainda não é dinheiro');
   });
 
+  it('Confirmar a proposta — mexe só naquela contratação: as outras mantêm o selo que tinham', async () => {
+    const { container } = await montar(<ContratacoesPage />);
+
+    await confirmarProposta(container, LUZ_DO_NORTE);
+
+    expect(folhaComTextoExato(cartaoDaContratacao(container, JACI), 'Realizada')).toBeDefined();
+    expect(folhaComTextoExato(cartaoDaContratacao(container, SEMENTE_VIVA), 'Cancelada')).toBeDefined();
+    expect(folhaComTextoExato(cartaoDaContratacao(container, ESTRELA_GUIA), 'Confirmada')).toBeDefined();
+  });
+
   it('Confirmar a proposta — avisa que nada de dinheiro se move até o recebimento ser registrado', async () => {
     const { container } = await montar(<ContratacoesPage />);
 
