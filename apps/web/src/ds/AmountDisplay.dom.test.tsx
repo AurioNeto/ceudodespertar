@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { AmountDisplay, type AmountSize, type NaturezaVisual } from './AmountDisplay';
-import { desmontarTudo, elemento, montar } from '../testes/montagem';
+import { desmontarTudo, elemento, montar } from '@/testes/montagem';
 
 afterEach(desmontarTudo);
 

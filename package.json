@@ -15,9 +15,12 @@
     "infra:descer": "docker compose down",
     "infra:zerar": "docker compose down -v",
     "db:verificar": "pnpm --filter @cdd/api test:integracao",
-    "lint": "oxlint -c .oxlintrc.json apps/api/src apps/api/test apps/api/scripts apps/api/vitest.config.ts apps/api/vitest.integracao.config.ts packages/contracts/src packages/contracts/test .dependency-cruiser.mjs .dependency-cruiser.web.mjs apps/web/test",
+    "lint": "oxlint -c .oxlintrc.json apps/api/src apps/api/test apps/api/scripts apps/api/vitest.config.ts apps/api/vitest.integracao.config.ts packages/contracts/src packages/contracts/test .dependency-cruiser.mjs .dependency-cruiser.web.mjs .dependency-cruiser.web.catraca.mjs apps/web/test",
     "fronteiras": "depcruise --config .dependency-cruiser.mjs apps/api/src packages/contracts/src",
     "fronteiras:web": "depcruise --config .dependency-cruiser.web.mjs apps/web/src",
+    "fronteiras:web:catraca": "depcruise --config .dependency-cruiser.web.catraca.mjs --ignore-known .dependency-cruiser-known-violations.web.json apps/web/src",
+    "fronteiras:web:linha-de-base": "depcruise --config .dependency-cruiser.web.catraca.mjs --baseline .dependency-cruiser-known-violations.web.json --baseline-mode shrink-only apps/web/src",
+    "fronteiras:web:linha-de-base:regenerar": "depcruise --config .dependency-cruiser.web.catraca.mjs --baseline .dependency-cruiser-known-violations.web.json --baseline-mode full apps/web/src",
     "db:migrar": "pnpm --filter @cdd/api db:migrar",
     "db:situacao": "pnpm --filter @cdd/api db:situacao",
     "db:referencia": "infra/postgres/verificar-referencia.sh"

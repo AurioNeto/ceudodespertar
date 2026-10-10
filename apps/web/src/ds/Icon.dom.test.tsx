@@ -1,7 +1,7 @@
 import { Component, type ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { Icon, type IconName } from './Icon';
-import { desmontarTudo, elemento, montar } from '../testes/montagem';
+import { desmontarTudo, elemento, montar } from '@/testes/montagem';
 
 afterEach(desmontarTudo);
 

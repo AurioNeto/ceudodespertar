@@ -638,12 +638,18 @@ Todas as regras rodam no depcruise, com configuração `.dependency-cruiser.web.
 | `pasta-camel-case` | Pasta de agrupamento em camelCase sob `apps/web/src` (agrupamento é minúsculo; unidade é PascalCase), que escaparia das regras de unidade, pelos imports feitos de dentro dela | erro | 0 |
 | `pasta-camel-case-no-destino` | Importar arquivo de pasta camelCase, inclusive pasta só com arquivos-folha | erro | 0 |
 
-São 33 regras: 26 nomeadas acima e as 7 de `unidade-so-pelo-index`. As contagens são a linha de base da main `1812df6`, já com o #55; os `comment` da configuração apontam para `pnpm fronteiras:web`, que a reproduz.
+São 33 regras: 26 nomeadas acima e as 7 de `unidade-so-pelo-index`. As contagens são as da linha de base (arquivo `.dependency-cruiser-known-violations.web.json`, seção 12.2), tirada da main `1812df6`, já com o #55; os `comment` da configuração apontam para `pnpm fronteiras:web`, que lista os mesmos avisos.
 
 ### 12.2 Linha de base
 
-- Na main `1812df6`, já com o #55: 404 avisos e 0 erros. São 60 avisos de sete regras, 29 do roteador e 315 da regra de alias.
-- Ainda não há catraca: um aviso novo não falha o CI, e nas etapas de mover "sem aviso novo" é conferido à mão (seção 13.3). A catraca entra logo depois do merge do #57, do #58 e do #59 (seção 15). Nesse PR, os imports do apoio de teste passam ao alias `@/`, que entra no vitest com o #57; `depcruise-baseline` gera os avisos conhecidos e o CI roda com `--ignore-known`.
+- A linha de base é o arquivo `.dependency-cruiser-known-violations.web.json`, na raiz, ao lado da configuração: 404 avisos e 0 erros, com as contagens por regra da seção 12.1. São 60 avisos de sete regras, 29 do roteador e 315 da regra de alias. Cada entrada é uma regra com a origem e o destino do import. Os imports do apoio de teste já passaram ao alias `@/`.
+- Catraca ligada: `pnpm fronteiras:web:catraca` sai com código diferente de 0 para qualquer violação fora do arquivo, de qualquer severidade. É a verificação "sem aviso novo" da seção 13.3 e a primeira metade do passo "fronteiras do web" do CI.
+- A catraca roda `.dependency-cruiser.web.catraca.mjs`, que é a configuração do web com toda regra elevada a erro, junto com `--ignore-known`. A elevação é necessária: o código de saída do depcruise conta só violação de severidade erro e `--ignore-known` não muda isso, então um aviso novo passaria com código 0. O teste estrutural confere a elevação, as mesmas opções do depcruise nas duas configurações e o script `fronteiras:web:catraca`.
+- `pnpm fronteiras:web` continua informativo: lista os avisos e só falha por regra em erro.
+- `pnpm fronteiras:web:linha-de-base` regenera o arquivo em modo `shrink-only`: tira as entradas cuja violação sumiu e nunca acrescenta. Quem corrige um aviso roda o comando no mesmo PR e commita o arquivo menor. A catraca sozinha só imprime as entradas obsoletas (`stale known violations`) e não falha por elas; quem falha é a segunda metade do passo do CI, que roda o `shrink-only` e confere com `git diff --exit-code` que o arquivo não mudou. Assim a linha de base é sempre igual às violações atuais, e um aviso corrigido não volta sem falhar a catraca. Por fim, num pull request, o passo compara o total de entradas com o da base do PR (o primeiro pai do commit de merge que o CI testa) e falha se ele subir. O teto não pega uma entrada nova trocada por uma corrigida na mesma etapa: essa troca aparece no diff do arquivo, que o revisor confere.
+- `pnpm fronteiras:web:linha-de-base:regenerar` roda o mesmo comando em modo `full`: reescreve o arquivo com as violações de agora, inclusive as novas. Só entra numa etapa de mover ou de dividir, ou numa alta de versão de dependência (os itens seguintes); fora delas, só o `shrink-only`.
+- Etapa de mover ou de dividir: a entrada é a regra mais a origem e o destino, então um arquivo movido, ou um import conhecido que a divisão leva para um arquivo novo da mesma tela, vira aviso novo, a catraca falha e o `shrink-only` não o absorve. Cada etapa de mover ou de dividir que caia nesse caso regenera o arquivo com `pnpm fronteiras:web:linha-de-base:regenerar` e commita o resultado. Antes de commitar, confira no diff do arquivo que só há renomes (a entrada sai e entra de novo com o caminho novo, a mesma regra e o mesmo import) e remoções, e que o total de entradas não sobe. Entrada com import que não existia antes da etapa é violação nova: corrija o import, não a linha de base. O aviso de alias some trocando o import por `@/`.
+- Alta de versão de dependência: 5 entradas têm destino em `node_modules/.pnpm/react@<versão>/…` ou `react-dom@<versão>_react@<versão>/…`, porque o depcruise resolve o link do pnpm até o caminho versionado. Uma alta de `react` ou `react-dom` muda esse caminho e a catraca falha sem mudança em `src`. Rode `pnpm fronteiras:web:linha-de-base:regenerar` e confira que o diff só troca o trecho versionado do destino, com o mesmo total. As 5 entradas são de `lib-e-folha` e somem quando `useDensidade`, `useValorComAtraso` e `chaveDeIdempotencia` (com o teste de DOM) saírem de `lib/`, nas etapas de mover.
 - A linha de base é a foto de antes da migração. Cada etapa de mover a reduz, e a etapa de fronteiras em erro fecha a conta.
 
 ### 12.3 Como cada regra é provada
@@ -653,7 +659,7 @@ São 33 regras: 26 nomeadas acima e as 7 de `unidade-so-pelo-index`. As contagen
 - O teste confere: toda regra da configuração tem caso; nenhum import das fixtures fica sem resolver; cada regra acusa exatamente os imports previstos; a negativa tem 0 violações; e `apps/web/src` não tem violação em erro.
 - Toda regex é sem grupo quantificado com quantificador dentro: o depcruise 18.4 recusa regex insegura e aborta a execução inteira.
 - O `tsconfig` da configuração usa caminho absoluto (caminho relativo dá TS5083). Regras que precisam valer também nas fixtures usam o prefixo `(?:^|/)` ou a captura `^(.*apps/web/src…)`.
-- O teste roda no projeto `estrutural` do vitest, dentro de `pnpm --filter @cdd/web test`. O script `fronteiras:web` da raiz roda as regras sobre `apps/web/src`, com passo próprio no CI.
+- O teste roda no projeto `estrutural` do vitest, dentro de `pnpm --filter @cdd/web test`. O script `fronteiras:web:catraca` da raiz roda as regras sobre `apps/web/src` contra a linha de base, com passo próprio no CI.
 
 ### 12.4 Outros verificadores
 
@@ -664,7 +670,9 @@ São 33 regras: 26 nomeadas acima e as 7 de `unidade-so-pelo-index`. As contagen
 
 ### 12.5 Severidade final
 
-Na etapa de fronteiras em erro, todas as regras viram erro. `camada-cruzada-por-alias` vira erro quando chegar a zero.
+Na etapa de fronteiras em erro, todas as regras viram erro. A etapa só acontece com `camada-cruzada-por-alias` em zero; até lá, a catraca segura o alias junto com as demais regras.
+
+Nessa etapa a linha de base chega a zero e a catraca deixa de ter função. Saem a configuração `.dependency-cruiser.web.catraca.mjs`, o arquivo `.dependency-cruiser-known-violations.web.json` e o caso de teste da catraca, junto com os scripts `fronteiras:web:catraca`, `fronteiras:web:linha-de-base` e `fronteiras:web:linha-de-base:regenerar`. O passo "fronteiras do web" do CI e a ferramenta `fronteiras_web` do `.codefox.yaml` passam a rodar `pnpm fronteiras:web`, que já falha por qualquer regra.
 
 ---
 
@@ -689,7 +697,7 @@ Na etapa de fronteiras em erro, todas as regras viram erro. `camada-cruzada-por-
 ### 13.3 Verificação padrão de mover
 
 - `pnpm --filter @cdd/web typecheck`, `test` e `build`;
-- `pnpm fronteiras:web` sem erro e sem aviso novo além dos previstos na etapa;
+- `pnpm fronteiras:web:catraca` sem erro e sem aviso novo, com a linha de base regenerada e o diff conferido (seção 12.2);
 - `node apps/web/scripts/conferir-movimento.mjs`: renomeação sem diferença fora das linhas de import, e declaração repartida com o mesmo hash de corpo;
 - o mesmo número de testes da main.
 
@@ -698,7 +706,7 @@ Na etapa de fronteiras em erro, todas as regras viram erro. `camada-cruzada-por-
 - Os testes de caracterização da tela passam antes e depois, sem edição;
 - a captura nas duas densidades é idêntica entre a main e a branch (`captura` e `captura:comparar`, seção 13.6);
 - `typecheck`, `test` e `build`;
-- `fronteiras:web` sem erro.
+- `pnpm fronteiras:web:catraca` sem erro. Se a divisão levar um import já conhecido para um arquivo novo da mesma tela, regenere a linha de base e confira o diff como na seção 12.2: só muda a origem para o arquivo novo, e o total não sobe.
 
 Nenhuma regra, texto ou cálculo muda numa divisão.
 
@@ -783,7 +791,7 @@ Títulos na ordem de leitura. Dependências por título.
 | Limpeza | Composições de domínio | — |
 | Rotas lazy | Fronteiras em erro | — |
 | Remover o Tailwind | Harness de captura de telas | — |
-| Catraca de avisos | Fronteiras no depcruise; Caracterizar lib/formato e components; Caracterizar primitivos do ds | — |
+| Catraca de avisos (concluída, seção 12.2) | Fronteiras no depcruise; Caracterizar lib/formato e components; Caracterizar primitivos do ds | — |
 
 Etapas de divisão de telas de demonstração (de Dividir RegistrarLancamento a Dividir Pessoas e Anamnese) podem andar com o gate fechado. A etapa de leitura única de valor depende das caracterizações das 10 telas que fazem leitura de valor (primitivos do ds, fluxo de lançamentos, financeiro I, eventos, inscrição e pessoas e estoque).
 
@@ -826,7 +834,7 @@ Respondidas pelo dono em 09/10/2026. Cada uma vira correção em PR próprio, de
 | Que data a demonstração usa como "hoje"? | `2026-09-02`, uma data só, em `pages/mocks/relogio.ts`. Devoluções, Contratações e Feitio passam a usá-la: prazos e "dias esperando" mudam nelas. É a mesma data do relógio da captura de telas | Composição de domínio |
 | O que fazer com o Tailwind? | Remover em etapa própria: as regras do preflight de que as telas dependem vão para `ds/fundacao/tokens/base.css`, o plugin e o `@theme` saem, e a captura nas duas densidades prova que nada mudou | Etapa "Remover o Tailwind", depois do harness de captura |
 | O cartão "Acesso ao sistema" da ficha de Pessoas (`PessoasPage.tsx:398-444`) repete a gestão de acesso da tela Acessos. O que fazer? | Fica como demonstração até Pessoas ligar no backend (B4); então vira link para Acessos, para não haver dois lugares que concedem acesso. A decisão sobre dados de saúde (08/10) não cobre este cartão | Na ligação de Pessoas ao backend |
-| Ligar a catraca de avisos das fronteiras no CI? | Sim: `depcruise-baseline` gera os avisos conhecidos e o CI roda com `--ignore-known`, então aviso novo falha o PR. A linha de base só cai; cada etapa de mover a regenera | PR próprio, logo depois do merge do #57, do #58 e do #59, com os imports do apoio de teste já pelo alias `@/` |
+| Ligar a catraca de avisos das fronteiras no CI? | Sim: os avisos conhecidos ficam numa linha de base versionada e aviso novo falha o PR. A linha de base só cai; cada etapa de mover a regenera | Feito em PR próprio, depois do merge do #57, do #58 e do #59, com os imports do apoio de teste já pelo alias `@/`; o mecanismo está na seção 12.2 |
 | Como a Agenda lê "Contribuições sugeridas"? | Só valores inteiros em reais, separados por vírgula, como o placeholder ("40, 60, 90"). Valor com centavos é recusado com mensagem no campo; hoje `45,50` vira 45 e 50 | PR próprio, depois da caracterização de eventos |
 
 Pendência de redação: o Documento 5 ainda não lista os primitivos admitidos em pt-BR (tabela da seção 4.3, coluna "Catálogo" = não). Ele está em `project/uploads/CDD - System/CDD-v2_2-05-sistema-de-design.md` e não foi alterado; o apêndice com os primitivos em pt-BR entra em PR próprio.

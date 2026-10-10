@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { errosAoClicar } from './apoioDeTeste';
 import { RecordRow, type RecordStatus } from './RecordRow';
-import { clicar, desmontarTudo, elemento, montar, passarMouseSobre, tirarMouseDe } from '../testes/montagem';
+import { clicar, desmontarTudo, elemento, montar, passarMouseSobre, tirarMouseDe } from '@/testes/montagem';
 
 afterEach(desmontarTudo);
 

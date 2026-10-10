@@ -8,7 +8,7 @@ import {
   escolherOpcao,
   montar,
   todos,
-} from '../testes/montagem';
+} from '@/testes/montagem';
 
 afterEach(desmontarTudo);
 

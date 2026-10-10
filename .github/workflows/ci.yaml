@@ -24,6 +24,8 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          # num pull_request o checkout é o commit de merge; o 1º pai (HEAD^1) é a ponta da base, usada no teto da linha de base
+          fetch-depth: 2
 
       - name: instalar pnpm
         uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
@@ -46,9 +48,30 @@ jobs:
       - name: fronteiras
         run: pnpm fronteiras
 
-      # modo de aviso: só regra de severidade error falha o passo; os avisos são a linha de base da migração
+      # catraca: falha em violação fora da linha de base versionada (Documento 8, seção 12.2);
+      # depois, o shrink-only não pode mudar o arquivo: a linha de base é igual às violações atuais;
+      # por fim, num pull_request, a linha de base não pode ter mais entradas que a da base do PR
       - name: fronteiras do web
-        run: pnpm fronteiras:web
+        env:
+          EVENTO: ${{ github.event_name }}
+        run: |
+          set -euo pipefail
+          LINHA_DE_BASE=.dependency-cruiser-known-violations.web.json
+          pnpm fronteiras:web:catraca
+          pnpm fronteiras:web:linha-de-base
+          if ! git diff --exit-code -- "$LINHA_DE_BASE"; then
+            echo "::error::a linha de base difere do que o shrink-only gera (entrada obsoleta ou arquivo editado à mão): rode pnpm fronteiras:web:linha-de-base e comite"
+            exit 1
+          fi
+          if [ "$EVENTO" = "pull_request" ] && git cat-file -e "HEAD^1:$LINHA_DE_BASE" 2>/dev/null; then
+            contar='let s="";process.stdin.on("data",(d)=>{s+=d}).on("end",()=>console.log(JSON.parse(s).length))'
+            na_base=$(git show "HEAD^1:$LINHA_DE_BASE" | node -e "$contar")
+            no_pr=$(node -e "$contar" < "$LINHA_DE_BASE")
+            if [ "$no_pr" -gt "$na_base" ]; then
+              echo "::error::a linha de base cresceu de $na_base para $no_pr entradas; ela só pode cair (Documento 8, seção 12.2)"
+              exit 1
+            fi
+          fi
 
       - name: testes unitarios de contracts
         run: pnpm --filter @cdd/contracts test

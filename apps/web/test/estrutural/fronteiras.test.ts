@@ -1,4 +1,5 @@
 import { spawnSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { ICruiseResult } from 'dependency-cruiser';
@@ -10,6 +11,10 @@ const RAIZ_DO_REPOSITORIO = join(DIRETORIO_DO_TESTE, '..', '..', '..', '..');
 const BINARIO_DEPCRUISE = join(RAIZ_DO_REPOSITORIO, 'node_modules', '.bin', 'depcruise');
 const FIXTURE_POSITIVA = 'apps/web/test/estrutural/fixtures';
 const FIXTURE_NEGATIVA = 'apps/web/test/estrutural/fixtures-negativas';
+const CONFIGURACAO_DO_WEB = '.dependency-cruiser.web.mjs';
+const CONFIGURACAO_DA_CATRACA = '.dependency-cruiser.web.catraca.mjs';
+const LINHA_DE_BASE_DAS_VIOLACOES = '.dependency-cruiser-known-violations.web.json';
+const SCRIPT_DA_CATRACA = 'fronteiras:web:catraca';
 const LIMITE_DA_SAIDA_EM_BYTES = 64 * 1024 * 1024;
 const TEMPO_DE_CRUZAMENTO_EM_MS = 60_000;
 const REGRAS = Object.keys(CASOS_DAS_FRONTEIRAS) as NomeDaRegra[];
@@ -30,6 +35,28 @@ function cruzar(configuracao: string, caminho: string): ICruiseResult {
 
 function cruzarFixture(fixture: string): ICruiseResult {
   return cruzar(`${fixture}/.dependency-cruiser.mjs`, `${fixture}/apps/web/src`);
+}
+
+function cruzarFixtureNegativaCom(configuracao: string): ICruiseResult {
+  return cruzar(configuracao, `${FIXTURE_NEGATIVA}/apps/web/src`);
+}
+
+function regrasDoResultado(resultado: ICruiseResult) {
+  return resultado.summary.ruleSetUsed?.forbidden ?? [];
+}
+
+function opcoesSemOArquivoDeRegras(resultado: ICruiseResult) {
+  return Object.fromEntries(
+    Object.entries(resultado.summary.optionsUsed).filter(([nome]) => nome !== 'rulesFile'),
+  );
+}
+
+function scriptDoPacote(nomeDoScript: string): string | undefined {
+  const pacote = JSON.parse(readFileSync(join(RAIZ_DO_REPOSITORIO, 'package.json'), 'utf8')) as {
+    scripts: Record<string, string>;
+  };
+
+  return pacote.scripts[nomeDoScript];
 }
 
 function nomeDoPacote(caminhoDentroDeNodeModules: string): string {
@@ -138,7 +165,7 @@ describe('fronteiras do web', () => {
   it(
     'apps/web/src não tem violação de severidade error',
     () => {
-      const resultado = cruzar('.dependency-cruiser.web.mjs', 'apps/web/src');
+      const resultado = cruzar(CONFIGURACAO_DO_WEB, 'apps/web/src');
 
       expect(resultado.summary.violations.filter((violacao) => violacao.rule.severity === 'error')).toEqual(
         [],
@@ -146,4 +173,40 @@ describe('fronteiras do web', () => {
     },
     TEMPO_DE_CRUZAMENTO_EM_MS,
   );
+});
+
+describe('catraca das fronteiras do web', () => {
+  let doWeb: ICruiseResult;
+  let daCatraca: ICruiseResult;
+
+  beforeAll(() => {
+    doWeb = cruzarFixtureNegativaCom(CONFIGURACAO_DO_WEB);
+    daCatraca = cruzarFixtureNegativaCom(CONFIGURACAO_DA_CATRACA);
+  }, TEMPO_DE_CRUZAMENTO_EM_MS);
+
+  it('é a configuração do web com toda regra elevada a error', () => {
+    expect(regrasDoResultado(doWeb)).toHaveLength(REGRAS.length);
+    expect(regrasDoResultado(daCatraca)).toEqual(
+      regrasDoResultado(doWeb).map((regra) => Object.assign({}, regra, { severity: 'error' })),
+    );
+  });
+
+  it('cruza com as mesmas opções do web, exceto o arquivo de regras', () => {
+    expect(opcoesSemOArquivoDeRegras(daCatraca)).toEqual(opcoesSemOArquivoDeRegras(doWeb));
+  });
+
+  it('é o que o script fronteiras:web:catraca executa, sobre o src inteiro e com a linha de base versionada', () => {
+    expect(scriptDoPacote(SCRIPT_DA_CATRACA)).toBe(
+      `depcruise --config ${CONFIGURACAO_DA_CATRACA} --ignore-known ${LINHA_DE_BASE_DAS_VIOLACOES} apps/web/src`,
+    );
+  });
+
+  it.each([
+    ['fronteiras:web:linha-de-base', 'shrink-only'],
+    ['fronteiras:web:linha-de-base:regenerar', 'full'],
+  ])('o script %s regenera a linha de base em modo %s, sobre o src inteiro', (nomeDoScript, modo) => {
+    expect(scriptDoPacote(nomeDoScript)).toBe(
+      `depcruise --config ${CONFIGURACAO_DA_CATRACA} --baseline ${LINHA_DE_BASE_DAS_VIOLACOES} --baseline-mode ${modo} apps/web/src`,
+    );
+  });
 });
