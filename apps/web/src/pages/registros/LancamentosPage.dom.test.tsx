@@ -16,6 +16,7 @@ import {
   barraDeEstado,
   campoRotulado,
   lerRecibos,
+  teclarEsc,
   usarDensidade,
   valorDeEntrada,
   valorDeSaida,
@@ -893,14 +894,14 @@ describe('LancamentosPage: gaveta de detalhe', () => {
     expect(gaveta(container)).toBeNull();
   });
 
-  it('a gaveta não se declara como diálogo e o Esc não a fecha', async () => {
+  it('a gaveta não se declara como diálogo e o Esc, teclado dentro dela, não a fecha', async () => {
     const { container } = await montar(<LancamentosPage />);
     await abrirLinhaDoEscritorio(container, 'mercado cerimônia mãe divina');
 
-    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    await teclarEsc(elemento(container, 'button[aria-label="Fechar detalhe"]'));
 
-    expect(container.querySelector('[role="dialog"]')).toBeNull();
-    expect(container.querySelector('[aria-modal]')).toBeNull();
+    expect(document.querySelector('[role="dialog"]')).toBeNull();
+    expect(document.querySelector('[aria-modal]')).toBeNull();
     expect(gaveta(container)).not.toBeNull();
   });
 

@@ -3,7 +3,7 @@ import { dataLocal, reais } from '@cdd/contracts';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { botaoComTexto, clicar, desmontarTudo, digitar, elemento, folhaComTexto, montar, todos } from '@/testes/montagem';
 import { PainelDeRevisao } from './PainelDeRevisao';
-import { campoComRotulo, digitarNaCaixa, rotulosDosCampos } from './apoioDeTeste';
+import { campoComRotulo, digitarNaCaixa, rotulosDosCampos, teclarEsc } from './apoioDeTeste';
 
 const SAIDA: ItemNaFila = {
   id: 'v-1' as LancamentoId,
@@ -408,14 +408,14 @@ describe('PainelDeRevisao: fechar e layout', () => {
     expect(onFechar).toHaveBeenCalledTimes(1);
   });
 
-  it('o painel não se declara como diálogo e o Esc não o fecha', async () => {
+  it('o painel não se declara como diálogo e o Esc, teclado dentro dele, não o fecha', async () => {
     const { montagem, onFechar } = montarPainel(SAIDA);
     const { container } = await montagem;
 
-    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    await teclarEsc(elemento(container, 'button[aria-label="fechar"]'));
 
-    expect(container.querySelector('[role="dialog"]')).toBeNull();
-    expect(container.querySelector('[aria-modal]')).toBeNull();
+    expect(document.querySelector('[role="dialog"]')).toBeNull();
+    expect(document.querySelector('[aria-modal]')).toBeNull();
     expect(onFechar).not.toHaveBeenCalled();
   });
 

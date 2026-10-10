@@ -1,3 +1,4 @@
+import { act } from 'react';
 import { vi } from 'vitest';
 import { elemento, todos } from '@/testes/montagem';
 
@@ -36,3 +37,9 @@ export const lerRecibos = (origem: HTMLElement) =>
   });
 
 export const barraDeEstado = (linha: HTMLElement) => elemento<HTMLElement>(linha, ':scope > span');
+
+export const teclarEsc = (alvo: HTMLElement) =>
+  act(async () => {
+    alvo.focus();
+    alvo.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }));
+  });

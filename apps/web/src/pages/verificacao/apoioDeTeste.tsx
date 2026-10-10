@@ -35,3 +35,9 @@ export async function digitarNaCaixa(caixa: HTMLTextAreaElement, valor: string):
     caixa.dispatchEvent(new Event('input', { bubbles: true }));
   });
 }
+
+export const teclarEsc = (alvo: HTMLElement) =>
+  act(async () => {
+    alvo.focus();
+    alvo.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }));
+  });
