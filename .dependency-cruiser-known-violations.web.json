@@ -273,20 +273,6 @@
   {
     "type": "dependency",
     "from": "apps/web/src/app/router.tsx",
-    "to": "apps/web/src/pages/conciliacao/ConciliacaoPage.tsx",
-    "unresolvedTo": "../pages/conciliacao/ConciliacaoPage",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/app/router.tsx",
     "to": "apps/web/src/pages/entrada/EntrarPage.tsx",
     "unresolvedTo": "../pages/entrada/EntrarPage",
     "dependencyTypes": [
@@ -385,20 +371,6 @@
   {
     "type": "dependency",
     "from": "apps/web/src/app/router.tsx",
-    "to": "apps/web/src/pages/fechamento/FechamentoPage.tsx",
-    "unresolvedTo": "../pages/fechamento/FechamentoPage",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/app/router.tsx",
     "to": "apps/web/src/pages/lancamento/RegistrarLancamentoPage.tsx",
     "unresolvedTo": "../pages/lancamento/RegistrarLancamentoPage",
     "dependencyTypes": [
@@ -415,20 +387,6 @@
     "from": "apps/web/src/app/router.tsx",
     "to": "apps/web/src/pages/painel/PainelPage.tsx",
     "unresolvedTo": "../pages/painel/PainelPage",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/app/router.tsx",
-    "to": "apps/web/src/pages/parametros/ParametrosPage.tsx",
-    "unresolvedTo": "../pages/parametros/ParametrosPage",
     "dependencyTypes": [
       "local",
       "import"
@@ -483,20 +441,6 @@
   {
     "type": "dependency",
     "from": "apps/web/src/app/router.tsx",
-    "to": "apps/web/src/pages/prestacao/PrestacaoDeContasPage.tsx",
-    "unresolvedTo": "../pages/prestacao/PrestacaoDeContasPage",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/app/router.tsx",
     "to": "apps/web/src/pages/publico/InscricaoPublicaPage.tsx",
     "unresolvedTo": "../pages/publico/InscricaoPublicaPage",
     "dependencyTypes": [
@@ -527,20 +471,6 @@
     "from": "apps/web/src/app/router.tsx",
     "to": "apps/web/src/pages/registros/MeusRegistrosPage.tsx",
     "unresolvedTo": "../pages/registros/MeusRegistrosPage",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/app/router.tsx",
-    "to": "apps/web/src/pages/relatorios/RelatoriosPage.tsx",
-    "unresolvedTo": "../pages/relatorios/RelatoriosPage",
     "dependencyTypes": [
       "local",
       "import"
@@ -1458,34 +1388,6 @@
   },
   {
     "type": "dependency",
-    "from": "apps/web/src/pages/conciliacao/ConciliacaoPage.tsx",
-    "to": "apps/web/src/lib/formato.ts",
-    "unresolvedTo": "../../lib/formato",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/conciliacao/ConciliacaoPage.tsx",
-    "to": "apps/web/src/mocks/conciliacao.ts",
-    "unresolvedTo": "../../mocks/conciliacao",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
     "from": "apps/web/src/pages/entrada/Aviso.tsx",
     "to": "apps/web/src/ds/index.ts",
     "unresolvedTo": "../../ds",
@@ -1795,104 +1697,6 @@
   },
   {
     "type": "dependency",
-    "from": "apps/web/src/pages/fechamento/FechamentoPage.tsx",
-    "to": "apps/web/src/app/navegacao.ts",
-    "unresolvedTo": "../../app/navegacao",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/fechamento/FechamentoPage.tsx",
-    "to": "apps/web/src/ds/index.ts",
-    "unresolvedTo": "../../ds",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/fechamento/FechamentoPage.tsx",
-    "to": "apps/web/src/lib/formato.ts",
-    "unresolvedTo": "../../lib/formato",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/fechamento/FechamentoPage.tsx",
-    "to": "apps/web/src/mocks/financeiro.ts",
-    "unresolvedTo": "../../mocks/financeiro",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/fechamento/FechamentoPage.tsx",
-    "to": "apps/web/src/mocks/lancamentos.ts",
-    "unresolvedTo": "../../mocks/lancamentos",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/fechamento/FechamentoPage.tsx",
-    "to": "apps/web/src/mocks/sessao.ts",
-    "unresolvedTo": "../../mocks/sessao",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/fechamento/FechamentoPage.tsx",
-    "to": "apps/web/src/mocks/verificacao.ts",
-    "unresolvedTo": "../../mocks/verificacao",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
     "from": "apps/web/src/pages/lancamento/RegistrarLancamentoPage.tsx",
     "to": "apps/web/src/app/sessao.tsx",
     "unresolvedTo": "../../app/sessao",
@@ -2145,34 +1949,6 @@
   },
   {
     "type": "dependency",
-    "from": "apps/web/src/pages/parametros/ParametrosPage.tsx",
-    "to": "apps/web/src/lib/formato.ts",
-    "unresolvedTo": "../../lib/formato",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/parametros/ParametrosPage.tsx",
-    "to": "apps/web/src/mocks/parametros.ts",
-    "unresolvedTo": "../../mocks/parametros",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
     "from": "apps/web/src/pages/perfil/MeuPerfilPage.dom.test.tsx",
     "to": "apps/web/src/app/apoioDeTeste.tsx",
     "unresolvedTo": "../../app/apoioDeTeste",
@@ -2274,34 +2050,6 @@
     "from": "apps/web/src/pages/pessoas/PessoasPage.tsx",
     "to": "apps/web/src/mocks/pessoas.ts",
     "unresolvedTo": "../../mocks/pessoas",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/prestacao/PrestacaoDeContasPage.tsx",
-    "to": "apps/web/src/lib/formato.ts",
-    "unresolvedTo": "../../lib/formato",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/prestacao/PrestacaoDeContasPage.tsx",
-    "to": "apps/web/src/mocks/prestacao.ts",
-    "unresolvedTo": "../../mocks/prestacao",
     "dependencyTypes": [
       "local",
       "import"
@@ -2484,90 +2232,6 @@
     "from": "apps/web/src/pages/registros/MeusRegistrosPage.tsx",
     "to": "apps/web/src/mocks/lancamentos.ts",
     "unresolvedTo": "../../mocks/lancamentos",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/relatorios/GraficoSerie.tsx",
-    "to": "apps/web/src/lib/formato.ts",
-    "unresolvedTo": "../../lib/formato",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/relatorios/PainelDeQuebra.tsx",
-    "to": "apps/web/src/lib/formato.ts",
-    "unresolvedTo": "../../lib/formato",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/relatorios/PainelDeQuebra.tsx",
-    "to": "apps/web/src/mocks/relatorios.ts",
-    "unresolvedTo": "../../mocks/relatorios",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/relatorios/RelatoriosPage.tsx",
-    "to": "apps/web/src/lib/formato.ts",
-    "unresolvedTo": "../../lib/formato",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/relatorios/RelatoriosPage.tsx",
-    "to": "apps/web/src/mocks/relatorios.ts",
-    "unresolvedTo": "../../mocks/relatorios",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/relatorios/useRelatorio.ts",
-    "to": "apps/web/src/mocks/relatorios.ts",
-    "unresolvedTo": "../../mocks/relatorios",
     "dependencyTypes": [
       "local",
       "import"
@@ -3346,10 +3010,13 @@
   },
   {
     "type": "dependency",
-    "from": "apps/web/src/pages/fechamento/FechamentoPage.tsx",
+    "from": "apps/web/src/pages/financeiro/FechamentoPage/FechamentoPage.tsx",
     "to": "apps/web/src/app/navegacao.ts",
-    "unresolvedTo": "../../app/navegacao",
+    "unresolvedTo": "@/app/navegacao",
     "dependencyTypes": [
+      "aliased",
+      "aliased-tsconfig",
+      "aliased-tsconfig-paths",
       "local",
       "import"
     ],
@@ -3501,20 +3168,6 @@
   {
     "type": "dependency",
     "from": "apps/web/src/app/router.tsx",
-    "to": "apps/web/src/pages/conciliacao/ConciliacaoPage.tsx",
-    "unresolvedTo": "../pages/conciliacao/ConciliacaoPage",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "roteador-so-pelo-index-da-pagina"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/app/router.tsx",
     "to": "apps/web/src/pages/entrada/EntrarPage.tsx",
     "unresolvedTo": "../pages/entrada/EntrarPage",
     "dependencyTypes": [
@@ -3613,20 +3266,6 @@
   {
     "type": "dependency",
     "from": "apps/web/src/app/router.tsx",
-    "to": "apps/web/src/pages/fechamento/FechamentoPage.tsx",
-    "unresolvedTo": "../pages/fechamento/FechamentoPage",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "roteador-so-pelo-index-da-pagina"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/app/router.tsx",
     "to": "apps/web/src/pages/lancamento/RegistrarLancamentoPage.tsx",
     "unresolvedTo": "../pages/lancamento/RegistrarLancamentoPage",
     "dependencyTypes": [
@@ -3643,20 +3282,6 @@
     "from": "apps/web/src/app/router.tsx",
     "to": "apps/web/src/pages/painel/PainelPage.tsx",
     "unresolvedTo": "../pages/painel/PainelPage",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "roteador-so-pelo-index-da-pagina"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/app/router.tsx",
-    "to": "apps/web/src/pages/parametros/ParametrosPage.tsx",
-    "unresolvedTo": "../pages/parametros/ParametrosPage",
     "dependencyTypes": [
       "local",
       "import"
@@ -3711,20 +3336,6 @@
   {
     "type": "dependency",
     "from": "apps/web/src/app/router.tsx",
-    "to": "apps/web/src/pages/prestacao/PrestacaoDeContasPage.tsx",
-    "unresolvedTo": "../pages/prestacao/PrestacaoDeContasPage",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "roteador-so-pelo-index-da-pagina"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/app/router.tsx",
     "to": "apps/web/src/pages/publico/InscricaoPublicaPage.tsx",
     "unresolvedTo": "../pages/publico/InscricaoPublicaPage",
     "dependencyTypes": [
@@ -3755,20 +3366,6 @@
     "from": "apps/web/src/app/router.tsx",
     "to": "apps/web/src/pages/registros/MeusRegistrosPage.tsx",
     "unresolvedTo": "../pages/registros/MeusRegistrosPage",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "roteador-so-pelo-index-da-pagina"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/app/router.tsx",
-    "to": "apps/web/src/pages/relatorios/RelatoriosPage.tsx",
-    "unresolvedTo": "../pages/relatorios/RelatoriosPage",
     "dependencyTypes": [
       "local",
       "import"
