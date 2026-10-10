@@ -132,13 +132,78 @@ describe('RegimeVocabulary: o invólucro', () => {
 });
 
 describe('RegimeVocabulary: regime fora do contrato', () => {
-  it('um regime desconhecido derruba a renderização de quem lê um termo', async () => {
-    const regimeDeOutraVersao = 'ATACADO' as unknown as RegimeDaUnidade;
-    const lerTermoDoRegimeDesconhecido = montar(
-      <RegimeVocabulary regime={regimeDeOutraVersao}>
-        <Termo chave="receita" />
+  const foraDoContrato = (valor: unknown) => valor as RegimeDaUnidade;
+
+  const VOCABULARIO_DE_CONTRIBUICAO = {
+    receita: 'contribuição',
+    pessoa: 'participante',
+    valor: 'valor sugerido',
+    documento: 'recibo de contribuição',
+  };
+
+  const termosLidos = (origem: ParentNode) =>
+    Object.fromEntries(CHAVES.map((chave) => [chave, termoLido(origem, chave)]));
+
+  const REGIMES_FORA_DO_CONTRATO: ReadonlyArray<[string, unknown]> = [
+    ['um regime de outra versão', 'ATACADO'],
+    ['CONTRIBUICAO em minúsculas', 'contribuicao'],
+    ['COMERCIAL em minúsculas', 'comercial'],
+    ['COMERCIAL com espaços em volta', ' COMERCIAL '],
+    ['texto vazio', ''],
+    ['um nome herdado de Object', 'constructor'],
+    ['null', null],
+    ['um objeto sem protótipo', Object.create(null)],
+  ];
+
+  it.each(REGIMES_FORA_DO_CONTRATO)(
+    '%s não derruba a renderização: quem lê um termo recebe o vocabulário de contribuição',
+    async (_descricao, regime) => {
+      const { container } = await montar(
+        <RegimeVocabulary regime={foraDoContrato(regime)}>{todosOsTermos()}</RegimeVocabulary>,
+      );
+      expect(termosLidos(container)).toEqual(VOCABULARIO_DE_CONTRIBUICAO);
+    },
+  );
+
+  it.each(REGIMES_FORA_DO_CONTRATO)(
+    '%s marca o invólucro com o regime aplicado, data-regime="contribuicao", e não com o valor recebido',
+    async (_descricao, regime) => {
+      const { container } = await montar(<RegimeVocabulary regime={foraDoContrato(regime)}>{null}</RegimeVocabulary>);
+      expect((container.firstElementChild as HTMLElement).dataset['regime']).toBe('contribuicao');
+    },
+  );
+
+  it('é o mesmo resultado de não informar o regime', async () => {
+    const semRegime = await montar(<RegimeVocabulary>{todosOsTermos()}</RegimeVocabulary>);
+    const regimeDesconhecido = await montar(
+      <RegimeVocabulary regime={foraDoContrato('ATACADO')}>{todosOsTermos()}</RegimeVocabulary>,
+    );
+    expect(termosLidos(regimeDesconhecido.container)).toEqual(termosLidos(semRegime.container));
+  });
+
+  it('dentro de um provedor comercial, o desconhecido não herda o regime de fora: volta ao padrão', async () => {
+    const { container } = await montar(
+      <RegimeVocabulary regime="COMERCIAL">
+        <Termo chave="pessoa" />
+        <RegimeVocabulary regime={foraDoContrato('ATACADO')}>
+          <Termo chave="pessoa" />
+        </RegimeVocabulary>
       </RegimeVocabulary>,
     );
-    await expect(lerTermoDoRegimeDesconhecido).rejects.toThrow(TypeError);
+    const textos = Array.from(container.querySelectorAll('[data-termo="pessoa"]')).map((termo) => termo.textContent);
+    expect(textos).toEqual(['cliente', 'participante']);
+  });
+
+  it('a troca entre regime desconhecido e regime do contrato atualiza os termos já exibidos', async () => {
+    const montado = await montar(
+      <RegimeVocabulary regime={foraDoContrato('ATACADO')}>{todosOsTermos()}</RegimeVocabulary>,
+    );
+    expect(termoLido(montado.container, 'receita')).toBe('contribuição');
+    await montado.atualizar(<RegimeVocabulary regime="COMERCIAL">{todosOsTermos()}</RegimeVocabulary>);
+    expect(termoLido(montado.container, 'receita')).toBe('venda');
+    await montado.atualizar(
+      <RegimeVocabulary regime={foraDoContrato('ATACADO')}>{todosOsTermos()}</RegimeVocabulary>,
+    );
+    expect(termoLido(montado.container, 'receita')).toBe('contribuição');
   });
 });
