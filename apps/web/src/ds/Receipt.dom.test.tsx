@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { Receipt, type ReceiptTone } from './Receipt';
 import { desmontarTudo, elemento, folhaComTexto, montar } from '@/testes/montagem';
+import { atributosComTexto } from './apoioDeTeste';
 
 afterEach(desmontarTudo);
 
@@ -48,6 +49,7 @@ describe('Receipt — título e valor', () => {
       );
 
       expect(container.textContent).toBe('');
+      expect(atributosComTexto(container)).toEqual([]);
     },
   );
 

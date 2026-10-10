@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { StatusBadge, type BadgeTone } from './StatusBadge';
 import { desmontarTudo, elemento, montar } from '@/testes/montagem';
+import { atributosComTexto } from './apoioDeTeste';
 
 afterEach(desmontarTudo);
 
@@ -48,12 +49,14 @@ describe('StatusBadge — tom e texto', () => {
     const { container } = await montar(<StatusBadge tone={tom}>{''}</StatusBadge>);
 
     expect(container.textContent).toBe('');
+    expect(atributosComTexto(container)).toEqual([]);
   });
 
   it('textos vazios — sem tom e sem filhos em string: o selo fica sem texto', async () => {
     const { container } = await montar(<StatusBadge>{''}</StatusBadge>);
 
     expect(container.textContent).toBe('');
+    expect(atributosComTexto(container)).toEqual([]);
   });
 
   it('filhos em zero — mostra o 0', async () => {

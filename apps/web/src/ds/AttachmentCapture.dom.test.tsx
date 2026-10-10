@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { clicar, desmontarTudo, elemento, folhaComTexto, montar, todos } from '@/testes/montagem';
-import { errosAoClicar, glifoDe } from './apoioDeTeste';
+import { atributosComTexto, errosAoClicar, glifoDe } from './apoioDeTeste';
 import { AttachmentCapture } from './AttachmentCapture';
 
 afterEach(desmontarTudo);
@@ -101,6 +101,7 @@ describe('AttachmentCapture: textos vazios', () => {
     const { container } = await montar(<AttachmentCapture {...TEXTOS_VAZIOS} />);
 
     expect(botaoDeCaptura(container).textContent).toBe('');
+    expect(atributosComTexto(container)).toEqual([]);
   });
 
   it('com anexo — o botão de remover fica sem nome: o componente não escreve o nome da remoção', async () => {
@@ -110,6 +111,7 @@ describe('AttachmentCapture: textos vazios', () => {
     expect(remover.getAttribute('title')).toBe('');
     expect(remover.hasAttribute('aria-label')).toBe(false);
     expect(container.textContent).toBe('nota-0912.jpg');
+    expect(atributosComTexto(container)).toEqual([]);
   });
 });
 

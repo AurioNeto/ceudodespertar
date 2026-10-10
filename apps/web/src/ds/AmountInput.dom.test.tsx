@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { useState } from 'react';
 import { AmountInput } from './AmountInput';
 import { desmontarTudo, digitar, elemento, montar } from '@/testes/montagem';
+import { atributosComTexto } from './apoioDeTeste';
 
 afterEach(desmontarTudo);
 
@@ -213,12 +214,14 @@ describe('AmountInput — textos vazios', () => {
 
     expect(container.textContent).toBe('R$');
     expect(campoDe(container).getAttribute('aria-label')).toBe('');
+    expect(atributosComTexto(container, { placeholder: '0,00' })).toEqual([]);
   });
 
   it('com soma — sobra só o total e o travessão que separa a nota: o componente não escreve rótulo nem nota', async () => {
     const { container } = await montar(<AmountInput {...TEXTOS_VAZIOS} value="65+70" onChange={vi.fn()} />);
 
     expect(container.textContent).toBe('R$ 135,00 — ');
+    expect(atributosComTexto(container, { placeholder: '0,00' })).toEqual([]);
   });
 });
 
