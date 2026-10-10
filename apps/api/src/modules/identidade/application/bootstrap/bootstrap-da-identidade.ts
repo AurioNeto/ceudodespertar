@@ -62,7 +62,8 @@ export class BootstrapDaIdentidade {
     private readonly relogio: Relogio,
   ) {}
 
-  async executar(comando: ComandoDeBootstrap): Promise<Result<ResultadoDoBootstrap, ErroDeDominio>> {
+  async executar(comandoRecebido: ComandoDeBootstrap): Promise<Result<ResultadoDoBootstrap, ErroDeDominio>> {
+    const comando = { ...comandoRecebido, adminEmail: normalizarEmail(comandoRecebido.adminEmail) };
     if (comando.sujeito !== undefined) {
       const conferencia = await this.conferirEmailDoSujeito(comando.sujeito, comando.adminEmail);
       if (conferencia.tipo === 'erro') return conferencia;

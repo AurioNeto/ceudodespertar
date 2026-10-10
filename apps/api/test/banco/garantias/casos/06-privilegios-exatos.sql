@@ -1,4 +1,4 @@
--- verificacoes: 21
+-- verificacoes: 22
 -- B0 · privilégios EXATOS de cdd_app (Documento 7 §15): nem a mais, nem a
 -- menos, tabela por tabela e função por função. Roda como dono, porque lê a
 -- ACL de cdd_app (o dono não precisa dos privilégios dele para consultá-los).
@@ -50,6 +50,10 @@ SELECT verif.confere('privilégios · identidade.convite é SELECT, INSERT, UPDA
 -- Tabela só-inserção: o papel nem recebe UPDATE/DELETE — além do gatilho.
 SELECT verif.confere('privilégios · identidade.registro_de_auditoria é só SELECT, INSERT',
   verif.privilegios_de_tabela('cdd_app', 'identidade.registro_de_auditoria'),
+  ARRAY['INSERT','SELECT']);
+
+SELECT verif.confere('privilégios · identidade.bootstrap_executado é só SELECT, INSERT',
+  verif.privilegios_de_tabela('cdd_app', 'identidade.bootstrap_executado'),
   ARRAY['INSERT','SELECT']);
 
 -- As três funções que só uma migration (ou o gatilho que instalam) chama:

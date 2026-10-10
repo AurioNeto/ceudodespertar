@@ -159,6 +159,16 @@ describe('BootstrapDaIdentidade com Postgres real', () => {
       expect(marcador?.admin_usuario_id).toBe(resultado.usuarioId);
     });
 
+    it('grava o e-mail do administrador normalizado e devolve o mesmo e-mail no convite', async () => {
+      const adminEmail = `  ${EMAIL_DA_ADMINISTRADORA.toUpperCase()} `;
+
+      const resultado = sucessoDe(await montarBootstrap(ambiente).executar({ ...COMANDO_POR_CONVITE, adminEmail }));
+
+      const [usuario] = await consultar<{ email: string }>('select email from identidade.usuario');
+      expect(usuario?.email).toBe(EMAIL_DA_ADMINISTRADORA);
+      expect(resultado.modo === 'CONVITE' && resultado.convite.email).toBe(EMAIL_DA_ADMINISTRADORA);
+    });
+
     it('grava o convite vigente cujo hash é o do token devolvido, convidado pelo próprio administrador', async () => {
       const resultado = sucessoDe(await montarBootstrap(ambiente).executar(COMANDO_POR_CONVITE));
 
@@ -220,6 +230,15 @@ describe('BootstrapDaIdentidade com Postgres real', () => {
 
       expect(ehOk(resultado)).toBe(true);
       expect(conferidor.consultados).toEqual([SUJEITO_DA_ADMINISTRADORA]);
+    });
+
+    it('grava o e-mail do administrador normalizado quando o informado vem com caixa e espaços', async () => {
+      const adminEmail = `  ${EMAIL_DA_ADMINISTRADORA.toUpperCase()} `;
+
+      sucessoDe(await montarBootstrap(ambiente).executar({ ...COMANDO_POR_VINCULO, adminEmail }));
+
+      const [usuario] = await consultar<{ email: string }>('select email from identidade.usuario');
+      expect(usuario?.email).toBe(EMAIL_DA_ADMINISTRADORA);
     });
 
     it('e-mail do sub diferente do informado: EMAIL_DO_SUJEITO_DIVERGENTE e nada é gravado', async () => {
