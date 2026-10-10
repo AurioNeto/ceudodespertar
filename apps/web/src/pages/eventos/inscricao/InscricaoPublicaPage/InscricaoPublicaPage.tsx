@@ -12,19 +12,19 @@ import {
   Cartao,
   Rotulo,
 } from '@/ds';
-import { BlocoDePergunta, disparaAlerta, respondida } from '../../components/Anamnese';
-import { formatarBRL, formatarDinheiro, pluralizar } from '../../lib/formato';
+import { BlocoDePergunta } from './components/BlocoDePergunta';
+import { disparaAlerta, respondida } from './utils/regraDeAlerta';
+import { formatarBRL, formatarDinheiro, pluralizar } from '@/lib/formato';
 import {
   cadastros,
   CPFS_DE_EXEMPLO,
-  eventoDoLink,
-  linkDaCerimonia,
   MODO_RECADO,
   TEXTO_DA_DECLARACAO,
   VERSAO_VIGENTE,
   formularioInteiro,
   type CadastroEncontrado,
-} from '../../mocks/inscricaoPublica';
+} from './mocks/inscricaoPublica';
+import { eventoDoLink, linkDaCerimonia } from '../mocks/linkDaCerimonia';
 
 /**
  * Inscrição pelo link da cerimônia — a única tela do sistema que um
