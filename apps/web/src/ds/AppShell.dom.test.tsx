@@ -630,6 +630,11 @@ describe('AppShell: navegação inferior em campo', () => {
     const { container } = await montarEmCampo({ nav: NAV });
     const [painel, fila, pessoas] = todos<HTMLButtonElement>(navInferior(container), 'button');
     expect(todos(fila as HTMLElement, '[data-numeric]').map((selo) => selo.textContent)).toEqual(['3']);
+    const selo = elemento(fila as HTMLElement, '[data-numeric]');
+    expect(selo.style.position).toBe('absolute');
+    expect(selo.style.top).toBe('var(--space-1)');
+    expect(selo.style.left).toBe('calc(50% + 6px)');
+    expect(fila?.style.position).toBe('relative');
     expect(todos(painel as HTMLElement, '[data-numeric]')).toHaveLength(0);
     expect(todos(pessoas as HTMLElement, '[data-numeric]')).toHaveLength(0);
   });
@@ -767,11 +772,11 @@ describe('AppShell: menu de campo', () => {
     expect(botaoDoMenu(dentro.container).style.borderTop).toBe('2px solid transparent');
   });
 
-  it('o item do menu é um alvo de toque de campo', async () => {
-    const { container } = await montarComMenu({ nav: NAV });
+  it('os itens do menu e o Meu perfil são alvos de toque de campo', async () => {
+    const { container } = await montarComMenu({ nav: NAV, onUserClick: vi.fn() });
     await abrirMenu(container);
     const alvos = todos<HTMLButtonElement>(dialogoAberto(), 'nav button').map((botao) => botao.style.minHeight);
-    expect(alvos).toEqual(['var(--target-field)', 'var(--target-field)']);
+    expect(alvos).toEqual(['var(--target-field)', 'var(--target-field)', 'var(--target-field)']);
   });
 
   it('com onUserClick o Meu perfil aparece no menu, depois dos itens', async () => {
