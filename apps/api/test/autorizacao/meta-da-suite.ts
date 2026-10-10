@@ -131,12 +131,12 @@ export function casosSemTeste(
     .map((caso) => caso.id);
 }
 
-function temTodoBloqueado(testes: readonly TesteExtraido[], marca: string, destravadaPor: string): boolean {
+function temTodoRotulado(testes: readonly TesteExtraido[], marca: string, rotulo: string): boolean {
   return testes.some(
     (teste) =>
       teste.situacao === 'todo' &&
       mencionaId(teste, marca) &&
-      teste.titulos.some((titulo) => titulo.includes(`bloqueada por ${destravadaPor}`)),
+      teste.titulos.some((titulo) => titulo.includes(rotulo)),
   );
 }
 
@@ -147,7 +147,7 @@ export function casosBloqueadosSemTodo(
 ): readonly string[] {
   return catalogo
     .filter((caso) => !exigidoAte(caso, etapaAtual))
-    .filter((caso) => caso.destravadaPor === null || !temTodoBloqueado(testes, caso.id, caso.destravadaPor))
+    .filter((caso) => !temTodoRotulado(testes, caso.id, `bloqueada até a ${caso.etapa}`))
     .map((caso) => caso.id);
 }
 
@@ -164,7 +164,7 @@ export function lacunasComProblema(
     .flatMap((caso) => caso.lacunasDeclaradas ?? [])
     .flatMap<ProblemaDeLacuna>((lacuna) => {
       if (temTesteAtivo(testes, lacuna.marca)) return [{ marca: lacuna.marca, problema: 'ja-tem-teste-ativo' }];
-      if (!temTodoBloqueado(testes, lacuna.marca, lacuna.destravadaPor)) return [{ marca: lacuna.marca, problema: 'sem-todo-visivel' }];
+      if (!temTodoRotulado(testes, lacuna.marca, `lacuna da ${lacuna.etapa}`)) return [{ marca: lacuna.marca, problema: 'sem-todo-visivel' }];
       return [];
     });
 }

@@ -39,7 +39,7 @@ function situacoesDoId(conteudo: string, id: string): SituacaoDoTeste[] {
 }
 
 function caso(id: string, sobras: Partial<CasoDoDoc3> = {}): CasoDoDoc3 {
-  return { id, cenario: `cenário ${id}`, esperado: '**403**', etapa: 'B0', destravadaPor: null, ...sobras };
+  return { id, cenario: `cenário ${id}`, esperado: '**403**', etapa: 'B0', ...sobras };
 }
 
 describe('M1 · catálogo do Doc 3 §11', () => {
@@ -59,11 +59,6 @@ describe('M1 · catálogo do Doc 3 §11', () => {
     expect(doCatalogo).toEqual(linhasDoDoc);
   });
 
-  it('casos bloqueados — catálogo — todos trazem o ticket que os destrava', () => {
-    const bloqueadosSemTicket = CATALOGO_DO_DOC_3_SECAO_11.filter(({ etapa, destravadaPor }) => etapa !== 'B0' && destravadaPor === null);
-
-    expect(bloqueadosSemTicket).toEqual([]);
-  });
 });
 
 describe('M2 · todo caso até a etapa atual tem teste ativo', () => {
@@ -219,56 +214,50 @@ describe('M2 · testes de integração só contam se o CI os executa', () => {
   });
 });
 
-describe('M3 · casos bloqueados por etapa futura têm it.todo com o ticket', () => {
-  it('etapa atual — suíte real — todo caso futuro tem it.todo com o ticket que o destrava', () => {
+describe('M3 · casos bloqueados por etapa futura têm it.todo com a etapa que os destrava', () => {
+  it('etapa atual — suíte real — todo caso futuro tem it.todo rotulado com a etapa que o destrava', () => {
     const semTodo = casosBloqueadosSemTodo(CATALOGO_DO_DOC_3_SECAO_11, ETAPA_ATUAL, TESTES_DO_REPOSITORIO);
 
     expect(semTodo).toEqual([]);
   });
 
   it('caso futuro sem título — catálogo sintético — é listado', () => {
-    const futuro = caso('T9', { etapa: 'B1', destravadaPor: 'TSK-501' });
+    const futuro = caso('T9', { etapa: 'B1' });
 
     expect(casosBloqueadosSemTodo([futuro], 'B0', [])).toEqual(['T9']);
   });
 
-  it('caso futuro com it.todo de outro ticket — é listado', () => {
-    const testes = extrairTestes('a.spec.ts', "it.todo('T9 · x — bloqueada por TSK-999');");
+  it('caso futuro com it.todo de outra etapa — é listado', () => {
+    const testes = extrairTestes('a.spec.ts', "it.todo('T9 · x — bloqueada até a B2');");
 
-    expect(casosBloqueadosSemTodo([caso('T9', { etapa: 'B1', destravadaPor: 'TSK-501' })], 'B0', testes)).toEqual(['T9']);
+    expect(casosBloqueadosSemTodo([caso('T9', { etapa: 'B1' })], 'B0', testes)).toEqual(['T9']);
   });
 
   it('caso futuro com teste ativo em vez de it.todo — é listado', () => {
-    const testes = extrairTestes('a.spec.ts', "it('T9 · x — bloqueada por TSK-501', () => {});");
+    const testes = extrairTestes('a.spec.ts', "it('T9 · x — bloqueada até a B1', () => {});");
 
-    expect(casosBloqueadosSemTodo([caso('T9', { etapa: 'B1', destravadaPor: 'TSK-501' })], 'B0', testes)).toEqual(['T9']);
+    expect(casosBloqueadosSemTodo([caso('T9', { etapa: 'B1' })], 'B0', testes)).toEqual(['T9']);
   });
 
-  it('caso futuro com it.todo e ticket — não é listado', () => {
-    const testes = extrairTestes('a.spec.ts', "it.todo('T9 · x — bloqueada por TSK-501');");
+  it('caso futuro com it.todo da etapa certa — não é listado', () => {
+    const testes = extrairTestes('a.spec.ts', "it.todo('T9 · x — bloqueada até a B1');");
 
-    expect(casosBloqueadosSemTodo([caso('T9', { etapa: 'B1', destravadaPor: 'TSK-501' })], 'B0', testes)).toEqual([]);
+    expect(casosBloqueadosSemTodo([caso('T9', { etapa: 'B1' })], 'B0', testes)).toEqual([]);
   });
 
   it('caso futuro com it.todo cuja id é só vizinha — é listado', () => {
-    const testes = extrairTestes('a.spec.ts', "it.todo('T16a · x — bloqueada por TSK-501');");
+    const testes = extrairTestes('a.spec.ts', "it.todo('T16a · x — bloqueada até a B1');");
 
-    expect(casosBloqueadosSemTodo([caso('T16', { etapa: 'B1', destravadaPor: 'TSK-501' })], 'B0', testes)).toEqual(['T16']);
-  });
-
-  it('caso futuro sem ticket no catálogo — é listado', () => {
-    const testes = extrairTestes('a.spec.ts', "it.todo('T9 · x — bloqueada por null');");
-
-    expect(casosBloqueadosSemTodo([caso('T9', { etapa: 'B1', destravadaPor: null })], 'B0', testes)).toEqual(['T9']);
+    expect(casosBloqueadosSemTodo([caso('T16', { etapa: 'B1' })], 'B0', testes)).toEqual(['T16']);
   });
 
   it('etapa atual B1 — caso de B1 — deixa de exigir it.todo', () => {
-    expect(casosBloqueadosSemTodo([caso('T9', { etapa: 'B1', destravadaPor: 'TSK-501' })], 'B1', [])).toEqual([]);
+    expect(casosBloqueadosSemTodo([caso('T9', { etapa: 'B1' })], 'B1', [])).toEqual([]);
   });
 });
 
 describe('M4 · lacunas declaradas', () => {
-  const comLacuna = caso('T28', { lacunasDeclaradas: [{ marca: 'T28b', destravadaPor: 'TSK-307' }] });
+  const comLacuna = caso('T28', { lacunasDeclaradas: [{ marca: 'T28b', etapa: 'B0' }] });
 
   it('suíte real — lacunas do catálogo — todas têm it.todo visível e nenhum teste ativo', () => {
     expect(lacunasComProblema(CATALOGO_DO_DOC_3_SECAO_11, TESTES_DO_REPOSITORIO)).toEqual([]);
@@ -279,19 +268,19 @@ describe('M4 · lacunas declaradas', () => {
   });
 
   it('lacuna que já ganhou teste ativo — catálogo sintético — é acusada para ser removida', () => {
-    const testes = extrairTestes('a.spec.ts', "it('T28b · x', () => {});\nit.todo('T28b · x — bloqueada por TSK-307');");
+    const testes = extrairTestes('a.spec.ts', "it('T28b · x', () => {});\nit.todo('T28b · x — lacuna da B0');");
 
     expect(lacunasComProblema([comLacuna], testes)).toEqual([{ marca: 'T28b', problema: 'ja-tem-teste-ativo' }]);
   });
 
-  it('lacuna com it.todo e ticket — catálogo sintético — não é acusada', () => {
-    const testes = extrairTestes('a.spec.ts', "it.todo('T28b · x — bloqueada por TSK-307');");
+  it('lacuna com it.todo da etapa certa — catálogo sintético — não é acusada', () => {
+    const testes = extrairTestes('a.spec.ts', "it.todo('T28b · x — lacuna da B0');");
 
     expect(lacunasComProblema([comLacuna], testes)).toEqual([]);
   });
 
-  it('lacuna com it.todo de outro ticket — catálogo sintético — é acusada', () => {
-    const testes = extrairTestes('a.spec.ts', "it.todo('T28b · x — bloqueada por TSK-111');");
+  it('lacuna com it.todo de outra etapa — catálogo sintético — é acusada', () => {
+    const testes = extrairTestes('a.spec.ts', "it.todo('T28b · x — lacuna da B1');");
 
     expect(lacunasComProblema([comLacuna], testes)).toEqual([{ marca: 'T28b', problema: 'sem-todo-visivel' }]);
   });
