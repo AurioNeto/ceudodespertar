@@ -32,6 +32,16 @@ export const CASOS_POSITIVOS: readonly CasoDeNomeDeGrupo[] = [
     ocorrencias: [8, 9, 10, 11].map((linha) => ocorrencia('permitidos.ts', linha, 'colecao')),
   },
   { caso: 'comparacao-entre-codigos-de-grupo', ocorrencias: [ocorrencia('outro.ts', 8, 'comparacao')] },
+  { caso: 'case-com-alvo-tipado', ocorrencias: [ocorrencia('escolher.ts', 5, 'case')] },
+  {
+    caso: 'colecao-com-formas-de-literal',
+    ocorrencias: [3, 4, 5].map((linha) => ocorrencia('formas.ts', linha, 'colecao')),
+  },
+  { caso: 'comparacao-com-codigo-anulavel', ocorrencias: [ocorrencia('anulavel.ts', 8, 'comparacao')] },
+  {
+    caso: 'colecao-importada',
+    ocorrencias: [ocorrencia('usa.ts', 4, 'colecao'), ocorrencia('usa.ts', 4, 'colecao')],
+  },
 ];
 
 export const CASOS_NEGATIVOS: readonly CasoDeNomeDeGrupo[] = [

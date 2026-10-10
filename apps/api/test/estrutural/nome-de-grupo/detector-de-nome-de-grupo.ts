@@ -95,7 +95,9 @@ function literalDeColecaoComGrupo(no: ts.Expression, proibidos: ReadonlySet<stri
 function inicializadorConstDe(checker: ts.TypeChecker, no: ts.Expression): ts.Expression | undefined {
   const interno = semEnvoltorios(no);
   if (!ts.isIdentifier(interno)) return undefined;
-  const declaracao = checker.getSymbolAtLocation(interno)?.valueDeclaration;
+  const simbolo = checker.getSymbolAtLocation(interno);
+  const original = simbolo !== undefined && (simbolo.flags & ts.SymbolFlags.Alias) !== 0 ? checker.getAliasedSymbol(simbolo) : simbolo;
+  const declaracao = original?.valueDeclaration;
   const ehConst =
     declaracao !== undefined &&
     ts.isVariableDeclaration(declaracao) &&
