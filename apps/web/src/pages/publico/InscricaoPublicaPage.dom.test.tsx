@@ -863,6 +863,7 @@ describe('InscricaoPublicaPage: participação, valor e total', () => {
     { valor: '80', abaixo: false, acima: false },
     { valor: '240', abaixo: false, acima: false },
     { valor: '240,01', abaixo: false, acima: true },
+    { valor: '1.000.000,00', abaixo: false, acima: true },
     { valor: '0', abaixo: false, acima: false },
   ])('valor $valor — avisa abaixo do social: $abaixo, acima do próspero: $acima', async ({ valor, abaixo, acima }) => {
     const container = await chegarEmParticipacaoComoHelena();

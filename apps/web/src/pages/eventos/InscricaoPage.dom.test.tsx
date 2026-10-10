@@ -868,6 +868,7 @@ describe('InscricaoPage: contribuição', () => {
     { evento: LUA_CHEIA, valor: '80', abaixo: false, acima: false },
     { evento: LUA_CHEIA, valor: '240', abaixo: false, acima: false },
     { evento: LUA_CHEIA, valor: '240,01', abaixo: false, acima: true },
+    { evento: LUA_CHEIA, valor: '1.000.000,00', abaixo: false, acima: true },
     { evento: LUA_CHEIA, valor: '0', abaixo: false, acima: false },
     { evento: JORNADA, valor: '179,99', abaixo: true, acima: false },
     { evento: JORNADA, valor: '80', abaixo: true, acima: false },
