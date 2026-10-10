@@ -756,7 +756,7 @@ Títulos na ordem de leitura. Dependências por título.
 | Caracterizar primitivos do ds (`Button`, `StatusBadge`, `AmountDisplay`, `AmountInput`, `Icon`, `RecordRow`, `Receipt`, estados e `FaixaDeDemonstracao`) | — | — |
 | Caracterizar o restante do ds (`BottomSheet`, `TextField`, `ScreenHeader`, `PainelDeAcao` e os componentes de domínio) | Caracterizar primitivos do ds | — |
 | Mover ds em níveis (concluída) | Fronteiras no depcruise; Caracterizar o restante do ds | — |
-| Primitivos para o ds | Caracterizar lib/formato e components; Mover ds em níveis | — |
+| Primitivos para o ds (concluída) | Caracterizar lib/formato e components; Mover ds em níveis | — |
 | Mover fundação do ds (concluída) | Primitivos para o ds | — |
 | Mover financeiro I (concluída) | Mover fundação do ds | — |
 | Mover financeiro II | Mover financeiro I | — |
@@ -807,7 +807,7 @@ Títulos na ordem de leitura. Dependências por título.
 | Remover o Tailwind | Harness de captura de telas | — |
 | Catraca de avisos (concluída, seção 12.2) | Fronteiras no depcruise; Caracterizar lib/formato e components; Caracterizar primitivos do ds | — |
 
-Etapas de divisão de telas de demonstração (de Dividir RegistrarLancamento a Dividir Pessoas e Anamnese) podem andar com o gate fechado. As seis caracterizações de telas de demonstração rodaram antes das etapas de mover do grupo, por decisão do dono (seção 15): os testes ficam ao lado das telas, nos caminhos de hoje, e cada etapa de mover os leva junto com a tela (anexo). Com isso, a leitura única de valor e as correções da seção 14 podem correr em paralelo com a cadeia de mover: quem entra depois rebaseia, e a etapa de mover continua provando só troca de caminho contra a `main` do momento. A etapa de leitura única de valor depende das caracterizações das 10 telas que fazem leitura de valor (primitivos do ds, fluxo de lançamentos, financeiro I, eventos, inscrição e pessoas e estoque).
+Etapas de divisão de telas de demonstração (de Dividir RegistrarLancamento a Dividir Pessoas e Anamnese) podem andar com o gate fechado. As seis caracterizações de telas de demonstração rodaram antes das etapas de mover do grupo, por decisão do dono (seção 15): os testes ficam ao lado das telas, nos caminhos de hoje, e cada etapa de mover os leva junto com a tela (anexo). Com isso, a leitura única de valor e as correções da seção 14 podem correr em paralelo com a cadeia de mover: quem entra depois rebaseia, e a etapa de mover continua provando só troca de caminho contra a `main` do momento. A etapa de leitura única de valor depende das caracterizações das 10 telas que fazem leitura de valor (primitivos do ds, fluxo de lançamentos, financeiro I, eventos, inscrição e pessoas e estoque). Na prática, Primitivos para o ds rodou depois de Mover fundação do ds e de Mover financeiro I, sobre a branch desta última; a tabela guarda a ordem de dependência.
 
 ---
 
