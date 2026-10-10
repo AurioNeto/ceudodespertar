@@ -293,6 +293,7 @@ describe('executarCli', () => {
     it.each([
       ['INSTITUICAO_NAO_DEMO_EXISTENTE', CODIGO_DE_REGRA],
       ['SUJEITO_DO_DEV_DIVERGENTE', CODIGO_DE_REGRA],
+      ['DEV_COM_CONVITE_PENDENTE', CODIGO_DE_REGRA],
       ['DEV_NAO_ENCONTRADO_NO_PROVEDOR', CODIGO_DE_REGRA],
       ['PROVEDOR_DE_IDENTIDADE_INDISPONIVEL', CODIGO_DE_INFRAESTRUTURA],
     ] as const)('Result de erro %s: código %i e mensagem objetiva', async (codigo, esperado) => {
@@ -312,6 +313,15 @@ describe('executarCli', () => {
 
       const saida = await executarCli(['seed-demo'], () => Promise.resolve(contexto), AMBIENTE_LOCAL);
 
+      expect(saida.stderr[0]).toContain('pnpm infra:zerar');
+    });
+
+    it('dev com convite pendente explica o convite e manda rodar pnpm infra:zerar', async () => {
+      const contexto = new ContextoDeTeste(porConvite, () => Promise.resolve(err(erroDeDominio('DEV_COM_CONVITE_PENDENTE'))));
+
+      const saida = await executarCli(['seed-demo'], () => Promise.resolve(contexto), AMBIENTE_LOCAL);
+
+      expect(saida.stderr[0]).toContain('convite pendente');
       expect(saida.stderr[0]).toContain('pnpm infra:zerar');
     });
 

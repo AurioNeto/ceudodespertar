@@ -408,6 +408,21 @@ describe('SemeaduraDeDemonstracao com Postgres real', () => {
       expect((await usuarioPorEmail(USERNAME_DO_DEV)).subject_id).toBe(SUB_DO_DEV);
     });
 
+    it('dev já existente com convite pendente aborta com código próprio e não altera nada', async () => {
+      await montarSemeadura(ambiente).executar();
+      await banco.owner.query(
+        `update identidade.usuario set situacao = 'CONVITE_PENDENTE', subject_id = null, ativado_em = null where email = $1`,
+        [USERNAME_DO_DEV],
+      );
+      const antes = await fotoDoBanco(banco);
+
+      const resultado = await montarSemeadura(ambiente).executar();
+
+      expect(codigoDoErro(resultado)).toBe('DEV_COM_CONVITE_PENDENTE');
+      expect(await fotoDoBanco(banco)).toEqual(antes);
+      expect((await usuarioPorEmail(USERNAME_DO_DEV)).subject_id).toBeNull();
+    });
+
     it('dev ausente no provedor: erro claro e banco intacto', async () => {
       const localizador = new LocalizadorQueResponde();
       localizador.sub = undefined;

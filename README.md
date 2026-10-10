@@ -297,6 +297,10 @@ diferente do atual do Keycloak (realm reimportado com o volume do banco mantido)
 alterar nada. Rode `pnpm infra:zerar` (apaga os volumes do Postgres e do Keycloak juntos),
 depois `pnpm infra:subir`, `pnpm db:migrar` e o seed de novo. Não existe religamento de `sub`.
 
+**Dev com convite pendente (código `3`).** Se o `dev@cdd.local` já existe no banco sem `sub`
+(convite pendente), o seed aborta sem alterar nada. Rode `pnpm infra:zerar` e refaça a subida e o
+seed, ou conclua o convite pendente.
+
 Se o `dev@cdd.local` não existir no realm (código `3`), suba a infraestrutura com `pnpm infra:subir`
 para importar o realm. Keycloak indisponível sai com código `1`.
 

@@ -15,6 +15,8 @@ const MENSAGENS_POR_CODIGO: Partial<Record<CodigoDeErro, string>> = {
     'Existe uma instituição que não é a de demonstração neste banco; o seed de demonstração não roda aqui e nada foi gravado.',
   SUJEITO_DO_DEV_DIVERGENTE:
     'O sujeito do dev@cdd.local no Keycloak mudou desde o seed anterior; nada foi alterado. Rode `pnpm infra:zerar`, depois `pnpm infra:subir`, `pnpm db:migrar` e refaça o seed.',
+  DEV_COM_CONVITE_PENDENTE:
+    'O dev@cdd.local está com convite pendente neste banco; nada foi alterado. Rode `pnpm infra:zerar`, depois `pnpm infra:subir`, `pnpm db:migrar` e refaça o seed (ou conclua o convite pendente).',
   DEV_NAO_ENCONTRADO_NO_PROVEDOR:
     'O usuário dev@cdd.local não existe no realm do Keycloak; suba a infraestrutura com `pnpm infra:subir` para importar o realm. Nada foi gravado.',
 };

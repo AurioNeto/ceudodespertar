@@ -93,6 +93,9 @@ export class SemeaduraDeDemonstracao {
       return err(erroDeDominio('INSTITUICAO_NAO_DEMO_EXISTENTE'));
     }
     const devExistente = await this.demonstracao.usuarioPorEmail(USERNAME_DO_DEV);
+    if (devExistente?.subjectId === null) {
+      return err(erroDeDominio('DEV_COM_CONVITE_PENDENTE'));
+    }
     if (devExistente !== undefined && devExistente.subjectId !== subDoDev) {
       return err(erroDeDominio('SUJEITO_DO_DEV_DIVERGENTE'));
     }
