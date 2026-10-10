@@ -335,12 +335,14 @@ function ehEsquerdaDeMembroDeDados(checker: ts.TypeChecker, identificador: ts.Id
   return membro !== undefined && declaradoEm(membro, PACOTES_DE_DADOS);
 }
 
-function ehAnyAplicadoATipoDeDados(checker: ts.TypeChecker, no: ts.Node): boolean {
+function ehAsercaoSobreTipoDeDados(checker: ts.TypeChecker, no: ts.Node): no is ts.AsExpression | ts.TypeAssertion {
   if (!ts.isAsExpression(no) && !ts.isTypeAssertionExpression(no)) return false;
-  if (no.type.kind !== ts.SyntaxKind.AnyKeyword) return false;
   const tipo = checker.getTypeAtLocation(no.expression);
-  const simbolo = tipo.aliasSymbol ?? tipo.getSymbol();
-  return simbolo !== undefined && declaradoEm(simbolo, PACOTES_DE_DADOS);
+  const componentes = tipo.isUnion() ? tipo.types : [tipo];
+  return componentes.some((componente) => {
+    const simbolo = componente.aliasSymbol ?? componente.getSymbol();
+    return simbolo !== undefined && declaradoEm(simbolo, PACOTES_DE_DADOS);
+  });
 }
 
 class Coletor {
@@ -372,8 +374,8 @@ class Coletor {
         this.rotaForaDoNest(no);
       }
       if (ts.isTaggedTemplateExpression(no)) this.sqlDeTemplateMarcado(no);
-      if (zonaDoArquivo(this.relativo) === 'fora' && ehAnyAplicadoATipoDeDados(this.checker, no)) {
-        this.violar(no, 'fora-da-persistencia', 'as any');
+      if (zonaDoArquivo(this.relativo) === 'fora' && ehAsercaoSobreTipoDeDados(this.checker, no)) {
+        this.violar(no, 'fora-da-persistencia', `as ${no.type.getText(this.arquivoDoPrograma)}`);
       }
     });
   }

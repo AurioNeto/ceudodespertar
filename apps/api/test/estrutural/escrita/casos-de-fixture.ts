@@ -322,6 +322,10 @@ export const CASOS_POSITIVOS: readonly CasoDeFixture[] = [
       'getReference',
     ),
   },
+  {
+    caso: 'as-unknown-as-interface-propria',
+    violacoes: esperar('modules/m/application/disfarcar.ts', 'fora-da-persistencia', 'as unknown', 'as unknown', 'as unknown'),
+  },
 ];
 
 export const CASOS_NEGATIVOS: readonly CasoDeFixture[] = [
@@ -351,4 +355,5 @@ export const CASOS_NEGATIVOS: readonly CasoDeFixture[] = [
   },
   { caso: 'pg-sonda-so-le', violacoes: [] },
   { caso: 'pg-modulo-de-saude-so-encerra', violacoes: [] },
+  { caso: 'asercao-sobre-tipo-proprio', violacoes: [] },
 ];
