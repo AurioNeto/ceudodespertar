@@ -32,8 +32,8 @@ const TESTES_DO_REPOSITORIO = [...lerTestesDaApi(configsDaApiNoCi(WORKFLOW)), ..
   ({ arquivo }) => arquivo !== ESTE_ARQUIVO,
 );
 
-function situacoesDoId(conteudo: string, id: string): SituacaoDoTeste[] {
-  return extrairTestes('amostra.spec.ts', conteudo)
+function situacoesDoId(conteudo: string, id: string, arquivo = 'amostra.spec.ts'): SituacaoDoTeste[] {
+  return extrairTestes(arquivo, conteudo)
     .filter((teste) => teste.titulos.some((titulo) => contemIdComLimites(titulo, id)))
     .map((teste) => teste.situacao);
 }
@@ -298,6 +298,16 @@ describe('extração por AST · extras', () => {
   });
 
   it('arquivo .mjs com test do node:test — extração — reconhece o teste ativo', () => {
-    expect(situacoesDoId("test('T29(c) · x', () => {});", 'T29')).toEqual(['ativo']);
+    expect(situacoesDoId("test('T29(c) · x', () => {});", 'T29', 'catalogo.test.mjs')).toEqual(['ativo']);
+  });
+
+  it('testes dos contratos — leitura pelo glob real — T29 do catálogo aparece como ativo', () => {
+    const dosContratos = lerTestesDosContratos(WORKFLOW).filter(({ arquivo }) => arquivo.endsWith('catalogo.test.mjs'));
+
+    const situacoes = dosContratos
+      .filter((teste) => teste.titulos.some((titulo) => contemIdComLimites(titulo, 'T29')))
+      .map((teste) => teste.situacao);
+
+    expect(situacoes).toContain('ativo');
   });
 });
