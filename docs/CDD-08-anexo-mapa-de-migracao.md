@@ -97,7 +97,7 @@ Os destinos são agrupados por área: `app/`, `dados/`, `lib/`, `ds/`, `testes/`
 |---|---|---|---|
 | `lib/formato.ts`: `BRL`, `formatarValor`, `iniciais` | `lib/formato.ts` | manter (repartir por export) | lib/formato por export |
 | `lib/formato.ts`: `formatarDataHora` (com `FUSO_DA_CASA` e `DATA_E_HORA`) | permanece em `lib/formato.ts` até a etapa de mover sistema; depois, ver seção 12 | manter | lib/formato por export |
-| `lib/formato.test.ts`: describes de `formatarValor`, `paraData`, `diaDaSemana` e o fuso, exceto o `it` de `formatarData` (seção 4.4) | `lib/formato.test.ts` | manter | lib/formato por export |
+| `lib/formato.test.ts`: describes de `formatarValor`, `paraData` e `diaDaSemana` (o describe de fuso desceu inteiro, seção 4.4) | `lib/formato.test.ts` | manter | lib/formato por export |
 | `lib/formato.ts`: `nomeDoMes` | ver seção 9 (`AgendaPage/utils/nomeDoMes.ts`) | repartir por export | lib/formato por export |
 | `PainelDeRevisao.tsx#paraNumero`, `GerenciarContasModal.tsx#paraNumero` | `lib/numero.ts` (`lerValorDigitado`) | fundir | Leitura única de valor |
 | `AyahuascaPage.tsx#paraNumero` (mudança de comportamento: passa a tirar o milhar; divergência 2) | `lib/numero.ts` (`lerValorDigitado`) | fundir | Leitura única de valor |
@@ -245,7 +245,7 @@ Os testes do #58, do #59, do #61 e do #62 se repartem por describe entre as unid
 | `components/Campo.dom.test.tsx`, describe `CampoDeTags` | `pages/financeiro/lancamentos/RegistrarLancamentoPage/components/CampoDeTags/CampoDeTags.dom.test.tsx` | mover (o arquivo só tinha esse describe desde Primitivos para o ds) | Mover lancamentos |
 | `lib/recibo.test.ts` (entra com o #58) | `pages/financeiro/lancamentos/utils/recibo.test.ts` | mover | Mover lancamentos |
 | `lib/formato.test.ts` (entra com o #58), describe `iniciais` | `ds/atoms/Avatar/utils/iniciais.test.ts` | repartir por describe | Primitivos novos e adoção do catálogo |
-| `lib/formato.test.ts`, describes `formatarDinheiro`, `formatarBRL`, `formatarInteiro`, `formatarLitros`, `formatarDiaMes`, `formatarCompetencia`, `competenciaPorExtenso`, `pluralizar` e o `it` de `formatarData` no describe de fuso | `pages/utils/formato.test.ts` | repartir por describe (e por `it`, no fuso) | lib/formato por export |
+| `lib/formato.test.ts`, describes `formatarDinheiro`, `formatarBRL`, `formatarInteiro`, `formatarLitros`, `formatarDiaMes`, `formatarCompetencia`, `competenciaPorExtenso`, `pluralizar` e o describe de fuso inteiro, com os `it` de `paraData`, `diaDaSemana` e `formatarDataHora`, que importam `@/lib/formato` (o `it` de `formatarData` não sai sozinho: o conferir-movimento acusa o corpo do describe, e `lib/formato.test.ts` não importa `pages/`, regra `lib-e-folha`) | `pages/utils/formato.test.ts` | repartir por describe | lib/formato por export |
 | `lib/formato.test.ts`, describes `formatarData` e `nomeDoMes` | `pages/utils/formato.test.ts` (`formatarData`) e `pages/eventos/AgendaPage/utils/nomeDoMes.test.ts` | repartir por describe | lib/formato por export |
 | `ds/AmountDisplay.dom.test.tsx` (entra com o #59) | `ds/atoms/AmountDisplay/AmountDisplay.dom.test.tsx` | mover | Mover ds em níveis |
 | `ds/AmountInput.dom.test.tsx` (entra com o #59); a describe de soma caracteriza a divergência 1 | `ds/molecules/AmountInput/AmountInput.dom.test.tsx` | mover | Mover ds em níveis |
