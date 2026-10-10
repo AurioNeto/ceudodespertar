@@ -16,6 +16,7 @@ import { AMBIENTE_DO_KEYCLOAK_DE_TESTE } from '../../ambiente-de-teste.js';
 import { CAMINHO_DO_TOKEN, CAMINHO_DOS_USUARIOS, RelogioManual, ServidorKeycloakFalso } from './servidor-keycloak-falso.js';
 
 const MARGEM_DO_TOKEN_EM_MS = 30_000;
+const FOLGA_PARA_O_SERVIDOR_REGISTRAR_EM_MS = 100;
 const COM_RETRY = { renovarTokenEm401: true };
 const SEM_RETRY = { renovarTokenEm401: false };
 const PEDIDO = { metodo: 'GET', caminho: '/users/abc' } as const;
@@ -86,6 +87,7 @@ describe('ClienteAdminDoKeycloak', () => {
     await compartilhado.executar(COM_RETRY, (sessao) => sessao.requisitar(PEDIDO));
     await compartilhado.executar(COM_RETRY, (sessao) => sessao.requisitar(PEDIDO));
 
+    await new Promise((pronto) => setTimeout(pronto, FOLGA_PARA_O_SERVIDOR_REGISTRAR_EM_MS));
     expect(servidor.chamadasA('POST', CAMINHO_DO_TOKEN)).toHaveLength(1);
   });
 
@@ -97,6 +99,7 @@ describe('ClienteAdminDoKeycloak', () => {
     await compartilhado.executar(COM_RETRY, (sessao) => sessao.requisitar(PEDIDO));
     relogio.avancarEmMs(validadeEmMs - 1);
     await compartilhado.executar(COM_RETRY, (sessao) => sessao.requisitar(PEDIDO));
+    await new Promise((pronto) => setTimeout(pronto, FOLGA_PARA_O_SERVIDOR_REGISTRAR_EM_MS));
     expect(servidor.chamadasA('POST', CAMINHO_DO_TOKEN)).toHaveLength(1);
 
     relogio.avancarEmMs(1);
@@ -115,6 +118,7 @@ describe('ClienteAdminDoKeycloak', () => {
       compartilhado.executar(COM_RETRY, (sessao) => sessao.requisitar(PEDIDO)),
     ]);
 
+    await new Promise((pronto) => setTimeout(pronto, FOLGA_PARA_O_SERVIDOR_REGISTRAR_EM_MS));
     expect(servidor.chamadasA('POST', CAMINHO_DO_TOKEN)).toHaveLength(1);
   });
 
@@ -290,6 +294,7 @@ describe('ClienteAdminDoKeycloak', () => {
       }),
     ).rejects.toMatchObject({ name: 'KeycloakIndisponivel', motivo: 'timeout' });
 
+    await new Promise((pronto) => setTimeout(pronto, FOLGA_PARA_O_SERVIDOR_REGISTRAR_EM_MS));
     expect(servidor.chamadasA('POST', CAMINHO_DO_TOKEN)).toHaveLength(1);
     expect(servidor.chamadasA('GET', '/admin/realms/cdd/users/abc')).toHaveLength(1);
   });
