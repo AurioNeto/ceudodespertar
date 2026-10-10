@@ -599,13 +599,14 @@ describe('InscricaoPublicaPage: anamnese', () => {
     expect(textoDe(container)).toContain('Estas perguntas só mudaram de redação desde que você respondeu.');
   });
 
-  it('Clarice — as sete respondidas liberam Continuar, e a pergunta herdada da medicação não é refeita', async () => {
+  it('Clarice — as cinco obrigatórias respondidas, com as duas opcionais em branco, liberam Continuar, e a pergunta herdada da medicação não é refeita', async () => {
     const container = await abrir();
     await identificar(container, CPF_DE_CLARICE);
 
     await responderOQueMudou(container);
 
     expect(botaoContinuar(container).disabled).toBe(false);
+    expect(todos<HTMLTextAreaElement>(container, 'textarea').map((caixa) => caixa.value)).toEqual(['', '']);
     expect(todos(container, 'button').some((botao) => botao.getAttribute('aria-label') === `Sim — ${MEDICACAO}`)).toBe(false);
   });
 
