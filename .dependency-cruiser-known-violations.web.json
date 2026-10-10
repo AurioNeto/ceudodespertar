@@ -836,34 +836,6 @@
   },
   {
     "type": "dependency",
-    "from": "apps/web/src/ds/AmountDisplay.tsx",
-    "to": "apps/web/src/lib/formato.ts",
-    "unresolvedTo": "../lib/formato",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/ds/AmountInput.tsx",
-    "to": "apps/web/src/lib/formato.ts",
-    "unresolvedTo": "../lib/formato",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
     "from": "apps/web/src/lib/recibo.ts",
     "to": "apps/web/src/ds/index.ts",
     "unresolvedTo": "../ds",

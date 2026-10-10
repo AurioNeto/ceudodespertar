@@ -1,0 +1,1 @@
+export { AttachmentCapture } from './AttachmentCapture';
