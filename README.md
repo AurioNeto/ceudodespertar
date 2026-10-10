@@ -233,7 +233,7 @@ Senha e segredo nunca entram por argumento: a ferramenta não tem flag para isso
 |---|---|
 | `0` | bootstrap concluído (ids criados e próximo passo em stdout); falha ao encerrar o contexto depois disso só gera aviso em stderr |
 | `1` | infraestrutura: ambiente inválido, banco ou Keycloak indisponível, falha no envio do convite, erro inesperado |
-| `2` | uso ou validação: flags inválidas ou dado recusado pela validação do domínio |
+| `2` | uso ou validação: flags inválidas, dado recusado pela validação do domínio ou ambiente recusado pela guarda do seed de demonstração |
 | `3` | regra de negócio: bootstrap já executado, sujeito inexistente, e-mail do sujeito divergente, sujeito já vinculado |
 
 A saída nunca traz token de convite, hash, `sub`, URL de convite nem segredo, nem em erro; erro
@@ -255,6 +255,50 @@ já aconteceu, então o comando não pode ser repetido e ninguém recebeu o e-ma
 O processo roda com `CDD_PROCESSO=cli`, fixado pelo próprio comando: o despachante de eventos e o
 vigia de eventos esgotados não sobem. Os eventos gravados pelo bootstrap ficam no outbox e a API os
 despacha quando subir.
+
+### Seed de demonstração (dev local entra sem SQL)
+
+Com a infraestrutura de pé e o banco migrado, um comando cria a instituição de demonstração e liga
+o `dev@cdd.local` do realm local a um administrador ativo:
+
+```bash
+pnpm infra:subir && pnpm db:migrar && pnpm db:identidade:seed-demo
+```
+
+Depois disso, entrar com `dev@cdd.local` no front já resolve o contexto de acesso, sem SQL manual.
+O subcomando não aceita flags.
+
+**O que cria**, tudo pelo domínio (nunca SQL que contorne o agregado):
+- a instituição `Casa de Demonstração CDD`, com id fixo, e os seis grupos de sistema;
+- `dev@cdd.local` como ADMINISTRADOR ativo, ligado ao `sub` real que o Keycloak gerou para ele
+  (buscado por username exato com a conta de serviço `cdd-api-admin`);
+- um usuário fictício ATIVO por grupo de sistema (`<grupo>@demo.cdd.invalid`, `sub` `demo:<grupo>`);
+- um `convidado@demo.cdd.invalid` com convite pendente (nenhum e-mail é enviado) e um
+  `suspenso@demo.cdd.invalid` suspenso.
+
+Não grava CPF, telefone, endereço nem dado de saúde, e não escreve o marcador do bootstrap. Os
+fictícios nunca fazem login: o prefixo `demo:` não é um `sub` que o Keycloak emita. Quando a API
+subir, o despachante tenta bloquear o `sub` do suspenso no Keycloak; o provedor não o conhece, a
+resposta 404 conta como convergido e nada falha.
+
+**Guarda de ambiente.** Antes de abrir banco ou Keycloak, o comando exige `CDD_AMBIENTE=local` ou
+`ci`, e `KEYCLOAK_URL_BASE` e `BANCO_URL` com host de loopback literal (`localhost`, `127.0.0.1` ou
+`[::1]`). `homologacao`, `producao`, ausente ou inválido recusam, assim como o host `postgres` do
+compose. Recusa sai com código `2`, sem imprimir URL. A guarda barra erro de configuração, não quem
+controla o `.env`. O seed também recusa (código `3`) se existir no banco qualquer instituição cujo
+id não seja o da demonstração.
+
+**Idempotência.** A chave natural é o e-mail dentro da instituição de demonstração: reexecutar não
+duplica nem altera nada, e a saída informa quantos usuários foram criados e quantos já existiam.
+Tudo grava numa única transação; a busca do `sub` no Keycloak acontece antes dela.
+
+**`sub` do dev divergente (código `3`).** Se o `dev@cdd.local` já existe no banco com um `sub`
+diferente do atual do Keycloak (realm reimportado com o volume do banco mantido), o seed aborta sem
+alterar nada. Rode `pnpm infra:zerar` (apaga os volumes do Postgres e do Keycloak juntos),
+depois `pnpm infra:subir`, `pnpm db:migrar` e o seed de novo. Não existe religamento de `sub`.
+
+Se o `dev@cdd.local` não existir no realm (código `3`), suba a infraestrutura com `pnpm infra:subir`
+para importar o realm. Keycloak indisponível sai com código `1`.
 
 ---
 

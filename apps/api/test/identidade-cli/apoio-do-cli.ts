@@ -1,5 +1,5 @@
 import { execFileSync, spawn } from 'node:child_process';
-import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -18,8 +18,32 @@ export interface ResultadoDoProcesso {
   readonly intervalosCriados: readonly number[];
 }
 
+const INTERVALO_DA_ESPERA_PELA_COMPILACAO_EM_MS = 200;
+const PRAZO_DA_ESPERA_PELA_COMPILACAO_EM_MS = 180_000;
+
+function pausarDeFormaSincrona(ms: number): void {
+  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
+}
+
+function esperarCompilacaoDeOutroArquivo(marcadorDePronto: string): void {
+  const limite = Date.now() + PRAZO_DA_ESPERA_PELA_COMPILACAO_EM_MS;
+  while (!existsSync(marcadorDePronto)) {
+    if (Date.now() > limite) throw new Error('a compilação do CLI por outro arquivo de teste não terminou');
+    pausarDeFormaSincrona(INTERVALO_DA_ESPERA_PELA_COMPILACAO_EM_MS);
+  }
+}
+
 export function compilarOCli(): void {
+  const diretorioDaCompilacao = join(tmpdir(), `cdd-compilacao-do-cli-${process.ppid}`);
+  const marcadorDePronto = join(diretorioDaCompilacao, 'pronto');
+  try {
+    mkdirSync(diretorioDaCompilacao);
+  } catch {
+    esperarCompilacaoDeOutroArquivo(marcadorDePronto);
+    return;
+  }
   execFileSync('pnpm', ['build'], { cwd: RAIZ_DA_API, stdio: 'pipe' });
+  writeFileSync(marcadorDePronto, '');
 }
 
 export function urlDoOwnerPara(banco: BancoDeTeste): string {
@@ -30,7 +54,14 @@ export function comoLocalhost(url: string): string {
   return url.replace('127.0.0.1', 'localhost');
 }
 
-function ambienteDoProcesso(banco: BancoDeTeste, urlDoKeycloak: string, arquivoDaSonda: string): NodeJS.ProcessEnv {
+export type VariaveisExtras = Readonly<Record<string, string | undefined>>;
+
+function ambienteDoProcesso(
+  banco: BancoDeTeste,
+  urlDoKeycloak: string,
+  arquivoDaSonda: string,
+  extras: VariaveisExtras,
+): NodeJS.ProcessEnv {
   return {
     PATH: process.env['PATH'],
     TZ: 'UTC',
@@ -47,6 +78,7 @@ function ambienteDoProcesso(banco: BancoDeTeste, urlDoKeycloak: string, arquivoD
     CDD_KC_ADMIN_SEGREDO: 'segredo-de-teste-da-conta-de-servico',
     APP_URL_BASE: 'http://localhost:5173',
     KEYCLOAK_CLIENT_ID_DO_CONVITE: 'cdd-web',
+    ...extras,
   };
 }
 
@@ -54,6 +86,7 @@ export async function executarProcessoDoCli(
   argumentos: readonly string[],
   banco: BancoDeTeste,
   urlDoKeycloak: string,
+  extras: VariaveisExtras = {},
 ): Promise<ResultadoDoProcesso> {
   const diretorio = mkdtempSync(join(tmpdir(), 'cdd-cli-'));
   const arquivoDaSonda = join(diretorio, 'intervalos.txt');
@@ -61,7 +94,7 @@ export async function executarProcessoDoCli(
     const processo = spawn(
       process.execPath,
       ['--require', SONDA, 'dist/identidade-cli/cli.js', ...argumentos],
-      { cwd: RAIZ_DA_API, env: ambienteDoProcesso(banco, urlDoKeycloak, arquivoDaSonda), timeout: PRAZO_DO_PROCESSO_EM_MS },
+      { cwd: RAIZ_DA_API, env: ambienteDoProcesso(banco, urlDoKeycloak, arquivoDaSonda, extras), timeout: PRAZO_DO_PROCESSO_EM_MS },
     );
     const stdout: Buffer[] = [];
     const stderr: Buffer[] = [];

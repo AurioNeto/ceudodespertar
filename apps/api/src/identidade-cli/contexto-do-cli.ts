@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { BootstrapDaIdentidade, EnviadorDeConvite, IdentidadeModule } from '../modules/identidade/public-api.js';
+import { BootstrapDaIdentidade, EnviadorDeConvite, IdentidadeModule, SemeaduraDeDemonstracao } from '../modules/identidade/public-api.js';
 import { BancoModule } from '../shared/infrastructure/banco/banco.module.js';
 import { ConfiguracaoModule } from '../shared/infrastructure/configuracao/configuracao.module.js';
 import { EventosModule } from '../shared/infrastructure/eventos/eventos.module.js';
@@ -18,6 +18,7 @@ export async function abrirContextoDoCli(): Promise<ContextoDoCli> {
     dependencias: {
       bootstrap: aplicacao.get(BootstrapDaIdentidade),
       enviador: aplicacao.get(EnviadorDeConvite),
+      semeadura: aplicacao.get(SemeaduraDeDemonstracao),
     },
     encerrar: () => aplicacao.close(),
   };
