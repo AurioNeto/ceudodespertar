@@ -145,6 +145,6 @@ import { GestaoDeUsuariosController } from './interface/http/gestao-de-usuarios.
     InvalidadorDoCacheDeAcesso,
     ResolvedorDeContextoDeAcessoDaIdentidade,
   ],
-  exports: [ResolvedorDeContextoDeAcessoDaIdentidade, SemeadorDeGruposDeSistema, BootstrapDaIdentidade],
+  exports: [ResolvedorDeContextoDeAcessoDaIdentidade, SemeadorDeGruposDeSistema, BootstrapDaIdentidade, EnviadorDeConvite],
 })
 export class IdentidadeModule {}
