@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { Receipt, RecordRow, ScreenHeader, useDensidade, SeletorDeTipo } from '@/ds';
-import { Paginacao } from '../../components/Paginacao';
-import { formatarData, formatarDinheiro, pluralizar } from '../../lib/formato';
-import { estadoDaLinha, linhasDoRecibo, naturezaDoTipo, rodapeDoRecibo, tomDoRecibo } from '../../lib/recibo';
-import { meusLancamentos, rotuloDoTipo } from '../../mocks/lancamentos';
+import { Paginacao } from '../components/Paginacao';
+import { formatarData, formatarDinheiro, pluralizar } from '@/lib/formato';
+import { estadoDaLinha, linhasDoRecibo, naturezaDoTipo, rodapeDoRecibo, tomDoRecibo } from '../utils/recibo';
+import { meusLancamentos } from '../../mocks/lancamentos';
+import { rotuloDoTipo } from '../utils/rotulosDoLancamento';
 
 type Visao = 'lista' | 'carrossel';
 

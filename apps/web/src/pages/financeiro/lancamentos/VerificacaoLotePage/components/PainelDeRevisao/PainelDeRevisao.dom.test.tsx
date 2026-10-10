@@ -3,7 +3,7 @@ import { dataLocal, reais } from '@cdd/contracts';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { botaoComTexto, clicar, desmontarTudo, digitar, elemento, folhaComTexto, montar, todos } from '@/testes/montagem';
 import { PainelDeRevisao } from './PainelDeRevisao';
-import { campoComRotulo, digitarNaCaixa, rotulosDosCampos, teclarEsc } from './apoioDeTeste';
+import { campoComRotulo, digitarNaCaixa, rotulosDosCampos, teclarEsc } from '../../apoioDeTeste';
 
 const SAIDA: ItemNaFila = {
   id: 'v-1' as LancamentoId,

@@ -1,10 +1,12 @@
 import { useMemo, useState } from 'react';
 import type { LancamentoNaLista } from '@cdd/contracts';
 import { Button, Icon, Receipt, RecordRow, ScreenHeader, StatusBadge, EmptyState, useDensidade, Select } from '@/ds';
-import { Paginacao } from '../../components/Paginacao';
-import { formatarData, formatarDiaMes, formatarDinheiro, pluralizar } from '../../lib/formato';
-import { estadoDaLinha, linhasDoRecibo, naturezaDoTipo, rodapeDoRecibo, tomDoRecibo } from '../../lib/recibo';
-import { corDoTipo, lancamentos, rotuloDaSituacao, rotuloDoTipo } from '../../mocks/lancamentos';
+import { Paginacao } from '../components/Paginacao';
+import { formatarData, formatarDiaMes, formatarDinheiro, pluralizar } from '@/lib/formato';
+import { estadoDaLinha, linhasDoRecibo, naturezaDoTipo, rodapeDoRecibo, tomDoRecibo } from '../utils/recibo';
+import { lancamentos } from '../../mocks/lancamentos';
+import { rotuloDaSituacao, rotuloDoTipo } from '../utils/rotulosDoLancamento';
+import { corDoTipo } from './utils/corDoTipo';
 
 const POR_PAGINA = 8;
 

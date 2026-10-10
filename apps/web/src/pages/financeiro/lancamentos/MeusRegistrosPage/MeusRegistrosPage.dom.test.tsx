@@ -2,12 +2,12 @@ import type { LancamentoNaLista } from '@cdd/contracts';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { botaoComTexto, clicar, desmontarTudo, elemento, montar, todos } from '@/testes/montagem';
 import { MeusRegistrosPage } from './MeusRegistrosPage';
-import { barraDeEstado, lerRecibos, usarDensidade, valorDeEntrada, valorDeSaida, valorDeTransferencia } from './apoioDeTeste';
+import { barraDeEstado, lerRecibos, usarDensidade, valorDeEntrada, valorDeSaida, valorDeTransferencia } from '../apoioDeTeste';
 
 type Transformacao = (lista: readonly LancamentoNaLista[]) => readonly LancamentoNaLista[];
 
 const registros = vi.hoisted(() => ({ transformar: ((lista) => lista) as Transformacao }));
-vi.mock('@/mocks/lancamentos', async (importarOriginal) => {
+vi.mock('@/pages/financeiro/mocks/lancamentos', async (importarOriginal) => {
   const original = await importarOriginal<{ meusLancamentos: readonly LancamentoNaLista[] }>();
   return {
     ...original,

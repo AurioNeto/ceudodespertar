@@ -1,0 +1,1 @@
+export { LancamentosPage } from './LancamentosPage';

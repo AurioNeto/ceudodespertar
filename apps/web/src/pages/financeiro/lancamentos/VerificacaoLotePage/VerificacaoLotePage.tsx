@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import type { ItemNaFila, LancamentoId, OrigemCaptura } from '@cdd/contracts';
-import { Button, EmptyState, Icon, ScreenHeader, StatusBadge, type IconName, useDensidade } from '../../ds';
-import { formatarData, formatarDinheiro, pluralizar } from '../../lib/formato';
-import { CONFIANCA, ORIGENS, filaDeVerificacaoInicial } from '../../mocks/verificacao';
-import { PainelDeRevisao } from './PainelDeRevisao';
+import { Button, EmptyState, Icon, ScreenHeader, StatusBadge, type IconName, useDensidade } from '@/ds';
+import { formatarData, formatarDinheiro, pluralizar } from '@/lib/formato';
+import { filaDeVerificacaoInicial } from '@/mocks/verificacao';
+import { CONFIANCA, ORIGENS } from './constantes';
+import { PainelDeRevisao } from './components/PainelDeRevisao';
 
 type FiltroOrigem = OrigemCaptura | 'TODAS';
 

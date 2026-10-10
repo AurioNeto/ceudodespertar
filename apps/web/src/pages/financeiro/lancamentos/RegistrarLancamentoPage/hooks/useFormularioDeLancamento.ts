@@ -6,7 +6,7 @@ import {
   metaDaOpcao,
   opcoesDeConta,
   rotuloDaOpcao,
-} from '../../mocks/opcoes';
+} from '../mocks/opcoes';
 
 export type CampoComPicker =
   | 'conta'

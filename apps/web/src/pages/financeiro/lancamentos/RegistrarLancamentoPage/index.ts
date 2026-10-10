@@ -1,0 +1,1 @@
+export { RegistrarLancamentoPage } from './RegistrarLancamentoPage';
