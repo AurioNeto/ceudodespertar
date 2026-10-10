@@ -2,18 +2,11 @@ import { act } from 'react';
 import type { ReactElement } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { botaoComTexto, clicar, desmontarTudo, elemento, folhaComTexto, montar, todos } from '@/testes/montagem';
-import {
-  PendencyCard,
-  type AddresseePendencyProps,
-  type AddresseeTexts,
-  type PendencyCardProps,
-  type PendencyTexts,
-  type ReviewerPendencyProps,
-  type ReviewerTexts,
-} from './PendencyCard';
+import { PendencyCard, type AddresseeTexts, type PendencyCardProps, type PendencyTexts, type ReviewerTexts } from './PendencyCard';
 
 afterEach(desmontarTudo);
 
+const ID_DA_PENDENCIA = 'pendencia-1';
 const PERGUNTA = 'Para que foi esta compra de 135?';
 const AUTOR = 'Helena';
 const RESPOSTA = 'Gás e extintor.';
@@ -38,17 +31,27 @@ const TEXTOS_DE_QUEM_CONFERIU: ReviewerTexts = {
   reopenLabel: 'Perguntar de novo',
 };
 
-type PropsDaPergunta = Partial<Pick<PendencyCardProps, 'question' | 'askedBy' | 'askedAt' | 'answer' | 'style'>>;
+type PropsDaPergunta = Partial<
+  Pick<PendencyCardProps, 'pendencyId' | 'question' | 'askedBy' | 'askedAt' | 'answer' | 'style'>
+>;
+type PropsDoDestinatario = Extract<PendencyCardProps, { role: 'addressee' }>;
+type PropsDeQuemConferiu = Extract<PendencyCardProps, { role: 'reviewer' }>;
 
 const paraOOutroLeitor = (props: PropsDaPergunta = {}) => (
-  <PendencyCard role="observer" question={PERGUNTA} askedBy={AUTOR} texts={TEXTOS_COMUNS} {...props} />
+  <PendencyCard
+    role="observer"
+    pendencyId={ID_DA_PENDENCIA}
+    question={PERGUNTA}
+    askedBy={AUTOR}
+    texts={TEXTOS_COMUNS}
+    {...props}
+  />
 );
 
-const paraODestinatario = (
-  props: PropsDaPergunta & Partial<Pick<AddresseePendencyProps, 'onAnswer'>> = {},
-) => (
+const paraODestinatario = (props: PropsDaPergunta & Partial<Pick<PropsDoDestinatario, 'onAnswer'>> = {}) => (
   <PendencyCard
     role="addressee"
+    pendencyId={ID_DA_PENDENCIA}
     question={PERGUNTA}
     askedBy={AUTOR}
     texts={TEXTOS_DO_DESTINATARIO}
@@ -57,11 +60,10 @@ const paraODestinatario = (
   />
 );
 
-const paraQuemConferiu = (
-  props: PropsDaPergunta & Partial<Pick<ReviewerPendencyProps, 'onReopen'>> = {},
-) => (
+const paraQuemConferiu = (props: PropsDaPergunta & Partial<Pick<PropsDeQuemConferiu, 'onReopen'>> = {}) => (
   <PendencyCard
     role="reviewer"
+    pendencyId={ID_DA_PENDENCIA}
     question={PERGUNTA}
     askedBy={AUTOR}
     texts={TEXTOS_DE_QUEM_CONFERIU}
@@ -79,6 +81,14 @@ const PAPEIS: readonly [string, (props?: PropsDaPergunta) => ReactElement][] = [
 const caixaDeResposta = (origem: ParentNode) => elemento<HTMLTextAreaElement>(origem, 'textarea');
 const controlesDeEntrada = (origem: ParentNode) => origem.querySelectorAll('textarea, input, select, button');
 const botaoDeEnviar = (origem: ParentNode) => botaoComTexto(origem, TEXTOS_DO_DESTINATARIO.submitLabel);
+const botaoDeReabrir = (origem: ParentNode) => botaoComTexto(origem, TEXTOS_DE_QUEM_CONFERIU.reopenLabel);
+const nomeDoGrupo = (grupo: Element) => document.getElementById(grupo.getAttribute('aria-labelledby') ?? '')?.textContent;
+
+const RESPOSTAS_EM_BRANCO: readonly [string, string][] = [
+  ['vazia', ''],
+  ['só com espaços', '   '],
+  ['só com quebras de linha e tabulação', ' \t\n '],
+];
 
 async function digitarNaCaixa(caixa: HTMLTextAreaElement, valor: string) {
   const definirValor = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value')?.set;
@@ -114,9 +124,18 @@ describe('PendencyCard: a pergunta', () => {
 
   it.each(PAPEIS)('para %s, o cartão é um grupo nomeado pelo cabeçalho', async (_papel, pendencia) => {
     const { container } = await montar(pendencia());
-    const grupo = elemento(container, '[role="group"]');
-    const nome = document.getElementById(grupo.getAttribute('aria-labelledby') ?? '');
-    expect(nome?.textContent).toBe(TEXTOS_COMUNS.openHeading);
+    expect(nomeDoGrupo(elemento(container, '[role="group"]'))).toBe(TEXTOS_COMUNS.openHeading);
+  });
+
+  it('com dois cartões no mesmo container, cada grupo é nomeado pelo seu próprio cabeçalho', async () => {
+    const { container } = await montar(
+      <>
+        {paraOOutroLeitor({ pendencyId: 'pendencia-1' })}
+        {paraOOutroLeitor({ pendencyId: 'pendencia-2', answer: RESPOSTA })}
+      </>,
+    );
+    const nomes = todos(container, '[role="group"]').map(nomeDoGrupo);
+    expect(nomes).toEqual([TEXTOS_COMUNS.openHeading, TEXTOS_COMUNS.answeredHeading]);
   });
 });
 
@@ -150,9 +169,7 @@ describe('PendencyCard: pendência já respondida', () => {
     'para %s, o grupo passa a ser nomeado pelo cabeçalho de respondida',
     async (_papel, pendencia) => {
       const { container } = await montar(pendencia({ answer: RESPOSTA }));
-      const grupo = elemento(container, '[role="group"]');
-      const nome = document.getElementById(grupo.getAttribute('aria-labelledby') ?? '');
-      expect(nome?.textContent).toBe(TEXTOS_COMUNS.answeredHeading);
+      expect(nomeDoGrupo(elemento(container, '[role="group"]'))).toBe(TEXTOS_COMUNS.answeredHeading);
     },
   );
 
@@ -166,11 +183,28 @@ describe('PendencyCard: pendência já respondida', () => {
     expect(container.textContent).not.toContain(TEXTOS_DO_DESTINATARIO.emptyDraftReason);
   });
 
-  it('resposta vazia conta como sem resposta e devolve a caixa ao destinatário', async () => {
-    const { container } = await montar(paraODestinatario({ answer: '' }));
-    expect(caixaDeResposta(container)).toBeTruthy();
-    expect(container.textContent).not.toContain(TEXTOS_COMUNS.answerLabel);
-    expect(container.textContent).not.toContain(TEXTOS_COMUNS.answeredHeading);
+  describe.each(RESPOSTAS_EM_BRANCO)('com a resposta %s', (_rotulo, resposta) => {
+    it.each(PAPEIS)(
+      'para %s, conta como sem resposta: cabeçalho de aberta e nenhum bloco de resposta',
+      async (_papel, pendencia) => {
+        const { container } = await montar(pendencia({ answer: resposta }));
+        expect(folhaComTexto(container, 'span', TEXTOS_COMUNS.openHeading)).toBeTruthy();
+        expect(nomeDoGrupo(elemento(container, '[role="group"]'))).toBe(TEXTOS_COMUNS.openHeading);
+        expect(container.textContent).not.toContain(TEXTOS_COMUNS.answerLabel);
+        expect(container.textContent).not.toContain(TEXTOS_COMUNS.answeredHeading);
+      },
+    );
+
+    it('devolve a caixa ao destinatário', async () => {
+      const { container } = await montar(paraODestinatario({ answer: resposta }));
+      expect(caixaDeResposta(container)).toBeTruthy();
+    });
+
+    it('mostra a quem conferiu a razão, não o botão de reabrir', async () => {
+      const { container } = await montar(paraQuemConferiu({ answer: resposta }));
+      expect(folhaComTexto(container, 'p', TEXTOS_DE_QUEM_CONFERIU.reviewerReason)).toBeTruthy();
+      expect(controlesDeEntrada(container)).toHaveLength(0);
+    });
   });
 
   it('a resposta que chega depois troca a caixa pelo texto respondido', async () => {
@@ -263,6 +297,14 @@ describe('PendencyCard: para o destinatário', () => {
     expect(botaoDeEnviar(container).disabled).toBe(true);
   });
 
+  it('a caixa mostra exatamente o que é digitado, inclusive os espaços das pontas', async () => {
+    const { container } = await montar(paraODestinatario());
+    await digitarNaCaixa(caixaDeResposta(container), ' Gás ');
+    expect(caixaDeResposta(container).value).toBe(' Gás ');
+    await digitarNaCaixa(caixaDeResposta(container), ' Gás e');
+    expect(caixaDeResposta(container).value).toBe(' Gás e');
+  });
+
   it('Responder esvazia a caixa e bloqueia o botão: um segundo clique não entrega de novo', async () => {
     const aoResponder = vi.fn();
     const { container } = await montar(paraODestinatario({ onAnswer: aoResponder }));
@@ -284,12 +326,28 @@ describe('PendencyCard: para o destinatário', () => {
     expect(aoResponder.mock.calls).toEqual([[RESPOSTA], ['Só o gás.']]);
   });
 
-  it('o rascunho reinicia quando a pergunta é trocada por outra', async () => {
+  it('depois de Responder, o foco vai para a caixa de resposta', async () => {
+    const { container } = await montar(paraODestinatario());
+    await digitarNaCaixa(caixaDeResposta(container), RESPOSTA);
+    botaoDeEnviar(container).focus();
+    expect(document.activeElement).toBe(botaoDeEnviar(container));
+    await clicar(botaoDeEnviar(container));
+    expect(document.activeElement).toBe(caixaDeResposta(container));
+  });
+
+  it('o rascunho reinicia quando a pendência é trocada por outra, mesmo com a mesma pergunta', async () => {
+    const montado = await montar(paraODestinatario({ pendencyId: 'pendencia-1' }));
+    await digitarNaCaixa(caixaDeResposta(montado.container), RESPOSTA);
+    await montado.atualizar(paraODestinatario({ pendencyId: 'pendencia-2' }));
+    expect(caixaDeResposta(montado.container).value).toBe('');
+    expect(botaoDeEnviar(montado.container).disabled).toBe(true);
+  });
+
+  it('o rascunho é mantido quando a pergunta é corrigida na mesma pendência', async () => {
     const montado = await montar(paraODestinatario());
     await digitarNaCaixa(caixaDeResposta(montado.container), RESPOSTA);
     await montado.atualizar(paraODestinatario({ question: 'Outra pergunta?' }));
-    expect(caixaDeResposta(montado.container).value).toBe('');
-    expect(botaoDeEnviar(montado.container).disabled).toBe(true);
+    expect(caixaDeResposta(montado.container).value).toBe(RESPOSTA);
   });
 
   it('o rascunho é mantido quando só mudam quem perguntou e quando', async () => {
@@ -333,27 +391,44 @@ describe('PendencyCard: para quem conferiu', () => {
     const { container } = await montar(paraQuemConferiu({ answer: RESPOSTA }));
     const controles = Array.from(controlesDeEntrada(container));
     expect(controles).toHaveLength(1);
-    expect(controles[0]).toBe(botaoComTexto(container, TEXTOS_DE_QUEM_CONFERIU.reopenLabel));
+    expect(controles[0]).toBe(botaoDeReabrir(container));
     expect(todos(container, 'textarea, input')).toHaveLength(0);
   });
 
   it('com resposta, o botão de reabrir está disponível e a razão não se repete', async () => {
     const { container } = await montar(paraQuemConferiu({ answer: RESPOSTA }));
-    expect(botaoComTexto(container, TEXTOS_DE_QUEM_CONFERIU.reopenLabel).disabled).toBe(false);
+    expect(botaoDeReabrir(container).disabled).toBe(false);
     expect(container.textContent).not.toContain(TEXTOS_DE_QUEM_CONFERIU.reviewerReason);
   });
 
   it('reabrir chama onReopen uma vez, sem argumentos', async () => {
     const aoReabrir = vi.fn();
     const { container } = await montar(paraQuemConferiu({ answer: RESPOSTA, onReopen: aoReabrir }));
-    await clicar(botaoComTexto(container, TEXTOS_DE_QUEM_CONFERIU.reopenLabel));
+    await clicar(botaoDeReabrir(container));
     expect(aoReabrir).toHaveBeenCalledExactlyOnceWith();
   });
 
-  it('resposta vazia conta como sem resposta: mostra a razão, não o botão de reabrir', async () => {
-    const { container } = await montar(paraQuemConferiu({ answer: '' }));
-    expect(folhaComTexto(container, 'p', TEXTOS_DE_QUEM_CONFERIU.reviewerReason)).toBeTruthy();
-    expect(controlesDeEntrada(container)).toHaveLength(0);
+  it('reabrir bloqueia o botão: dois cliques, uma chamada', async () => {
+    const aoReabrir = vi.fn();
+    const { container } = await montar(paraQuemConferiu({ answer: RESPOSTA, onReopen: aoReabrir }));
+    await clicar(botaoDeReabrir(container));
+    await clicar(botaoDeReabrir(container));
+    expect(aoReabrir).toHaveBeenCalledTimes(1);
+    expect(botaoDeReabrir(container).disabled).toBe(true);
+  });
+
+  it('quando a resposta muda, o botão de reabrir volta a ficar disponível', async () => {
+    const montado = await montar(paraQuemConferiu({ answer: RESPOSTA }));
+    await clicar(botaoDeReabrir(montado.container));
+    await montado.atualizar(paraQuemConferiu({ answer: 'Só o gás.' }));
+    expect(botaoDeReabrir(montado.container).disabled).toBe(false);
+  });
+
+  it('trocada a pendência, o botão de reabrir está disponível mesmo com a mesma resposta', async () => {
+    const montado = await montar(paraQuemConferiu({ pendencyId: 'pendencia-1', answer: RESPOSTA }));
+    await clicar(botaoDeReabrir(montado.container));
+    await montado.atualizar(paraQuemConferiu({ pendencyId: 'pendencia-2', answer: RESPOSTA }));
+    expect(botaoDeReabrir(montado.container).disabled).toBe(false);
   });
 
   it('quando o consumidor reabre e retira a resposta, o cartão volta a ser o da pergunta aberta', async () => {

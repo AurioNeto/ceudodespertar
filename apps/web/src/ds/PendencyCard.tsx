@@ -1,4 +1,4 @@
-import { useId, useState } from 'react';
+import { useId, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
 import { Button } from './Button';
 import { Icon } from './Icon';
@@ -23,6 +23,7 @@ export interface ReviewerTexts extends PendencyTexts {
 }
 
 interface PendencyBaseProps {
+  pendencyId: string;
   question: string;
   askedBy: string;
   askedAt?: string;
@@ -30,19 +31,19 @@ interface PendencyBaseProps {
   style?: CSSProperties;
 }
 
-export interface AddresseePendencyProps extends PendencyBaseProps {
+interface AddresseePendencyProps extends PendencyBaseProps {
   role: 'addressee';
   texts: AddresseeTexts;
   onAnswer: (answer: string) => void;
 }
 
-export interface ReviewerPendencyProps extends PendencyBaseProps {
+interface ReviewerPendencyProps extends PendencyBaseProps {
   role: 'reviewer';
   texts: ReviewerTexts;
   onReopen: () => void;
 }
 
-export interface ObserverPendencyProps extends PendencyBaseProps {
+interface ObserverPendencyProps extends PendencyBaseProps {
   role: 'observer';
   texts: PendencyTexts;
 }
@@ -51,9 +52,14 @@ export type PendencyCardProps = AddresseePendencyProps | ReviewerPendencyProps |
 
 export type PendencyRole = PendencyCardProps['role'];
 
+function hasAnswer(answer: string | undefined): answer is string {
+  return Boolean(answer?.trim());
+}
+
 export function PendencyCard(props: PendencyCardProps) {
-  const { question, askedBy, askedAt, answer, texts, style } = props;
+  const { pendencyId, question, askedBy, askedAt, answer, texts, style } = props;
   const headingId = useId();
+  const answered = hasAnswer(answer);
 
   return (
     <div
@@ -79,7 +85,7 @@ export function PendencyCard(props: PendencyCardProps) {
             color: 'var(--color-attention)',
           }}
         >
-          {answer ? texts.answeredHeading : texts.openHeading}
+          {answered ? texts.answeredHeading : texts.openHeading}
         </span>
       </div>
 
@@ -89,8 +95,8 @@ export function PendencyCard(props: PendencyCardProps) {
         {askedAt ? ` · ${askedAt}` : ''}
       </p>
 
-      {answer ? <AnswerBlock label={texts.answerLabel} answer={answer} /> : null}
-      <RoleAction pendency={props} />
+      {answered ? <AnswerBlock label={texts.answerLabel} answer={answer} /> : null}
+      <RoleAction key={pendencyId} pendency={props} answered={answered} />
     </div>
   );
 }
@@ -130,24 +136,17 @@ function AnswerBlock({ label, answer }: AnswerBlockProps) {
 
 interface RoleActionProps {
   pendency: PendencyCardProps;
+  answered: boolean;
 }
 
-function RoleAction({ pendency }: RoleActionProps) {
-  const answered = Boolean(pendency.answer);
-
+function RoleAction({ pendency, answered }: RoleActionProps) {
   if (pendency.role === 'addressee') {
-    return answered ? null : (
-      <DraftForm key={pendency.question} texts={pendency.texts} onAnswer={pendency.onAnswer} />
-    );
+    return answered ? null : <DraftForm texts={pendency.texts} onAnswer={pendency.onAnswer} />;
   }
 
   if (pendency.role === 'reviewer') {
     return answered ? (
-      <div style={{ marginTop: 12 }}>
-        <Button variant="quiet" iconName="rotate-ccw" onClick={() => pendency.onReopen()}>
-          {pendency.texts.reopenLabel}
-        </Button>
-      </div>
+      <ReopenAction key={pendency.answer} label={pendency.texts.reopenLabel} onReopen={pendency.onReopen} />
     ) : (
       <p style={{ marginTop: 12, font: 'var(--text-small)', color: 'var(--text-secondary)' }}>
         {pendency.texts.reviewerReason}
@@ -158,6 +157,28 @@ function RoleAction({ pendency }: RoleActionProps) {
   return null;
 }
 
+interface ReopenActionProps {
+  label: string;
+  onReopen: () => void;
+}
+
+function ReopenAction({ label, onReopen }: ReopenActionProps) {
+  const [requested, setRequested] = useState(false);
+
+  function reopen() {
+    onReopen();
+    setRequested(true);
+  }
+
+  return (
+    <div style={{ marginTop: 12 }}>
+      <Button variant="quiet" iconName="rotate-ccw" disabled={requested} onClick={reopen}>
+        {label}
+      </Button>
+    </div>
+  );
+}
+
 interface DraftFormProps {
   texts: AddresseeTexts;
   onAnswer: (answer: string) => void;
@@ -165,15 +186,17 @@ interface DraftFormProps {
 
 function DraftForm({ texts, onAnswer }: DraftFormProps) {
   const [rascunho, setRascunho] = useState('');
+  const formulario = useRef<HTMLDivElement>(null);
   const resposta = rascunho.trim();
 
   function entregar() {
     onAnswer(resposta);
     setRascunho('');
+    formulario.current?.querySelector('textarea')?.focus();
   }
 
   return (
-    <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 10 }}>
+    <div ref={formulario} style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 10 }}>
       <TextField
         label={texts.draftLabel}
         multiline
