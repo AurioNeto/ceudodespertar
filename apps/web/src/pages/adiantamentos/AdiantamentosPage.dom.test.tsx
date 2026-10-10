@@ -604,6 +604,19 @@ describe('AdiantamentosPage: ressarcir', () => {
     expect(campoPeloRotulo(container, 'Data').value).toBe('2026-09-15');
   });
 
+  it('ressarcimento confirmado — a conta e a data escolhidas continuam no formulário de outra linha', async () => {
+    const { container } = await montar(<AdiantamentosPage />);
+    await clicar(botaoComTexto(linhaDe(container, ...LINHA_DE_PATY_A_RESSARCIR), 'Ressarcir'));
+    await escolherOpcao(campoPeloRotulo<HTMLSelectElement>(container, 'Conta de saída'), 'especie');
+    await digitar(campoPeloRotulo(container, 'Data'), '2026-09-10');
+    await clicar(botaoComTexto(linhaDe(container, ...LINHA_DE_PATY_A_RESSARCIR), 'Confirmar'));
+
+    await clicar(botaoComTexto(linhaDe(container, ...LINHA_DE_LUCIA_A_RESSARCIR), 'Ressarcir'));
+
+    expect(campoPeloRotulo<HTMLSelectElement>(container, 'Conta de saída').value).toBe('especie');
+    expect(campoPeloRotulo(container, 'Data').value).toBe('2026-09-10');
+  });
+
   it('data do ressarcimento apagada — o adiantamento fecha como Ressarcido, mas a linha não diz quando nem por qual conta', async () => {
     const { container } = await montar(<AdiantamentosPage />);
     await clicar(botaoComTexto(linhaDe(container, ...LINHA_DE_PATY_A_RESSARCIR), 'Ressarcir'));

@@ -503,6 +503,21 @@ describe('FaturasPage: registrar o pagamento', () => {
     expect(linhaDePagamento(container)).toBe('Paga em 10/09/2026 por transferência de Espécie.');
   });
 
+  it('pagamento confirmado com outra conta e outra data — o formulário de outra fatura abre com a conta e a data escolhidas', async () => {
+    const { container } = await montar(<FaturasPage />);
+    await clicar(botaoComTexto(container, 'Registrar pagamento'));
+    await escolherOpcao(campoPeloRotulo<HTMLSelectElement>(container, 'Conta de saída'), 'itau');
+    await digitar(campoPeloRotulo(container, 'Data do pagamento'), '2026-09-10');
+    await clicar(botaoComTexto(container, 'Confirmar pagamento'));
+    await abrirFatura(container, 'setembro de 2026');
+    await clicar(botaoComTexto(container, 'Fechar fatura'));
+
+    await clicar(botaoComTexto(container, 'Registrar pagamento'));
+
+    expect(campoPeloRotulo<HTMLSelectElement>(container, 'Conta de saída').value).toBe('itau');
+    expect(campoPeloRotulo(container, 'Data do pagamento').value).toBe('2026-09-10');
+  });
+
   it('data do pagamento apagada — o pagamento é aceito e a fatura diz Paga em 01/01/1900', async () => {
     const { container } = await montar(<FaturasPage />);
     await clicar(botaoComTexto(container, 'Registrar pagamento'));

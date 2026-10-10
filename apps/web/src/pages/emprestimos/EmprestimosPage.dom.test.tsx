@@ -513,6 +513,21 @@ describe('EmprestimosPage: registrar devolução', () => {
     expect(campoPeloRotulo(container, 'Valor').value).toBe('');
   });
 
+  it('devolução registrada com outra data e outra conta — o formulário do empréstimo seguinte abre com a data e a conta escolhidas', async () => {
+    const { container } = await montar(<EmprestimosPage />);
+    await abrirFormularioDeDevolucao(container);
+    await digitar(campoPeloRotulo(container, 'Valor'), '200');
+    await digitar(campoPeloRotulo(container, 'Data'), '2026-09-15');
+    await escolherOpcao(campoPeloRotulo<HTMLSelectElement>(container, 'Conta de entrada'), 'especie');
+    await clicar(botaoComTexto(container, 'Registrar devolução'));
+
+    await abrirEmprestimo(container, 'Marta Neto');
+    await abrirFormularioDeDevolucao(container);
+
+    expect(campoPeloRotulo(container, 'Data').value).toBe('2026-09-15');
+    expect(campoPeloRotulo<HTMLSelectElement>(container, 'Conta de saída').value).toBe('especie');
+  });
+
   it('devolução de todo o saldo — quita o empréstimo, com o recado de quitado e sem ação', async () => {
     const { container } = await montar(<EmprestimosPage />);
 
