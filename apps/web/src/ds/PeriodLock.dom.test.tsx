@@ -37,6 +37,13 @@ const bloqueioReabrivel = (props: ComoReabrivel = {}) => (
 const caixaDoMotivo = (origem: ParentNode) => elemento<HTMLTextAreaElement>(origem, 'textarea');
 const botaoDeReabrir = (origem: ParentNode) => botaoComTexto(origem, ACAO_DE_REABRIR);
 
+const descricaoAcessivel = (campo: HTMLElement) =>
+  (campo.getAttribute('aria-describedby') ?? '')
+    .split(' ')
+    .filter(Boolean)
+    .map((id) => campo.ownerDocument.getElementById(id)?.textContent ?? '')
+    .join(' ');
+
 async function digitarNoMotivo(caixa: HTMLTextAreaElement, valor: string) {
   const definirValor = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value')?.set;
   await act(async () => {
@@ -381,6 +388,47 @@ describe('PeriodLock: o motivo da reabertura', () => {
     await clicar(botaoDeReabrir(montado.container));
     expect(primeiro).not.toHaveBeenCalled();
     expect(segundo.mock.calls[0]).toEqual([MOTIVO]);
+  });
+});
+
+describe('PeriodLock: o aviso de motivo obrigatório descreve o campo', () => {
+  it('sem motivo, a descrição acessível do campo é o aviso recebido', async () => {
+    const { container } = await montar(bloqueioReabrivel());
+    expect(descricaoAcessivel(caixaDoMotivo(container))).toBe(AVISO_DE_MOTIVO_OBRIGATORIO);
+  });
+
+  it('o campo aponta para o mesmo aviso que aparece abaixo do botão, no lugar de sempre', async () => {
+    const { container } = await montar(bloqueioReabrivel());
+    const aviso = folhaComTexto<HTMLSpanElement>(container, 'span', AVISO_DE_MOTIVO_OBRIGATORIO);
+    expect(aviso.id).not.toBe('');
+    expect(caixaDoMotivo(container).getAttribute('aria-describedby')).toBe(aviso.id);
+    expect(aviso.previousElementSibling).toBe(botaoDeReabrir(container));
+    expect(aviso.style.color).toBe('var(--color-attention)');
+  });
+
+  it('com o motivo escrito, o aviso sai e o campo deixa de apontar para ele', async () => {
+    const { container } = await montar(bloqueioReabrivel());
+    await digitarNoMotivo(caixaDoMotivo(container), MOTIVO);
+    expect(caixaDoMotivo(container).hasAttribute('aria-describedby')).toBe(false);
+  });
+
+  it('apagado o motivo, o aviso volta e o campo volta a apontar para ele', async () => {
+    const { container } = await montar(bloqueioReabrivel());
+    await digitarNoMotivo(caixaDoMotivo(container), MOTIVO);
+    await digitarNoMotivo(caixaDoMotivo(container), '');
+    expect(descricaoAcessivel(caixaDoMotivo(container))).toBe(AVISO_DE_MOTIVO_OBRIGATORIO);
+  });
+
+  it('dois bloqueios na mesma tela têm cada um o seu aviso, com ids diferentes', async () => {
+    const { container } = await montar(
+      <>
+        {bloqueioReabrivel({ reopenReasonRequiredNote: 'aviso de julho' })}
+        {bloqueioReabrivel({ reopenReasonRequiredNote: 'aviso de junho' })}
+      </>,
+    );
+    const [primeira, segunda] = todos<HTMLTextAreaElement>(container, 'textarea');
+    expect(primeira && descricaoAcessivel(primeira)).toBe('aviso de julho');
+    expect(segunda && descricaoAcessivel(segunda)).toBe('aviso de junho');
   });
 });
 

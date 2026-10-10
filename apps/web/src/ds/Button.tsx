@@ -34,6 +34,7 @@ export interface ButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement
   iconAfter?: boolean;
   /** Motivo exibido abaixo do botão quando ele está bloqueado. */
   blockedReason?: string;
+  blockedReasonId?: string;
 }
 
 export function Button({
@@ -45,6 +46,7 @@ export function Button({
   iconAfter = false,
   disabled = false,
   blockedReason,
+  blockedReasonId,
   style,
   ...rest
 }: ButtonProps) {
@@ -99,7 +101,10 @@ export function Button({
       }}
     >
       {btn}
-      <span style={{ font: 'var(--text-small)', color: 'var(--color-attention)', maxWidth: '46ch' }}>
+      <span
+        id={blockedReasonId}
+        style={{ font: 'var(--text-small)', color: 'var(--color-attention)', maxWidth: '46ch' }}
+      >
         {blockedReason}
       </span>
     </span>

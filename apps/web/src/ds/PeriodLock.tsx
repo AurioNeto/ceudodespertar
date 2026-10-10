@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import type { CSSProperties } from 'react';
 import { Button } from './Button';
 import { Icon } from './Icon';
@@ -38,6 +38,7 @@ interface ReopenWithReasonProps {
 
 function ReopenWithReason({ label, reasonLabel, reasonRequiredNote, onReopen }: ReopenWithReasonProps) {
   const [typedReason, setTypedReason] = useState('');
+  const reasonRequiredNoteId = useId();
   const reopenReason = typedReason.trim();
   const reasonMissing = reopenReason === '';
 
@@ -47,6 +48,7 @@ function ReopenWithReason({ label, reasonLabel, reasonRequiredNote, onReopen }: 
         label={reasonLabel}
         multiline
         aria-required="true"
+        aria-describedby={reasonMissing ? reasonRequiredNoteId : undefined}
         value={typedReason}
         onChange={(event) => setTypedReason(event.target.value)}
       />
@@ -56,6 +58,7 @@ function ReopenWithReason({ label, reasonLabel, reasonRequiredNote, onReopen }: 
           iconName="lock-open"
           disabled={reasonMissing}
           blockedReason={reasonRequiredNote}
+          blockedReasonId={reasonRequiredNoteId}
           onClick={() => onReopen(reopenReason)}
         >
           {label}
