@@ -10,7 +10,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "captura": "node captura/capturar.mjs",
-    "captura:comparar": "node captura/comparar.mjs"
+    "captura:comparar": "node captura/comparar.mjs",
+    "conferir-movimento": "node scripts/conferir-movimento.mjs"
   },
   "dependencies": {
     "@cdd/contracts": "workspace:*",
