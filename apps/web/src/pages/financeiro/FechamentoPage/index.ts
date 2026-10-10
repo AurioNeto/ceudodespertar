@@ -1,0 +1,1 @@
+export { FechamentoPage } from './FechamentoPage';

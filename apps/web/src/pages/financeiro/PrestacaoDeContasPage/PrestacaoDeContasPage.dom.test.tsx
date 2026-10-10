@@ -9,7 +9,7 @@ const cenario = vi.hoisted(() => ({
   periodos: (reaisDoMock: Periodos): Periodos => reaisDoMock,
 }));
 
-vi.mock('@/mocks/prestacao', async (importarOriginal) => {
+vi.mock('@/pages/financeiro/PrestacaoDeContasPage/mocks/prestacao', async (importarOriginal) => {
   const original = await importarOriginal<{ periodos: Periodos }>();
   return {
     ...original,

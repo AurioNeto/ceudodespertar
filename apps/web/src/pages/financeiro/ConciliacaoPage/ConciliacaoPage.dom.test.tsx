@@ -7,7 +7,7 @@ const cenario = vi.hoisted(() => ({
   lancamentos: (itens: readonly LancamentoAConciliar[]): readonly LancamentoAConciliar[] => itens,
 }));
 
-vi.mock('@/mocks/conciliacao', async (importarOriginal) => {
+vi.mock('@/pages/financeiro/ConciliacaoPage/mocks/conciliacao', async (importarOriginal) => {
   const original = await importarOriginal<{ lancamentosSozinhos: readonly LancamentoAConciliar[] }>();
   return {
     ...original,

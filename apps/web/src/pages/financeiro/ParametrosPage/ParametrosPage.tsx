@@ -14,7 +14,7 @@ import {
   Td,
   Th,
 } from '@/ds';
-import { formatarDinheiro, pluralizar } from '../../lib/formato';
+import { formatarDinheiro, pluralizar } from '@/lib/formato';
 import {
   categorias as categoriasIniciais,
   LINHAS_DE_RELATORIO,
@@ -22,7 +22,7 @@ import {
   unidades,
   type CategoriaDoPlano,
   type UnidadeDoPlano,
-} from '../../mocks/parametros';
+} from './mocks/parametros';
 
 type Aba = 'categorias' | 'unidades' | 'casa';
 

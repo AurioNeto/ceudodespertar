@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Button, Icon, ScreenHeader, useDensidade, Select } from '@/ds';
-import { formatarValor, pluralizar } from '../../lib/formato';
+import { formatarValor, pluralizar } from '@/lib/formato';
 import {
   CATEGORIAS_DE_ENTRADA,
   CATEGORIAS_DE_SAIDA,
@@ -9,10 +9,10 @@ import {
   GRUPOS,
   metasDeFundo,
   type LinhaDoRelatorio,
-} from '../../mocks/relatorios';
-import { GraficoSerie } from './GraficoSerie';
-import { PainelDeQuebra } from './PainelDeQuebra';
-import { corDoDelta, textoDoDelta, useRelatorio, type Comparacao, type Filtros, type Periodo } from './useRelatorio';
+} from './mocks/relatorios';
+import { GraficoSerie } from './components/GraficoSerie';
+import { PainelDeQuebra } from './components/PainelDeQuebra';
+import { corDoDelta, textoDoDelta, useRelatorio, type Comparacao, type Filtros, type Periodo } from './hooks/useRelatorio';
 
 interface Drill {
   rotulo: string;

@@ -1,0 +1,1 @@
+export { PainelDeQuebra } from './PainelDeQuebra';

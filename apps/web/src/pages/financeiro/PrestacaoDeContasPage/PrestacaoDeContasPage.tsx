@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import type { ReactNode } from 'react';
 import { Button, Icon, ScreenHeader, StatusBadge, useDensidade, Select, SeletorDeTipo, Recado, Rotulo } from '@/ds';
-import { formatarDinheiro } from '../../lib/formato';
+import { formatarDinheiro } from '@/lib/formato';
 import {
   gerarHash,
   historico as historicoInicial,
@@ -12,7 +12,7 @@ import {
   type LinhaDePrestacao,
   type NivelDeDetalhe,
   type PrestacaoGerada,
-} from '../../mocks/prestacao';
+} from './mocks/prestacao';
 
 export function PrestacaoDeContasPage() {
   const densidade = useDensidade();

@@ -1,0 +1,1 @@
+export { PrestacaoDeContasPage } from './PrestacaoDeContasPage';

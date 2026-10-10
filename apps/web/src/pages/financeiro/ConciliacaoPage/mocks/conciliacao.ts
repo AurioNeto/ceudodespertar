@@ -9,7 +9,7 @@ import type {
   SugestaoDeCasamento,
 } from '@cdd/contracts';
 import { dataHora, dataLocal, reais } from '@cdd/contracts';
-import { id } from './ids';
+import { id } from '@/mocks/ids';
 
 /**
  * Conciliação do extrato de setembro do Cora PJ.
