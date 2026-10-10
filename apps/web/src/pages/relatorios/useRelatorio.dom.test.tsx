@@ -1,11 +1,13 @@
 import { act } from 'react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { desmontarTudo, montar } from '@/testes/montagem';
-import { useRelatorio, type Comparacao, type Periodo } from './useRelatorio';
+import { useRelatorio } from './useRelatorio';
 
 afterEach(desmontarTudo);
 
 type Relatorio = ReturnType<typeof useRelatorio>;
+type Periodo = Relatorio['periodo'];
+type Comparacao = Relatorio['comparar'];
 
 async function montarRelatorio() {
   const captura: { atual: Relatorio | null } = { atual: null };

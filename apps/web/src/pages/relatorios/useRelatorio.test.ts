@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { corDoDelta, textoDoDelta, type Comparacao } from './useRelatorio';
+import { corDoDelta, textoDoDelta } from './useRelatorio';
+
+type Comparacao = Parameters<typeof textoDoDelta>[2];
 
 const COR_NEUTRA = 'var(--text-meta)';
 const COR_BOA = 'var(--color-confirmed)';
