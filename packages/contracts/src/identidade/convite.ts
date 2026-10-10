@@ -13,3 +13,7 @@ export type UsuarioConvidado = Omit<UsuarioListado, 'ultimoAcessoEm'>;
 export interface ConviteReenviado {
   readonly versao: number;
 }
+
+export interface UsuarioAtivado {
+  readonly situacao: 'ATIVO';
+}
