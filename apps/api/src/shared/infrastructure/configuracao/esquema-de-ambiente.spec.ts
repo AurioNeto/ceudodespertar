@@ -1,7 +1,12 @@
 import { describe, expect, it } from 'vitest';
+import { AMBIENTE_DO_KEYCLOAK_DE_TESTE } from '../../../../test/ambiente-de-teste.js';
 import { analisarAmbiente, ErroDeAmbienteInvalido } from './esquema-de-ambiente.js';
 
-const OIDC_VALIDO = { OIDC_EMISSOR: 'http://localhost:8080/realms/cdd', OIDC_AUDIENCIA: 'cdd-api' };
+const OIDC_VALIDO = {
+  OIDC_EMISSOR: 'http://localhost:8080/realms/cdd',
+  OIDC_AUDIENCIA: 'cdd-api',
+  ...AMBIENTE_DO_KEYCLOAK_DE_TESTE,
+};
 
 describe('analisarAmbiente', () => {
   it('aceita um ambiente válido e aplica os defaults', () => {
@@ -61,17 +66,40 @@ describe('analisarAmbiente', () => {
     }
   });
 
-  it('exige OIDC_EMISSOR e OIDC_AUDIENCIA', () => {
-    expect.assertions(3);
+  it.each(['OIDC_EMISSOR', 'OIDC_AUDIENCIA', ...Object.keys(AMBIENTE_DO_KEYCLOAK_DE_TESTE)])(
+    'exige %s',
+    (variavel) => {
+      expect.assertions(2);
 
-    try {
-      analisarAmbiente({});
-    } catch (erro) {
-      const problemas = (erro as ErroDeAmbienteInvalido).problemas;
-      expect(problemas).toHaveLength(2);
-      expect(problemas.some((problema) => problema.startsWith('OIDC_EMISSOR'))).toBe(true);
-      expect(problemas.some((problema) => problema.startsWith('OIDC_AUDIENCIA'))).toBe(true);
-    }
+      try {
+        analisarAmbiente({ ...OIDC_VALIDO, [variavel]: undefined });
+      } catch (erro) {
+        const problemas = (erro as ErroDeAmbienteInvalido).problemas;
+        expect(problemas).toHaveLength(1);
+        expect(problemas[0]?.startsWith(variavel)).toBe(true);
+      }
+    },
+  );
+
+  it.each(['KEYCLOAK_URL_BASE', 'APP_URL_BASE'])('recusa %s fora da forma canônica', (variavel) => {
+    expect(() => analisarAmbiente({ ...OIDC_VALIDO, [variavel]: 'https://app.exemplo.com/' })).toThrow(
+      ErroDeAmbienteInvalido,
+    );
+    expect(() => analisarAmbiente({ ...OIDC_VALIDO, [variavel]: 'http://app.exemplo.com' })).toThrow(
+      ErroDeAmbienteInvalido,
+    );
+  });
+
+  it.each(['KEYCLOAK_REALM', 'KEYCLOAK_ADMIN_CLIENT_ID', 'KEYCLOAK_CLIENT_ID_DO_CONVITE'])(
+    'recusa %s com barra ou espaço',
+    (variavel) => {
+      expect(() => analisarAmbiente({ ...OIDC_VALIDO, [variavel]: 'cdd/admin' })).toThrow(ErroDeAmbienteInvalido);
+      expect(() => analisarAmbiente({ ...OIDC_VALIDO, [variavel]: 'cdd admin' })).toThrow(ErroDeAmbienteInvalido);
+    },
+  );
+
+  it('recusa CDD_KC_ADMIN_SEGREDO vazio', () => {
+    expect(() => analisarAmbiente({ ...OIDC_VALIDO, CDD_KC_ADMIN_SEGREDO: '' })).toThrow(ErroDeAmbienteInvalido);
   });
 
   it.each([
