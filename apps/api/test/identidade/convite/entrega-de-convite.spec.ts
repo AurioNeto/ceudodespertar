@@ -68,20 +68,47 @@ describe('EntregaDeConvite', () => {
       return { liberar: () => liberar(), terminou: () => terminou, enviador };
     }
 
-    it('aguardarEntregas só resolve depois de o envio em voo terminar', async () => {
-      const { liberar, terminou, enviador } = enviadorQueSoTerminaQuandoLiberado();
+    const ESPERA_PARA_CONFIRMAR_QUE_NAO_RESOLVEU_EM_MS = 20;
+
+    async function enviarSemTerminar() {
+      const parcial = enviadorQueSoTerminaQuandoLiberado();
       const unidade = new UnidadeDeTrabalhoComGanchos();
-      const entrega = new EntregaDeConvite(enviador);
+      const entrega = new EntregaDeConvite(parcial.enviador);
       await unidade.transacao('escrita', (contexto) => Promise.resolve(entrega.depoisDoCommit(contexto, CONVITE)));
       unidade.confirmar();
+      return { ...parcial, entrega };
+    }
 
-      const espera = entrega.aguardarEntregas();
-      await Promise.resolve();
-      expect(terminou()).toBe(false);
+    async function resolveuAntesDeLiberar(esperar: () => Promise<void>, liberar: () => void): Promise<boolean> {
+      let resolveu = false;
+      const espera = esperar().then(() => {
+        resolveu = true;
+      });
+      await new Promise((resolver) => setTimeout(resolver, ESPERA_PARA_CONFIRMAR_QUE_NAO_RESOLVEU_EM_MS));
+      const resolveuCedo = resolveu;
       liberar();
       await espera;
+      return resolveuCedo;
+    }
 
+    it('aguardarEntregas só resolve depois de o envio em voo terminar', async () => {
+      const { liberar, terminou, entrega } = await enviarSemTerminar();
+
+      const resolveuCedo = await resolveuAntesDeLiberar(() => entrega.aguardarEntregas(), liberar);
+
+      expect(resolveuCedo).toBe(false);
       expect(terminou()).toBe(true);
+    });
+
+    it('esquece a entrega concluída, sem acumular promessas', async () => {
+      const { liberar, entrega } = await enviarSemTerminar();
+      expect(Reflect.get(entrega, 'entregasEmVoo')).toHaveProperty('size', 1);
+
+      liberar();
+      await entrega.aguardarEntregas();
+      await Promise.resolve();
+
+      expect(Reflect.get(entrega, 'entregasEmVoo')).toHaveProperty('size', 0);
     });
 
     it('aguardarEntregas resolve também quando o envio falha', async () => {
@@ -101,16 +128,11 @@ describe('EntregaDeConvite', () => {
     });
 
     it('o encerramento do módulo aguarda as entregas em voo', async () => {
-      const { liberar, terminou, enviador } = enviadorQueSoTerminaQuandoLiberado();
-      const unidade = new UnidadeDeTrabalhoComGanchos();
-      const entrega = new EntregaDeConvite(enviador);
-      await unidade.transacao('escrita', (contexto) => Promise.resolve(entrega.depoisDoCommit(contexto, CONVITE)));
-      unidade.confirmar();
+      const { liberar, terminou, entrega } = await enviarSemTerminar();
 
-      const encerramento = entrega.onModuleDestroy();
-      liberar();
-      await encerramento;
+      const resolveuCedo = await resolveuAntesDeLiberar(() => entrega.onModuleDestroy(), liberar);
 
+      expect(resolveuCedo).toBe(false);
       expect(terminou()).toBe(true);
     });
   });

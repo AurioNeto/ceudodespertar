@@ -20,10 +20,7 @@ export class EntregaDeConvite implements OnModuleDestroy {
   }
 
   async aguardarEntregas(): Promise<void> {
-    while (this.entregasEmVoo.size > 0) {
-      // eslint-disable-next-line no-await-in-loop -- entregas podem surgir enquanto se aguarda
-      await Promise.allSettled(this.entregasEmVoo);
-    }
+    await Promise.allSettled(this.entregasEmVoo);
   }
 
   onModuleDestroy(): Promise<void> {
