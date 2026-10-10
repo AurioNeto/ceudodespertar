@@ -371,20 +371,6 @@
   {
     "type": "dependency",
     "from": "apps/web/src/app/router.tsx",
-    "to": "apps/web/src/pages/lancamento/RegistrarLancamentoPage.tsx",
-    "unresolvedTo": "../pages/lancamento/RegistrarLancamentoPage",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/app/router.tsx",
     "to": "apps/web/src/pages/painel/PainelPage.tsx",
     "unresolvedTo": "../pages/painel/PainelPage",
     "dependencyTypes": [
@@ -443,48 +429,6 @@
     "from": "apps/web/src/app/router.tsx",
     "to": "apps/web/src/pages/publico/InscricaoPublicaPage.tsx",
     "unresolvedTo": "../pages/publico/InscricaoPublicaPage",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/app/router.tsx",
-    "to": "apps/web/src/pages/registros/LancamentosPage.tsx",
-    "unresolvedTo": "../pages/registros/LancamentosPage",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/app/router.tsx",
-    "to": "apps/web/src/pages/registros/MeusRegistrosPage.tsx",
-    "unresolvedTo": "../pages/registros/MeusRegistrosPage",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/app/router.tsx",
-    "to": "apps/web/src/pages/verificacao/VerificacaoLotePage.tsx",
-    "unresolvedTo": "../pages/verificacao/VerificacaoLotePage",
     "dependencyTypes": [
       "local",
       "import"
@@ -610,70 +554,11 @@
   },
   {
     "type": "dependency",
-    "from": "apps/web/src/components/Paginacao.tsx",
-    "to": "apps/web/src/ds/index.ts",
-    "unresolvedTo": "../ds",
-    "dependencyTypes": [
-      "local",
-      "type-only",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
     "from": "apps/web/src/components/PermissoesPorModulo.tsx",
     "to": "apps/web/src/lib/permissoesAgrupadas.ts",
     "unresolvedTo": "../lib/permissoesAgrupadas",
     "dependencyTypes": [
       "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/lib/recibo.ts",
-    "to": "apps/web/src/ds/index.ts",
-    "unresolvedTo": "../ds",
-    "dependencyTypes": [
-      "local",
-      "type-only",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/lib/recibo.ts",
-    "to": "apps/web/src/mocks/lancamentos.ts",
-    "unresolvedTo": "../mocks/lancamentos",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/mocks/opcoes.ts",
-    "to": "apps/web/src/ds/index.ts",
-    "unresolvedTo": "../ds",
-    "dependencyTypes": [
-      "local",
-      "type-only",
       "import"
     ],
     "rule": {
@@ -1697,62 +1582,6 @@
   },
   {
     "type": "dependency",
-    "from": "apps/web/src/pages/lancamento/RegistrarLancamentoPage.tsx",
-    "to": "apps/web/src/app/sessao.tsx",
-    "unresolvedTo": "../../app/sessao",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/lancamento/RegistrarLancamentoPage.tsx",
-    "to": "apps/web/src/components/Campo.tsx",
-    "unresolvedTo": "../../components/Campo",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/lancamento/RegistrarLancamentoPage.tsx",
-    "to": "apps/web/src/mocks/opcoes.ts",
-    "unresolvedTo": "../../mocks/opcoes",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/lancamento/useFormularioDeLancamento.ts",
-    "to": "apps/web/src/mocks/opcoes.ts",
-    "unresolvedTo": "../../mocks/opcoes",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
     "from": "apps/web/src/pages/painel/GraficoEstoque.tsx",
     "to": "apps/web/src/ds/index.ts",
     "unresolvedTo": "../../ds",
@@ -2120,202 +1949,6 @@
     "from": "apps/web/src/pages/publico/InscricaoPublicaPage.tsx",
     "to": "apps/web/src/mocks/inscricaoPublica.ts",
     "unresolvedTo": "../../mocks/inscricaoPublica",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/registros/LancamentosPage.tsx",
-    "to": "apps/web/src/components/Paginacao.tsx",
-    "unresolvedTo": "../../components/Paginacao",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/registros/LancamentosPage.tsx",
-    "to": "apps/web/src/lib/formato.ts",
-    "unresolvedTo": "../../lib/formato",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/registros/LancamentosPage.tsx",
-    "to": "apps/web/src/lib/recibo.ts",
-    "unresolvedTo": "../../lib/recibo",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/registros/LancamentosPage.tsx",
-    "to": "apps/web/src/mocks/lancamentos.ts",
-    "unresolvedTo": "../../mocks/lancamentos",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/registros/MeusRegistrosPage.tsx",
-    "to": "apps/web/src/components/Paginacao.tsx",
-    "unresolvedTo": "../../components/Paginacao",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/registros/MeusRegistrosPage.tsx",
-    "to": "apps/web/src/lib/formato.ts",
-    "unresolvedTo": "../../lib/formato",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/registros/MeusRegistrosPage.tsx",
-    "to": "apps/web/src/lib/recibo.ts",
-    "unresolvedTo": "../../lib/recibo",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/registros/MeusRegistrosPage.tsx",
-    "to": "apps/web/src/mocks/lancamentos.ts",
-    "unresolvedTo": "../../mocks/lancamentos",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/verificacao/PainelDeRevisao.tsx",
-    "to": "apps/web/src/ds/index.ts",
-    "unresolvedTo": "../../ds",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/verificacao/PainelDeRevisao.tsx",
-    "to": "apps/web/src/lib/formato.ts",
-    "unresolvedTo": "../../lib/formato",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/verificacao/PainelDeRevisao.tsx",
-    "to": "apps/web/src/mocks/verificacao.ts",
-    "unresolvedTo": "../../mocks/verificacao",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/verificacao/VerificacaoLotePage.tsx",
-    "to": "apps/web/src/ds/index.ts",
-    "unresolvedTo": "../../ds",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/verificacao/VerificacaoLotePage.tsx",
-    "to": "apps/web/src/lib/formato.ts",
-    "unresolvedTo": "../../lib/formato",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/verificacao/VerificacaoLotePage.tsx",
-    "to": "apps/web/src/mocks/verificacao.ts",
-    "unresolvedTo": "../../mocks/verificacao",
     "dependencyTypes": [
       "local",
       "import"
@@ -2727,35 +2360,6 @@
   },
   {
     "type": "dependency",
-    "from": "apps/web/src/lib/recibo.ts",
-    "to": "apps/web/src/ds/index.ts",
-    "unresolvedTo": "../ds",
-    "dependencyTypes": [
-      "local",
-      "type-only",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "lib-e-folha"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/lib/recibo.ts",
-    "to": "apps/web/src/mocks/lancamentos.ts",
-    "unresolvedTo": "../mocks/lancamentos",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "lib-e-folha"
-    }
-  },
-  {
-    "type": "dependency",
     "from": "apps/web/src/lib/useValorComAtraso.ts",
     "to": "node_modules/.pnpm/react@19.2.8/node_modules/react/index.js",
     "unresolvedTo": "react",
@@ -2766,21 +2370,6 @@
     "rule": {
       "severity": "error",
       "name": "lib-e-folha"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/mocks/opcoes.ts",
-    "to": "apps/web/src/ds/index.ts",
-    "unresolvedTo": "../ds",
-    "dependencyTypes": [
-      "local",
-      "type-only",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "mock-global-so-dados"
     }
   },
   {
@@ -3027,10 +2616,13 @@
   },
   {
     "type": "dependency",
-    "from": "apps/web/src/pages/lancamento/RegistrarLancamentoPage.tsx",
+    "from": "apps/web/src/pages/financeiro/lancamentos/RegistrarLancamentoPage/RegistrarLancamentoPage.tsx",
     "to": "apps/web/src/app/sessao.tsx",
-    "unresolvedTo": "../../app/sessao",
+    "unresolvedTo": "@/app/sessao",
     "dependencyTypes": [
+      "aliased",
+      "aliased-tsconfig",
+      "aliased-tsconfig-paths",
       "local",
       "import"
     ],
@@ -3093,20 +2685,6 @@
     "rule": {
       "severity": "error",
       "name": "paginas-so-pela-api-publica-do-app"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/lib/recibo.ts",
-    "to": "apps/web/src/mocks/lancamentos.ts",
-    "unresolvedTo": "../mocks/lancamentos",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "producao-global-sem-mock"
     }
   },
   {
@@ -3266,20 +2844,6 @@
   {
     "type": "dependency",
     "from": "apps/web/src/app/router.tsx",
-    "to": "apps/web/src/pages/lancamento/RegistrarLancamentoPage.tsx",
-    "unresolvedTo": "../pages/lancamento/RegistrarLancamentoPage",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "roteador-so-pelo-index-da-pagina"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/app/router.tsx",
     "to": "apps/web/src/pages/painel/PainelPage.tsx",
     "unresolvedTo": "../pages/painel/PainelPage",
     "dependencyTypes": [
@@ -3338,48 +2902,6 @@
     "from": "apps/web/src/app/router.tsx",
     "to": "apps/web/src/pages/publico/InscricaoPublicaPage.tsx",
     "unresolvedTo": "../pages/publico/InscricaoPublicaPage",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "roteador-so-pelo-index-da-pagina"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/app/router.tsx",
-    "to": "apps/web/src/pages/registros/LancamentosPage.tsx",
-    "unresolvedTo": "../pages/registros/LancamentosPage",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "roteador-so-pelo-index-da-pagina"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/app/router.tsx",
-    "to": "apps/web/src/pages/registros/MeusRegistrosPage.tsx",
-    "unresolvedTo": "../pages/registros/MeusRegistrosPage",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "roteador-so-pelo-index-da-pagina"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/app/router.tsx",
-    "to": "apps/web/src/pages/verificacao/VerificacaoLotePage.tsx",
-    "unresolvedTo": "../pages/verificacao/VerificacaoLotePage",
     "dependencyTypes": [
       "local",
       "import"
