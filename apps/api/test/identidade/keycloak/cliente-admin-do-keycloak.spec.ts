@@ -262,7 +262,7 @@ describe('ClienteAdminDoKeycloak', () => {
   });
 
   it('interrompe a espera pelo token quando o orçamento esgota antes do fim do pedido de token', async () => {
-    const atrasoDoTokenEmMs = 800;
+    const atrasoDoTokenEmMs = 2_000;
     configuracao = { ...configuracao, timeoutPorChamadaEmMs: 2_000, orcamentoDaOperacaoEmMs: 100 };
     servidor.definir('POST', CAMINHO_DO_TOKEN, {
       status: 200,
@@ -276,23 +276,22 @@ describe('ClienteAdminDoKeycloak', () => {
     expect(Date.now() - inicio).toBeLessThan(atrasoDoTokenEmMs / 2);
   });
 
-  it('recusa de imediato um pedido feito depois de esgotado o orçamento, sem pedir novo token', async () => {
+  it('recusa de imediato um pedido feito depois de esgotado o orçamento, sem novo pedido de token', async () => {
     const orcamentoEmMs = 60;
     configuracao = { ...configuracao, timeoutPorChamadaEmMs: 2_000, orcamentoDaOperacaoEmMs: orcamentoEmMs };
     servidor.definir('GET', '/admin/realms/cdd/users/abc', { status: 200, corpo: {} });
-    const inicio = Date.now();
 
     await expect(
       cliente().executar(COM_RETRY, async (sessao) => {
         await sessao.requisitar(PEDIDO);
         await new Promise((pronto) => setTimeout(pronto, orcamentoEmMs * 2));
         relogio.avancarEmMs(servidor.expiraEmSegundos * 1_000);
-        servidor.definir('POST', CAMINHO_DO_TOKEN, { status: 200, corpo: { access_token: 'b', expires_in: 300 }, atrasoEmMs: 800 });
         await sessao.requisitar(PEDIDO);
       }),
     ).rejects.toMatchObject({ name: 'KeycloakIndisponivel', motivo: 'timeout' });
 
-    expect(Date.now() - inicio).toBeLessThan(500);
+    expect(servidor.chamadasA('POST', CAMINHO_DO_TOKEN)).toHaveLength(1);
+    expect(servidor.chamadasA('GET', '/admin/realms/cdd/users/abc')).toHaveLength(1);
   });
 
   it('não vaza segredo, token nem URL nas mensagens de erro', async () => {

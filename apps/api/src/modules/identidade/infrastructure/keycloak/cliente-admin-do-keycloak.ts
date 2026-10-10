@@ -78,6 +78,7 @@ export class ClienteAdminDoKeycloak {
   }
 
   private async enviar(contexto: ContextoDaOperacao, pedido: PedidoAoKeycloak): Promise<RespostaDoKeycloak> {
+    if (contexto.orcamento.aborted) throw new KeycloakIndisponivel('timeout');
     const token = await aguardarAte(this.obterToken(), contexto.orcamento);
     const cabecalhos: Record<string, string> = { authorization: `Bearer ${token}` };
     if (pedido.corpo !== undefined) cabecalhos['content-type'] = 'application/json';
@@ -167,11 +168,11 @@ function lerJson(texto: string): unknown {
 function aguardarAte<T>(promessa: Promise<T>, sinal: AbortSignal): Promise<T> {
   return new Promise<T>((resolver, rejeitar) => {
     const estourou = (): void => rejeitar(new KeycloakIndisponivel('timeout'));
+    promessa.then(resolver, rejeitar).finally(() => sinal.removeEventListener('abort', estourou));
     if (sinal.aborted) {
       estourou();
       return;
     }
     sinal.addEventListener('abort', estourou, { once: true });
-    promessa.then(resolver, rejeitar).finally(() => sinal.removeEventListener('abort', estourou));
   });
 }
