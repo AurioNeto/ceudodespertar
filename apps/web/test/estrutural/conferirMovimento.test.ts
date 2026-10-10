@@ -888,6 +888,9 @@ describe('conferir-movimento', { timeout: TEMPO_DO_CENARIO_EM_MS }, () => {
       expect(resultado.saida).toContain('Falha com saída 1 se houver mudança não commitada em apps/web/src');
       expect(resultado.saida).toContain('Provado, com a leitura feita pelo compilador do TypeScript');
       expect(resultado.saida).toContain('Não provado:');
+      expect(resultado.saida.replaceAll(/\s+/g, ' ')).toContain(
+        'ajudante de teste repetido e idêntico a um ajudante de teste da base, em arquivo de teste movido',
+      );
     });
 
     it('conta as diferenças e sai com 1 quando falha', () => {

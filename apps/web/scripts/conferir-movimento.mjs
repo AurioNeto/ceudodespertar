@@ -12,13 +12,17 @@ que a mudança é só de caminho. Falha com saída 1 se houver mudança não com
 (git status --porcelain), porque o que não foi commitado não entra na comparação.
 
 Provado, com a leitura feita pelo compilador do TypeScript:
-  1. renomeações sem diferença de conteúdo fora das linhas de import e de export ... from;
+  1. renomeações sem diferença de conteúdo fora das linhas de import e de export ... from, com cada
+     import(), import type e vi.mock apontando para o mesmo módulo dentro da mesma declaração;
   2. declarações de topo repartidas entre arquivos com o mesmo nome e o mesmo hash de corpo, sem
-     declaração nova nem perdida (o modificador export não entra no hash);
+     declaração nova nem perdida (o modificador export não entra no hash; o módulo alvo de cada import(),
+     import type e vi.mock da declaração entra);
   3. cada ligação de import (nome, alias, type, namespace, efeito, require) e cada referência de módulo
      (import(), import type, vi.mock) continua apontando para a mesma declaração ou módulo, resolvida
      pelo tsconfig do web, seguindo reexports e passando pelo mapa de renomeações e repartições; o
-     arquivo apagado que não deixou destino perde as suas ligações, e isso é acusado;
+     arquivo apagado que não deixou destino perde as suas ligações, e isso é acusado; import { type X }
+     conta como import de efeito, porque com verbatimModuleSyntax ele emite import {} from, e por isso
+     difere de import type { X };
   4. cada arquivo exporta os mesmos nomes (barrels incluídos) apontando para as mesmas declarações;
      uma declaração privada só passa a ser exportada se outro arquivo do HEAD a importa;
   5. o index.ts novo só reexporta nomes que a base já exportava, com o mesmo alvo.
@@ -26,8 +30,10 @@ Provado, com a leitura feita pelo compilador do TypeScript:
 Não provado: a ordem das linhas de import e de export ... from; comentários que acompanham essas linhas
 ou que ficam fora do corpo de declarações repartidas; caminhos de arquivos que não são código (a ligação
 por import de css e por alias não resolvido compara o texto do caminho); import() e vi.mock com argumento
-que não é literal, require() fora de import x = require(), import.meta.glob; o comportamento em tempo de
-execução e tudo fora de apps/web/src.
+que não é literal, require() fora de import x = require(), import.meta.glob; ajudante de teste repetido
+e idêntico a um ajudante de teste da base, em arquivo de teste movido; export { type X } from no lugar de
+export type { X } from, que também emite export {} from; o comportamento em tempo de execução e tudo
+fora de apps/web/src.
 
 --pares aponta um JSON com renomes que trocam de nome, que a similaridade do git pode não casar:
 {
