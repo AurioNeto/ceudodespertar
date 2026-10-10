@@ -7,9 +7,27 @@ const BASE_PADRAO = 'origin/main';
 const TAMANHO_DO_SHA_CURTO = 10;
 const USO = `uso: node scripts/conferir-movimento.mjs [--base <ref>] [--pares <arquivo.json>]
 
-Compara o HEAD com o merge-base da base (padrão ${BASE_PADRAO}) em apps/web/src e prova que a
-mudança é só de caminho: renomeações sem diferença fora das linhas de import e de export ... from,
-declarações de topo repartidas com o mesmo nome e o mesmo hash de corpo, nenhuma declaração nova.
+Compara o HEAD com o merge-base da base (padrão ${BASE_PADRAO}) em apps/web/src, só pelos commits, e prova
+que a mudança é só de caminho. Falha com saída 1 se houver mudança não commitada em apps/web/src
+(git status --porcelain), porque o que não foi commitado não entra na comparação.
+
+Provado, com a leitura feita pelo compilador do TypeScript:
+  1. renomeações sem diferença de conteúdo fora das linhas de import e de export ... from;
+  2. declarações de topo repartidas entre arquivos com o mesmo nome e o mesmo hash de corpo, sem
+     declaração nova nem perdida (o modificador export não entra no hash);
+  3. cada ligação de import (nome, alias, type, namespace, efeito, require) e cada referência de módulo
+     (import(), import type, vi.mock) continua apontando para a mesma declaração ou módulo, resolvida
+     pelo tsconfig do web, seguindo reexports e passando pelo mapa de renomeações e repartições; o
+     arquivo apagado que não deixou destino perde as suas ligações, e isso é acusado;
+  4. cada arquivo exporta os mesmos nomes (barrels incluídos) apontando para as mesmas declarações;
+     uma declaração privada só passa a ser exportada se outro arquivo do HEAD a importa;
+  5. o index.ts novo só reexporta nomes que a base já exportava, com o mesmo alvo.
+
+Não provado: a ordem das linhas de import e de export ... from; comentários que acompanham essas linhas
+ou que ficam fora do corpo de declarações repartidas; caminhos de arquivos que não são código (a ligação
+por import de css e por alias não resolvido compara o texto do caminho); import() e vi.mock com argumento
+que não é literal, require() fora de import x = require(), import.meta.glob; o comportamento em tempo de
+execução e tudo fora de apps/web/src.
 
 --pares aponta um JSON com renomes que trocam de nome, que a similaridade do git pode não casar:
 {
@@ -52,7 +70,7 @@ function linhasConferidas({ renomeacoes, repartidas, barrels }) {
   ];
 }
 
-function resumo({ arquivosNaDiferenca, renomeacoes, repartidas, barrels }) {
+function resumo({ arquivosNaDiferenca, renomeacoes, repartidas, barrels, ligacoes }) {
   const declaracoes = repartidas.reduce((total, { nomes }) => total + nomes.length, 0);
 
   return [
@@ -60,6 +78,7 @@ function resumo({ arquivosNaDiferenca, renomeacoes, repartidas, barrels }) {
     `${renomeacoes.length} renomeações`,
     `${declaracoes} declarações repartidas`,
     `${barrels.length} barrels novos`,
+    `${ligacoes} ligações conferidas`,
   ].join(', ');
 }
 

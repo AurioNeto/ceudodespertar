@@ -17,7 +17,7 @@ export const ehCodigo = (caminho) => EXTENSAO_DE_CODIGO.test(caminho);
 
 export const ehArquivoDeTeste = (caminho) => EXTENSAO_DE_ARQUIVO_DE_TESTE.test(caminho);
 
-const lerArquivo = (caminho, conteudo) =>
+export const lerArquivo = (caminho, conteudo) =>
   ts.createSourceFile(caminho, conteudo, ts.ScriptTarget.Latest, true);
 
 const ehImportDeModulo = (statement) =>
@@ -64,13 +64,13 @@ const mascaraDe = (arquivo, no, substituto) => ({
   substituto,
 });
 
-function mascarasDeEspecificadores(arquivo) {
-  const mascaras = [];
+export function especificadoresDeModulo(arquivo) {
+  const especificadores = [];
   const visitar = (no) => {
     const especificador = especificadorDoNo(no);
 
     if (especificador) {
-      mascaras.push(mascaraDe(arquivo, especificador, SUBSTITUTO_DO_ESPECIFICADOR));
+      especificadores.push(especificador);
     }
 
     ts.forEachChild(no, visitar);
@@ -78,8 +78,13 @@ function mascarasDeEspecificadores(arquivo) {
 
   visitar(arquivo);
 
-  return mascaras;
+  return especificadores;
 }
+
+const mascarasDeEspecificadores = (arquivo) =>
+  especificadoresDeModulo(arquivo).map((especificador) =>
+    mascaraDe(arquivo, especificador, SUBSTITUTO_DO_ESPECIFICADOR),
+  );
 
 function aplicarMascaras(texto, inicio, fim, mascaras) {
   const dentroDoTrecho = mascaras
@@ -148,6 +153,34 @@ function nomesDeVariaveis(arquivo, statement) {
     .join(', ');
 }
 
+const ehDeclaracaoPadraoSemNome = (statement) =>
+  ts.isExportAssignment(statement) ||
+  ((ts.isFunctionDeclaration(statement) || ts.isClassDeclaration(statement)) && !statement.name);
+
+function nomesDoBinding(nome) {
+  return ts.isIdentifier(nome)
+    ? [nome.text]
+    : nome.elements.flatMap((elemento) =>
+        ts.isOmittedExpression(elemento) ? [] : nomesDoBinding(elemento.name),
+      );
+}
+
+export function nomesDeclarados(statement) {
+  if (ts.isVariableStatement(statement)) {
+    return statement.declarationList.declarations.flatMap((declaracao) =>
+      nomesDoBinding(declaracao.name),
+    );
+  }
+
+  const noDoNome = nomeDeDeclaracaoNomeada(statement);
+
+  if (noDoNome) {
+    return [noDoNome.text];
+  }
+
+  return ehDeclaracaoPadraoSemNome(statement) ? [NOME_DA_EXPORTACAO_PADRAO] : [];
+}
+
 function identificar(arquivo, statement) {
   const nomeDoTeste = nomeDaChamadaDeTeste(arquivo, statement);
 
@@ -165,12 +198,8 @@ function identificar(arquivo, statement) {
     return { nome: nomesDeVariaveis(arquivo, statement), chamadaDeTeste: false };
   }
 
-  const ehExportacaoPadraoSemNome =
-    ts.isExportAssignment(statement) ||
-    ((ts.isFunctionDeclaration(statement) || ts.isClassDeclaration(statement)) && !statement.name);
-
   return {
-    nome: ehExportacaoPadraoSemNome ? NOME_DA_EXPORTACAO_PADRAO : undefined,
+    nome: ehDeclaracaoPadraoSemNome(statement) ? NOME_DA_EXPORTACAO_PADRAO : undefined,
     chamadaDeTeste: false,
   };
 }
@@ -197,6 +226,7 @@ function criarDeclaracao(arquivo, statement, mascaras) {
     emTeste: ehArquivoDeTeste(arquivo.fileName),
     nome: nome ?? primeiraLinha(corpo),
     hash: resumir(corpo),
+    simbolos: nomesDeclarados(statement),
     chamadaDeTeste,
   };
 }

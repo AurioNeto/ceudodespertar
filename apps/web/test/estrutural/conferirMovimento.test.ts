@@ -1,124 +1,23 @@
-import { spawnSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, renameSync, rmSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { writeFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
-
-const DIRETORIO_DO_TESTE = dirname(fileURLToPath(import.meta.url));
-const SCRIPT_DO_VERIFICADOR = join(DIRETORIO_DO_TESTE, '..', '..', 'scripts', 'conferir-movimento.mjs');
-const PASTA_DO_SRC = 'apps/web/src';
-const CODIGO_DE_SUCESSO = 0;
-const CODIGO_DE_FALHA = 1;
-const TEMPO_DO_CENARIO_EM_MS = 30_000;
-const OPCOES_DO_GIT = [
-  '-c',
-  'user.name=Teste',
-  '-c',
-  'user.email=teste@example.com',
-  '-c',
-  'commit.gpgsign=false',
-  '-c',
-  'core.hooksPath=/dev/null',
-];
-
-interface Resultado {
-  codigo: number | null;
-  saida: string;
-  erro: string;
-}
-
-interface Repositorio {
-  raiz: string;
-  escrever: (arquivos: Record<string, string>) => void;
-  mover: (de: string, para: string) => void;
-  apagar: (caminho: string) => void;
-  commitar: (mensagem: string) => string;
-}
-
-interface Cenario {
-  base: Record<string, string>;
-  depois: (repositorio: Repositorio) => void;
-  argumentos?: string[];
-  pares?: unknown;
-}
-
-const repositoriosCriados: string[] = [];
-
-const emSrc = (caminho: string): string => `${PASTA_DO_SRC}/${caminho}`;
-
-const renomeacaoConferida = (de: string, para: string): string =>
-  `renomeação: ${emSrc(de)} -> ${emSrc(para)}`;
-
-const renomeacaoComDiferenca = (de: string, para: string): string =>
-  `renomeação com diferença fora das linhas de import: ${emSrc(de)} -> ${emSrc(para)}`;
-
-const arquivoNovoSemOrigem = (caminho: string, declaracoes?: string): string =>
-  `arquivo novo sem origem: ${emSrc(caminho)}${declaracoes ? ` (declarações: ${declaracoes})` : ''}`;
-
-const codigo = (...linhas: string[]): string => `${linhas.join('\n')}\n`;
-
-function executarGit(raiz: string, argumentos: string[]): string {
-  const resultado = spawnSync('git', [...OPCOES_DO_GIT, ...argumentos], { cwd: raiz, encoding: 'utf8' });
-
-  if (resultado.status !== CODIGO_DE_SUCESSO) {
-    throw new Error(`git ${argumentos.join(' ')}: ${resultado.stderr}`);
-  }
-
-  return resultado.stdout.trim();
-}
-
-function criarRepositorio(): Repositorio {
-  const raiz = mkdtempSync(join(tmpdir(), 'conferir-movimento-'));
-  repositoriosCriados.push(raiz);
-  executarGit(raiz, ['init', '--quiet']);
-  executarGit(raiz, ['config', 'diff.renames', 'false']);
-
-  const caminhoNoDisco = (caminho: string): string => join(raiz, emSrc(caminho));
-
-  return {
-    raiz,
-    escrever: (arquivos) => {
-      for (const [caminho, conteudo] of Object.entries(arquivos)) {
-        mkdirSync(dirname(caminhoNoDisco(caminho)), { recursive: true });
-        writeFileSync(caminhoNoDisco(caminho), conteudo);
-      }
-    },
-    mover: (de, para) => {
-      mkdirSync(dirname(caminhoNoDisco(para)), { recursive: true });
-      renameSync(caminhoNoDisco(de), caminhoNoDisco(para));
-    },
-    apagar: (caminho) => rmSync(caminhoNoDisco(caminho)),
-    commitar: (mensagem) => {
-      executarGit(raiz, ['add', '--all']);
-      executarGit(raiz, ['commit', '--quiet', '--allow-empty', '--message', mensagem]);
-      return executarGit(raiz, ['rev-parse', 'HEAD']);
-    },
-  };
-}
-
-function executarCenario({ base, depois, argumentos, pares }: Cenario): Resultado {
-  const repositorio = criarRepositorio();
-  repositorio.escrever(base);
-  const shaDaBase = repositorio.commitar('base');
-  depois(repositorio);
-  repositorio.commitar('depois');
-
-  const argumentosDoPares = pares === undefined ? [] : ['--pares', escreverPares(repositorio.raiz, pares)];
-  const resultado = spawnSync(
-    process.execPath,
-    [SCRIPT_DO_VERIFICADOR, ...(argumentos ?? ['--base', shaDaBase]), ...argumentosDoPares],
-    { cwd: repositorio.raiz, encoding: 'utf8' },
-  );
-
-  return { codigo: resultado.status, saida: resultado.stdout, erro: resultado.stderr };
-}
-
-function escreverPares(raiz: string, pares: unknown): string {
-  const caminho = join(raiz, 'pares.json');
-  writeFileSync(caminho, JSON.stringify(pares));
-  return caminho;
-}
+import {
+  arquivoNovoSemOrigem,
+  CODIGO_DE_FALHA,
+  CODIGO_DE_SUCESSO,
+  codigo,
+  criarRepositorio,
+  emSrc,
+  executarCenario,
+  executarGit,
+  executarVerificador,
+  removerRepositoriosCriados,
+  renomeacaoComDiferenca,
+  renomeacaoConferida,
+  type Repositorio,
+  TEMPO_DO_CENARIO_EM_MS,
+  trocar,
+} from './apoioDoConferirMovimento';
 
 const SOMA = codigo('export const soma = (a: number, b: number): number => a + b;');
 
@@ -132,7 +31,7 @@ const CALCULO = codigo(
 
 const CALCULO_COM_IMPORT_NOVO = CALCULO.replace("'./soma'", "'../soma'");
 
-const CALCULO_COM_CORPO_TROCADO = CALCULO.replace('soma(valor, valor)', 'soma(valor, 1)');
+const CALCULO_COM_CORPO_TROCADO = CALCULO_COM_IMPORT_NOVO.replace('soma(valor, valor)', 'soma(valor, 1)');
 
 const CONSUMIDOR = codigo(
   "import { dobro } from './calculo';",
@@ -168,6 +67,17 @@ const SOMAR_EM_ARQUIVO_PROPRIO = codigo(
   '  return soma(a, b);',
   '}',
 );
+
+const SOMAR_EM_OUTRA_PASTA = SOMAR_EM_ARQUIVO_PROPRIO.replace("'./soma'", "'../soma'");
+
+const ESTADOS = codigo(
+  "export const Alfa = (): string => 'alfa';",
+  "export const Beta = (): string => 'beta';",
+);
+
+const ALFA = codigo("export const Alfa = (): string => 'alfa';");
+
+const BETA = codigo("export const Beta = (): string => 'beta';");
 
 const TESTE_DE_ESTADOS = codigo(
   "import { afterEach, describe, expect, it } from 'vitest';",
@@ -219,21 +129,58 @@ const TESTE_DA_BETA_COM_CORPO_TROCADO = codigo(
 
 const BARREL_DO_CALCULO = codigo("export { dobro } from './calculo';");
 
-afterEach(() => {
-  repositoriosCriados.splice(0).forEach((raiz) => rmSync(raiz, { recursive: true, force: true }));
-});
+const CSS_DA_MARCA = codigo(
+  ':root {',
+  '  --cor-primaria: #1a3a5c;',
+  '  --cor-secundaria: #c8a24a;',
+  '  --raio: 8px;',
+  '  --espaco: 16px;',
+  '}',
+);
+
+const COM_LISTA_DE_EXPORTACAO = codigo(
+  'const a = 1;',
+  'const b = 2;',
+  '',
+  'export const soma = a + b;',
+  'export { a, b };',
+);
+
+const COM_NOTA_FINAL = codigo('export const a = 1;', 'export const b = 2;', '', "// nota final");
+
+const COM_TIPO_IMPORTADO = codigo(
+  "export type Entrada = import('../tipos').Tipo;",
+  '',
+  'export const rotulo = "tela";',
+  'export const largura = 320;',
+  'export const altura = 480;',
+);
+
+const DOBRO = codigo('export const dobro = (valor: number): number => valor * 2;');
+
+const UTILITARIOS_COM_NOTA_NO_CORPO = UTILITARIOS.replace(
+  'return soma(a, b);',
+  'return soma(a, b); // soma simples',
+);
+
+const SOMAR_COM_NOTA_NO_CORPO = SOMAR_EM_ARQUIVO_PROPRIO.replace(
+  'return soma(a, b);',
+  'return soma(a, b); // soma simples',
+);
+
+afterEach(removerRepositoriosCriados);
 
 describe('conferir-movimento', { timeout: TEMPO_DO_CENARIO_EM_MS }, () => {
   describe('renomeações', () => {
     it('passa quando o arquivo só muda de lugar', () => {
       const resultado = executarCenario({
-        base: { 'calculo.ts': CALCULO, 'soma.ts': SOMA },
-        depois: (repositorio) => repositorio.mover('calculo.ts', 'matematica/calculo.ts'),
+        base: { 'soma.ts': SOMA },
+        depois: (repositorio) => repositorio.mover('soma.ts', 'matematica/soma.ts'),
       });
 
       expect(resultado.erro).toBe('');
       expect(resultado.codigo).toBe(CODIGO_DE_SUCESSO);
-      expect(resultado.saida).toContain(renomeacaoConferida('calculo.ts', 'matematica/calculo.ts'));
+      expect(resultado.saida).toContain(renomeacaoConferida('soma.ts', 'matematica/soma.ts'));
     });
 
     it('passa quando o arquivo muda de lugar e troca só a linha de import, e o consumidor também', () => {
@@ -290,7 +237,7 @@ describe('conferir-movimento', { timeout: TEMPO_DO_CENARIO_EM_MS }, () => {
           repositorio.mover('utilitarios.ts', 'grupo/utilitarios.ts');
           repositorio.escrever({
             'grupo/utilitarios.ts': UTILITARIOS_SEM_SOMAR,
-            'grupo/somar.ts': SOMAR_EM_ARQUIVO_PROPRIO,
+            'grupo/somar.ts': SOMAR_EM_OUTRA_PASTA,
           });
         },
       });
@@ -346,6 +293,62 @@ describe('conferir-movimento', { timeout: TEMPO_DO_CENARIO_EM_MS }, () => {
       expect(movido.codigo).toBe(CODIGO_DE_SUCESSO);
       expect(apagado.codigo).toBe(CODIGO_DE_FALHA);
       expect(apagado.erro).toContain(emSrc('estilos/marca.css'));
+    });
+
+    it('falha quando um arquivo que não é código muda de lugar e de conteúdo', () => {
+      const resultado = executarCenario({
+        base: { 'estilos/marca.css': CSS_DA_MARCA },
+        depois: (repositorio) => {
+          repositorio.mover('estilos/marca.css', 'marca.css');
+          repositorio.escrever({ 'marca.css': CSS_DA_MARCA.replace('#1a3a5c', '#1a3a5d') });
+        },
+      });
+
+      expect(resultado.codigo).toBe(CODIGO_DE_FALHA);
+      expect(resultado.erro).toContain(renomeacaoComDiferenca('estilos/marca.css', 'marca.css'));
+    });
+
+    it('falha quando o arquivo renomeado perde uma lista local de export', () => {
+      const resultado = executarCenario({
+        base: { 'tudo.ts': COM_LISTA_DE_EXPORTACAO },
+        depois: (repositorio) => {
+          repositorio.mover('tudo.ts', 'pasta/tudo.ts');
+          repositorio.escrever({
+            'pasta/tudo.ts': COM_LISTA_DE_EXPORTACAO.replace('export { a, b };\n', ''),
+          });
+        },
+      });
+
+      expect(resultado.codigo).toBe(CODIGO_DE_FALHA);
+      expect(resultado.erro).toContain(`declaração perdida: export { a, b }; (${emSrc('tudo.ts')})`);
+    });
+
+    it('falha quando o arquivo renomeado só muda o texto depois da última declaração', () => {
+      const resultado = executarCenario({
+        base: { 'tudo.ts': COM_NOTA_FINAL },
+        depois: (repositorio) => {
+          repositorio.mover('tudo.ts', 'pasta/tudo.ts');
+          repositorio.escrever({ 'pasta/tudo.ts': COM_NOTA_FINAL.replace('final', 'outra') });
+        },
+      });
+
+      expect(resultado.codigo).toBe(CODIGO_DE_FALHA);
+      expect(resultado.erro).toContain(renomeacaoComDiferenca('tudo.ts', 'pasta/tudo.ts'));
+    });
+
+    it('passa quando só o caminho de um import() dentro de um tipo muda', () => {
+      const resultado = executarCenario({
+        base: { 'a/tela.ts': COM_TIPO_IMPORTADO, 'tipos.ts': codigo('export type Tipo = string;') },
+        depois: (repositorio) => {
+          repositorio.mover('a/tela.ts', 'a/b/tela.ts');
+          repositorio.escrever({
+            'a/b/tela.ts': COM_TIPO_IMPORTADO.replace("'../tipos'", "'../../tipos'"),
+          });
+        },
+      });
+
+      expect(resultado.erro).toBe('');
+      expect(resultado.codigo).toBe(CODIGO_DE_SUCESSO);
     });
   });
 
@@ -412,19 +415,68 @@ describe('conferir-movimento', { timeout: TEMPO_DO_CENARIO_EM_MS }, () => {
       expect(resultado.erro).toContain(arquivoNovoSemOrigem('somar.ts', 'somar'));
     });
 
-    it('não conta o modificador export no hash do corpo', () => {
-      const base = codigo(
-        'const auxiliar = (valor: number): number => valor + 1;',
-        '',
-        'export const principal = 1;',
-      );
+    it('não conta o modificador export no hash do corpo quando outro arquivo importa a declaração', () => {
+      const principal = 'export const principal = auxiliar(1);';
       const resultado = executarCenario({
-        base: { 'tudo.ts': base },
+        base: {
+          'tudo.ts': codigo(
+            'const auxiliar = (valor: number): number => valor + 1;',
+            '',
+            principal,
+          ),
+        },
         depois: (repositorio) =>
           repositorio.escrever({
-            'tudo.ts': codigo('export const principal = 1;'),
+            'tudo.ts': codigo("import { auxiliar } from './auxiliar';", '', principal),
             'auxiliar.ts': codigo('export const auxiliar = (valor: number): number => valor + 1;'),
           }),
+      });
+
+      expect(resultado.erro).toBe('');
+      expect(resultado.codigo).toBe(CODIGO_DE_SUCESSO);
+    });
+
+    it('falha quando a declaração de produção vai para dois arquivos novos e o original some', () => {
+      const resto = codigo(
+        'export const triplo = (valor: number): number => valor * 3;',
+        'export const quadruplo = (valor: number): number => valor * 4;',
+      );
+      const resultado = executarCenario({
+        base: { 'util.ts': codigo(DOBRO.trim(), '', resto.trim()) },
+        depois: (repositorio) => {
+          repositorio.apagar('util.ts');
+          repositorio.escrever({ 'a/dobro.ts': DOBRO, 'b/dobro.ts': DOBRO, 'c/resto.ts': resto });
+        },
+      });
+
+      expect(resultado.codigo).toBe(CODIGO_DE_FALHA);
+      expect(resultado.erro).toContain(arquivoNovoSemOrigem('b/dobro.ts', 'dobro'));
+    });
+
+    it('falha quando o comentário dentro do corpo da declaração repartida muda', () => {
+      const resultado = executarCenario({
+        base: { 'soma.ts': SOMA, 'utilitarios.ts': UTILITARIOS_COM_NOTA_NO_CORPO },
+        depois: (repositorio) => {
+          repositorio.escrever({
+            'utilitarios.ts': UTILITARIOS_SEM_SOMAR,
+            'somar.ts': SOMAR_COM_NOTA_NO_CORPO.replace('simples', 'direta'),
+          });
+        },
+      });
+
+      expect(resultado.codigo).toBe(CODIGO_DE_FALHA);
+      expect(resultado.erro).toContain('corpo mudou: somar');
+    });
+
+    it('passa quando o comentário dentro do corpo da declaração repartida é o mesmo', () => {
+      const resultado = executarCenario({
+        base: { 'soma.ts': SOMA, 'utilitarios.ts': UTILITARIOS_COM_NOTA_NO_CORPO },
+        depois: (repositorio) => {
+          repositorio.escrever({
+            'utilitarios.ts': UTILITARIOS_SEM_SOMAR,
+            'somar.ts': SOMAR_COM_NOTA_NO_CORPO,
+          });
+        },
       });
 
       expect(resultado.erro).toBe('');
@@ -433,18 +485,21 @@ describe('conferir-movimento', { timeout: TEMPO_DO_CENARIO_EM_MS }, () => {
   });
 
   describe('testes repartidos por describe', () => {
-    const base = { 'estados.dom.test.ts': TESTE_DE_ESTADOS };
+    const base = { 'estados.ts': ESTADOS, 'estados.dom.test.ts': TESTE_DE_ESTADOS };
+    const repartirOsEstados = (repositorio: Repositorio, testes: Record<string, string>): void => {
+      repositorio.apagar('estados.ts');
+      repositorio.apagar('estados.dom.test.ts');
+      repositorio.escrever({ 'Alfa/Alfa.ts': ALFA, 'Beta/Beta.ts': BETA, ...testes });
+    };
 
     it('passa com o describe repartido de título igual e o ajudante repetido idêntico', () => {
       const resultado = executarCenario({
         base,
-        depois: (repositorio) => {
-          repositorio.apagar('estados.dom.test.ts');
-          repositorio.escrever({
+        depois: (repositorio) =>
+          repartirOsEstados(repositorio, {
             'Alfa/Alfa.dom.test.ts': TESTE_DA_ALFA,
             'Beta/Beta.dom.test.ts': TESTE_DA_BETA,
-          });
-        },
+          }),
       });
 
       expect(resultado.erro).toBe('');
@@ -455,13 +510,11 @@ describe('conferir-movimento', { timeout: TEMPO_DO_CENARIO_EM_MS }, () => {
     it('falha quando o corpo de um describe repartido muda', () => {
       const resultado = executarCenario({
         base,
-        depois: (repositorio) => {
-          repositorio.apagar('estados.dom.test.ts');
-          repositorio.escrever({
+        depois: (repositorio) =>
+          repartirOsEstados(repositorio, {
             'Alfa/Alfa.dom.test.ts': TESTE_DA_ALFA,
             'Beta/Beta.dom.test.ts': TESTE_DA_BETA_COM_CORPO_TROCADO,
-          });
-        },
+          }),
       });
 
       expect(resultado.codigo).toBe(CODIGO_DE_FALHA);
@@ -471,14 +524,12 @@ describe('conferir-movimento', { timeout: TEMPO_DO_CENARIO_EM_MS }, () => {
     it('falha quando um describe aparece em dois arquivos novos', () => {
       const resultado = executarCenario({
         base,
-        depois: (repositorio) => {
-          repositorio.apagar('estados.dom.test.ts');
-          repositorio.escrever({
+        depois: (repositorio) =>
+          repartirOsEstados(repositorio, {
             'Alfa/Alfa.dom.test.ts': TESTE_DA_ALFA,
             'Beta/Beta.dom.test.ts': TESTE_DA_BETA,
             'Copia/Copia.dom.test.ts': TESTE_DA_BETA,
-          });
-        },
+          }),
       });
 
       expect(resultado.codigo).toBe(CODIGO_DE_FALHA);
@@ -488,17 +539,46 @@ describe('conferir-movimento', { timeout: TEMPO_DO_CENARIO_EM_MS }, () => {
     it('falha quando o ajudante de teste repartido muda em um dos arquivos', () => {
       const resultado = executarCenario({
         base,
-        depois: (repositorio) => {
-          repositorio.apagar('estados.dom.test.ts');
-          repositorio.escrever({
+        depois: (repositorio) =>
+          repartirOsEstados(repositorio, {
             'Alfa/Alfa.dom.test.ts': TESTE_DA_ALFA,
             'Beta/Beta.dom.test.ts': TESTE_DA_BETA.replace('valor.trim()', 'valor.trimEnd()'),
+          }),
+      });
+
+      expect(resultado.codigo).toBe(CODIGO_DE_FALHA);
+      expect(resultado.erro).toContain('raizDe');
+    });
+
+    it('falha quando o teste ganha a cópia de uma declaração de produção', () => {
+      const producao = codigo(
+        "import { base } from './base';",
+        '',
+        'export const outra = (valor: number): number => valor * 2;',
+        'export const maior = base + 1;',
+      );
+      const teste = codigo(
+        "import { describe, expect, it } from 'vitest';",
+        '',
+        "describe('soma', () => {",
+        "  it('confere', () => {",
+        '    expect(1).toBe(1);',
+        '  });',
+        '});',
+      );
+      const resultado = executarCenario({
+        base: { 'base.ts': codigo('export const base = 1;'), 'soma.ts': producao, 'soma.dom.test.ts': teste },
+        depois: (repositorio) => {
+          repositorio.mover('base.ts', 'lib/base.ts');
+          repositorio.escrever({
+            'soma.ts': trocar(producao, "'./base'", "'./lib/base'"),
+            'soma.dom.test.ts': `const outra = (valor: number): number => valor * 2;\n\n${teste}`,
           });
         },
       });
 
       expect(resultado.codigo).toBe(CODIGO_DE_FALHA);
-      expect(resultado.erro).toContain('raizDe');
+      expect(resultado.erro).toContain(`declaração nova: outra (${emSrc('soma.dom.test.ts')})`);
     });
   });
 
@@ -508,7 +588,10 @@ describe('conferir-movimento', { timeout: TEMPO_DO_CENARIO_EM_MS }, () => {
         base: { 'calculo.ts': CALCULO, 'soma.ts': SOMA },
         depois: (repositorio) => {
           repositorio.mover('calculo.ts', 'Calculo/calculo.ts');
-          repositorio.escrever({ 'Calculo/index.ts': BARREL_DO_CALCULO });
+          repositorio.escrever({
+            'Calculo/calculo.ts': CALCULO_COM_IMPORT_NOVO,
+            'Calculo/index.ts': BARREL_DO_CALCULO,
+          });
         },
       });
 
@@ -516,6 +599,9 @@ describe('conferir-movimento', { timeout: TEMPO_DO_CENARIO_EM_MS }, () => {
       expect(resultado.codigo).toBe(CODIGO_DE_SUCESSO);
       expect(resultado.saida).toContain(
         `barrels novos só com export ... from: ${emSrc('Calculo/index.ts')}`,
+      );
+      expect(resultado.saida).toContain(
+        'ok, 2 arquivos na diferença, 1 renomeações, 0 declarações repartidas, 1 barrels novos, 4 ligações conferidas',
       );
     });
 
@@ -563,6 +649,22 @@ describe('conferir-movimento', { timeout: TEMPO_DO_CENARIO_EM_MS }, () => {
       expect(resultado.codigo).toBe(CODIGO_DE_FALHA);
       expect(resultado.erro).toContain(`declaração perdida: dobro (${emSrc('calculo.ts')})`);
     });
+
+    it('falha com um arquivo novo que só reexporta mas não se chama index.ts', () => {
+      const resultado = executarCenario({
+        base: { 'calculo.ts': CALCULO, 'soma.ts': SOMA },
+        depois: (repositorio) => {
+          repositorio.mover('calculo.ts', 'Calculo/calculo.ts');
+          repositorio.escrever({
+            'Calculo/calculo.ts': CALCULO_COM_IMPORT_NOVO,
+            'Calculo/publico.ts': BARREL_DO_CALCULO,
+          });
+        },
+      });
+
+      expect(resultado.codigo).toBe(CODIGO_DE_FALHA);
+      expect(resultado.erro).toContain(arquivoNovoSemOrigem('Calculo/publico.ts'));
+    });
   });
 
   describe('pares explícitos', () => {
@@ -574,7 +676,7 @@ describe('conferir-movimento', { timeout: TEMPO_DO_CENARIO_EM_MS }, () => {
       '',
       'export const ligar = (): string => a + b + c + d;',
     );
-    const IMPORTS_DEMAIS_EM_OUTRO_LUGAR = IMPORTS_DEMAIS.replace(/'\.\//g, "'../../");
+    const IMPORTS_DEMAIS_EM_OUTRO_LUGAR = IMPORTS_DEMAIS.replace(/'\.\//g, "'../lib/");
 
     it('passa com o par de arquivo quando o git não casa o renome por falta de similaridade', () => {
       const resultado = executarCenario({
@@ -693,19 +795,16 @@ describe('conferir-movimento', { timeout: TEMPO_DO_CENARIO_EM_MS }, () => {
 
     it('usa origin/main como base quando --base não é passado', () => {
       const repositorio = criarRepositorio();
-      repositorio.escrever({ 'calculo.ts': CALCULO, 'soma.ts': SOMA });
+      repositorio.escrever({ 'soma.ts': SOMA });
       const shaDaBase = repositorio.commitar('base');
       executarGit(repositorio.raiz, ['update-ref', 'refs/remotes/origin/main', shaDaBase]);
-      repositorio.mover('calculo.ts', 'matematica/calculo.ts');
+      repositorio.mover('soma.ts', 'matematica/soma.ts');
       repositorio.commitar('depois');
 
-      const resultado = spawnSync(process.execPath, [SCRIPT_DO_VERIFICADOR], {
-        cwd: repositorio.raiz,
-        encoding: 'utf8',
-      });
+      const resultado = executarVerificador(repositorio.raiz);
 
-      expect(resultado.status).toBe(CODIGO_DE_SUCESSO);
-      expect(resultado.stdout).toContain('renomeação:');
+      expect(resultado.codigo).toBe(CODIGO_DE_SUCESSO);
+      expect(resultado.saida).toContain('renomeação:');
     });
 
     it('falha com mensagem clara quando a base não existe', () => {
@@ -721,13 +820,74 @@ describe('conferir-movimento', { timeout: TEMPO_DO_CENARIO_EM_MS }, () => {
 
     it('lista o que foi conferido e a contagem final quando passa', () => {
       const resultado = executarCenario({
-        base: { 'calculo.ts': CALCULO, 'soma.ts': SOMA },
-        depois: (repositorio) => repositorio.mover('calculo.ts', 'matematica/calculo.ts'),
+        base: { 'soma.ts': SOMA },
+        depois: (repositorio) => repositorio.mover('soma.ts', 'matematica/soma.ts'),
       });
 
       expect(resultado.saida).toContain(
-        'ok, 1 arquivos na diferença, 1 renomeações, 0 declarações repartidas, 0 barrels novos',
+        'ok, 1 arquivos na diferença, 1 renomeações, 0 declarações repartidas, 0 barrels novos, 1 ligações conferidas',
       );
+    });
+
+    it('falha com a lista das pendências quando há mudança não commitada em apps/web/src', () => {
+      const resultado = executarCenario({
+        base: { 'soma.ts': SOMA },
+        depois: (repositorio) => repositorio.mover('soma.ts', 'matematica/soma.ts'),
+        pendencia: (repositorio) =>
+          repositorio.escrever({ 'matematica/soma.ts': `${SOMA}export const EXTRA = 1;\n` }),
+      });
+
+      expect(resultado.codigo).toBe(CODIGO_DE_FALHA);
+      expect(resultado.saida).toBe('');
+      expect(resultado.erro).toContain('conferir-movimento: há mudanças não commitadas em apps/web/src');
+      expect(resultado.erro).toContain(` M ${emSrc('matematica/soma.ts')}`);
+      expect(resultado.erro).not.toContain('e mais');
+    });
+
+    it('falha quando o arquivo novo ainda não foi adicionado ao git', () => {
+      const resultado = executarCenario({
+        base: { 'soma.ts': SOMA },
+        depois: (repositorio) => repositorio.mover('soma.ts', 'matematica/soma.ts'),
+        pendencia: (repositorio) => repositorio.escrever({ 'rascunho.ts': SOMA }),
+      });
+
+      expect(resultado.codigo).toBe(CODIGO_DE_FALHA);
+      expect(resultado.erro).toContain(`?? ${emSrc('rascunho.ts')}`);
+    });
+
+    it('lista só as primeiras pendências e conta as outras', () => {
+      const resultado = executarCenario({
+        base: { 'soma.ts': SOMA },
+        depois: () => undefined,
+        pendencia: (repositorio) =>
+          repositorio.escrever(
+            Object.fromEntries(Array.from({ length: 12 }, (_, indice) => [`novo${indice}.ts`, SOMA])),
+          ),
+      });
+
+      expect(resultado.codigo).toBe(CODIGO_DE_FALHA);
+      expect(resultado.erro).toContain('... e mais 2');
+      expect(resultado.erro.split('\n').filter((linha) => linha.startsWith('??'))).toHaveLength(10);
+    });
+
+    it('ignora a mudança não commitada fora de apps/web/src', () => {
+      const resultado = executarCenario({
+        base: { 'soma.ts': SOMA },
+        depois: (repositorio) => repositorio.mover('soma.ts', 'matematica/soma.ts'),
+        pendencia: (repositorio) => writeFileSync(join(repositorio.raiz, 'fora.md'), 'rascunho\n'),
+      });
+
+      expect(resultado.erro).toBe('');
+      expect(resultado.codigo).toBe(CODIGO_DE_SUCESSO);
+    });
+
+    it('diz na ajuda o que prova, o que não prova e a regra da mudança não commitada', () => {
+      const resultado = executarVerificador(criarRepositorio().raiz, ['--ajuda']);
+
+      expect(resultado.codigo).toBe(CODIGO_DE_SUCESSO);
+      expect(resultado.saida).toContain('Falha com saída 1 se houver mudança não commitada em apps/web/src');
+      expect(resultado.saida).toContain('Provado, com a leitura feita pelo compilador do TypeScript');
+      expect(resultado.saida).toContain('Não provado:');
     });
 
     it('conta as diferenças e sai com 1 quando falha', () => {
@@ -736,8 +896,11 @@ describe('conferir-movimento', { timeout: TEMPO_DO_CENARIO_EM_MS }, () => {
         depois: (repositorio) => repositorio.escrever({ 'utilitarios.ts': UTILITARIOS_SEM_SOMAR }),
       });
 
+      const diferencas = resultado.erro.split('\n').filter((linha) => linha.startsWith('DIFERENÇA '));
+
       expect(resultado.codigo).toBe(CODIGO_DE_FALHA);
-      expect(resultado.erro).toMatch(/conferir-movimento: 1 diferenças contra/);
+      expect(diferencas.length).toBeGreaterThan(0);
+      expect(resultado.erro).toContain(`conferir-movimento: ${diferencas.length} diferenças contra`);
     });
   });
 });

@@ -1,3 +1,4 @@
+import { conferirLigacoes } from './conferenciaDeLigacoes.mjs';
 import { conteudoComparavel, declaracoesDe, ehBarrel, ehCodigo } from './declaracoes.mjs';
 
 const SEPARADOR_DA_CHAVE = '\0';
@@ -305,6 +306,14 @@ export function conferirMovimento(repositorio, pares = {}) {
     registrar,
   });
   acusarDeclaracoesPerdidasENovas({ baseLivre, headLivre, registrar });
+  const ligacoes = conferirLigacoes({
+    repositorio,
+    entradas,
+    renomeacoes,
+    correspondencias,
+    barrels,
+    registrar,
+  });
 
   const arquivosComDiferenca = new Set(diferencas.flatMap(({ arquivos }) => arquivos));
   const conferidas = [...puras, ...porDeclaracao].filter(
@@ -316,6 +325,7 @@ export function conferirMovimento(repositorio, pares = {}) {
     renomeacoes: conferidas.toSorted(porCaminho),
     repartidas: agruparRepartidas(correspondencias).toSorted((a, b) => a.para.localeCompare(b.para)),
     barrels: barrels.toSorted(),
+    ligacoes,
     diferencas,
   };
 }
