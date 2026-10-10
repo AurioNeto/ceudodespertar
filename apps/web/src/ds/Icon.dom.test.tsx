@@ -46,6 +46,7 @@ const GLIFO_POR_NOME: readonly [IconName, string][] = [
   ['lock-open', 'lock-open'],
   ['log-in', 'log-in'],
   ['mail', 'mail'],
+  ['menu', 'menu'],
   ['message-circle-question', 'message-circle-question-mark'],
   ['minus', 'minus'],
   ['monitor', 'monitor'],
