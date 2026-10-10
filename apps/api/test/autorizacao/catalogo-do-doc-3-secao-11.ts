@@ -246,8 +246,7 @@ export const CATALOGO_DO_DOC_3_SECAO_11: readonly CasoDoDoc3[] = [
     cenario: 'Busca no código por comparação com nome de grupo (`=== \'TESOURARIA\'`)',
     esperado: '**Nenhuma ocorrência** — lint',
     etapa: 'B0',
-    lacunasDeclaradas: [{ marca: 'T28b', etapa: 'B0' }],
-    idsDeTitulo: ['T28a'],
+    idsDeTitulo: ['T28a', 'T28b'],
   },
   {
     id: 'T29',

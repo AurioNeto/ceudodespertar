@@ -81,6 +81,5 @@ describe('Doc 3 §11 · casos bloqueados por etapa futura', () => {
   it.todo('T21 · Tesouraria tenta ler anamnese — bloqueada até a B4');
   it.todo('T22 · Governança tenta ler anamnese — bloqueada até a B4');
   it.todo('T27 · `LEITURA` consulta lista nominal de participantes — bloqueada até a B5');
-  it.todo('T28b · nome de grupo comparado no código — lacuna da B0');
   it.todo('T26 · Keycloak · usuário desativado no provedor não obtém token — lacuna da B0');
 });
