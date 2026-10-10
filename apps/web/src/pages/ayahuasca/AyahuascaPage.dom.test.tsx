@@ -676,6 +676,30 @@ describe('AyahuascaPage: avisos', () => {
     expect(todos(container, 'button[aria-label="fechar aviso"]')).toHaveLength(1);
     expect(textoDoAviso(container)).toBe('Baixa de 1,0 L em Lote 12/2025.');
   });
+
+  it('aviso aberto — continua na tela quando a ficha de um lote abre', async () => {
+    const container = await montarAyahuasca();
+    await registrarSaida(container, '8', 'Mãe Divina · setembro');
+
+    await abrirLote(container, 'Lote 12/2025');
+
+    expect(fichaAberta(container)).toBe(true);
+    expect(textoDoAviso(container)).toBe('Baixa de 8,0 L em Lote 12/2025.');
+  });
+
+  it.each([
+    { nome: 'entrada de feitio', abrir: abrirEntradaDeFeitio },
+    { nome: 'saída', abrir: abrirSaida },
+    { nome: 'transferência', abrir: abrirTransferencia },
+  ])('aviso aberto — continua na tela quando o modal de $nome abre', async ({ abrir }) => {
+    const container = await montarAyahuasca();
+    await registrarSaida(container, '8', 'Mãe Divina · setembro');
+
+    await abrir(container);
+
+    expect(modalAberto(container)).toBe(true);
+    expect(textoDoAviso(container)).toBe('Baixa de 8,0 L em Lote 12/2025.');
+  });
 });
 
 describe('AyahuascaPage: aba Reservas', () => {
@@ -1050,9 +1074,10 @@ describe('AyahuascaPage: modal de entrada de feitio', () => {
   });
 
   it.each([
-    { nome: 'meio litro', litros: '0,25', garrafas: '1 garrafas de 500 ml' },
-    { nome: 'litro e meio de resto', litros: '9,25', garrafas: '19 garrafas de 500 ml' },
+    { nome: 'um quarto de litro', litros: '0,25', garrafas: '1 garrafas de 500 ml' },
+    { nome: 'nove litros e um quarto', litros: '9,25', garrafas: '19 garrafas de 500 ml' },
     { nome: 'litros cheios', litros: '9', garrafas: '18 garrafas de 500 ml' },
+    { nome: 'fração abaixo de meia garrafa', litros: '9,1', garrafas: '18 garrafas de 500 ml' },
   ])('envase de $nome — arredonda as garrafas para o inteiro mais próximo', async ({ litros, garrafas }) => {
     const container = await montarAyahuasca();
     await registrarEntradaDeFeitio(container, 'Lote 01/2027', litros);
