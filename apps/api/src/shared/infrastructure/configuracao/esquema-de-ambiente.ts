@@ -40,6 +40,7 @@ export const EsquemaDeAmbiente = z.object({
   ORIGENS_CORS: listaDeOrigens,
   LOG_NIVEL: z.enum(NIVEIS_DE_LOG).default('info'),
   TZ: z.string().min(1).default('UTC'),
+  CDD_AMBIENTE: z.string().optional(),
   OIDC_EMISSOR: urlSegura,
   OIDC_AUDIENCIA: audienciaOidc,
   KEYCLOAK_URL_BASE: urlSegura,

@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { DiscoveryModule } from '@nestjs/core';
 import { BancoModule } from '../banco/banco.module.js';
 import { Despachante, TIMEOUT_DO_CONSUMIDOR_EM_MS, lerTimeoutDoConsumidorEmMs } from './despachante.js';
+import { MODO_DO_PROCESSO, lerModoDoProcesso } from './modo-do-processo.js';
 import { RegistroDeConsumidores } from './registro-de-consumidores.js';
 import { RepositorioDoOutbox } from './repositorio-do-outbox.js';
 import { RepositorioDoOutboxPostgres } from './repositorio-do-outbox.postgres.js';
@@ -15,6 +16,7 @@ import { VigiaDeEventosEsgotados } from './vigia-de-eventos-esgotados.js';
     SinalizadorDeEventos,
     { provide: RepositorioDoOutbox, useClass: RepositorioDoOutboxPostgres },
     { provide: TIMEOUT_DO_CONSUMIDOR_EM_MS, useFactory: () => lerTimeoutDoConsumidorEmMs(process.env) },
+    { provide: MODO_DO_PROCESSO, useFactory: () => lerModoDoProcesso(process.env) },
     Despachante,
     VigiaDeEventosEsgotados,
   ],

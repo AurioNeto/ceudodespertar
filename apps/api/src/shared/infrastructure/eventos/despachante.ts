@@ -9,6 +9,8 @@ import {
   foraDaTransacaoAtiva,
 } from '../banco/unidade-de-trabalho.mikro-orm.js';
 import { calcularProximaTentativa } from './backoff.js';
+import { MODO_DO_PROCESSO } from './modo-do-processo.js';
+import type { ModoDoProcesso } from './modo-do-processo.js';
 import { formatarUltimoErro } from './formatador-de-erro.js';
 import type { ConsumidorRegistrado } from './registro-de-consumidores.js';
 import { RegistroDeConsumidores } from './registro-de-consumidores.js';
@@ -108,9 +110,11 @@ export class Despachante implements OnModuleInit, OnModuleDestroy {
     private readonly registro: RegistroDeConsumidores,
     private readonly sinalizador: SinalizadorDeEventos,
     @Inject(TIMEOUT_DO_CONSUMIDOR_EM_MS) private readonly timeoutDoConsumidorEmMs: number,
+    @Inject(MODO_DO_PROCESSO) private readonly modoDoProcesso: ModoDoProcesso,
   ) {}
 
   onModuleInit(): void {
+    if (this.modoDoProcesso === 'cli') return;
     this.temporizador = setInterval(() => this.agendarCiclo(), INTERVALO_DE_POLLING_EM_MS);
     this.pararDeOuvirSinal = this.sinalizador.aoNotificar(() => this.agendarCiclo());
   }

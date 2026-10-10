@@ -54,6 +54,7 @@ describe('Despachante · falha do ciclo acordado pelo sinal', () => {
       {} as unknown as RegistroDeConsumidores,
       sinalizador,
       100,
+      'api',
     );
     despachante.onModuleInit();
 
@@ -76,7 +77,7 @@ describe('Despachante · falha do ciclo acordado pelo sinal', () => {
     const transacao = vi.fn(() => (bancoForaDoAr ? Promise.reject(new Error('banco fora')) : Promise.resolve(false)));
     const unidade = { transacao } as unknown as UnidadeDeTrabalho;
     const sinalizador = new SinalizadorDeEventos();
-    const despachante = new Despachante(unidade, {} as unknown as RegistroDeConsumidores, sinalizador, 100);
+    const despachante = new Despachante(unidade, {} as unknown as RegistroDeConsumidores, sinalizador, 100, 'api');
     despachante.onModuleInit();
 
     const falhasSeguidas = 3;

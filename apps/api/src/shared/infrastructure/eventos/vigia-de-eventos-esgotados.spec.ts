@@ -32,7 +32,7 @@ function unidadeQueResponde(contagens: (Contagem | Error)[]): UnidadeDeTrabalho 
 }
 
 async function verificarEmSequencia(contagens: (Contagem | Error)[]): Promise<void> {
-  const vigia = new VigiaDeEventosEsgotados(unidadeQueResponde(contagens));
+  const vigia = new VigiaDeEventosEsgotados(unidadeQueResponde(contagens), 'api');
   for (let ciclo = 0; ciclo < contagens.length; ciclo += 1) {
     // eslint-disable-next-line no-await-in-loop -- cada ciclo depende do estado deixado pelo anterior
     await vigia.verificar();
