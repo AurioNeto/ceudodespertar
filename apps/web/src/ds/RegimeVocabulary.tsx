@@ -28,7 +28,14 @@ const VOCAB: Record<RegimeDaUnidade, Vocabulario> = {
   },
 };
 
-const Ctx = createContext<Vocabulario>(VOCAB.CONTRIBUICAO);
+const REGIME_PADRAO: RegimeDaUnidade = 'CONTRIBUICAO';
+
+const ehRegimeDoContrato = (regime: unknown): regime is RegimeDaUnidade =>
+  typeof regime === 'string' && Object.hasOwn(VOCAB, regime);
+
+const regimeEmUso = (regime: unknown): RegimeDaUnidade => (ehRegimeDoContrato(regime) ? regime : REGIME_PADRAO);
+
+const Ctx = createContext<Vocabulario>(VOCAB[REGIME_PADRAO]);
 
 export interface RegimeVocabularyProps {
   regime?: RegimeDaUnidade;
@@ -36,10 +43,12 @@ export interface RegimeVocabularyProps {
   style?: CSSProperties;
 }
 
-export function RegimeVocabulary({ regime = 'CONTRIBUICAO', children, style }: RegimeVocabularyProps) {
+export function RegimeVocabulary({ regime = REGIME_PADRAO, children, style }: RegimeVocabularyProps) {
+  const regimeAplicado = regimeEmUso(regime);
+
   return (
-    <Ctx value={VOCAB[regime]}>
-      <div data-regime={regime.toLowerCase()} style={style}>
+    <Ctx value={VOCAB[regimeAplicado]}>
+      <div data-regime={regimeAplicado.toLowerCase()} style={style}>
         {children}
       </div>
     </Ctx>
