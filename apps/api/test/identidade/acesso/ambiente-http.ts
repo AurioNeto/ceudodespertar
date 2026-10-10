@@ -42,6 +42,9 @@ import { comContexto } from '../../eventos/apoio.js';
 import type { BancoDeTeste } from '../../integracao/banco-de-teste.js';
 import { urlDoAppPara } from '../../unidade-de-trabalho/orm-de-teste.js';
 import { AGORA, hashDeConvite } from '../apoio.js';
+import { ControleDeAcessoNoProvedor } from '../../../src/modules/identidade/application/usuarios/controle-de-acesso-no-provedor.js';
+import { LiberacaoDiretaDoAcesso } from '../../../src/modules/identidade/application/usuarios/liberacao-direta-do-acesso.js';
+import { ControleDeAcessoQueRegistra } from '../keycloak/controle-de-acesso-que-registra.js';
 import { EnviadorDeConviteQueRegistra } from '../convite/enviador-de-convite.que-registra.js';
 
 export const PERMISSAO_EXIGIDA_PELA_ROTA: Permissao = 'financeiro.lancamento.ler';
@@ -144,7 +147,9 @@ export async function subirAplicacaoDeAcesso(
     .overrideProvider(Relogio)
     .useValue(relogio)
     .overrideProvider(EnviadorDeConvite)
-    .useValue(new EnviadorDeConviteQueRegistra());
+    .useValue(new EnviadorDeConviteQueRegistra())
+    .overrideProvider(ControleDeAcessoNoProvedor)
+    .useValue(new ControleDeAcessoQueRegistra());
   for (const { provider, valor } of substituicoes) {
     construtor = construtor.overrideProvider(provider).useValue(valor);
   }
@@ -172,6 +177,7 @@ export async function subirAplicacaoDeAcesso(
     },
     encerrar: async () => {
       await app.get(EntregaDeConvite).aguardarEntregas();
+      await app.get(LiberacaoDiretaDoAcesso).aguardarLiberacoes();
       await app.close();
       await servidor.derrubar();
       delete process.env.BANCO_URL;

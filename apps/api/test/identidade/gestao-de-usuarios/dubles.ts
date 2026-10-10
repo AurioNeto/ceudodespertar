@@ -33,10 +33,16 @@ export class RelogioFixo extends Relogio {
 
 export class UnidadeDeTrabalhoFalsa extends UnidadeDeTrabalho {
   readonly modos: ModoDeTransacao[] = [];
+  private readonly ganchos: Array<() => void> = [];
 
   transacao<T>(modo: ModoDeTransacao, fn: (contexto: ContextoDaTransacao) => Promise<T>): Promise<T> {
     this.modos.push(modo);
-    return fn({} as ContextoDaTransacao);
+    const parcial: Partial<ContextoDaTransacao> = { aoConfirmar: (gancho) => void this.ganchos.push(gancho) };
+    return fn(parcial as ContextoDaTransacao);
+  }
+
+  confirmar(): void {
+    for (const gancho of this.ganchos.splice(0)) gancho();
   }
 }
 

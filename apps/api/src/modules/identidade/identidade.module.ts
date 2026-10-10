@@ -31,6 +31,9 @@ import { LeitorDeGruposDaInstituicao } from './application/usuarios/leitor-de-gr
 import { LeitorDeUsuarios } from './application/usuarios/leitor-de-usuarios.js';
 import { ObterUsuario } from './application/usuarios/obter-usuario.js';
 import { ListarUsuarios } from './application/usuarios/listar-usuarios.js';
+import { ControleDeAcessoNoProvedor } from './application/usuarios/controle-de-acesso-no-provedor.js';
+import { LeitorDoSujeitoDoUsuario } from './application/usuarios/leitor-do-sujeito-do-usuario.js';
+import { LiberacaoDiretaDoAcesso } from './application/usuarios/liberacao-direta-do-acesso.js';
 import { ReativarUsuario } from './application/usuarios/reativar-usuario.js';
 import { ReenviarConvite } from './application/usuarios/reenviar-convite.js';
 import { RepositorioDeGrupo } from './domain/grupo/grupo.repo.js';
@@ -50,6 +53,7 @@ import {
   configuracaoDoKeycloakDe,
 } from './infrastructure/keycloak/configuracao-do-keycloak.js';
 import { ConferidorDeSujeitoKeycloak } from './infrastructure/keycloak/conferidor-de-sujeito.keycloak.js';
+import { ControleDeAcessoNoProvedorKeycloak } from './infrastructure/keycloak/controle-de-acesso-no-provedor.keycloak.js';
 import { EnviadorDeConviteKeycloak } from './infrastructure/keycloak/enviador-de-convite.keycloak.js';
 import { LeitorDeGruposDaInstituicaoKysely } from './infrastructure/usuarios/leitor-de-grupos-da-instituicao.kysely.js';
 import { LeitorDeUsuariosKysely } from './infrastructure/usuarios/leitor-de-usuarios.kysely.js';
@@ -57,6 +61,8 @@ import { GravadorDeTrilha } from './infrastructure/auditoria/gravador-de-trilha.
 import { LeitorDeAuditoriaKysely } from './infrastructure/auditoria/leitor-de-auditoria.kysely.js';
 import { CacheDeContextoDeAcesso } from './infrastructure/acesso/cache-de-contexto-de-acesso.js';
 import { InvalidadorDoCacheDeAcesso } from './infrastructure/acesso/invalidador-do-cache-de-acesso.js';
+import { LeitorDoSujeitoDoUsuarioKysely } from './infrastructure/acesso/leitor-do-sujeito-do-usuario.kysely.js';
+import { SincronizadorDoAcessoNoProvedor } from './infrastructure/acesso/sincronizador-do-acesso-no-provedor.js';
 import { LeitorDoEuKysely } from './infrastructure/acesso/leitor-do-eu.kysely.js';
 import { RegistradorDeUltimoAcessoKysely } from './infrastructure/acesso/registrador-de-ultimo-acesso.kysely.js';
 import { ResolvedorDeContextoDeAcessoDaIdentidade } from './infrastructure/acesso/resolvedor-de-contexto-de-acesso.da-identidade.js';
@@ -115,6 +121,10 @@ import { GestaoDeUsuariosController } from './interface/http/gestao-de-usuarios.
     { provide: EnviadorDeConvite, useClass: EnviadorDeConviteKeycloak },
     { provide: ConferidorDeSujeito, useClass: ConferidorDeSujeitoKeycloak },
     EntregaDeConvite,
+    { provide: ControleDeAcessoNoProvedor, useClass: ControleDeAcessoNoProvedorKeycloak },
+    { provide: LeitorDoSujeitoDoUsuario, useClass: LeitorDoSujeitoDoUsuarioKysely },
+    LiberacaoDiretaDoAcesso,
+    SincronizadorDoAcessoNoProvedor,
     { provide: ResolvedorDeConvite, useClass: ResolvedorDeConviteKysely },
     { provide: LeitorDeGruposDaInstituicao, useClass: LeitorDeGruposDaInstituicaoKysely },
     { provide: LeitorDeUsuarios, useClass: LeitorDeUsuariosKysely },
