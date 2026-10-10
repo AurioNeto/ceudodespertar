@@ -1,4 +1,6 @@
 import { Module } from '@nestjs/common';
+import { AMBIENTE } from '../../shared/infrastructure/configuracao/esquema-de-ambiente.js';
+import type { Ambiente } from '../../shared/infrastructure/configuracao/esquema-de-ambiente.js';
 import { BancoModule } from '../../shared/infrastructure/banco/banco.module.js';
 import { EventosModule } from '../../shared/infrastructure/eventos/eventos.module.js';
 import { Relogio, RelogioDoSistema } from '../../shared/infrastructure/relogio.js';
@@ -16,6 +18,7 @@ import { EntregaDeConvite } from './application/convite/entrega-de-convite.js';
 import { EnviadorDeConvite } from './application/convite/enviador-de-convite.js';
 import { GeradorDeTokenDeConvite } from './application/convite/gerador-de-token-de-convite.js';
 import { ResolvedorDeConvite } from './application/convite/resolvedor-de-convite.js';
+import { ResolvedorDeSujeito } from './application/convite/resolvedor-de-sujeito.js';
 import { LeitorDoEu } from './application/leitor-do-eu.js';
 import { ObterEu } from './application/obter-eu.js';
 import { RegistradorDeUltimoAcesso } from './application/registrador-de-ultimo-acesso.js';
@@ -34,9 +37,17 @@ import { RepositorioDeUsuario } from './domain/usuario/usuario.repo.js';
 import { LeitorDaAdministracaoKysely } from './infrastructure/administracao/leitor-da-administracao.kysely.js';
 import { TravaDaAdministracaoAdvisory } from './infrastructure/administracao/trava-da-administracao.advisory.js';
 import { LeitorDeGruposKysely } from './infrastructure/grupos/leitor-de-grupos.kysely.js';
-import { EnviadorDeConviteQueRegistra } from './infrastructure/convite/enviador-de-convite.que-registra.js';
 import { GeradorDeTokenDeConviteNode } from './infrastructure/convite/gerador-de-token-de-convite.node.js';
 import { ResolvedorDeConviteKysely } from './infrastructure/convite/resolvedor-de-convite.kysely.js';
+import { ResolvedorDeSujeitoKysely } from './infrastructure/convite/resolvedor-de-sujeito.kysely.js';
+import { ClienteAdminDoKeycloak } from './infrastructure/keycloak/cliente-admin-do-keycloak.js';
+import {
+  CONFIGURACAO_DO_CONVITE_NO_KEYCLOAK,
+  CONFIGURACAO_DO_KEYCLOAK,
+  configuracaoDoConviteDe,
+  configuracaoDoKeycloakDe,
+} from './infrastructure/keycloak/configuracao-do-keycloak.js';
+import { EnviadorDeConviteKeycloak } from './infrastructure/keycloak/enviador-de-convite.keycloak.js';
 import { LeitorDeGruposDaInstituicaoKysely } from './infrastructure/usuarios/leitor-de-grupos-da-instituicao.kysely.js';
 import { LeitorDeUsuariosKysely } from './infrastructure/usuarios/leitor-de-usuarios.kysely.js';
 import { GravadorDeTrilha } from './infrastructure/auditoria/gravador-de-trilha.js';
@@ -86,7 +97,19 @@ import { GestaoDeUsuariosController } from './interface/http/gestao-de-usuarios.
     RevogarPermissaoDoGrupo,
     RenomearGrupo,
     { provide: GeradorDeTokenDeConvite, useClass: GeradorDeTokenDeConviteNode },
-    { provide: EnviadorDeConvite, useClass: EnviadorDeConviteQueRegistra },
+    {
+      provide: CONFIGURACAO_DO_KEYCLOAK,
+      inject: [AMBIENTE],
+      useFactory: (ambiente: Ambiente) => configuracaoDoKeycloakDe(ambiente),
+    },
+    {
+      provide: CONFIGURACAO_DO_CONVITE_NO_KEYCLOAK,
+      inject: [AMBIENTE],
+      useFactory: (ambiente: Ambiente) => configuracaoDoConviteDe(ambiente),
+    },
+    ClienteAdminDoKeycloak,
+    { provide: ResolvedorDeSujeito, useClass: ResolvedorDeSujeitoKysely },
+    { provide: EnviadorDeConvite, useClass: EnviadorDeConviteKeycloak },
     EntregaDeConvite,
     { provide: ResolvedorDeConvite, useClass: ResolvedorDeConviteKysely },
     { provide: LeitorDeGruposDaInstituicao, useClass: LeitorDeGruposDaInstituicaoKysely },

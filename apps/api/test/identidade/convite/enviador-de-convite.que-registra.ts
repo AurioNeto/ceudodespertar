@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { EnviadorDeConvite } from '../../application/convite/enviador-de-convite.js';
-import type { ConviteParaEnviar } from '../../application/convite/enviador-de-convite.js';
+import { EnviadorDeConvite } from '../../../src/modules/identidade/application/convite/enviador-de-convite.js';
+import type { ConviteParaEnviar } from '../../../src/modules/identidade/application/convite/enviador-de-convite.js';
 
 @Injectable()
 export class EnviadorDeConviteQueRegistra extends EnviadorDeConvite {
