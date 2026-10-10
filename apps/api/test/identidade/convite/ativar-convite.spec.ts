@@ -29,6 +29,7 @@ const INSTITUICAO = 'a0000000-0000-7000-8000-0000000000aa' as InstituicaoId;
 const USUARIO_ID = 'a1000000-0000-7000-8000-000000000002' as UsuarioId;
 const AUTOR = 'a1000000-0000-7000-8000-000000000001' as UsuarioId;
 const CRIADO_EM = new Date('2026-10-09T12:00:00.000Z');
+const INTERVALO_DE_REENVIO_EM_MS = 60_000;
 const EXPIRA_EM = new Date('2026-10-12T12:00:00.000Z');
 
 class RelogioAjustavel extends Relogio {
@@ -406,7 +407,7 @@ describe('AtivarConvite', () => {
       const usuario = usuarioPendente();
       const { ativar, conferidor, repositorio } = montar({ usuario });
       conferidor.resposta = () => {
-        usuario.reenviarConvite('e'.repeat(64), EXPIRA_EM, AUTOR, CRIADO_EM);
+        usuario.reenviarConvite('e'.repeat(64), EXPIRA_EM, AUTOR, new Date(CRIADO_EM.getTime() + INTERVALO_DE_REENVIO_EM_MS));
         return Promise.resolve(EMAIL);
       };
 

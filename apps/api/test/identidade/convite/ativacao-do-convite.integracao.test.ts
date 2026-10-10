@@ -21,6 +21,7 @@ const EMAIL_DA_MARIA = 'maria@casa.org';
 const EMAIL_DO_JOAO = 'joao@casa.org';
 const HORAS_DO_CONVITE = 72;
 const MILISSEGUNDOS_POR_HORA = 3_600_000;
+const INTERVALO_DE_REENVIO_EM_MS = 60_000;
 const AUTOR = gerarUuidV7() as UsuarioId;
 const CABECALHO_DE_CHAVE = { [NOME_DO_CABECALHO_DE_IDEMPOTENCIA]: 'chave-automatica-do-front-0001' };
 
@@ -255,6 +256,7 @@ describe('POST /api/v1/eu/ativacao — ativação do convite com Postgres real',
   it('convite revogado pelo reenvio não ativa e o novo ativa', async () => {
     const { id, token: tokenAntigo } = await convidar(EMAIL_DA_MARIA);
     const tokenNovoDoReenvio = tokenNovo();
+    aplicacao.relogio.avancarEmMs(INTERVALO_DE_REENVIO_EM_MS);
     await comContexto(INSTITUICAO_A, async () => {
       const usuario = (await aplicacao.usuarios.porId(id))!;
       const agora = aplicacao.relogio.agora();
