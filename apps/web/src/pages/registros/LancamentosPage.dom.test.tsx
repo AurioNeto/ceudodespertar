@@ -661,7 +661,7 @@ describe('LancamentosPage: recorte vazio', () => {
     expect(tabelaDoEscritorio(container)).toEqual(PAGINA_1_DE_AGOSTO);
   });
 
-  it('campo — sem lançamentos, o estado vazio traz um Limpar filtros que, sem filtro além do tipo, apenas reabre o livro', async () => {
+  it('campo — sem lançamentos, o estado vazio traz um só Limpar filtros e nenhuma paginação', async () => {
     usarDensidade('field');
     livro.transformar = () => [];
     const { container } = await montar(<LancamentosPage />);
@@ -669,6 +669,23 @@ describe('LancamentosPage: recorte vazio', () => {
     expect(container.textContent).toContain('Nenhum lançamento neste recorte');
     expect(todos(container, 'button').filter((botao) => botao.textContent === 'Limpar filtros')).toHaveLength(1);
     expect(container.textContent).not.toContain('Página');
+  });
+
+  it('campo — um tipo sem lançamentos esvazia a lista, e o Limpar filtros do estado vazio volta para Todos e reabre o livro', async () => {
+    usarDensidade('field');
+    livro.transformar = (lista) => lista.filter((lancamento) => lancamento.tipo === 'ENTRADA');
+    const { container } = await montar(<LancamentosPage />);
+    await clicar(botaoComTexto(container, 'Saída'));
+
+    await clicar(botaoComTexto(container, 'Limpar filtros'));
+
+    expect(motivosEmCampo(container)).toEqual([
+      'contribuições da cerimônia de agosto',
+      'venda de camisetas na lojinha',
+      'doação de padrinho para o dormitório',
+      'hospedagem extra de dois participantes',
+    ]);
+    expect(botaoComTexto(container, 'Todos').ariaPressed).toBe('true');
   });
 });
 

@@ -730,6 +730,7 @@ describe('RegistrarLancamentoPage: competência fechada', () => {
 
     expect(container.textContent).toContain('Período 07/2026 está fechado');
     expect(container.textContent).toContain('Guarde como rascunho ou lance em 08/2026 explicando na descrição.');
+    expect(container.textContent).toContain('Enquanto isso não se resolve, dá para salvar como rascunho — nada se perde.');
     expect(camposPadrao(container)[0]).toEqual(['Competência', '07/2026', 'da data do gasto']);
     expect(botaoDeRegistrar(container).disabled).toBe(true);
   });
@@ -872,7 +873,7 @@ describe('RegistrarLancamentoPage: reembolso a uma pessoa', () => {
     expect(folhaAberta(container, 'Quem adiantou o dinheiro')).toBeNull();
   });
 
-  it('campo — não existe a chave de reembolso, então o campo da pessoa nunca aparece', async () => {
+  it('campo — não existe a chave de reembolso, então o campo da pessoa não aparece ao abrir em campo', async () => {
     usarDensidade('field');
     const { container } = await montar(<RegistrarLancamentoPage />);
 
