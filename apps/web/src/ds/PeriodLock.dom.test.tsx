@@ -1,5 +1,5 @@
 import { act } from 'react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, expectTypeOf, it, vi } from 'vitest';
 import { botaoComTexto, clicar, desmontarTudo, elemento, folhaComTexto, montar, todos } from '@/testes/montagem';
 import { PeriodLock, type PeriodLockClosedProps, type PeriodLockReopenableProps } from './PeriodLock';
 
@@ -12,6 +12,7 @@ const ACAO_DE_REABRIR = 'Reabrir período';
 const ROTULO_DO_MOTIVO = 'Motivo da reabertura';
 const AVISO_DE_MOTIVO_OBRIGATORIO = 'Sem motivo, a reabertura não é registrável.';
 const MOTIVO = 'O relatório de julho saiu com a conta errada.';
+const naoFazNada = () => undefined;
 
 type ComoFechado = Partial<PeriodLockClosedProps>;
 type ComoReabrivel = Partial<Omit<PeriodLockReopenableProps, 'canReopen'>>;
@@ -28,20 +29,8 @@ const bloqueioReabrivel = (props: ComoReabrivel = {}) => (
     reopenLabel={ACAO_DE_REABRIR}
     reopenReasonLabel={ROTULO_DO_MOTIVO}
     reopenReasonRequiredNote={AVISO_DE_MOTIVO_OBRIGATORIO}
+    onReopen={naoFazNada}
     {...props}
-  />
-);
-
-const comPermissaoCalculada = (canReopen: boolean, onReopen?: (reopenReason: string) => void) => (
-  <PeriodLock
-    title={TITULO}
-    reason={RAZAO}
-    canReopen={canReopen}
-    reopenDeniedNote={AVISO_DE_QUEM_NAO_REABRE}
-    reopenLabel={ACAO_DE_REABRIR}
-    reopenReasonLabel={ROTULO_DO_MOTIVO}
-    reopenReasonRequiredNote={AVISO_DE_MOTIVO_OBRIGATORIO}
-    onReopen={onReopen}
   />
 );
 
@@ -214,11 +203,20 @@ describe('PeriodLock: sem permissão de reabrir', () => {
     expect(folhaComTexto(container, 'p', AVISO_DE_QUEM_NAO_REABRE)).toBeTruthy();
   });
 
-  it('onReopen recebido não ganha nenhum ponto de acionamento', async () => {
+  it('o que é só de quem reabre é recusado pelo tipo e, se chegar, não ganha acionamento', async () => {
     const aoReabrir = vi.fn();
-    const { container } = await montar(comPermissaoCalculada(false, aoReabrir));
+    const soDeQuemReabre = {
+      canReopen: false as const,
+      reopenLabel: ACAO_DE_REABRIR,
+      reopenReasonLabel: ROTULO_DO_MOTIVO,
+      reopenReasonRequiredNote: AVISO_DE_MOTIVO_OBRIGATORIO,
+      onReopen: aoReabrir,
+    };
+    // @ts-expect-error
+    const { container } = await montar(bloqueio(soDeQuemReabre));
     expect(todos(container, 'button')).toHaveLength(0);
     expect(todos(container, 'textarea')).toHaveLength(0);
+    expect(container.textContent).not.toContain(ACAO_DE_REABRIR);
     expect(aoReabrir).not.toHaveBeenCalled();
   });
 });
@@ -229,8 +227,20 @@ describe('PeriodLock: com permissão de reabrir', () => {
     expect(botaoDeReabrir(container).disabled).toBe(true);
   });
 
-  it('não mostra o aviso de quem não pode reabrir, mesmo que ele chegue junto', async () => {
-    const { container } = await montar(comPermissaoCalculada(true));
+  it('o aviso de quem não reabre é recusado pelo tipo e, se chegar com a permissão, não aparece', async () => {
+    const { container } = await montar(
+      <PeriodLock
+        title={TITULO}
+        reason={RAZAO}
+        canReopen
+        // @ts-expect-error
+        reopenDeniedNote={AVISO_DE_QUEM_NAO_REABRE}
+        reopenLabel={ACAO_DE_REABRIR}
+        reopenReasonLabel={ROTULO_DO_MOTIVO}
+        reopenReasonRequiredNote={AVISO_DE_MOTIVO_OBRIGATORIO}
+        onReopen={naoFazNada}
+      />,
+    );
     expect(container.textContent).not.toContain(AVISO_DE_QUEM_NAO_REABRE);
   });
 
@@ -362,12 +372,6 @@ describe('PeriodLock: o motivo da reabertura', () => {
     expect(aoReabrir.mock.calls[0]).toEqual([MOTIVO]);
   });
 
-  it('sem onReopen, clicar com o motivo escrito não falha', async () => {
-    const { container } = await montar(bloqueioReabrivel());
-    await digitarNoMotivo(caixaDoMotivo(container), MOTIVO);
-    await expect(clicar(botaoDeReabrir(container))).resolves.toBeUndefined();
-  });
-
   it('um onReopen que chega depois é o que recebe o motivo', async () => {
     const primeiro = vi.fn();
     const segundo = vi.fn();
@@ -377,6 +381,17 @@ describe('PeriodLock: o motivo da reabertura', () => {
     await clicar(botaoDeReabrir(montado.container));
     expect(primeiro).not.toHaveBeenCalled();
     expect(segundo.mock.calls[0]).toEqual([MOTIVO]);
+  });
+});
+
+describe('PeriodLock: o contrato de tipos (a prova é o typecheck)', () => {
+  it('quem pode reabrir é obrigado a entregar o onReopen, que recebe o motivo e mais nada', () => {
+    expectTypeOf<PeriodLockReopenableProps['onReopen']>().toEqualTypeOf<(reopenReason: string) => void>();
+  });
+
+  it('o período fechado sem reabertura não aceita nada do que é de quem reabre', () => {
+    type SoDeQuemReabre = Exclude<keyof PeriodLockReopenableProps, 'title' | 'reason' | 'style' | 'canReopen'>;
+    expectTypeOf<PeriodLockClosedProps[SoDeQuemReabre]>().toEqualTypeOf<undefined>();
   });
 });
 

@@ -13,6 +13,10 @@ interface PeriodLockBaseProps {
 export interface PeriodLockClosedProps extends PeriodLockBaseProps {
   canReopen?: false;
   reopenDeniedNote: string;
+  reopenLabel?: never;
+  reopenReasonLabel?: never;
+  reopenReasonRequiredNote?: never;
+  onReopen?: never;
 }
 
 export interface PeriodLockReopenableProps extends PeriodLockBaseProps {
@@ -20,7 +24,7 @@ export interface PeriodLockReopenableProps extends PeriodLockBaseProps {
   reopenLabel: string;
   reopenReasonLabel: string;
   reopenReasonRequiredNote: string;
-  onReopen?: (reopenReason: string) => void;
+  onReopen: (reopenReason: string) => void;
 }
 
 export type PeriodLockProps = PeriodLockClosedProps | PeriodLockReopenableProps;
@@ -29,7 +33,7 @@ interface ReopenWithReasonProps {
   label: string;
   reasonLabel: string;
   reasonRequiredNote: string;
-  onReopen?: (reopenReason: string) => void;
+  onReopen: (reopenReason: string) => void;
 }
 
 function ReopenWithReason({ label, reasonLabel, reasonRequiredNote, onReopen }: ReopenWithReasonProps) {
@@ -52,7 +56,7 @@ function ReopenWithReason({ label, reasonLabel, reasonRequiredNote, onReopen }: 
           iconName="lock-open"
           disabled={reasonMissing}
           blockedReason={reasonRequiredNote}
-          onClick={() => onReopen?.(reopenReason)}
+          onClick={() => onReopen(reopenReason)}
         >
           {label}
         </Button>
