@@ -7,3 +7,5 @@ export type {
   ResultadoDoBootstrap,
 } from './application/bootstrap/bootstrap-da-identidade.js';
 export { EnviadorDeConvite } from './application/convite/enviador-de-convite.js';
+export { SemeaduraDeDemonstracao } from './application/seed-demo/semeadura-de-demonstracao.js';
+export type { ResumoDaSemeadura } from './application/seed-demo/semeadura-de-demonstracao.js';

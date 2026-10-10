@@ -38,11 +38,9 @@ describe('analisarComandoDaIdentidade', () => {
       '--sujeito=abc-123',
     ]);
 
-    expect(comando.bootstrap).toEqual({
-      instituicaoNome: 'Casa',
-      adminNome: 'Ana',
-      adminEmail: 'ana@casa.org',
-      sujeito: 'abc-123',
+    expect(comando).toEqual({
+      subcomando: 'bootstrap',
+      bootstrap: { instituicaoNome: 'Casa', adminNome: 'Ana', adminEmail: 'ana@casa.org', sujeito: 'abc-123' },
     });
   });
 
@@ -57,7 +55,10 @@ describe('analisarComandoDaIdentidade', () => {
       '  ANA@Casa.ORG ',
     ]);
 
-    expect(comando.bootstrap).toEqual({ instituicaoNome: 'Casa', adminNome: 'Ana', adminEmail: 'ana@casa.org' });
+    expect(comando).toEqual({
+      subcomando: 'bootstrap',
+      bootstrap: { instituicaoNome: 'Casa', adminNome: 'Ana', adminEmail: 'ana@casa.org' },
+    });
   });
 
   it.each([[[]], [['migrar']], [['--instituicao-nome', 'X']]])('recusa subcomando ausente ou desconhecido: %j', (argumentos) => {
@@ -117,5 +118,18 @@ describe('analisarComandoDaIdentidade', () => {
     const argumentos = ARGUMENTOS_VALIDOS.map((argumento) => (argumento === 'ana@casa.org' ? email : argumento));
 
     expect(problemasDe(argumentos)).toEqual(['--admin-email: informe um e-mail válido.']);
+  });
+
+  describe('seed-demo', () => {
+    it('aceita o subcomando sem flags', () => {
+      expect(analisarComandoDaIdentidade(['seed-demo'])).toEqual({ subcomando: 'seed-demo' });
+    });
+
+    it.each([[['seed-demo', '--admin-email', 'ana@casa.org']], [['seed-demo', '--sujeito=abc']], [['seed-demo', 'extra']]])(
+      'recusa qualquer flag ou argumento: %j',
+      (argumentos) => {
+        expect(() => analisarComandoDaIdentidade(argumentos)).toThrow(ErroDeUsoDoCli);
+      },
+    );
   });
 });

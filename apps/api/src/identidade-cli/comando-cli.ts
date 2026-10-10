@@ -14,16 +14,24 @@ const DEFINICOES_DOS_SUBCOMANDOS = {
     obrigatorias: ['instituicao-nome', 'admin-nome', 'admin-email'],
     opcionais: ['sujeito'],
   },
+  'seed-demo': {
+    obrigatorias: [],
+    opcionais: [],
+  },
 } as const satisfies Record<string, DefinicaoDoSubcomando>;
 
 export type SubcomandoDaIdentidade = keyof typeof DEFINICOES_DOS_SUBCOMANDOS;
 
 export const SUBCOMANDOS_DA_IDENTIDADE = Object.keys(DEFINICOES_DOS_SUBCOMANDOS) as SubcomandoDaIdentidade[];
 
-export type ComandoDaIdentidade = { readonly subcomando: 'bootstrap'; readonly bootstrap: ComandoDeBootstrap };
+export type ComandoDaIdentidade =
+  | { readonly subcomando: 'bootstrap'; readonly bootstrap: ComandoDeBootstrap }
+  | { readonly subcomando: 'seed-demo' };
 
-export const USO_DO_CLI =
-  'Uso: identidade-cli bootstrap --instituicao-nome <texto> --admin-nome <texto> --admin-email <e-mail> [--sujeito <sub>]';
+export const USO_DO_CLI = [
+  'Uso: identidade-cli bootstrap --instituicao-nome <texto> --admin-nome <texto> --admin-email <e-mail> [--sujeito <sub>]',
+  '     identidade-cli seed-demo',
+].join('\n');
 
 export class ErroDeUsoDoCli extends Error {
   constructor(readonly problemas: readonly string[]) {
@@ -128,5 +136,6 @@ export function analisarComandoDaIdentidade(argumentos: readonly string[]): Coma
   const definicao = DEFINICOES_DOS_SUBCOMANDOS[subcomando];
   const lidas = lerFlags(restantes, definicao);
   exigirFlags(lidas, definicao);
+  if (subcomando === 'seed-demo') return { subcomando };
   return { subcomando, bootstrap: analisarBootstrap(lidas) };
 }

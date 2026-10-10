@@ -2,7 +2,7 @@ import type { UsuarioId } from '@cdd/contracts';
 import { describe, expect, it } from 'vitest';
 import { FalhaNoEnvioDoConvite } from '../modules/identidade/application/convite/enviador-de-convite.js';
 import type { ConviteParaEnviar } from '../modules/identidade/application/convite/enviador-de-convite.js';
-import type { ComandoDeBootstrap, ResultadoDoBootstrap } from '../modules/identidade/public-api.js';
+import type { ComandoDeBootstrap, ResultadoDoBootstrap, ResumoDaSemeadura } from '../modules/identidade/public-api.js';
 import { ErroDeAmbienteInvalido } from '../shared/infrastructure/configuracao/esquema-de-ambiente.js';
 import { erroDeDominio, ErroDeDominioException } from '../shared/kernel/erro-de-dominio.js';
 import type { ErroDeDominio } from '../shared/kernel/erro-de-dominio.js';
@@ -32,6 +32,16 @@ const CONVITE: ConviteParaEnviar = {
 };
 
 type Executar = () => Promise<Result<ResultadoDoBootstrap, ErroDeDominio>>;
+type ExecutarSemeadura = () => Promise<Result<ResumoDaSemeadura, ErroDeDominio>>;
+
+const RESUMO_DA_SEMEADURA: ResumoDaSemeadura = {
+  instituicaoId: INSTITUICAO_ID,
+  instituicaoCriada: true,
+  usuariosCriados: 9,
+  usuariosJaExistentes: 0,
+};
+
+const semeaduraConcluida: ExecutarSemeadura = () => Promise.resolve(ok(RESUMO_DA_SEMEADURA));
 
 class ContextoDeTeste implements ContextoDoCli {
   readonly comandosRecebidos: ComandoDeBootstrap[] = [];
@@ -43,7 +53,12 @@ class ContextoDeTeste implements ContextoDoCli {
     return Promise.resolve();
   };
 
-  constructor(private readonly executarBootstrap: Executar) {}
+  semeaduras = 0;
+
+  constructor(
+    private readonly executarBootstrap: Executar,
+    private readonly executarSemeadura: ExecutarSemeadura = semeaduraConcluida,
+  ) {}
 
   readonly dependencias = {
     bootstrap: {
@@ -53,6 +68,12 @@ class ContextoDeTeste implements ContextoDoCli {
       },
     },
     enviador: { enviar: (convite: ConviteParaEnviar) => this.enviar(convite) },
+    semeadura: {
+      executar: () => {
+        this.semeaduras += 1;
+        return this.executarSemeadura();
+      },
+    },
   };
 
   encerrar(): Promise<void> {
@@ -196,5 +217,121 @@ describe('executarCli', () => {
 
   it('códigos de saída são distintos e estáveis', () => {
     expect([CODIGO_DE_SUCESSO, CODIGO_DE_INFRAESTRUTURA, CODIGO_DE_USO_OU_VALIDACAO, CODIGO_DE_REGRA]).toEqual([0, 1, 2, 3]);
+  });
+
+  describe('seed-demo', () => {
+    const AMBIENTE_LOCAL = {
+      CDD_AMBIENTE: 'local',
+      KEYCLOAK_URL_BASE: 'http://localhost:8080',
+      BANCO_URL: 'postgres://cdd_app:senha-do-banco@localhost:5433/cdd',
+    };
+    const SEGREDO_NA_URL = 'senha-do-banco';
+
+    function abridorQueLanca(): { abrir: () => Promise<ContextoDoCli>; chamadas: () => number } {
+      let chamadas = 0;
+      return {
+        abrir: () => {
+          chamadas += 1;
+          throw new Error('o contexto não pode ser aberto antes da guarda');
+        },
+        chamadas: () => chamadas,
+      };
+    }
+
+    it.each([
+      ['CDD_AMBIENTE ausente', {}],
+      ['CDD_AMBIENTE=producao', { ...AMBIENTE_LOCAL, CDD_AMBIENTE: 'producao' }],
+      ['CDD_AMBIENTE=homologacao', { ...AMBIENTE_LOCAL, CDD_AMBIENTE: 'homologacao' }],
+      ['CDD_AMBIENTE desconhecido', { ...AMBIENTE_LOCAL, CDD_AMBIENTE: 'staging' }],
+      ['banco no host postgres', { ...AMBIENTE_LOCAL, BANCO_URL: `postgres://cdd_app:${SEGREDO_NA_URL}@postgres:5432/cdd` }],
+      ['banco ausente', { ...AMBIENTE_LOCAL, BANCO_URL: undefined }],
+      ['Keycloak fora do loopback', { ...AMBIENTE_LOCAL, KEYCLOAK_URL_BASE: 'https://id.casa.org' }],
+      ['Keycloak ausente', { ...AMBIENTE_LOCAL, KEYCLOAK_URL_BASE: undefined }],
+    ])('recusa com %s sem abrir contexto, banco ou Keycloak e sai com código de uso', async (_cenario, variaveis) => {
+      const { abrir, chamadas } = abridorQueLanca();
+
+      const saida = await executarCli(['seed-demo'], abrir, variaveis);
+
+      expect(saida.codigoDeSaida).toBe(CODIGO_DE_USO_OU_VALIDACAO);
+      expect(chamadas()).toBe(0);
+      expect(saida.stdout).toEqual([]);
+      expect(saida.stderr).toHaveLength(1);
+      expect(textoDe(saida)).not.toContain(SEGREDO_NA_URL);
+    });
+
+    it.each([['local'], ['ci']])('CDD_AMBIENTE=%s com loopback: abre o contexto, semeia e encerra', async (ambiente) => {
+      const contexto = new ContextoDeTeste(porConvite);
+
+      const saida = await executarCli(['seed-demo'], () => Promise.resolve(contexto), { ...AMBIENTE_LOCAL, CDD_AMBIENTE: ambiente });
+
+      expect(saida.codigoDeSaida).toBe(CODIGO_DE_SUCESSO);
+      expect(contexto.semeaduras).toBe(1);
+      expect(contexto.comandosRecebidos).toEqual([]);
+      expect(contexto.encerrado).toBe(1);
+      expect(saida.stdout).toEqual(
+        expect.arrayContaining([
+          `Instituição de demonstração: ${INSTITUICAO_ID} (criada)`,
+          'Usuários criados: 9; já existentes: 0',
+        ]),
+      );
+      expect(saida.stderr).toEqual([]);
+    });
+
+    it('reexecução: informa que a instituição já existia e que nada foi criado', async () => {
+      const contexto = new ContextoDeTeste(
+        porConvite,
+        () => Promise.resolve(ok({ ...RESUMO_DA_SEMEADURA, instituicaoCriada: false, usuariosCriados: 0, usuariosJaExistentes: 9 })),
+      );
+
+      const saida = await executarCli(['seed-demo'], () => Promise.resolve(contexto), AMBIENTE_LOCAL);
+
+      expect(saida.stdout).toEqual(
+        expect.arrayContaining([`Instituição de demonstração: ${INSTITUICAO_ID} (já existia)`, 'Usuários criados: 0; já existentes: 9']),
+      );
+    });
+
+    it.each([
+      ['INSTITUICAO_NAO_DEMO_EXISTENTE', CODIGO_DE_REGRA],
+      ['SUJEITO_DO_DEV_DIVERGENTE', CODIGO_DE_REGRA],
+      ['DEV_COM_CONVITE_PENDENTE', CODIGO_DE_REGRA],
+      ['DEV_NAO_ENCONTRADO_NO_PROVEDOR', CODIGO_DE_REGRA],
+      ['PROVEDOR_DE_IDENTIDADE_INDISPONIVEL', CODIGO_DE_INFRAESTRUTURA],
+    ] as const)('Result de erro %s: código %i e mensagem objetiva', async (codigo, esperado) => {
+      const contexto = new ContextoDeTeste(porConvite, () => Promise.resolve(err(erroDeDominio(codigo))));
+
+      const saida = await executarCli(['seed-demo'], () => Promise.resolve(contexto), AMBIENTE_LOCAL);
+
+      expect(saida.codigoDeSaida).toBe(esperado);
+      expect(saida.stdout).toEqual([]);
+      expect(saida.stderr).toHaveLength(1);
+      expect(saida.stderr[0]).not.toMatch(/Operação recusada pela regra de negócio/);
+      expect(contexto.encerrado).toBe(1);
+    });
+
+    it('sub divergente do dev manda rodar pnpm infra:zerar', async () => {
+      const contexto = new ContextoDeTeste(porConvite, () => Promise.resolve(err(erroDeDominio('SUJEITO_DO_DEV_DIVERGENTE'))));
+
+      const saida = await executarCli(['seed-demo'], () => Promise.resolve(contexto), AMBIENTE_LOCAL);
+
+      expect(saida.stderr[0]).toContain('pnpm infra:zerar');
+    });
+
+    it('dev com convite pendente explica o convite e manda rodar pnpm infra:zerar', async () => {
+      const contexto = new ContextoDeTeste(porConvite, () => Promise.resolve(err(erroDeDominio('DEV_COM_CONVITE_PENDENTE'))));
+
+      const saida = await executarCli(['seed-demo'], () => Promise.resolve(contexto), AMBIENTE_LOCAL);
+
+      expect(saida.stderr[0]).toContain('convite pendente');
+      expect(saida.stderr[0]).toContain('pnpm infra:zerar');
+    });
+
+    it('o bootstrap não depende de CDD_AMBIENTE nem de loopback', async () => {
+      const contexto = new ContextoDeTeste(porVinculo);
+
+      const saida = await executarCli(ARGUMENTOS, () => Promise.resolve(contexto), { CDD_AMBIENTE: 'producao' });
+
+      expect(saida.codigoDeSaida).toBe(CODIGO_DE_SUCESSO);
+      expect(contexto.semeaduras).toBe(0);
+    });
   });
 });

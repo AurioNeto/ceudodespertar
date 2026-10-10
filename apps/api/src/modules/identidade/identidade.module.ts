@@ -17,6 +17,9 @@ import { RevogarPermissaoDoGrupo } from './application/grupos/revogar-permissao-
 import { BootstrapDaIdentidade } from './application/bootstrap/bootstrap-da-identidade.js';
 import { PersistenciaDoBootstrap } from './application/bootstrap/persistencia-do-bootstrap.js';
 import { SemeadorDeGrupos } from './application/bootstrap/semeador-de-grupos.js';
+import { LocalizadorDeSujeito } from './application/seed-demo/localizador-de-sujeito.js';
+import { PersistenciaDaDemonstracao } from './application/seed-demo/persistencia-da-demonstracao.js';
+import { SemeaduraDeDemonstracao } from './application/seed-demo/semeadura-de-demonstracao.js';
 import { AtivarConvite } from './application/convite/ativar-convite.js';
 import { ConferidorDeSujeito } from './application/convite/conferidor-de-sujeito.js';
 import { EntregaDeConvite } from './application/convite/entrega-de-convite.js';
@@ -59,6 +62,8 @@ import {
 import { ConferidorDeSujeitoKeycloak } from './infrastructure/keycloak/conferidor-de-sujeito.keycloak.js';
 import { ControleDeAcessoNoProvedorKeycloak } from './infrastructure/keycloak/controle-de-acesso-no-provedor.keycloak.js';
 import { EnviadorDeConviteKeycloak } from './infrastructure/keycloak/enviador-de-convite.keycloak.js';
+import { PersistenciaDaDemonstracaoKysely } from './infrastructure/seed-demo/persistencia-da-demonstracao.kysely.js';
+import { LocalizadorDeSujeitoKeycloak } from './infrastructure/keycloak/localizador-de-sujeito.keycloak.js';
 import { LeitorDeGruposDaInstituicaoKysely } from './infrastructure/usuarios/leitor-de-grupos-da-instituicao.kysely.js';
 import { LeitorDeUsuariosKysely } from './infrastructure/usuarios/leitor-de-usuarios.kysely.js';
 import { GravadorDeTrilha } from './infrastructure/auditoria/gravador-de-trilha.js';
@@ -141,10 +146,13 @@ import { GestaoDeUsuariosController } from './interface/http/gestao-de-usuarios.
     { provide: SemeadorDeGrupos, useExisting: SemeadorDeGruposDeSistema },
     { provide: PersistenciaDoBootstrap, useClass: PersistenciaDoBootstrapKysely },
     BootstrapDaIdentidade,
+    { provide: PersistenciaDaDemonstracao, useClass: PersistenciaDaDemonstracaoKysely },
+    { provide: LocalizadorDeSujeito, useClass: LocalizadorDeSujeitoKeycloak },
+    SemeaduraDeDemonstracao,
     ObterEu,
     InvalidadorDoCacheDeAcesso,
     ResolvedorDeContextoDeAcessoDaIdentidade,
   ],
-  exports: [ResolvedorDeContextoDeAcessoDaIdentidade, SemeadorDeGruposDeSistema, BootstrapDaIdentidade, EnviadorDeConvite],
+  exports: [ResolvedorDeContextoDeAcessoDaIdentidade, SemeadorDeGruposDeSistema, BootstrapDaIdentidade, SemeaduraDeDemonstracao, EnviadorDeConvite],
 })
 export class IdentidadeModule {}

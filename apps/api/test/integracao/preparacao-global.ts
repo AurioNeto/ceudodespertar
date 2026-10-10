@@ -1,4 +1,5 @@
-import { readFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { PostgreSqlContainer } from '@testcontainers/postgresql';
@@ -18,6 +19,7 @@ declare module 'vitest' {
     bancoModelo: string;
     senhaCddOwner: string;
     senhaCddApp: string;
+    diretorioDaExecucao: string;
   }
 }
 
@@ -87,6 +89,7 @@ async function subirContainerDePostgres(): Promise<StartedPostgreSqlContainer> {
 }
 
 export async function setup(projeto: ProjetoDoVitest): Promise<() => Promise<void>> {
+  const diretorioDaExecucao = mkdtempSync(join(tmpdir(), 'cdd-execucao-'));
   const container = await subirContainerDePostgres();
 
   const host = container.getHost();
@@ -111,6 +114,7 @@ export async function setup(projeto: ProjetoDoVitest): Promise<() => Promise<voi
     }
   } catch (erroNaPreparacao) {
     await container.stop();
+    rmSync(diretorioDaExecucao, { recursive: true, force: true });
     throw erroNaPreparacao;
   }
 
@@ -122,8 +126,10 @@ export async function setup(projeto: ProjetoDoVitest): Promise<() => Promise<voi
   projeto.provide('bancoModelo', BANCO_MODELO);
   projeto.provide('senhaCddOwner', SENHA_CDD_OWNER);
   projeto.provide('senhaCddApp', SENHA_CDD_APP);
+  projeto.provide('diretorioDaExecucao', diretorioDaExecucao);
 
   return async () => {
     await container.stop();
+    rmSync(diretorioDaExecucao, { recursive: true, force: true });
   };
 }

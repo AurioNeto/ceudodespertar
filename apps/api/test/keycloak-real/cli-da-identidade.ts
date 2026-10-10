@@ -11,12 +11,12 @@ export interface SaidaDoCliReal {
   readonly stderr: string;
 }
 
-function ambienteDoCli(ambiente: AmbienteDoAceite): NodeJS.ProcessEnv {
+function ambienteDoCli(ambiente: AmbienteDoAceite, nomeDoBanco: string, extras: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
   const portaDoPostgres = process.env['ACEITE_PORTA_POSTGRES'];
   return {
     PATH: process.env['PATH'],
     TZ: 'UTC',
-    BANCO_URL: `postgres://cdd_app:${process.env['CDD_APP_SENHA']}@localhost:${portaDoPostgres}/cdd`,
+    BANCO_URL: `postgres://cdd_app:${process.env['CDD_APP_SENHA']}@localhost:${portaDoPostgres}/${nomeDoBanco}`,
     BANCO_POOL_MAXIMO: '4',
     OIDC_EMISSOR: ambiente.emissor,
     OIDC_AUDIENCIA: 'cdd-api',
@@ -26,16 +26,29 @@ function ambienteDoCli(ambiente: AmbienteDoAceite): NodeJS.ProcessEnv {
     CDD_KC_ADMIN_SEGREDO: ambiente.segredoDaContaDeServico,
     APP_URL_BASE: 'http://localhost:5173',
     KEYCLOAK_CLIENT_ID_DO_CONVITE: 'cdd-web',
+    ...extras,
   };
 }
 
-export async function executarBootstrapPeloCli(
+const BANCO_PADRAO_DO_ACEITE = 'cdd';
+
+export function executarBootstrapPeloCli(ambiente: AmbienteDoAceite, argumentos: readonly string[]): Promise<SaidaDoCliReal> {
+  return executarCli(ambiente, ['bootstrap', ...argumentos], BANCO_PADRAO_DO_ACEITE, {});
+}
+
+export function executarSeedDemoPeloCli(ambiente: AmbienteDoAceite, nomeDoBanco: string): Promise<SaidaDoCliReal> {
+  return executarCli(ambiente, ['seed-demo'], nomeDoBanco, { CDD_AMBIENTE: 'local' });
+}
+
+async function executarCli(
   ambiente: AmbienteDoAceite,
   argumentos: readonly string[],
+  nomeDoBanco: string,
+  extras: NodeJS.ProcessEnv,
 ): Promise<SaidaDoCliReal> {
-  const processo = spawn(process.execPath, ['--enable-source-maps', 'dist/identidade-cli/cli.js', 'bootstrap', ...argumentos], {
+  const processo = spawn(process.execPath, ['--enable-source-maps', 'dist/identidade-cli/cli.js', ...argumentos], {
     cwd: RAIZ_DA_API,
-    env: ambienteDoCli(ambiente),
+    env: ambienteDoCli(ambiente, nomeDoBanco, extras),
     timeout: PRAZO_DO_CLI_EM_MS,
   });
   const stdout: Buffer[] = [];

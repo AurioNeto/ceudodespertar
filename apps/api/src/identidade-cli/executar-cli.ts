@@ -3,7 +3,8 @@ import { ErroDeAmbienteInvalido } from '../shared/infrastructure/configuracao/es
 import { ErroDeDominioException } from '../shared/kernel/erro-de-dominio.js';
 import type { ErroDeDominio } from '../shared/kernel/erro-de-dominio.js';
 import type { Result } from '../shared/kernel/result.js';
-import type { ComandoDeBootstrap, ResultadoDoBootstrap } from '../modules/identidade/public-api.js';
+import type { ComandoDeBootstrap, ResultadoDoBootstrap, ResumoDaSemeadura } from '../modules/identidade/public-api.js';
+import { ambientePermiteSeedDemo } from '../shared/infrastructure/configuracao/ambiente-permite-seed-demo.js';
 import type { EnviadorDeConvite } from '../modules/identidade/public-api.js';
 import {
   CODIGO_DE_INFRAESTRUTURA,
@@ -14,9 +15,11 @@ import {
 import { analisarComandoDaIdentidade, ErroDeUsoDoCli, USO_DO_CLI } from './comando-cli.js';
 import type { ComandoDaIdentidade } from './comando-cli.js';
 import {
+  linhasDeSucessoDaSemeadura,
   linhasDeSucessoPorConvite,
   linhasDeSucessoPorVinculo,
   mensagemDeBootstrapGravadoSemConvite,
+  mensagemDaRecusaDoSeed,
   mensagemDoCodigoDeErro,
 } from './mensagens-do-cli.js';
 
@@ -31,8 +34,16 @@ export interface DependenciasDoBootstrap {
   readonly enviador: Pick<EnviadorDeConvite, 'enviar'>;
 }
 
+export interface DependenciasDaSemeadura {
+  readonly semeadura: { executar(): Promise<Result<ResumoDaSemeadura, ErroDeDominio>> };
+}
+
+export type DependenciasDoCli = DependenciasDoBootstrap & DependenciasDaSemeadura;
+
+export type VariaveisDeAmbiente = Readonly<Record<string, string | undefined>>;
+
 export interface ContextoDoCli {
-  readonly dependencias: DependenciasDoBootstrap;
+  readonly dependencias: DependenciasDoCli;
   encerrar(): Promise<void>;
 }
 
@@ -98,8 +109,25 @@ export async function executarBootstrap(
   );
 }
 
-async function executarSubcomando(comando: ComandoDaIdentidade, contexto: ContextoDoCli): Promise<SaidaDoCli> {
-  return executarBootstrap(comando.bootstrap, contexto.dependencias);
+export async function executarSemeadura({ semeadura }: DependenciasDaSemeadura): Promise<SaidaDoCli> {
+  const resultado = await semeadura.executar();
+  if (resultado.tipo === 'erro') return saidaDeRegraRecusada(resultado.erro);
+  return saida(CODIGO_DE_SUCESSO, linhasDeSucessoDaSemeadura(resultado.valor));
+}
+
+function recusaDaGuardaDoSeed(variaveis: VariaveisDeAmbiente): SaidaDoCli | undefined {
+  const guarda = ambientePermiteSeedDemo({
+    ambiente: variaveis['CDD_AMBIENTE'],
+    urlDoKeycloak: variaveis['KEYCLOAK_URL_BASE'] ?? '',
+    urlDoBanco: variaveis['BANCO_URL'] ?? '',
+  });
+  return guarda.tipo === 'erro' ? saida(CODIGO_DE_USO_OU_VALIDACAO, [], [mensagemDaRecusaDoSeed(guarda.erro)]) : undefined;
+}
+
+function executarSubcomando(comando: ComandoDaIdentidade, contexto: ContextoDoCli): Promise<SaidaDoCli> {
+  return comando.subcomando === 'seed-demo'
+    ? executarSemeadura(contexto.dependencias)
+    : executarBootstrap(comando.bootstrap, contexto.dependencias);
 }
 
 async function encerrarSemPerderASaida(contexto: ContextoDoCli, saidaDoComando: SaidaDoCli): Promise<SaidaDoCli> {
@@ -112,12 +140,20 @@ async function encerrarSemPerderASaida(contexto: ContextoDoCli, saidaDoComando: 
   }
 }
 
-export async function executarCli(argumentos: readonly string[], abrirContexto: AbrirContextoDoCli): Promise<SaidaDoCli> {
+export async function executarCli(
+  argumentos: readonly string[],
+  abrirContexto: AbrirContextoDoCli,
+  variaveisDeAmbiente: VariaveisDeAmbiente = {},
+): Promise<SaidaDoCli> {
   let comando: ComandoDaIdentidade;
   try {
     comando = analisarComandoDaIdentidade(argumentos);
   } catch (erro) {
     return saidaDeFalhaInesperada(erro);
+  }
+  if (comando.subcomando === 'seed-demo') {
+    const recusa = recusaDaGuardaDoSeed(variaveisDeAmbiente);
+    if (recusa !== undefined) return recusa;
   }
   let contexto: ContextoDoCli;
   try {
