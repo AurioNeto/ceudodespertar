@@ -384,6 +384,23 @@ describe('VerificacaoLotePage: seleção', () => {
     expect(rotuloDaSelecao(container)).toBe('2 selecionados');
   });
 
+  it('desmarcar a do meio de três marcadas — ficam marcadas as outras duas, e Aprovar selecionados deixa a desmarcada na fila', async () => {
+    const { container } = await montar(<VerificacaoLotePage />);
+    await marcarVarios(container, ['Enel — conta de luz', 'diarista pós-cerimônia', 'TED — Hidro Serviços']);
+
+    await marcar(container, 'diarista pós-cerimônia');
+    const marcadas = caixasDeLinha(container).filter((caixa) => caixa.checked).map((caixa) => caixa.getAttribute('aria-label'));
+    const rotuloDepoisDeDesmarcar = rotuloDaSelecao(container);
+    await aprovarSelecionados(container);
+
+    expect(marcadas).toEqual(['selecionar Enel — conta de luz', 'selecionar TED — Hidro Serviços']);
+    expect(rotuloDepoisDeDesmarcar).toBe('2 selecionados');
+    expect(motivosDaFila(container)).toEqual(
+      MOTIVOS_DA_FILA.filter((motivo) => motivo !== 'Enel — conta de luz' && motivo !== 'TED — Hidro Serviços'),
+    );
+    expect(mensagem(container)).toBe('2 lançamentos aprovados e consolidados.');
+  });
+
   it('Selecionar todos visíveis — marca as doze linhas e a própria caixa', async () => {
     const { container } = await montar(<VerificacaoLotePage />);
 
