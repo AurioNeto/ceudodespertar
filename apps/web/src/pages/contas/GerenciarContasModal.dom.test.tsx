@@ -105,6 +105,12 @@ const linhaGerenciavel = (container: HTMLElement, nome: string) => {
   return editar.parentElement;
 };
 
+const seloDaLinha = (linha: HTMLElement, texto: string) => {
+  const achado = todos<HTMLSpanElement>(linha, 'span').find((no) => no.childElementCount === 0 && no.textContent === texto);
+  if (!achado) throw new Error(`selo não encontrado: ${texto}`);
+  return achado;
+};
+
 const abrirAbaDeFundos = (container: HTMLElement) => clicar(botaoComTexto(container, 'Fundos'));
 const titulosDoFormulario = (container: HTMLElement) =>
   textosDasFolhas(container).filter((texto) => /^(Nova conta|Novo fundo|Editar )/.test(texto));
@@ -186,6 +192,17 @@ describe('GerenciarContasModal: aba de contas', () => {
   });
 
   it.each([
+    { nome: 'Banco da Casa', selo: 'Ativa', cor: 'var(--color-confirmed)', fundo: 'var(--color-confirmed-soft)' },
+    { nome: 'Conta Antiga', selo: 'Inativa', cor: 'var(--color-neutral)', fundo: 'var(--color-neutral-soft)' },
+  ])('selo da conta $nome — diz $selo no tom $cor', async ({ nome, selo, cor, fundo }) => {
+    const { container } = await montarModal();
+
+    const folha = seloDaLinha(linhaGerenciavel(container, nome), selo);
+
+    expect([folha.style.color, folha.style.background]).toEqual([cor, fundo]);
+  });
+
+  it.each([
     { nome: 'Banco da Casa', glifo: 'landmark' },
     { nome: 'Caixa da Chácara', glifo: 'wallet' },
     { nome: 'Conta da Carla', glifo: 'landmark' },
@@ -257,6 +274,18 @@ describe('GerenciarContasModal: aba de fundos', () => {
       'Inativo',
       'Reativar',
     ]);
+  });
+
+  it.each([
+    { nome: 'Obra do dormitório', selo: 'Ativo', cor: 'var(--color-confirmed)', fundo: 'var(--color-confirmed-soft)' },
+    { nome: 'Feitio de dezembro', selo: 'Inativo', cor: 'var(--color-neutral)', fundo: 'var(--color-neutral-soft)' },
+  ])('selo do fundo $nome — diz $selo no tom $cor', async ({ nome, selo, cor, fundo }) => {
+    const { container } = await montarModal();
+    await abrirAbaDeFundos(container);
+
+    const folha = seloDaLinha(linhaGerenciavel(container, nome), selo);
+
+    expect([folha.style.color, folha.style.background]).toEqual([cor, fundo]);
   });
 
   it('marcador de cor — segue a posição do fundo na lista inteira, ativo ou não', async () => {

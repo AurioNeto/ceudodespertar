@@ -193,6 +193,16 @@ describe('FaturasPage em escritório: cabeçalho, cartões e lista de faturas', 
     expect(valor.style.color).toBe('var(--color-attention)');
   });
 
+  it('ícone do cartão — fica em royal no cartão marcado e em meta no outro, e a cor acompanha a troca de cartão', async () => {
+    const { container } = await montar(<FaturasPage />);
+    const coresDosIcones = () => botoesDoTopo(container).map((botao) => elemento(botao, 'svg').getAttribute('stroke'));
+    expect(coresDosIcones()).toEqual(['var(--color-royal)', 'var(--text-meta)']);
+
+    await escolherCartao(container, 'Cartão Itaú Paty');
+
+    expect(coresDosIcones()).toEqual(['var(--text-meta)', 'var(--color-royal)']);
+  });
+
   it('lista de faturas — mostra as do cartão com competência, selo, total e número de compras', async () => {
     const { container } = await montar(<FaturasPage />);
 
