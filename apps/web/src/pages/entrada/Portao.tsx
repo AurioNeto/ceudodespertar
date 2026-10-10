@@ -1,7 +1,6 @@
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
-import { FlowerOfLife, Icon } from '../../ds';
-import { useDensidade } from '../../lib/useDensidade';
+import { FlowerOfLife, Icon, useDensidade } from '../../ds';
 
 export interface PortaoProps {
   titulo: string;

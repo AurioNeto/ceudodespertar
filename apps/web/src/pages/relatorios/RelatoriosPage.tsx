@@ -1,7 +1,6 @@
 import { useState } from 'react';
-import { Button, Icon, ScreenHeader } from '../../ds';
+import { Button, Icon, ScreenHeader, useDensidade } from '../../ds';
 import { Select } from '../../components/Campo';
-import { useDensidade } from '../../lib/useDensidade';
 import { formatarValor, pluralizar } from '../../lib/formato';
 import {
   CATEGORIAS_DE_ENTRADA,

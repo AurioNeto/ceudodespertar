@@ -169,7 +169,7 @@ Os destinos são agrupados por área: `app/`, `dados/`, `lib/`, `ds/`, `testes/`
 | `ds/PainelDeAcao.dom.test.tsx` (PR #55) | `ds/organisms/PainelDeAcao/PainelDeAcao.dom.test.tsx` | mover (do #55) | Mover ds em níveis |
 | `ds/TextField.dom.test.tsx` (do #55) | `ds/molecules/TextField/TextField.dom.test.tsx` | mover (do #55) | Mover ds em níveis |
 | `lib/useDensidade.ts` | `ds/fundacao/useDensidade.ts` | mover | Mover fundação do ds |
-| novo (teste do hook; `lib/` não tem teste dele hoje) | `ds/fundacao/useDensidade.dom.test.ts` | criar | Mover fundação do ds |
+| novo (teste do hook; `lib/` não tem teste dele hoje) | `ds/fundacao/useDensidade.dom.test.ts` | não criado: etapa de mover não ganha teste; a troca de densidade já é exercitada pelo teste do registro de lançamento | Mover fundação do ds |
 | `styles/marca.css` | `ds/fundacao/marca.css` | mover | Mover fundação do ds |
 | `styles/tokens/base.css` | `ds/fundacao/tokens/base.css` | mover | Mover fundação do ds |
 | `styles/tokens/colors.css` (o #55 alterou o arquivo) | `ds/fundacao/tokens/colors.css` | mover (do #55) | Mover fundação do ds |

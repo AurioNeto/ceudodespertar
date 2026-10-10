@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import type { ReactNode } from 'react';
-import { Button, Icon, ScreenHeader, StatusBadge } from '../../ds';
+import { Button, Icon, ScreenHeader, StatusBadge, useDensidade } from '../../ds';
 import { Select, SeletorDeTipo } from '../../components/Campo';
 import { Recado, Rotulo } from '../../components/Blocos';
-import { useDensidade } from '../../lib/useDensidade';
 import { formatarDinheiro } from '../../lib/formato';
 import {
   gerarHash,

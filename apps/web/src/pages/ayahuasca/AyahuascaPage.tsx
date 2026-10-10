@@ -1,7 +1,6 @@
 import { useState } from 'react';
-import { Button, Icon, ScreenHeader, StatusBadge, TextField, type BadgeTone } from '../../ds';
+import { Button, Icon, ScreenHeader, StatusBadge, TextField, type BadgeTone, useDensidade } from '../../ds';
 import { Select, SeletorDeTipo } from '../../components/Campo';
-import { useDensidade } from '../../lib/useDensidade';
 import { formatarLitros, pluralizar } from '../../lib/formato';
 import {
   lotesIniciais,

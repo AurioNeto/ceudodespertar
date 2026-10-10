@@ -7,10 +7,9 @@ import type {
   Refeicao,
   TipoParticipacao,
 } from '@cdd/contracts';
-import { Button, Icon, ScreenHeader, StatusBadge, TextField, type BadgeTone } from '../../ds';
+import { Button, Icon, ScreenHeader, StatusBadge, TextField, type BadgeTone, useDensidade } from '../../ds';
 import { Interruptor, Select, SeletorDeTipo } from '../../components/Campo';
 import { Cartao, Recado, Rotulo } from '../../components/Blocos';
-import { useDensidade } from '../../lib/useDensidade';
 import { formatarBRL, formatarDinheiro, pluralizar } from '../../lib/formato';
 import {
   ANAMNESE_ROTULO,

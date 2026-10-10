@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import type { ReactNode } from 'react';
-import { Button, Icon, ScreenHeader, StatusBadge, TextField } from '../../ds';
+import { Button, Icon, ScreenHeader, StatusBadge, TextField, useDensidade } from '../../ds';
 import { Cartao, Numero, Recado, Rotulo } from '../../components/Blocos';
-import { useDensidade } from '../../lib/useDensidade';
 import { formatarBRL, formatarLitros, pluralizar } from '../../lib/formato';
 import {
   anteriores,

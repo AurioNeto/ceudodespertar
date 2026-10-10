@@ -10,6 +10,7 @@ export type { SheetOption } from './fundacao/opcao';
 export { Button } from './atoms/Button';
 export type { ButtonVariant } from './atoms/Button';
 export type { Density } from './fundacao/densidade';
+export { useDensidade } from './fundacao/useDensidade';
 export { ConfirmAction } from './molecules/ConfirmAction';
 export { DataTable } from './organisms/DataTable';
 export type { Column } from './organisms/DataTable';

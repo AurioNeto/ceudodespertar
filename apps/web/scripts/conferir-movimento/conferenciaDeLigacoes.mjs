@@ -76,6 +76,14 @@ function importadasNoHead(head) {
   return new Set(alvos.map(({ alvo }) => chaveDoAlvo(alvo)));
 }
 
+function exportadasDeArquivosQueSairam({ base, head, mapear }) {
+  return chavesDe(
+    [...base.codigos]
+      .filter((arquivo) => !head.codigos.has(arquivo))
+      .flatMap((arquivo) => base.exportacoes(arquivo).map((ligacao) => mapearLigacao(mapear, ligacao))),
+  );
+}
+
 function declaracoesLocaisDaBase({ base, mapear }, origens) {
   return new Map(
     [...origens].flatMap((origem) =>
@@ -85,7 +93,7 @@ function declaracoesLocaisDaBase({ base, mapear }, origens) {
 }
 
 function ligacoesNovasDoArquivo(contexto, arquivo, origens) {
-  const { base, head, mapear, alvosImportados } = contexto;
+  const { base, head, mapear, alvosImportados, exportadasQueMudaramDeArquivo } = contexto;
   const esperadas = chavesDe(
     [...origens].flatMap((origem) =>
       ligacoesDe(base, origem).map((ligacao) => mapearLigacao(mapear, ligacao)),
@@ -96,12 +104,17 @@ function ligacoesNovasDoArquivo(contexto, arquivo, origens) {
     categoria === 'importacao' && locais.get(nome) === chaveDoAlvo(alvo);
   const exportacaoNecessariaAoImport = ({ categoria, alvo }) =>
     categoria === 'exportacao' && alvo.arquivo === arquivo && alvosImportados().has(chaveDoAlvo(alvo));
+  const reexportaDeclaracaoQueMudouDeArquivo = (ligacao) =>
+    ligacao.categoria === 'exportacao' &&
+    ligacao.alvo.arquivo !== arquivo &&
+    exportadasQueMudaramDeArquivo().has(chaveDaLigacao(ligacao));
 
   return ligacoesDe(head, arquivo).filter(
     (ligacao) =>
       !esperadas.has(chaveDaLigacao(ligacao)) &&
       !vemDeDeclaracaoLocal(ligacao) &&
-      !exportacaoNecessariaAoImport(ligacao),
+      !exportacaoNecessariaAoImport(ligacao) &&
+      !reexportaDeclaracaoQueMudouDeArquivo(ligacao),
   );
 }
 
@@ -146,7 +159,10 @@ export function conferirLigacoes({
   const mapear = criarMapeador(renomeacoes, correspondencias);
   const { origens, destinos } = relacionarArquivos({ base, head, entradas, correspondencias });
   const alvosImportados = memoizarUmaVez(() => importadasNoHead(head));
-  const contexto = { base, head, mapear, alvosImportados };
+  const exportadasQueMudaramDeArquivo = memoizarUmaVez(() =>
+    exportadasDeArquivosQueSairam({ base, head, mapear }),
+  );
+  const contexto = { base, head, mapear, alvosImportados, exportadasQueMudaramDeArquivo };
 
   for (const [arquivo, deOnde] of origens) {
     registrarLigacoes(registrar, 'nova', arquivo, ligacoesNovasDoArquivo(contexto, arquivo, deOnde));

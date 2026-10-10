@@ -1,7 +1,6 @@
 import { useState } from 'react';
-import { Button, ScreenHeader, varianteDoPainel } from '../../ds';
+import { Button, ScreenHeader, varianteDoPainel, useDensidade } from '../../ds';
 import { SeletorDeTipo } from '../../components/Campo';
-import { useDensidade } from '../../lib/useDensidade';
 import { useSessao } from '../../app/sessao';
 import { AbaDeGrupos } from './AbaDeGrupos';
 import { AbaDeUsuarios } from './AbaDeUsuarios';

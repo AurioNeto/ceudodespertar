@@ -1,7 +1,6 @@
 import { useState } from 'react';
-import { Button, Icon, ScreenHeader, StatusBadge, TextField, type BadgeTone } from '../../ds';
+import { Button, Icon, ScreenHeader, StatusBadge, TextField, type BadgeTone, useDensidade } from '../../ds';
 import { Interruptor, Select } from '../../components/Campo';
-import { useDensidade } from '../../lib/useDensidade';
 import { pluralizar } from '../../lib/formato';
 import {
   TIPOS_DE_PERGUNTA,
