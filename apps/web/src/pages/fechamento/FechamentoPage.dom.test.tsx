@@ -15,7 +15,7 @@ const cenario = vi.hoisted(() => {
   };
 });
 
-vi.mock('../../mocks/verificacao', async (importarOriginal) => {
+vi.mock('@/mocks/verificacao', async (importarOriginal) => {
   const original = await importarOriginal<{ filaDeVerificacaoInicial: readonly ItemNaFila[] }>();
   return {
     ...original,
@@ -25,7 +25,7 @@ vi.mock('../../mocks/verificacao', async (importarOriginal) => {
   };
 });
 
-vi.mock('../../mocks/financeiro', async (importarOriginal) => {
+vi.mock('@/mocks/financeiro', async (importarOriginal) => {
   const original = await importarOriginal<{ contas: readonly Conta[] }>();
   return {
     ...original,
@@ -35,7 +35,7 @@ vi.mock('../../mocks/financeiro', async (importarOriginal) => {
   };
 });
 
-vi.mock('../../mocks/lancamentos', async (importarOriginal) => {
+vi.mock('@/mocks/lancamentos', async (importarOriginal) => {
   const original = await importarOriginal<{ lancamentos: readonly LancamentoNaLista[] }>();
   return {
     ...original,
