@@ -550,6 +550,32 @@ describe('ContasEFundoPage: gerenciar contas e fundos', () => {
     expect(blocoDoRotulo(container, 'Saldo consolidado da unidade')[2]).toBe('posição de hoje, 09:12 · 4 contas ativas');
   });
 
+  it('editar um fundo — trocar o valor reajusta o que já tem destino e o Livre, e a reserva continua no mesmo lugar', async () => {
+    const { container } = await montar(<ContasEFundoPage />);
+    await abrirGerenciador(container);
+    await clicar(botaoComTexto(container, 'Fundos'));
+
+    await clicar(elemento(container, 'button[aria-label="editar Feitio de dezembro"]'));
+    await digitar(campoRotulado(container, 'Valor alocado (R$)'), '10.000,00');
+    await clicar(botaoComTexto(container, 'Salvar fundo'));
+
+    await fecharGerenciador(container);
+    expect(blocoDoRotulo(container, 'Já com destino')).toEqual(['Já com destino', '34.400,00']);
+    expect(blocoDoRotulo(container, 'Livre', 0)).toEqual(['Livre', '4.835,40']);
+    expect(linhasDaReserva(container).map((linha) => linha[0])).toEqual([
+      'Obra do dormitório',
+      'Feitio de dezembro',
+      'Emergência e saúde',
+      'Livre',
+    ]);
+    expect(linhasDaReserva(container)[1]).toEqual([
+      'Feitio de dezembro',
+      'insumos, garrafas e deslocamento',
+      '10.000,00',
+      '25%',
+    ]);
+  });
+
   it('novo fundo — com valor lido como 1.500,00, vira reserva de 1.500,00 e tira do Livre', async () => {
     const { container } = await montar(<ContasEFundoPage />);
     await abrirGerenciador(container);

@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Fatura } from '@cdd/contracts';
+import type { ContaId, Fatura } from '@cdd/contracts';
+import { dataLocal } from '@cdd/contracts';
 import { botaoComTexto, clicar, desmontarTudo, digitar, elemento, escolherOpcao, montar, todos } from '@/testes/montagem';
 import { FaturasPage } from './FaturasPage';
 
@@ -655,6 +656,38 @@ describe('FaturasPage: estados vazios e variações que a demonstração não al
 
     expect(container.textContent).toContain('Depois de fechada, compra nova neste cartão entra na fatura seguinte.');
     expect(container.textContent).not.toContain('ainda a conferir');
+  });
+
+  it('compra sem grupo — mostra um traço na coluna Grupo', async () => {
+    const demonstracao = await faturasDaDemonstracao();
+    const agosto = demonstracao.find((fatura) => fatura.id === 'f-cora-08') as Fatura;
+    const semGrupoNaPrimeira = agosto.compras.map((compra, posicao) =>
+      posicao === 0 ? Object.assign({}, compra, { grupo: null }) : compra,
+    );
+    cenario.faturas = comAlteracao(demonstracao, 'f-cora-08', { compras: semGrupoNaPrimeira });
+    const { container } = await montar(<FaturasPage />);
+
+    expect(textosDasFolhas(linhaDaCompra(container, 'mercado da cerimônia de agosto'))).toEqual([
+      '02/08',
+      'mercado da cerimônia de agosto',
+      'Alimentação de cerimônia',
+      '—',
+      'Aurio Neto',
+      '487,40',
+    ]);
+  });
+
+  it('escolher um cartão cuja primeira fatura já está paga — abre a primeira que não está paga', async () => {
+    cenario.faturas = comAlteracao(await faturasDaDemonstracao(), 'f-itau-09', {
+      status: 'PAGA',
+      pagaEm: dataLocal('2026-09-01'),
+      contaPagamentoId: 'cora' as ContaId,
+    });
+    const { container } = await montar(<FaturasPage />);
+
+    await escolherCartao(container, 'Cartão Itaú Paty');
+
+    expect(faturaAtiva(container)).toEqual(['agosto de 2026']);
   });
 
   it('fatura paga sem conta de pagamento conhecida — diz só a data, sem a conta', async () => {
