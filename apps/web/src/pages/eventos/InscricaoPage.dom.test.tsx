@@ -111,6 +111,8 @@ const escolherResponsavel = (container: HTMLElement, nome: string) => escolherOp
 const temIcone = (origem: ParentNode, nome: string) => origem.querySelector(`svg.lucide-${nome}`) !== null;
 const marcadorDaOpcao = (opcao: HTMLElement) => elemento<HTMLSpanElement>(opcao, 'span[aria-hidden]');
 const corDoSelo = (container: HTMLElement, selo: string) => folhaComTexto<HTMLSpanElement>(container, 'span', selo).style.color;
+const linkEstaCopiado = (container: HTMLElement) =>
+  todos<HTMLButtonElement>(container, 'button').some((botao) => botao.textContent === 'Copiado');
 
 const SEM_PENDENCIA: string[][] = [];
 const PENDENCIA_DE_EMERGENCIA = ['Contato de emergência e restrição alimentar', 'IN4'];
@@ -1520,6 +1522,46 @@ describe('InscricaoPage: confirmar e salvar como pendente', () => {
     await clicar(botaoComTexto(container, 'Salvar como pendente'));
 
     expect(recadoMostrado(container)).toContain('com 0 pendências — e nada se perde');
+  });
+
+  it('link copiado e inscrição salva como pendente — o link continua Copiado', async () => {
+    const container = await abrirComPessoa('Helena Duarte');
+    await clicar(botaoComTexto(container, 'Copiar'));
+
+    await clicar(botaoComTexto(container, 'Salvar como pendente'));
+
+    expect(linkEstaCopiado(container)).toBe(true);
+  });
+
+  it('Jornada, beliche e três diárias, inscrição salva como pendente — a Jornada fica marcada e a próxima pessoa abre o beliche em três diárias', async () => {
+    const container = await abrirComPessoa('Helena Duarte');
+    await trocarEvento(container, JORNADA);
+    await escolherHospedagem(container, 'Beliche no dormitório');
+    await escolherDiarias(container, '3');
+    await clicar(botaoComTexto(container, 'Salvar como pendente'));
+    await clicar(botaoDaPessoa(container, 'Marina Tavares'));
+
+    await escolherHospedagem(container, 'Beliche no dormitório');
+
+    expect(marcado(botaoComTexto(container, JORNADA))).toBe(true);
+    expect(seletorDeDiarias(container).value).toBe('3');
+    expect(textoDe(container)).toContain('R$ 150,00 de acomodação, à parte da contribuição.');
+  });
+
+  it('Jornada, beliche e três diárias, inscrição confirmada — a Jornada fica marcada e a próxima pessoa abre o beliche em três diárias', async () => {
+    const container = await abrirComPessoa('Sérgio Bittencourt');
+    await trocarEvento(container, JORNADA);
+    await escolherHospedagem(container, 'Beliche no dormitório');
+    await escolherDiarias(container, '3');
+    await clicar(botaoComTexto(container, 'Alocar um leito'));
+    await clicar(botaoDeConfirmar(container));
+    await clicar(botaoDaPessoa(container, 'Marina Tavares'));
+
+    await escolherHospedagem(container, 'Beliche no dormitório');
+
+    expect(marcado(botaoComTexto(container, JORNADA))).toBe(true);
+    expect(seletorDeDiarias(container).value).toBe('3');
+    expect(textoDe(container)).toContain('R$ 150,00 de acomodação, à parte da contribuição.');
   });
 });
 
