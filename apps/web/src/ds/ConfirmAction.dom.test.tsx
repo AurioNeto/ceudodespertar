@@ -112,9 +112,20 @@ describe('ConfirmAction: sem bloqueio', () => {
     expect(aoConfirmar.mock.calls).toEqual([[]]);
   });
 
-  it('sem onConfirm, clicar não falha', async () => {
-    const { container } = await montar(confirmacao());
-    await expect(clicar(botaoComTexto(container, 'Confirmar'))).resolves.toBeUndefined();
+  it('sem onConfirm, clicar não dispara erro algum', async () => {
+    const errosDaJanela: unknown[] = [];
+    const guardarErro = (evento: ErrorEvent) => {
+      errosDaJanela.push(evento.error);
+      evento.preventDefault();
+    };
+    window.addEventListener('error', guardarErro);
+    try {
+      const { container } = await montar(confirmacao());
+      await clicar(botaoComTexto(container, 'Confirmar'));
+    } finally {
+      window.removeEventListener('error', guardarErro);
+    }
+    expect(errosDaJanela).toEqual([]);
   });
 
   it('lista de bloqueios vazia equivale a sem bloqueio', async () => {
