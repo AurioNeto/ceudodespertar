@@ -10,17 +10,17 @@ import {
   Select,
   SeletorDeTipo,
 } from '@/ds';
-import { formatarLitros, pluralizar } from '../../lib/formato';
+import { formatarLitros, pluralizar } from '@/lib/formato';
 import {
   lotesIniciais,
   movimentosIniciais,
   reservadoInicial,
   reservasIniciais,
-  rotuloDoMovimento,
   type LoteDeDaime,
   type MovimentoDeDaime,
   type SituacaoDoLote,
-} from '../../mocks/ayahuasca';
+} from './mocks/ayahuasca';
+import { rotuloDoMovimento } from './constantes';
 
 type Aba = 'lotes' | 'movimentos' | 'reservas';
 type ModoDoFormulario = 'feitio' | 'saida' | 'transferencia';

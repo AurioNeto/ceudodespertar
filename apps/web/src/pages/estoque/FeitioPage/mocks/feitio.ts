@@ -9,7 +9,7 @@ import type {
   Litros,
 } from '@cdd/contracts';
 import { dataLocal, reais } from '@cdd/contracts';
-import { id } from './ids';
+import { id } from '@/mocks/ids';
 
 /**
  * `S-04` — um feitio em andamento e os anteriores, para o custo por litro ter

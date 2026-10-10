@@ -1,0 +1,1 @@
+export { FeitioPage } from './FeitioPage';

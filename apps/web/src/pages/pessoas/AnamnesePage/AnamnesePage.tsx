@@ -10,14 +10,14 @@ import {
   Interruptor,
   Select,
 } from '@/ds';
-import { pluralizar } from '../../lib/formato';
+import { pluralizar } from '@/lib/formato';
 import {
   TIPOS_DE_PERGUNTA,
   versoesIniciais,
   type PerguntaDoFormulario,
   type SituacaoDaVersao,
   type VersaoDoFormulario,
-} from '../../mocks/anamnese';
+} from './mocks/anamnese';
 
 const TOM_DA_SITUACAO: Record<SituacaoDaVersao, BadgeTone> = {
   rascunho: 'suggest',
