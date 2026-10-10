@@ -10,6 +10,8 @@ import { GeradorFixo, montarEntrega, RepositorioQueGuardaAdicionados, TOKEN_EM_C
 
 const VERSAO = 4;
 const HASH_ANTIGO = 'f'.repeat(64);
+const UMA_HORA_EM_MS = 3_600_000;
+const CONVITE_CRIADO_EM = new Date(AGORA.getTime() - UMA_HORA_EM_MS);
 
 function usuarioEm(situacao: 'CONVITE_PENDENTE' | 'ATIVO' | 'SUSPENSO' | 'REVOGADO'): Usuario {
   return Usuario.reconstituir(
@@ -24,7 +26,7 @@ function usuarioEm(situacao: 'CONVITE_PENDENTE' | 'ATIVO' | 'SUSPENSO' | 'REVOGA
       ativadoEm: null,
       suspensoEm: null,
       ultimoAcessoEm: null,
-      convite: Convite.criar(HASH_ANTIGO, new Date(AGORA.getTime() + 3_600_000), ACESSO.usuarioId, AGORA),
+      convite: Convite.criar(HASH_ANTIGO, new Date(AGORA.getTime() + UMA_HORA_EM_MS), ACESSO.usuarioId, CONVITE_CRIADO_EM),
     },
     VERSAO,
   );

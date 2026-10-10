@@ -7,6 +7,7 @@ import { AMBIENTE } from '../shared/infrastructure/configuracao/esquema-de-ambie
 import type { Ambiente } from '../shared/infrastructure/configuracao/esquema-de-ambiente.js';
 import type { HttpLogger } from 'pino-http';
 import { CABECALHO_DE_CORRELACAO, middlewareDeCorrelacao } from '../shared/infrastructure/log/correlacao.js';
+import { CABECALHO_RETRY_AFTER } from '../shared/infrastructure/http/retry-after.js';
 import { MIDDLEWARE_DE_LOG_HTTP } from '../shared/infrastructure/log/log.module.js';
 
 export const PREFIXO_GLOBAL = 'api/v1';
@@ -22,7 +23,7 @@ export async function criarAplicacao(modulo: Type = AppModule): Promise<INestApp
   const ambiente = app.get<Ambiente>(AMBIENTE);
   app.enableCors({
     origin: ambiente.ORIGENS_CORS.length > 0 ? ambiente.ORIGENS_CORS : false,
-    exposedHeaders: [CABECALHO_DE_CORRELACAO],
+    exposedHeaders: [CABECALHO_DE_CORRELACAO, CABECALHO_RETRY_AFTER],
   });
   return app;
 }
