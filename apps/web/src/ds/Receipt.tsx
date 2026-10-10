@@ -16,7 +16,7 @@ export interface ReceiptLine {
 }
 
 export interface ReceiptProps {
-  title?: string;
+  title: string;
   /** Em reais. */
   amount?: number | null;
   tone?: ReceiptTone;
@@ -27,7 +27,7 @@ export interface ReceiptProps {
 }
 
 export function Receipt({
-  title = 'Registrado',
+  title,
   amount,
   tone = 'entrada',
   lines = [],
