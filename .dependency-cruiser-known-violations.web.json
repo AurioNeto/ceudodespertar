@@ -231,20 +231,6 @@
   {
     "type": "dependency",
     "from": "apps/web/src/app/router.tsx",
-    "to": "apps/web/src/pages/adiantamentos/AdiantamentosPage.tsx",
-    "unresolvedTo": "../pages/adiantamentos/AdiantamentosPage",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/app/router.tsx",
     "to": "apps/web/src/pages/agenda/AgendaPage.tsx",
     "unresolvedTo": "../pages/agenda/AgendaPage",
     "dependencyTypes": [
@@ -289,34 +275,6 @@
     "from": "apps/web/src/app/router.tsx",
     "to": "apps/web/src/pages/conciliacao/ConciliacaoPage.tsx",
     "unresolvedTo": "../pages/conciliacao/ConciliacaoPage",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/app/router.tsx",
-    "to": "apps/web/src/pages/contas/ContasEFundoPage.tsx",
-    "unresolvedTo": "../pages/contas/ContasEFundoPage",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/app/router.tsx",
-    "to": "apps/web/src/pages/emprestimos/EmprestimosPage.tsx",
-    "unresolvedTo": "../pages/emprestimos/EmprestimosPage",
     "dependencyTypes": [
       "local",
       "import"
@@ -415,20 +373,6 @@
     "from": "apps/web/src/app/router.tsx",
     "to": "apps/web/src/pages/eventos/LeitosPage.tsx",
     "unresolvedTo": "../pages/eventos/LeitosPage",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/app/router.tsx",
-    "to": "apps/web/src/pages/faturas/FaturasPage.tsx",
-    "unresolvedTo": "../pages/faturas/FaturasPage",
     "dependencyTypes": [
       "local",
       "import"
@@ -1501,104 +1445,6 @@
   },
   {
     "type": "dependency",
-    "from": "apps/web/src/pages/adiantamentos/AdiantamentosPage.tsx",
-    "to": "apps/web/src/components/Blocos.tsx",
-    "unresolvedTo": "../../components/Blocos",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/adiantamentos/AdiantamentosPage.tsx",
-    "to": "apps/web/src/components/Campo.tsx",
-    "unresolvedTo": "../../components/Campo",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/adiantamentos/AdiantamentosPage.tsx",
-    "to": "apps/web/src/ds/index.ts",
-    "unresolvedTo": "../../ds",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/adiantamentos/AdiantamentosPage.tsx",
-    "to": "apps/web/src/lib/formato.ts",
-    "unresolvedTo": "../../lib/formato",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/adiantamentos/AdiantamentosPage.tsx",
-    "to": "apps/web/src/mocks/adiantamentos.ts",
-    "unresolvedTo": "../../mocks/adiantamentos",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/adiantamentos/AdiantamentosPage.tsx",
-    "to": "apps/web/src/mocks/ids.ts",
-    "unresolvedTo": "../../mocks/ids",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/adiantamentos/AdiantamentosPage.tsx",
-    "to": "apps/web/src/mocks/sessao.ts",
-    "unresolvedTo": "../../mocks/sessao",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
     "from": "apps/web/src/pages/agenda/AgendaPage.tsx",
     "to": "apps/web/src/components/Campo.tsx",
     "unresolvedTo": "../../components/Campo",
@@ -1994,188 +1840,6 @@
     "from": "apps/web/src/pages/conciliacao/ConciliacaoPage.tsx",
     "to": "apps/web/src/mocks/conciliacao.ts",
     "unresolvedTo": "../../mocks/conciliacao",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/contas/ContasEFundoPage.tsx",
-    "to": "apps/web/src/components/Campo.tsx",
-    "unresolvedTo": "../../components/Campo",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/contas/ContasEFundoPage.tsx",
-    "to": "apps/web/src/ds/index.ts",
-    "unresolvedTo": "../../ds",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/contas/ContasEFundoPage.tsx",
-    "to": "apps/web/src/lib/formato.ts",
-    "unresolvedTo": "../../lib/formato",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/contas/ContasEFundoPage.tsx",
-    "to": "apps/web/src/mocks/financeiro.ts",
-    "unresolvedTo": "../../mocks/financeiro",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/contas/GerenciarContasModal.tsx",
-    "to": "apps/web/src/ds/index.ts",
-    "unresolvedTo": "../../ds",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/contas/GerenciarContasModal.tsx",
-    "to": "apps/web/src/lib/formato.ts",
-    "unresolvedTo": "../../lib/formato",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/emprestimos/EmprestimosPage.tsx",
-    "to": "apps/web/src/components/Blocos.tsx",
-    "unresolvedTo": "../../components/Blocos",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/emprestimos/EmprestimosPage.tsx",
-    "to": "apps/web/src/components/Campo.tsx",
-    "unresolvedTo": "../../components/Campo",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/emprestimos/EmprestimosPage.tsx",
-    "to": "apps/web/src/ds/index.ts",
-    "unresolvedTo": "../../ds",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/emprestimos/EmprestimosPage.tsx",
-    "to": "apps/web/src/lib/formato.ts",
-    "unresolvedTo": "../../lib/formato",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/emprestimos/EmprestimosPage.tsx",
-    "to": "apps/web/src/mocks/emprestimos.ts",
-    "unresolvedTo": "../../mocks/emprestimos",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/emprestimos/EmprestimosPage.tsx",
-    "to": "apps/web/src/mocks/ids.ts",
-    "unresolvedTo": "../../mocks/ids",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/emprestimos/EmprestimosPage.tsx",
-    "to": "apps/web/src/mocks/sessao.ts",
-    "unresolvedTo": "../../mocks/sessao",
     "dependencyTypes": [
       "local",
       "import"
@@ -2681,90 +2345,6 @@
     "from": "apps/web/src/pages/eventos/LeitosPage.tsx",
     "to": "apps/web/src/mocks/leitos.ts",
     "unresolvedTo": "../../mocks/leitos",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/faturas/FaturasPage.tsx",
-    "to": "apps/web/src/components/Blocos.tsx",
-    "unresolvedTo": "../../components/Blocos",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/faturas/FaturasPage.tsx",
-    "to": "apps/web/src/components/Campo.tsx",
-    "unresolvedTo": "../../components/Campo",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/faturas/FaturasPage.tsx",
-    "to": "apps/web/src/ds/index.ts",
-    "unresolvedTo": "../../ds",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/faturas/FaturasPage.tsx",
-    "to": "apps/web/src/lib/formato.ts",
-    "unresolvedTo": "../../lib/formato",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/faturas/FaturasPage.tsx",
-    "to": "apps/web/src/mocks/faturas.ts",
-    "unresolvedTo": "../../mocks/faturas",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/faturas/FaturasPage.tsx",
-    "to": "apps/web/src/mocks/sessao.ts",
-    "unresolvedTo": "../../mocks/sessao",
     "dependencyTypes": [
       "local",
       "import"
@@ -4748,20 +4328,6 @@
   {
     "type": "dependency",
     "from": "apps/web/src/app/router.tsx",
-    "to": "apps/web/src/pages/adiantamentos/AdiantamentosPage.tsx",
-    "unresolvedTo": "../pages/adiantamentos/AdiantamentosPage",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "roteador-so-pelo-index-da-pagina"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/app/router.tsx",
     "to": "apps/web/src/pages/agenda/AgendaPage.tsx",
     "unresolvedTo": "../pages/agenda/AgendaPage",
     "dependencyTypes": [
@@ -4806,34 +4372,6 @@
     "from": "apps/web/src/app/router.tsx",
     "to": "apps/web/src/pages/conciliacao/ConciliacaoPage.tsx",
     "unresolvedTo": "../pages/conciliacao/ConciliacaoPage",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "roteador-so-pelo-index-da-pagina"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/app/router.tsx",
-    "to": "apps/web/src/pages/contas/ContasEFundoPage.tsx",
-    "unresolvedTo": "../pages/contas/ContasEFundoPage",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "roteador-so-pelo-index-da-pagina"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/app/router.tsx",
-    "to": "apps/web/src/pages/emprestimos/EmprestimosPage.tsx",
-    "unresolvedTo": "../pages/emprestimos/EmprestimosPage",
     "dependencyTypes": [
       "local",
       "import"
@@ -4932,20 +4470,6 @@
     "from": "apps/web/src/app/router.tsx",
     "to": "apps/web/src/pages/eventos/LeitosPage.tsx",
     "unresolvedTo": "../pages/eventos/LeitosPage",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "roteador-so-pelo-index-da-pagina"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/app/router.tsx",
-    "to": "apps/web/src/pages/faturas/FaturasPage.tsx",
-    "unresolvedTo": "../pages/faturas/FaturasPage",
     "dependencyTypes": [
       "local",
       "import"
@@ -5163,36 +4687,6 @@
         "dependencyTypes": [
           "local",
           "type-only",
-          "import"
-        ]
-      }
-    ]
-  },
-  {
-    "type": "cycle",
-    "from": "apps/web/src/pages/contas/ContasEFundoPage.tsx",
-    "to": "apps/web/src/pages/contas/GerenciarContasModal.tsx",
-    "unresolvedTo": "./GerenciarContasModal",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "web-sem-ciclo"
-    },
-    "cycle": [
-      {
-        "name": "apps/web/src/pages/contas/GerenciarContasModal.tsx",
-        "dependencyTypes": [
-          "local",
-          "import"
-        ]
-      },
-      {
-        "name": "apps/web/src/pages/contas/ContasEFundoPage.tsx",
-        "dependencyTypes": [
-          "local",
           "import"
         ]
       }

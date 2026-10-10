@@ -758,7 +758,7 @@ Títulos na ordem de leitura. Dependências por título.
 | Mover ds em níveis (concluída) | Fronteiras no depcruise; Caracterizar o restante do ds | — |
 | Primitivos para o ds | Caracterizar lib/formato e components; Mover ds em níveis | — |
 | Mover fundação do ds (concluída) | Primitivos para o ds | — |
-| Mover financeiro I | Mover fundação do ds | — |
+| Mover financeiro I (concluída) | Mover fundação do ds | — |
 | Mover financeiro II | Mover financeiro I | — |
 | Mover lancamentos | Mover financeiro II | — |
 | Mover eventos | Mover lancamentos | — |

@@ -3,7 +3,7 @@ import type { Conta, ContaId, Fundo, FundoId } from '@cdd/contracts';
 import { dataLocal, reais } from '@cdd/contracts';
 import { botaoComTexto, clicar, desmontarTudo, digitar, elemento, escolherOpcao, montar, todos } from '@/testes/montagem';
 import { GerenciarContasModal, type GerenciarContasModalProps } from './GerenciarContasModal';
-import { campoRotulado, glifoDe, textosDasFolhas } from './apoioDeTeste';
+import { campoRotulado, glifoDe, textosDasFolhas } from '../../apoioDeTeste';
 
 const HOJE_DA_DEMONSTRACAO = '2026-09-02T12:00:00Z';
 const CARIMBO_DE_HOJE = Date.parse(HOJE_DA_DEMONSTRACAO);

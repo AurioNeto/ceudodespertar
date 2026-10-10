@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import type { DevolucaoEmprestimoId, DirecaoEmprestimo, Emprestimo, EmprestimoId, PessoaId } from '@cdd/contracts';
 import { dataLocal, reais } from '@cdd/contracts';
-import { id as marcarId } from '../../mocks/ids';
-import { Button, DomainError, EmptyState, Icon, ScreenHeader, StatusBadge, TextField, useDensidade } from '../../ds';
-import { Select, SeletorDeTipo } from '../../components/Campo';
-import { BarraDeProporcao, Cartao, Numero, Recado, Rotulo, Td, Th } from '../../components/Blocos';
-import { formatarData, formatarDinheiro, pluralizar } from '../../lib/formato';
+import { id as marcarId } from '@/mocks/ids';
+import { Button, DomainError, EmptyState, Icon, ScreenHeader, StatusBadge, TextField, useDensidade } from '@/ds';
+import { Select, SeletorDeTipo } from '@/components/Campo';
+import { BarraDeProporcao, Cartao, Numero, Recado, Rotulo, Td, Th } from '@/components/Blocos';
+import { formatarData, formatarDinheiro, pluralizar } from '@/lib/formato';
 import {
   contasDeEmprestimo,
   contrapartesConhecidas,
@@ -13,8 +13,8 @@ import {
   emprestimos as emprestimosIniciais,
   quitado,
   saldoDevedor,
-} from '../../mocks/emprestimos';
-import { hoje } from '../../mocks/sessao';
+} from './mocks/emprestimos';
+import { hoje } from '@/mocks/sessao';
 
 type Filtro = 'todos' | 'CONCEDIDO' | 'RECEBIDO' | 'quitados';
 

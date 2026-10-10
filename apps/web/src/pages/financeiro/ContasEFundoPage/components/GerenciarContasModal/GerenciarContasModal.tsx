@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import type { Conta, ContaId, Fundo, FundoId } from '@cdd/contracts';
 import { reais } from '@cdd/contracts';
-import { Icon, StatusBadge } from '../../ds';
-import { formatarDinheiro } from '../../lib/formato';
-import { contaVazia, corDaReserva, ehCaixa, fundoVazio } from './ContasEFundoPage';
+import { Icon, StatusBadge } from '@/ds';
+import { formatarDinheiro } from '@/lib/formato';
+import { ehCaixa } from '../../utils/conta';
+import { corDaReserva } from '../../utils/reservas';
+import { contaVazia, fundoVazio } from './utils/novos';
 
 export interface GerenciarContasModalProps {
   contas: readonly Conta[];

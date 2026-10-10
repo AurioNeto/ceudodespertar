@@ -1,6 +1,6 @@
 import type { Adiantamento, AdiantamentoId, ContaId, LancamentoId, PessoaId } from '@cdd/contracts';
 import { dataLocal, reais } from '@cdd/contracts';
-import { id } from './ids';
+import { id } from '@/mocks/ids';
 
 /**
  * Adiantamentos: quem tirou do próprio bolso e ainda não foi ressarcido.

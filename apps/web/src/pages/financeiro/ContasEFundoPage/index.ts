@@ -1,0 +1,1 @@
+export { ContasEFundoPage } from './ContasEFundoPage';

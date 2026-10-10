@@ -1,0 +1,1 @@
+export { EmprestimosPage } from './EmprestimosPage';

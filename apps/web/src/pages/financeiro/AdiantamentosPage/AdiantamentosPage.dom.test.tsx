@@ -5,8 +5,8 @@ import { AdiantamentosPage } from './AdiantamentosPage';
 
 const cenario = vi.hoisted(() => ({ adiantamentos: undefined as readonly Adiantamento[] | undefined }));
 
-vi.mock('@/mocks/adiantamentos', async (importarOriginal) => {
-  const original = await importarOriginal<typeof import('@/mocks/adiantamentos')>();
+vi.mock('@/pages/financeiro/AdiantamentosPage/mocks/adiantamentos', async (importarOriginal) => {
+  const original = await importarOriginal<typeof import('@/pages/financeiro/AdiantamentosPage/mocks/adiantamentos')>();
   return {
     ...original,
     get adiantamentos() {
@@ -916,7 +916,7 @@ describe('AdiantamentosPage em campo', () => {
 
 describe('AdiantamentosPage: variações que a demonstração não alcança', () => {
   it('sem nenhum fechado — a seção Fechados não aparece e o resumo mostra 0', async () => {
-    const demonstracao = (await vi.importActual<typeof import('@/mocks/adiantamentos')>('@/mocks/adiantamentos'))
+    const demonstracao = (await vi.importActual<typeof import('@/pages/financeiro/AdiantamentosPage/mocks/adiantamentos')>('@/pages/financeiro/AdiantamentosPage/mocks/adiantamentos'))
       .adiantamentos;
     cenario.adiantamentos = demonstracao.filter((adiantamento) => adiantamento.status !== 'RESSARCIDO');
     const { container } = await montar(<AdiantamentosPage />);
@@ -926,7 +926,7 @@ describe('AdiantamentosPage: variações que a demonstração não alcança', ()
   });
 
   it('a ressarcir com menos de 30 dias — não mostra o selo de idade', async () => {
-    const demonstracao = (await vi.importActual<typeof import('@/mocks/adiantamentos')>('@/mocks/adiantamentos'))
+    const demonstracao = (await vi.importActual<typeof import('@/pages/financeiro/AdiantamentosPage/mocks/adiantamentos')>('@/pages/financeiro/AdiantamentosPage/mocks/adiantamentos'))
       .adiantamentos;
     cenario.adiantamentos = demonstracao.filter((adiantamento) => adiantamento.id !== 'a-3');
     const { container } = await montar(<AdiantamentosPage />);
@@ -939,7 +939,7 @@ describe('AdiantamentosPage: variações que a demonstração não alcança', ()
     { dias: 30, dataDespesa: '2026-08-03', selo: [] },
     { dias: 31, dataDespesa: '2026-08-02', selo: ['há 31 dias'] },
   ])('a ressarcir há $dias dias — o selo de idade só aparece acima de 30', async ({ dataDespesa, selo }) => {
-    const demonstracao = (await vi.importActual<typeof import('@/mocks/adiantamentos')>('@/mocks/adiantamentos'))
+    const demonstracao = (await vi.importActual<typeof import('@/pages/financeiro/AdiantamentosPage/mocks/adiantamentos')>('@/pages/financeiro/AdiantamentosPage/mocks/adiantamentos'))
       .adiantamentos;
     cenario.adiantamentos = demonstracao
       .filter((adiantamento) => adiantamento.id !== 'a-3')
@@ -952,7 +952,7 @@ describe('AdiantamentosPage: variações que a demonstração não alcança', ()
   });
 
   it('aguardando autorização há mais de 30 dias — a fila não mostra o selo de idade', async () => {
-    const demonstracao = (await vi.importActual<typeof import('@/mocks/adiantamentos')>('@/mocks/adiantamentos'))
+    const demonstracao = (await vi.importActual<typeof import('@/pages/financeiro/AdiantamentosPage/mocks/adiantamentos')>('@/pages/financeiro/AdiantamentosPage/mocks/adiantamentos'))
       .adiantamentos;
     cenario.adiantamentos = demonstracao.map((adiantamento) =>
       adiantamento.id === 'a-1' ? Object.assign({}, adiantamento, { dataDespesa: '2026-07-01' }) : adiantamento,

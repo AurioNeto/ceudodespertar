@@ -6,8 +6,8 @@ import { FaturasPage } from './FaturasPage';
 
 const cenario = vi.hoisted(() => ({ faturas: undefined as readonly Fatura[] | undefined }));
 
-vi.mock('@/mocks/faturas', async (importarOriginal) => {
-  const original = await importarOriginal<typeof import('@/mocks/faturas')>();
+vi.mock('@/pages/financeiro/FaturasPage/mocks/faturas', async (importarOriginal) => {
+  const original = await importarOriginal<typeof import('@/pages/financeiro/FaturasPage/mocks/faturas')>();
   return {
     ...original,
     get faturas() {
@@ -633,7 +633,7 @@ describe('FaturasPage em campo', () => {
 });
 
 describe('FaturasPage: estados vazios e variações que a demonstração não alcança', () => {
-  const faturasDaDemonstracao = async () => (await vi.importActual<typeof import('@/mocks/faturas')>('@/mocks/faturas')).faturas;
+  const faturasDaDemonstracao = async () => (await vi.importActual<typeof import('@/pages/financeiro/FaturasPage/mocks/faturas')>('@/pages/financeiro/FaturasPage/mocks/faturas')).faturas;
 
   const comAlteracao = (lista: readonly Fatura[], id: string, alteracao: Partial<Fatura>): Fatura[] =>
     lista.map((fatura) => (fatura.id === id ? Object.assign({}, fatura, alteracao) : fatura));
