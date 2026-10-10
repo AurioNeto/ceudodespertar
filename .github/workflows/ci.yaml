@@ -113,3 +113,44 @@ jobs:
 
       - name: tipos do kysely batem com o banco migrado
         run: pnpm --filter @cdd/api db:gerar-tipos:verificar
+
+  e2e:
+    name: e2e
+    runs-on: ubuntu-latest
+    # medido em ubuntu-latest: ~70s (pull ~11s, Keycloak healthy ~25s, testes ~20s); a folga cobre pull lento e
+    # Keycloak travado no healthcheck (o script espera até 300s), sem acomodar regressão de tempo
+    timeout-minutes: 10
+    steps:
+      - name: checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: instalar pnpm
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+
+      - name: instalar node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: instalar dependencias
+        run: pnpm install --frozen-lockfile
+
+      # sobe compose num projeto isolado (cdd-aceite-<pid>), compila a API com tsc, migra e roda o aceite real;
+      # o trap do script derruba o projeto (down -v) ao sair, inclusive em falha
+      - name: aceite real com keycloak
+        id: aceite
+        env:
+          ACEITE_DIRETORIO_DO_LOG: ${{ runner.temp }}/aceite-log
+        run: pnpm test:keycloak
+
+      - name: publicar log da api
+        if: failure() && steps.aceite.conclusion == 'failure'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: aceite-log-da-api
+          path: ${{ runner.temp }}/aceite-log/api.log
+          if-no-files-found: warn
+          retention-days: 3

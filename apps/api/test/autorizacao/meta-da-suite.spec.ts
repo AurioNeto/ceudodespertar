@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { CATALOGO_DO_DOC_3_SECAO_11 } from './catalogo-do-doc-3-secao-11.js';
+import { CATALOGO_DO_DOC_3_SECAO_11, MARCAS_COBERTAS_NO_ACEITE } from './catalogo-do-doc-3-secao-11.js';
 import type { CasoDoDoc3 } from './catalogo-do-doc-3-secao-11.js';
 import { ETAPA_ATUAL } from './etapa-atual.js';
-import { configsDaApiNoCi, lerSecao11DoDoc3, lerTestesDaApi, lerTestesDosContratos, lerWorkflowDoCi } from './leitor-de-testes.js';
+import { configsDaApiNoCi, lerSecao11DoDoc3, lerTestesDaApi, lerTestesDoAceite, lerTestesDosContratos, lerWorkflowDoCi } from './leitor-de-testes.js';
 import {
   casosBloqueadosSemTodo,
   casosSemTeste,
@@ -12,6 +12,7 @@ import {
   extrairTestes,
   globParaRegex,
   lacunasComProblema,
+  lacunasSemCoberturaNoAceite,
   lerConfiguracaoDoVitest,
 } from './meta-da-suite.js';
 import type { SituacaoDoTeste } from './meta-da-suite.js';
@@ -283,6 +284,49 @@ describe('M4 · lacunas declaradas', () => {
     const testes = extrairTestes('a.spec.ts', "it.todo('T28b · x — lacuna da B1');");
 
     expect(lacunasComProblema([comLacuna], testes)).toEqual([{ marca: 'T28b', problema: 'sem-todo-visivel' }]);
+  });
+});
+
+describe('M5 · lacunas cobertas no aceite', () => {
+  const comLacuna = caso('T28', { lacunasDeclaradas: [{ marca: 'T28b', etapa: 'B0' }] });
+  const marcas = ['T28b'];
+
+  it('suíte real — marcas cobertas no aceite — todas têm teste ativo em keycloak-real', () => {
+    expect(lacunasSemCoberturaNoAceite(CATALOGO_DO_DOC_3_SECAO_11, MARCAS_COBERTAS_NO_ACEITE, lerTestesDoAceite())).toEqual([]);
+  });
+
+  it('suíte real — lista de marcas cobertas — inclui a lacuna T26 do Keycloak', () => {
+    expect(MARCAS_COBERTAS_NO_ACEITE).toContain('T26 · Keycloak');
+  });
+
+  it('aceite sem nenhum teste da marca — catálogo sintético — é acusada', () => {
+    expect(lacunasSemCoberturaNoAceite([comLacuna], marcas, [])).toEqual(['T28b']);
+  });
+
+  it('aceite com teste ativo da marca — catálogo sintético — não é acusada', () => {
+    const testes = extrairTestes('a.aceite.ts', "it('T28b · x', () => {});");
+
+    expect(lacunasSemCoberturaNoAceite([comLacuna], marcas, testes)).toEqual([]);
+  });
+
+  it('aceite com a marca em describe ativo — catálogo sintético — não é acusada', () => {
+    const testes = extrairTestes('a.aceite.ts', "describe('T28b · x', () => { it('y', () => {}); });");
+
+    expect(lacunasSemCoberturaNoAceite([comLacuna], marcas, testes)).toEqual([]);
+  });
+
+  it.each([
+    { forma: 'it.skip', fonte: "it.skip('T28b · x', () => {});" },
+    { forma: 'it.todo', fonte: "it.todo('T28b · x');" },
+    { forma: 'opção skip', fonte: "it('T28b · x', { skip: true }, () => {});" },
+    { forma: 'título renomeado', fonte: "it('T28 · x', () => {});" },
+    { forma: 'marca só vizinha', fonte: "it('T28bb · x', () => {});" },
+  ])('aceite com $forma — catálogo sintético — é acusada', ({ fonte }) => {
+    expect(lacunasSemCoberturaNoAceite([comLacuna], marcas, extrairTestes('a.aceite.ts', fonte))).toEqual(['T28b']);
+  });
+
+  it('lacuna fora da lista de cobertas no aceite — catálogo sintético — não é exigida', () => {
+    expect(lacunasSemCoberturaNoAceite([comLacuna], [], [])).toEqual([]);
   });
 });
 

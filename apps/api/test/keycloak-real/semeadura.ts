@@ -90,6 +90,51 @@ export async function lerUsuarioNoBanco(urlDoBancoDoDono: string, instituicaoId:
   }
 }
 
+export interface LinhaDaTrilha {
+  readonly operacao: string;
+  readonly autor_tipo: string;
+  readonly autor_usuario_id: string | null;
+  readonly autor_grupos: string[];
+  readonly agregado_tipo: string;
+  readonly detalhes: { rotulo: string; valor: string }[];
+  readonly sensivel: boolean;
+}
+
+export async function lerTrilhaDoAgregado(urlDoBancoDoDono: string, instituicaoId: string, agregadoId: string): Promise<LinhaDaTrilha[]> {
+  const cliente = new Client({ connectionString: urlDoBancoDoDono });
+  await cliente.connect();
+  try {
+    await cliente.query('begin');
+    await cliente.query('select set_config($1, $2, true)', [VARIAVEL_DA_INSTITUICAO, instituicaoId]);
+    const { rows } = await cliente.query<LinhaDaTrilha>(
+      `select operacao, autor_tipo, autor_usuario_id, autor_grupos, agregado_tipo, detalhes, sensivel
+         from identidade.registro_de_auditoria where agregado_id = $1 order by em, id`,
+      [agregadoId],
+    );
+    await cliente.query('rollback');
+    return rows;
+  } finally {
+    await cliente.end();
+  }
+}
+
+export async function lerGrupoDoGestor(urlDoBancoDoDono: string, instituicaoId: string, gestorId: string): Promise<string[]> {
+  const cliente = new Client({ connectionString: urlDoBancoDoDono });
+  await cliente.connect();
+  try {
+    await cliente.query('begin');
+    await cliente.query('select set_config($1, $2, true)', [VARIAVEL_DA_INSTITUICAO, instituicaoId]);
+    const { rows } = await cliente.query<{ grupo_id: string }>(
+      'select grupo_id from identidade.usuario_grupo where usuario_id = $1',
+      [gestorId],
+    );
+    await cliente.query('rollback');
+    return rows.map(({ grupo_id: grupoId }) => grupoId);
+  } finally {
+    await cliente.end();
+  }
+}
+
 export async function recuarCriacaoDoConviteVigente(
   urlDoBancoDoDono: string,
   instituicaoId: string,

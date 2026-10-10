@@ -4,13 +4,21 @@ set -euo pipefail
 raiz="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 cd "$raiz"
 
-if [ ! -f .env ]; then
-  echo "aceite-keycloak: .env ausente na raiz; copie de .env.example" >&2
-  exit 1
+# Na CI (CI=true) não há .env: usa o .env.example, que só tem valores de dev local.
+# Fora da CI a ausência do .env continua sendo erro, para ninguém rodar com defaults sem perceber.
+arquivo_de_ambiente=.env
+if [ ! -f "$arquivo_de_ambiente" ]; then
+  if [ "${CI:-}" = "true" ] && [ -f .env.example ]; then
+    arquivo_de_ambiente=.env.example
+    echo "aceite-keycloak: CI sem .env; usando .env.example (valores de dev)"
+  else
+    echo "aceite-keycloak: .env ausente na raiz; copie de .env.example" >&2
+    exit 1
+  fi
 fi
 
 set -a
-. ./.env
+. "./$arquivo_de_ambiente"
 set +a
 
 porta_livre() {
@@ -23,9 +31,17 @@ export ACEITE_PORTA_MAILPIT="${ACEITE_PORTA_MAILPIT:-$(porta_livre)}"
 export ACEITE_PORTA_API="${ACEITE_PORTA_API:-$(porta_livre)}"
 
 projeto="cdd-aceite-$$"
-compose=(docker compose -p "$projeto" --env-file .env -f compose.yaml -f infra/aceite/compose.aceite.yaml)
+compose=(docker compose -p "$projeto" --env-file "$arquivo_de_ambiente" -f compose.yaml -f infra/aceite/compose.aceite.yaml)
 
-diretorio_do_log="$(mktemp -d "${TMPDIR:-/tmp}/cdd-aceite-api-XXXXXX")"
+# ACEITE_DIRETORIO_DO_LOG pré-definido (a CI usa isso para publicar o log): o script o cria e nunca o apaga
+if [ -n "${ACEITE_DIRETORIO_DO_LOG:-}" ]; then
+  diretorio_do_log="$ACEITE_DIRETORIO_DO_LOG"
+  mkdir -p "$diretorio_do_log"
+  apagar_log_no_sucesso=0
+else
+  diretorio_do_log="$(mktemp -d "${TMPDIR:-/tmp}/cdd-aceite-api-XXXXXX")"
+  apagar_log_no_sucesso=1
+fi
 export ACEITE_DIRETORIO_DO_LOG="$diretorio_do_log"
 
 derrubar() {
@@ -42,7 +58,9 @@ derrubar() {
       ;;
   esac
   if [ "$status" -eq 0 ]; then
-    rm -rf "$diretorio_do_log"
+    if [ "$apagar_log_no_sucesso" -eq 1 ]; then
+      rm -rf "$diretorio_do_log"
+    fi
   else
     echo "aceite-keycloak: log da API mantido em $diretorio_do_log/api.log" >&2
   fi

@@ -304,6 +304,26 @@ seed, ou conclua o convite pendente.
 Se o `dev@cdd.local` não existir no realm (código `3`), suba a infraestrutura com `pnpm infra:subir`
 para importar o realm. Keycloak indisponível sai com código `1`.
 
+### Aceite real com Keycloak (`pnpm test:keycloak`)
+
+Sobe Postgres, Keycloak e Mailpit num projeto compose isolado (`cdd-aceite-<pid>`, portas livres,
+`infra/aceite/compose.aceite.yaml`), compila a API com `tsc`, migra e roda os arquivos de
+`apps/api/test/keycloak-real/`: login real, convite lido no Mailpit, suspensão/reativação, trilha
+de auditoria, T26 (usuário desativado não obtém token) e o seed de demonstração. O trap do script
+derruba o projeto (`down -v` só dele) ao sair, inclusive em falha.
+
+Na CI roda no job `e2e` de `.github/workflows/ci.yaml`, em paralelo a `qualidade` e `integracao`
+(meta: ~70 s). Com `CI=true` e sem `.env`, o script usa o `.env.example` (só valores de dev).
+Local, sem `.env` ele falha: copie o `.env.example`.
+
+Quando o job `e2e` falhar:
+
+1. Baixe o artefato `aceite-log-da-api` (retenção de 3 dias) na página da execução: é o `api.log` da API.
+2. Procure no log do job a linha do teste vermelho (reporter verbose) e cruze com o `api.log`.
+3. Reproduza local com `pnpm test:keycloak`; o log fica em `$ACEITE_DIRETORIO_DO_LOG/api.log`
+   (o script imprime o caminho em falha). `ACEITE_DIRETORIO_DO_LOG` definido por você não é apagado.
+4. Se o log disser "FALHA ao derrubar o projeto", derrube à mão com o comando que ele imprime.
+
 ---
 
 ## Handoff original do Claude Design
