@@ -225,6 +225,39 @@ export const CASOS_POSITIVOS: readonly CasoDeFixture[] = [
       'sql:transacao',
     ),
   },
+  {
+    caso: 'pg-fora-da-persistencia',
+    violacoes: esperar('modules/m/application/apagar.ts', 'fora-da-persistencia', 'query'),
+  },
+  {
+    caso: 'pg-em-leitor',
+    violacoes: esperar(
+      'modules/m/infrastructure/leitor-g.ts',
+      'leitura-fora-da-allowlist',
+      'sql:transacao',
+      'sql:escrita',
+      'sql:escrita',
+      'connect',
+    ).concat(esperar('modules/m/infrastructure/leitor-g.ts', 'sql-indeterminado', 'query')),
+  },
+  {
+    caso: 'pg-na-persistencia',
+    violacoes: esperar('modules/m/infrastructure/repositorio-pg.ts', 'so-no-banco', 'sql:transacao'),
+  },
+  {
+    caso: 'pg-sonda-que-escreve',
+    violacoes: esperar(
+      'shared/infrastructure/saude/verificador-de-prontidao.ts',
+      'leitura-fora-da-allowlist',
+      'sql:escrita',
+    ).concat(
+      esperar('shared/infrastructure/saude/verificador-de-prontidao.ts', 'fora-da-persistencia', 'end', 'selectFrom', 'execute'),
+    ),
+  },
+  {
+    caso: 'pg-modulo-de-saude-alem-do-end',
+    violacoes: esperar('shared/infrastructure/saude/saude.module.ts', 'fora-da-persistencia', 'query'),
+  },
 ];
 
 export const CASOS_NEGATIVOS: readonly CasoDeFixture[] = [
@@ -252,4 +285,6 @@ export const CASOS_NEGATIVOS: readonly CasoDeFixture[] = [
     violacoes: [],
     achados: achar('transacao-em-sql', 'transacao', 'transacao', 'transacao'),
   },
+  { caso: 'pg-sonda-so-le', violacoes: [] },
+  { caso: 'pg-modulo-de-saude-so-encerra', violacoes: [] },
 ];

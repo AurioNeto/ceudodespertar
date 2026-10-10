@@ -12,6 +12,7 @@ import type { ProgramaAnalisavel } from './motor-de-programa.js';
 import {
   ARQUIVOS_QUE_PODEM_AJUSTAR_A_SESSAO,
   ARQUIVOS_QUE_ENCERRAM_TRANSACAO_EM_SQL_CRU,
+  EXCECOES_DE_PG_FORA_DA_PERSISTENCIA,
   EXCECOES_DE_ROTA_FORA_DO_NEST,
   EXCECOES_DE_SQL_INDETERMINADO,
   MEMBROS_DE_ESCRITA,
@@ -20,6 +21,7 @@ import {
   PASTA_DO_BANCO,
   zonaDoArquivo,
 } from './politica-da-api.js';
+import type { ZonaDoArquivo } from './politica-da-api.js';
 
 export type RegraViolada =
   | 'fora-da-persistencia'
@@ -49,7 +51,8 @@ export interface Relatorio {
   readonly achados: readonly Achado[];
 }
 
-const PACOTES_DE_DADOS = /\/node_modules\/(kysely|@mikro-orm\/[^/]+)\//;
+const PACOTES_DE_DADOS = /\/node_modules\/(kysely|@mikro-orm\/[^/]+|pg|@types\/pg)\//;
+const PACOTE_PG = /\/node_modules\/(pg|@types\/pg)\//;
 const PACOTE_KYSELY = /\/node_modules\/kysely\//;
 const PACOTE_MIKRO_ORM = /\/node_modules\/@mikro-orm\/[^/]+\//;
 const PACOTES_HTTP = /\/node_modules\/@nestjs\/(common|core)\//;
@@ -74,6 +77,7 @@ const MEMBROS_QUE_EXPOEM_O_SERVIDOR: ReadonlySet<string> = new Set(['getInstance
 const CHAMADA_DE_SET_CONFIG = /\bset_config\b/i;
 const PROFUNDIDADE_MAXIMA_DE_CONSTANTE = 8;
 const MARCA_DE_INTERPOLACAO = '?';
+const VALOR_NUMERICO_OPACO = '0';
 
 type CategoriaDeSql = 'leitura' | 'fragmento' | 'escrita' | 'controle' | 'transacao' | 'set' | 'set-config';
 
@@ -195,9 +199,14 @@ function textoLiteral(checker: ts.TypeChecker, expressao: ts.Expression, profund
     }
     return texto;
   }
+  if (ehNumerico(checker, expressao)) return VALOR_NUMERICO_OPACO;
   if (ts.isIdentifier(expressao)) return textoDeConstante(checker, expressao, profundidade);
   const tipo = checker.getTypeAtLocation(expressao);
   return tipo.isStringLiteral() ? tipo.value : undefined;
+}
+
+function ehNumerico(checker: ts.TypeChecker, expressao: ts.Expression): boolean {
+  return (checker.getTypeAtLocation(expressao).flags & ts.TypeFlags.NumberLike) !== 0;
 }
 
 function textoDeConstante(checker: ts.TypeChecker, identificador: ts.Identifier, profundidade: number): string | undefined {
@@ -236,6 +245,17 @@ function algumaInstrucaoComecaComInterpolacao(modelo: ts.TemplateLiteral): boole
   return instrucoesDe(semComentarios(textoDoTemplateMarcado(modelo))).some((instrucao) =>
     instrucao.trimStart().startsWith(MARCA_DE_INTERPOLACAO),
   );
+}
+
+function textoDoArgumento(argumento: ts.Expression): ts.Expression {
+  if (!ts.isObjectLiteralExpression(argumento)) return argumento;
+  for (const propriedade of argumento.properties) {
+    if (ts.isShorthandPropertyAssignment(propriedade) && propriedade.name.text === 'text') return propriedade.name;
+    if (ts.isPropertyAssignment(propriedade) && ts.isIdentifier(propriedade.name) && propriedade.name.text === 'text') {
+      return propriedade.initializer;
+    }
+  }
+  return argumento;
 }
 
 function ehCaminhoDeRota(checker: ts.TypeChecker, argumento: ts.Expression | undefined): boolean {
@@ -322,7 +342,7 @@ class Coletor {
       (simbolo.flags & ts.SymbolFlags.Value) !== 0 &&
       declaradoEm(simbolo, PACOTES_DE_DADOS);
     if (!ehValorDeDados || ehEsquerdaDeMembroDeDados(this.checker, identificador)) return;
-    this.usoDeDados(identificador, simbolo.getName());
+    this.usoDeDados(identificador, simbolo.getName(), simbolo);
   }
 
   private usoPorIndice(acesso: ts.ElementAccessExpression): void {
@@ -330,13 +350,13 @@ class Coletor {
     if (!ts.isStringLiteralLike(argumento)) return;
     const simbolo = this.checker.getTypeAtLocation(acesso.expression).getProperty(argumento.text);
     const ehDeDados = simbolo !== undefined && declaradoEm(simbolo, PACOTES_DE_DADOS);
-    if (ehDeDados) this.usoDeDados(acesso, argumento.text);
+    if (ehDeDados) this.usoDeDados(acesso, argumento.text, simbolo);
   }
 
-  private usoDeDados(no: ts.Node, nome: string): void {
+  private usoDeDados(no: ts.Node, nome: string, simbolo: ts.Symbol): void {
     const zona = zonaDoArquivo(this.relativo);
     if (zona === 'fora') {
-      this.violar(no, 'fora-da-persistencia', nome);
+      if (!this.ehPgPermitidoForaDaPersistencia(nome, simbolo)) this.violar(no, 'fora-da-persistencia', nome);
       return;
     }
     const ehNoBanco = this.relativo.startsWith(PASTA_DO_BANCO);
@@ -348,16 +368,31 @@ class Coletor {
     }
   }
 
+  private ehPgPermitidoForaDaPersistencia(nome: string, simbolo: ts.Symbol): boolean {
+    return (
+      declaradoEm(simbolo, PACOTE_PG) &&
+      Object.hasOwn(EXCECOES_DE_PG_FORA_DA_PERSISTENCIA, this.relativo) &&
+      Object.hasOwn(EXCECOES_DE_PG_FORA_DA_PERSISTENCIA[this.relativo as keyof typeof EXCECOES_DE_PG_FORA_DA_PERSISTENCIA], nome)
+    );
+  }
+
+  private zonaParaSql(): ZonaDoArquivo {
+    const zona = zonaDoArquivo(this.relativo);
+    return zona === 'fora' && Object.hasOwn(EXCECOES_DE_PG_FORA_DA_PERSISTENCIA, this.relativo) ? 'leitura' : zona;
+  }
+
   private sqlDeChamada(chamada: ts.CallExpression): void {
     const nomeDoCallee = nomeDoMembro(chamada);
     const primeiro = chamada.arguments[0];
     if (nomeDoCallee === undefined || primeiro === undefined) return;
     const simbolo = simboloResolvido(this.checker, nomeDoCallee);
     if (simbolo === undefined) return;
-    const ehExecutarSqlDoOrm = nomeDoCallee.text === 'execute' && declaradoEm(simbolo, PACOTE_MIKRO_ORM);
+    const ehExecutarSqlDoOrm =
+      (nomeDoCallee.text === 'execute' && declaradoEm(simbolo, PACOTE_MIKRO_ORM)) ||
+      (nomeDoCallee.text === 'query' && declaradoEm(simbolo, PACOTE_PG));
     const ehSqlCru = nomeDoCallee.text === 'raw' && declaradoEm(simbolo, PACOTES_DE_DADOS);
     if (!ehExecutarSqlDoOrm && !ehSqlCru) return;
-    const texto = textoLiteral(this.checker, primeiro);
+    const texto = textoLiteral(this.checker, textoDoArgumento(primeiro));
     const executado = () => ehExecutarSqlDoOrm || this.ehExecutado(chamada);
     this.avaliarSql(chamada, nomeDoCallee.text, texto, executado);
   }
@@ -373,7 +408,7 @@ class Coletor {
   }
 
   private avaliarSql(no: ts.Node, origem: string, texto: string | undefined, executado: () => boolean): void {
-    const zona = zonaDoArquivo(this.relativo);
+    const zona = this.zonaParaSql();
     if (zona === 'fora') return;
     if (texto === undefined) {
       if (!Object.hasOwn(EXCECOES_DE_SQL_INDETERMINADO, this.relativo)) this.violar(no, 'sql-indeterminado', origem);

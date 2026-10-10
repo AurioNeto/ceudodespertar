@@ -137,6 +137,7 @@ export const MEMBROS_DE_LEITURA: ReadonlySet<string> = new Set([
   'executeTakeFirst',
   'executeTakeFirstOrThrow',
   'stream',
+  'query',
   'compile',
   'find',
   'findOne',
@@ -146,6 +147,17 @@ export const MEMBROS_DE_LEITURA: ReadonlySet<string> = new Set([
   'findByCursor',
   'getReference',
 ]);
+
+export const EXCECOES_DE_PG_FORA_DA_PERSISTENCIA = exigirMotivosPorMembro({
+  'shared/infrastructure/saude/verificador-de-prontidao.ts': {
+    connect: 'sonda-de-prontidao-so-le',
+    query: 'sonda-de-prontidao-so-le',
+    release: 'sonda-de-prontidao-so-le',
+    on: 'sonda-de-prontidao-so-le',
+    rows: 'sonda-de-prontidao-so-le',
+  },
+  'shared/infrastructure/saude/saude.module.ts': { end: 'encerra-o-pool-da-sonda-de-prontidao' },
+} as const);
 
 export const EXCECOES_DE_SQL_INDETERMINADO = exigirMotivos<Readonly<Record<string, MotivoNomeado>>>({});
 
