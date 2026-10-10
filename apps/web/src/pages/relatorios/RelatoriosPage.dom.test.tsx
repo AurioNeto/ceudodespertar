@@ -710,6 +710,24 @@ describe('RelatoriosPage: gaveta com os lançamentos de um recorte', () => {
     expect(cabecalhoDaGaveta(container)).toEqual(['Gastos da cerimônia', 'São Miguel · julho', '1 lançamento · 1.543,68 · ago/26']);
   });
 
+  it('barra de Saídas por grupo com entrada no mês — a gaveta do grupo lista só as saídas', async () => {
+    const { container } = await montar(<RelatoriosPage />);
+
+    await clicar(barraDoPainel(container, 'Saídas por grupo', 'Cozinha'));
+
+    expect(cabecalhoDaGaveta(container)).toEqual(['Saídas do grupo', 'Cozinha', '1 lançamento · 538,55 · ago/26']);
+    expect(linhasDaGaveta(container)).toEqual([`10/08lenha para o feitioCozinha · Cora PJ${MENOS}538,55`]);
+  });
+
+  it('cerimônia com entrada no mês — a gaveta de gastos lista só as saídas da cerimônia', async () => {
+    const { container } = await montar(<RelatoriosPage />);
+
+    await clicar(botaoComTexto(container, 'Mãe Divina · setembro538,55'));
+
+    expect(cabecalhoDaGaveta(container)).toEqual(['Gastos da cerimônia', 'Mãe Divina · setembro', '1 lançamento · 538,55 · ago/26']);
+    expect(linhasDaGaveta(container)).toEqual([`10/08lenha para o feitioCozinha · Cora PJ${MENOS}538,55`]);
+  });
+
   it('conta — a gaveta lista entradas e saídas da conta, com sinal de mais e de menos', async () => {
     const { container } = await montar(<RelatoriosPage />);
 
