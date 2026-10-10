@@ -11,6 +11,7 @@
     "test": "vitest run",
     "test:cobertura": "vitest run --coverage",
     "test:integracao": "vitest run --config vitest.integracao.config.ts",
+    "test:keycloak": "bash scripts/aceite-keycloak.sh",
     "db:migrar": "pnpm build && node --enable-source-maps --env-file-if-exists=../../.env dist/banco/cli.js migrar",
     "db:situacao": "pnpm build && node --enable-source-maps --env-file-if-exists=../../.env dist/banco/cli.js situacao",
     "db:gerar-tipos": "pnpm build && node scripts/gerar-tipos-do-banco.mjs",
