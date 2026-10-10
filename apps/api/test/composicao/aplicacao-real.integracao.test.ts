@@ -6,6 +6,8 @@ import type { GrupoId } from '@cdd/contracts';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { criarAplicacao } from '../../src/composicao/aplicacao.js';
 import { AppModule } from '../../src/composicao/app.module.js';
+import { EnviadorDeConvite } from '../../src/modules/identidade/application/convite/enviador-de-convite.js';
+import { EnviadorDeConviteKeycloak } from '../../src/modules/identidade/infrastructure/keycloak/enviador-de-convite.keycloak.js';
 import { RepositorioDeUsuario } from '../../src/modules/identidade/domain/usuario/usuario.repo.js';
 import { SemeadorDeGruposDeSistema } from '../../src/modules/identidade/public-api.js';
 import { ApenasIdentificado, Publico, RequerPermissao } from '../../src/shared/infrastructure/autenticacao/marcas-de-acesso.js';
@@ -307,6 +309,12 @@ describe('aplicação real (AppModule) contra o banco', () => {
         `select 1 from identidade.grupo where nome = 'Grupo fora de contexto'`,
       );
       expect(gravados).toStrictEqual([]);
+    });
+  });
+
+  describe('envio de convite', () => {
+    it('a composição real entrega os convites pelo adaptador do Keycloak', () => {
+      expect(app.get(EnviadorDeConvite)).toBeInstanceOf(EnviadorDeConviteKeycloak);
     });
   });
 });

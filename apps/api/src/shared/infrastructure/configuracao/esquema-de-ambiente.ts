@@ -12,14 +12,18 @@ const listaDeOrigens = z
       .filter((origem) => origem.length > 0),
   );
 
-const emissorOidc = z.string().refine(ehEmissorOidcAceito, {
+const urlSegura = z.string().refine(ehUrlSeguraAceita, {
   message:
     'deve ser uma URL https, ou http apenas em localhost, na forma canônica, sem barra final, credenciais, query ou fragmento',
 });
 
+const identificadorSemEspacos = z.string().regex(/^[A-Za-z0-9._-]+$/, {
+  message: 'deve conter só letras, dígitos, ponto, hífen ou sublinhado',
+});
+
 const audienciaOidc = z.string().regex(/^\S+$/, { message: 'deve ser um texto sem espaços em branco' });
 
-function ehEmissorOidcAceito(valor: string): boolean {
+function ehUrlSeguraAceita(valor: string): boolean {
   const url = URL.parse(valor);
   if (url === null) return false;
   const protocoloAceito = url.protocol === 'https:' || (url.protocol === 'http:' && url.hostname === 'localhost');
@@ -36,8 +40,14 @@ export const EsquemaDeAmbiente = z.object({
   ORIGENS_CORS: listaDeOrigens,
   LOG_NIVEL: z.enum(NIVEIS_DE_LOG).default('info'),
   TZ: z.string().min(1).default('UTC'),
-  OIDC_EMISSOR: emissorOidc,
+  OIDC_EMISSOR: urlSegura,
   OIDC_AUDIENCIA: audienciaOidc,
+  KEYCLOAK_URL_BASE: urlSegura,
+  KEYCLOAK_REALM: identificadorSemEspacos,
+  KEYCLOAK_ADMIN_CLIENT_ID: identificadorSemEspacos,
+  CDD_KC_ADMIN_SEGREDO: z.string().min(1),
+  APP_URL_BASE: urlSegura,
+  KEYCLOAK_CLIENT_ID_DO_CONVITE: identificadorSemEspacos,
 });
 
 export type Ambiente = z.infer<typeof EsquemaDeAmbiente>;

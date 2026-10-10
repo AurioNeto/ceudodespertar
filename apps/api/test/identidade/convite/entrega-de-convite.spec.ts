@@ -1,7 +1,10 @@
 import { Logger } from '@nestjs/common';
 import type { UsuarioId } from '@cdd/contracts';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { montarEntrega, TOKEN_EM_CLARO } from './dubles-de-convite.js';
+import { EntregaDeConvite } from '../../../src/modules/identidade/application/convite/entrega-de-convite.js';
+import { EnviadorDeConvite } from '../../../src/modules/identidade/application/convite/enviador-de-convite.js';
+import { KeycloakIndisponivel, KeycloakRecusou } from '../../../src/modules/identidade/infrastructure/keycloak/erros-do-keycloak.js';
+import { montarEntrega, TOKEN_EM_CLARO, UnidadeDeTrabalhoComGanchos } from './dubles-de-convite.js';
 
 const CONVITE = {
   usuarioId: 'a1000000-0000-7000-8000-000000000002' as UsuarioId,
@@ -48,5 +51,105 @@ describe('EntregaDeConvite', () => {
     expect(mensagem).toContain('TypeError');
     expect(mensagem).not.toContain(CONVITE.email);
     expect(mensagem).not.toContain(CONVITE.token);
+  });
+
+  it.each([
+    [new KeycloakRecusou(403), 'KeycloakRecusou (status 403)'],
+    [new KeycloakIndisponivel('timeout'), 'KeycloakIndisponivel (timeout)'],
+  ])('falha tipada do Keycloak vai ao log com o diagnóstico: %s', async (falha, diagnostico) => {
+    const { unidade, enviador, entrega } = montarEntrega();
+    enviador.falharCom = falha;
+    const log = vi.spyOn(Logger.prototype, 'error').mockImplementation(() => undefined);
+
+    await unidade.transacao('escrita', (contexto) => Promise.resolve(entrega.depoisDoCommit(contexto, CONVITE)));
+    unidade.confirmar();
+    await vi.waitFor(() => expect(log).toHaveBeenCalledTimes(1));
+
+    expect(String(log.mock.calls[0]![0])).toContain(diagnostico);
+  });
+
+  describe('entregas em voo', () => {
+    function enviadorQueSoTerminaQuandoLiberado(): { liberar: () => void; terminou: () => boolean; enviador: EnviadorDeConvite } {
+      let liberar: () => void = () => undefined;
+      let terminou = false;
+      const enviador = new (class extends EnviadorDeConvite {
+        enviar(): Promise<void> {
+          return new Promise<void>((resolver) => {
+            liberar = resolver;
+          }).then(() => {
+            terminou = true;
+          });
+        }
+      })();
+      return { liberar: () => liberar(), terminou: () => terminou, enviador };
+    }
+
+    const ESPERA_PARA_CONFIRMAR_QUE_NAO_RESOLVEU_EM_MS = 20;
+
+    async function enviarSemTerminar() {
+      const parcial = enviadorQueSoTerminaQuandoLiberado();
+      const unidade = new UnidadeDeTrabalhoComGanchos();
+      const entrega = new EntregaDeConvite(parcial.enviador);
+      await unidade.transacao('escrita', (contexto) => Promise.resolve(entrega.depoisDoCommit(contexto, CONVITE)));
+      unidade.confirmar();
+      return { ...parcial, entrega };
+    }
+
+    async function resolveuAntesDeLiberar(esperar: () => Promise<void>, liberar: () => void): Promise<boolean> {
+      let resolveu = false;
+      const espera = esperar().then(() => {
+        resolveu = true;
+      });
+      await new Promise((resolver) => setTimeout(resolver, ESPERA_PARA_CONFIRMAR_QUE_NAO_RESOLVEU_EM_MS));
+      const resolveuCedo = resolveu;
+      liberar();
+      await espera;
+      return resolveuCedo;
+    }
+
+    it('aguardarEntregas só resolve depois de o envio em voo terminar', async () => {
+      const { liberar, terminou, entrega } = await enviarSemTerminar();
+
+      const resolveuCedo = await resolveuAntesDeLiberar(() => entrega.aguardarEntregas(), liberar);
+
+      expect(resolveuCedo).toBe(false);
+      expect(terminou()).toBe(true);
+    });
+
+    it('esquece a entrega concluída, sem acumular promessas', async () => {
+      const { liberar, entrega } = await enviarSemTerminar();
+      expect(Reflect.get(entrega, 'entregasEmVoo')).toHaveProperty('size', 1);
+
+      liberar();
+      await entrega.aguardarEntregas();
+      await Promise.resolve();
+
+      expect(Reflect.get(entrega, 'entregasEmVoo')).toHaveProperty('size', 0);
+    });
+
+    it('aguardarEntregas resolve também quando o envio falha', async () => {
+      const { unidade, enviador, entrega } = montarEntrega();
+      enviador.falharCom = new Error('indisponível');
+      vi.spyOn(Logger.prototype, 'error').mockImplementation(() => undefined);
+      await unidade.transacao('escrita', (contexto) => Promise.resolve(entrega.depoisDoCommit(contexto, CONVITE)));
+      unidade.confirmar();
+
+      await expect(entrega.aguardarEntregas()).resolves.toBeUndefined();
+    });
+
+    it('resolve de imediato quando não há entrega em voo', async () => {
+      const { entrega } = montarEntrega();
+
+      await expect(entrega.aguardarEntregas()).resolves.toBeUndefined();
+    });
+
+    it('o encerramento do módulo aguarda as entregas em voo', async () => {
+      const { liberar, terminou, entrega } = await enviarSemTerminar();
+
+      const resolveuCedo = await resolveuAntesDeLiberar(() => entrega.onModuleDestroy(), liberar);
+
+      expect(resolveuCedo).toBe(false);
+      expect(terminou()).toBe(true);
+    });
   });
 });

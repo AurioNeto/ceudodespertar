@@ -1,5 +1,6 @@
 import swc from 'unplugin-swc';
 import { configDefaults, defineConfig } from 'vitest/config';
+import { AMBIENTE_DO_KEYCLOAK_DE_TESTE } from './test/ambiente-de-teste.js';
 
 const CONDICAO_FONTE = '@cdd/fonte';
 
@@ -11,6 +12,7 @@ export default defineConfig({
     },
   },
   test: {
+    env: { ...AMBIENTE_DO_KEYCLOAK_DE_TESTE },
     setupFiles: ['reflect-metadata'],
     include: ['src/**/*.spec.ts', 'test/**/*.spec.ts', 'test/**/*.test.ts'],
     exclude: [...configDefaults.exclude, '**/*.integracao.test.ts'],

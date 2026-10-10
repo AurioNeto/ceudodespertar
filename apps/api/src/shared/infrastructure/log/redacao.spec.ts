@@ -43,6 +43,7 @@ const CHAVES_PROIBIDAS = [
   'refresh_token',
   'tokenDoLink',
   'segredo',
+  'CDD_KC_ADMIN_SEGREDO',
   'clientSecret',
   'client_secret',
   'x-api-key',

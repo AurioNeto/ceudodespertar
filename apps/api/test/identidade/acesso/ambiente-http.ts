@@ -6,6 +6,8 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
 import { Test } from '@nestjs/testing';
 import type { GrupoId, Permissao, UsuarioId } from '@cdd/contracts';
 import { IdentidadeModule } from '../../../src/modules/identidade/identidade.module.js';
+import { EnviadorDeConvite } from '../../../src/modules/identidade/application/convite/enviador-de-convite.js';
+import { EntregaDeConvite } from '../../../src/modules/identidade/application/convite/entrega-de-convite.js';
 import { Grupo } from '../../../src/modules/identidade/domain/grupo/grupo.js';
 import { Usuario } from '../../../src/modules/identidade/domain/usuario/usuario.js';
 import { ResolvedorDeContextoDeAcessoDaIdentidade } from '../../../src/modules/identidade/infrastructure/acesso/resolvedor-de-contexto-de-acesso.da-identidade.js';
@@ -30,6 +32,7 @@ import { ProvedorDeContextoDeInstituicaoDoAcesso } from '../../../src/shared/inf
 import { middlewareDeCorrelacao } from '../../../src/shared/infrastructure/log/correlacao.js';
 import { Relogio } from '../../../src/shared/infrastructure/relogio.js';
 import { gerarUuidV7 } from '../../../src/shared/kernel/ids.js';
+import { AMBIENTE_DO_KEYCLOAK_DE_TESTE } from '../../ambiente-de-teste.js';
 import { AUDIENCIA_DE_TESTE, criarChavesDeTeste, emitirToken } from '../../autenticacao/chaves-de-teste.js';
 import type { ChavesDeTeste } from '../../autenticacao/chaves-de-teste.js';
 import { pedir } from '../../autenticacao/cliente-http.js';
@@ -39,6 +42,7 @@ import { comContexto } from '../../eventos/apoio.js';
 import type { BancoDeTeste } from '../../integracao/banco-de-teste.js';
 import { urlDoAppPara } from '../../unidade-de-trabalho/orm-de-teste.js';
 import { AGORA, hashDeConvite } from '../apoio.js';
+import { EnviadorDeConviteQueRegistra } from '../convite/enviador-de-convite.que-registra.js';
 
 export const PERMISSAO_EXIGIDA_PELA_ROTA: Permissao = 'financeiro.lancamento.ler';
 export const ROTA_PROTEGIDA_POR_PERMISSAO = '/api/v1/rota-protegida-por-permissao';
@@ -73,7 +77,12 @@ class AmbienteDeTesteModule {
     return {
       module: AmbienteDeTesteModule,
       global: true,
-      providers: [{ provide: AMBIENTE, useValue: { OIDC_EMISSOR: emissor, OIDC_AUDIENCIA: AUDIENCIA_DE_TESTE } }],
+      providers: [
+        {
+          provide: AMBIENTE,
+          useValue: { OIDC_EMISSOR: emissor, OIDC_AUDIENCIA: AUDIENCIA_DE_TESTE, ...AMBIENTE_DO_KEYCLOAK_DE_TESTE },
+        },
+      ],
       exports: [AMBIENTE],
     };
   }
@@ -133,7 +142,9 @@ export async function subirAplicacaoDeAcesso(
     .overrideProvider(CHAVES_DE_VERIFICACAO)
     .useValue(criarChavesRemotas(servidor.emissor, { limiteDeEsperaEmMs: LIMITE_DE_ESPERA_DO_PROVEDOR_EM_MS }))
     .overrideProvider(Relogio)
-    .useValue(relogio);
+    .useValue(relogio)
+    .overrideProvider(EnviadorDeConvite)
+    .useValue(new EnviadorDeConviteQueRegistra());
   for (const { provider, valor } of substituicoes) {
     construtor = construtor.overrideProvider(provider).useValue(valor);
   }
@@ -160,6 +171,7 @@ export async function subirAplicacaoDeAcesso(
       return pedir(origem, rota, { ...cabecalhos, authorization: `Bearer ${token}` }, { metodo, corpo });
     },
     encerrar: async () => {
+      await app.get(EntregaDeConvite).aguardarEntregas();
       await app.close();
       await servidor.derrubar();
       delete process.env.BANCO_URL;
