@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { DomainError, EmptyState, FlowerOfLife, InfraError, PermissionDenied, SkeletonList } from './estados';
 import { clicar, desmontarTudo, elemento, montar } from '@/testes/montagem';
+import { atributosComTexto } from './apoioDeTeste';
 
 afterEach(desmontarTudo);
 
@@ -232,89 +233,42 @@ describe('InfraError', () => {
   });
 });
 
-const ESQUELETO_DO_BLOQUEIO_SEM_TEXTOS = 'Você não tem acesso a ' + ' .  . Se você precisa desse acesso, fale com .';
-
-const TEXTOS_DE_ACESSO = {
-  groupLabel: 'Rótulo do grupo:',
-  missingLabel: 'Rótulo da permissão:',
-} as const;
+const FRASE_DO_BLOQUEIO = (
+  <>
+    Grupo <b>Voluntários</b>, chave <code>x.y.z</code>.
+  </>
+);
 
 describe('PermissionDenied', () => {
-  it('mostra a tela negada, o grupo, a permissão que falta e a quem pedir', async () => {
-    const { container } = await montar(
-      <PermissionDenied
-        screen="Fechamento"
-        groupLabel="Seu grupo é"
-        group="Voluntários"
-        missingLabel="Falta a permissão"
-        missing="financeiro.fechamento.executar"
-        whoToAsk="o administrador"
-      />,
-    );
+  it('mostra o título e a explicação que o consumidor passa, nessa ordem', async () => {
+    const { container } = await montar(<PermissionDenied title="Sem acesso ao Fechamento" description={FRASE_DO_BLOQUEIO} />);
 
-    expect(container.textContent).toBe(
-      'Você não tem acesso a Fechamento' +
-        'Seu grupo é Voluntários. Falta a permissão financeiro.fechamento.executar. ' +
-        'Se você precisa desse acesso, fale com o administrador.',
-    );
+    expect(container.textContent).toBe('Sem acesso ao FechamentoGrupo Voluntários, chave x.y.z.');
+    expect(paragrafosDe(container)).toEqual(['Grupo Voluntários, chave x.y.z.']);
   });
 
-  it('whoToAsk — é quem a frase manda procurar, sem papel padrão escrito no componente', async () => {
-    const { container } = await montar(
-      <PermissionDenied {...TEXTOS_DE_ACESSO} screen="Fechamento" group="Voluntários" missing="x.y.z" whoToAsk="a tesouraria" />,
-    );
-
-    expect(paragrafosDe(container)).toEqual([
-      'Rótulo do grupo: Voluntários. Rótulo da permissão: x.y.z. Se você precisa desse acesso, fale com a tesouraria.',
-    ]);
-  });
-
-  it('groupLabel e missingLabel — são o que antecede o grupo e a permissão, sem termo de acesso próprio', async () => {
-    const { container } = await montar(
-      <PermissionDenied
-        screen="Fechamento"
-        groupLabel="Equipe:"
-        group="Voluntários"
-        missingLabel="Chave que falta:"
-        missing="x.y.z"
-        whoToAsk="a tesouraria"
-      />,
-    );
-
-    expect(paragrafosDe(container)).toEqual([
-      'Equipe: Voluntários. Chave que falta: x.y.z. Se você precisa desse acesso, fale com a tesouraria.',
-    ]);
-  });
-
-  it('textos vazios — o componente não escreve papel, grupo nem permissão: sobra só o esqueleto de acesso', async () => {
-    const { container } = await montar(
-      <PermissionDenied screen="" groupLabel="" group="" missingLabel="" missing="" whoToAsk="" />,
-    );
-
-    expect(container.textContent).toBe(ESQUELETO_DO_BLOQUEIO_SEM_TEXTOS);
-  });
-
-  it('grupo — sai em negrito, e a permissão em código', async () => {
-    const { container } = await montar(
-      <PermissionDenied {...TEXTOS_DE_ACESSO} screen="Fechamento" group="Voluntários" missing="x.y.z" whoToAsk="a tesouraria" />,
-    );
+  it('a marcação da explicação chega intacta: o negrito e o código são do consumidor', async () => {
+    const { container } = await montar(<PermissionDenied title="T" description={FRASE_DO_BLOQUEIO} />);
 
     expect(elemento(container, 'b').textContent).toBe('Voluntários');
     expect(elemento(container, 'code').textContent).toBe('x.y.z');
   });
 
+  it('textos vazios — o componente não escreve nenhum texto de acesso, nem em atributo', async () => {
+    const { container } = await montar(<PermissionDenied title="" description="" />);
+
+    expect(container.textContent).toBe('');
+    expect(atributosComTexto(container)).toEqual([]);
+  });
+
   it('sinaliza o bloqueio com o ícone ban', async () => {
-    const { container } = await montar(
-      <PermissionDenied {...TEXTOS_DE_ACESSO} screen="S" group="G" missing="m" whoToAsk="Q" />,
-    );
+    const { container } = await montar(<PermissionDenied title="T" description="D" />);
 
     expect(elemento<SVGElement>(container, 'svg').classList.contains('lucide-ban')).toBe(true);
   });
 
   it('style próprio — sobrepõe o fundo', async () => {
-    const { container } = await montar(
-      <PermissionDenied {...TEXTOS_DE_ACESSO} screen="S" group="G" missing="m" whoToAsk="Q" style={{ background: 'red' }} />,
-    );
+    const { container } = await montar(<PermissionDenied title="T" description="D" style={{ background: 'red' }} />);
 
     expect(raizDe(container).style.background).toBe('red');
   });

@@ -47,12 +47,13 @@ export function Layout({ telas = TELAS }: LayoutProps) {
           <ScreenHeader title={nomeDaTela} density={densidade} />
           <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 760 }}>
             <PermissionDenied
-              screen={nomeDaTela}
-              groupLabel="Seu grupo é"
-              group={usuario.grupoNome}
-              missingLabel="Falta a permissão"
-              missing={registro.acesso[0] ?? ''}
-              whoToAsk="o administrador"
+              title={`Você não tem acesso a ${nomeDaTela}`}
+              description={
+                <>
+                  Seu grupo é <b>{usuario.grupoNome}</b>. Falta a permissão <code>{registro.acesso[0] ?? ''}</code>. Se
+                  você precisa desse acesso, fale com o administrador.
+                </>
+              }
             />
           </div>
         </>

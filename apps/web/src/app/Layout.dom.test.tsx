@@ -147,6 +147,8 @@ describe('acesso por permissão no Layout', () => {
       'Seu grupo é Tesouraria. Falta a permissão financeiro.lancamento.confirmar. ' +
         'Se você precisa desse acesso, fale com o administrador.',
     );
+    expect(tela.container.querySelector('p b')?.textContent).toBe('Tesouraria');
+    expect(tela.container.querySelector('p code')?.textContent).toBe('financeiro.lancamento.confirmar');
     expect(faixas(tela).length).toBe(0);
     expect(tela.texto()).not.toContain('conteudo-da-tela');
   });

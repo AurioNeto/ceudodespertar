@@ -149,24 +149,12 @@ export function InfraError({ title = 'Não deu para carregar', description, onRe
 }
 
 export interface PermissionDeniedProps {
-  screen: string;
-  groupLabel: string;
-  group: string;
-  missingLabel: string;
-  missing: string;
-  whoToAsk: string;
+  title: ReactNode;
+  description: ReactNode;
   style?: CSSProperties;
 }
 
-export function PermissionDenied({
-  screen,
-  groupLabel,
-  group,
-  missingLabel,
-  missing,
-  whoToAsk,
-  style,
-}: PermissionDeniedProps) {
+export function PermissionDenied({ title, description, style }: PermissionDeniedProps) {
   return (
     <div
       style={{
@@ -181,10 +169,9 @@ export function PermissionDenied({
     >
       <Icon name="ban" size={20} color="var(--color-attention)" style={{ marginTop: 2 }} />
       <div>
-        <div style={{ font: 'var(--text-title-sm)', color: 'var(--text-title)' }}>Você não tem acesso a {screen}</div>
+        <div style={{ font: 'var(--text-title-sm)', color: 'var(--text-title)' }}>{title}</div>
         <p style={{ marginTop: 7, font: 'var(--text-body)', color: 'var(--text-secondary)', maxWidth: '58ch' }}>
-          {groupLabel} <b>{group}</b>. {missingLabel} <code>{missing}</code>. Se você precisa desse acesso, fale com{' '}
-          {whoToAsk}.
+          {description}
         </p>
       </div>
     </div>
