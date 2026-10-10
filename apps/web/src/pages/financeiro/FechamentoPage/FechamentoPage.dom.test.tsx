@@ -25,7 +25,7 @@ vi.mock('@/mocks/verificacao', async (importarOriginal) => {
   };
 });
 
-vi.mock('@/mocks/financeiro', async (importarOriginal) => {
+vi.mock('@/pages/mocks/contas', async (importarOriginal) => {
   const original = await importarOriginal<{ contas: readonly Conta[] }>();
   return {
     ...original,

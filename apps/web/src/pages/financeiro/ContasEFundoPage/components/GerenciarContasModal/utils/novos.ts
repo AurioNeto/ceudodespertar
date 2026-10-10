@@ -1,6 +1,6 @@
 import type { Conta, ContaId, Fundo, FundoId } from '@cdd/contracts';
 import { reais } from '@cdd/contracts';
-import { contas as contasIniciais } from '@/mocks/financeiro';
+import { contas as contasIniciais } from '@/pages/mocks/contas';
 
 export const contaVazia = (id: ContaId): Conta => ({
   id,

@@ -14,7 +14,7 @@ import {
   Rotulo,
 } from '@/ds';
 import { formatarData, pluralizar } from '../../lib/formato';
-import { hoje } from '../../mocks/sessao';
+import { hoje } from '@/pages/mocks/relogio';
 import {
   acessos,
   autoresDaTrilha,

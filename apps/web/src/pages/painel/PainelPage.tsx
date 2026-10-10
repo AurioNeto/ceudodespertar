@@ -4,15 +4,16 @@ import { Button, Icon, ScreenHeader, type IconName } from '../../ds';
 import { ROTAS } from '../../app/navegacao';
 import { proximaCerimonia, ultimaCerimonia } from '../../mocks/cerimonias';
 import {
-  fundoProprio,
   movimentoDoMes,
   remessasEmLote,
   saldoConsolidado,
   saldoEmBanco,
   saldoEmCaixa,
 } from '../../mocks/financeiro';
+import { fundoProprio } from '@/pages/mocks/contas';
 import { filaDeVerificacaoInicial } from '../../mocks/verificacao';
-import { competenciaAtual, competenciaAnterior } from '../../mocks/sessao';
+import { competenciaAnterior } from '../../mocks/sessao';
+import { competenciaAtual } from '@/pages/mocks/relogio';
 import {
   competenciaPorExtenso,
   formatarCompetencia,
@@ -23,7 +24,7 @@ import {
 } from '../../lib/formato';
 import { GraficoEstoque } from './GraficoEstoque';
 import { GraficoResultado } from './GraficoResultado';
-import { CartazSlot } from '../../components/CartazSlot';
+import { CartazSlot } from '@/pages/components/CartazSlot';
 
 const PAINEIS = ['Próxima cerimônia', 'Resultado por cerimônia', 'Última cerimônia'] as const;
 

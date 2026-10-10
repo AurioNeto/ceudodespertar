@@ -11,7 +11,8 @@ import {
   SeletorDeTipo,
 } from '@/ds';
 import { formatarDiaMes, formatarDinheiro, pluralizar } from '@/lib/formato';
-import { contas as contasIniciais, fundos as fundosIniciais, fundoProprio } from '@/mocks/financeiro';
+import { contas as contasIniciais, fundoProprio } from '@/pages/mocks/contas';
+import { fundos as fundosIniciais } from './mocks/fundos';
 import { GerenciarContasModal } from './components/GerenciarContasModal';
 import { ehCaixa } from './utils/conta';
 import { corDaReserva } from './utils/reservas';

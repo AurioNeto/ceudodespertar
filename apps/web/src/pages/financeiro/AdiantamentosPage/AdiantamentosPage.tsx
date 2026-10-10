@@ -29,7 +29,7 @@ import {
   quemAdianta,
   type Perspectiva,
 } from './mocks/adiantamentos';
-import { hoje } from '@/mocks/sessao';
+import { hoje } from '@/pages/mocks/relogio';
 
 const TOM: Record<StatusAdiantamento, BadgeTone> = {
   AGUARDANDO_AUTORIZACAO: 'pending',
