@@ -203,7 +203,27 @@ export const CASOS_POSITIVOS: readonly CasoDeFixture[] = [
       'sql:escrita',
       'sql:escrita',
       'sql:escrita',
+      'sql:escrita',
     ).concat(esperar('modules/m/infrastructure/leitor-a.kysely.ts', 'sql-indeterminado', 'sql')),
+  },
+  {
+    caso: 'leitor-fora-da-allowlist',
+    violacoes: esperar(
+      'modules/m/infrastructure/leitor-l.kysely.ts',
+      'leitura-fora-da-allowlist',
+      ...Array<string>(7).fill('sql:fora-da-allowlist'),
+      'sql:transacao',
+    ),
+  },
+  {
+    caso: 'transacao-preparada-fora-do-banco',
+    violacoes: esperar(
+      'modules/m/infrastructure/preparar.ts',
+      'so-no-banco',
+      'sql:transacao',
+      'sql:transacao',
+      'sql:transacao',
+    ),
   },
 ];
 
@@ -225,4 +245,11 @@ export const CASOS_NEGATIVOS: readonly CasoDeFixture[] = [
   { caso: 'ponto-de-salvamento-fora-do-banco', violacoes: [] },
   { caso: 'transacao-no-despachante', violacoes: [], achados: achar('transacao-em-sql', 'transacao', 'transacao') },
   { caso: 'transacao-no-banco', violacoes: [], achados: achar('transacao-em-sql', 'transacao', 'transacao', 'transacao') },
+  { caso: 'leitor-so-select-na-allowlist', violacoes: [] },
+  { caso: 'sql-desconhecido-fora-de-leitor', violacoes: [] },
+  {
+    caso: 'transacao-preparada-no-banco',
+    violacoes: [],
+    achados: achar('transacao-em-sql', 'transacao', 'transacao', 'transacao'),
+  },
 ];

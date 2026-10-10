@@ -64,7 +64,7 @@ const RECIPIENTES_DE_USE: ReadonlySet<string> = new Set([
 
 const VERBOS_DE_ESCRITA_SQL = /^(insert|update|delete|merge|truncate|create|alter|drop|grant|revoke|copy|call|do|reindex|vacuum|comment)$/;
 const VERBOS_DE_PONTO_DE_SALVAMENTO_SQL = /^(savepoint|release)$/;
-const VERBOS_DE_TRANSACAO_SQL = /^(commit|begin|start|end|abort)$/;
+const VERBOS_DE_TRANSACAO_SQL = /^(commit|begin|start|end|abort|prepare)$/;
 const ROLLBACK_PARA_PONTO_DE_SALVAMENTO = /^\s*rollback(\s+(work|transaction))?\s+to\b/i;
 const VERBOS_DE_LEITURA_SQL = /^(select|values|table|explain|show)$/;
 const DML_DENTRO_DE_WITH = /\b(insert|update|delete|merge)\b/i;
@@ -140,6 +140,16 @@ function categoriaDaInstrucao(instrucao: string): CategoriaDeSql {
   if (VERBOS_DE_TRANSACAO_SQL.test(verbo)) return 'transacao';
   if (VERBOS_DE_LEITURA_SQL.test(verbo)) return 'leitura';
   return 'fragmento';
+}
+
+function ehSelectPuro(instrucao: string): boolean {
+  const verbo = /^\s*(\w+)/.exec(instrucao)?.[1]?.toLowerCase() ?? '';
+  if (verbo === 'with') return !DML_DENTRO_DE_WITH.test(instrucao);
+  return verbo === 'select';
+}
+
+function instrucoesPreenchidas(texto: string): readonly string[] {
+  return instrucoesDe(semComentarios(texto)).filter((instrucao) => instrucao.trim() !== '');
 }
 
 function categoriasDoSql(texto: string): readonly CategoriaDeSql[] {
@@ -348,7 +358,8 @@ class Coletor {
     const ehSqlCru = nomeDoCallee.text === 'raw' && declaradoEm(simbolo, PACOTES_DE_DADOS);
     if (!ehExecutarSqlDoOrm && !ehSqlCru) return;
     const texto = textoLiteral(this.checker, primeiro);
-    this.avaliarSql(chamada, nomeDoCallee.text, texto);
+    const executado = () => ehExecutarSqlDoOrm || this.ehExecutado(chamada);
+    this.avaliarSql(chamada, nomeDoCallee.text, texto, executado);
   }
 
   private sqlDeTemplateMarcado(marcado: ts.TaggedTemplateExpression): void {
@@ -358,14 +369,14 @@ class Coletor {
     if (!ehSqlDoKysely) return;
     const indeterminado = algumaInstrucaoComecaComInterpolacao(marcado.template) && this.ehExecutado(marcado);
     const texto = indeterminado ? undefined : textoDoTemplateMarcado(marcado.template);
-    this.avaliarSql(marcado, 'sql', texto);
+    this.avaliarSql(marcado, 'sql', texto, () => this.ehExecutado(marcado));
   }
 
-  private avaliarSql(no: ts.Node, origem: string, texto: string | undefined): void {
+  private avaliarSql(no: ts.Node, origem: string, texto: string | undefined, executado: () => boolean): void {
     const zona = zonaDoArquivo(this.relativo);
     if (zona === 'fora') return;
     if (texto === undefined) {
-      if (EXCECOES_DE_SQL_INDETERMINADO[this.relativo] === undefined) this.violar(no, 'sql-indeterminado', origem);
+      if (!Object.hasOwn(EXCECOES_DE_SQL_INDETERMINADO, this.relativo)) this.violar(no, 'sql-indeterminado', origem);
       return;
     }
     const categorias = categoriasDoSql(texto);
@@ -382,7 +393,14 @@ class Coletor {
       return;
     }
     const ehLeitura = categoria === 'leitura' || categoria === 'fragmento';
-    if (zona === 'leitura' && !ehLeitura) this.violar(no, 'leitura-fora-da-allowlist', `sql:${categoria}`);
+    if (zona === 'leitura' && !ehLeitura) {
+      this.violar(no, 'leitura-fora-da-allowlist', `sql:${categoria}`);
+      return;
+    }
+    const foraDaAllowlistDeSelect = !instrucoesPreenchidas(texto).every(ehSelectPuro);
+    if (zona === 'leitura' && foraDaAllowlistDeSelect && executado()) {
+      this.violar(no, 'leitura-fora-da-allowlist', 'sql:fora-da-allowlist');
+    }
   }
 
   private ehExecutado(no: ts.Node): boolean {
@@ -403,12 +421,12 @@ class Coletor {
 
   private podeControlarTransacaoEmSqlCru(): boolean {
     return (
-      this.relativo.startsWith(PASTA_DO_BANCO) || ARQUIVOS_QUE_ENCERRAM_TRANSACAO_EM_SQL_CRU.includes(this.relativo)
+      this.relativo.startsWith(PASTA_DO_BANCO) || Object.hasOwn(ARQUIVOS_QUE_ENCERRAM_TRANSACAO_EM_SQL_CRU, this.relativo)
     );
   }
 
   private podeAjustarASessao(): boolean {
-    return this.relativo.startsWith(PASTA_DO_BANCO) || ARQUIVOS_QUE_PODEM_AJUSTAR_A_SESSAO.includes(this.relativo);
+    return this.relativo.startsWith(PASTA_DO_BANCO) || Object.hasOwn(ARQUIVOS_QUE_PODEM_AJUSTAR_A_SESSAO, this.relativo);
   }
 
   private rotaForaDoNest(chamada: ts.CallExpression): void {
@@ -427,9 +445,11 @@ class Coletor {
     if (!ehDoServidorHttp) return;
     if (!ehUse && !ehCaminhoDeRota(this.checker, chamada.arguments[0])) return;
     this.achar('rota-fora-do-nest', nome.text);
-    const excecoes = EXCECOES_DE_ROTA_FORA_DO_NEST[this.relativo] ?? [];
+    const excecoes: Readonly<Record<string, string>> = Object.hasOwn(EXCECOES_DE_ROTA_FORA_DO_NEST, this.relativo)
+      ? EXCECOES_DE_ROTA_FORA_DO_NEST[this.relativo as keyof typeof EXCECOES_DE_ROTA_FORA_DO_NEST]
+      : {};
     const comCaminho = ehCaminhoDeRota(this.checker, chamada.arguments[0]);
-    if (!excecoes.includes(nome.text) || comCaminho) this.violar(chamada, 'rota-fora-do-nest', nome.text);
+    if (!Object.hasOwn(excecoes, nome.text) || comCaminho) this.violar(chamada, 'rota-fora-do-nest', nome.text);
   }
 
   private acessoAoServidor(identificador: ts.Identifier): void {
