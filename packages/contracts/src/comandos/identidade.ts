@@ -37,8 +37,10 @@ export const ReativarUsuario = z.object({
 
 export type ReativarUsuario = z.infer<typeof ReativarUsuario>;
 
+const TOKEN_DE_CONVITE_EM_BASE64URL = /^[A-Za-z0-9_-]{43}$/;
+
 export const AtivarConvite = z.object({
-  token: z.string().trim().min(1).max(512),
+  convite: z.string().regex(TOKEN_DE_CONVITE_EM_BASE64URL),
 });
 
 export type AtivarConvite = z.infer<typeof AtivarConvite>;

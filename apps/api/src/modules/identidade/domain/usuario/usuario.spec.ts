@@ -419,6 +419,87 @@ describe('Usuario.ativar', () => {
   });
 });
 
+describe('Usuario.avaliarAtivacao', () => {
+  const conviteUsado = Convite.criar(HASH, EXPIRA_EM, ADMIN_ID, AGORA).usar(AGORA);
+
+  it('convite vigente de usuário pendente manda ativar e não muda o usuário', () => {
+    const usuario = convidado();
+    usuario.retirarEventos();
+
+    const resultado = usuario.avaliarAtivacao(HASH, SUBJECT, DEPOIS);
+
+    expect(resultado).toEqual({ tipo: 'ok', valor: 'ATIVAR' });
+    expect(usuario.situacao).toBe('CONVITE_PENDENTE');
+    expect(usuario.subjectId).toBeNull();
+    expect(usuario.retirarEventos()).toEqual([]);
+  });
+
+  it('no instante exato da expiração ainda manda ativar, e um milissegundo depois dá CONVITE_EXPIRADO', () => {
+    const usuario = convidado();
+
+    expect(usuario.avaliarAtivacao(HASH, SUBJECT, EXPIRA_EM)).toEqual({ tipo: 'ok', valor: 'ATIVAR' });
+    expect(codigoDe(usuario.avaliarAtivacao(HASH, SUBJECT, new Date(EXPIRA_EM.getTime() + 1)))).toBe(
+      'CONVITE_EXPIRADO',
+    );
+  });
+
+  it.each([
+    ['sem convite', null, 'CONVITE_PENDENTE', HASH],
+    ['hash diferente do convite', Convite.criar(HASH, EXPIRA_EM, ADMIN_ID, AGORA), 'CONVITE_PENDENTE', 'x'],
+    ['convite revogado', Convite.criar(HASH, EXPIRA_EM, ADMIN_ID, AGORA).revogar(AGORA), 'CONVITE_PENDENTE', HASH],
+    ['hash diferente em usuário suspenso', conviteUsado, 'SUSPENSO', 'x'],
+    ['hash diferente em usuário ativo', conviteUsado, 'ATIVO', 'x'],
+    ['convite revogado em usuário revogado', conviteUsado.revogar(AGORA), 'REVOGADO', HASH],
+  ] as const)('%s dá CONVITE_INVALIDO antes de olhar a situação', (_descricao, convite, situacao, hash) => {
+    expect(codigoDe(emSituacao(situacao, convite).avaliarAtivacao(hash, SUBJECT, DEPOIS))).toBe('CONVITE_INVALIDO');
+  });
+
+  it('convite já usado por usuário pendente dá CONVITE_JA_USADO', () => {
+    expect(codigoDe(emSituacao('CONVITE_PENDENTE', conviteUsado).avaliarAtivacao(HASH, SUBJECT, DEPOIS))).toBe(
+      'CONVITE_JA_USADO',
+    );
+  });
+
+  it('convite expirado de usuário pendente dá CONVITE_EXPIRADO', () => {
+    expect(codigoDe(convidado().avaliarAtivacao(HASH, SUBJECT, NOVA_EXPIRA_EM))).toBe('CONVITE_EXPIRADO');
+  });
+
+  it('usuário ativo com o convite já usado pelo mesmo sujeito é idempotente, mesmo depois de expirado', () => {
+    const usuario = emSituacao('ATIVO', conviteUsado);
+
+    expect(usuario.avaliarAtivacao(HASH, SUBJECT, NOVA_EXPIRA_EM)).toEqual({
+      tipo: 'ok',
+      valor: 'JA_ATIVADO_PELO_MESMO_SUJEITO',
+    });
+    expect(usuario.retirarEventos()).toEqual([]);
+  });
+
+  it('usuário ativo com o convite já usado por outro sujeito dá CONVITE_JA_USADO', () => {
+    expect(codigoDe(emSituacao('ATIVO', conviteUsado).avaliarAtivacao(HASH, 'outro-sub', DEPOIS))).toBe(
+      'CONVITE_JA_USADO',
+    );
+  });
+
+  it('usuário ativo com convite não usado dá CONVITE_JA_USADO mesmo para o mesmo sujeito', () => {
+    expect(codigoDe(ativo().avaliarAtivacao(HASH, SUBJECT, DEPOIS))).toBe('CONVITE_JA_USADO');
+  });
+
+  it.each([
+    ['SUSPENSO', 'USUARIO_SUSPENSO'],
+    ['REVOGADO', 'USUARIO_REVOGADO'],
+  ] as const)('usuário %s dá %s, até para o mesmo sujeito', (situacao, codigo) => {
+    expect(codigoDe(emSituacao(situacao, conviteUsado).avaliarAtivacao(HASH, SUBJECT, DEPOIS))).toBe(codigo);
+  });
+
+  it('o hash antigo dá CONVITE_INVALIDO depois do reenvio', () => {
+    const usuario = convidado();
+    usuario.reenviarConvite(NOVO_HASH, NOVA_EXPIRA_EM, ADMIN_ID, DEPOIS);
+
+    expect(codigoDe(usuario.avaliarAtivacao(HASH, SUBJECT, DEPOIS))).toBe('CONVITE_INVALIDO');
+    expect(usuario.avaliarAtivacao(NOVO_HASH, SUBJECT, DEPOIS)).toEqual({ tipo: 'ok', valor: 'ATIVAR' });
+  });
+});
+
 describe('Usuario.desativar', () => {
   it('suspende usuário ATIVO e registra autor, motivo e instante', () => {
     const usuario = ativo();

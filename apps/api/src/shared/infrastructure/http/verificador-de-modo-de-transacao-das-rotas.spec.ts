@@ -3,6 +3,7 @@ import { All, Controller, Delete, Get, Patch, Post, Put } from '@nestjs/common';
 import { DiscoveryModule } from '@nestjs/core';
 import { Test } from '@nestjs/testing';
 import { ModoDeTransacao } from './modo-de-transacao.decorator.js';
+import { SemIdempotencia } from '../idempotencia/sem-idempotencia.decorator.js';
 import { SemTransacaoNaBorda } from './sem-transacao-na-borda.decorator.js';
 import {
   ErroDeRotaQueMudaEstadoSemModoGravavel,
@@ -68,6 +69,29 @@ class AllSemMarca {
   qualquer(): void {}
 }
 
+@Controller('post-fora-da-borda-e-sem-idempotencia')
+class PostForaDaBordaESemIdempotenciaNoMetodo {
+  @SemTransacaoNaBorda()
+  @SemIdempotencia()
+  @Post()
+  ativar(): void {}
+}
+
+@SemTransacaoNaBorda()
+@SemIdempotencia()
+@Controller('classe-fora-da-borda-e-sem-idempotencia')
+class DeleteForaDaBordaESemIdempotenciaNaClasse {
+  @Delete()
+  remover(): void {}
+}
+
+@Controller('post-sem-idempotencia-com-borda')
+class PostSemIdempotenciaSemModo {
+  @SemIdempotencia()
+  @Post()
+  criar(): void {}
+}
+
 @Controller('get-fora-da-borda')
 class GetForaDaBorda {
   @SemTransacaoNaBorda()
@@ -122,6 +146,18 @@ describe('VerificadorDeModoDeTransacaoDasRotas', () => {
 
   it('aceita rota de leitura que dispensa a transação da borda', async () => {
     await expect(subirCom(GetForaDaBorda)).resolves.toBeUndefined();
+  });
+
+  it('aceita rota que muda estado e dispensa a transação da borda quando também é @SemIdempotencia, no método', async () => {
+    await expect(subirCom(PostForaDaBordaESemIdempotenciaNoMetodo)).resolves.toBeUndefined();
+  });
+
+  it('aceita rota que muda estado e dispensa a transação da borda quando também é @SemIdempotencia, na classe', async () => {
+    await expect(subirCom(DeleteForaDaBordaESemIdempotenciaNaClasse)).resolves.toBeUndefined();
+  });
+
+  it('recusa @SemIdempotencia sozinha em rota que muda estado sem modo gravável', async () => {
+    await expect(subirCom(PostSemIdempotenciaSemModo)).rejects.toThrow(ErroDeRotaQueMudaEstadoSemModoGravavel);
   });
 
   it('recusa a partida com rota que muda estado e dispensa a transação da borda, na classe', async () => {

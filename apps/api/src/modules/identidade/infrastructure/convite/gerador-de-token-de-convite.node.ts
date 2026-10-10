@@ -9,6 +9,10 @@ const BYTES_DO_TOKEN = 32;
 export class GeradorDeTokenDeConviteNode extends GeradorDeTokenDeConvite {
   gerar(): TokenDeConvite {
     const token = randomBytes(BYTES_DO_TOKEN).toString('base64url');
-    return { token, hash: createHash('sha256').update(token).digest('hex') };
+    return { token, hash: this.hashDe(token) };
+  }
+
+  hashDe(token: string): string {
+    return createHash('sha256').update(token).digest('hex');
   }
 }

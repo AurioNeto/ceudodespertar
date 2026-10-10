@@ -29,4 +29,13 @@ describe('GeradorDeTokenDeConviteNode', () => {
     expect(hash).toBe(SHA256_HEX_DO_TEXTO_DO_TOKEN);
     expect(hash).not.toBe(SHA256_HEX_DOS_BYTES_DO_TOKEN);
   });
+
+  it('hashDe usa o mesmo SHA-256 hexadecimal do texto, e gerar devolve o hash do próprio token', () => {
+    const gerador = new GeradorDeTokenDeConviteNode();
+    const { token, hash } = gerador.gerar();
+
+    expect(gerador.hashDe(TOKEN_DOS_BYTES_FIXOS)).toBe(SHA256_HEX_DO_TEXTO_DO_TOKEN);
+    expect(gerador.hashDe(token)).toBe(hash);
+    expect(gerador.hashDe('outro-token')).not.toBe(hash);
+  });
 });
