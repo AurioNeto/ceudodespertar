@@ -8,5 +8,5 @@ export async function leitor(kysely: Kysely<any>) {
   await q2.execute(kysely);
   await (sql.raw('rollback')).execute(kysely);
   const q3 = (sql`${sql.raw('x')} from t`);
-  await q3.executeTakeFirst(kysely);
+  await q3.execute(kysely);
 }

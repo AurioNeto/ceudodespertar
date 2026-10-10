@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { detectarEscrita } from './detector-de-escrita.js';
 import type { Relatorio } from './detector-de-escrita.js';
-import { abrirPrograma, arquivosDoTsconfig, modulosNaoResolvidos } from './motor-de-programa.js';
+import { abrirPrograma, arquivosDoTsconfig, diagnosticosDeTipos, modulosNaoResolvidos } from './motor-de-programa.js';
 import type { ProgramaAnalisavel } from './motor-de-programa.js';
 
 const RAIZ_DA_API = join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
@@ -43,6 +43,12 @@ describe('T28a · api · escrita só pela camada de persistência em apps/api/sr
     const naoResolvidos = modulosNaoResolvidos(programa);
 
     expect(naoResolvidos).toEqual([]);
+  }, TEMPO_MAXIMO_DA_ABERTURA_EM_MS);
+
+  it('programa da api — diagnóstico de tipos — nenhum erro', () => {
+    const diagnosticos = diagnosticosDeTipos(programa);
+
+    expect(diagnosticos).toEqual([]);
   }, TEMPO_MAXIMO_DA_ABERTURA_EM_MS);
 
   it('programa da api — arquivos analisados — cobre o src inteiro e não só uma amostra', () => {

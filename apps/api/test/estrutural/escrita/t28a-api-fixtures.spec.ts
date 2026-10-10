@@ -5,7 +5,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import { CASOS_NEGATIVOS, CASOS_POSITIVOS } from './casos-de-fixture.js';
 import type { CasoDeFixture } from './casos-de-fixture.js';
 import { detectarEscrita } from './detector-de-escrita.js';
-import { abrirPrograma, modulosNaoResolvidos } from './motor-de-programa.js';
+import { abrirPrograma, diagnosticosDeTipos, modulosNaoResolvidos } from './motor-de-programa.js';
 import type { ProgramaAnalisavel } from './motor-de-programa.js';
 
 const RAIZ_DA_API = join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
@@ -17,6 +17,13 @@ const PASTA_DO_SENTINELA = join(
   'estrutural',
   'fixtures',
   'escrita-so-na-persistencia-sentinela',
+);
+const PASTA_DO_SENTINELA_DE_TIPOS = join(
+  RAIZ_DA_API,
+  'test',
+  'estrutural',
+  'fixtures',
+  'escrita-so-na-persistencia-sentinela-de-tipos',
 );
 const TEMPO_MAXIMO_DA_ABERTURA_EM_MS = 120_000;
 
@@ -67,11 +74,11 @@ describe('T28a · api · fixtures de escrita só pela persistência', () => {
   });
 
   it.each([...CASOS_POSITIVOS, ...CASOS_NEGATIVOS].map((caso) => ({ caso: caso.caso })))(
-    'fixture $caso — resolução de módulos — nenhum import fica sem resolver',
+    'fixture $caso — diagnóstico de tipos — nenhum erro, import resolvido ou não',
     ({ caso }) => {
-      const naoResolvidos = modulosNaoResolvidos(programaSoDoCaso(programa, caso));
+      const diagnosticos = diagnosticosDeTipos(programaSoDoCaso(programa, caso));
 
-      expect(naoResolvidos).toEqual([]);
+      expect(diagnosticos).toEqual([]);
     },
   );
 
@@ -111,5 +118,15 @@ describe('T28a · api · sentinela da resolução de módulos', () => {
     const naoResolvidos = modulosNaoResolvidos(programa);
 
     expect(naoResolvidos).toHaveLength(2);
+  }, TEMPO_MAXIMO_DA_ABERTURA_EM_MS);
+
+  it('fixture com tipo incompatível — diagnosticosDeTipos — acusa o erro que não é de módulo', () => {
+    const arquivos = arquivosTs(PASTA_DO_SENTINELA_DE_TIPOS);
+    const programa = abrirPrograma(TSCONFIG_DA_API, arquivos, (caminho) => arquivos.includes(caminho));
+
+    const diagnosticos = diagnosticosDeTipos(programa);
+
+    expect(diagnosticos).toHaveLength(1);
+    expect(diagnosticos[0]).toContain('TS2322');
   }, TEMPO_MAXIMO_DA_ABERTURA_EM_MS);
 });

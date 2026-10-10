@@ -41,6 +41,17 @@ export function modulosNaoResolvidos(programa: ProgramaAnalisavel): readonly str
   );
 }
 
+export function diagnosticosDeTipos(programa: ProgramaAnalisavel): readonly string[] {
+  return programa.arquivos.flatMap((arquivo) =>
+    ts
+      .getPreEmitDiagnostics(programa.program, arquivo)
+      .map(
+        (diagnostico) =>
+          `${arquivo.fileName}: TS${diagnostico.code} ${ts.flattenDiagnosticMessageText(diagnostico.messageText, ' ')}`,
+      ),
+  );
+}
+
 export function simboloResolvido(checker: ts.TypeChecker, no: ts.Node): ts.Symbol | undefined {
   const simbolo = checker.getSymbolAtLocation(no);
   if (simbolo !== undefined && (simbolo.flags & ts.SymbolFlags.Alias) !== 0) {
