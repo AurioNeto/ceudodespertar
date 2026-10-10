@@ -137,11 +137,13 @@ const recadoMostrado = (container: HTMLElement) => {
 const linhaDePagamento = (container: HTMLElement) =>
   todos(container, 'div').find((no) => no.textContent?.startsWith('Paga em'))?.textContent ?? null;
 
-const dividaDoCartao = (container: HTMLElement, nome: string) => {
+const botaoDoCartao = (container: HTMLElement, nome: string) => {
   const botao = botoesDoTopo(container).find((candidato) => candidato.textContent?.includes(nome));
   if (!botao) throw new Error(`cartão não encontrado: ${nome}`);
-  return textosDasFolhas(botao);
+  return botao;
 };
+
+const dividaDoCartao = (container: HTMLElement, nome: string) => textosDasFolhas(botaoDoCartao(container, nome));
 
 const textosDosBotoes = (container: HTMLElement) => todos(container, 'button').map((botao) => botao.textContent?.trim());
 
@@ -645,6 +647,7 @@ describe('FaturasPage: estados vazios e variações que a demonstração não al
 
     await escolherCartao(container, 'Cartão Itaú Paty');
 
+    const valorDaDivida = folhasComTexto(botaoDoCartao(container, 'Cartão Itaú Paty'), '0,00')[0] as HTMLElement;
     expect(folhasComTexto(container, 'Nenhuma fatura neste cartão')).toHaveLength(1);
     expect(
       folhasComTexto(container, 'A primeira fatura nasce com a primeira compra registrada nesta conta.'),
@@ -656,6 +659,7 @@ describe('FaturasPage: estados vazios e variações que a demonstração não al
       '0,00',
       'em aberto',
     ]);
+    expect(valorDaDivida.style.color).toBe('var(--text-meta)');
     expect(todos(container, 'table')).toHaveLength(0);
   });
 
@@ -671,7 +675,7 @@ describe('FaturasPage: estados vazios e variações que a demonstração não al
     expect(linhasDaLista(container)[1]).toEqual(['agosto de 2026', 'Fechada, a pagar', '0,00', '0 compras']);
   });
 
-  it('fatura aberta com duas compras a conferir — o aviso usa o plural', async () => {
+  it('fatura aberta com as três compras a conferir — o aviso usa o plural', async () => {
     const demonstracao = await faturasDaDemonstracao();
     const setembro = demonstracao.find((fatura) => fatura.id === 'f-cora-09') as Fatura;
     cenario.faturas = comAlteracao(demonstracao, 'f-cora-09', { compras: comprasTodasComStatus(setembro, 'A_CONFERIR') });
