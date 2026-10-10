@@ -1,4 +1,4 @@
-import { useId, useState } from 'react';
+import { Fragment, useId, useState } from 'react';
 import type { CSSProperties, MouseEvent, ReactNode } from 'react';
 import { Icon, type IconName } from './Icon';
 import { PainelDeAcao } from './PainelDeAcao';
@@ -61,10 +61,17 @@ function useMenuDeCampo(campo: boolean, ativo: string | undefined) {
   };
 }
 
+export interface AppShellBrand {
+  lines: readonly string[];
+  tagline: string;
+}
+
 export interface AppShellProps {
-  institution?: string;
-  unit?: string;
+  institution: string;
+  unit: string;
+  brand: AppShellBrand;
   user: { name: string; group: string };
+  userLabel: string;
   nav?: readonly NavEntry[];
   activeId?: string;
   onNavigate?: (id: string) => void;
@@ -80,9 +87,11 @@ export interface AppShellProps {
  * com tinta royal, fio na borda e o item ativo em cartão branco.
  */
 export function AppShell({
-  institution = 'Céu do Despertar',
-  unit = 'CDD',
+  institution,
+  unit,
+  brand,
   user,
+  userLabel,
   nav = [],
   activeId,
   onNavigate,
@@ -132,9 +141,12 @@ export function AppShell({
                 color: 'var(--color-ink-brand)',
               }}
             >
-              Céu do
-              <br />
-              Despertar
+              {brand.lines.map((linha, posicao) => (
+                <Fragment key={`${posicao}-${linha}`}>
+                  {posicao > 0 ? <br /> : null}
+                  {linha}
+                </Fragment>
+              ))}
             </div>
             <div
               style={{
@@ -145,7 +157,7 @@ export function AppShell({
                 color: 'var(--text-field-label)',
               }}
             >
-              Sistema de gestão
+              {brand.tagline}
             </div>
             <div style={{ marginTop: 14, height: 1, background: 'var(--color-line-gold)' }} />
           </div>
@@ -163,7 +175,7 @@ export function AppShell({
           <button
             type="button"
             onClick={onUserClick}
-            title="Meu perfil"
+            title={userLabel}
             style={{
               margin: '12px 10px 0',
               padding: '11px 8px 0',
@@ -263,6 +275,7 @@ export function AppShell({
         grupos={foraDaBarra}
         activeId={activeId}
         user={user}
+        userLabel={userLabel}
         onNavigate={onNavigate}
         onUserClick={onUserClick}
         aoFechar={menu.fechar}
@@ -394,12 +407,13 @@ interface MenuDeCampoProps {
   grupos: readonly GrupoDoMenu[];
   activeId: string | undefined;
   user: { name: string; group: string };
+  userLabel: string;
   onNavigate: ((id: string) => void) | undefined;
   onUserClick: (() => void) | undefined;
   aoFechar: () => void;
 }
 
-function MenuDeCampo({ aberto, grupos, activeId, user, onNavigate, onUserClick, aoFechar }: MenuDeCampoProps) {
+function MenuDeCampo({ aberto, grupos, activeId, user, userLabel, onNavigate, onUserClick, aoFechar }: MenuDeCampoProps) {
   const navegarPara = (id: string) => {
     onNavigate?.(id);
     aoFechar();
@@ -415,7 +429,7 @@ function MenuDeCampo({ aberto, grupos, activeId, user, onNavigate, onUserClick, 
         {grupos.map((grupo) => (
           <GrupoNoMenu key={grupo.posicao} grupo={grupo} activeId={activeId} onNavigate={navegarPara} />
         ))}
-        {onUserClick ? <PerfilNoMenu user={user} aoAbrir={abrirPerfil} /> : null}
+        {onUserClick ? <PerfilNoMenu user={user} rotulo={userLabel} aoAbrir={abrirPerfil} /> : null}
       </nav>
     </PainelDeAcao>
   );
@@ -453,7 +467,13 @@ function GrupoNoMenu({
   );
 }
 
-function PerfilNoMenu({ user, aoAbrir }: { user: { name: string; group: string }; aoAbrir: () => void }) {
+interface PerfilNoMenuProps {
+  user: { name: string; group: string };
+  rotulo: string;
+  aoAbrir: () => void;
+}
+
+function PerfilNoMenu({ user, rotulo, aoAbrir }: PerfilNoMenuProps) {
   return (
     <button
       type="button"
@@ -471,7 +491,7 @@ function PerfilNoMenu({ user, aoAbrir }: { user: { name: string; group: string }
     >
       <SeloDoUsuario name={user.name} decorativo />
       <span style={{ minWidth: 0 }}>
-        <span style={{ display: 'block', font: '600 13.5px var(--font-body)' }}>Meu perfil</span>
+        <span style={{ display: 'block', font: '600 13.5px var(--font-body)' }}>{rotulo}</span>
         <span style={{ display: 'block', font: 'var(--text-small)', color: 'var(--text-secondary)' }}>
           {user.name} · {user.group}
         </span>

@@ -163,3 +163,18 @@ describe('acesso por permissão no Layout', () => {
     expect(tela.texto()).not.toContain('financeiro.resultado_evento.ler');
   });
 });
+
+describe('AppShell dentro do Layout', () => {
+  const lateral = (tela: TelaMontada) => tela.container.querySelector('aside');
+  const barraDeContexto = (tela: TelaMontada) => tela.container.querySelector('header');
+  const chip = (tela: TelaMontada) => tela.container.querySelector('button[title="Meu perfil"]');
+
+  it('passa à casca os textos da casa: marca, legenda, instituição, unidade e o nome do perfil', async () => {
+    const tela = await montarLayoutEm(ROTAS.painel, TELAS);
+    expect(lateral(tela)?.textContent).toContain('Céu doDespertar');
+    expect(lateral(tela)?.textContent).toContain('Sistema de gestão');
+    expect(barraDeContexto(tela)?.textContent).toContain('Céu do Despertar');
+    expect(barraDeContexto(tela)?.textContent).toContain('CDD');
+    expect(chip(tela)).not.toBeNull();
+  });
+});

@@ -41,6 +41,13 @@ const NAV_LONGA: readonly NavEntry[] = [
 
 const USUARIA = { name: 'Ana Souza', group: 'Tesouraria' };
 
+const IDENTIDADE = {
+  institution: 'Céu do Despertar',
+  unit: 'CDD',
+  brand: { lines: ['Céu do', 'Despertar'], tagline: 'Sistema de gestão' },
+  userLabel: 'Meu perfil',
+} as const;
+
 const raiz = (container: HTMLElement) => container.firstElementChild as HTMLElement;
 const lateral = (container: HTMLElement) => elemento(container, 'aside');
 const navLateral = (container: HTMLElement) => elemento(lateral(container), 'nav');
@@ -72,7 +79,7 @@ const teclarEsc = () =>
 
 describe('AppShell: estrutura por densidade', () => {
   it('sem densidade vale a de escritório, com coluna lateral de 232px', async () => {
-    const { container } = await montar(<AppShell user={USUARIA}>conteúdo</AppShell>);
+    const { container } = await montar(<AppShell {...IDENTIDADE} user={USUARIA}>conteúdo</AppShell>);
     expect(raiz(container).dataset['density']).toBe('office');
     expect(raiz(container).style.gridTemplateColumns).toBe('232px 1fr');
     expect(todos(container, 'aside')).toHaveLength(1);
@@ -80,7 +87,7 @@ describe('AppShell: estrutura por densidade', () => {
 
   it('em campo a tela é de coluna única e não há lateral', async () => {
     const { container } = await montar(
-      <AppShell user={USUARIA} density="field">
+      <AppShell {...IDENTIDADE} user={USUARIA} density="field">
         conteúdo
       </AppShell>,
     );
@@ -91,7 +98,7 @@ describe('AppShell: estrutura por densidade', () => {
 
   it('o conteúdo fica dentro de main, que é a área com a estampa de papel', async () => {
     const { container } = await montar(
-      <AppShell user={USUARIA}>
+      <AppShell {...IDENTIDADE} user={USUARIA}>
         <p>conteúdo da tela</p>
       </AppShell>,
     );
@@ -103,7 +110,7 @@ describe('AppShell: estrutura por densidade', () => {
 
   it('em campo o conteúdo também fica dentro de main', async () => {
     const campo = await montar(
-      <AppShell user={USUARIA} density="field">
+      <AppShell {...IDENTIDADE} user={USUARIA} density="field">
         <p>conteúdo da tela</p>
       </AppShell>,
     );
@@ -112,7 +119,7 @@ describe('AppShell: estrutura por densidade', () => {
 
   it('o style recebido vence o padrão e preserva o resto', async () => {
     const { container } = await montar(
-      <AppShell user={USUARIA} style={{ height: '50%' }}>
+      <AppShell {...IDENTIDADE} user={USUARIA} style={{ height: '50%' }}>
         conteúdo
       </AppShell>,
     );
@@ -122,15 +129,39 @@ describe('AppShell: estrutura por densidade', () => {
 });
 
 describe('AppShell: marca da lateral', () => {
-  it('a lateral abre com o nome da casa e a legenda do sistema', async () => {
-    const { container } = await montar(<AppShell user={USUARIA}>conteúdo</AppShell>);
+  const blocoDaMarca = (container: HTMLElement) => lateral(container).firstElementChild?.firstElementChild as HTMLElement;
+
+  it('a lateral abre com o nome da casa em duas linhas e a legenda que recebeu', async () => {
+    const { container } = await montar(<AppShell {...IDENTIDADE} user={USUARIA}>conteúdo</AppShell>);
     expect(lateral(container).textContent).toContain('Céu doDespertar');
+    expect(blocoDaMarca(container).innerHTML).toBe('Céu do<br>Despertar');
     expect(folhaComTexto(lateral(container), 'div', 'Sistema de gestão')).toBeTruthy();
+  });
+
+  it('as linhas e a legenda da marca são as que o consumidor passa, com quebra só entre as linhas', async () => {
+    const tres = await montar(
+      <AppShell
+        {...IDENTIDADE}
+        brand={{ lines: ['Instituto', 'Aurora', 'Norte'], tagline: 'Gestão de unidades' }}
+        user={USUARIA}
+      >
+        conteúdo
+      </AppShell>,
+    );
+    expect(blocoDaMarca(tres.container).innerHTML).toBe('Instituto<br>Aurora<br>Norte');
+    expect(folhaComTexto(lateral(tres.container), 'div', 'Gestão de unidades')).toBeTruthy();
+    expect(lateral(tres.container).textContent).not.toContain('Sistema de gestão');
+    await tres.atualizar(
+      <AppShell {...IDENTIDADE} brand={{ lines: ['Aurora'], tagline: 'Gestão' }} user={USUARIA}>
+        conteúdo
+      </AppShell>,
+    );
+    expect(blocoDaMarca(tres.container).innerHTML).toBe('Aurora');
   });
 
   it('em campo a marca da lateral não existe', async () => {
     const { container } = await montar(
-      <AppShell user={USUARIA} density="field">
+      <AppShell {...IDENTIDADE} user={USUARIA} density="field">
         conteúdo
       </AppShell>,
     );
@@ -141,7 +172,7 @@ describe('AppShell: marca da lateral', () => {
 describe('AppShell: navegação lateral', () => {
   it('lista seções e itens na ordem recebida, com a contagem colada ao rótulo', async () => {
     const { container } = await montar(
-      <AppShell user={USUARIA} nav={NAV}>
+      <AppShell {...IDENTIDADE} user={USUARIA} nav={NAV}>
         conteúdo
       </AppShell>,
     );
@@ -158,7 +189,7 @@ describe('AppShell: navegação lateral', () => {
 
   it('cada item mostra o ícone que recebeu', async () => {
     const { container } = await montar(
-      <AppShell user={USUARIA} nav={NAV}>
+      <AppShell {...IDENTIDADE} user={USUARIA} nav={NAV}>
         conteúdo
       </AppShell>,
     );
@@ -168,7 +199,7 @@ describe('AppShell: navegação lateral', () => {
   it('seção é só um título: não é botão e clicar nela não navega', async () => {
     const aoNavegar = vi.fn();
     const { container } = await montar(
-      <AppShell user={USUARIA} nav={NAV} onNavigate={aoNavegar}>
+      <AppShell {...IDENTIDADE} user={USUARIA} nav={NAV} onNavigate={aoNavegar}>
         conteúdo
       </AppShell>,
     );
@@ -180,7 +211,7 @@ describe('AppShell: navegação lateral', () => {
   it('clicar num item chama onNavigate uma vez com o id dele', async () => {
     const aoNavegar = vi.fn();
     const { container } = await montar(
-      <AppShell user={USUARIA} nav={NAV} onNavigate={aoNavegar}>
+      <AppShell {...IDENTIDADE} user={USUARIA} nav={NAV} onNavigate={aoNavegar}>
         conteúdo
       </AppShell>,
     );
@@ -190,7 +221,7 @@ describe('AppShell: navegação lateral', () => {
 
   it('sem onNavigate clicar num item não lança erro', async () => {
     const { container } = await montar(
-      <AppShell user={USUARIA} nav={NAV}>
+      <AppShell {...IDENTIDADE} user={USUARIA} nav={NAV}>
         conteúdo
       </AppShell>,
     );
@@ -199,7 +230,7 @@ describe('AppShell: navegação lateral', () => {
 
   it('os itens são botões de tipo button', async () => {
     const { container } = await montar(
-      <AppShell user={USUARIA} nav={NAV}>
+      <AppShell {...IDENTIDADE} user={USUARIA} nav={NAV}>
         conteúdo
       </AppShell>,
     );
@@ -209,7 +240,7 @@ describe('AppShell: navegação lateral', () => {
 
   it('em escritório a lateral é a única navegação: não há barra inferior', async () => {
     const { container } = await montar(
-      <AppShell user={USUARIA} nav={NAV}>
+      <AppShell {...IDENTIDADE} user={USUARIA} nav={NAV}>
         conteúdo
       </AppShell>,
     );
@@ -218,7 +249,7 @@ describe('AppShell: navegação lateral', () => {
   });
 
   it('sem nav a lateral tem a navegação vazia', async () => {
-    const { container } = await montar(<AppShell user={USUARIA}>conteúdo</AppShell>);
+    const { container } = await montar(<AppShell {...IDENTIDADE} user={USUARIA}>conteúdo</AppShell>);
     expect(navLateral(container).children).toHaveLength(0);
   });
 });
@@ -226,7 +257,7 @@ describe('AppShell: navegação lateral', () => {
 describe('AppShell: item ativo', () => {
   it('só o item cujo id é o activeId carrega aria-current=page', async () => {
     const { container } = await montar(
-      <AppShell user={USUARIA} nav={NAV} activeId="fila">
+      <AppShell {...IDENTIDADE} user={USUARIA} nav={NAV} activeId="fila">
         conteúdo
       </AppShell>,
     );
@@ -240,7 +271,7 @@ describe('AppShell: item ativo', () => {
     ['igual ao nome de uma seção', 'Operação'],
   ])('com activeId %s nenhum item é marcado como atual', async (_descricao, activeId) => {
     const { container } = await montar(
-      <AppShell user={USUARIA} nav={NAV} {...(activeId ? { activeId } : {})}>
+      <AppShell {...IDENTIDADE} user={USUARIA} nav={NAV} {...(activeId ? { activeId } : {})}>
         conteúdo
       </AppShell>,
     );
@@ -249,7 +280,7 @@ describe('AppShell: item ativo', () => {
 
   it('o item ativo ganha tinta royal escura e uma marca na borda esquerda, os outros não', async () => {
     const { container } = await montar(
-      <AppShell user={USUARIA} nav={NAV} activeId="painel">
+      <AppShell {...IDENTIDADE} user={USUARIA} nav={NAV} activeId="painel">
         conteúdo
       </AppShell>,
     );
@@ -262,12 +293,12 @@ describe('AppShell: item ativo', () => {
 
   it('trocar o activeId passa a marca de um item para o outro', async () => {
     const montado = await montar(
-      <AppShell user={USUARIA} nav={NAV} activeId="painel">
+      <AppShell {...IDENTIDADE} user={USUARIA} nav={NAV} activeId="painel">
         conteúdo
       </AppShell>,
     );
     await montado.atualizar(
-      <AppShell user={USUARIA} nav={NAV} activeId="contas">
+      <AppShell {...IDENTIDADE} user={USUARIA} nav={NAV} activeId="contas">
         conteúdo
       </AppShell>,
     );
@@ -279,7 +310,7 @@ describe('AppShell: item ativo', () => {
 describe('AppShell: contagem de pendências', () => {
   it('mostra o número no item que tem contagem positiva, marcado como dado numérico', async () => {
     const { container } = await montar(
-      <AppShell user={USUARIA} nav={NAV}>
+      <AppShell {...IDENTIDADE} user={USUARIA} nav={NAV}>
         conteúdo
       </AppShell>,
     );
@@ -291,7 +322,7 @@ describe('AppShell: contagem de pendências', () => {
 
   it('contagem zero ou ausente não ocupa lugar no item', async () => {
     const { container } = await montar(
-      <AppShell user={USUARIA} nav={NAV}>
+      <AppShell {...IDENTIDADE} user={USUARIA} nav={NAV}>
         conteúdo
       </AppShell>,
     );
@@ -302,7 +333,7 @@ describe('AppShell: contagem de pendências', () => {
 
   it('o número aparece como veio, sem separador de milhar', async () => {
     const { container } = await montar(
-      <AppShell user={USUARIA} nav={[{ id: 'fila', label: 'Fila', icon: 'inbox', count: 1200 }]}>
+      <AppShell {...IDENTIDADE} user={USUARIA} nav={[{ id: 'fila', label: 'Fila', icon: 'inbox', count: 1200 }]}>
         conteúdo
       </AppShell>,
     );
@@ -313,7 +344,7 @@ describe('AppShell: contagem de pendências', () => {
 describe('AppShell: realce ao passar o mouse', () => {
   it('item inativo ganha fundo tênue ao receber o mouse e volta a transparente ao sair', async () => {
     const { container } = await montar(
-      <AppShell user={USUARIA} nav={NAV} activeId="painel">
+      <AppShell {...IDENTIDADE} user={USUARIA} nav={NAV} activeId="painel">
         conteúdo
       </AppShell>,
     );
@@ -327,7 +358,7 @@ describe('AppShell: realce ao passar o mouse', () => {
 
   it('o item ativo mantém o cartão branco mesmo com o mouse em cima', async () => {
     const { container } = await montar(
-      <AppShell user={USUARIA} nav={NAV} activeId="painel">
+      <AppShell {...IDENTIDADE} user={USUARIA} nav={NAV} activeId="painel">
         conteúdo
       </AppShell>,
     );
@@ -338,7 +369,7 @@ describe('AppShell: realce ao passar o mouse', () => {
 
   it('o realce de um item não contamina os vizinhos', async () => {
     const { container } = await montar(
-      <AppShell user={USUARIA} nav={NAV}>
+      <AppShell {...IDENTIDADE} user={USUARIA} nav={NAV}>
         conteúdo
       </AppShell>,
     );
@@ -350,7 +381,7 @@ describe('AppShell: realce ao passar o mouse', () => {
 
 describe('AppShell: chip do usuário', () => {
   it('mostra nome e grupo, e o botão se chama Meu perfil', async () => {
-    const { container } = await montar(<AppShell user={USUARIA}>conteúdo</AppShell>);
+    const { container } = await montar(<AppShell {...IDENTIDADE} user={USUARIA}>conteúdo</AppShell>);
     const chip = chipDoUsuario(container);
     expect(folhaComTexto(chip, 'span', 'Ana Souza')).toBeTruthy();
     expect(folhaComTexto(chip, 'span', 'Tesouraria')).toBeTruthy();
@@ -364,19 +395,19 @@ describe('AppShell: chip do usuário', () => {
     ['élio', 'ÉL'],
     ['', '?'],
   ])('o selo do usuário "%s" mostra %s: as duas primeiras letras do nome, em maiúsculas', async (name, selo) => {
-    const { container } = await montar(<AppShell user={{ name, group: 'Tesouraria' }}>conteúdo</AppShell>);
+    const { container } = await montar(<AppShell {...IDENTIDADE} user={{ name, group: 'Tesouraria' }}>conteúdo</AppShell>);
     expect(chipDoUsuario(container).querySelector('span')?.textContent).toBe(selo);
   });
 
   it('o selo do chip da lateral não é escondido do leitor de tela', async () => {
-    const { container } = await montar(<AppShell user={USUARIA}>conteúdo</AppShell>);
+    const { container } = await montar(<AppShell {...IDENTIDADE} user={USUARIA}>conteúdo</AppShell>);
     expect(chipDoUsuario(container).querySelector('span')?.hasAttribute('aria-hidden')).toBe(false);
   });
 
   it('clicar no chip chama onUserClick uma vez', async () => {
     const aoClicarNoUsuario = vi.fn();
     const { container } = await montar(
-      <AppShell user={USUARIA} onUserClick={aoClicarNoUsuario}>
+      <AppShell {...IDENTIDADE} user={USUARIA} onUserClick={aoClicarNoUsuario}>
         conteúdo
       </AppShell>,
     );
@@ -385,23 +416,33 @@ describe('AppShell: chip do usuário', () => {
   });
 
   it('sem onUserClick o chip não lança erro e o cursor deixa de ser de clique', async () => {
-    const { container } = await montar(<AppShell user={USUARIA}>conteúdo</AppShell>);
+    const { container } = await montar(<AppShell {...IDENTIDADE} user={USUARIA}>conteúdo</AppShell>);
     expect(await errosAoClicar(chipDoUsuario(container))).toEqual([]);
     expect(chipDoUsuario(container).style.cursor).toBe('default');
   });
 
   it('com onUserClick o cursor é de clique', async () => {
     const { container } = await montar(
-      <AppShell user={USUARIA} onUserClick={vi.fn()}>
+      <AppShell {...IDENTIDADE} user={USUARIA} onUserClick={vi.fn()}>
         conteúdo
       </AppShell>,
     );
     expect(chipDoUsuario(container).style.cursor).toBe('pointer');
   });
 
+  it('o título do chip é o userLabel recebido, e o rótulo antigo não aparece', async () => {
+    const { container } = await montar(
+      <AppShell {...IDENTIDADE} userLabel="Minha conta" user={USUARIA}>
+        conteúdo
+      </AppShell>,
+    );
+    expect(elemento<HTMLButtonElement>(container, 'button[title="Minha conta"]')).toBeTruthy();
+    expect(container.querySelector('[title="Meu perfil"]')).toBeNull();
+  });
+
   it('em campo o chip da lateral não existe: o Meu perfil fica no menu', async () => {
     const { container } = await montar(
-      <AppShell user={USUARIA} density="field" onUserClick={vi.fn()}>
+      <AppShell {...IDENTIDADE} user={USUARIA} density="field" onUserClick={vi.fn()}>
         conteúdo
       </AppShell>,
     );
@@ -410,20 +451,14 @@ describe('AppShell: chip do usuário', () => {
 });
 
 describe('AppShell: barra de contexto', () => {
-  it('traz por padrão a instituição e a unidade CDD', async () => {
-    const { container } = await montar(<AppShell user={USUARIA}>conteúdo</AppShell>);
-    expect(folhaComTexto(barraDeContexto(container), 'span', 'Céu do Despertar')).toBeTruthy();
-    expect(botaoComTexto(barraDeContexto(container), 'CDD')).toBeTruthy();
-  });
-
   it('a unidade leva a seta para baixo que indica a troca', async () => {
-    const { container } = await montar(<AppShell user={USUARIA}>conteúdo</AppShell>);
+    const { container } = await montar(<AppShell {...IDENTIDADE} user={USUARIA}>conteúdo</AppShell>);
     expect(glifoDe(elemento(botaoComTexto(barraDeContexto(container), 'CDD'), 'svg'))).toBe('chevron-down');
   });
 
-  it('aceita instituição e unidade próprias', async () => {
+  it('mostra a instituição e a unidade que recebeu', async () => {
     const { container } = await montar(
-      <AppShell user={USUARIA} institution="Instituto Aurora" unit="Filial Norte">
+      <AppShell {...IDENTIDADE} user={USUARIA} institution="Instituto Aurora" unit="Filial Norte">
         conteúdo
       </AppShell>,
     );
@@ -434,7 +469,7 @@ describe('AppShell: barra de contexto', () => {
   it('clicar na unidade chama onUnitClick uma vez', async () => {
     const aoClicarNaUnidade = vi.fn();
     const { container } = await montar(
-      <AppShell user={USUARIA} onUnitClick={aoClicarNaUnidade}>
+      <AppShell {...IDENTIDADE} user={USUARIA} onUnitClick={aoClicarNaUnidade}>
         conteúdo
       </AppShell>,
     );
@@ -443,18 +478,18 @@ describe('AppShell: barra de contexto', () => {
   });
 
   it('sem onUnitClick clicar na unidade não lança erro', async () => {
-    const { container } = await montar(<AppShell user={USUARIA}>conteúdo</AppShell>);
+    const { container } = await montar(<AppShell {...IDENTIDADE} user={USUARIA}>conteúdo</AppShell>);
     expect(await errosAoClicar(botaoComTexto(barraDeContexto(container), 'CDD'))).toEqual([]);
   });
 
   it('em escritório o canto direito diz o grupo do usuário', async () => {
-    const { container } = await montar(<AppShell user={USUARIA}>conteúdo</AppShell>);
+    const { container } = await montar(<AppShell {...IDENTIDADE} user={USUARIA}>conteúdo</AppShell>);
     expect(barraDeContexto(container).lastElementChild?.textContent).toBe('Tesouraria');
   });
 
   it('em campo o canto direito diz o nome do usuário, e a unidade continua à mão', async () => {
     const { container } = await montar(
-      <AppShell user={USUARIA} density="field">
+      <AppShell {...IDENTIDADE} user={USUARIA} density="field">
         conteúdo
       </AppShell>,
     );
@@ -463,7 +498,7 @@ describe('AppShell: barra de contexto', () => {
   });
 
   it('é a única barra de contexto, acima do conteúdo', async () => {
-    const { container } = await montar(<AppShell user={USUARIA}>conteúdo</AppShell>);
+    const { container } = await montar(<AppShell {...IDENTIDADE} user={USUARIA}>conteúdo</AppShell>);
     expect(todos(container, 'header')).toHaveLength(1);
     expect(barraDeContexto(container).nextElementSibling?.tagName).toBe('MAIN');
   });
@@ -477,7 +512,7 @@ describe('AppShell: navegação inferior em campo', () => {
     onUserClick?: () => void;
   }) =>
     montar(
-      <AppShell user={USUARIA} density="field" {...props}>
+      <AppShell {...IDENTIDADE} user={USUARIA} density="field" {...props}>
         conteúdo
       </AppShell>,
     );
@@ -586,7 +621,7 @@ describe('AppShell: navegação inferior em campo', () => {
 
   it('em escritório não há botão Menu: a lateral já traz tudo', async () => {
     const { container } = await montar(
-      <AppShell user={USUARIA} nav={NAV} onUserClick={vi.fn()}>
+      <AppShell {...IDENTIDADE} user={USUARIA} nav={NAV} onUserClick={vi.fn()}>
         conteúdo
       </AppShell>,
     );
@@ -602,7 +637,7 @@ describe('AppShell: menu de campo', () => {
     onUserClick?: () => void;
   }) =>
     montar(
-      <AppShell user={USUARIA} density="field" {...props}>
+      <AppShell {...IDENTIDADE} user={USUARIA} density="field" {...props}>
         conteúdo
       </AppShell>,
     );
@@ -693,7 +728,7 @@ describe('AppShell: menu de campo', () => {
     expect(botaoDoMenu(dentro.container).style.borderTop).toBe('2px solid var(--color-royal)');
     expect(botaoDoMenu(dentro.container).hasAttribute('aria-current')).toBe(false);
     await dentro.atualizar(
-      <AppShell user={USUARIA} density="field" nav={NAV} activeId="painel">
+      <AppShell {...IDENTIDADE} user={USUARIA} density="field" nav={NAV} activeId="painel">
         conteúdo
       </AppShell>,
     );
@@ -714,6 +749,16 @@ describe('AppShell: menu de campo', () => {
     const botoes = todos(dialogoAberto(), 'nav button');
     expect(botoes.map((botao) => botao.textContent)).toEqual(['Contas', 'Acessos', 'ANMeu perfilAna Souza · Tesouraria']);
     expect(perfilNoMenu().type).toBe('button');
+  });
+
+  it('o Meu perfil do menu chama-se como o userLabel recebido', async () => {
+    const { container } = await montar(
+      <AppShell {...IDENTIDADE} userLabel="Minha conta" user={USUARIA} density="field" nav={NAV} onUserClick={vi.fn()}>
+        conteúdo
+      </AppShell>,
+    );
+    await abrirMenu(container);
+    expect(botoesDoMenu()).toEqual(['Contas', 'Acessos', 'ANMinha contaAna Souza · Tesouraria']);
   });
 
   it('sem onUserClick não há Meu perfil no menu', async () => {
@@ -800,7 +845,7 @@ describe('AppShell: menu de campo', () => {
     const montado = await montarComMenu({ nav: NAV, activeId: 'painel' });
     await abrirMenu(montado.container);
     await montado.atualizar(
-      <AppShell user={USUARIA} density="field" nav={NAV} activeId="fila">
+      <AppShell {...IDENTIDADE} user={USUARIA} density="field" nav={NAV} activeId="fila">
         conteúdo
       </AppShell>,
     );
@@ -811,12 +856,12 @@ describe('AppShell: menu de campo', () => {
     const montado = await montarComMenu({ nav: NAV, activeId: 'painel' });
     await abrirMenu(montado.container);
     await montado.atualizar(
-      <AppShell user={USUARIA} density="field" nav={NAV} activeId="fila">
+      <AppShell {...IDENTIDADE} user={USUARIA} density="field" nav={NAV} activeId="fila">
         conteúdo
       </AppShell>,
     );
     await montado.atualizar(
-      <AppShell user={USUARIA} density="field" nav={NAV} activeId="painel">
+      <AppShell {...IDENTIDADE} user={USUARIA} density="field" nav={NAV} activeId="painel">
         conteúdo
       </AppShell>,
     );
@@ -827,7 +872,7 @@ describe('AppShell: menu de campo', () => {
     const montado = await montarComMenu({ nav: NAV, activeId: 'painel' });
     await abrirMenu(montado.container);
     await montado.atualizar(
-      <AppShell user={USUARIA} density="field" nav={NAV} activeId="painel">
+      <AppShell {...IDENTIDADE} user={USUARIA} density="field" nav={NAV} activeId="painel">
         outro conteúdo
       </AppShell>,
     );
@@ -838,13 +883,13 @@ describe('AppShell: menu de campo', () => {
     const montado = await montarComMenu({ nav: NAV, activeId: 'painel' });
     await abrirMenu(montado.container);
     await montado.atualizar(
-      <AppShell user={USUARIA} density="office" nav={NAV} activeId="painel">
+      <AppShell {...IDENTIDADE} user={USUARIA} density="office" nav={NAV} activeId="painel">
         conteúdo
       </AppShell>,
     );
     expect(dialogoDoMenu()).toBeNull();
     await montado.atualizar(
-      <AppShell user={USUARIA} density="field" nav={NAV} activeId="painel">
+      <AppShell {...IDENTIDADE} user={USUARIA} density="field" nav={NAV} activeId="painel">
         conteúdo
       </AppShell>,
     );
