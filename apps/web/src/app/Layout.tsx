@@ -46,7 +46,12 @@ export function Layout({ telas = TELAS }: LayoutProps) {
         <>
           <ScreenHeader title={nomeDaTela} density={densidade} />
           <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 760 }}>
-            <PermissionDenied screen={nomeDaTela} group={usuario.grupoNome} missing={registro.acesso[0] ?? ''} />
+            <PermissionDenied
+              screen={nomeDaTela}
+              group={usuario.grupoNome}
+              missing={registro.acesso[0] ?? ''}
+              whoToAsk="o administrador"
+            />
           </div>
         </>
       )}

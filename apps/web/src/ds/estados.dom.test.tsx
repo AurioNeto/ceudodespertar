@@ -235,7 +235,12 @@ describe('InfraError', () => {
 describe('PermissionDenied', () => {
   it('mostra a tela negada, o grupo, a permissão que falta e a quem pedir', async () => {
     const { container } = await montar(
-      <PermissionDenied screen="Fechamento" group="Voluntários" missing="financeiro.fechamento.executar" />,
+      <PermissionDenied
+        screen="Fechamento"
+        group="Voluntários"
+        missing="financeiro.fechamento.executar"
+        whoToAsk="o administrador"
+      />,
     );
 
     expect(container.textContent).toBe(
@@ -245,7 +250,7 @@ describe('PermissionDenied', () => {
     );
   });
 
-  it('whoToAsk próprio — substitui "o administrador"', async () => {
+  it('whoToAsk — é quem a frase manda procurar, sem papel padrão escrito no componente', async () => {
     const { container } = await montar(
       <PermissionDenied screen="Fechamento" group="Voluntários" missing="x.y.z" whoToAsk="a tesouraria" />,
     );
@@ -256,20 +261,22 @@ describe('PermissionDenied', () => {
   });
 
   it('grupo — sai em negrito, e a permissão em código', async () => {
-    const { container } = await montar(<PermissionDenied screen="Fechamento" group="Voluntários" missing="x.y.z" />);
+    const { container } = await montar(
+      <PermissionDenied screen="Fechamento" group="Voluntários" missing="x.y.z" whoToAsk="a tesouraria" />,
+    );
 
     expect(elemento(container, 'b').textContent).toBe('Voluntários');
     expect(elemento(container, 'code').textContent).toBe('x.y.z');
   });
 
   it('sinaliza o bloqueio com o ícone ban', async () => {
-    const { container } = await montar(<PermissionDenied screen="S" group="G" missing="m" />);
+    const { container } = await montar(<PermissionDenied screen="S" group="G" missing="m" whoToAsk="Q" />);
 
     expect(elemento<SVGElement>(container, 'svg').classList.contains('lucide-ban')).toBe(true);
   });
 
   it('style próprio — sobrepõe o fundo', async () => {
-    const { container } = await montar(<PermissionDenied screen="S" group="G" missing="m" style={{ background: 'red' }} />);
+    const { container } = await montar(<PermissionDenied screen="S" group="G" missing="m" whoToAsk="Q" style={{ background: 'red' }} />);
 
     expect(raizDe(container).style.background).toBe('red');
   });

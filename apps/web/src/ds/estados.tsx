@@ -152,7 +152,7 @@ export interface PermissionDeniedProps {
   screen: string;
   group: string;
   missing: string;
-  whoToAsk?: string;
+  whoToAsk: string;
   style?: CSSProperties;
 }
 
@@ -160,7 +160,7 @@ export function PermissionDenied({
   screen,
   group,
   missing,
-  whoToAsk = 'o administrador',
+  whoToAsk,
   style,
 }: PermissionDeniedProps) {
   return (
