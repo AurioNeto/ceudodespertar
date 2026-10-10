@@ -135,7 +135,7 @@ describe('EnviadorDeConviteKeycloak', () => {
   it('não vaza token, e-mail nem redirect_uri na mensagem do erro de convite expirado', async () => {
     convite = { ...convite, expiraEm: relogio.agora() };
 
-    const erro = await enviar().catch((motivo: unknown) => motivo as Error);
+    const erro = (await enviar().catch((motivo: unknown) => motivo)) as Error;
 
     for (const proibido of [TOKEN_DO_CONVITE, convite.email, 'redirect_uri']) {
       expect(erro.message).not.toContain(proibido);
