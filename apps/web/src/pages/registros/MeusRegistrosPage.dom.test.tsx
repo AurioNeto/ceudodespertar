@@ -7,7 +7,7 @@ import { barraDeEstado, lerRecibos, usarDensidade, valorDeEntrada, valorDeSaida,
 type Transformacao = (lista: readonly LancamentoNaLista[]) => readonly LancamentoNaLista[];
 
 const registros = vi.hoisted(() => ({ transformar: ((lista) => lista) as Transformacao }));
-vi.mock('../../mocks/lancamentos', async (importarOriginal) => {
+vi.mock('@/mocks/lancamentos', async (importarOriginal) => {
   const original = await importarOriginal<{ meusLancamentos: readonly LancamentoNaLista[] }>();
   return {
     ...original,
@@ -17,6 +17,8 @@ vi.mock('../../mocks/lancamentos', async (importarOriginal) => {
   };
 });
 
+const ROYAL = 'var(--color-royal)';
+const LINHA_FORTE = 'var(--color-line-strong)';
 const LISTA = 'Lista simplificada';
 const VISAO_COMPLETA = 'Visão completa';
 
@@ -116,6 +118,16 @@ describe('MeusRegistrosPage: cabeçalho e lista simplificada', () => {
       ['doação de padrinho para o dormitório', valorDeEntrada('3.000,00'), 'Entrada'],
       ['reforço do caixa em espécie', valorDeTransferencia('600,00'), 'Transferência'],
     ]);
+  });
+
+  it.each([
+    { densidade: 'office' as const, padding: '11px 14px 11px 16px' },
+    { densidade: 'field' as const, padding: '13px 15px 13px 17px' },
+  ])('densidade $densidade — as linhas da lista usam o espaçamento $padding', async ({ densidade, padding }) => {
+    usarDensidade(densidade);
+    const { container } = await montar(<MeusRegistrosPage />);
+
+    expect(linhasDaLista(container).map((linha) => linha.style.padding)).toEqual(Array(4).fill(padding));
   });
 
   it('segunda página — os outros quatro, inclusive o de julho, apesar do subtítulo dos últimos 30 dias', async () => {
@@ -381,6 +393,21 @@ describe('MeusRegistrosPage: visão completa em carrossel', () => {
     expect(larguraInicial).toEqual(['26px', '9px', '9px', '9px', '9px', '9px', '9px', '9px']);
     expect(contador(container)).toBe('5 de 8');
     expect(pontos(container).map((ponto) => ponto.style.width)).toEqual(['9px', '9px', '9px', '9px', '26px', '9px', '9px', '9px']);
+  });
+
+  it('escritório — o ponto do cartão atual é royal e os outros ficam na linha forte, e a cor acompanha o ponto tocado', async () => {
+    const { container } = await montar(<MeusRegistrosPage />);
+    await abrirVisaoCompleta(container);
+    const coresIniciais = pontos(container).map((ponto) => ponto.style.background);
+
+    await clicar(pontos(container)[4] as HTMLButtonElement);
+
+    expect(coresIniciais).toEqual([ROYAL, ...Array(7).fill(LINHA_FORTE)]);
+    expect(pontos(container).map((ponto) => ponto.style.background)).toEqual([
+      ...Array(4).fill(LINHA_FORTE),
+      ROYAL,
+      ...Array(3).fill(LINHA_FORTE),
+    ]);
   });
 
   it('campo — o cartão tem 328px, o vão é de 12px, e não há setas redondas nem pontos nem rodapé no recibo', async () => {

@@ -25,7 +25,7 @@ import {
 type Transformacao = (lista: readonly LancamentoNaLista[]) => readonly LancamentoNaLista[];
 
 const livro = vi.hoisted(() => ({ transformar: ((lista) => lista) as Transformacao }));
-vi.mock('../../mocks/lancamentos', async (importarOriginal) => {
+vi.mock('@/mocks/lancamentos', async (importarOriginal) => {
   const original = await importarOriginal<{ lancamentos: readonly LancamentoNaLista[] }>();
   return {
     ...original,
@@ -735,6 +735,23 @@ describe('LancamentosPage: gaveta de detalhe', () => {
       ['19/08/2026 11:30', 'Lançado por Chico Aguiar.'],
       ['19/08/2026 21:04', 'Consolidado por Aurio Neto.'],
       ['20/08/2026 09:30', 'Estornado: valor lançado em duplicidade.'],
+    ]);
+  });
+
+  it.each([
+    { situacao: 'Consolidado', motivo: 'mercado cerimônia mãe divina', tom: 'confirmed' },
+    { situacao: 'A conferir', motivo: 'material de obra do dormitório', tom: 'pending' },
+    { situacao: 'Estornado', motivo: 'gasolina para buscar mantimentos', tom: 'neutral' },
+  ])('lançamento $situacao — o selo da situação na gaveta fica no tom $tom', async ({ situacao, motivo, tom }) => {
+    const { container } = await montar(<LancamentosPage />);
+    await abrirLinhaDoEscritorio(container, motivo);
+
+    const selo = (gaveta(container) as HTMLElement).children[0]?.children[1] as HTMLElement;
+
+    expect([selo.textContent, selo.style.color, selo.style.background]).toEqual([
+      situacao,
+      `var(--color-${tom})`,
+      `var(--color-${tom}-soft)`,
     ]);
   });
 
