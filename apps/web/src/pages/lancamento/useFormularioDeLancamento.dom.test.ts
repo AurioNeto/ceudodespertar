@@ -664,13 +664,12 @@ describe('useFormularioDeLancamento: registrar, limpar e descartar o recibo', ()
     expect(formulario().recibo).toMatchObject({ total: 135, tipo: 'SAIDA', horario: '15:07' });
   });
 
-  it('registrar — volta os campos aos padrões, esvazia as sugestões resolvidas e fecha a folha, mas mantém o tipo', async () => {
+  it('registrar — volta os campos aos padrões e fecha a folha, mas mantém o tipo', async () => {
     const { formulario, agir } = await montarFormulario();
     await agir((f) => {
       f.trocarTipo('ENTRADA');
       f.alterar('valor', '10');
       f.alterar('anexo', 'IMG.jpg');
-      f.descartarSugestao('valor');
       f.abrirPicker('conta');
     });
 
@@ -679,6 +678,19 @@ describe('useFormularioDeLancamento: registrar, limpar e descartar o recibo', ()
     expect(formulario().campos).toEqual(CAMPOS_INICIAIS);
     expect(formulario().picker).toBeNull();
     expect(formulario().tipo).toBe('ENTRADA');
+  });
+
+  it('registrar depois de descartar uma sugestão — anexar de novo traz as quatro sugestões', async () => {
+    const { formulario, agir } = await montarFormulario();
+    await agir((f) => {
+      f.alterar('anexo', 'IMG.jpg');
+      f.descartarSugestao('valor');
+    });
+
+    await agir((f) => f.registrar());
+    await agir((f) => f.alterar('anexo', 'IMG.jpg'));
+
+    expect(formulario().sugestoesPendentes.map((s) => s.chave)).toEqual(['valor', 'descricao', 'contraparte', 'categoria']);
   });
 
   it('registrar sem anexo e com anexo — o comprovante entra no recibo da saída só quando existe', async () => {
@@ -749,7 +761,7 @@ describe('useFormularioDeLancamento: registrar, limpar e descartar o recibo', ()
     expect(formulario().recibo?.horario).toBe('23:59');
   });
 
-  it('limpar — esvazia campos, sugestões, folha e recibo, e mantém o tipo', async () => {
+  it('limpar — esvazia campos, folha e recibo, e mantém o tipo', async () => {
     const { formulario, agir } = await montarFormulario();
     await agir((f) => {
       f.trocarTipo('TRANSFERENCIA');
@@ -765,6 +777,19 @@ describe('useFormularioDeLancamento: registrar, limpar e descartar o recibo', ()
     expect(formulario().picker).toBeNull();
     expect(formulario().recibo).toBeNull();
     expect(formulario().tipo).toBe('TRANSFERENCIA');
+  });
+
+  it('limpar depois de descartar uma sugestão — anexar de novo traz as quatro sugestões', async () => {
+    const { formulario, agir } = await montarFormulario();
+    await agir((f) => {
+      f.alterar('anexo', 'IMG.jpg');
+      f.descartarSugestao('valor');
+    });
+
+    await agir((f) => f.limpar());
+    await agir((f) => f.alterar('anexo', 'IMG.jpg'));
+
+    expect(formulario().sugestoesPendentes.map((s) => s.chave)).toEqual(['valor', 'descricao', 'contraparte', 'categoria']);
   });
 
   it('descartar o recibo — tira só o recibo e deixa os campos como estão', async () => {

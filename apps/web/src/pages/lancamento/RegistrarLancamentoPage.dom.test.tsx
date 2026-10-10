@@ -147,6 +147,12 @@ const botoesDeSugestao = (container: HTMLElement, acao: 'Aceitar sugestão' | 'D
   todos<HTMLButtonElement>(container, `button[title="${acao}"]`);
 const textosDeSugestao = (container: HTMLElement) =>
   todos(container, 'button[title="Aceitar sugestão"]').map((aceitar) => aceitar.previousElementSibling?.textContent);
+const TEXTOS_DAS_QUATRO_SUGESTOES = [
+  'Valor 187,40',
+  'Descrição: mercado cerimônia mãe divina',
+  'Fornecedor: Assaí Atacadista',
+  'Categoria: alimentação de cerimônia',
+];
 const tiposMarcados = (container: HTMLElement) =>
   ['Saída', 'Entrada', 'Transferência'].map((rotulo) => [rotulo, botaoComTexto(container, rotulo).ariaPressed]);
 
@@ -1219,13 +1225,6 @@ describe('RegistrarLancamentoPage: folha de categoria em campo', () => {
 });
 
 describe('RegistrarLancamentoPage: comprovante e sugestões da leitura do cupom', () => {
-  const TEXTOS_DAS_QUATRO_SUGESTOES = [
-    'Valor 187,40',
-    'Descrição: mercado cerimônia mãe divina',
-    'Fornecedor: Assaí Atacadista',
-    'Categoria: alimentação de cerimônia',
-  ];
-
   it('sem anexo — não há sugestão nenhuma, nem a moldura do cupom', async () => {
     const { container } = await montar(<RegistrarLancamentoPage />);
 
@@ -1616,6 +1615,17 @@ describe('RegistrarLancamentoPage: registrar e recibo', () => {
     expect(todos(container, 'button[aria-label^="remover categoria"]')).toHaveLength(0);
     expect(botoesDeRemoverAnexo(container)).toHaveLength(0);
     expect(botaoComTexto(container, 'Entrada').ariaPressed).toBe('true');
+  });
+
+  it('Limpar campos depois de descartar uma sugestão — as quatro sugestões voltam ao anexar de novo', async () => {
+    const { container } = await montar(<RegistrarLancamentoPage />);
+    await anexarComprovante(container);
+    await clicar(botoesDeSugestao(container, 'Descartar sugestão')[0] as HTMLButtonElement);
+
+    await clicar(botaoComTexto(container, 'Limpar campos'));
+    await anexarComprovante(container);
+
+    expect(textosDeSugestao(container)).toEqual(TEXTOS_DAS_QUATRO_SUGESTOES);
   });
 
   it('Limpar campos depois de registrar — também esvazia o recibo', async () => {
