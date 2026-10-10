@@ -40,6 +40,8 @@ access token não limita essa janela (README, seção citada acima).
    ```bash
    curl -s "$OIDC_EMISSOR/protocol/openid-connect/certs"
    ```
+   Se o `kid` antigo continuar publicado, a chave não foi removida nem desativada no realm (só
+   rebaixada): volte ao passo 1 da ação e desative ou remova a chave antes de reiniciar a API de novo.
 2. Confira que a API reiniciou depois da remoção (horário de partida no log do processo).
 3. Se você tiver um access token assinado pela chave removida, uma requisição com ele no
    `Authorization: Bearer` tem de receber **401**, com o aviso `Token recusado: …` no log da API

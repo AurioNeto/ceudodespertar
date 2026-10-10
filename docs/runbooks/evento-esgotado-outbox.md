@@ -47,7 +47,10 @@ No log da API:
   (`vigia-de-eventos-esgotados.ts`) conta a cada 60 s e só registra quando a contagem muda.
 - `error` `evento esgotou o teto de tentativas: evento=… tipo=… tentativas=…` (`despachante.ts:357`).
 - Antes disso, um `warn` por falha: `consumidor falhou: evento=… tipo=… consumidor=… tentativas=… motivo=…`
-  (`despachante.ts:257-258`).
+  (`despachante.ts:257-258`). Exceção: quando o consumidor estoura o tempo limite, a transação do
+  evento é abortada antes desse `warn`, e `ultimo_erro` guarda só `ErroDeTimeoutDoConsumidor`. Nesse
+  caso nenhum log diz qual consumidor travou; descubra pela tabela de consumidores já processados
+  (passo 3 do diagnóstico).
 
 No sistema: o efeito do consumidor não aconteceu. Por exemplo, um usuário suspenso que continua
 liberado no Keycloak.
@@ -116,6 +119,6 @@ Precisa haver um processo da API em modo `api` no ar para o evento sair.
    foi corrigida, e o evento esgota de novo em cerca de 8,5 min.
 2. A consulta do passo 3 do diagnóstico lista todos os consumidores do tipo (tabela acima).
 3. A consulta do passo 4 do diagnóstico volta vazia.
-4. Em até 60 s, quando a contagem chega a zero, a vigia registra `info` `outbox: nenhum evento esgotado`.
+4. A consulta do passo 1 do diagnóstico volta vazia. A vigia só registra `info` `outbox: nenhum evento esgotado` se o mesmo processo já tinha visto contagem diferente de zero; depois de um reinício (por exemplo, para implantar a correção), essa linha pode nunca aparecer.
 5. Confira o efeito no sistema. Para `USUARIO_SUSPENSO`/`USUARIO_REATIVADO`, veja se o usuário está
    bloqueado ou liberado no Keycloak conforme a situação dele no banco.
