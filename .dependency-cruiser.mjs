@@ -75,6 +75,15 @@ export default {
       },
     },
     {
+      name: 'cli-da-identidade-nao-importa-o-migrador',
+      severity: 'error',
+      comment:
+        'O CLI da identidade roda como cdd_app (BANCO_URL) e nunca importa direto o ambiente, as opções ' +
+        'ou o CLI do migrador (BANCO_URL_MIGRACAO, papel cdd_owner).',
+      from: { path: '(?:^|/)apps/api/src/identidade-cli/' },
+      to: { path: '(?:^|/)apps/api/src/banco/(?:ambiente-do-migrador|opcoes-do-migrador|cli)\\.ts$' },
+    },
+    {
       name: 'contracts-nao-importa-apps',
       severity: 'error',
       comment: 'packages/contracts é a base do workspace — não depende de apps/.',

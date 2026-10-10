@@ -54,6 +54,7 @@ const CASOS_POSITIVOS = [
   ['orm-so-na-infraestrutura-de-banco', 'fixtures/orm-so-na-infraestrutura-de-banco/tipo'],
   ['modulo-so-por-public-api', 'fixtures/modulo-so-por-public-api/valor'],
   ['modulo-so-por-public-api', 'fixtures/modulo-so-por-public-api/tipo'],
+  ['cli-da-identidade-nao-importa-o-migrador', 'fixtures/cli-da-identidade-nao-importa-o-migrador'],
   ['contracts-nao-importa-apps', 'fixtures/contracts-nao-importa-apps'],
   ['contracts-nao-importa-apps', 'fixtures/contracts-nao-importa-apps-tipo'],
 ] as const;

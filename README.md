@@ -191,6 +191,67 @@ uma chave removida continua aceita até o cache expirar e, se o Keycloak estiver
 para a API nesse intervalo, por até 15 min. Quem tem a chave privada emite tokens com qualquer
 `exp`, então a validade de 300 s do token não limita essa janela.
 
+### Bootstrap da identidade (primeiro administrador)
+
+Banco novo não tem instituição nem usuário. O comando abaixo cria a instituição, os seis grupos de
+sistema e o primeiro administrador, uma única vez por banco. Ele roda como `cdd_app` (`BANCO_URL`),
+nunca como `cdd_owner`: `BANCO_URL_MIGRACAO` não é lida, então RLS e os GRANTs valem também aqui.
+Antes, suba a infraestrutura e migre (`pnpm infra:subir && pnpm db:migrar`).
+
+```bash
+pnpm db:identidade:bootstrap \
+  --instituicao-nome "Casa do Despertar" \
+  --admin-nome "Nome da Pessoa" \
+  --admin-email pessoa@casa.org
+```
+
+| Flag | Obrigatória | Observação |
+|---|---|---|
+| `--instituicao-nome` | sim | texto não vazio |
+| `--admin-nome` | sim | texto não vazio |
+| `--admin-email` | sim | e-mail válido (aparado e em minúsculas, como no contrato da API) |
+| `--sujeito` | não | `sub` de uma conta já existente no Keycloak; liga o modo vínculo |
+
+Flag desconhecida, repetida, vazia ou ausente, e qualquer argumento posicional, são recusados.
+Senha e segredo nunca entram por argumento: a ferramenta não tem flag para isso.
+
+**Modos.**
+- **Convite (padrão):** grava tudo, e só depois do commit, fora de transação, envia o convite pelo
+  Keycloak (e-mail com o link de definir senha). A pessoa define a senha, entra e a SPA ativa o
+  convite em `POST /eu/ativacao`.
+- **Vínculo (`--sujeito`):** antes de gravar, confere no Keycloak que o e-mail do `sub` é o de
+  `--admin-email`; grava o administrador já ATIVO e não envia e-mail. A verificação do e-mail
+  (`emailVerified`) do Keycloak não é exigida: o realm `cdd` não tem auto-registro, e o e-mail e o
+  username só podem ser editados por um administrador do realm (a Account API os recusa para o
+  próprio usuário), então quem controla o e-mail do `sub` já é quem opera o realm.
+
+**Códigos de saída.**
+
+| Código | Significado |
+|---|---|
+| `0` | bootstrap concluído (ids criados e próximo passo em stdout) |
+| `1` | infraestrutura: ambiente inválido, banco ou Keycloak indisponível, falha no envio do convite, erro inesperado |
+| `2` | uso ou validação: flags inválidas ou dado recusado pela validação do domínio |
+| `3` | regra de negócio: bootstrap já executado, sujeito inexistente, e-mail do sujeito divergente, sujeito já vinculado |
+
+A saída nunca traz token de convite, hash, `sub`, URL de convite nem segredo, nem em erro; erro
+inesperado mostra só o tipo e o código de sistema (ex.: `ECONNREFUSED`).
+
+**Só roda uma vez.** O comando recusa (código `3`) se já houver o marcador de execução ou qualquer
+instituição no banco. Um banco com instituição criada por SQL manual fica fora do bootstrap e exige
+intervenção de DBA.
+
+**Recuperação quando o envio do convite falha (código `1` com "O bootstrap foi gravado").** O commit
+já aconteceu, então o comando não pode ser repetido e ninguém recebeu o e-mail.
+- Em ambiente local: `pnpm infra:zerar`, depois `pnpm infra:subir`, `pnpm db:migrar` e refaça o
+  bootstrap (`infra:zerar` apaga os volumes do Postgres e do Keycloak juntos).
+- Em outro ambiente: a recuperação é manual e exige intervenção de DBA. Um comando de reenvio do
+  convite inicial é um passo futuro opcional.
+
+O processo roda com `CDD_PROCESSO=cli`, fixado pelo próprio comando: o despachante de eventos e o
+vigia de eventos esgotados não sobem. Os eventos gravados pelo bootstrap ficam no outbox e a API os
+despacha quando subir.
+
 ---
 
 ## Handoff original do Claude Design
