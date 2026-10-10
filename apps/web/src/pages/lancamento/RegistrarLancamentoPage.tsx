@@ -17,10 +17,10 @@ import {
   TwoAxisGuard,
   type ReceiptTone,
   type SheetOption,
+  useDensidade,
 } from '../../ds';
 import { useSessao } from '../../app/sessao';
 import { CampoDeTags, Select, SeletorDeTipo, Interruptor } from '../../components/Campo';
-import { useDensidade } from '../../lib/useDensidade';
 import {
   opcoesDeCategoria,
   opcoesDeCerimonia,

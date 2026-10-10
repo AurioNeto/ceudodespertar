@@ -15,7 +15,7 @@ pnpm typecheck
 | Onde | O que é |
 |---|---|
 | `apps/web/src/ds` | Design system em TSX, portado do bundle exportado |
-| `apps/web/src/styles/tokens` | Tokens do design system — a fonte da verdade visual |
+| `apps/web/src/ds/fundacao/tokens` | Tokens do design system — a fonte da verdade visual |
 | `apps/web/src/pages` | As 13 telas |
 | `apps/web/src/mocks` | Fixtures tipadas; saem quando o backend entrar |
 | `packages/contracts` | Tipos do domínio e read models (Doc 2 e Doc 3) |

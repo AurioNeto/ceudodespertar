@@ -4,14 +4,14 @@
   reset do documento. Os cinco arquivos em tokens/ são cópia fiel do design
   system exportado (_ds/.../tokens) — a fonte da verdade visual.
 */
-@import './tokens/fonts.css';
-@import './tokens/colors.css';
-@import './tokens/typography.css';
-@import './tokens/spacing.css';
-@import './tokens/base.css';
+@import '../ds/fundacao/tokens/fonts.css';
+@import '../ds/fundacao/tokens/colors.css';
+@import '../ds/fundacao/tokens/typography.css';
+@import '../ds/fundacao/tokens/spacing.css';
+@import '../ds/fundacao/tokens/base.css';
 
 /* Acréscimo da aplicação, fora da cópia fiel dos tokens exportados. */
-@import './marca.css';
+@import '../ds/fundacao/marca.css';
 
 @import 'tailwindcss';
 

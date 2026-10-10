@@ -1,6 +1,5 @@
 import type { UsuarioListado } from '@cdd/contracts';
-import { Button, StatusBadge } from '../../ds';
-import { useDensidade } from '../../lib/useDensidade';
+import { Button, StatusBadge, useDensidade } from '../../ds';
 import { Avatar } from '../../components/Avatar';
 import { formatarDataHora } from '../../lib/formato';
 import { SITUACAO_DE_USUARIO } from './situacaoDeUsuario';

@@ -1,8 +1,7 @@
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { AppShell, FaixaDeDemonstracao, PermissionDenied, ScreenHeader } from '../ds';
+import { AppShell, FaixaDeDemonstracao, PermissionDenied, ScreenHeader, useDensidade } from '../ds';
 import { filtrarNavPorAcesso, podeVerTela } from './acesso';
 import { construirNav, ROTAS, rotaAtiva, type RotaId } from './navegacao';
-import { useDensidade } from '../lib/useDensidade';
 import { sessaoDeDemonstracaoLigada } from './demonstracao';
 import { TELAS, type RegistroDeTelas } from './telas';
 import { useSessao } from './sessao';

@@ -1,9 +1,8 @@
 import { useMemo, useState } from 'react';
 import type { Dormitorio, Leito } from '@cdd/contracts';
-import { Button, Icon, ScreenHeader, StatusBadge, TextField } from '../../ds';
+import { Button, Icon, ScreenHeader, StatusBadge, TextField, useDensidade } from '../../ds';
 import { Select, SeletorDeTipo } from '../../components/Campo';
 import { Cartao, Numero, Recado, Rotulo } from '../../components/Blocos';
-import { useDensidade } from '../../lib/useDensidade';
 import { pluralizar } from '../../lib/formato';
 import {
   alocacaoInicial,

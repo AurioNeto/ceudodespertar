@@ -1,7 +1,6 @@
 import type { ReactNode } from 'react';
 import type { Eu } from '@cdd/contracts';
-import { Button, ScreenHeader } from '../../ds';
-import { useDensidade } from '../../lib/useDensidade';
+import { Button, ScreenHeader, useDensidade } from '../../ds';
 import { iniciais } from '../../lib/formato';
 import { useSessao } from '../../app/sessao';
 import { Rotulo } from '../../components/Blocos';

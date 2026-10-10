@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import type { ItemNaFila, LancamentoId, OrigemCaptura } from '@cdd/contracts';
-import { Button, EmptyState, Icon, ScreenHeader, StatusBadge, type IconName } from '../../ds';
-import { useDensidade } from '../../lib/useDensidade';
+import { Button, EmptyState, Icon, ScreenHeader, StatusBadge, type IconName, useDensidade } from '../../ds';
 import { formatarData, formatarDinheiro, pluralizar } from '../../lib/formato';
 import { CONFIANCA, ORIGENS, filaDeVerificacaoInicial } from '../../mocks/verificacao';
 import { PainelDeRevisao } from './PainelDeRevisao';

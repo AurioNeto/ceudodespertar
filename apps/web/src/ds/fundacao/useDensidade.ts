@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from 'react';
-import type { Density } from '../ds';
+import type { Density } from './densidade';
 
 /**
  * Densidade de campo é a do celular: alvo de 56px, corpo maior, uma mão e

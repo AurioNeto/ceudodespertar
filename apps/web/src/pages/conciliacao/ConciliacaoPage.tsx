@@ -1,10 +1,9 @@
 import { useState } from 'react';
 import type { ReactNode } from 'react';
 import type { LancamentoAConciliar, LinhaExtrato, LinhaExtratoId, SugestaoDeCasamento } from '@cdd/contracts';
-import { Button, EmptyState, Icon, ScreenHeader, StatusBadge } from '../../ds';
+import { Button, EmptyState, Icon, ScreenHeader, StatusBadge, useDensidade } from '../../ds';
 import { Select } from '../../components/Campo';
 import { Numero, Recado, Rotulo } from '../../components/Blocos';
-import { useDensidade } from '../../lib/useDensidade';
 import { formatarData, formatarDinheiro, pluralizar } from '../../lib/formato';
 import {
   contasComExtrato,

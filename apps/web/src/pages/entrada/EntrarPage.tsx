@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import { Button, SkeletonList } from '../../ds';
-import { useDensidade } from '../../lib/useDensidade';
+import { Button, SkeletonList, useDensidade } from '../../ds';
 import { destinoDaNavegacao } from '../../app/destino';
 import { useSessao } from '../../app/sessao';
 import { MensagemDeEntradaNaTela } from './MensagemDeEntradaNaTela';
