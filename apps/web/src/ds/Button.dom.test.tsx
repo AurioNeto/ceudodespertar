@@ -341,6 +341,36 @@ describe('Button — blockedReason', () => {
     expect(envoltorio.style.alignItems).toBe('stretch');
   });
 
+  it('disabled com blockedReason e blockedReasonId — o id vai para o motivo, que fica no mesmo lugar', async () => {
+    const { container } = await montar(
+      <Button disabled blockedReason="Período fechado" blockedReasonId="motivo-do-bloqueio">
+        Confirmar
+      </Button>,
+    );
+
+    const motivo = elemento<HTMLSpanElement>(container, ':scope > span > span');
+    expect(motivo.id).toBe('motivo-do-bloqueio');
+    expect(motivo.previousElementSibling).toBe(botaoDe(container));
+    expect(botaoDe(container).hasAttribute('id')).toBe(false);
+  });
+
+  it('disabled com blockedReason e sem blockedReasonId — o motivo não leva id', async () => {
+    const { container } = await montar(
+      <Button disabled blockedReason="Período fechado">
+        Confirmar
+      </Button>,
+    );
+
+    expect(elemento<HTMLSpanElement>(container, ':scope > span > span').hasAttribute('id')).toBe(false);
+  });
+
+  it('blockedReasonId não vai para o button como atributo extra', async () => {
+    const { container } = await montar(<Button blockedReasonId="motivo-do-bloqueio">Confirmar</Button>);
+
+    expect(botaoDe(container).hasAttribute('blockedreasonid')).toBe(false);
+    expect(botaoDe(container).hasAttribute('id')).toBe(false);
+  });
+
   it('blockedReason sem disabled — não mostra o motivo nem põe title', async () => {
     const { container } = await montar(<Button blockedReason="Período fechado">Confirmar</Button>);
 
