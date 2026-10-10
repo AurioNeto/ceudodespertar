@@ -245,6 +245,31 @@ describe('AgendaPage: lista', () => {
     expect(container.textContent).toContain('Realizada');
   });
 
+  it.each([
+    { posicao: 0, situacao: 'Realizada', tom: 'var(--color-confirmed)' },
+    { posicao: 1, situacao: 'Confirmada', tom: 'var(--color-royal-ink)' },
+    { posicao: 2, situacao: 'Planejada', tom: 'var(--color-pending)' },
+  ])('item $posicao da lista — o selo $situacao usa o tom $tom', async ({ posicao, situacao, tom }) => {
+    const { container } = await montar(<AgendaPage />);
+    await abrirLista(container);
+
+    const selo = todos<HTMLSpanElement>(itensDaLista(container)[posicao]!, 'span').find((span) => span.textContent === situacao)!;
+
+    expect(selo.style.color).toBe(tom);
+  });
+
+  it('item cancelado da lista — o selo Cancelada usa o tom neutro', async () => {
+    const { container } = await montar(<AgendaPage />);
+    await abrirDetalhe(container, 'Mãe Divina');
+    await clicar(botaoComTexto(container, 'Cancelar'));
+    await clicar(botaoComTexto(container, 'Voltar para a agenda'));
+    await abrirLista(container);
+
+    const selo = todos<HTMLSpanElement>(itensDaLista(container)[1]!, 'span').find((span) => span.textContent === 'Cancelada')!;
+
+    expect(selo.style.color).toBe('var(--color-neutral)');
+  });
+
   it('voltar à vista em calendário — retoma o mês que estava aberto', async () => {
     const { container } = await montar(<AgendaPage />);
     await clicar(mesAnterior(container));
@@ -555,6 +580,24 @@ describe('AgendaPage: nova cerimônia', () => {
     expect(nomesPorDiaNoCalendario(container)['1']).toEqual(['Cerimônia sem data certa']);
   });
 
+  it('salvar com data de outro ano — o calendário pula para o mês e o ano da nova cerimônia', async () => {
+    const { container } = await montar(<AgendaPage />);
+
+    await preencherEEnviarNovaCerimonia(container, { nome: 'Cerimônia de 2027', data: '10/03/2027' });
+
+    expect(mesNaTela(container)).toBe('março de 2027');
+    expect(nomesPorDiaNoCalendario(container)).toEqual({ '10': ['Cerimônia de 2027'] });
+  });
+
+  it('mesmo mês em outro ano — a contagem do mês é por mês e ano, e não soma as cerimônias de setembro de 2026', async () => {
+    const { container } = await montar(<AgendaPage />);
+
+    await preencherEEnviarNovaCerimonia(container, { nome: 'Setembro de 2027', data: '10/09/2027' });
+
+    expect(mesNaTela(container)).toBe('setembro de 2027');
+    expect(contagemDoMes(container)).toBe('1 cerimônia no mês');
+  });
+
   it('cerimônia criada — abre como planejada, com dirigente a definir e equipe só com o dirigente', async () => {
     const { container } = await montar(<AgendaPage />);
 
@@ -816,5 +859,22 @@ describe('AgendaPage: densidade', () => {
 
     expect(botaoComTexto(container, 'Calendário').style.flex).toBe('1 1 0%');
     expect(botaoComTexto(container, 'Lista').style.flex).toBe('1 1 0%');
+  });
+});
+
+describe('AgendaPage: permissões', () => {
+  it('sem sessão nenhuma — a agenda oferece Nova cerimônia: a tela não consulta permissão para criar', async () => {
+    const { container } = await montar(<AgendaPage />);
+
+    expect(botaoComTexto(container, 'Nova cerimônia').disabled).toBe(false);
+  });
+
+  it('sem sessão nenhuma — o detalhe oferece Editar, Duplicar e Cancelar habilitados: a tela não consulta permissão por ação', async () => {
+    const { container } = await montar(<AgendaPage />);
+    await abrirDetalhe(container, 'Mãe Divina');
+
+    const habilitados = ['Editar', 'Duplicar', 'Cancelar'].map((acao) => !botaoComTexto(container, acao).disabled);
+
+    expect(habilitados).toEqual([true, true, true]);
   });
 });

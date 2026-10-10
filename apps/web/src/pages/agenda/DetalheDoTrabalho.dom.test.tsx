@@ -174,6 +174,12 @@ describe('DetalheDoTrabalho: números', () => {
     expect(textoDoNumero(container, 'Visitantes')).toBe('Visitantes3primeira vez ou convidados');
   });
 
+  it('trabalho com confirmados negativos — o número mostra 0, porque conta a lista de participantes e não o campo', async () => {
+    const { container } = await montarDetalhe({ trabalho: umTrabalho({ confirmados: -2, previstos: 40 }) });
+
+    expect(textoDoNumero(container, 'Confirmados')).toBe('Confirmados0de 40 previstos');
+  });
+
   it.each([
     { contribuicoes: [] as number[], numero: 'Contribuição—sem contribuição' },
     { contribuicoes: [40], numero: 'Contribuição40sem contribuição' },
@@ -429,6 +435,17 @@ describe('DetalheDoTrabalho: anamnese e participantes', () => {
     expect(linhasDeParticipantes(container)[0]!.textContent).toBe(
       'Eduardo Munayfardado desde 2008Anamnese em diaConfirmado60,00',
     );
+  });
+
+  it('linha de participante — a borda da esquerda é verde para confirmado e de pendente para quem está em espera', async () => {
+    const { container } = await montarDetalhe(COM_PARTICIPANTES);
+
+    const linhas = linhasDeParticipantes(container);
+
+    expect([linhas[0]!.style.borderLeft, linhas[11]!.style.borderLeft]).toEqual([
+      '3px solid var(--color-confirmed)',
+      '3px solid var(--color-pending)',
+    ]);
   });
 
   it('participante sem contribuição sugerida — não mostra valor na linha', async () => {
