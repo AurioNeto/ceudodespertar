@@ -67,7 +67,10 @@ describe('analisarComandoDaIdentidade', () => {
   it('recusa flag desconhecida sem ecoar o valor', () => {
     const problemas = problemasDe([...ARGUMENTOS_VALIDOS, '--senha=segredo-que-nao-pode-aparecer']);
 
-    expect(problemas).toEqual(['Flag desconhecida: --senha.']);
+    expect(problemas).toEqual([
+      'Flag desconhecida; use apenas: --instituicao-nome, --admin-nome, --admin-email, --sujeito.',
+    ]);
+    expect(problemas.join('')).not.toContain('senha');
   });
 
   it('recusa flag repetida', () => {
@@ -79,10 +82,18 @@ describe('analisarComandoDaIdentidade', () => {
     [['--instituicao-nome', '']],
     [['--instituicao-nome=']],
     [['--instituicao-nome']],
+    [['--instituicao-nome', '--sujeito', 'x']],
   ])('recusa flag vazia: %j', (trecho) => {
     const problemas = problemasDe(['bootstrap', '--admin-nome', 'Ana', '--admin-email', 'ana@casa.org', ...trecho]);
 
     expect(problemas).toEqual(['Flag vazia: --instituicao-nome.']);
+  });
+
+  it('recusa nome de instituição acima de 200 caracteres', () => {
+    const nomeLongo = 'a'.repeat(201);
+    const argumentos = ARGUMENTOS_VALIDOS.map((argumento) => (argumento === 'Casa do Despertar' ? nomeLongo : argumento));
+
+    expect(problemasDe(argumentos)).toEqual(['--instituicao-nome: informe um nome de até 200 caracteres.']);
   });
 
   it('recusa --sujeito vazio', () => {

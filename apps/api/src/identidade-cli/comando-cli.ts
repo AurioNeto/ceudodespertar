@@ -33,6 +33,14 @@ export class ErroDeUsoDoCli extends Error {
 }
 
 const nomeDaInstituicao = z.string().trim().min(1).max(TAMANHO_MAXIMO_DO_NOME_DA_INSTITUICAO);
+
+function problemaDoNomeDaInstituicao(resultado: ReturnType<typeof nomeDaInstituicao.safeParse>): string | undefined {
+  if (resultado.success) return undefined;
+  const excedeu = resultado.error.issues.some((problema) => problema.code === 'too_big');
+  return excedeu
+    ? `--instituicao-nome: informe um nome de até ${TAMANHO_MAXIMO_DO_NOME_DA_INSTITUICAO} caracteres.`
+    : '--instituicao-nome: informe um nome não vazio.';
+}
 const sujeitoInformado = z.string().trim().min(1);
 
 function ehSubcomando(valor: string | undefined): valor is SubcomandoDaIdentidade {
@@ -57,7 +65,7 @@ function lerFlag(argumentos: readonly string[], posicao: number): FlagLida {
 }
 
 function problemaDaFlag(flag: FlagLida, permitidas: ReadonlySet<string>, lidas: ReadonlyMap<string, string>): string | undefined {
-  if (!permitidas.has(flag.nome)) return `Flag desconhecida: --${flag.nome}.`;
+  if (!permitidas.has(flag.nome)) return `Flag desconhecida; use apenas: ${[...permitidas].map((nome) => `--${nome}`).join(', ')}.`;
   if (lidas.has(flag.nome)) return `Flag repetida: --${flag.nome}.`;
   if (flag.valor.trim() === '') return `Flag vazia: --${flag.nome}.`;
   return undefined;
@@ -93,7 +101,8 @@ function exigirFlags(lidas: Map<string, string>, definicao: DefinicaoDoSubcomand
 function analisarBootstrap(lidas: Map<string, string>): ComandoDeBootstrap {
   const problemas: string[] = [];
   const instituicao = nomeDaInstituicao.safeParse(lidas.get('instituicao-nome'));
-  if (!instituicao.success) problemas.push('--instituicao-nome: informe um nome não vazio.');
+  const problemaDaInstituicao = problemaDoNomeDaInstituicao(instituicao);
+  if (problemaDaInstituicao !== undefined) problemas.push(problemaDaInstituicao);
   const administrador = ConvidarUsuario.safeParse({ nome: lidas.get('admin-nome'), email: lidas.get('admin-email') });
   if (!administrador.success) {
     const campos = new Set(administrador.error.issues.map((problema) => problema.path[0]));

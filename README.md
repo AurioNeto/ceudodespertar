@@ -213,6 +213,8 @@ pnpm db:identidade:bootstrap \
 | `--sujeito` | não | `sub` de uma conta já existente no Keycloak; liga o modo vínculo |
 
 Flag desconhecida, repetida, vazia ou ausente, e qualquer argumento posicional, são recusados.
+O `pnpm` 11 repassa o `--` literal ao script: não o use antes das flags
+(`pnpm db:identidade:bootstrap --admin-email ...`), ou o comando responde `Flag desconhecida` com código `2`.
 Senha e segredo nunca entram por argumento: a ferramenta não tem flag para isso.
 
 **Modos.**
@@ -229,7 +231,7 @@ Senha e segredo nunca entram por argumento: a ferramenta não tem flag para isso
 
 | Código | Significado |
 |---|---|
-| `0` | bootstrap concluído (ids criados e próximo passo em stdout) |
+| `0` | bootstrap concluído (ids criados e próximo passo em stdout); falha ao encerrar o contexto depois disso só gera aviso em stderr |
 | `1` | infraestrutura: ambiente inválido, banco ou Keycloak indisponível, falha no envio do convite, erro inesperado |
 | `2` | uso ou validação: flags inválidas ou dado recusado pela validação do domínio |
 | `3` | regra de negócio: bootstrap já executado, sujeito inexistente, e-mail do sujeito divergente, sujeito já vinculado |
@@ -245,7 +247,9 @@ intervenção de DBA.
 já aconteceu, então o comando não pode ser repetido e ninguém recebeu o e-mail.
 - Em ambiente local: `pnpm infra:zerar`, depois `pnpm infra:subir`, `pnpm db:migrar` e refaça o
   bootstrap (`infra:zerar` apaga os volumes do Postgres e do Keycloak juntos).
-- Em outro ambiente: a recuperação é manual e exige intervenção de DBA. Um comando de reenvio do
+- Em outro ambiente: a recuperação é manual e exige intervenção de DBA. O envio já criou o usuário
+  no realm do Keycloak, sem vínculo no banco: ao refazer o bootstrap, remova esse usuário do realm
+  ou reaproveite-o (o convite adota o usuário existente do mesmo e-mail). Um comando de reenvio do
   convite inicial é um passo futuro opcional.
 
 O processo roda com `CDD_PROCESSO=cli`, fixado pelo próprio comando: o despachante de eventos e o

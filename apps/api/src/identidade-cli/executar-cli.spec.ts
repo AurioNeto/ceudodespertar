@@ -183,15 +183,15 @@ describe('executarCli', () => {
     expect(saida.stderr[0]).toContain('OIDC_EMISSOR: ausente');
   });
 
-  it('falha ao encerrar o contexto após sucesso: infraestrutura, mantendo a saída do comando', async () => {
+  it('falha ao encerrar o contexto após sucesso: mantém o código de sucesso e avisa em stderr', async () => {
     const contexto = new ContextoDeTeste(porVinculo);
     contexto.falhaAoEncerrar = true;
 
     const saida = await executarCli(ARGUMENTOS, () => Promise.resolve(contexto));
 
-    expect(saida.codigoDeSaida).toBe(CODIGO_DE_INFRAESTRUTURA);
+    expect(saida.codigoDeSaida).toBe(CODIGO_DE_SUCESSO);
     expect(saida.stdout[0]).toBe('Bootstrap concluído.');
-    expect(saida.stderr.at(-1)).toContain('Falha ao encerrar o contexto');
+    expect(saida.stderr.at(-1)).toContain('falha ao encerrar o contexto');
   });
 
   it('códigos de saída são distintos e estáveis', () => {

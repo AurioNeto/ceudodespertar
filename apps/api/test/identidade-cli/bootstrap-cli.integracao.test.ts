@@ -210,7 +210,8 @@ describe('CLI identidade:bootstrap de ponta a ponta contra Postgres real', () =>
     const resultado = await executar(['bootstrap', '--senha=x']);
 
     expect(resultado.codigo).toBe(2);
-    expect(resultado.stderr).toContain('Flag desconhecida: --senha.');
+    expect(resultado.stderr).toContain('Flag desconhecida; use apenas:');
+    expect(resultado.stderr).not.toContain('senha');
     expect(await contagensDoBanco(banco)).toEqual(BANCO_VAZIO);
   });
 });

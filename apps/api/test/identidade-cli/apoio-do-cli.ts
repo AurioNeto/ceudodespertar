@@ -9,7 +9,7 @@ import { urlDoAppPara } from '../unidade-de-trabalho/orm-de-teste.js';
 
 const RAIZ_DA_API = fileURLToPath(new URL('../..', import.meta.url));
 const SONDA = fileURLToPath(new URL('sonda-de-temporizadores.cjs', import.meta.url));
-const PRAZO_DO_PROCESSO_EM_MS = 30_000;
+const PRAZO_DO_PROCESSO_EM_MS = 8_000;
 
 export interface ResultadoDoProcesso {
   readonly codigo: number | null;

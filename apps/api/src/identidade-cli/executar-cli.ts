@@ -107,10 +107,8 @@ async function encerrarSemPerderASaida(contexto: ContextoDoCli, saidaDoComando: 
     await contexto.encerrar();
     return saidaDoComando;
   } catch (erro) {
-    const aviso = `Falha ao encerrar o contexto (${nomeDoErro(erro)}).`;
-    const codigoDeSaida =
-      saidaDoComando.codigoDeSaida === CODIGO_DE_SUCESSO ? CODIGO_DE_INFRAESTRUTURA : saidaDoComando.codigoDeSaida;
-    return saida(codigoDeSaida, saidaDoComando.stdout, [...saidaDoComando.stderr, aviso]);
+    const aviso = `Aviso: falha ao encerrar o contexto (${nomeDoErro(erro)}); o resultado acima não foi afetado.`;
+    return saida(saidaDoComando.codigoDeSaida, saidaDoComando.stdout, [...saidaDoComando.stderr, aviso]);
   }
 }
 
