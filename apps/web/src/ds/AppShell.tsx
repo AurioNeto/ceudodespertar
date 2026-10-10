@@ -1,6 +1,7 @@
-import { useState } from 'react';
-import type { CSSProperties, ReactNode } from 'react';
+import { useId, useState } from 'react';
+import type { CSSProperties, MouseEvent, ReactNode } from 'react';
 import { Icon, type IconName } from './Icon';
+import { PainelDeAcao } from './PainelDeAcao';
 import type { Density } from './Button';
 
 export interface NavLink {
@@ -17,6 +18,48 @@ export interface NavSection {
 export type NavEntry = NavLink | NavSection;
 
 const isSection = (e: NavEntry): e is NavSection => 'section' in e;
+
+const ITENS_NA_BARRA_DE_CAMPO = 3;
+
+interface GrupoDoMenu {
+  readonly posicao: number;
+  readonly secao: string | null;
+  readonly itens: NavLink[];
+}
+
+function agruparForaDaBarra(nav: readonly NavEntry[], naBarra: number): readonly GrupoDoMenu[] {
+  const grupos: GrupoDoMenu[] = [];
+  let secaoAtual: string | null = null;
+  let posicaoDaSecao = 0;
+  let vistos = 0;
+  for (const entrada of nav) {
+    if (isSection(entrada)) {
+      secaoAtual = entrada.section;
+      posicaoDaSecao += 1;
+      continue;
+    }
+    vistos += 1;
+    if (vistos <= naBarra) continue;
+    const ultimo = grupos.at(-1);
+    if (ultimo?.posicao === posicaoDaSecao) ultimo.itens.push(entrada);
+    else grupos.push({ posicao: posicaoDaSecao, secao: secaoAtual, itens: [entrada] });
+  }
+  return grupos;
+}
+
+function useMenuDeCampo(campo: boolean, ativo: string | undefined) {
+  const [aberto, setAberto] = useState(false);
+  const [contextoVisto, setContextoVisto] = useState({ campo, ativo });
+  if (contextoVisto.campo !== campo || contextoVisto.ativo !== ativo) {
+    setContextoVisto({ campo, ativo });
+    setAberto(false);
+  }
+  return {
+    aberto,
+    abrir: () => setAberto(true),
+    fechar: () => setAberto(false),
+  };
+}
 
 export interface AppShellProps {
   institution?: string;
@@ -51,6 +94,10 @@ export function AppShell({
 }: AppShellProps) {
   const field = density === 'field';
   const links = nav.filter((n): n is NavLink => !isSection(n));
+  const naBarra = links.slice(0, ITENS_NA_BARRA_DE_CAMPO);
+  const foraDaBarra = agruparForaDaBarra(nav, ITENS_NA_BARRA_DE_CAMPO);
+  const temMenu = foraDaBarra.length > 0 || onUserClick !== undefined;
+  const menu = useMenuDeCampo(field, activeId);
 
   return (
     <div
@@ -106,18 +153,7 @@ export function AppShell({
           <nav style={{ display: 'flex', flexDirection: 'column', gap: 2, padding: '0 10px', flex: 1 }}>
             {nav.map((item) =>
               isSection(item) ? (
-                <div
-                  key={item.section}
-                  style={{
-                    font: 'var(--text-label)',
-                    letterSpacing: 'var(--tracking-label)',
-                    textTransform: 'uppercase',
-                    color: 'var(--text-meta)',
-                    padding: '16px 8px 6px',
-                  }}
-                >
-                  {item.section}
-                </div>
+                <RotuloDeSecao key={item.section}>{item.section}</RotuloDeSecao>
               ) : (
                 <NavItem key={item.id} item={item} active={item.id === activeId} onNavigate={onNavigate} />
               ),
@@ -139,21 +175,7 @@ export function AppShell({
               cursor: onUserClick ? 'pointer' : 'default',
             }}
           >
-            <span
-              style={{
-                width: 30,
-                height: 30,
-                borderRadius: 'var(--radius-sm)',
-                flex: '0 0 auto',
-                background: 'var(--color-royal)',
-                color: '#fff',
-                display: 'grid',
-                placeItems: 'center',
-                font: '700 12px var(--font-data)',
-              }}
-            >
-              {(user.name || '?').slice(0, 2).toUpperCase()}
-            </span>
+            <SeloDoUsuario name={user.name} />
             <span style={{ minWidth: 0 }}>
               <span style={{ display: 'block', font: '600 13px var(--font-body)' }}>{user.name}</span>
               <span style={{ display: 'block', font: 'var(--text-small)', color: 'var(--text-secondary)' }}>
@@ -220,40 +242,108 @@ export function AppShell({
           {children}
         </main>
 
-        {field && links.length ? (
+        {field && (naBarra.length > 0 || temMenu) ? (
           <nav style={{ display: 'flex', background: 'var(--bg-card)', borderTop: '1px solid var(--color-line)' }}>
-            {links.slice(0, 4).map((item) => {
-              const on = item.id === activeId;
-              return (
-                <button
-                  key={item.id}
-                  type="button"
-                  onClick={() => onNavigate?.(item.id)}
-                  style={{
-                    flex: 1,
-                    minHeight: 'var(--target-field)',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: 3,
-                    color: on ? 'var(--color-royal)' : 'var(--text-secondary)',
-                    borderTop: `2px solid ${on ? 'var(--color-royal)' : 'transparent'}`,
-                  }}
-                >
-                  <Icon name={item.icon} size={20} />
-                  <span style={{ font: '600 10.5px var(--font-body)' }}>{item.label}</span>
-                </button>
-              );
-            })}
+            {naBarra.map((item) => (
+              <ItemDaBarra key={item.id} item={item} active={item.id === activeId} onNavigate={onNavigate} />
+            ))}
+            {temMenu ? (
+              <BotaoDoMenu
+                aberto={menu.aberto}
+                ativo={foraDaBarra.some((grupo) => grupo.itens.some((item) => item.id === activeId))}
+                aoAbrir={menu.abrir}
+              />
+            ) : null}
           </nav>
         ) : null}
       </div>
+
+      <MenuDeCampo
+        aberto={menu.aberto}
+        grupos={foraDaBarra}
+        activeId={activeId}
+        user={user}
+        onNavigate={onNavigate}
+        onUserClick={onUserClick}
+        aoFechar={menu.fechar}
+      />
     </div>
   );
 }
 
-function NavItem({
+function SeloDoUsuario({ name, decorativo = false }: { name: string; decorativo?: boolean }) {
+  return (
+    <span
+      aria-hidden={decorativo ? true : undefined}
+      style={{
+        width: 30,
+        height: 30,
+        borderRadius: 'var(--radius-sm)',
+        flex: '0 0 auto',
+        background: 'var(--color-royal)',
+        color: '#fff',
+        display: 'grid',
+        placeItems: 'center',
+        font: '700 12px var(--font-data)',
+      }}
+    >
+      {(name || '?').slice(0, 2).toUpperCase()}
+    </span>
+  );
+}
+
+function SeloDeContagem({ count, style }: { count: number | undefined; style?: CSSProperties }) {
+  if (!count) return null;
+  return (
+    <span
+      data-numeric
+      style={{
+        font: '600 11.5px var(--font-data)',
+        background: 'var(--color-pending-soft)',
+        color: 'var(--color-pending)',
+        borderRadius: 'var(--radius-pill)',
+        padding: '1px 7px',
+        ...style,
+      }}
+    >
+      {count}
+    </span>
+  );
+}
+
+function RotuloDeSecao({ id, children }: { id?: string; children: ReactNode }) {
+  return (
+    <div
+      id={id}
+      style={{
+        font: 'var(--text-label)',
+        letterSpacing: 'var(--tracking-label)',
+        textTransform: 'uppercase',
+        color: 'var(--text-meta)',
+        padding: '16px 8px 6px',
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+const estiloDoBotaoDaBarra = (ativo: boolean): CSSProperties => ({
+  position: 'relative',
+  flex: 1,
+  minHeight: 'var(--target-field)',
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: 3,
+  color: ativo ? 'var(--color-royal)' : 'var(--text-secondary)',
+  borderTop: `2px solid ${ativo ? 'var(--color-royal)' : 'transparent'}`,
+});
+
+const ROTULO_DA_BARRA: CSSProperties = { font: '600 10.5px var(--font-body)' };
+
+function ItemDaBarra({
   item,
   active,
   onNavigate,
@@ -261,6 +351,145 @@ function NavItem({
   item: NavLink;
   active: boolean;
   onNavigate?: (id: string) => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={() => onNavigate?.(item.id)}
+      aria-current={active ? 'page' : undefined}
+      style={estiloDoBotaoDaBarra(active)}
+    >
+      <Icon name={item.icon} size={20} />
+      <span style={ROTULO_DA_BARRA}>{item.label}</span>
+      <SeloDeContagem
+        count={item.count}
+        style={{ position: 'absolute', top: 'var(--space-1)', left: 'calc(50% + 6px)' }}
+      />
+    </button>
+  );
+}
+
+function BotaoDoMenu({ aberto, ativo, aoAbrir }: { aberto: boolean; ativo: boolean; aoAbrir: () => void }) {
+  const focarEAbrir = (evento: MouseEvent<HTMLButtonElement>) => {
+    evento.currentTarget.focus();
+    aoAbrir();
+  };
+
+  return (
+    <button
+      type="button"
+      onClick={focarEAbrir}
+      aria-haspopup="dialog"
+      aria-expanded={aberto}
+      style={estiloDoBotaoDaBarra(ativo)}
+    >
+      <Icon name="menu" size={20} />
+      <span style={ROTULO_DA_BARRA}>Menu</span>
+    </button>
+  );
+}
+
+interface MenuDeCampoProps {
+  aberto: boolean;
+  grupos: readonly GrupoDoMenu[];
+  activeId: string | undefined;
+  user: { name: string; group: string };
+  onNavigate: ((id: string) => void) | undefined;
+  onUserClick: (() => void) | undefined;
+  aoFechar: () => void;
+}
+
+function MenuDeCampo({ aberto, grupos, activeId, user, onNavigate, onUserClick, aoFechar }: MenuDeCampoProps) {
+  const navegarPara = (id: string) => {
+    onNavigate?.(id);
+    aoFechar();
+  };
+  const abrirPerfil = () => {
+    onUserClick?.();
+    aoFechar();
+  };
+
+  return (
+    <PainelDeAcao aberto={aberto} titulo="Menu" variante="folha" aoFechar={aoFechar}>
+      <nav style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        {grupos.map((grupo) => (
+          <GrupoNoMenu key={grupo.posicao} grupo={grupo} activeId={activeId} onNavigate={navegarPara} />
+        ))}
+        {onUserClick ? <PerfilNoMenu user={user} aoAbrir={abrirPerfil} /> : null}
+      </nav>
+    </PainelDeAcao>
+  );
+}
+
+function GrupoNoMenu({
+  grupo,
+  activeId,
+  onNavigate,
+}: {
+  grupo: GrupoDoMenu;
+  activeId: string | undefined;
+  onNavigate: (id: string) => void;
+}) {
+  const idDoRotulo = useId();
+  const nomeado = grupo.secao !== null;
+
+  return (
+    <div
+      role={nomeado ? 'group' : undefined}
+      aria-labelledby={nomeado ? idDoRotulo : undefined}
+      style={{ display: 'flex', flexDirection: 'column', gap: 2 }}
+    >
+      {nomeado ? <RotuloDeSecao id={idDoRotulo}>{grupo.secao}</RotuloDeSecao> : null}
+      {grupo.itens.map((item) => (
+        <NavItem
+          key={item.id}
+          item={item}
+          active={item.id === activeId}
+          onNavigate={onNavigate}
+          densidade="field"
+        />
+      ))}
+    </div>
+  );
+}
+
+function PerfilNoMenu({ user, aoAbrir }: { user: { name: string; group: string }; aoAbrir: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={aoAbrir}
+      style={{
+        marginTop: 'var(--space-3)',
+        padding: 'var(--space-3) var(--space-2)',
+        minHeight: 'var(--target-field)',
+        borderTop: '1px solid var(--color-line-strong)',
+        display: 'flex',
+        gap: 10,
+        alignItems: 'center',
+        textAlign: 'left',
+      }}
+    >
+      <SeloDoUsuario name={user.name} decorativo />
+      <span style={{ minWidth: 0 }}>
+        <span style={{ display: 'block', font: '600 13.5px var(--font-body)' }}>Meu perfil</span>
+        <span style={{ display: 'block', font: 'var(--text-small)', color: 'var(--text-secondary)' }}>
+          {user.name} · {user.group}
+        </span>
+      </span>
+    </button>
+  );
+}
+
+function NavItem({
+  item,
+  active,
+  onNavigate,
+  densidade = 'office',
+}: {
+  item: NavLink;
+  active: boolean;
+  onNavigate?: (id: string) => void;
+  densidade?: Density;
 }) {
   const [hot, setHot] = useState(false);
 
@@ -276,7 +505,7 @@ function NavItem({
         alignItems: 'center',
         gap: 10,
         textAlign: 'left',
-        minHeight: 'var(--target-office)',
+        minHeight: densidade === 'field' ? 'var(--target-field)' : 'var(--target-office)',
         padding: '0 10px',
         borderRadius: 'var(--radius-sm)',
         color: active ? 'var(--color-royal-deep)' : 'var(--text-primary)',
@@ -302,20 +531,7 @@ function NavItem({
       ) : null}
       <Icon name={item.icon} size={17} color={active ? 'var(--color-royal)' : 'var(--text-meta)'} />
       <span style={{ flex: 1 }}>{item.label}</span>
-      {item.count ? (
-        <span
-          data-numeric
-          style={{
-            font: '600 11.5px var(--font-data)',
-            background: 'var(--color-pending-soft)',
-            color: 'var(--color-pending)',
-            borderRadius: 'var(--radius-pill)',
-            padding: '1px 7px',
-          }}
-        >
-          {item.count}
-        </span>
-      ) : null}
+      <SeloDeContagem count={item.count} />
     </button>
   );
 }
