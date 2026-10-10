@@ -63,11 +63,50 @@ function operandoTemTipoDeGrupo(checker: ts.TypeChecker, no: ts.Expression, proi
   return ehTipoDeGrupo(checker.getTypeAtLocation(no), proibidos);
 }
 
-function colecaoDeGrupo(checker: ts.TypeChecker, colecao: ts.Expression, proibidos: ReadonlySet<string>): boolean {
-  const interna = semParenteses(colecao);
-  if (ts.isArrayLiteralExpression(interna)) {
-    return interna.elements.some((elemento) => ehLiteralProibido(elemento, proibidos));
+function semEnvoltorios(no: ts.Expression): ts.Expression {
+  const interno = semParenteses(no);
+  if (ts.isAsExpression(interno) || ts.isSatisfiesExpression(interno) || ts.isNonNullExpression(interno)) {
+    return semEnvoltorios(interno.expression);
   }
+  return interno;
+}
+
+function ehNulo(no: ts.Expression): boolean {
+  const interno = semParenteses(no);
+  return interno.kind === ts.SyntaxKind.NullKeyword || (ts.isIdentifier(interno) && interno.text === 'undefined');
+}
+
+function elementoChaveDe(elemento: ts.Expression): ts.Expression {
+  const interno = semEnvoltorios(elemento);
+  return ts.isArrayLiteralExpression(interno) && interno.elements.length > 0 ? interno.elements[0]! : interno;
+}
+
+function literalDeColecaoComGrupo(no: ts.Expression, proibidos: ReadonlySet<string>): boolean {
+  const interno = semEnvoltorios(no);
+  if (ts.isArrayLiteralExpression(interno)) {
+    return interno.elements.some((elemento) => ehLiteralProibido(elementoChaveDe(elemento), proibidos));
+  }
+  if (!ts.isNewExpression(interno) || !ts.isIdentifier(interno.expression)) return false;
+  if (!['Set', 'Map'].includes(interno.expression.text)) return false;
+  const primeiro = interno.arguments?.[0];
+  return primeiro !== undefined && literalDeColecaoComGrupo(primeiro, proibidos);
+}
+
+function inicializadorConstDe(checker: ts.TypeChecker, no: ts.Expression): ts.Expression | undefined {
+  const interno = semEnvoltorios(no);
+  if (!ts.isIdentifier(interno)) return undefined;
+  const declaracao = checker.getSymbolAtLocation(interno)?.valueDeclaration;
+  const ehConst =
+    declaracao !== undefined &&
+    ts.isVariableDeclaration(declaracao) &&
+    (ts.getCombinedNodeFlags(declaracao) & ts.NodeFlags.Const) !== 0;
+  return ehConst ? declaracao.initializer : undefined;
+}
+
+function colecaoDeGrupo(checker: ts.TypeChecker, colecao: ts.Expression, proibidos: ReadonlySet<string>): boolean {
+  if (literalDeColecaoComGrupo(colecao, proibidos)) return true;
+  const inicializador = inicializadorConstDe(checker, colecao);
+  if (inicializador !== undefined && literalDeColecaoComGrupo(inicializador, proibidos)) return true;
   const tipo = checker.getTypeAtLocation(colecao);
   const referencia = tipo as ts.TypeReference;
   if (referencia.target === undefined) return false;
@@ -79,6 +118,7 @@ function comparacaoComGrupo(
   no: ts.BinaryExpression,
   proibidos: ReadonlySet<string>,
 ): boolean {
+  if (ehNulo(no.left) || ehNulo(no.right)) return false;
   return [no.left, no.right].some(
     (operando) => ehLiteralProibido(operando, proibidos) || operandoTemTipoDeGrupo(checker, operando, proibidos),
   );
