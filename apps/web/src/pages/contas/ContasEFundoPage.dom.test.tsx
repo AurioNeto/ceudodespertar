@@ -436,6 +436,22 @@ describe('ContasEFundoPage: gerenciar contas e fundos', () => {
     expect(folhasComTexto(container, '1 conta esperando conferência')).toHaveLength(1);
   });
 
+  it('excluir uma conta de banco — tira o saldo de Em banco, baixa a nota para 2 contas e o consolidado', async () => {
+    const { container } = await montar(<ContasEFundoPage />);
+    await abrirGerenciador(container);
+
+    await clicar(botaoComTexto(linhaGerenciavel(container, 'Nubank Paty'), 'Excluir'));
+
+    await fecharGerenciador(container);
+    expect(blocoDoRotulo(container, 'Em banco')).toEqual(['Em banco', '79.896,95', '2 contas']);
+    expect(blocoDoRotulo(container, 'Em espécie')).toEqual(['Em espécie', '3.180,40', 'caixa da chácara']);
+    expect(blocoDoRotulo(container, 'Saldo consolidado da unidade')).toEqual([
+      'Saldo consolidado da unidade',
+      '83.077,35',
+      'posição de hoje, 09:12 · 3 contas ativas',
+    ]);
+  });
+
   it('reativar uma conta — devolve o saldo aos totais e o cartão à tela', async () => {
     const { container } = await montar(<ContasEFundoPage />);
     await abrirGerenciador(container);
@@ -460,6 +476,26 @@ describe('ContasEFundoPage: gerenciar contas e fundos', () => {
     expect(blocoDoRotulo(container, 'Já com destino')).toEqual(['Já com destino', '15.200,00']);
     expect(blocoDoRotulo(container, 'Livre', 0)).toEqual(['Livre', '24.035,40']);
     expect(linhasDaReserva(container).map((linha) => linha[0])).toEqual([
+      'Feitio de dezembro',
+      'Emergência e saúde',
+      'Livre',
+    ]);
+  });
+
+  it('reativar um fundo — devolve a reserva à lista e o valor ao Já com destino, e o Livre volta ao que era', async () => {
+    const { container } = await montar(<ContasEFundoPage />);
+    await abrirGerenciador(container);
+    await clicar(botaoComTexto(container, 'Fundos'));
+    await clicar(botaoComTexto(linhaGerenciavel(container, 'Obra do dormitório'), 'Excluir'));
+
+    await clicar(botaoComTexto(linhaGerenciavel(container, 'Obra do dormitório'), 'Reativar'));
+
+    await fecharGerenciador(container);
+    expect(blocoDoRotulo(container, 'Total do fundo')).toEqual(['Total do fundo', '39.235,40']);
+    expect(blocoDoRotulo(container, 'Já com destino')).toEqual(['Já com destino', '33.600,00']);
+    expect(blocoDoRotulo(container, 'Livre', 0)).toEqual(['Livre', '5.635,40']);
+    expect(linhasDaReserva(container).map((linha) => linha[0])).toEqual([
+      'Obra do dormitório',
       'Feitio de dezembro',
       'Emergência e saúde',
       'Livre',
