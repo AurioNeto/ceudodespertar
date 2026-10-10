@@ -103,6 +103,14 @@ const trocarTipo = (container: HTMLElement, tipo: string) => clicar(botaoComText
 const campoDoValor = (container: HTMLElement) => campoRotulado<HTMLInputElement>(container, 'Valor combinado');
 const clicarNoNivel = (container: HTMLElement, nivel: string) => clicar(botaoDoNivel(container, nivel));
 const escolherHospedagem = (container: HTMLElement, rotulo: string) => clicar(opcaoEmLinha(container, rotulo));
+const seletorDeDiarias = (container: HTMLElement) => campoRotulado<HTMLSelectElement>(container, 'Quantas diárias');
+const escolherDiarias = (container: HTMLElement, diarias: string) => escolherOpcao(seletorDeDiarias(container), diarias);
+const seletorDeResponsavel = (container: HTMLElement) =>
+  campoRotulado<HTMLSelectElement>(container, 'Responsável neste trabalho');
+const escolherResponsavel = (container: HTMLElement, nome: string) => escolherOpcao(seletorDeResponsavel(container), nome);
+const temIcone = (origem: ParentNode, nome: string) => origem.querySelector(`svg.lucide-${nome}`) !== null;
+const marcadorDaOpcao = (opcao: HTMLElement) => elemento<HTMLSpanElement>(opcao, 'span[aria-hidden]');
+const corDoSelo = (container: HTMLElement, selo: string) => folhaComTexto<HTMLSpanElement>(container, 'span', selo).style.color;
 
 const SEM_PENDENCIA: string[][] = [];
 const PENDENCIA_DE_EMERGENCIA = ['Contato de emergência e restrição alimentar', 'IN4'];
@@ -162,6 +170,22 @@ describe('InscricaoPage: abertura e escolha do evento', () => {
     expect(botaoComTexto(container, 'Copiado').type).toBe('button');
     await clicar(botaoComTexto(container, 'Copiado'));
     expect(botaoComTexto(container, 'Copiado').type).toBe('button');
+  });
+
+  it('link da cerimônia — copiar troca o ícone de copiar pelo de check e o botão de contorno pelo discreto', async () => {
+    const container = await abrir();
+    const antes = botaoComTexto(container, 'Copiar');
+    const antesDoClique = [temIcone(antes, 'copy'), temIcone(antes, 'check'), antes.style.color];
+
+    await clicar(antes);
+
+    const copiado = botaoComTexto(container, 'Copiado');
+    expect(antesDoClique).toEqual([true, false, 'var(--color-royal)']);
+    expect([temIcone(copiado, 'copy'), temIcone(copiado, 'check'), copiado.style.color]).toEqual([
+      false,
+      true,
+      'var(--text-primary)',
+    ]);
   });
 });
 
@@ -259,7 +283,7 @@ describe('InscricaoPage: ficha da pessoa escolhida', () => {
     { pessoa: 'Sérgio Bittencourt', pendencias: SEM_PENDENCIA },
     { pessoa: 'Antônio Duarte', pendencias: [['Falta o responsável', 'IN2']] },
     { pessoa: 'Bruna Camargo', pendencias: SEM_PENDENCIA },
-  ])('$pessoa — as pendências na entrada, na ordem das invariantes, são $pendencias', async ({ pessoa, pendencias }) => {
+  ])('$pessoa — as pendências na entrada saem na ordem das invariantes', async ({ pessoa, pendencias }) => {
     const container = await abrirComPessoa(pessoa);
 
     expect(pendenciasMostradas(container)).toEqual(pendencias);
@@ -294,7 +318,7 @@ describe('InscricaoPage: ficha da pessoa escolhida', () => {
     expect(todos(container, 'button').some((botao) => botao.textContent === 'Não tem nenhuma')).toBe(false);
   });
 
-  it('escolher outra pessoa depois de mexer em tudo — recomeça do padrão e não guarda valor nem hospedagem', async () => {
+  it('escolher outra pessoa depois de mexer em valor, hospedagem e tipo — o valor, a hospedagem e o tipo recomeçam do padrão', async () => {
     const container = await abrirComPessoa('Helena Duarte');
     await digitar(campoDoValor(container), '200');
     await escolherHospedagem(container, 'Quarto');
@@ -458,33 +482,81 @@ describe('InscricaoPage: tipo de participação e consagração', () => {
     await clicar(botaoComTexto(container, 'Registrar a conversa'));
 
     await clicar(interruptor(container, 'Primeira vez na casa'));
+    const notaDepoisDoPrimeiroClique = textoDe(container).includes('Já esteve aqui antes.');
     await clicar(interruptor(container, 'Primeira vez na casa'));
 
+    expect(notaDepoisDoPrimeiroClique).toBe(true);
     expect(textoDe(container)).toContain('Conversa de acolhimento registrada.');
+  });
+
+  it('Marina — desligar a primeira vez tira a pendência IN6 e a nota diz que já esteve aqui antes', async () => {
+    const container = await abrirComPessoa('Marina Tavares');
+
+    await clicar(interruptor(container, 'Primeira vez na casa'));
+
+    expect(interruptor(container, 'Primeira vez na casa').getAttribute('aria-checked')).toBe('false');
+    expect(textoDe(container)).toContain('Já esteve aqui antes.');
+    expect(pendenciasMostradas(container)).toEqual([['Anamnese pendente', 'IN5'], PENDENCIA_DE_EMERGENCIA]);
+  });
+
+  it('Marina — desligar e religar a consagração devolve a pendência IN5 de anamnese', async () => {
+    const container = await abrirComPessoa('Marina Tavares');
+    await clicar(interruptor(container, 'Consagra neste trabalho'));
+    const semAnamneseDepoisDeDesligar = pendenciasMostradas(container).some(([titulo]) => titulo === 'Anamnese pendente');
+
+    await clicar(interruptor(container, 'Consagra neste trabalho'));
+
+    expect(semAnamneseDepoisDeDesligar).toBe(false);
+    expect(interruptor(container, 'Consagra neste trabalho').getAttribute('aria-checked')).toBe('true');
+    expect(pendenciasMostradas(container)).toEqual([
+      ['Anamnese pendente', 'IN5'],
+      ['Conversa de primeira vez não registrada', 'IN6'],
+      PENDENCIA_DE_EMERGENCIA,
+    ]);
   });
 });
 
 describe('InscricaoPage: estado da anamnese', () => {
   it.each([
-    { pessoa: 'Helena Duarte', selo: 'Em dia', frase: 'Em dia.', nota: 'Respondida em 28/07/2026 · v3 · vale até 28/07/2027' },
+    {
+      pessoa: 'Helena Duarte',
+      selo: 'Em dia',
+      tom: 'confirmed',
+      frase: 'Em dia.',
+      nota: 'Respondida em 28/07/2026 · v3 · vale até 28/07/2027',
+    },
     {
       pessoa: 'Marina Tavares',
       selo: 'Pendente',
+      tom: 'attention',
       frase: 'Enquanto não estiver em dia, a inscrição pode ser salva, mas não confirmada.',
       nota: 'Nunca respondeu',
     },
     {
       pessoa: 'Eduardo Pires',
       selo: 'Vencida',
+      tom: 'attention',
       frase: 'Enquanto não estiver em dia, a inscrição pode ser salva, mas não confirmada.',
       nota: 'Respondida em 11/03/2024 · v2 · venceu em 11/03/2025',
     },
-  ])('$pessoa que consagra — mostra o selo $selo, a nota da anamnese e a frase do estado', async ({ pessoa, selo, frase, nota }) => {
+  ])('$pessoa que consagra — mostra o selo $selo, a nota da anamnese e a frase do estado', async ({ pessoa, selo, tom, frase, nota }) => {
     const container = await abrirComPessoa(pessoa);
 
     expect(folhaComTexto(container, 'span', selo)).toBeDefined();
+    expect(corDoSelo(container, selo)).toBe(`var(--color-${tom})`);
     expect(folhaComTexto(container, 'span', nota)).toBeDefined();
     expect(textoDe(container)).toContain(frase);
+  });
+
+  it.each([
+    { pessoa: 'Marina Tavares', estado: 'pendente' },
+    { pessoa: 'Eduardo Pires', estado: 'vencida' },
+  ])('$pessoa com a anamnese $estado e sem consagrar — o selo Não se aplica fica neutro, não no tom do estado', async ({ pessoa }) => {
+    const container = await abrirComPessoa(pessoa);
+
+    await clicar(interruptor(container, 'Consagra neste trabalho'));
+
+    expect(corDoSelo(container, 'Não se aplica')).toBe('var(--color-neutral)');
   });
 
   it('quem não consagra — o selo vira Não se aplica e a frase diz que o estado antigo continua guardado', async () => {
@@ -529,6 +601,17 @@ describe('InscricaoPage: estado da anamnese', () => {
 
     expect(botaoComTexto(container, 'Copiado').type).toBe('button');
     expect(pendenciasMostradas(container)[0]).toEqual(['Anamnese pendente', 'IN5']);
+  });
+
+  it('Marina com beliche — o botão de cada ação de pendência leva o ícone de check', async () => {
+    const container = await abrirComPessoa('Marina Tavares');
+    await escolherHospedagem(container, 'Beliche no dormitório');
+
+    const acoes = ['Copiar o link para mandar no WhatsApp', 'Registrar a conversa', 'Alocar um leito'].map((rotulo) =>
+      botaoComTexto(container, rotulo),
+    );
+
+    expect(acoes.map((acao) => temIcone(acao, 'check'))).toEqual([true, true, true]);
   });
 });
 
@@ -653,6 +736,44 @@ describe('InscricaoPage: criança estelar', () => {
     await trocarTipo(container, 'Participante');
 
     expect(pendenciasMostradas(container)).toEqual([['Anamnese pendente', 'IN5']]);
+  });
+
+  it('adulta com autorização marcada como Criança estelar, sem responsável — a pendência IN2 pede o responsável, como para o menino', async () => {
+    const container = await abrirComPessoa('Helena Duarte');
+
+    await trocarTipo(container, 'Criança estelar');
+
+    expect(pendenciasMostradas(container)).toEqual([['Falta o responsável', 'IN2']]);
+  });
+
+  it('adulta com autorização marcada como Criança estelar e responsável sem autorização — nenhuma pendência: vale a autorização da própria pessoa', async () => {
+    const container = await abrirComPessoa('Helena Duarte');
+    await trocarTipo(container, 'Criança estelar');
+
+    await escolherResponsavel(container, 'Marina Tavares');
+
+    expect(pendenciasMostradas(container)).toEqual(SEM_PENDENCIA);
+  });
+
+  it('Sérgio sem autorização marcado como Criança estelar — ele mesmo aparece entre os responsáveis e, escolhido, pede a autorização que lhe falta', async () => {
+    const container = await abrirComPessoa('Sérgio Bittencourt');
+    await trocarTipo(container, 'Criança estelar');
+    const opcoes = todos<HTMLOptionElement>(seletorDeResponsavel(container), 'option').map((opcao) => opcao.textContent);
+
+    await escolherResponsavel(container, 'Sérgio Bittencourt');
+
+    expect(opcoes).toContain('Sérgio Bittencourt');
+    expect(seletorDeResponsavel(container).value).toBe('Sérgio Bittencourt');
+    expect(pendenciasMostradas(container)).toEqual([['Sem autorização vigente para este trabalho', 'IN2']]);
+  });
+
+  it('Sérgio sem autorização marcado como Criança estelar e Helena como responsável — a autorização da Helena basta', async () => {
+    const container = await abrirComPessoa('Sérgio Bittencourt');
+    await trocarTipo(container, 'Criança estelar');
+
+    await escolherResponsavel(container, 'Helena Duarte');
+
+    expect(pendenciasMostradas(container)).toEqual(SEM_PENDENCIA);
   });
 });
 
@@ -814,6 +935,29 @@ describe('InscricaoPage: hospedagem e leito', () => {
       'R$ 90,00 por dia',
     ]);
     expect(opcoes.map(marcado)).toEqual([true, false, false, false]);
+    expect(opcoes.map((opcao) => opcao.textContent)).toEqual([
+      'Não vai dormir na casaVai embora depois do trabalho.sem custo',
+      'Colchonete próprio na igrejaGrátis. Não entra na contribuição nem gera lançamento — a casa só precisa saber quem fica.sem custo',
+      'Beliche no dormitórioPago à parte por quem usa a acomodação.R$ 50,00 por dia',
+      'QuartoPago à parte por quem usa a acomodação.R$ 90,00 por dia',
+    ]);
+  });
+
+  it('hospedagem — só a opção marcada leva o ícone de check no marcador, e o marcador é redondo', async () => {
+    const container = await abrirComPessoa('Helena Duarte');
+    const rotulos = ['Não vai dormir na casa', 'Colchonete próprio na igreja', 'Beliche no dormitório', 'Quarto'];
+    const iconesAntes = rotulos.map((rotulo) => temIcone(opcaoEmLinha(container, rotulo), 'check'));
+
+    await escolherHospedagem(container, 'Beliche no dormitório');
+
+    expect(iconesAntes).toEqual([true, false, false, false]);
+    expect(rotulos.map((rotulo) => temIcone(opcaoEmLinha(container, rotulo), 'check'))).toEqual([false, false, true, false]);
+    expect(rotulos.map((rotulo) => marcadorDaOpcao(opcaoEmLinha(container, rotulo)).style.borderRadius)).toEqual([
+      '50%',
+      '50%',
+      '50%',
+      '50%',
+    ]);
   });
 
   it('hospedagem sem custo — não oferece diárias nem pendência de leito', async () => {
@@ -864,6 +1008,30 @@ describe('InscricaoPage: hospedagem e leito', () => {
 
     expect(campoRotulado<HTMLSelectElement>(container, 'Quantas diárias').value).toBe('3');
     expect(textoDe(container)).toContain('R$ 270,00 de acomodação, à parte da contribuição.');
+  });
+
+  it('diárias escolhidas para uma pessoa e outra pessoa escolhida em seguida — a segunda abre o beliche com as diárias da primeira', async () => {
+    const container = await abrirComPessoa('Helena Duarte');
+    await escolherHospedagem(container, 'Beliche no dormitório');
+    await escolherDiarias(container, '3');
+    await clicar(botaoComTexto(container, 'Trocar'));
+    await clicar(botaoDaPessoa(container, 'Marina Tavares'));
+
+    await escolherHospedagem(container, 'Beliche no dormitório');
+
+    expect(seletorDeDiarias(container).value).toBe('3');
+    expect(textoDe(container)).toContain('R$ 150,00 de acomodação, à parte da contribuição.');
+  });
+
+  it('diárias escolhidas e evento trocado — a Jornada mantém as diárias e o custo da acomodação', async () => {
+    const container = await abrirComPessoa('Helena Duarte');
+    await escolherHospedagem(container, 'Beliche no dormitório');
+    await escolherDiarias(container, '3');
+
+    await trocarEvento(container, JORNADA);
+
+    expect(seletorDeDiarias(container).value).toBe('3');
+    expect(textoDe(container)).toContain('R$ 150,00 de acomodação, à parte da contribuição.');
   });
 
   it('Beliche — abre a pendência IN9 com o rótulo em minúsculas e os leitos livres do evento', async () => {
@@ -953,6 +1121,21 @@ describe('InscricaoPage: alimentação', () => {
 
     expect(marcadaDepoisDoPrimeiroClique).toBe(true);
     expect(marcado(opcaoEmLinha(container, 'Almoço'))).toBe(false);
+  });
+
+  it('refeição — o marcador é quadrado, leva o ícone de check só enquanto marcada e o perde ao desmarcar', async () => {
+    const container = await abrirComPessoa('Helena Duarte');
+    await trocarEvento(container, JORNADA);
+    const ceia = () => opcaoEmLinha(container, 'Ceia');
+    const antesDoClique = [temIcone(ceia(), 'check'), marcadorDaOpcao(ceia()).style.borderRadius];
+
+    await clicar(ceia());
+    const iconeMarcada = temIcone(ceia(), 'check');
+    await clicar(ceia());
+
+    expect(antesDoClique).toEqual([false, '5px']);
+    expect(iconeMarcada).toBe(true);
+    expect(temIcone(ceia(), 'check')).toBe(false);
   });
 
   it('refeições marcadas e evento trocado — voltar à Jornada encontra todas desmarcadas', async () => {
@@ -1088,6 +1271,7 @@ describe('InscricaoPage: valor devido na tela', () => {
 
   it.each([
     { digitado: '1.500,50', total: 'R$ 1.500,50' },
+    { digitado: '1.500.000,00', total: 'R$ 1.500.000,00' },
     { digitado: '160,5', total: 'R$ 160,50' },
     { digitado: '0', total: 'R$ 0,00' },
     { digitado: '1.5', total: 'R$ 15,00' },
@@ -1353,4 +1537,82 @@ describe('InscricaoPage: densidade', () => {
     ]);
     expect(folhaComTexto(container, 'span', 'R$ 100,00')).toBeDefined();
   });
+
+  it.each([
+    { campo: false, minimo: '' },
+    { campo: true, minimo: 'var(--target-field)' },
+  ])('campo=$campo — níveis, hospedagens e refeições só ganham alvo mínimo em campo', async ({ campo, minimo }) => {
+    definirDensidade(campo);
+    const container = await abrirComPessoa('Helena Duarte');
+    await trocarEvento(container, JORNADA);
+    const botoes = [
+      ...['Social', 'Sustentável', 'Próspero'].map((nivel) => botaoDoNivel(container, nivel)),
+      ...['Não vai dormir na casa', 'Colchonete próprio na igreja', 'Beliche no dormitório', 'Quarto'].map((rotulo) =>
+        opcaoEmLinha(container, rotulo),
+      ),
+      ...['Ceia', 'Café da manhã', 'Almoço', 'Jantar'].map((rotulo) => opcaoEmLinha(container, rotulo)),
+    ];
+
+    expect(botoes.map((botao) => botao.style.minHeight)).toEqual(Array(11).fill(minimo));
+  });
+
+  it.each([
+    { campo: false, minimo: 'var(--target-office)' },
+    { campo: true, minimo: 'var(--target-field)' },
+  ])('campo=$campo — contato de emergência, restrições e valor combinado usam o alvo $minimo', async ({ campo, minimo }) => {
+    definirDensidade(campo);
+    const container = await abrirComPessoa('Helena Duarte');
+
+    const alvos = ['Contato de emergência', 'Restrições alimentares', 'Valor combinado'].map(
+      (rotulo) => campoRotulado<HTMLInputElement>(container, rotulo).style.minHeight,
+    );
+
+    expect(alvos).toEqual([minimo, minimo, minimo]);
+  });
+
+  it.each([
+    { campo: false, campoDeBusca: 'var(--target-office)', linhaDaPessoa: '' },
+    { campo: true, campoDeBusca: 'var(--target-field)', linhaDaPessoa: 'var(--target-field)' },
+  ])('campo=$campo — o campo de busca usa o alvo $campoDeBusca e as pessoas só ganham alvo mínimo em campo', async ({ campo, campoDeBusca, linhaDaPessoa }) => {
+    definirDensidade(campo);
+    const container = await abrir();
+
+    const linhas = PESSOAS_DO_DIRETORIO.map((nome) => botaoDaPessoa(container, nome).style.minHeight);
+
+    expect(campoRotulado<HTMLInputElement>(container, 'Buscar no diretório').style.minHeight).toBe(campoDeBusca);
+    expect(linhas).toEqual(Array(6).fill(linhaDaPessoa));
+  });
+
+  it.each([{ campo: false }, { campo: true }])(
+    'campo=$campo — Trocar, Copiar, as ações de pendência e Não tem nenhuma ficam no alvo de escritório, sem acompanhar a densidade',
+    async ({ campo }) => {
+      definirDensidade(campo);
+      const container = await abrirComPessoa('Marina Tavares');
+      await escolherHospedagem(container, 'Beliche no dormitório');
+
+      const alvos = [
+        'Trocar',
+        'Copiar',
+        'Copiar o link para mandar no WhatsApp',
+        'Registrar a conversa',
+        'Alocar um leito',
+        'Não tem nenhuma',
+      ].map((rotulo) => botaoComTexto(container, rotulo).style.minHeight);
+
+      expect(alvos).toEqual(Array(6).fill('var(--target-office)'));
+    },
+  );
+
+  it.each([{ campo: false }, { campo: true }])(
+    'campo=$campo — os seletores de responsável e de diárias ficam no alvo de escritório, sem acompanhar a densidade',
+    async ({ campo }) => {
+      definirDensidade(campo);
+      const container = await abrirComPessoa('Antônio Duarte');
+      await escolherHospedagem(container, 'Beliche no dormitório');
+
+      const alvos = [seletorDeResponsavel(container), seletorDeDiarias(container)].map((seletor) => seletor.style.minHeight);
+
+      expect(alvos).toEqual(['var(--target-office)', 'var(--target-office)']);
+    },
+  );
 });
