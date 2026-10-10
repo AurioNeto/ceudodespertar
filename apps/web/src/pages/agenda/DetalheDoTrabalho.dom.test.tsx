@@ -375,6 +375,26 @@ describe('DetalheDoTrabalho: anamnese e participantes', () => {
     expect(caixa.textContent).toBe('Marina Tavares— uso de medicação contínuaLúcia Munay— histórico de crise de ansiedade');
   });
 
+  it('trabalho grande, como a Mãe Divina de 05/09 (65 inscritos) — soma os números da anamnese, as atenções e as contribuições esperadas', async () => {
+    const grande = umTrabalho({ id: 1, confirmados: 61, visitantes: 12, previstos: 84, contribuicoes: [40, 60, 90] });
+
+    const { container } = await montarDetalhe({ trabalho: grande });
+
+    const caixa = todos<HTMLDivElement>(container, 'div[style*="color-attention-soft"]')[0]!;
+    expect(['Em dia', 'Vencidas', 'Sem resposta', 'Pontos de atenção'].map((rotulo) => textoDoNumero(container, rotulo))).toEqual([
+      'Em dia50',
+      'Vencidas11',
+      'Sem resposta4',
+      'Pontos de atenção3',
+    ]);
+    expect(container.textContent).toContain('Anamnese do trabalho4 sem resposta · 11 vencidas');
+    expect(caixa.textContent).toBe(
+      'Sofia Camargo— uso de medicação contínuaTobias Monteiro— histórico de crise de ansiedadeSérgio Bittencourt— cirurgia cardíaca em 2023',
+    );
+    expect(container.textContent).toContain('Participantes61 confirmados · 4 em espera · 12 visitantes · mostrando 12 de 65');
+    expect(textoDoNumero(container, 'Contribuições esperadas')).toBe('Contribuições esperadas3.690,00');
+  });
+
   it('nota dos participantes — conta confirmados, em espera e visitantes, sem o aviso de corte até 12', async () => {
     const { container } = await montarDetalhe(COM_PARTICIPANTES);
 
