@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import type { Conta, ContaId, Fundo, FundoId } from '@cdd/contracts';
-import { reais } from '@cdd/contracts';
-import { Button, Icon, ScreenHeader, StatusBadge, type BadgeTone, type IconName, useDensidade } from '../../ds';
-import { SeletorDeTipo } from '../../components/Campo';
-import { formatarDiaMes, formatarDinheiro, pluralizar } from '../../lib/formato';
-import { contas as contasIniciais, fundos as fundosIniciais, fundoProprio } from '../../mocks/financeiro';
-import { GerenciarContasModal } from './GerenciarContasModal';
+import { Button, Icon, ScreenHeader, StatusBadge, type BadgeTone, type IconName, useDensidade } from '@/ds';
+import { SeletorDeTipo } from '@/components/Campo';
+import { formatarDiaMes, formatarDinheiro, pluralizar } from '@/lib/formato';
+import { contas as contasIniciais, fundos as fundosIniciais, fundoProprio } from '@/mocks/financeiro';
+import { GerenciarContasModal } from './components/GerenciarContasModal';
+import { ehCaixa } from './utils/conta';
+import { corDaReserva } from './utils/reservas';
 
 const rotuloLabel = {
   font: 'var(--text-label)',
@@ -26,8 +27,6 @@ const valorMedio = {
   fontVariantNumeric: 'tabular-nums',
 } as const;
 
-export const ehCaixa = (c: Conta) => c.tipo === 'DINHEIRO';
-
 const iconeDaConta = (c: Conta): IconName =>
   ehCaixa(c) ? 'wallet' : c.titularidade === 'PESSOAL_DE_TERCEIRO' ? 'credit-card' : 'landmark';
 
@@ -38,15 +37,6 @@ const textoDaConciliacao = (c: Conta): string => {
 };
 
 const tomDaConciliacao = (c: Conta): BadgeTone => (c.conciliacao === 'CONCILIADA' ? 'confirmed' : 'pending');
-
-const CORES_DE_RESERVA = [
-  'var(--color-royal)',
-  'var(--color-confirmed)',
-  'var(--color-pending)',
-  'var(--color-attention)',
-];
-
-export const corDaReserva = (indice: number) => CORES_DE_RESERVA[indice % CORES_DE_RESERVA.length] as string;
 
 export function ContasEFundoPage() {
   const densidade = useDensidade();
@@ -383,29 +373,3 @@ function CartaoDeConta({ conta }: { conta: Conta }) {
     </div>
   );
 }
-
-export const contaVazia = (id: ContaId): Conta => ({
-  id,
-  nome: '',
-  descricao: '',
-  tipo: 'CONTA_CORRENTE',
-  titularidade: 'INSTITUCIONAL',
-  pessoaTitularId: null,
-  responsavel: '',
-  saldo: reais(0),
-  ultimoMovimento: null,
-  conciliacao: 'PENDENTE',
-  alerta: null,
-  ativa: true,
-});
-
-export const fundoVazio = (id: FundoId): Fundo => ({
-  id,
-  codigoSistema: '',
-  nome: '',
-  nota: '',
-  contaVinculadaId: contasIniciais[0]?.id ?? ('cora' as ContaId),
-  valorReservado: reais(0),
-  meta: null,
-  ativo: true,
-});

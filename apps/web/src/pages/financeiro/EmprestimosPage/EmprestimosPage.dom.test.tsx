@@ -5,8 +5,8 @@ import { EmprestimosPage } from './EmprestimosPage';
 
 const cenario = vi.hoisted(() => ({ emprestimos: undefined as readonly Emprestimo[] | undefined }));
 
-vi.mock('@/mocks/emprestimos', async (importarOriginal) => {
-  const original = await importarOriginal<typeof import('@/mocks/emprestimos')>();
+vi.mock('@/pages/financeiro/EmprestimosPage/mocks/emprestimos', async (importarOriginal) => {
+  const original = await importarOriginal<typeof import('@/pages/financeiro/EmprestimosPage/mocks/emprestimos')>();
   return {
     ...original,
     get emprestimos() {
@@ -929,7 +929,7 @@ describe('EmprestimosPage em campo', () => {
 
 describe('EmprestimosPage: variações que a demonstração não alcança', () => {
   it('sem nenhum quitado — o resumo diz 0 e nenhum ainda, e o filtro Quitados cai no estado vazio', async () => {
-    const demonstracao = (await vi.importActual<typeof import('@/mocks/emprestimos')>('@/mocks/emprestimos'))
+    const demonstracao = (await vi.importActual<typeof import('@/pages/financeiro/EmprestimosPage/mocks/emprestimos')>('@/pages/financeiro/EmprestimosPage/mocks/emprestimos'))
       .emprestimos;
     cenario.emprestimos = demonstracao.map((emprestimo) =>
       emprestimo.id === 'e-ze' ? Object.assign({}, emprestimo, { devolucoes: emprestimo.devolucoes.slice(0, 1) }) : emprestimo,

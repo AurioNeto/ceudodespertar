@@ -1,6 +1,6 @@
 import type { ContaId, DevolucaoEmprestimoId, Emprestimo, EmprestimoId, PessoaId } from '@cdd/contracts';
 import { dataLocal, reais } from '@cdd/contracts';
-import { id } from './ids';
+import { id } from '@/mocks/ids';
 
 /**
  * Os três empréstimos vivos da casa.

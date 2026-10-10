@@ -1,6 +1,6 @@
 import type { Competencia, Conta, ContaId, Fatura, FaturaId, LancamentoId, PessoaId } from '@cdd/contracts';
 import { competencia, dataLocal, reais } from '@cdd/contracts';
-import { id } from './ids';
+import { id } from '@/mocks/ids';
 
 /**
  * Cartões e faturas.

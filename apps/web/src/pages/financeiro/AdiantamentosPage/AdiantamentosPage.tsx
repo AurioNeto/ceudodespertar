@@ -2,11 +2,11 @@ import { useState } from 'react';
 import type { ReactNode } from 'react';
 import type { Adiantamento, AdiantamentoId, ContaId, LancamentoId, PessoaId, StatusAdiantamento } from '@cdd/contracts';
 import { dataLocal, reais } from '@cdd/contracts';
-import { Button, EmptyState, Icon, ScreenHeader, StatusBadge, TextField, TwoAxisGuard, type BadgeTone, useDensidade } from '../../ds';
-import { Select } from '../../components/Campo';
-import { Cartao, Numero, Recado, Rotulo } from '../../components/Blocos';
-import { formatarData, formatarDinheiro, pluralizar } from '../../lib/formato';
-import { id as marcarId } from '../../mocks/ids';
+import { Button, EmptyState, Icon, ScreenHeader, StatusBadge, TextField, TwoAxisGuard, type BadgeTone, useDensidade } from '@/ds';
+import { Select } from '@/components/Campo';
+import { Cartao, Numero, Recado, Rotulo } from '@/components/Blocos';
+import { formatarData, formatarDinheiro, pluralizar } from '@/lib/formato';
+import { id as marcarId } from '@/mocks/ids';
 import {
   adiantamentos as adiantamentosIniciais,
   contasInstitucionais,
@@ -15,8 +15,8 @@ import {
   perspectivas,
   quemAdianta,
   type Perspectiva,
-} from '../../mocks/adiantamentos';
-import { hoje } from '../../mocks/sessao';
+} from './mocks/adiantamentos';
+import { hoje } from '@/mocks/sessao';
 
 const TOM: Record<StatusAdiantamento, BadgeTone> = {
   AGUARDANDO_AUTORIZACAO: 'pending',
