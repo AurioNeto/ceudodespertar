@@ -13,7 +13,7 @@ import { FeitioPage } from './FeitioPage';
 
 const fila = vi.hoisted(() => ({ confirmados: null as boolean[] | null, litrosDoPrimeiroAnterior: null as number | null }));
 
-vi.mock('@/mocks/feitio', async (importOriginal) => {
+vi.mock('@/pages/estoque/FeitioPage/mocks/feitio', async (importOriginal) => {
   const original = await importOriginal<Record<string, any>>();
   return {
     ...original,

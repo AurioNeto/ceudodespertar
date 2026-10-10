@@ -11,7 +11,7 @@ import {
   todos,
 } from '@/testes/montagem';
 import { AnamnesePage } from './AnamnesePage';
-import { cabecalhoDaTela, campoRotulado, definirDensidade, textoDoAviso } from './apoioDeTeste';
+import { cabecalhoDaTela, campoRotulado, definirDensidade, textoDoAviso } from '../apoioDeTeste';
 
 beforeEach(() => {
   definirDensidade('office');

@@ -1,0 +1,1 @@
+export { AyahuascaPage } from './AyahuascaPage';

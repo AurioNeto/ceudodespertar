@@ -245,20 +245,6 @@
   {
     "type": "dependency",
     "from": "apps/web/src/app/router.tsx",
-    "to": "apps/web/src/pages/ayahuasca/AyahuascaPage.tsx",
-    "unresolvedTo": "../pages/ayahuasca/AyahuascaPage",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/app/router.tsx",
     "to": "apps/web/src/pages/entrada/EntrarPage.tsx",
     "unresolvedTo": "../pages/entrada/EntrarPage",
     "dependencyTypes": [
@@ -287,20 +273,6 @@
   {
     "type": "dependency",
     "from": "apps/web/src/app/router.tsx",
-    "to": "apps/web/src/pages/estoque/FeitioPage.tsx",
-    "unresolvedTo": "../pages/estoque/FeitioPage",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/app/router.tsx",
     "to": "apps/web/src/pages/painel/PainelPage.tsx",
     "unresolvedTo": "../pages/painel/PainelPage",
     "dependencyTypes": [
@@ -317,34 +289,6 @@
     "from": "apps/web/src/app/router.tsx",
     "to": "apps/web/src/pages/perfil/MeuPerfilPage.tsx",
     "unresolvedTo": "../pages/perfil/MeuPerfilPage",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/app/router.tsx",
-    "to": "apps/web/src/pages/pessoas/AnamnesePage.tsx",
-    "unresolvedTo": "../pages/pessoas/AnamnesePage",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/app/router.tsx",
-    "to": "apps/web/src/pages/pessoas/PessoasPage.tsx",
-    "unresolvedTo": "../pages/pessoas/PessoasPage",
     "dependencyTypes": [
       "local",
       "import"
@@ -1049,34 +993,6 @@
   },
   {
     "type": "dependency",
-    "from": "apps/web/src/pages/ayahuasca/AyahuascaPage.tsx",
-    "to": "apps/web/src/lib/formato.ts",
-    "unresolvedTo": "../../lib/formato",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/ayahuasca/AyahuascaPage.tsx",
-    "to": "apps/web/src/mocks/ayahuasca.ts",
-    "unresolvedTo": "../../mocks/ayahuasca",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
     "from": "apps/web/src/pages/entrada/Aviso.tsx",
     "to": "apps/web/src/ds/index.ts",
     "unresolvedTo": "../../ds",
@@ -1193,34 +1109,6 @@
     "from": "apps/web/src/pages/entrada/RetornoPage.tsx",
     "to": "apps/web/src/ds/index.ts",
     "unresolvedTo": "../../ds",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/estoque/FeitioPage.tsx",
-    "to": "apps/web/src/lib/formato.ts",
-    "unresolvedTo": "../../lib/formato",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/estoque/FeitioPage.tsx",
-    "to": "apps/web/src/mocks/feitio.ts",
-    "unresolvedTo": "../../mocks/feitio",
     "dependencyTypes": [
       "local",
       "import"
@@ -1473,62 +1361,6 @@
     "from": "apps/web/src/pages/perfil/MeuPerfilPage.tsx",
     "to": "apps/web/src/lib/formato.ts",
     "unresolvedTo": "../../lib/formato",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/pessoas/AnamnesePage.tsx",
-    "to": "apps/web/src/lib/formato.ts",
-    "unresolvedTo": "../../lib/formato",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/pessoas/AnamnesePage.tsx",
-    "to": "apps/web/src/mocks/anamnese.ts",
-    "unresolvedTo": "../../mocks/anamnese",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/pessoas/PessoasPage.tsx",
-    "to": "apps/web/src/lib/formato.ts",
-    "unresolvedTo": "../../lib/formato",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/pessoas/PessoasPage.tsx",
-    "to": "apps/web/src/mocks/pessoas.ts",
-    "unresolvedTo": "../../mocks/pessoas",
     "dependencyTypes": [
       "local",
       "import"
@@ -2301,20 +2133,6 @@
   {
     "type": "dependency",
     "from": "apps/web/src/app/router.tsx",
-    "to": "apps/web/src/pages/ayahuasca/AyahuascaPage.tsx",
-    "unresolvedTo": "../pages/ayahuasca/AyahuascaPage",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "roteador-so-pelo-index-da-pagina"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/app/router.tsx",
     "to": "apps/web/src/pages/entrada/EntrarPage.tsx",
     "unresolvedTo": "../pages/entrada/EntrarPage",
     "dependencyTypes": [
@@ -2343,20 +2161,6 @@
   {
     "type": "dependency",
     "from": "apps/web/src/app/router.tsx",
-    "to": "apps/web/src/pages/estoque/FeitioPage.tsx",
-    "unresolvedTo": "../pages/estoque/FeitioPage",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "roteador-so-pelo-index-da-pagina"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/app/router.tsx",
     "to": "apps/web/src/pages/painel/PainelPage.tsx",
     "unresolvedTo": "../pages/painel/PainelPage",
     "dependencyTypes": [
@@ -2373,34 +2177,6 @@
     "from": "apps/web/src/app/router.tsx",
     "to": "apps/web/src/pages/perfil/MeuPerfilPage.tsx",
     "unresolvedTo": "../pages/perfil/MeuPerfilPage",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "roteador-so-pelo-index-da-pagina"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/app/router.tsx",
-    "to": "apps/web/src/pages/pessoas/AnamnesePage.tsx",
-    "unresolvedTo": "../pages/pessoas/AnamnesePage",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "roteador-so-pelo-index-da-pagina"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/app/router.tsx",
-    "to": "apps/web/src/pages/pessoas/PessoasPage.tsx",
-    "unresolvedTo": "../pages/pessoas/PessoasPage",
     "dependencyTypes": [
       "local",
       "import"

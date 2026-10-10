@@ -61,10 +61,3 @@ export const reservasIniciais: readonly ReservaDeTrabalho[] = [
 ];
 
 export const reservadoInicial: Readonly<Record<number, boolean>> = { 1: true, 2: false, 3: false };
-
-export const rotuloDoMovimento: Record<TipoDeMovimento, string> = {
-  entrada: 'Entrada',
-  saida: 'Saída para trabalho',
-  transferencia: 'Transferência',
-  perda: 'Perda',
-};

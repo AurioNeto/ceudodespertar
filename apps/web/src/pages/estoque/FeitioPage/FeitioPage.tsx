@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import type { ReactNode } from 'react';
 import { Button, Icon, ScreenHeader, StatusBadge, TextField, useDensidade, Cartao, Numero, Recado, Rotulo } from '@/ds';
-import { formatarBRL, formatarLitros, pluralizar } from '../../lib/formato';
+import { formatarBRL, formatarLitros, pluralizar } from '@/lib/formato';
 import {
   anteriores,
   aquisicaoExterna,
@@ -9,7 +9,7 @@ import {
   custoTotal,
   emAndamento,
   type FeitioNaTela,
-} from '../../mocks/feitio';
+} from './mocks/feitio';
 
 /**
  * `S-04` · Feitio — Doc 4 §8 e Doc 2 §4.3.

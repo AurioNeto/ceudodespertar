@@ -11,11 +11,11 @@ import {
   todos,
 } from '@/testes/montagem';
 import { PessoasPage } from './PessoasPage';
-import { cabecalhoDaTela, campoRotulado, definirDensidade, textoDoAviso } from './apoioDeTeste';
+import { cabecalhoDaTela, campoRotulado, definirDensidade, textoDoAviso } from '../apoioDeTeste';
 
 const variacao = vi.hoisted(() => ({ pontosDeAna: null as (readonly [string, string])[] | null }));
 
-vi.mock('@/mocks/pessoas', async (importOriginal) => {
+vi.mock('@/pages/pessoas/PessoasPage/mocks/pessoas', async (importOriginal) => {
   const original = await importOriginal<Record<string, any>>();
   return {
     ...original,

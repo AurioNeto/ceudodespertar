@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Button, Icon, ScreenHeader, StatusBadge, type BadgeTone, useDensidade, Avatar, Select } from '@/ds';
-import { pluralizar } from '../../lib/formato';
+import { pluralizar } from '@/lib/formato';
 import {
   acessosIniciais,
   gruposIniciais,
@@ -10,7 +10,7 @@ import {
   type GrupoDeAcesso,
   type PessoaDaCasa,
   type SituacaoDeAcesso,
-} from '../../mocks/pessoas';
+} from './mocks/pessoas';
 
 const TOM_DA_ANAMNESE: Record<EstadoDaAnamnese, BadgeTone> = {
   'em dia': 'confirmed',
