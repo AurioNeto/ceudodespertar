@@ -364,6 +364,7 @@ describe('AgendaPage: detalhe e lista de preparo', () => {
 
     expect(aoDesligar).toEqual(['Webhook desligado — a lista só muda por aqui e pelo link.', 'false']);
     expect(avisoDaAgenda(container)).toBe('Webhook ligado: POST /preparo/{id}/tarefas atualiza a lista.');
+    expect(interruptor.getAttribute('aria-checked')).toBe('true');
   });
 
   it('webhook desligado — o texto passa a ser desligado e vale também para as outras cerimônias', async () => {
@@ -854,6 +855,20 @@ describe('AgendaPage: editar', () => {
     await clicar(botaoComTexto(container, 'Voltar para a agenda'));
 
     expect(nomesPorDiaNoCalendario(container)['6']).toEqual(['Mãe Divina']);
+    expect(nomesPorDiaNoCalendario(container)['5']).toBeUndefined();
+  });
+
+  it('editar a data para outro mês — o calendário continua no mês em que estava, sem a cerimônia', async () => {
+    const { container } = await montar(<AgendaPage />);
+    await abrirDetalhe(container, 'Mãe Divina');
+    await clicar(botaoComTexto(container, 'Editar'));
+    await digitar(campoDoRotulo(formularioAberto(container), 'Data'), '10/10/2026');
+    await clicar(botaoComTexto(formularioAberto(container), 'Salvar cerimônia'));
+
+    await clicar(botaoComTexto(container, 'Voltar para a agenda'));
+
+    expect(mesNaTela(container)).toBe('setembro de 2026');
+    expect(contagemDoMes(container)).toBe('3 cerimônias no mês');
     expect(nomesPorDiaNoCalendario(container)['5']).toBeUndefined();
   });
 
