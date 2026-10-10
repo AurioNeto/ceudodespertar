@@ -1,4 +1,7 @@
-import { describe, expect, it } from 'vitest';
+import { Logger } from '@nestjs/common';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { LiberacaoDiretaDoAcesso } from '../../../src/modules/identidade/application/usuarios/liberacao-direta-do-acesso.js';
+import { ControleDeAcessoQueRegistra } from '../keycloak/controle-de-acesso-que-registra.js';
 import { ReativarUsuario } from '../../../src/modules/identidade/application/usuarios/reativar-usuario.js';
 import type { ComandoDeReativacao } from '../../../src/modules/identidade/application/usuarios/reativar-usuario.js';
 import { ehErr, ehOk } from '../../../src/shared/kernel/result.js';
@@ -22,11 +25,17 @@ function montar(situacao: Parameters<typeof usuarioEm>[1]) {
   const usuario = usuarioEm(ALVO, situacao, [GRUPO_LEITURA], VERSAO_DO_ALVO);
   const repositorio = new RepositorioDeUsuarioEmMemoria([usuario]);
   const unidadeDeTrabalho = new UnidadeDeTrabalhoFalsa();
-  const reativar = new ReativarUsuario(unidadeDeTrabalho, repositorio, new RelogioFixo());
-  return { usuario, repositorio, unidadeDeTrabalho, reativar };
+  const controle = new ControleDeAcessoQueRegistra();
+  const liberacao = new LiberacaoDiretaDoAcesso(controle);
+  const reativar = new ReativarUsuario(unidadeDeTrabalho, repositorio, new RelogioFixo(), liberacao);
+  return { usuario, repositorio, unidadeDeTrabalho, controle, liberacao, reativar };
 }
 
 describe('ReativarUsuario', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it('reativa o suspenso com o motivo no evento, salva e devolve a nova versão, numa transação de escrita', async () => {
     const { usuario, repositorio, unidadeDeTrabalho, reativar } = montar('SUSPENSO');
 
@@ -85,5 +94,66 @@ describe('ReativarUsuario', () => {
 
     expect(ehOk(resultado) && resultado.valor).toEqual({ situacao: 'ATIVO', versao: VERSAO_DO_ALVO });
     expect(repositorio.salvos).toEqual([]);
+  });
+
+  it('libera o acesso no provedor direto, só depois da confirmação da transação', async () => {
+    const { unidadeDeTrabalho, controle, liberacao, reativar } = montar('SUSPENSO');
+
+    await reativar.executar(ACESSO, comando());
+    expect(controle.chamadas).toEqual([]);
+    unidadeDeTrabalho.confirmar();
+    await liberacao.aguardarLiberacoes();
+
+    expect(controle.chamadas).toEqual([{ operacao: 'liberar', sujeito: 'sub' }]);
+  });
+
+  it('usuário já ativo também libera no provedor, para curar acesso travado', async () => {
+    const { unidadeDeTrabalho, controle, liberacao, reativar } = montar('ATIVO');
+
+    await reativar.executar(ACESSO, comando());
+    unidadeDeTrabalho.confirmar();
+    await liberacao.aguardarLiberacoes();
+
+    expect(controle.chamadas).toEqual([{ operacao: 'liberar', sujeito: 'sub' }]);
+  });
+
+  it('não libera no provedor quando a reativação é recusada', async () => {
+    const { unidadeDeTrabalho, controle, liberacao, reativar } = montar('SUSPENSO');
+
+    await reativar.executar(ACESSO, comando({ motivo: ' ' }));
+    unidadeDeTrabalho.confirmar();
+    await liberacao.aguardarLiberacoes();
+
+    expect(controle.chamadas).toEqual([]);
+  });
+
+  it('falha na liberação direta vai só ao log e não propaga', async () => {
+    const { unidadeDeTrabalho, controle, liberacao, reativar } = montar('SUSPENSO');
+    controle.falharCom = new TypeError('Keycloak fora');
+    const log = vi.spyOn(Logger.prototype, 'error').mockImplementation(() => undefined);
+
+    const resultado = await reativar.executar(ACESSO, comando());
+    unidadeDeTrabalho.confirmar();
+    await liberacao.aguardarLiberacoes();
+
+    expect(ehOk(resultado)).toBe(true);
+    expect(log).toHaveBeenCalledTimes(1);
+  });
+
+  it('o desligamento só conclui depois da liberação direta em voo', async () => {
+    const { unidadeDeTrabalho, controle, liberacao, reativar } = montar('SUSPENSO');
+    let concluirLiberacao: () => void = () => undefined;
+    controle.liberar = () => new Promise<void>((resolver) => (concluirLiberacao = resolver));
+
+    await reativar.executar(ACESSO, comando());
+    unidadeDeTrabalho.confirmar();
+    let desligado = false;
+    const desligamento = liberacao.onModuleDestroy().then(() => (desligado = true));
+    await Promise.resolve();
+
+    expect(desligado).toBe(false);
+    concluirLiberacao();
+    await desligamento;
+    expect(desligado).toBe(true);
   });
 });

@@ -14,6 +14,7 @@ import { AlteracaoQuePodeTirarAdministrador } from '../../src/modules/identidade
 import type { TravaDaAdministracao } from '../../src/modules/identidade/application/administracao/trava-da-administracao.js';
 import { DefinirGruposDoUsuario } from '../../src/modules/identidade/application/usuarios/definir-grupos-do-usuario.js';
 import { DesativarUsuario } from '../../src/modules/identidade/application/usuarios/desativar-usuario.js';
+import { LiberacaoDiretaDoAcesso } from '../../src/modules/identidade/application/usuarios/liberacao-direta-do-acesso.js';
 import { ReativarUsuario } from '../../src/modules/identidade/application/usuarios/reativar-usuario.js';
 import { PoliticaDoUltimoAdministrador } from '../../src/modules/identidade/domain/servicos/politica-do-ultimo-administrador.js';
 import { LeitorDaAdministracaoKysely } from '../../src/modules/identidade/infrastructure/administracao/leitor-da-administracao.kysely.js';
@@ -25,6 +26,7 @@ import { GravadorDeTrilha } from '../../src/modules/identidade/infrastructure/au
 import { RepositorioDeGrupoMikroOrm } from '../../src/modules/identidade/infrastructure/persistencia/repositorio-de-grupo.mikro-orm.js';
 import { RepositorioDeUsuarioMikroOrm } from '../../src/modules/identidade/infrastructure/persistencia/repositorio-de-usuario.mikro-orm.js';
 import { SemeadorDeGruposDeSistema } from '../../src/modules/identidade/infrastructure/persistencia/semeador-de-grupos-de-sistema.js';
+import { ControleDeAcessoQueRegistra } from './keycloak/controle-de-acesso-que-registra.js';
 import { urlDoAppPara } from '../unidade-de-trabalho/orm-de-teste.js';
 import type { BancoDeTeste } from '../integracao/banco-de-teste.js';
 
@@ -62,7 +64,12 @@ export function montarCasosDeUsoDaGestao(
   );
   return {
     desativar: new DesativarUsuario(alteracao, ambiente.usuarios, relogio),
-    reativar: new ReativarUsuario(ambiente.unidadeDeTrabalho, ambiente.usuarios, relogio),
+    reativar: new ReativarUsuario(
+      ambiente.unidadeDeTrabalho,
+      ambiente.usuarios,
+      relogio,
+      new LiberacaoDiretaDoAcesso(new ControleDeAcessoQueRegistra()),
+    ),
     definirGrupos: new DefinirGruposDoUsuario(alteracao, ambiente.usuarios, relogio),
   };
 }
