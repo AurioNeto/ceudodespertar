@@ -13,12 +13,28 @@ import {
 import { PessoasPage } from './PessoasPage';
 import { cabecalhoDaTela, campoRotulado, definirDensidade, textoDoAviso } from './apoioDeTeste';
 
+const variacao = vi.hoisted(() => ({ pontosDeAna: null as (readonly [string, string])[] | null }));
+
+vi.mock('@/mocks/pessoas', async (importOriginal) => {
+  const original = await importOriginal<Record<string, any>>();
+  return {
+    ...original,
+    get pessoasIniciais() {
+      const pontos = variacao.pontosDeAna;
+      return pontos
+        ? original.pessoasIniciais.map((pessoa: { id: number }) => (pessoa.id === 1 ? { ...pessoa, pontos } : pessoa))
+        : original.pessoasIniciais;
+    },
+  };
+});
+
 beforeEach(() => {
   definirDensidade('office');
 });
 
 afterEach(async () => {
   await desmontarTudo();
+  variacao.pontosDeAna = null;
   vi.unstubAllGlobals();
 });
 
@@ -492,6 +508,24 @@ describe('PessoasPage: ficha da pessoa', () => {
     expect(folhaComTexto(container, 'span', 'Fardado desde 2014 · São Paulo · SP')).toBeTruthy();
   });
 
+  it('abrir a ficha — mostra o avatar com as iniciais da pessoa, escondido da leitura de tela', async () => {
+    const container = await montarPessoas();
+
+    await abrirFicha(container, 'Ana Beatriz Cordeiro');
+
+    const avatares = todos(container, 'span[aria-hidden="true"]').map((avatar) => avatar.textContent);
+    expect(avatares).toEqual(['AC']);
+  });
+
+  it('abrir a ficha — o botão Voltar para a lista leva o ícone da seta para a esquerda', async () => {
+    const container = await montarPessoas();
+
+    await abrirFicha(container, 'Ana Beatriz Cordeiro');
+
+    const seta = elemento(botaoComTexto(container, 'Voltar para a lista'), 'svg');
+    expect(Array.from(seta.classList)).toContain('lucide-arrow-left');
+  });
+
   it('cartão Dados — mostra telefone, nascimento, cidade e contato de emergência', async () => {
     const container = await montarPessoas();
 
@@ -575,7 +609,7 @@ describe('PessoasPage: anamnese na ficha e pontos de atenção', () => {
     expect(cartao.textContent).toContain('Nenhum ponto de atenção declarado.');
   });
 
-  it('ficha de pessoa com ponto de saúde — mostra o ponto e a explicação sem consultar permissão alguma', async () => {
+  it('ficha de pessoa com ponto de saúde — mostra o ponto e a explicação sem consultar permissão, como decidido em 08/10', async () => {
     const container = await montarPessoas();
 
     await abrirFicha(container, 'Helena Duarte');
@@ -584,6 +618,32 @@ describe('PessoasPage: anamnese na ficha e pontos de atenção', () => {
     expect(cartaoDaFicha(container, 'Anamnese').textContent).toContain(
       'orientada a não tomar até o parto; participa fora do salão',
     );
+  });
+});
+
+describe('PessoasPage: pessoa com dois pontos de atenção', () => {
+  const DOIS_PONTOS: readonly (readonly [string, string])[] = [
+    ['Uso contínuo de sertralina', '50 mg pela manhã'],
+    ['Alergia a dipirona', 'reação cutânea em 2019'],
+  ];
+
+  it('dica da lista — junta os dois títulos com o ponto médio, na ordem declarada', async () => {
+    variacao.pontosDeAna = [...DOIS_PONTOS];
+
+    const container = await montarPessoas();
+
+    const dicas = todos(linhaDe(container, 'Ana Beatriz Cordeiro'), 'span[title]');
+    expect(dicas.map((dica) => dica.title)).toEqual(['Uso contínuo de sertralina · Alergia a dipirona']);
+  });
+
+  it('ficha — mostra os dois pontos, cada um com o título antes da explicação', async () => {
+    variacao.pontosDeAna = [...DOIS_PONTOS];
+    const container = await montarPessoas();
+
+    await abrirFicha(container, 'Ana Beatriz Cordeiro');
+
+    const cartao = cartaoDaFicha(container, 'Anamnese');
+    expect(cartao.textContent).toContain('Uso contínuo de sertralina50 mg pela manhãAlergia a dipironareação cutânea em 2019');
   });
 });
 
@@ -720,9 +780,9 @@ describe('PessoasPage: cartão Acesso ao sistema', () => {
   });
 
   it.each([
-    { nome: 'o primeiro nome de quem nunca teve acesso', pessoa: 'Marina Tavares', email: 'marina@cdd.org' },
-    { nome: 'o primeiro nome de quem nunca teve acesso, sem o sobrenome', pessoa: 'Eduardo Pires', email: 'eduardo@cdd.org' },
-  ])('e-mail do convite — usa $nome', async ({ pessoa, email }) => {
+    { nome: 'Marina, sem acesso antes', pessoa: 'Marina Tavares', email: 'marina@cdd.org' },
+    { nome: 'Eduardo, sem acesso antes', pessoa: 'Eduardo Pires', email: 'eduardo@cdd.org' },
+  ])('e-mail do convite — $nome — é o primeiro nome em minúsculas', async ({ pessoa, email }) => {
     const container = await montarPessoas();
     await abrirFicha(container, pessoa);
 
@@ -732,9 +792,9 @@ describe('PessoasPage: cartão Acesso ao sistema', () => {
   });
 
   it.each([
-    { nome: 'o primeiro nome, sem o sobrenome do e-mail antigo', pessoa: 'Ana Beatriz Cordeiro', email: 'ana@cdd.org' },
-    { nome: 'o primeiro nome com o acento que ele tem', pessoa: 'Sérgio Bittencourt', email: 'sérgio@cdd.org' },
-  ])('e-mail do convite, depois de revogar o acesso — usa $nome', async ({ pessoa, email }) => {
+    { nome: 'Ana, sem o sobrenome', pessoa: 'Ana Beatriz Cordeiro', email: 'ana@cdd.org' },
+    { nome: 'Sérgio, com o acento', pessoa: 'Sérgio Bittencourt', email: 'sérgio@cdd.org' },
+  ])('e-mail do convite depois de revogar — $nome — é o primeiro nome em minúsculas', async ({ pessoa, email }) => {
     const container = await montarPessoas();
     await abrirFicha(container, pessoa);
     await clicar(botaoComTexto(container, 'Revogar acesso'));
