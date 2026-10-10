@@ -4,7 +4,6 @@ import {
   ARQUIVOS_QUE_PODEM_AJUSTAR_A_SESSAO,
   EXCECOES_DE_PG_FORA_DA_PERSISTENCIA,
   EXCECOES_DE_ROTA_FORA_DO_NEST,
-  EXCECOES_DE_SQL_INDETERMINADO,
   exigirMotivos,
   exigirMotivosPorMembro,
 } from './politica-da-api.js';
@@ -50,7 +49,6 @@ describe('T28a · api · política · exceções com motivo nomeado', () => {
     const entradas = [
       ...Object.values(ARQUIVOS_QUE_PODEM_AJUSTAR_A_SESSAO),
       ...Object.values(ARQUIVOS_QUE_ENCERRAM_TRANSACAO_EM_SQL_CRU),
-      ...Object.values(EXCECOES_DE_SQL_INDETERMINADO),
       ...Object.values(EXCECOES_DE_ROTA_FORA_DO_NEST).flatMap((membros) => Object.values(membros)),
       ...Object.values(EXCECOES_DE_PG_FORA_DA_PERSISTENCIA).flatMap((membros) => Object.values(membros)),
     ];

@@ -14,7 +14,6 @@ import {
   ARQUIVOS_QUE_ENCERRAM_TRANSACAO_EM_SQL_CRU,
   EXCECOES_DE_PG_FORA_DA_PERSISTENCIA,
   EXCECOES_DE_ROTA_FORA_DO_NEST,
-  EXCECOES_DE_SQL_INDETERMINADO,
   MEMBROS_DE_ESCRITA,
   MEMBROS_DE_LEITURA,
   MEMBROS_SO_DO_BANCO,
@@ -473,7 +472,7 @@ class Coletor {
     const zona = this.zonaParaSql();
     if (zona === 'fora') return;
     if (texto === undefined) {
-      if (!Object.hasOwn(EXCECOES_DE_SQL_INDETERMINADO, this.relativo)) this.violar(no, 'sql-indeterminado', origem);
+      this.violar(no, 'sql-indeterminado', origem);
       return;
     }
     const categorias = categoriasDoSql(texto);

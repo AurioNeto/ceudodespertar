@@ -50,6 +50,8 @@ export const MEMBROS_SO_DO_BANCO: ReadonlySet<string> = new Set([
   'rollback',
   'transaction',
   'startTransaction',
+  'setTransactionContext',
+  'resetTransactionContext',
 ]);
 
 export const MEMBROS_DE_ESCRITA: ReadonlySet<string> = new Set([
@@ -139,13 +141,6 @@ export const MEMBROS_DE_LEITURA: ReadonlySet<string> = new Set([
   'stream',
   'query',
   'compile',
-  'find',
-  'findOne',
-  'findOneOrFail',
-  'findAll',
-  'findAndCount',
-  'findByCursor',
-  'getReference',
 ]);
 
 export const EXCECOES_DE_PG_FORA_DA_PERSISTENCIA = exigirMotivosPorMembro({
@@ -158,8 +153,6 @@ export const EXCECOES_DE_PG_FORA_DA_PERSISTENCIA = exigirMotivosPorMembro({
   },
   'shared/infrastructure/saude/saude.module.ts': { end: 'encerra-o-pool-da-sonda-de-prontidao' },
 } as const);
-
-export const EXCECOES_DE_SQL_INDETERMINADO = exigirMotivos<Readonly<Record<string, MotivoNomeado>>>({});
 
 export const EXCECOES_DE_ROTA_FORA_DO_NEST = exigirMotivosPorMembro({
   'composicao/aplicacao.ts': { use: 'registra-middleware-global-sem-caminho' },

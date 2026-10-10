@@ -287,6 +287,41 @@ export const CASOS_POSITIVOS: readonly CasoDeFixture[] = [
       .concat(esperar('modules/m/infrastructure/leitor-m.kysely.ts', 'set-config-restrito', 'set-config', 'set'))
       .concat(esperar('modules/m/infrastructure/leitor-m.kysely.ts', 'sql-indeterminado', 'raw')),
   },
+  {
+    caso: 'sql-com-trecho-nao-resolvido',
+    violacoes: esperar('modules/m/infrastructure/nao-resolvido.ts', 'sql-indeterminado', 'execute', 'execute'),
+  },
+  {
+    caso: 'transacao-do-kysely-fora-do-banco',
+    violacoes: esperar('modules/m/infrastructure/transacao-direta.ts', 'so-no-banco', 'transaction', 'startTransaction'),
+  },
+  {
+    caso: 'contexto-de-transacao-fora-do-banco',
+    violacoes: esperar(
+      'modules/m/infrastructure/contexto.ts',
+      'so-no-banco',
+      'setTransactionContext',
+      'resetTransactionContext',
+    ),
+  },
+  {
+    caso: 'set-config-em-maiusculas',
+    violacoes: esperar('modules/m/infrastructure/maiusculas.ts', 'set-config-restrito', 'set-config', 'set-config'),
+  },
+  {
+    caso: 'leitor-com-busca-de-entidade',
+    violacoes: esperar(
+      'modules/m/infrastructure/leitor-f.ts',
+      'leitura-fora-da-allowlist',
+      'find',
+      'findOne',
+      'findOneOrFail',
+      'findAll',
+      'findAndCount',
+      'findByCursor',
+      'getReference',
+    ),
+  },
 ];
 
 export const CASOS_NEGATIVOS: readonly CasoDeFixture[] = [
