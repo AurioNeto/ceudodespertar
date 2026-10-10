@@ -16,7 +16,7 @@ import {
   Rotulo,
 } from '@/ds';
 import { formatarBRL, pluralizar } from '@/lib/formato';
-import { contas } from '@/mocks/financeiro';
+import { contas } from '@/pages/mocks/contas';
 import {
   contratacoes as contratacoesIniciais,
   munay,

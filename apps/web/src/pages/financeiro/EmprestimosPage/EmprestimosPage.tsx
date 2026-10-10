@@ -30,7 +30,7 @@ import {
   quitado,
   saldoDevedor,
 } from './mocks/emprestimos';
-import { hoje } from '@/mocks/sessao';
+import { hoje } from '@/pages/mocks/relogio';
 
 type Filtro = 'todos' | 'CONCEDIDO' | 'RECEBIDO' | 'quitados';
 

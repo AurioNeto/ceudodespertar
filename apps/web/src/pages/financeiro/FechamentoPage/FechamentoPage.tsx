@@ -3,10 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { Button, Icon, ScreenHeader, StatusBadge, type BadgeTone, type IconName, useDensidade } from '@/ds';
 import { ROTAS, type RotaId } from '@/app/navegacao';
 import { competenciaPorExtenso, formatarCompetencia, formatarDinheiro, pluralizar } from '@/lib/formato';
-import { contas } from '@/mocks/financeiro';
+import { contas } from '@/pages/mocks/contas';
 import { lancamentos } from '../mocks/lancamentos';
 import { filaDeVerificacaoInicial } from '@/mocks/verificacao';
-import { competenciaAtual } from '@/mocks/sessao';
+import { competenciaAtual } from '@/pages/mocks/relogio';
 
 interface ItemDoChecklist {
   id: string;

@@ -21,7 +21,7 @@ import {
 } from '@/ds';
 import { competenciaPorExtenso, formatarData, formatarDinheiro, pluralizar } from '@/lib/formato';
 import { cartoes, contasPagadoras, faturas as faturasIniciais, totalDaFatura } from './mocks/faturas';
-import { hoje } from '@/mocks/sessao';
+import { hoje } from '@/pages/mocks/relogio';
 
 const TOM: Record<StatusFatura, BadgeTone> = {
   ABERTA: 'royal',

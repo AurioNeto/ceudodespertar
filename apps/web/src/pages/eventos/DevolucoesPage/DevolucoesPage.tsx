@@ -14,7 +14,7 @@ import {
   Rotulo,
 } from '@/ds';
 import { formatarBRL, formatarCompetencia, pluralizar } from '@/lib/formato';
-import { contas } from '@/mocks/financeiro';
+import { contas } from '@/pages/mocks/contas';
 import { fila as filaInicial, faltaramSemPedir, pagas as pagasIniciais, type DevolucaoNaFila } from './mocks/devolucoes';
 
 /**

@@ -1,0 +1,1 @@
+export { CartazSlot } from './CartazSlot';

@@ -27,8 +27,8 @@ vi.mock('@/pages/eventos/ContratacoesPage/mocks/contratacoes', async (importarOr
   };
 });
 
-vi.mock('@/mocks/financeiro', async (importarOriginal) => {
-  const original = await importarOriginal<typeof import('@/mocks/financeiro')>();
+vi.mock('@/pages/mocks/contas', async (importarOriginal) => {
+  const original = await importarOriginal<typeof import('@/pages/mocks/contas')>();
   const contas = original.contas.map((conta) => ((conta.id as string) === 'especie' ? Object.assign({}, conta, { ativa: false }) : conta));
   return { ...original, contas };
 });

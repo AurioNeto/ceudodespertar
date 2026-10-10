@@ -1,5 +1,5 @@
 import type { Permissao } from '@cdd/contracts';
-import { agruparPermissoes } from '../lib/permissoesAgrupadas';
+import { agruparPermissoes } from './utils/permissoesAgrupadas';
 import { Rotulo } from '@/ds';
 
 export interface PermissoesPorModuloProps {
