@@ -438,6 +438,48 @@ export const MODELO_USUARIOS = {
   }),
 };
 
+const ATRIBUTOS_DE_PERFIL_EDITAVEIS_SO_POR_ADMIN = ['username', 'email'];
+const PROVEDOR_DE_PERFIL_DE_USUARIO = 'org.keycloak.userprofile.UserProfileProvider';
+
+function lerPerfilDeUsuario(atual, caminho, falhas) {
+  const componentes = atual?.[PROVEDOR_DE_PERFIL_DE_USUARIO];
+  const declarativo = Array.isArray(componentes) ? componentes.filter((item) => item?.providerId === 'declarative-user-profile') : [];
+  const textoDoPerfil = declarativo.length === 1 ? declarativo[0]?.config?.['kc.user.profile.config']?.[0] : undefined;
+  if (typeof textoDoPerfil !== 'string') {
+    falhas.push(`${caminho}.${PROVEDOR_DE_PERFIL_DE_USUARIO} precisa ter exatamente um declarative-user-profile com kc.user.profile.config`);
+    return null;
+  }
+  try {
+    return JSON.parse(textoDoPerfil);
+  } catch {
+    falhas.push(`${caminho}: kc.user.profile.config do perfil de usuário não é JSON`);
+    return null;
+  }
+}
+
+function validarPerfilDeUsuario(atual, caminho, falhas) {
+  if (atual === null || typeof atual !== 'object' || Array.isArray(atual)) {
+    falhas.push(`${caminho} precisa ser um objeto`);
+    return;
+  }
+  for (const chave of Object.keys(atual)) {
+    if (chave !== PROVEDOR_DE_PERFIL_DE_USUARIO) falhas.push(`${caminho} não pode ter a chave desconhecida "${chave}"`);
+  }
+  const perfil = lerPerfilDeUsuario(atual, caminho, falhas);
+  if (perfil === null) return;
+  const atributos = Array.isArray(perfil.attributes) ? perfil.attributes : [];
+  for (const nomeDoAtributo of ATRIBUTOS_DE_PERFIL_EDITAVEIS_SO_POR_ADMIN) {
+    const atributo = atributos.find((item) => item?.name === nomeDoAtributo);
+    const caminhoDoAtributo = `${caminho}.perfil-de-usuario.${nomeDoAtributo}`;
+    if (!atributo) {
+      falhas.push(`${caminhoDoAtributo} precisa estar declarado no perfil de usuário`);
+      continue;
+    }
+    compararComEspecificacao(atributo.permissions?.edit, conjunto(['admin']), `${caminhoDoAtributo}.permissions.edit`, falhas);
+    compararComEspecificacao(atributo.permissions?.view, conjunto(['admin', 'user']), `${caminhoDoAtributo}.permissions.view`, falhas);
+  }
+}
+
 export const MODELO_REALM = objeto({
   obrigatorias: {
     realm: valor('cdd'),
@@ -475,6 +517,8 @@ export const MODELO_REALM = objeto({
 
     loginTheme: customizado(validarTema('login')),
     emailTheme: customizado(validarTema('email')),
+
+    components: customizado(validarPerfilDeUsuario),
 
     smtpServer: objeto({
       obrigatorias: {
