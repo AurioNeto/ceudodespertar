@@ -155,6 +155,12 @@ describe('InscricaoPage: abertura e escolha do evento', () => {
     expect(folhaComTexto(container, 'span', '18 de 40 · 11 leitos livres')).toBeDefined();
   });
 
+  it('abertura — o cartão do link da cerimônia leva o ícone de link', async () => {
+    const container = await abrir();
+
+    expect(temIcone(container, 'link')).toBe(true);
+  });
+
   it('abertura — lista o link da cerimônia com as aberturas e as inscrições pelo link', async () => {
     const container = await abrir();
 
@@ -207,6 +213,14 @@ describe('InscricaoPage: busca no diretório', () => {
     ]);
   });
 
+  it('sem termo — cada pessoa do diretório leva a seta para a direita', async () => {
+    const container = await abrir();
+
+    const setas = PESSOAS_DO_DIRETORIO.map((nome) => temIcone(botaoDaPessoa(container, nome), 'chevron-right'));
+
+    expect(setas).toEqual([true, true, true, true, true, true]);
+  });
+
   it.each([
     { termo: 'helena', achados: ['Helena Duarte'] },
     { termo: '  HELENA  ', achados: ['Helena Duarte'] },
@@ -252,6 +266,13 @@ describe('InscricaoPage: ficha da pessoa escolhida', () => {
     expect(textoDe(container)).toContain('Frequentadora desde 2019 · São Roque · SP · nasceu em 22/02/1996');
     expect(existeCampoRotulado(container, 'Buscar no diretório')).toBe(false);
     expect(textoDe(container)).not.toContain('Menor de idade');
+  });
+
+  it('escolher Helena — a ficha leva o ícone de pessoa e o botão Trocar leva a seta para a esquerda', async () => {
+    const container = await abrirComPessoa('Helena Duarte');
+
+    expect(temIcone(container, 'user-round')).toBe(true);
+    expect(temIcone(botaoComTexto(container, 'Trocar'), 'arrow-left')).toBe(true);
   });
 
   it('escolher Antônio — a ficha traz o selo de menor de idade', async () => {
@@ -1376,6 +1397,18 @@ describe('InscricaoPage: confirmar e salvar como pendente', () => {
     expect(confirmar.disabled).toBe(true);
     expect(confirmar.title).toBe('3 pendências acima impedem confirmar. Salvar como pendente sempre pode.');
     expect(folhaComTexto(container, 'span', '3 pendências para confirmar')).toBeDefined();
+  });
+
+  it('com pendências — o cartão leva o ícone de alerta triangular', async () => {
+    const container = await abrirComPessoa('Marina Tavares');
+
+    expect(temIcone(container, 'triangle-alert')).toBe(true);
+  });
+
+  it('o botão de confirmar leva o ícone de check duplo', async () => {
+    const container = await abrirComPessoa('Sérgio Bittencourt');
+
+    expect(temIcone(botaoDeConfirmar(container), 'check-check')).toBe(true);
   });
 
   it('sem pendências — o cartão de pendências não aparece', async () => {
