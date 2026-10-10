@@ -11,7 +11,7 @@ import {
 } from '@/testes/montagem';
 import { FeitioPage } from './FeitioPage';
 
-const fila = vi.hoisted(() => ({ confirmados: null as boolean[] | null }));
+const fila = vi.hoisted(() => ({ confirmados: null as boolean[] | null, litrosDoPrimeiroAnterior: null as number | null }));
 
 vi.mock('@/mocks/feitio', async (importOriginal) => {
   const original = await importOriginal<Record<string, any>>();
@@ -23,6 +23,11 @@ vi.mock('@/mocks/feitio', async (importOriginal) => {
       return confirmados
         ? { ...feitio, custos: feitio.custos.map((custo: object, i: number) => ({ ...custo, confirmado: confirmados[i] })) }
         : feitio;
+    },
+    get anteriores() {
+      const litros = fila.litrosDoPrimeiroAnterior;
+      const [primeiro, ...demais] = original.anteriores;
+      return litros === null ? original.anteriores : [{ ...primeiro, litrosProduzidos: litros }, ...demais];
     },
   };
 });
@@ -45,6 +50,7 @@ beforeEach(() => {
 afterEach(async () => {
   await desmontarTudo();
   fila.confirmados = null;
+  fila.litrosDoPrimeiroAnterior = null;
   vi.useRealTimers();
   vi.unstubAllGlobals();
 });
@@ -287,6 +293,15 @@ describe('FeitioPage: feitio em andamento', () => {
       'Feitio de dezembroLote 12/202542,0 LR$ 12.180,00R$ 290,00/L',
     ]);
   });
+
+  it('feitios anteriores com litros fracionados (30,5) — a linha mostra os litros sem arredondar e o custo por litro sobre eles', async () => {
+    fila.litrosDoPrimeiroAnterior = 30.5;
+    const container = await montarFeitio();
+
+    const primeiraLinha = cartaoDe(container, 'Feitios anteriores').children[1]?.children[0];
+
+    expect(primeiraLinha?.textContent).toBe('Feitio de junhoLote 06/202630,5 LR$ 9.840,00R$ 322,62/L');
+  });
 });
 
 describe('FeitioPage: Concluir o feitio', () => {
@@ -388,21 +403,27 @@ describe('FeitioPage: Concluir o feitio', () => {
   });
 
   it.each([
-    { nome: 'vírgula decimal', digitado: '40,5', previa: '40,5 L' },
-    { nome: 'ponto decimal', digitado: '40.5', previa: '40,5 L' },
-    { nome: 'decimal sem a parte inteira', digitado: ',5', previa: '0,5 L' },
-    { nome: 'inteiro', digitado: '40', previa: '40,0 L' },
-    { nome: 'prefixo hexadecimal (0x10)', digitado: '0x10', previa: '16,0 L' },
-  ])('litros com $nome — libera o botão e mostra a prévia com $previa', async ({ digitado, previa }) => {
-    const container = await montarFeitio();
-    await abrirConclusao(container);
+    { nome: 'vírgula decimal', digitado: '40,5', previa: '40,5 L', porLitro: 'R$ 381,73/L' },
+    { nome: 'ponto decimal', digitado: '40.5', previa: '40,5 L', porLitro: 'R$ 381,73/L' },
+    { nome: 'decimal sem a parte inteira', digitado: ',5', previa: '0,5 L', porLitro: 'R$ 30.920,00/L' },
+    { nome: 'inteiro', digitado: '40', previa: '40,0 L', porLitro: 'R$ 386,50/L' },
+    { nome: 'prefixo hexadecimal (0x10)', digitado: '0x10', previa: '16,0 L', porLitro: 'R$ 966,25/L' },
+  ])(
+    'litros com $nome — libera o botão e mostra a prévia com $previa e $porLitro',
+    async ({ digitado, previa, porLitro }) => {
+      const container = await montarFeitio();
+      await abrirConclusao(container);
 
-    await preencherLitros(container, digitado);
+      await preencherLitros(container, digitado);
 
-    const painel = painelDeConclusao(container);
-    expect(botaoComTexto(painel, 'Concluir e criar o lote').disabled).toBe(false);
-    expect(painel.textContent).toContain(`R$ 15.460,00 em ${previa}`);
-  });
+      const painel = painelDeConclusao(container);
+      expect(botaoComTexto(painel, 'Concluir e criar o lote').disabled).toBe(false);
+      expect(textosDasFolhas(painel).filter((texto) => texto?.includes('R$'))).toEqual([
+        `R$ 15.460,00 em ${previa}`,
+        porLitro,
+      ]);
+    },
+  );
 
   it('litros 40 — a prévia mostra o total em 40,0 L e o custo por litro', async () => {
     const container = await montarFeitio();
@@ -666,6 +687,14 @@ describe('FeitioPage: feitio concluído', () => {
     await concluirComLitros(container, '42,5');
 
     expect(numero(container, 'Custo por litro')).toEqual(['Custo por litro', 'R$ 363,76', 'sobre 42,5 L']);
+  });
+
+  it('Concluir com litros fracionados (42,5) — a caixa do lote mostra os litros sem arredondar', async () => {
+    const container = await montarFeitio();
+
+    await concluirComLitros(container, '42,5');
+
+    expect(textosDasFolhas(caixaDoLoteProduzido(container) as HTMLElement)[1]).toBe('42,5 L');
   });
 
   it('Concluir com litros fracionados (42,5) — a comparação usa o mesmo custo por litro e a economia sobre 42,5 L', async () => {
