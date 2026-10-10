@@ -232,12 +232,21 @@ describe('InfraError', () => {
   });
 });
 
+const ESQUELETO_DO_BLOQUEIO_SEM_TEXTOS = 'Você não tem acesso a ' + ' .  . Se você precisa desse acesso, fale com .';
+
+const TEXTOS_DE_ACESSO = {
+  groupLabel: 'Rótulo do grupo:',
+  missingLabel: 'Rótulo da permissão:',
+} as const;
+
 describe('PermissionDenied', () => {
   it('mostra a tela negada, o grupo, a permissão que falta e a quem pedir', async () => {
     const { container } = await montar(
       <PermissionDenied
         screen="Fechamento"
+        groupLabel="Seu grupo é"
         group="Voluntários"
+        missingLabel="Falta a permissão"
         missing="financeiro.fechamento.executar"
         whoToAsk="o administrador"
       />,
@@ -252,17 +261,42 @@ describe('PermissionDenied', () => {
 
   it('whoToAsk — é quem a frase manda procurar, sem papel padrão escrito no componente', async () => {
     const { container } = await montar(
-      <PermissionDenied screen="Fechamento" group="Voluntários" missing="x.y.z" whoToAsk="a tesouraria" />,
+      <PermissionDenied {...TEXTOS_DE_ACESSO} screen="Fechamento" group="Voluntários" missing="x.y.z" whoToAsk="a tesouraria" />,
     );
 
     expect(paragrafosDe(container)).toEqual([
-      'Seu grupo é Voluntários. Falta a permissão x.y.z. Se você precisa desse acesso, fale com a tesouraria.',
+      'Rótulo do grupo: Voluntários. Rótulo da permissão: x.y.z. Se você precisa desse acesso, fale com a tesouraria.',
     ]);
+  });
+
+  it('groupLabel e missingLabel — são o que antecede o grupo e a permissão, sem termo de acesso próprio', async () => {
+    const { container } = await montar(
+      <PermissionDenied
+        screen="Fechamento"
+        groupLabel="Equipe:"
+        group="Voluntários"
+        missingLabel="Chave que falta:"
+        missing="x.y.z"
+        whoToAsk="a tesouraria"
+      />,
+    );
+
+    expect(paragrafosDe(container)).toEqual([
+      'Equipe: Voluntários. Chave que falta: x.y.z. Se você precisa desse acesso, fale com a tesouraria.',
+    ]);
+  });
+
+  it('textos vazios — o componente não escreve papel, grupo nem permissão: sobra só o esqueleto de acesso', async () => {
+    const { container } = await montar(
+      <PermissionDenied screen="" groupLabel="" group="" missingLabel="" missing="" whoToAsk="" />,
+    );
+
+    expect(container.textContent).toBe(ESQUELETO_DO_BLOQUEIO_SEM_TEXTOS);
   });
 
   it('grupo — sai em negrito, e a permissão em código', async () => {
     const { container } = await montar(
-      <PermissionDenied screen="Fechamento" group="Voluntários" missing="x.y.z" whoToAsk="a tesouraria" />,
+      <PermissionDenied {...TEXTOS_DE_ACESSO} screen="Fechamento" group="Voluntários" missing="x.y.z" whoToAsk="a tesouraria" />,
     );
 
     expect(elemento(container, 'b').textContent).toBe('Voluntários');
@@ -270,13 +304,17 @@ describe('PermissionDenied', () => {
   });
 
   it('sinaliza o bloqueio com o ícone ban', async () => {
-    const { container } = await montar(<PermissionDenied screen="S" group="G" missing="m" whoToAsk="Q" />);
+    const { container } = await montar(
+      <PermissionDenied {...TEXTOS_DE_ACESSO} screen="S" group="G" missing="m" whoToAsk="Q" />,
+    );
 
     expect(elemento<SVGElement>(container, 'svg').classList.contains('lucide-ban')).toBe(true);
   });
 
   it('style próprio — sobrepõe o fundo', async () => {
-    const { container } = await montar(<PermissionDenied screen="S" group="G" missing="m" whoToAsk="Q" style={{ background: 'red' }} />);
+    const { container } = await montar(
+      <PermissionDenied {...TEXTOS_DE_ACESSO} screen="S" group="G" missing="m" whoToAsk="Q" style={{ background: 'red' }} />,
+    );
 
     expect(raizDe(container).style.background).toBe('red');
   });

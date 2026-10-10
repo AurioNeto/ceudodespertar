@@ -150,7 +150,9 @@ export function InfraError({ title = 'Não deu para carregar', description, onRe
 
 export interface PermissionDeniedProps {
   screen: string;
+  groupLabel: string;
   group: string;
+  missingLabel: string;
   missing: string;
   whoToAsk: string;
   style?: CSSProperties;
@@ -158,7 +160,9 @@ export interface PermissionDeniedProps {
 
 export function PermissionDenied({
   screen,
+  groupLabel,
   group,
+  missingLabel,
   missing,
   whoToAsk,
   style,
@@ -179,7 +183,7 @@ export function PermissionDenied({
       <div>
         <div style={{ font: 'var(--text-title-sm)', color: 'var(--text-title)' }}>Você não tem acesso a {screen}</div>
         <p style={{ marginTop: 7, font: 'var(--text-body)', color: 'var(--text-secondary)', maxWidth: '58ch' }}>
-          Seu grupo é <b>{group}</b>. Falta a permissão <code>{missing}</code>. Se você precisa desse acesso, fale com{' '}
+          {groupLabel} <b>{group}</b>. {missingLabel} <code>{missing}</code>. Se você precisa desse acesso, fale com{' '}
           {whoToAsk}.
         </p>
       </div>

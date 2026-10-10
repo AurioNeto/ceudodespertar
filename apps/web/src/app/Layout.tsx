@@ -48,7 +48,9 @@ export function Layout({ telas = TELAS }: LayoutProps) {
           <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 760 }}>
             <PermissionDenied
               screen={nomeDaTela}
+              groupLabel="Seu grupo é"
               group={usuario.grupoNome}
+              missingLabel="Falta a permissão"
               missing={registro.acesso[0] ?? ''}
               whoToAsk="o administrador"
             />
