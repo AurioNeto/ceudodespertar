@@ -21,7 +21,7 @@ import {
   Td,
   Th,
 } from '@/ds';
-import { formatarData, formatarDinheiro, pluralizar } from '@/lib/formato';
+import { formatarData, formatarDinheiro, pluralizar } from '@/pages/utils/formato';
 import {
   contasDeEmprestimo,
   contrapartesConhecidas,

@@ -1,5 +1,6 @@
 import { cerimoniasPassadas } from '../../mocks/cerimonias';
-import { formatarDiaMes, formatarValor } from '../../lib/formato';
+import { formatarValor } from '../../lib/formato';
+import { formatarDiaMes } from '@/pages/utils/formato';
 
 const TOPO = 18;
 const ALTURA = 132;

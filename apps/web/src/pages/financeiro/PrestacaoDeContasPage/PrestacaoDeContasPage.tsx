@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import type { ReactNode } from 'react';
 import { Button, Icon, ScreenHeader, StatusBadge, useDensidade, Select, SeletorDeTipo, Recado, Rotulo } from '@/ds';
-import { formatarDinheiro } from '@/lib/formato';
+import { formatarDinheiro } from '@/pages/utils/formato';
 import {
   gerarHash,
   historico as historicoInicial,

@@ -1,7 +1,7 @@
 import { Icon } from '../../ds';
 import { cerimoniasPassadas } from '../../mocks/cerimonias';
 import { conferidoEm, feitioRecente, lotesDeDaime } from '../../mocks/estoque';
-import { formatarDiaMes, formatarLitros } from '../../lib/formato';
+import { formatarDiaMes, formatarLitros } from '@/pages/utils/formato';
 
 const BASE = 226;
 const TOPO_PLOT = 46;

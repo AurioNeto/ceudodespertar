@@ -13,7 +13,7 @@ import {
   Numero,
   Rotulo,
 } from '@/ds';
-import { formatarData, pluralizar } from '../../lib/formato';
+import { formatarData, pluralizar } from '@/pages/utils/formato';
 import { hoje } from '@/pages/mocks/relogio';
 import {
   acessos,

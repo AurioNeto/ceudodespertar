@@ -2,7 +2,7 @@ import { useState } from 'react';
 import type { ItemNaFila } from '@cdd/contracts';
 import { reais } from '@cdd/contracts';
 import { Button, Icon, StatusBadge, type IconName } from '@/ds';
-import { formatarData, formatarDinheiro } from '@/lib/formato';
+import { formatarData, formatarDinheiro } from '@/pages/utils/formato';
 import { CONFIANCA, ORIGENS } from '../../constantes';
 
 export interface PainelDeRevisaoProps {

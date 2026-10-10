@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Button, Icon, ScreenHeader, StatusBadge, type BadgeTone, useDensidade, Avatar, Select } from '@/ds';
-import { pluralizar } from '@/lib/formato';
+import { pluralizar } from '@/pages/utils/formato';
 import {
   acessosIniciais,
   gruposIniciais,

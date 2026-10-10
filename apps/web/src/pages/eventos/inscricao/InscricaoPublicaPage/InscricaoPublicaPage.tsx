@@ -14,7 +14,7 @@ import {
 } from '@/ds';
 import { BlocoDePergunta } from './components/BlocoDePergunta';
 import { disparaAlerta, respondida } from './utils/regraDeAlerta';
-import { formatarBRL, formatarDinheiro, pluralizar } from '@/lib/formato';
+import { formatarBRL, formatarDinheiro, pluralizar } from '@/pages/utils/formato';
 import {
   cadastros,
   CPFS_DE_EXEMPLO,

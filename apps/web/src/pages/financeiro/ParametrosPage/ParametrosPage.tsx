@@ -14,7 +14,7 @@ import {
   Td,
   Th,
 } from '@/ds';
-import { formatarDinheiro, pluralizar } from '@/lib/formato';
+import { formatarDinheiro, pluralizar } from '@/pages/utils/formato';
 import {
   categorias as categoriasIniciais,
   LINHAS_DE_RELATORIO,

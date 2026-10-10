@@ -13,7 +13,7 @@ import {
   Recado,
   Rotulo,
 } from '@/ds';
-import { formatarData, formatarDinheiro, pluralizar } from '@/lib/formato';
+import { formatarData, formatarDinheiro, pluralizar } from '@/pages/utils/formato';
 import {
   contasComExtrato,
   importacao,
