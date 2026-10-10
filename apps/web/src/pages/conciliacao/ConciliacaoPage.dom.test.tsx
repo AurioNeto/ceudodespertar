@@ -8,6 +8,22 @@ const TITULO_DAS_LINHAS = 'Saiu dinheiro que ninguém registrou';
 const TITULO_DAS_SUGESTOES = 'Sugestões de casamento';
 const TITULO_DOS_LANCAMENTOS = 'Registramos algo que não saiu do banco';
 
+const SUGESTAO_ASSAI =
+  'Alta confiançamesmo valor, mesma data, mesma conta' +
+  'No bancoASSAI ATACADISTA IBIUNA02/09487,40' +
+  'No sistemamercado do trabalho de setembro02/09487,40' +
+  'CasarNão é o mesmo';
+const SUGESTAO_POSTO =
+  'Alta confiançamesmo valor, um dia de diferença' +
+  'No bancoPOSTO IPIRANGA IBIUNA05/09320,00' +
+  'No sistemacombustível da van04/09320,00' +
+  'CasarNão é o mesmo';
+const SUGESTAO_CORREIOS =
+  'Média confiançamesmo valor, quatro dias de diferença' +
+  'No bancoCORREIOS AGF IBIUNA30/08517,90' +
+  'No sistemaenvio de camisetas da lojinha26/08517,90' +
+  'CasarNão é o mesmo';
+
 const MOTIVOS = [
   'Tarifa bancária, sem lançamento correspondente',
   'Movimentação pessoal em conta de terceiro',
@@ -271,20 +287,7 @@ describe('ConciliacaoPage: coluna de sugestões de casamento', () => {
     const { container } = await montar(<ConciliacaoPage />);
 
     expect(contagemDaColuna(container, TITULO_DAS_SUGESTOES)).toBe('3');
-    expect(textosDaColuna(container, TITULO_DAS_SUGESTOES)).toEqual([
-      'Alta confiançamesmo valor, mesma data, mesma conta' +
-        'No bancoASSAI ATACADISTA IBIUNA02/09487,40' +
-        'No sistemamercado do trabalho de setembro02/09487,40' +
-        'CasarNão é o mesmo',
-      'Alta confiançamesmo valor, um dia de diferença' +
-        'No bancoPOSTO IPIRANGA IBIUNA05/09320,00' +
-        'No sistemacombustível da van04/09320,00' +
-        'CasarNão é o mesmo',
-      'Média confiançamesmo valor, quatro dias de diferença' +
-        'No bancoCORREIOS AGF IBIUNA30/08517,90' +
-        'No sistemaenvio de camisetas da lojinha26/08517,90' +
-        'CasarNão é o mesmo',
-    ]);
+    expect(textosDaColuna(container, TITULO_DAS_SUGESTOES)).toEqual([SUGESTAO_ASSAI, SUGESTAO_POSTO, SUGESTAO_CORREIOS]);
   });
 
   it('Casar — tira a sugestão, soma uma conciliada e desconta do Sem par', async () => {
@@ -295,6 +298,18 @@ describe('ConciliacaoPage: coluna de sugestões de casamento', () => {
     expect(contagemDaColuna(container, TITULO_DAS_SUGESTOES)).toBe('2');
     expect(container.textContent).not.toContain('ASSAI ATACADISTA IBIUNA');
     expect(indicadores(container)).toEqual(['7', '2', '1', '0']);
+  });
+
+  it.each<{ casada: string; ficam: string[] }>([
+    { casada: 'ASSAI', ficam: [SUGESTAO_POSTO, SUGESTAO_CORREIOS] },
+    { casada: 'POSTO', ficam: [SUGESTAO_ASSAI, SUGESTAO_CORREIOS] },
+    { casada: 'CORREIOS', ficam: [SUGESTAO_ASSAI, SUGESTAO_POSTO] },
+  ])('Casar $casada — só a casada sai da lista: as outras duas ficam, na mesma ordem', async ({ casada, ficam }) => {
+    const { container } = await montar(<ConciliacaoPage />);
+
+    await clicar(botaoComTexto(cartaoDaSugestao(container, casada), 'Casar'));
+
+    expect(textosDaColuna(container, TITULO_DAS_SUGESTOES)).toEqual(ficam);
   });
 
   it('Casar — o recado diz que a data de caixa passou a ser a do extrato, com a data completa', async () => {
@@ -324,6 +339,40 @@ describe('ConciliacaoPage: coluna de sugestões de casamento', () => {
     expect(textosDaColuna(container, TITULO_DOS_LANCAMENTOS)[0]).toBe(`02/09mercado do trabalho de setembro${MENOS}487,40Cora PJ · Aurio Neto`);
     expect([contagemDaColuna(container, TITULO_DAS_LINHAS), contagemDaColuna(container, TITULO_DAS_SUGESTOES), contagemDaColuna(container, TITULO_DOS_LANCAMENTOS)]).toEqual(['6', '2', '4']);
   });
+
+  it.each<{ recusada: string; ficam: string[]; linha: string; lancamento: string }>([
+    {
+      recusada: 'ASSAI',
+      ficam: [SUGESTAO_POSTO, SUGESTAO_CORREIOS],
+      linha: `02/09ASSAI ATACADISTA IBIUNA${MENOS}487,40Registrar lançamentoIgnorar`,
+      lancamento: `02/09mercado do trabalho de setembro${MENOS}487,40Cora PJ · Aurio Neto`,
+    },
+    {
+      recusada: 'POSTO',
+      ficam: [SUGESTAO_ASSAI, SUGESTAO_CORREIOS],
+      linha: `05/09POSTO IPIRANGA IBIUNA${MENOS}320,00Registrar lançamentoIgnorar`,
+      lancamento: `04/09combustível da van${MENOS}320,00Cora PJ · Chico Aguiar`,
+    },
+    {
+      recusada: 'CORREIOS',
+      ficam: [SUGESTAO_ASSAI, SUGESTAO_POSTO],
+      linha: `30/08CORREIOS AGF IBIUNA${MENOS}517,90Registrar lançamentoIgnorar`,
+      lancamento: `26/08envio de camisetas da lojinha${MENOS}517,90Cora PJ · Paty Munay`,
+    },
+  ])(
+    'Não é o mesmo $recusada — só ela sai da lista, e a linha e o lançamento dela voltam para o topo de cada coluna',
+    async ({ recusada, ficam, linha, lancamento }) => {
+      const { container } = await montar(<ConciliacaoPage />);
+
+      await clicar(botaoComTexto(cartaoDaSugestao(container, recusada), 'Não é o mesmo'));
+
+      expect({
+        sugestoes: textosDaColuna(container, TITULO_DAS_SUGESTOES),
+        topoDasLinhas: textosDaColuna(container, TITULO_DAS_LINHAS)[0],
+        topoDosLancamentos: textosDaColuna(container, TITULO_DOS_LANCAMENTOS)[0],
+      }).toEqual({ sugestoes: ficam, topoDasLinhas: linha, topoDosLancamentos: lancamento });
+    },
+  );
 
   it('Não é o mesmo — o Sem par não muda, porque a linha volta e a sugestão sai', async () => {
     const { container } = await montar(<ConciliacaoPage />);
