@@ -1,0 +1,1 @@
+export { ContratacoesPage } from './ContratacoesPage';

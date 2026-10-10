@@ -1,0 +1,1 @@
+export { FormularioDeTrabalho } from './FormularioDeTrabalho';

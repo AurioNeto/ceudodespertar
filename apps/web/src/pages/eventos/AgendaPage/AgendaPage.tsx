@@ -1,15 +1,16 @@
 import { useState } from 'react';
 import { Button, Icon, ScreenHeader, StatusBadge, type BadgeTone, useDensidade, SeletorDeTipo } from '@/ds';
-import { nomeDoMes, pluralizar } from '../../lib/formato';
+import { nomeDoMes, pluralizar } from '@/lib/formato';
 import {
   CORES_POR_TIPO,
   trabalhosIniciais,
   type SituacaoDoTrabalho,
   type Trabalho,
-} from '../../mocks/agenda';
-import { CalendarioMensal, LegendaDeTipos } from './CalendarioMensal';
-import { DetalheDoTrabalho } from './DetalheDoTrabalho';
-import { FormularioDeTrabalho, rascunhoDe, rascunhoVazio, type RascunhoDeTrabalho } from './FormularioDeTrabalho';
+} from './mocks/agenda';
+import { CalendarioMensal, LegendaDeTipos } from './components/CalendarioMensal';
+import { DetalheDoTrabalho } from './components/DetalheDoTrabalho';
+import { FormularioDeTrabalho } from './components/FormularioDeTrabalho';
+import { rascunhoDe, rascunhoVazio, type RascunhoDeTrabalho } from './utils/rascunhoDeTrabalho';
 
 const TOM_DA_SITUACAO: Record<SituacaoDoTrabalho, BadgeTone> = {
   planejada: 'pending',

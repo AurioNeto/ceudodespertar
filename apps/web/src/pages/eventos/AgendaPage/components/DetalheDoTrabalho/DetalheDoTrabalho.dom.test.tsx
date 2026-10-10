@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { botaoComTexto, clicar, desmontarTudo, elemento, montar, todos } from '@/testes/montagem';
 import { DetalheDoTrabalho, type DetalheDoTrabalhoProps } from './DetalheDoTrabalho';
-import { textoDoNumero, umTrabalho } from './apoioDeTeste';
+import { textoDoNumero, umTrabalho } from '../../apoioDeTeste';
 
 afterEach(async () => {
   await desmontarTudo();

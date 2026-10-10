@@ -11,7 +11,7 @@ import {
   itensDaListaDoCartao,
   recadoDaTela,
   textoDaFolhaPai,
-} from './apoioDeTeste';
+} from '../apoioDeTeste';
 
 beforeEach(() => {
   fixarDensidade('office');

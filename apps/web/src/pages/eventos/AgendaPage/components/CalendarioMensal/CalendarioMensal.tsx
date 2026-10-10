@@ -1,5 +1,5 @@
 import { CORES_POR_TIPO, type Trabalho } from '../../mocks/agenda';
-import { hoje } from '../../mocks/sessao';
+import { hoje } from '@/mocks/sessao';
 
 const DIAS_DA_SEMANA = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
 

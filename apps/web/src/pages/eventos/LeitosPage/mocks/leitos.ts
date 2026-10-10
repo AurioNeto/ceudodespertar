@@ -1,5 +1,5 @@
 import type { Dormitorio, DormitorioId, Hospedagem, InscricaoId, LeitoId, TipoLeito, UnidadeId } from '@cdd/contracts';
-import { id } from './ids';
+import { id } from '@/mocks/ids';
 
 /**
  * `E-10` e `E-15` — o mapa e o cadastro.
@@ -75,14 +75,6 @@ export const dormitorios: readonly Dormitorio[] = [
     ],
   },
 ];
-
-export const TIPO_LEITO_ROTULO: Record<TipoLeito, string> = {
-  BELICHE_SUPERIOR: 'Beliche superior',
-  BELICHE_INFERIOR: 'Beliche inferior',
-  CAMA_SOLTEIRO: 'Cama de solteiro',
-  CAMA_CASAL: 'Cama de casal',
-  QUARTO_PRIVATIVO: 'Quarto privativo',
-};
 
 /* ── Quem pediu hospedagem ───────────────────────────────────────────────── */
 

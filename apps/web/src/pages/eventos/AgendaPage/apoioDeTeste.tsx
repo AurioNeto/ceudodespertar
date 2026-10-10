@@ -1,7 +1,7 @@
 import { act } from 'react';
 import { vi } from 'vitest';
 import { elemento, todos } from '@/testes/montagem';
-import type { DetalheDoTrabalhoProps } from './DetalheDoTrabalho';
+import type { DetalheDoTrabalhoProps } from './components/DetalheDoTrabalho';
 
 export type DensidadeDeTeste = 'office' | 'field';
 

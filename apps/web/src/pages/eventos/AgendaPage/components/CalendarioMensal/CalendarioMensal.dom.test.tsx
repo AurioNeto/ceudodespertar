@@ -8,7 +8,7 @@ import {
   diasDestacadosComoHoje,
   nomesPorDiaNoCalendario,
   umTrabalho,
-} from './apoioDeTeste';
+} from '../../apoioDeTeste';
 
 afterEach(desmontarTudo);
 
