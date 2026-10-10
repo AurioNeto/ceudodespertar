@@ -82,6 +82,7 @@ export interface AppShellProps {
   brand: AppShellBrand;
   user: { name: string; group: string };
   userLabel: string;
+  userActive?: boolean;
   nav?: readonly NavEntry[];
   activeId?: string;
   onNavigate?: (id: string) => void;
@@ -102,6 +103,7 @@ export function AppShell({
   brand,
   user,
   userLabel,
+  userActive = false,
   nav = [],
   activeId,
   onNavigate,
@@ -188,6 +190,7 @@ export function AppShell({
             type="button"
             onClick={onUserClick}
             title={userLabel}
+            aria-current={userActive ? 'page' : undefined}
             style={{
               margin: '12px 10px 0',
               padding: '11px 8px 0',
@@ -279,7 +282,7 @@ export function AppShell({
             {temMenu ? (
               <BotaoDoMenu
                 aberto={menu.aberto}
-                ativo={foraDaBarra.some((grupo) => grupo.itens.some((item) => item.id === activeId))}
+                ativo={userActive || foraDaBarra.some((grupo) => grupo.itens.some((item) => item.id === activeId))}
                 aoAbrir={menu.abrir}
               />
             ) : null}
@@ -293,6 +296,7 @@ export function AppShell({
         activeId={activeId}
         user={user}
         userLabel={userLabel}
+        userActive={userActive}
         onNavigate={onNavigate}
         onUserClick={onUserClick}
         aoFechar={menu.fechar}
@@ -426,6 +430,7 @@ interface MenuDeCampoProps {
   activeId: string | undefined;
   user: { name: string; group: string };
   userLabel: string;
+  userActive: boolean;
   onNavigate: ((id: string) => void) | undefined;
   onUserClick: (() => void) | undefined;
   aoFechar: () => void;
@@ -438,6 +443,7 @@ function MenuDeCampo({
   activeId,
   user,
   userLabel,
+  userActive,
   onNavigate,
   onUserClick,
   aoFechar,
@@ -458,7 +464,7 @@ function MenuDeCampo({
         {grupos.map((grupo) => (
           <GrupoNoMenu key={grupo.posicao} grupo={grupo} activeId={activeId} onNavigate={navegarPara} />
         ))}
-        {onUserClick ? <PerfilNoMenu user={user} rotulo={userLabel} aoAbrir={abrirPerfil} /> : null}
+        {onUserClick ? <PerfilNoMenu user={user} rotulo={userLabel} ativo={userActive} aoAbrir={abrirPerfil} /> : null}
       </nav>
     </PainelDeAcao>
   );
@@ -499,14 +505,16 @@ function GrupoNoMenu({
 interface PerfilNoMenuProps {
   user: { name: string; group: string };
   rotulo: string;
+  ativo: boolean;
   aoAbrir: () => void;
 }
 
-function PerfilNoMenu({ user, rotulo, aoAbrir }: PerfilNoMenuProps) {
+function PerfilNoMenu({ user, rotulo, ativo, aoAbrir }: PerfilNoMenuProps) {
   return (
     <button
       type="button"
       onClick={aoAbrir}
+      aria-current={ativo ? 'page' : undefined}
       style={{
         marginTop: 'var(--space-3)',
         padding: 'var(--space-3) var(--space-2)',

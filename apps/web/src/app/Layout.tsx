@@ -41,6 +41,7 @@ export function Layout({ telas = TELAS }: LayoutProps) {
       {...TEXTOS_DO_SHELL}
       density={densidade}
       user={{ name: usuario.nome, group: usuario.grupoNome }}
+      userActive={ativo === 'perfil'}
       nav={filtrarNavPorAcesso(nav, telas, pode)}
       activeId={ativo}
       onNavigate={(id) => navigate(ROTAS[id as RotaId] ?? '/')}

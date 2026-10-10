@@ -441,6 +441,26 @@ describe('AppShell: chip do usuário', () => {
     expect(container.querySelector('[title="Meu perfil"]')).toBeNull();
   });
 
+  it('o chip só é marcado como página atual quando userActive é verdadeiro', async () => {
+    const inativo = await montar(<AppShell {...IDENTIDADE} user={USUARIA}>conteúdo</AppShell>);
+    expect(chipDoUsuario(inativo.container).hasAttribute('aria-current')).toBe(false);
+    await inativo.atualizar(
+      <AppShell {...IDENTIDADE} user={USUARIA} userActive>
+        conteúdo
+      </AppShell>,
+    );
+    expect(chipDoUsuario(inativo.container).getAttribute('aria-current')).toBe('page');
+  });
+
+  it('com o usuário como página atual nenhum item da navegação é marcado', async () => {
+    const { container } = await montar(
+      <AppShell {...IDENTIDADE} user={USUARIA} nav={NAV} activeId="perfil" userActive>
+        conteúdo
+      </AppShell>,
+    );
+    expect(todos(container, '[aria-current]')).toEqual([chipDoUsuario(container)]);
+  });
+
   it('em campo o chip da lateral não existe: o Meu perfil fica no menu', async () => {
     const { container } = await montar(
       <AppShell {...IDENTIDADE} user={USUARIA} density="field" onUserClick={vi.fn()}>
@@ -636,6 +656,7 @@ describe('AppShell: menu de campo', () => {
     activeId?: string;
     onNavigate?: (id: string) => void;
     onUserClick?: () => void;
+    userActive?: boolean;
   }
 
   const montarComMenu = (props: PropsDoMenu) =>
@@ -769,6 +790,37 @@ describe('AppShell: menu de campo', () => {
     );
     await abrirMenu(container);
     expect(botoesDoMenu()).toEqual(['Contas', 'Acessos', 'ANMinha contaAna Souza · Tesouraria']);
+  });
+
+  it('na página do usuário o Meu perfil leva aria-current=page e o botão Menu é realçado, sem aria-current', async () => {
+    const { container } = await montarComMenu({ nav: NAV, activeId: 'perfil', userActive: true, onUserClick: vi.fn() });
+    expect(botaoDoMenu(container).style.color).toBe('var(--color-royal)');
+    expect(botaoDoMenu(container).style.borderTop).toBe('2px solid var(--color-royal)');
+    expect(botaoDoMenu(container).hasAttribute('aria-current')).toBe(false);
+    expect(todos(navInferior(container), 'button').map((botao) => botao.getAttribute('aria-current'))).toEqual([
+      null,
+      null,
+      null,
+      null,
+    ]);
+    await abrirMenu(container);
+    expect(todos(dialogoAberto(), 'nav button').map((botao) => botao.getAttribute('aria-current'))).toEqual([
+      null,
+      null,
+      'page',
+    ]);
+  });
+
+  it('fora da página do usuário o Meu perfil não é marcado e o Menu não é realçado, mesmo com activeId alheio à navegação', async () => {
+    const { container } = await montarComMenu({ nav: NAV, activeId: 'perfil', onUserClick: vi.fn() });
+    expect(botaoDoMenu(container).style.color).toBe('var(--text-secondary)');
+    expect(botaoDoMenu(container).style.borderTop).toBe('2px solid transparent');
+    await abrirMenu(container);
+    expect(todos(dialogoAberto(), 'nav button').map((botao) => botao.getAttribute('aria-current'))).toEqual([
+      null,
+      null,
+      null,
+    ]);
   });
 
   it('sem onUserClick não há Meu perfil no menu', async () => {
@@ -925,6 +977,13 @@ describe('AppShell: menu de campo', () => {
       const montado = await emCampoComMenuAberto(props);
       await passarParaEscritorio(montado, props);
       expect(document.activeElement).toBe(botaoComTexto(navLateral(montado.container), 'Painel'));
+    });
+
+    it('na página do usuário o foco vai para o chip, que é a página atual', async () => {
+      const props = { nav: NAV, activeId: 'perfil', userActive: true, onUserClick: vi.fn() };
+      const montado = await emCampoComMenuAberto(props);
+      await passarParaEscritorio(montado, props);
+      expect(document.activeElement).toBe(chipDoUsuario(montado.container));
     });
 
     it('sem itens na navegação o foco vai para a área principal, que aceita foco por programa e não por Tab', async () => {
