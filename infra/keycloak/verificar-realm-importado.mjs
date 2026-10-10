@@ -23,6 +23,7 @@ import {
   normalizarBooleanoTexto,
   objeto,
   objetoComApenas,
+  validarAtributosDoPerfilDeUsuario,
 } from './modelo-esperado.mjs';
 
 const TEMPO_LIMITE_MS = 20000;
@@ -437,6 +438,20 @@ for (const [clientId, esperado] of Object.entries(CLIENTES_EMBUTIDOS_E_ADMIN_CLI
   );
   if (mapeadorDeAudienciaCddApi) {
     falhas.push(`${caminho} não pode ter mapeador de audiência para cdd-api`);
+  }
+}
+
+const perfilDeUsuarioVivo = await chamarAdminApi(token, '/users/profile');
+if (perfilDeUsuarioVivo === null) {
+  falhas.push('perfil de usuário não foi encontrado no realm importado');
+} else {
+  const falhasDoPerfil = [];
+  validarAtributosDoPerfilDeUsuario(perfilDeUsuarioVivo, 'perfilDeUsuario', falhasDoPerfil);
+  falhas.push(...falhasDoPerfil);
+  if (falhasDoPerfil.length > 0) {
+    falhas.push(
+      'falta a trava do perfil de usuário (email e username editáveis só por admin) — o import não sobrescreve realm existente: recrie só o realm/container do Keycloak, ou aplique o perfil de realm-cdd.json em Realm settings > User profile > JSON editor no console',
+    );
   }
 }
 

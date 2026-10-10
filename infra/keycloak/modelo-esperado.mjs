@@ -467,6 +467,10 @@ function validarPerfilDeUsuario(atual, caminho, falhas) {
   }
   const perfil = lerPerfilDeUsuario(atual, caminho, falhas);
   if (perfil === null) return;
+  validarAtributosDoPerfilDeUsuario(perfil, caminho, falhas);
+}
+
+export function validarAtributosDoPerfilDeUsuario(perfil, caminho, falhas) {
   const atributos = Array.isArray(perfil.attributes) ? perfil.attributes : [];
   for (const nomeDoAtributo of ATRIBUTOS_DE_PERFIL_EDITAVEIS_SO_POR_ADMIN) {
     const atributo = atributos.find((item) => item?.name === nomeDoAtributo);
