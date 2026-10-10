@@ -8,7 +8,7 @@ export interface ConfirmActionProps {
   /** Regras que impedem a confirmação, nomeadas em português (Doc 2, L2 e L7). */
   blockedBy?: readonly string[];
   blockedGuidance: string;
-  blockedHeadingForOneRule: (rule: string) => string;
+  blockedHeadingForOneRule: string;
   blockedHeadingForManyRules: string;
   density?: Density;
   onConfirm?: () => void;
@@ -44,7 +44,13 @@ export function ConfirmAction({
           <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 6 }}>
             <Icon name="triangle-alert" size={16} color="var(--color-pending)" />
             <span style={{ font: 'var(--text-body-strong)', color: 'var(--color-pending)' }}>
-              {otherRules.length === 0 ? blockedHeadingForOneRule(firstRule) : blockedHeadingForManyRules}
+              {otherRules.length === 0 ? (
+                <>
+                  {blockedHeadingForOneRule} <span>{firstRule}</span>
+                </>
+              ) : (
+                blockedHeadingForManyRules
+              )}
             </span>
           </div>
           {otherRules.length > 0 ? (

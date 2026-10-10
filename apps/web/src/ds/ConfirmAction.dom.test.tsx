@@ -7,12 +7,13 @@ afterEach(desmontarTudo);
 const NOTA_DE_IRREVERSIBILIDADE = 'Lançamento confirmado só se corrige com estorno.';
 const ORIENTACAO_DO_BLOQUEIO = 'Complete o cadastro ou fale com quem registrou.';
 const CABECALHO_DE_VARIAS_REGRAS = 'Faltam algumas coisas antes de confirmar';
-const cabecalhoDeUmaRegra = (regra: string) => `Falta resolver: ${regra}`;
+const FRASE_DE_UMA_REGRA = 'Falta resolver:';
+const cabecalhoComARegra = (regra: string) => `${FRASE_DE_UMA_REGRA} ${regra}`;
 
 const textosDoConsumidor = {
   irreversibleNote: NOTA_DE_IRREVERSIBILIDADE,
   blockedGuidance: ORIENTACAO_DO_BLOQUEIO,
-  blockedHeadingForOneRule: cabecalhoDeUmaRegra,
+  blockedHeadingForOneRule: FRASE_DE_UMA_REGRA,
   blockedHeadingForManyRules: CABECALHO_DE_VARIAS_REGRAS,
 };
 
@@ -25,6 +26,9 @@ const TEXTOS_QUE_O_COMPONENTE_TRAZIA_ESCRITOS = [
   'Não dá para confirmar',
   'Resolva o que falta acima, ou pergunte a quem registrou.',
 ];
+
+const avisoDeUmaRegra = (origem: ParentNode, regra: string) =>
+  folhaComTexto(origem, 'span', regra).parentElement as HTMLElement;
 
 const SITUACOES_DE_BLOQUEIO: ReadonlyArray<[string, readonly string[]]> = [
   ['sem bloqueio', []],
@@ -41,7 +45,7 @@ describe('ConfirmAction: nenhum texto de negócio escrito no componente', () => 
   it('bloqueado por uma regra, escreve só o cabeçalho do consumidor, o rótulo e a orientação', async () => {
     const { container } = await montar(confirmacao({ blockedBy: ['falta a categoria'] }));
     expect(container.textContent).toBe(
-      `${cabecalhoDeUmaRegra('falta a categoria')}Confirmar${ORIENTACAO_DO_BLOQUEIO}`,
+      `${cabecalhoComARegra('falta a categoria')}Confirmar${ORIENTACAO_DO_BLOQUEIO}`,
     );
   });
 
@@ -76,7 +80,7 @@ describe('ConfirmAction: sem bloqueio', () => {
 
   it('não mostra aviso de bloqueio nem orientação para resolver', async () => {
     const { container } = await montar(confirmacao());
-    expect(container.textContent).not.toContain(cabecalhoDeUmaRegra(''));
+    expect(container.textContent).not.toContain(FRASE_DE_UMA_REGRA);
     expect(container.textContent).not.toContain(CABECALHO_DE_VARIAS_REGRAS);
     expect(container.textContent).not.toContain(ORIENTACAO_DO_BLOQUEIO);
     expect(botaoComTexto(container, 'Confirmar').hasAttribute('title')).toBe(false);
@@ -118,12 +122,6 @@ describe('ConfirmAction: sem bloqueio', () => {
     expect(folhaComTexto(container, 'p', NOTA_DE_IRREVERSIBILIDADE)).toBeTruthy();
     expect(botaoComTexto(container, 'Confirmar').disabled).toBe(false);
   });
-
-  it('sem bloqueio, nenhum dos textos de bloqueio do consumidor é pedido', async () => {
-    const cabecalhoDeUma = vi.fn(cabecalhoDeUmaRegra);
-    await montar(confirmacao({ blockedHeadingForOneRule: cabecalhoDeUma }));
-    expect(cabecalhoDeUma).not.toHaveBeenCalled();
-  });
 });
 
 describe('ConfirmAction: densidade', () => {
@@ -161,7 +159,7 @@ describe('ConfirmAction: ordem de leitura', () => {
 
   it('bloqueado por uma regra, o aviso vem antes do botão', async () => {
     const { container } = await montar(confirmacao({ blockedBy: ['falta a categoria'] }));
-    const aviso = folhaComTexto(container, 'span', cabecalhoDeUmaRegra('falta a categoria'));
+    const aviso = avisoDeUmaRegra(container, 'falta a categoria');
     const botao = botaoComTexto(container, 'Confirmar');
     expect(aviso.compareDocumentPosition(botao)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
   });
@@ -179,15 +177,14 @@ describe('ConfirmAction: ordem de leitura', () => {
 describe('ConfirmAction: bloqueado por uma regra', () => {
   const umaRegra = { blockedBy: ['falta a categoria'] };
 
-  it('mostra o cabeçalho que o consumidor monta a partir da regra', async () => {
+  it('o aviso é a frase do consumidor, um espaço e a regra, que fica num elemento próprio', async () => {
     const { container } = await montar(confirmacao(umaRegra));
-    expect(folhaComTexto(container, 'span', cabecalhoDeUmaRegra('falta a categoria'))).toBeTruthy();
+    expect(avisoDeUmaRegra(container, 'falta a categoria').textContent).toBe('Falta resolver: falta a categoria');
   });
 
-  it('entrega só a regra ao consumidor, uma vez, e não usa o cabeçalho de várias', async () => {
-    const cabecalhoDeUma = vi.fn(cabecalhoDeUmaRegra);
-    const { container } = await montar(confirmacao({ ...umaRegra, blockedHeadingForOneRule: cabecalhoDeUma }));
-    expect(cabecalhoDeUma.mock.calls).toEqual([['falta a categoria']]);
+  it('usa a frase de uma regra e não o cabeçalho de várias', async () => {
+    const { container } = await montar(confirmacao(umaRegra));
+    expect(container.textContent).toContain(FRASE_DE_UMA_REGRA);
     expect(container.textContent).not.toContain(CABECALHO_DE_VARIAS_REGRAS);
   });
 
@@ -233,13 +230,7 @@ describe('ConfirmAction: bloqueado por várias regras', () => {
   it('o aviso é o cabeçalho de várias regras do consumidor, sem nomear regra nenhuma', async () => {
     const { container } = await montar(confirmacao(duasRegras));
     expect(folhaComTexto(container, 'span', CABECALHO_DE_VARIAS_REGRAS)).toBeTruthy();
-    expect(container.textContent).not.toContain(cabecalhoDeUmaRegra(''));
-  });
-
-  it('não pede o cabeçalho de uma regra ao consumidor', async () => {
-    const cabecalhoDeUma = vi.fn(cabecalhoDeUmaRegra);
-    await montar(confirmacao({ ...duasRegras, blockedHeadingForOneRule: cabecalhoDeUma }));
-    expect(cabecalhoDeUma).not.toHaveBeenCalled();
+    expect(container.textContent).not.toContain(FRASE_DE_UMA_REGRA);
   });
 
   it('lista cada regra, na ordem recebida', async () => {
@@ -295,7 +286,7 @@ describe('ConfirmAction: a lista de bloqueios muda', () => {
     await montado.atualizar(confirmacao({ blockedBy: [], onConfirm: aoConfirmar }));
     await clicar(botaoComTexto(montado.container, 'Confirmar'));
     expect(folhaComTexto(montado.container, 'p', NOTA_DE_IRREVERSIBILIDADE)).toBeTruthy();
-    expect(montado.container.textContent).not.toContain(cabecalhoDeUmaRegra(''));
+    expect(montado.container.textContent).not.toContain(FRASE_DE_UMA_REGRA);
     expect(aoConfirmar).toHaveBeenCalledTimes(1);
   });
 
