@@ -44,8 +44,14 @@ describe('StatusBadge — tom e texto', () => {
     expect(container.textContent).toBe('');
   });
 
-  it('filhos em string vazia — mostra o selo sem texto', async () => {
-    const { container } = await montar(<StatusBadge tone="confirmed">{''}</StatusBadge>);
+  it.each(CORES_POR_TOM)('textos vazios — tom %s: o selo fica sem texto, sem escrever o próprio', async (tom) => {
+    const { container } = await montar(<StatusBadge tone={tom}>{''}</StatusBadge>);
+
+    expect(container.textContent).toBe('');
+  });
+
+  it('textos vazios — sem tom e sem filhos em string: o selo fica sem texto', async () => {
+    const { container } = await montar(<StatusBadge>{''}</StatusBadge>);
 
     expect(container.textContent).toBe('');
   });

@@ -205,6 +205,23 @@ describe('AmountInput — soma de parcelas', () => {
   });
 });
 
+describe('AmountInput — textos vazios', () => {
+  const TEXTOS_VAZIOS = { label: '', sumLabel: '', sumNote: '', hint: '' } as const;
+
+  it('sem soma — só sobra o prefixo R$ e o campo fica sem nome próprio', async () => {
+    const { container } = await montar(<AmountInput {...TEXTOS_VAZIOS} value="65" onChange={vi.fn()} />);
+
+    expect(container.textContent).toBe('R$');
+    expect(campoDe(container).getAttribute('aria-label')).toBe('');
+  });
+
+  it('com soma — sobra só o total e o travessão que separa a nota: o componente não escreve rótulo nem nota', async () => {
+    const { container } = await montar(<AmountInput {...TEXTOS_VAZIOS} value="65+70" onChange={vi.fn()} />);
+
+    expect(container.textContent).toBe('R$ 135,00 — ');
+  });
+});
+
 describe('AmountInput — dica', () => {
   it('com hint e sem soma — mostra a dica', async () => {
     const { container } = await montar(<AmountInput {...TEXTOS} value="40" onChange={vi.fn()} hint="Use ponto ou vírgula" />);

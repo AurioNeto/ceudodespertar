@@ -40,6 +40,17 @@ describe('Receipt — título e valor', () => {
     expect(listaDe(container).children.length).toBe(0);
   });
 
+  it.each(SINAL_E_COR_POR_TOM)(
+    'textos vazios — tom %s: com title, linha e nota em string vazia o recibo não escreve texto próprio',
+    async (tom) => {
+      const { container } = await montar(
+        <Receipt tone={tom} title="" footnote="" lines={[{ label: '', value: '' }]} />,
+      );
+
+      expect(container.textContent).toBe('');
+    },
+  );
+
   it('amount — mostra o valor em reais formatado', async () => {
     const { container } = await montar(<Receipt title={TITULO} amount={1234.5} />);
 

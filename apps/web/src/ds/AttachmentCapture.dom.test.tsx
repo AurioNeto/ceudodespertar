@@ -94,6 +94,25 @@ describe('AttachmentCapture: sem anexo', () => {
   });
 });
 
+describe('AttachmentCapture: textos vazios', () => {
+  const TEXTOS_VAZIOS = { label: '', hint: '', removeLabel: '' } as const;
+
+  it('sem anexo — o botão fica sem texto: o componente não escreve rótulo nem dica', async () => {
+    const { container } = await montar(<AttachmentCapture {...TEXTOS_VAZIOS} />);
+
+    expect(botaoDeCaptura(container).textContent).toBe('');
+  });
+
+  it('com anexo — o botão de remover fica sem nome: o componente não escreve o nome da remoção', async () => {
+    const { container } = await montar(<AttachmentCapture {...TEXTOS_VAZIOS} filename="nota-0912.jpg" />);
+
+    const remover = elemento<HTMLButtonElement>(container, 'button');
+    expect(remover.getAttribute('title')).toBe('');
+    expect(remover.hasAttribute('aria-label')).toBe(false);
+    expect(container.textContent).toBe('nota-0912.jpg');
+  });
+});
+
 describe('AttachmentCapture: opcional', () => {
   it('não é um campo de formulário nem declara obrigatoriedade', async () => {
     const { container } = await montar(<AttachmentCapture {...TEXTOS} />);
@@ -125,6 +144,15 @@ describe('AttachmentCapture: com anexo', () => {
     expect(botaoDeRemover(container).title).toBe(TEXTOS.removeLabel);
     expect(botaoDeRemover(container).textContent).toBe('');
     expect(botaoDeRemover(container).type).toBe('button');
+  });
+
+  it('o nome acessível do botão de remover é o removeLabel: sem aria-label que o sobreponha e com ícone decorativo', async () => {
+    const { container } = await montar(<AttachmentCapture {...TEXTOS} filename="nota-0912.jpg" />);
+    const remover = botaoDeRemover(container);
+    expect(remover.hasAttribute('aria-label')).toBe(false);
+    expect(remover.hasAttribute('aria-labelledby')).toBe(false);
+    expect(elemento(remover, 'svg').getAttribute('aria-hidden')).toBe('true');
+    expect(remover.title).toBe(TEXTOS.removeLabel);
   });
 
   it('o nome do botão de remover acompanha o removeLabel: trocar a prop troca o title', async () => {
