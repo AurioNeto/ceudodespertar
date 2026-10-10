@@ -95,6 +95,16 @@ const indicador = (container: HTMLElement, rotulo: string) => {
   return Array.from(cartao?.children ?? []).map((filho) => filho.textContent);
 };
 
+const INDICADORES_DO_CADASTRO = [
+  ['Cadastradas', '10', '9 ativas'],
+  ['Anamnese em dia', '6', 'dentro da validade'],
+  ['Anamnese pendente', '4', 'sem resposta ou vencida'],
+  ['Com acesso', '6', '1 tem cadastro inativo'],
+] as const;
+
+const indicadoresDaTela = (container: HTMLElement) =>
+  INDICADORES_DO_CADASTRO.map(([rotulo]) => indicador(container, rotulo));
+
 const dadoDaFicha = (container: HTMLElement, rotulo: string) =>
   folhaComTexto(container, 'span', rotulo).nextElementSibling?.textContent;
 
@@ -279,8 +289,7 @@ describe('PessoasPage: indicadores', () => {
     definirDensidade('field');
     const container = await montarPessoas();
 
-    expect(indicador(container, 'Cadastradas')).toEqual(['Cadastradas', '10', '9 ativas']);
-    expect(indicador(container, 'Com acesso')).toEqual(['Com acesso', '6', '1 tem cadastro inativo']);
+    expect(indicadoresDaTela(container)).toEqual(INDICADORES_DO_CADASTRO);
   });
 
   it('filtro e busca — não mexem nos indicadores: eles contam o cadastro inteiro', async () => {
@@ -290,7 +299,7 @@ describe('PessoasPage: indicadores', () => {
     await buscar(container, 'marina');
 
     expect(nomesNaLista(container)).toEqual(['Marina Tavares']);
-    expect(indicador(container, 'Cadastradas')).toEqual(['Cadastradas', '10', '9 ativas']);
+    expect(indicadoresDaTela(container)).toEqual(INDICADORES_DO_CADASTRO);
   });
 });
 
@@ -485,6 +494,15 @@ describe('PessoasPage: avisos', () => {
     expect(todos(container, 'button[aria-label="fechar aviso"]')).toHaveLength(1);
     expect(textoDoAviso(container)).toBe('Anamnese enviada para Carlos Menezes.');
   });
+
+  it('aviso aberto na lista — continua na tela ao abrir a ficha', async () => {
+    const container = await montarPessoas();
+    await clicar(botaoComTexto(container, 'Nova pessoa'));
+
+    await abrirFicha(container, 'Carlos Menezes');
+
+    expect(textoDoAviso(container)).toBe('Formulário de nova pessoa — cadastro e convite.');
+  });
 });
 
 describe('PessoasPage: ficha da pessoa', () => {
@@ -537,7 +555,7 @@ describe('PessoasPage: ficha da pessoa', () => {
     expect(dadoDaFicha(container, 'Contato de emergência')).toBe('Marcos Cordeiro · (11) 99110-2233');
   });
 
-  it('Voltar para a lista — devolve a lista inteira e os indicadores, e a busca e o filtro ficam como estavam', async () => {
+  it('Voltar para a lista — devolve a lista filtrada e os indicadores do cadastro inteiro, e a busca e o filtro ficam como estavam', async () => {
     const container = await montarPessoas();
     await filtrarPor(container, 'Fardado');
     await buscar(container, 'ana');
@@ -548,7 +566,7 @@ describe('PessoasPage: ficha da pessoa', () => {
     expect(nomesNaLista(container)).toEqual(['Ana Beatriz Cordeiro']);
     expect(campoRotulado(container, 'Buscar').value).toBe('ana');
     expect(campoRotulado<HTMLSelectElement>(container, 'Filtro').value).toBe('Fardado');
-    expect(indicador(container, 'Cadastradas')).toEqual(['Cadastradas', '10', '9 ativas']);
+    expect(indicadoresDaTela(container)).toEqual(INDICADORES_DO_CADASTRO);
   });
 
   it('campo — abre a ficha com os mesmos cartões', async () => {
