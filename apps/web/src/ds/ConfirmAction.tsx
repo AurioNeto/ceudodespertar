@@ -4,9 +4,12 @@ import { Icon } from './Icon';
 
 export interface ConfirmActionProps {
   label?: string;
-  irreversibleNote?: string;
+  irreversibleNote: string;
   /** Regras que impedem a confirmação, nomeadas em português (Doc 2, L2 e L7). */
   blockedBy?: readonly string[];
+  blockedGuidance: string;
+  blockedHeadingForOneRule: (rule: string) => string;
+  blockedHeadingForManyRules: string;
   density?: Density;
   onConfirm?: () => void;
   style?: CSSProperties;
@@ -14,13 +17,17 @@ export interface ConfirmActionProps {
 
 export function ConfirmAction({
   label = 'Confirmar',
-  irreversibleNote = 'Confirmar é irreversível. Depois disso, só estorno.',
+  irreversibleNote,
   blockedBy = [],
+  blockedGuidance,
+  blockedHeadingForOneRule,
+  blockedHeadingForManyRules,
   density = 'office',
   onConfirm,
   style,
 }: ConfirmActionProps) {
-  const blocked = blockedBy.length > 0;
+  const [firstRule, ...otherRules] = blockedBy;
+  const blocked = firstRule !== undefined;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10, ...style }}>
@@ -37,13 +44,13 @@ export function ConfirmAction({
           <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 6 }}>
             <Icon name="triangle-alert" size={16} color="var(--color-pending)" />
             <span style={{ font: 'var(--text-body-strong)', color: 'var(--color-pending)' }}>
-              {blockedBy.length === 1 ? `Não dá para confirmar: ${blockedBy[0]}` : 'Não dá para confirmar ainda'}
+              {otherRules.length === 0 ? blockedHeadingForOneRule(firstRule) : blockedHeadingForManyRules}
             </span>
           </div>
-          {blockedBy.length > 1 ? (
+          {otherRules.length > 0 ? (
             <ul style={{ margin: 0, paddingLeft: 18, font: 'var(--text-small)', color: 'var(--text-secondary)' }}>
-              {blockedBy.map((b) => (
-                <li key={b}>{b}</li>
+              {blockedBy.map((rule, position) => (
+                <li key={position}>{rule}</li>
               ))}
             </ul>
           ) : null}
@@ -57,8 +64,8 @@ export function ConfirmAction({
         fullWidth={density === 'field'}
         iconName="check"
         disabled={blocked}
-        onClick={onConfirm}
-        blockedReason={blocked ? 'Resolva o que falta acima, ou pergunte a quem registrou.' : undefined}
+        onClick={() => onConfirm?.()}
+        blockedReason={blocked ? blockedGuidance : undefined}
       >
         {label}
       </Button>

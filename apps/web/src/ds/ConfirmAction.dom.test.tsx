@@ -4,15 +4,67 @@ import { ConfirmAction, type ConfirmActionProps } from './ConfirmAction';
 
 afterEach(desmontarTudo);
 
-const NOTA_PADRAO = 'Confirmar é irreversível. Depois disso, só estorno.';
-const ORIENTACAO_DO_BLOQUEIO = 'Resolva o que falta acima, ou pergunte a quem registrou.';
+const NOTA_DE_IRREVERSIBILIDADE = 'Lançamento confirmado só se corrige com estorno.';
+const ORIENTACAO_DO_BLOQUEIO = 'Complete o cadastro ou fale com quem registrou.';
+const CABECALHO_DE_VARIAS_REGRAS = 'Faltam algumas coisas antes de confirmar';
+const cabecalhoDeUmaRegra = (regra: string) => `Falta resolver: ${regra}`;
 
-const confirmacao = (props: ConfirmActionProps = {}) => <ConfirmAction {...props} />;
+const textosDoConsumidor = {
+  irreversibleNote: NOTA_DE_IRREVERSIBILIDADE,
+  blockedGuidance: ORIENTACAO_DO_BLOQUEIO,
+  blockedHeadingForOneRule: cabecalhoDeUmaRegra,
+  blockedHeadingForManyRules: CABECALHO_DE_VARIAS_REGRAS,
+};
+
+const confirmacao = (props: Partial<ConfirmActionProps> = {}) => (
+  <ConfirmAction {...textosDoConsumidor} {...props} />
+);
+
+const TEXTOS_QUE_O_COMPONENTE_TRAZIA_ESCRITOS = [
+  'Confirmar é irreversível. Depois disso, só estorno.',
+  'Não dá para confirmar',
+  'Resolva o que falta acima, ou pergunte a quem registrou.',
+];
+
+const SITUACOES_DE_BLOQUEIO: ReadonlyArray<[string, readonly string[]]> = [
+  ['sem bloqueio', []],
+  ['com uma regra', ['falta a categoria']],
+  ['com várias regras', ['falta a categoria', 'falta a conta']],
+];
+
+describe('ConfirmAction: nenhum texto de negócio escrito no componente', () => {
+  it('sem bloqueio, escreve só a nota do consumidor e o rótulo do botão', async () => {
+    const { container } = await montar(confirmacao());
+    expect(container.textContent).toBe(`${NOTA_DE_IRREVERSIBILIDADE}Confirmar`);
+  });
+
+  it('bloqueado por uma regra, escreve só o cabeçalho do consumidor, o rótulo e a orientação', async () => {
+    const { container } = await montar(confirmacao({ blockedBy: ['falta a categoria'] }));
+    expect(container.textContent).toBe(
+      `${cabecalhoDeUmaRegra('falta a categoria')}Confirmar${ORIENTACAO_DO_BLOQUEIO}`,
+    );
+  });
+
+  it('bloqueado por várias regras, escreve só o cabeçalho, as regras, o rótulo e a orientação', async () => {
+    const { container } = await montar(confirmacao({ blockedBy: ['falta a categoria', 'falta a conta'] }));
+    expect(container.textContent).toBe(
+      `${CABECALHO_DE_VARIAS_REGRAS}falta a categoriafalta a contaConfirmar${ORIENTACAO_DO_BLOQUEIO}`,
+    );
+  });
+
+  it.each(SITUACOES_DE_BLOQUEIO)(
+    '%s, nenhum dos textos que o componente trazia escritos aparece',
+    async (_situacao, blockedBy) => {
+      const { container } = await montar(confirmacao({ blockedBy }));
+      TEXTOS_QUE_O_COMPONENTE_TRAZIA_ESCRITOS.forEach((texto) => expect(container.textContent).not.toContain(texto));
+    },
+  );
+});
 
 describe('ConfirmAction: sem bloqueio', () => {
   it('diz que é irreversível antes do botão de confirmar', async () => {
     const { container } = await montar(confirmacao());
-    const nota = folhaComTexto(container, 'p', NOTA_PADRAO);
+    const nota = folhaComTexto(container, 'p', NOTA_DE_IRREVERSIBILIDADE);
     const botao = botaoComTexto(container, 'Confirmar');
     expect(nota.compareDocumentPosition(botao)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
   });
@@ -24,18 +76,22 @@ describe('ConfirmAction: sem bloqueio', () => {
 
   it('não mostra aviso de bloqueio nem orientação para resolver', async () => {
     const { container } = await montar(confirmacao());
-    expect(container.textContent).not.toContain('Não dá para confirmar');
+    expect(container.textContent).not.toContain(cabecalhoDeUmaRegra(''));
+    expect(container.textContent).not.toContain(CABECALHO_DE_VARIAS_REGRAS);
     expect(container.textContent).not.toContain(ORIENTACAO_DO_BLOQUEIO);
     expect(botaoComTexto(container, 'Confirmar').hasAttribute('title')).toBe(false);
   });
 
-  it('aceita rótulo e nota de irreversibilidade próprios, que substituem os padrões', async () => {
-    const { container } = await montar(
-      confirmacao({ label: 'Confirmar lançamento', irreversibleNote: 'Depois de confirmado, só com estorno.' }),
-    );
+  it('aceita rótulo próprio, que substitui o padrão', async () => {
+    const { container } = await montar(confirmacao({ label: 'Confirmar lançamento' }));
     expect(botaoComTexto(container, 'Confirmar lançamento')).toBeTruthy();
+    expect(todos(container, 'button').map((botao) => botao.textContent)).toEqual(['Confirmar lançamento']);
+  });
+
+  it('mostra a nota de irreversibilidade exatamente como o consumidor a passou', async () => {
+    const { container } = await montar(confirmacao({ irreversibleNote: 'Depois de confirmado, só com estorno.' }));
     expect(folhaComTexto(container, 'p', 'Depois de confirmado, só com estorno.')).toBeTruthy();
-    expect(container.textContent).not.toContain(NOTA_PADRAO);
+    expect(container.textContent).not.toContain(NOTA_DE_IRREVERSIBILIDADE);
   });
 
   it('clicar em confirmar chama onConfirm uma vez', async () => {
@@ -45,13 +101,11 @@ describe('ConfirmAction: sem bloqueio', () => {
     expect(aoConfirmar).toHaveBeenCalledTimes(1);
   });
 
-  it('onConfirm recebe só o evento de clique, nada que diga o que está sendo confirmado', async () => {
+  it('onConfirm é chamado sem argumento algum: o evento de clique não vaza para o consumidor', async () => {
     const aoConfirmar = vi.fn();
     const { container } = await montar(confirmacao({ onConfirm: aoConfirmar }));
     await clicar(botaoComTexto(container, 'Confirmar'));
-    const argumentos = aoConfirmar.mock.calls[0] ?? [];
-    expect(argumentos).toHaveLength(1);
-    expect(argumentos[0]).toMatchObject({ type: 'click' });
+    expect(aoConfirmar.mock.calls).toEqual([[]]);
   });
 
   it('sem onConfirm, clicar não falha', async () => {
@@ -61,8 +115,14 @@ describe('ConfirmAction: sem bloqueio', () => {
 
   it('lista de bloqueios vazia equivale a sem bloqueio', async () => {
     const { container } = await montar(confirmacao({ blockedBy: [] }));
-    expect(folhaComTexto(container, 'p', NOTA_PADRAO)).toBeTruthy();
+    expect(folhaComTexto(container, 'p', NOTA_DE_IRREVERSIBILIDADE)).toBeTruthy();
     expect(botaoComTexto(container, 'Confirmar').disabled).toBe(false);
+  });
+
+  it('sem bloqueio, nenhum dos textos de bloqueio do consumidor é pedido', async () => {
+    const cabecalhoDeUma = vi.fn(cabecalhoDeUmaRegra);
+    await montar(confirmacao({ blockedHeadingForOneRule: cabecalhoDeUma }));
+    expect(cabecalhoDeUma).not.toHaveBeenCalled();
   });
 });
 
@@ -101,14 +161,14 @@ describe('ConfirmAction: ordem de leitura', () => {
 
   it('bloqueado por uma regra, o aviso vem antes do botão', async () => {
     const { container } = await montar(confirmacao({ blockedBy: ['falta a categoria'] }));
-    const aviso = folhaComTexto(container, 'span', 'Não dá para confirmar: falta a categoria');
+    const aviso = folhaComTexto(container, 'span', cabecalhoDeUmaRegra('falta a categoria'));
     const botao = botaoComTexto(container, 'Confirmar');
     expect(aviso.compareDocumentPosition(botao)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
   });
 
   it('bloqueado por várias regras, o aviso e a lista vêm antes do botão', async () => {
     const { container } = await montar(confirmacao({ blockedBy: ['falta a categoria', 'falta a conta'] }));
-    const aviso = folhaComTexto(container, 'span', 'Não dá para confirmar ainda');
+    const aviso = folhaComTexto(container, 'span', CABECALHO_DE_VARIAS_REGRAS);
     const lista = elemento(container, 'ul');
     const botao = botaoComTexto(container, 'Confirmar');
     expect(aviso.compareDocumentPosition(lista)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
@@ -119,9 +179,16 @@ describe('ConfirmAction: ordem de leitura', () => {
 describe('ConfirmAction: bloqueado por uma regra', () => {
   const umaRegra = { blockedBy: ['falta a categoria'] };
 
-  it('nomeia a regra na própria mensagem', async () => {
+  it('mostra o cabeçalho que o consumidor monta a partir da regra', async () => {
     const { container } = await montar(confirmacao(umaRegra));
-    expect(folhaComTexto(container, 'span', 'Não dá para confirmar: falta a categoria')).toBeTruthy();
+    expect(folhaComTexto(container, 'span', cabecalhoDeUmaRegra('falta a categoria'))).toBeTruthy();
+  });
+
+  it('entrega só a regra ao consumidor, uma vez, e não usa o cabeçalho de várias', async () => {
+    const cabecalhoDeUma = vi.fn(cabecalhoDeUmaRegra);
+    const { container } = await montar(confirmacao({ ...umaRegra, blockedHeadingForOneRule: cabecalhoDeUma }));
+    expect(cabecalhoDeUma.mock.calls).toEqual([['falta a categoria']]);
+    expect(container.textContent).not.toContain(CABECALHO_DE_VARIAS_REGRAS);
   });
 
   it('não desdobra uma única regra numa lista', async () => {
@@ -131,7 +198,7 @@ describe('ConfirmAction: bloqueado por uma regra', () => {
 
   it('troca a nota de irreversibilidade pelo aviso: a nota não aparece bloqueado', async () => {
     const { container } = await montar(confirmacao(umaRegra));
-    expect(container.textContent).not.toContain(NOTA_PADRAO);
+    expect(container.textContent).not.toContain(NOTA_DE_IRREVERSIBILIDADE);
   });
 
   it('o botão fica desabilitado, com a orientação visível e como dica do botão', async () => {
@@ -154,7 +221,7 @@ describe('ConfirmAction: bloqueado por uma regra', () => {
     expect(botaoComTexto(container, 'Confirmar lançamento').disabled).toBe(true);
   });
 
-  it('a orientação do bloqueio é a mesma para qualquer regra', async () => {
+  it('a orientação do bloqueio é a que o consumidor passou, qualquer que seja a regra', async () => {
     const { container } = await montar(confirmacao({ blockedBy: ['o período está fechado'] }));
     expect(folhaComTexto(container, 'span', ORIENTACAO_DO_BLOQUEIO)).toBeTruthy();
   });
@@ -163,10 +230,16 @@ describe('ConfirmAction: bloqueado por uma regra', () => {
 describe('ConfirmAction: bloqueado por várias regras', () => {
   const duasRegras = { blockedBy: ['falta a categoria', 'falta a conta'] };
 
-  it('o aviso não nomeia regra nenhuma: vem só a frase geral', async () => {
+  it('o aviso é o cabeçalho de várias regras do consumidor, sem nomear regra nenhuma', async () => {
     const { container } = await montar(confirmacao(duasRegras));
-    expect(folhaComTexto(container, 'span', 'Não dá para confirmar ainda')).toBeTruthy();
-    expect(container.textContent).not.toContain('Não dá para confirmar:');
+    expect(folhaComTexto(container, 'span', CABECALHO_DE_VARIAS_REGRAS)).toBeTruthy();
+    expect(container.textContent).not.toContain(cabecalhoDeUmaRegra(''));
+  });
+
+  it('não pede o cabeçalho de uma regra ao consumidor', async () => {
+    const cabecalhoDeUma = vi.fn(cabecalhoDeUmaRegra);
+    await montar(confirmacao({ ...duasRegras, blockedHeadingForOneRule: cabecalhoDeUma }));
+    expect(cabecalhoDeUma).not.toHaveBeenCalled();
   });
 
   it('lista cada regra, na ordem recebida', async () => {
@@ -178,7 +251,40 @@ describe('ConfirmAction: bloqueado por várias regras', () => {
   it('o botão fica desabilitado e a nota de irreversibilidade não aparece', async () => {
     const { container } = await montar(confirmacao(duasRegras));
     expect(botaoComTexto(container, 'Confirmar').disabled).toBe(true);
-    expect(container.textContent).not.toContain(NOTA_PADRAO);
+    expect(container.textContent).not.toContain(NOTA_DE_IRREVERSIBILIDADE);
+  });
+
+  it('a orientação do bloqueio do consumidor aparece também com várias regras', async () => {
+    const { container } = await montar(confirmacao(duasRegras));
+    expect(botaoComTexto(container, 'Confirmar').title).toBe(ORIENTACAO_DO_BLOQUEIO);
+    expect(folhaComTexto(container, 'span', ORIENTACAO_DO_BLOQUEIO)).toBeTruthy();
+  });
+});
+
+describe('ConfirmAction: regras repetidas', () => {
+  const regrasRepetidas = ['falta a conta', 'falta a conta', 'falta a categoria', 'falta a conta'];
+
+  it('lista cada ocorrência, sem juntar as repetidas', async () => {
+    const { container } = await montar(confirmacao({ blockedBy: regrasRepetidas }));
+    const itens = todos(container, 'ul > li').map((item) => item.textContent);
+    expect(itens).toEqual(regrasRepetidas);
+  });
+
+  it('não gera aviso de chave repetida do React, ao montar nem ao crescer a lista', async () => {
+    const avisos = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const crescida = [...regrasRepetidas, 'falta a conta'];
+    const montado = await montar(confirmacao({ blockedBy: regrasRepetidas }));
+    await montado.atualizar(confirmacao({ blockedBy: crescida }));
+    const itens = todos(montado.container, 'ul > li').map((item) => item.textContent);
+    expect(avisos).not.toHaveBeenCalled();
+    expect(itens).toEqual(crescida);
+    avisos.mockRestore();
+  });
+
+  it('com a mesma regra duas vezes, o aviso é o de várias regras e a lista mostra as duas', async () => {
+    const { container } = await montar(confirmacao({ blockedBy: ['falta a conta', 'falta a conta'] }));
+    expect(folhaComTexto(container, 'span', CABECALHO_DE_VARIAS_REGRAS)).toBeTruthy();
+    expect(todos(container, 'ul > li')).toHaveLength(2);
   });
 });
 
@@ -188,8 +294,8 @@ describe('ConfirmAction: a lista de bloqueios muda', () => {
     const montado = await montar(confirmacao({ blockedBy: ['falta a categoria'], onConfirm: aoConfirmar }));
     await montado.atualizar(confirmacao({ blockedBy: [], onConfirm: aoConfirmar }));
     await clicar(botaoComTexto(montado.container, 'Confirmar'));
-    expect(folhaComTexto(montado.container, 'p', NOTA_PADRAO)).toBeTruthy();
-    expect(montado.container.textContent).not.toContain('Não dá para confirmar');
+    expect(folhaComTexto(montado.container, 'p', NOTA_DE_IRREVERSIBILIDADE)).toBeTruthy();
+    expect(montado.container.textContent).not.toContain(cabecalhoDeUmaRegra(''));
     expect(aoConfirmar).toHaveBeenCalledTimes(1);
   });
 
