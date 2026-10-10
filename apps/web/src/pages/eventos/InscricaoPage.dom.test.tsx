@@ -579,15 +579,25 @@ describe('InscricaoPage: tipo de participação e consagração', () => {
     ]);
   });
 
-  it('Marina como Convidado e com a conversa registrada, evento trocado — o tipo e a conversa ficam', async () => {
+  it('Marina com a conversa registrada e depois como Convidado, evento trocado — o tipo e a conversa ficam', async () => {
     const container = await abrirComPessoa('Marina Tavares');
-    await trocarTipo(container, 'Convidado');
     await clicar(botaoComTexto(container, 'Registrar a conversa'));
+    await trocarTipo(container, 'Convidado');
 
     await trocarEvento(container, JORNADA);
 
     expect(marcado(botaoComTexto(container, 'Convidado'))).toBe(true);
     expect(textoDe(container)).toContain('Conversa de acolhimento registrada.');
+  });
+
+  it('link da cerimônia copiado, ida e volta pela equipe — o link continua Copiado', async () => {
+    const container = await abrirComPessoa('Helena Duarte');
+    await clicar(botaoComTexto(container, 'Copiar'));
+    await trocarTipo(container, 'Equipe');
+
+    await trocarTipo(container, 'Participante');
+
+    expect(linkEstaCopiado(container)).toBe(true);
   });
 });
 
@@ -787,14 +797,18 @@ describe('InscricaoPage: criança estelar', () => {
     expect(interruptor(container, 'Consagra neste trabalho').getAttribute('aria-checked')).toBe('true');
   });
 
-  it('voltar a Criança estelar com a modalidade Participa do ritual — a consagração volta ligada', async () => {
+  it('voltar a Criança estelar com o responsável e a modalidade Participa do ritual — a consagração volta ligada e o responsável continua escolhido', async () => {
     const container = await abrirComPessoa('Antônio Duarte');
+    await escolherResponsavel(container, 'Helena Duarte');
     await clicar(botaoComTexto(container, 'Participa do ritual'));
     await trocarTipo(container, 'Participante');
 
     await trocarTipo(container, 'Criança estelar');
 
     expect(interruptor(container, 'Consagra neste trabalho').getAttribute('aria-checked')).toBe('true');
+    expect(marcado(botaoComTexto(container, 'Participa do ritual'))).toBe(true);
+    expect(seletorDeResponsavel(container).value).toBe('Helena Duarte');
+    expect(pendenciasMostradas(container)).toEqual([['Anamnese pendente', 'IN5']]);
   });
 
   it('criança estelar — a explicação da modalidade diz que ela decide a consagração', async () => {
@@ -988,6 +1002,22 @@ describe('InscricaoPage: contribuição', () => {
     await trocarTipo(container, 'Participante');
 
     expect(campoDoValor(container).value).toBe('160');
+  });
+
+  it('nível, quarto com duas diárias e leito alocado, ida e volta pela equipe — nada disso recomeça', async () => {
+    const container = await abrirComPessoa('Helena Duarte');
+    await clicarNoNivel(container, 'Sustentável');
+    await escolherHospedagem(container, 'Quarto');
+    await escolherDiarias(container, '2');
+    await clicar(botaoComTexto(container, 'Alocar um leito'));
+    await trocarTipo(container, 'Equipe');
+
+    await trocarTipo(container, 'Participante');
+
+    expect(marcado(botaoDoNivel(container, 'Sustentável'))).toBe(true);
+    expect(marcado(opcaoEmLinha(container, 'Quarto'))).toBe(true);
+    expect(seletorDeDiarias(container).value).toBe('2');
+    expect(pendenciasMostradas(container)).toEqual(SEM_PENDENCIA);
   });
 
   it('trocar de evento com um nível marcado — o nível e o texto do campo ficam, e o valor do nível muda', async () => {
@@ -1233,6 +1263,18 @@ describe('InscricaoPage: alimentação', () => {
     await trocarEvento(container, JORNADA);
 
     expect(marcado(opcaoEmLinha(container, 'Ceia'))).toBe(false);
+  });
+
+  it('Jornada com um almoço marcado, ida e volta pela equipe — a Jornada e o almoço continuam marcados', async () => {
+    const container = await abrirComPessoa('Helena Duarte');
+    await trocarEvento(container, JORNADA);
+    await clicar(opcaoEmLinha(container, 'Almoço'));
+    await trocarTipo(container, 'Equipe');
+
+    await trocarTipo(container, 'Participante');
+
+    expect(marcado(botaoComTexto(container, JORNADA))).toBe(true);
+    expect(marcado(opcaoEmLinha(container, 'Almoço'))).toBe(true);
   });
 });
 
