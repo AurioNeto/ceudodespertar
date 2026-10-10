@@ -1,14 +1,14 @@
-export class KeycloakIndisponivel extends Error {
+import { FalhaNoEnvioDoConvite } from '../../application/convite/enviador-de-convite.js';
+
+export class KeycloakIndisponivel extends FalhaNoEnvioDoConvite {
   constructor(readonly motivo: string) {
-    super(`Keycloak indisponível: ${motivo}`);
-    this.name = 'KeycloakIndisponivel';
+    super('KeycloakIndisponivel', motivo);
   }
 }
 
-export class KeycloakRecusou extends Error {
+export class KeycloakRecusou extends FalhaNoEnvioDoConvite {
   constructor(readonly status: number) {
-    super(`Keycloak recusou a requisição com status ${status}`);
-    this.name = 'KeycloakRecusou';
+    super('KeycloakRecusou', `status ${status}`);
   }
 }
 

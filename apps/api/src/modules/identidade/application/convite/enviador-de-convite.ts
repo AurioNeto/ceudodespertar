@@ -8,6 +8,16 @@ export interface ConviteParaEnviar {
   readonly expiraEm: Date;
 }
 
+export class FalhaNoEnvioDoConvite extends Error {
+  constructor(
+    nome: string,
+    readonly diagnostico: string,
+  ) {
+    super(`${nome}: ${diagnostico}`);
+    this.name = nome;
+  }
+}
+
 export abstract class EnviadorDeConvite {
   abstract enviar(convite: ConviteParaEnviar): Promise<void>;
 }

@@ -3,6 +3,7 @@ import type { UsuarioId } from '@cdd/contracts';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { EntregaDeConvite } from '../../../src/modules/identidade/application/convite/entrega-de-convite.js';
 import { EnviadorDeConvite } from '../../../src/modules/identidade/application/convite/enviador-de-convite.js';
+import { KeycloakIndisponivel, KeycloakRecusou } from '../../../src/modules/identidade/infrastructure/keycloak/erros-do-keycloak.js';
 import { montarEntrega, TOKEN_EM_CLARO, UnidadeDeTrabalhoComGanchos } from './dubles-de-convite.js';
 
 const CONVITE = {
@@ -50,6 +51,21 @@ describe('EntregaDeConvite', () => {
     expect(mensagem).toContain('TypeError');
     expect(mensagem).not.toContain(CONVITE.email);
     expect(mensagem).not.toContain(CONVITE.token);
+  });
+
+  it.each([
+    [new KeycloakRecusou(403), 'KeycloakRecusou (status 403)'],
+    [new KeycloakIndisponivel('timeout'), 'KeycloakIndisponivel (timeout)'],
+  ])('falha tipada do Keycloak vai ao log com o diagnóstico: %s', async (falha, diagnostico) => {
+    const { unidade, enviador, entrega } = montarEntrega();
+    enviador.falharCom = falha;
+    const log = vi.spyOn(Logger.prototype, 'error').mockImplementation(() => undefined);
+
+    await unidade.transacao('escrita', (contexto) => Promise.resolve(entrega.depoisDoCommit(contexto, CONVITE)));
+    unidade.confirmar();
+    await vi.waitFor(() => expect(log).toHaveBeenCalledTimes(1));
+
+    expect(String(log.mock.calls[0]![0])).toContain(diagnostico);
   });
 
   describe('entregas em voo', () => {
