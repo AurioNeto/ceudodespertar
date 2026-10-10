@@ -55,8 +55,11 @@ const blocoDoRotulo = (container: HTMLElement, rotulo: string, posicao = 0): str
 const campoPeloRotulo = <T extends HTMLInputElement | HTMLSelectElement = HTMLInputElement>(
   container: HTMLElement,
   rotulo: string,
+  posicao = 0,
 ): T => {
-  const etiqueta = todos<HTMLLabelElement>(container, 'label').find((candidata) => candidata.textContent === rotulo);
+  const etiqueta = todos<HTMLLabelElement>(container, 'label').filter((candidata) => candidata.textContent === rotulo)[
+    posicao
+  ];
   const campo = etiqueta ? container.ownerDocument.getElementById(etiqueta.htmlFor) : null;
   if (!campo) throw new Error(`campo não encontrado: ${rotulo}`);
   return campo as T;
@@ -800,6 +803,7 @@ describe('EmprestimosPage: novo empréstimo', () => {
     await abrirNovoEmprestimo(container);
     await clicar(botaoComTexto(container, 'A casa toma emprestado'));
     await escolherOpcao(campoPeloRotulo<HTMLSelectElement>(container, 'De quem'), 'p-chico');
+    await escolherOpcao(campoPeloRotulo<HTMLSelectElement>(container, 'Conta de entrada'), 'especie');
     await digitar(campoPeloRotulo(container, 'Data'), '2026-09-20');
     await digitar(campoPeloRotulo(container, 'Valor'), '100');
     await digitar(campoPeloRotulo(container, 'Motivo'), 'gás');
@@ -811,6 +815,7 @@ describe('EmprestimosPage: novo empréstimo', () => {
     expect(campoPeloRotulo(container, 'Motivo').value).toBe('');
     expect(botaoComTexto(container, 'A casa toma emprestado').getAttribute('aria-pressed')).toBe('true');
     expect(campoPeloRotulo<HTMLSelectElement>(container, 'De quem').value).toBe('p-chico');
+    expect(campoPeloRotulo<HTMLSelectElement>(container, 'Conta de entrada').value).toBe('especie');
     expect(campoPeloRotulo(container, 'Data').value).toBe('2026-09-20');
   });
 
@@ -857,6 +862,23 @@ describe('EmprestimosPage: novo empréstimo', () => {
 
     expect(folhasComTexto(container, 'Registrar o que voltou')).toHaveLength(1);
     expect(todos(container, 'label').map((rotulo) => rotulo.textContent)).toContain('Motivo');
+  });
+
+  it('registrar um empréstimo com a devolução aberta — a devolução continua aberta, com o valor digitado, e passa a ser do empréstimo novo', async () => {
+    const { container } = await montar(<EmprestimosPage />);
+    await abrirNovoEmprestimo(container);
+    await abrirFormularioDeDevolucao(container);
+    await digitar(campoPeloRotulo(container, 'Valor', 1), '100');
+    await digitar(campoPeloRotulo(container, 'Valor', 0), '300');
+    await digitar(campoPeloRotulo(container, 'Motivo'), 'feira');
+
+    await clicar(botaoComTexto(container, 'Registrar empréstimo'));
+
+    expect(formularioDeDevolucaoAberto(container)).toBe(true);
+    expect(campoPeloRotulo(container, 'Valor').value).toBe('100');
+    expect(mensagemDoCampo(campoPeloRotulo(container, 'Valor'))).toBe('saldo de 300,00');
+    expect(linhaAtiva(container)).toEqual(['Érico Santana']);
+    expect(textosDasLinhas(container)[0]).toEqual(['Érico Santana', '300,00', 'a receber']);
   });
 });
 
