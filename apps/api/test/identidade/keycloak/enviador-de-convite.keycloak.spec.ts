@@ -124,6 +124,33 @@ describe('EnviadorDeConviteKeycloak', () => {
     expect(servidor.chamadasA('PUT', CAMINHO_DO_ENVIO)[0]!.consulta.get('lifespan')).toBe(String(esperado));
   });
 
+  it.each([0, -1_000])('não dispara o e-mail de ações quando o convite expira %d ms antes de agora', async (atrasoEmMs) => {
+    convite = { ...convite, expiraEm: new Date(relogio.agora().getTime() + atrasoEmMs) };
+
+    await expect(enviar()).rejects.toMatchObject({ name: 'ConviteExpiradoAntesDoEnvio' });
+
+    expect(servidor.chamadasA('PUT', CAMINHO_DO_ENVIO)).toHaveLength(0);
+  });
+
+  it('não vaza token, e-mail nem redirect_uri na mensagem do erro de convite expirado', async () => {
+    convite = { ...convite, expiraEm: relogio.agora() };
+
+    const erro = await enviar().catch((motivo: unknown) => motivo as Error);
+
+    for (const proibido of [TOKEN_DO_CONVITE, convite.email, 'redirect_uri']) {
+      expect(erro.message).not.toContain(proibido);
+    }
+  });
+
+  it('trata Location com percent-encoding malformado como transitório', async () => {
+    servidor.definir('POST', CAMINHO_DOS_USUARIOS, {
+      status: 201,
+      cabecalhos: { location: `${configuracao.urlBase}${CAMINHO_DOS_USUARIOS}/%E0%A4%A` },
+    });
+
+    await expect(enviar()).rejects.toMatchObject({ name: 'KeycloakIndisponivel' });
+  });
+
   it('usa o id do Location da criação no caminho do envio', async () => {
     servidor.definir('POST', CAMINHO_DOS_USUARIOS, {
       status: 201,

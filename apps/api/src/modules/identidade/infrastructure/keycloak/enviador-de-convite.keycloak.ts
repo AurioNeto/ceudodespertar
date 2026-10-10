@@ -8,10 +8,11 @@ import { ClienteAdminDoKeycloak } from './cliente-admin-do-keycloak.js';
 import type { SessaoNoKeycloak } from './cliente-admin-do-keycloak.js';
 import { CONFIGURACAO_DO_CONVITE_NO_KEYCLOAK } from './configuracao-do-keycloak.js';
 import type { ConfiguracaoDoConviteNoKeycloak } from './configuracao-do-keycloak.js';
-import { KeycloakIndisponivel, KeycloakRecusou } from './erros-do-keycloak.js';
+import { ConviteExpiradoAntesDoEnvio, KeycloakIndisponivel, KeycloakRecusou } from './erros-do-keycloak.js';
 
 const STATUS_USUARIO_JA_EXISTE = 409;
 const MILISSEGUNDOS_POR_SEGUNDO = 1_000;
+const SEGUNDOS_MINIMOS_DE_VALIDADE = 1;
 const ACOES_DO_CONVITE = ['UPDATE_PASSWORD'];
 const ID_NO_LOCATION = /\/users\/([^/?#]+)$/;
 
@@ -77,13 +78,15 @@ export class EnviadorDeConviteKeycloak extends EnviadorDeConvite {
     sujeito: string,
     convite: ConviteParaEnviar,
   ): Promise<void> {
+    const lifespan = this.segundosAteExpirar(convite.expiraEm);
+    if (lifespan < SEGUNDOS_MINIMOS_DE_VALIDADE) throw new ConviteExpiradoAntesDoEnvio();
     await sessao.requisitar({
       metodo: 'PUT',
       caminho: `/users/${encodeURIComponent(sujeito)}/execute-actions-email`,
       consulta: {
         client_id: this.configuracao.clientIdDoConvite,
         redirect_uri: `${this.configuracao.urlBaseDoApp}/entrar?convite=${convite.token}`,
-        lifespan: String(this.segundosAteExpirar(convite.expiraEm)),
+        lifespan: String(lifespan),
       },
       corpo: ACOES_DO_CONVITE,
     });
@@ -102,5 +105,9 @@ function corpoDoUsuario({ email, nome }: ConviteParaEnviar): Record<string, unkn
 function idDoLocation(location: string | null): string {
   const id = location === null ? undefined : ID_NO_LOCATION.exec(location)?.[1];
   if (id === undefined) throw new KeycloakIndisponivel('criação sem Location');
-  return decodeURIComponent(id);
+  try {
+    return decodeURIComponent(id);
+  } catch {
+    throw new KeycloakIndisponivel('Location inválido');
+  }
 }

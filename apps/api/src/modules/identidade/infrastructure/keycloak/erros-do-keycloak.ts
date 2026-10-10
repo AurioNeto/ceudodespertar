@@ -18,3 +18,10 @@ export class UsuarioNaoExisteNoKeycloak extends Error {
     this.name = 'UsuarioNaoExisteNoKeycloak';
   }
 }
+
+export class ConviteExpiradoAntesDoEnvio extends Error {
+  constructor() {
+    super('Convite expirou antes do envio do e-mail de ações');
+    this.name = 'ConviteExpiradoAntesDoEnvio';
+  }
+}
