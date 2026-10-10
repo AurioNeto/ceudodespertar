@@ -281,6 +281,15 @@ describe('ContratacoesPage: resultado do evento', () => {
     expect(cartao.textContent).toContain('R$ 2.400,00 − R$ 0,00 de cachês − R$ 280,00 de custos');
   });
 
+  it('contratante sem documento — o cartão não mostra a linha de CNPJ', async () => {
+    cenario.primeira = { documento: null };
+
+    const { container } = await montar(<ContratacoesPage />);
+
+    expect(cartaoDaContratacao(container, LUZ_DO_NORTE).textContent).not.toContain('CNPJ');
+    expect(cartaoDaContratacao(container, ESTRELA_GUIA).textContent).toContain('CNPJ 19.550.802/0001-71');
+  });
+
   it('contratação sem outros custos — o bloco Outros custos do evento não aparece', async () => {
     cenario.primeira = { custos: [] };
 

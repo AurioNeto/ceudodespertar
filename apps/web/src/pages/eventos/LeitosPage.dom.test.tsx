@@ -256,6 +256,15 @@ describe('LeitosPage: alocar', () => {
     ]);
   });
 
+  it('quem pediu quarto e foi liberado da cama de casal — volta como candidato com o texto Pediu quarto', async () => {
+    const { container } = await montar(<LeitosPage />);
+    await clicar(botaoDeLiberar(container, 'Cama de casal', NOITE_24, 'Tobias Aguiar'));
+
+    await clicar(botaoDeAlocar(container, 'Beliche 1 · inferior', NOITE_24));
+
+    expect(candidatosDoPainel(container)).toContain('Tobias AguiarPediu quarto · 2 noites · Dirigente do trabalho.');
+  });
+
   it('candidatos da noite 25 — inclui quem chega só no segundo dia', async () => {
     const { container } = await montar(<LeitosPage />);
 
@@ -647,6 +656,17 @@ describe('LeitosPage: cadastro de dormitórios e leitos', () => {
       (leito) => (linhaDoLeito(container, leito).firstElementChild as HTMLElement).style.opacity,
     );
     expect(opacidades).toEqual(['0.5', '1']);
+  });
+
+  it('densidade de campo, leito inativado — a célula vazia da grade usa a altura de 52px', async () => {
+    fixarDensidade('field');
+    const { container } = await montar(<LeitosPage />);
+    await abrirCadastro(container);
+    await clicar(botaoComTexto(linhasDoCadastro(container, 'Beliche 3 · superior'), 'Inativar'));
+
+    await abrirMapa(container);
+
+    expect(celulasDoLeito(container, 'Beliche 3 · superior').map((celula) => celula.style.minHeight)).toEqual(['52px', '52px']);
   });
 
   it('Acrescentar leito — abre o formulário com Identificação em branco e o tipo Beliche inferior', async () => {
