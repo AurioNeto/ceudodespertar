@@ -216,6 +216,22 @@ describe('InscricaoPublicaPage: moldura', () => {
     expect(todos(elemento(container, 'header'), 'svg')).toHaveLength(0);
   });
 
+  it('percurso de quem não tem cadastro — o botão de seguir leva a seta para a direita em cada passo e o de enviar o check duplo', async () => {
+    const container = await abrir();
+    const setas = [temIcone(botaoContinuar(container), 'arrow-right')];
+    await identificar(container, CPF_SEM_CADASTRO);
+    setas.push(temIcone(botaoContinuar(container), 'arrow-right'));
+    await preencherCadastro(container, 'Maria Silva');
+    setas.push(temIcone(botaoContinuar(container), 'arrow-right'));
+    await responderFormularioInteiro(container);
+    await clicar(botaoContinuar(container));
+    setas.push(temIcone(botaoContinuar(container), 'arrow-right'));
+    await declarar(container);
+
+    expect(setas).toEqual([true, true, true, true]);
+    expect(temIcone(botaoDeEnviar(container), 'check-check')).toBe(true);
+  });
+
   it('percurso de quem não tem cadastro — a barra de progresso avança um segmento por passo, de 1 a 5', async () => {
     const container = await abrir();
     const atingidos = [segmentosAtingidos(container)];
@@ -685,6 +701,14 @@ describe('InscricaoPublicaPage: declaração por cerimônia', () => {
     expect(botaoContinuar(container).title).toBe('Marque a declaração acima para seguir.');
   });
 
+  it('a saída de quem mudou de condição — o cartão e o botão levam o ícone de girar', async () => {
+    const container = await abrir();
+    await identificar(container, CPF_DE_HELENA);
+
+    expect(temIcone(botaoComTexto(container, 'Quero responder de novo'), 'rotate-ccw')).toBe(true);
+    expect(todos(container, 'svg.lucide-rotate-ccw')).toHaveLength(2);
+  });
+
   it('declaração — o marcador leva o ícone de check só enquanto está marcada', async () => {
     const container = await abrir();
     await identificar(container, CPF_DE_HELENA);
@@ -896,17 +920,23 @@ describe('InscricaoPublicaPage: participação, valor e total', () => {
     ]);
   });
 
-  it('hospedagem — só a opção marcada leva o ícone de check no marcador', async () => {
+  it('hospedagem — só a opção marcada leva o ícone de check no marcador, e o marcador é redondo', async () => {
     const container = await chegarEmParticipacaoComoHelena();
     const rotulos = ['Não vai dormir na casa', 'Colchonete próprio na igreja', 'Beliche no dormitório', 'Quarto'];
-    const icones = () =>
-      rotulos.map((rotulo) => temIcone(elemento<HTMLButtonElement>(container, `button[aria-label="${rotulo}"]`), 'check'));
+    const opcao = (rotulo: string) => elemento<HTMLButtonElement>(container, `button[aria-label="${rotulo}"]`);
+    const icones = () => rotulos.map((rotulo) => temIcone(opcao(rotulo), 'check'));
     const antes = icones();
 
     await escolherHospedagem(container, 'Quarto');
 
     expect(antes).toEqual([true, false, false, false]);
     expect(icones()).toEqual([false, false, false, true]);
+    expect(rotulos.map((rotulo) => elemento<HTMLSpanElement>(opcao(rotulo), 'span[aria-hidden]').style.borderRadius)).toEqual([
+      '50%',
+      '50%',
+      '50%',
+      '50%',
+    ]);
   });
 
   it('hospedagem sem custo — não mostra a linha de acomodação', async () => {
@@ -1089,6 +1119,14 @@ describe('InscricaoPublicaPage: contato de emergência e restrições na partici
 });
 
 describe('InscricaoPublicaPage: inscrição enviada', () => {
+  it('tela final — o cartão do evento leva o ícone de círculo com check', async () => {
+    const container = await chegarEmParticipacaoComoHelena();
+
+    await clicar(botaoDeEnviar(container));
+
+    expect(temIcone(container, 'circle-check')).toBe(true);
+  });
+
   it('Helena com valor — a tela final traz o nome, o evento, o total e o aviso de privacidade', async () => {
     const container = await chegarEmParticipacaoComoHelena();
     await clicarNoNivel(container, 'Sustentável');
