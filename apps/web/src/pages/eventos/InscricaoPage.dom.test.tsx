@@ -180,6 +180,25 @@ describe('InscricaoPage: abertura e escolha do evento', () => {
     expect(botaoComTexto(container, 'Copiado').type).toBe('button');
   });
 
+  it('link da cerimônia copiado e evento trocado — o link continua Copiado', async () => {
+    const container = await abrir();
+    await clicar(botaoComTexto(container, 'Copiar'));
+
+    await trocarEvento(container, JORNADA);
+
+    expect(linkEstaCopiado(container)).toBe(true);
+  });
+
+  it('evento trocado para a Jornada — o cartão do link continua com o endereço e os números da Lua Cheia', async () => {
+    const container = await abrir();
+
+    await trocarEvento(container, JORNADA);
+
+    expect(folhaComTexto(container, 'code', 'ceudodespertar.org/i/lua-cheia-1209-7k3f')).toBeDefined();
+    expect(folhaComTexto(container, 'span', '96 aberturas · 34 inscrições')).toBeDefined();
+    expect(folhaComTexto(container, 'span', '18 de 40 · 11 leitos livres')).toBeDefined();
+  });
+
   it('link da cerimônia — copiar troca o ícone de copiar pelo de check e o botão de contorno pelo discreto', async () => {
     const container = await abrir();
     const antes = botaoComTexto(container, 'Copiar');
@@ -259,6 +278,16 @@ describe('InscricaoPage: busca no diretório', () => {
     expect(PESSOAS_DO_DIRETORIO.filter((nome) => textoDe(container).includes(nome))).toEqual(PESSOAS_DO_DIRETORIO);
     expect(textoDe(container)).not.toContain('Ninguém com esse nome');
   });
+
+  it('termo digitado e evento trocado — o termo continua no campo e a lista continua filtrada', async () => {
+    const container = await abrir();
+    await digitar(campoRotulado<HTMLInputElement>(container, 'Buscar no diretório'), 'helena');
+
+    await trocarEvento(container, JORNADA);
+
+    expect(campoRotulado<HTMLInputElement>(container, 'Buscar no diretório').value).toBe('helena');
+    expect(PESSOAS_DO_DIRETORIO.filter((nome) => textoDe(container).includes(nome))).toEqual(['Helena Duarte']);
+  });
 });
 
 describe('InscricaoPage: ficha da pessoa escolhida', () => {
@@ -290,6 +319,17 @@ describe('InscricaoPage: ficha da pessoa escolhida', () => {
 
     expect(existeCampoRotulado(container, 'Buscar no diretório')).toBe(true);
     expect(existeRecado(container)).toBe(false);
+  });
+
+  it('link da cerimônia copiado, pessoa escolhida, trocada e outra escolhida — o link continua Copiado', async () => {
+    const container = await abrir();
+    await clicar(botaoComTexto(container, 'Copiar'));
+    await clicar(botaoDaPessoa(container, 'Helena Duarte'));
+    await clicar(botaoComTexto(container, 'Trocar'));
+
+    await clicar(botaoDaPessoa(container, 'Marina Tavares'));
+
+    expect(linkEstaCopiado(container)).toBe(true);
   });
 
   it.each([
@@ -341,15 +381,16 @@ describe('InscricaoPage: ficha da pessoa escolhida', () => {
     expect(todos(container, 'button').some((botao) => botao.textContent === 'Não tem nenhuma')).toBe(false);
   });
 
-  it('escolher outra pessoa depois de mexer em valor, hospedagem e tipo — o valor, a hospedagem e o tipo recomeçam do padrão', async () => {
+  it('escolher outra pessoa depois de mexer em nível, hospedagem e tipo — o nível, o valor, a hospedagem e o tipo recomeçam do padrão', async () => {
     const container = await abrirComPessoa('Helena Duarte');
-    await digitar(campoDoValor(container), '200');
+    await clicarNoNivel(container, 'Sustentável');
     await escolherHospedagem(container, 'Quarto');
     await trocarTipo(container, 'Convidado');
     await clicar(botaoComTexto(container, 'Trocar'));
 
-    await clicar(botaoDaPessoa(container, 'Helena Duarte'));
+    await clicar(botaoDaPessoa(container, 'Marina Tavares'));
 
+    expect(marcado(botaoDoNivel(container, 'Sustentável'))).toBe(false);
     expect(campoDoValor(container).value).toBe('');
     expect(marcado(opcaoEmLinha(container, 'Não vai dormir na casa'))).toBe(true);
     expect(marcado(botaoComTexto(container, 'Participante'))).toBe(true);
@@ -537,6 +578,17 @@ describe('InscricaoPage: tipo de participação e consagração', () => {
       PENDENCIA_DE_EMERGENCIA,
     ]);
   });
+
+  it('Marina como Convidado e com a conversa registrada, evento trocado — o tipo e a conversa ficam', async () => {
+    const container = await abrirComPessoa('Marina Tavares');
+    await trocarTipo(container, 'Convidado');
+    await clicar(botaoComTexto(container, 'Registrar a conversa'));
+
+    await trocarEvento(container, JORNADA);
+
+    expect(marcado(botaoComTexto(container, 'Convidado'))).toBe(true);
+    expect(textoDe(container)).toContain('Conversa de acolhimento registrada.');
+  });
 });
 
 describe('InscricaoPage: estado da anamnese', () => {
@@ -723,6 +775,16 @@ describe('InscricaoPage: criança estelar', () => {
 
     expect(interruptor(container, 'Consagra neste trabalho').getAttribute('aria-checked')).toBe('false');
     expect(folhaComTexto(container, 'span', 'Não se aplica')).toBeDefined();
+  });
+
+  it('modalidade Participa do ritual e evento trocado — a modalidade e a consagração ficam', async () => {
+    const container = await abrirComPessoa('Antônio Duarte');
+    await clicar(botaoComTexto(container, 'Participa do ritual'));
+
+    await trocarEvento(container, JORNADA);
+
+    expect(marcado(botaoComTexto(container, 'Participa do ritual'))).toBe(true);
+    expect(interruptor(container, 'Consagra neste trabalho').getAttribute('aria-checked')).toBe('true');
   });
 
   it('voltar a Criança estelar com a modalidade Participa do ritual — a consagração volta ligada', async () => {
@@ -1537,6 +1599,15 @@ describe('InscricaoPage: confirmar e salvar como pendente', () => {
     await clicar(botaoComTexto(container, 'Salvar como pendente'));
 
     expect(recadoMostrado(container)).toContain('com 0 pendências — e nada se perde');
+  });
+
+  it('confirmar e trocar o evento em seguida — o recado da confirmação continua na tela', async () => {
+    const container = await abrirComPessoa('Helena Duarte');
+    await clicar(botaoDeConfirmar(container));
+
+    await trocarEvento(container, JORNADA);
+
+    expect(recadoMostrado(container)).toContain('Helena Duarte está confirmada no Trabalho de Lua Cheia de 12/09/2026.');
   });
 
   it('link copiado e inscrição salva como pendente — o link continua Copiado', async () => {
