@@ -119,16 +119,19 @@ describe('ReativarUsuario', () => {
     expect(leitor.leituras).toEqual([{ usuarioId: ALVO, instituicaoId: ACESSO.instituicaoId }]);
   });
 
-  it('não libera quando a situação mudou para suspenso entre o commit e a liberação', async () => {
-    const { unidadeDeTrabalho, controle, leitor, liberacao, reativar } = montar('SUSPENSO');
+  it.each(['SUSPENSO', 'REVOGADO', 'CONVITE_PENDENTE'] as const)(
+    'não libera quando a situação relida é %s entre o commit e a liberação',
+    async (situacaoRelida) => {
+      const { unidadeDeTrabalho, controle, leitor, liberacao, reativar } = montar('SUSPENSO');
 
-    await reativar.executar(ACESSO, comando());
-    leitor.sujeito = { subjectId: 'sub', situacao: 'SUSPENSO' };
-    unidadeDeTrabalho.confirmar();
-    await liberacao.aguardarLiberacoes();
+      await reativar.executar(ACESSO, comando());
+      leitor.sujeito = { subjectId: 'sub', situacao: situacaoRelida };
+      unidadeDeTrabalho.confirmar();
+      await liberacao.aguardarLiberacoes();
 
-    expect(controle.chamadas).toEqual([]);
-  });
+      expect(controle.chamadas).toEqual([]);
+    },
+  );
 
   it.each([
     ['sem subject_id', { subjectId: null, situacao: 'ATIVO' as const }],
