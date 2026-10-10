@@ -173,7 +173,7 @@ describe('LeitosPage: mapa do evento', () => {
     const { container } = await montar(<LeitosPage />);
 
     expect(textosDasCelulas(container, 'Cama de casal')).toEqual(['TobiasAguiarlivre · cabe mais 1', 'TobiasAguiarlivre · cabe mais 1']);
-    expect(folhaComTextoExato(linhaDoLeito(container, 'Cama de casal'), 'Cama de casal')).toBeDefined();
+    expect(linhaDoLeito(container, 'Cama de casal').firstElementChild!.textContent).toBe('Cama de casalCama de casal');
   });
 
   it('beliche ocupado — mostra a pessoa nas duas noites e não oferece alocar: leito ocupado não é alvo', async () => {
@@ -496,13 +496,22 @@ describe('LeitosPage: liberar', () => {
     expect(numero(container, 'Ainda sem leito')).toContain('Ainda sem leito5');
   });
 
-  it('liberar na cama de casal — tira só aquela pessoa e mantém a outra', async () => {
+  it('liberar a primeira pessoa da cama de casal — tira só ela e mantém a outra', async () => {
     const { container } = await montar(<LeitosPage />);
     await alocar(container, 'Cama de casal', NOITE_24, 'Helena Duarte');
 
     await clicar(botaoDeLiberar(container, 'Cama de casal', NOITE_24, 'Tobias Aguiar'));
 
     expect(textosDasCelulas(container, 'Cama de casal')[0]).toBe('HelenaDuartelivre · cabe mais 1');
+  });
+
+  it('liberar a segunda pessoa da cama de casal — tira quem foi clicado, e não a primeira da célula', async () => {
+    const { container } = await montar(<LeitosPage />);
+    await alocar(container, 'Cama de casal', NOITE_24, 'Helena Duarte');
+
+    await clicar(botaoDeLiberar(container, 'Cama de casal', NOITE_24, 'Helena Duarte'));
+
+    expect(textosDasCelulas(container, 'Cama de casal')[0]).toBe('TobiasAguiarlivre · cabe mais 1');
   });
 
   it('liberar quem pediu quarto — volta para a lista descrito como quarto e vira candidato', async () => {
@@ -815,6 +824,20 @@ describe('LeitosPage: cadastro de dormitórios e leitos', () => {
     await clicar(botaoComTexto(cartaoDoDormitorio(container, 'Dormitório 1'), 'Acrescentar leito'));
 
     expect(campoDoRotulo<HTMLSelectElement>(cartaoDoDormitorio(container, 'Dormitório 1'), 'Tipo').value).toBe('BELICHE_INFERIOR');
+  });
+
+  it('acrescentar leito com o aviso do anterior na tela — abrir o formulário de novo apaga o aviso', async () => {
+    const { container } = await montar(<LeitosPage />);
+    await abrirCadastro(container);
+    await clicar(botaoComTexto(cartaoDoDormitorio(container, 'Dormitório 1'), 'Acrescentar leito'));
+    await digitar(campoDoRotulo(cartaoDoDormitorio(container, 'Dormitório 1'), 'Identificação'), 'Casal 2');
+    await clicar(botaoComTexto(cartaoDoDormitorio(container, 'Dormitório 1'), 'Acrescentar'));
+    const aposAcrescentar = recadoDaTela(container);
+
+    await clicar(botaoComTexto(cartaoDoDormitorio(container, 'Dormitório 1'), 'Acrescentar leito'));
+
+    expect(aposAcrescentar).toBe('Casal 2 acrescentado ao dormitório 1. Já aparece no mapa do próximo evento.');
+    expect(recadoDaTela(container)).toBeNull();
   });
 
   it('inativar um leito — apaga o aviso do leito acrescentado', async () => {
