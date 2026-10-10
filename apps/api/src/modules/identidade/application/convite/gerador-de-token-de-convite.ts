@@ -5,4 +5,5 @@ export interface TokenDeConvite {
 
 export abstract class GeradorDeTokenDeConvite {
   abstract gerar(): TokenDeConvite;
+  abstract hashDe(token: string): string;
 }

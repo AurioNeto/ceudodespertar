@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { UnidadeDeTrabalho } from '../../../../shared/infrastructure/banco/unidade-de-trabalho.js';
 import { RegistradorDeUltimoAcesso } from '../../application/registrador-de-ultimo-acesso.js';
 import type { PedidoDeRegistroDeAcesso } from '../../application/registrador-de-ultimo-acesso.js';
-import { emContextoDaInstituicao } from './contexto-da-instituicao.js';
+import { emContextoDaInstituicao } from '../../../../shared/infrastructure/contexto-da-instituicao.js';
 
 @Injectable()
 export class RegistradorDeUltimoAcessoKysely extends RegistradorDeUltimoAcesso {

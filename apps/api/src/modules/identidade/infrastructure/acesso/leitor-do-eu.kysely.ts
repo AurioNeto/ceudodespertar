@@ -5,7 +5,7 @@ import { UnidadeDeTrabalho } from '../../../../shared/infrastructure/banco/unida
 import { LeitorDoEu } from '../../application/leitor-do-eu.js';
 import { CacheDeContextoDeAcesso } from './cache-de-contexto-de-acesso.js';
 import { CODIGO_DE_RECUSA_POR_SITUACAO, gruposAtivosDoUsuario, permissoesEfetivasDosGrupos } from './consultas-de-acesso.js';
-import { emContextoDaInstituicao } from './contexto-da-instituicao.js';
+import { emContextoDaInstituicao } from '../../../../shared/infrastructure/contexto-da-instituicao.js';
 
 @Injectable()
 export class LeitorDoEuKysely extends LeitorDoEu {
