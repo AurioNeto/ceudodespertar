@@ -126,4 +126,5 @@ export const CASOS_NEGATIVOS: readonly CasoDeFixture[] = [
   { caso: 'consulta-de-di-nao-e-rota', violacoes: [], achados: achar('rota-fora-do-nest', 'use') },
   { caso: 'application-passa-contexto-adiante', violacoes: [] },
   { caso: 'controle-de-transacao-em-sql', violacoes: [] },
+  { caso: 'http-adapter-sem-caminho', violacoes: [] },
 ];
