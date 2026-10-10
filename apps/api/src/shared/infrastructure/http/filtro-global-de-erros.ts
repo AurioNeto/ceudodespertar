@@ -7,6 +7,7 @@ import { ContextoDaRequisicao } from '../contexto-da-requisicao.js';
 import { lerCorrelacaoDaRequisicao } from './correlacao-da-requisicao.js';
 import { erroDeDominio, ErroDeDominioException } from '../../kernel/erro-de-dominio.js';
 import type { ErroDeDominio } from '../../kernel/erro-de-dominio.js';
+import { CABECALHO_RETRY_AFTER, segundosDeEspera } from './retry-after.js';
 import { STATUS_POR_CODIGO } from './status-por-codigo.js';
 import { RESTRICAO_PARA_CODIGO } from './restricao-para-codigo.js';
 import { codigoDaGuardaMinima } from './guardas-minimas-do-banco.js';
@@ -95,6 +96,10 @@ export class FiltroGlobalDeErros implements ExceptionFilter {
     const { status, corpo } = this.resolver(excecao, correlacaoId);
     if (status === STATUS_NAO_AUTENTICADO) {
       resposta.setHeader(CABECALHO_DE_DESAFIO, DESAFIO_DE_AUTENTICACAO);
+    }
+    const espera = segundosDeEspera(status, corpo.detalhes);
+    if (espera !== undefined) {
+      resposta.setHeader(CABECALHO_RETRY_AFTER, String(espera));
     }
     resposta.status(status).json(corpo);
   }

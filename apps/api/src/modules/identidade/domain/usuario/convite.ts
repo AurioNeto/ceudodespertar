@@ -1,9 +1,11 @@
 import type { UsuarioId } from '@cdd/contracts';
-import { erroDeDominio, type ErroDeDominio } from '../../../../shared/kernel/erro-de-dominio.js';
+import { CHAVE_DE_ESPERA_EM_SEGUNDOS, erroDeDominio, type ErroDeDominio } from '../../../../shared/kernel/erro-de-dominio.js';
 import { err, ok, type Result } from '../../../../shared/kernel/result.js';
 
 export const VALIDADE_MAXIMA_DO_CONVITE_EM_HORAS = 72;
+export const INTERVALO_MINIMO_ENTRE_REENVIOS_EM_SEGUNDOS = 60;
 const MILISSEGUNDOS_POR_HORA = 3_600_000;
+const MILISSEGUNDOS_POR_SEGUNDO = 1_000;
 
 export interface DadosDoConvite {
   readonly hashDoToken: string;
@@ -62,6 +64,16 @@ export class Convite {
     if (this.dados.usadoEm !== null) return err(erroDeDominio('CONVITE_JA_USADO'));
     if (em > this.dados.expiraEm) return err(erroDeDominio('CONVITE_EXPIRADO'));
     return ok();
+  }
+
+  validarReenvio(em: Date): Result<void, ErroDeDominio> {
+    const intervaloEmMs = INTERVALO_MINIMO_ENTRE_REENVIOS_EM_SEGUNDOS * MILISSEGUNDOS_POR_SEGUNDO;
+    const decorridoEmMs = em.getTime() - this.dados.criadoEm.getTime();
+    if (decorridoEmMs >= intervaloEmMs) return ok();
+
+    const restanteEmSegundos = Math.ceil((intervaloEmMs - decorridoEmMs) / MILISSEGUNDOS_POR_SEGUNDO);
+    const esperaEmSegundos = Math.min(INTERVALO_MINIMO_ENTRE_REENVIOS_EM_SEGUNDOS, Math.max(1, restanteEmSegundos));
+    return err(erroDeDominio('CONVITE_REENVIADO_RECENTEMENTE', { [CHAVE_DE_ESPERA_EM_SEGUNDOS]: esperaEmSegundos }));
   }
 
   usar(em: Date): Convite {

@@ -293,7 +293,7 @@ describe('RepositorioDeUsuarioMikroOrm', () => {
     const expiraEm = new Date(DEPOIS.getTime() + 3_600_000);
     usuario.reenviarConvite(hashDeConvite(), expiraEm, AUTOR, DEPOIS);
     const ultimoHash = hashDeConvite();
-    usuario.reenviarConvite(ultimoHash, expiraEm, AUTOR, DEPOIS);
+    usuario.reenviarConvite(ultimoHash, expiraEm, AUTOR, new Date(DEPOIS.getTime() + 60_000));
     await naInstituicaoA(() => ambiente.usuarios.salvar(usuario));
 
     const convites = await convitesDoUsuario(convidado.id);

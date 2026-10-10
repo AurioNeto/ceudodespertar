@@ -140,12 +140,12 @@ describe('log por requisição: correlação e redação (Documento 7 §13)', ()
     },
   );
 
-  it('expõe o X-Correlacao-Id ao navegador pelo CORS', async () => {
+  it('expõe o X-Correlacao-Id e o Retry-After ao navegador pelo CORS', async () => {
     const resposta = await fetch(`${origem}/api/v1/sonda`, { headers: { Origin: ORIGEM_PERMITIDA } });
     await resposta.text();
 
     expect(resposta.headers.get('access-control-allow-origin')).toBe(ORIGEM_PERMITIDA);
-    expect(resposta.headers.get('access-control-expose-headers')).toBe(CABECALHO_DE_CORRELACAO);
+    expect(resposta.headers.get('access-control-expose-headers')).toBe(`${CABECALHO_DE_CORRELACAO},Retry-After`);
   });
 
   it.each([
