@@ -309,10 +309,16 @@ describe('FechamentoPage: bloqueios individuais', () => {
 
   it('conciliação — conta inativa pendente não bloqueia nem entra na contagem', async () => {
     cenario.contas = (contas) =>
-      contas.map((c) => ({ ...c, conciliacao: 'CONCILIADA' as const, ativa: c.nome !== 'Itaú Munay' }));
+      contas.map((c) => ({
+        ...c,
+        conciliacao: c.nome === 'Itaú Munay' ? ('PENDENTE' as const) : ('CONCILIADA' as const),
+        ativa: c.nome !== 'Itaú Munay',
+      }));
     const { container } = await montarFechamento();
 
-    expect(itemDoChecklist(container, TITULO_DA_CONCILIACAO).detalhe).toBe('3 contas conciliadas em 31/08');
+    const item = itemDoChecklist(container, TITULO_DA_CONCILIACAO);
+
+    expect([item.detalhe, item.selo]).toEqual(['3 contas conciliadas em 31/08', 'Resolvido']);
   });
 
   it('contagem do caixa — conta de espécie sem alerta é resolvida e nomeia quem cuida do caixa', async () => {
@@ -325,7 +331,7 @@ describe('FechamentoPage: bloqueios individuais', () => {
   });
 
   it('contagem do caixa — sem nenhuma conta de espécie ativa, continua bloqueada', async () => {
-    cenario.contas = (contas) => contas.filter((c) => c.tipo !== 'DINHEIRO');
+    cenario.contas = (contas) => contas.map((c) => (c.tipo === 'DINHEIRO' ? { ...c, ativa: false, alerta: null } : c));
     const { container } = await montarFechamento();
 
     const item = itemDoChecklist(container, TITULO_DA_CONTAGEM);
