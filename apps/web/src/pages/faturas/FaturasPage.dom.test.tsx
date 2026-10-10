@@ -381,6 +381,17 @@ describe('FaturasPage: escolher cartão e fatura', () => {
     expect(recadoMostrado(container)).toBeNull();
   });
 
+  it('escolher o outro cartão com o recado do pagamento na tela — tira o recado', async () => {
+    const { container } = await montar(<FaturasPage />);
+    await clicar(botaoComTexto(container, 'Registrar pagamento'));
+    await clicar(botaoComTexto(container, 'Confirmar pagamento'));
+    expect(recadoMostrado(container)).not.toBeNull();
+
+    await escolherCartao(container, 'Cartão Itaú Paty');
+
+    expect(recadoMostrado(container)).toBeNull();
+  });
+
   it('escolher o outro cartão com o formulário de pagamento aberto — fecha o formulário', async () => {
     const { container } = await montar(<FaturasPage />);
     await clicar(botaoComTexto(container, 'Registrar pagamento'));

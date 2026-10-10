@@ -475,6 +475,19 @@ describe('AdiantamentosPage: recusar', () => {
     expect(blocoDoRotulo(container, 'Fechados')).toEqual(['Fechados', '2', 'ressarcidos ou recusados']);
   });
 
+  it('recusar com motivo — o campo do motivo da recusa seguinte abre vazio, com Recusar bloqueado', async () => {
+    const { container } = await montar(<AdiantamentosPage />);
+    await verComo(container, 'Marta Neto');
+    await clicar(botaoComTexto(linhaDe(container, ...LINHA_DE_PATY_A_AUTORIZAR), 'Recusar'));
+    await digitar(campoPeloRotulo(container, 'Motivo da recusa'), 'sem nota fiscal');
+    await clicar(botaoComTexto(linhaDe(container, ...LINHA_DE_PATY_A_AUTORIZAR), 'Recusar'));
+
+    await clicar(botaoComTexto(linhaDe(container, ...LINHA_DE_CARLOS_A_AUTORIZAR), 'Recusar'));
+
+    expect(campoPeloRotulo(container, 'Motivo da recusa').value).toBe('');
+    expect(botaoComTexto(linhaDe(container, ...LINHA_DE_CARLOS_A_AUTORIZAR), 'Recusar').disabled).toBe(true);
+  });
+
   it('Voltar — desfaz o campo do motivo e devolve Autorizar e Recusar, sem recusar nada', async () => {
     const { container } = await montar(<AdiantamentosPage />);
     await verComo(container, 'Marta Neto');
