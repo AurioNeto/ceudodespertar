@@ -85,16 +85,36 @@ describe('PeriodLock: o bloqueio', () => {
 });
 
 describe('PeriodLock: nenhuma palavra de negócio dentro do componente', () => {
-  const sobraDoTexto = (container: HTMLElement, textos: readonly string[]) =>
-    textos.reduce((resto, texto) => resto.replace(texto, ''), container.textContent ?? '');
+  const ATRIBUTOS_QUE_SE_LEEM = [
+    'placeholder',
+    'title',
+    'alt',
+    'aria-label',
+    'aria-description',
+    'aria-roledescription',
+    'aria-valuetext',
+    'aria-placeholder',
+  ] as const;
 
-  it('fechado, tudo o que aparece vem das props', async () => {
+  const valoresDeAtributoQueSeLe = (container: HTMLElement) =>
+    todos(container, '*')
+      .flatMap((no) => ATRIBUTOS_QUE_SE_LEEM.map((nome) => no.getAttribute(nome) ?? ''))
+      .filter((valor) => valor !== '');
+
+  const tudoQueSeLe = (container: HTMLElement) => [container.textContent ?? '', ...valoresDeAtributoQueSeLe(container)];
+
+  const sobraDoQueSeLe = (container: HTMLElement, textos: readonly string[]) =>
+    tudoQueSeLe(container)
+      .map((trecho) => textos.reduce((resto, texto) => resto.replace(texto, ''), trecho))
+      .join('');
+
+  it('fechado, tudo o que se lê, em texto e em atributo, vem das props', async () => {
     const textos = ['aaa título', 'bbb razão', 'ccc aviso'];
     const { container } = await montar(bloqueio({ title: textos[0], reason: textos[1], reopenDeniedNote: textos[2] }));
-    expect(sobraDoTexto(container, textos)).toBe('');
+    expect(sobraDoQueSeLe(container, textos)).toBe('');
   });
 
-  it('com permissão de reabrir, tudo o que aparece vem das props', async () => {
+  it('com permissão de reabrir, tudo o que se lê, em texto e em atributo, vem das props', async () => {
     const textos = ['aaa título', 'bbb razão', 'ccc rótulo do motivo', 'ddd ação', 'eee motivo obrigatório'];
     const { container } = await montar(
       bloqueioReabrivel({
@@ -105,7 +125,7 @@ describe('PeriodLock: nenhuma palavra de negócio dentro do componente', () => {
         reopenReasonRequiredNote: textos[4],
       }),
     );
-    expect(sobraDoTexto(container, textos)).toBe('');
+    expect(sobraDoQueSeLe(container, textos)).toBe('');
   });
 
   it('com o motivo escrito, o aviso de motivo obrigatório sai e nada de texto próprio entra', async () => {
@@ -119,7 +139,50 @@ describe('PeriodLock: nenhuma palavra de negócio dentro do componente', () => {
       }),
     );
     await digitarNoMotivo(caixaDoMotivo(container), MOTIVO);
-    expect(sobraDoTexto(container, textos)).toBe('');
+    expect(sobraDoQueSeLe(container, textos)).toBe('');
+  });
+
+  const sobraComIntruso = async (preparar: (intruso: HTMLElement) => void) => {
+    const { container } = await montar(bloqueio());
+    const intruso = document.createElement('span');
+    container.append(intruso);
+    preparar(intruso);
+    return sobraDoQueSeLe(container, [TITULO, RAZAO, AVISO_DE_QUEM_NAO_REABRE]);
+  };
+
+  it('o varredor enxerga palavra estranha em texto', async () => {
+    const sobra = await sobraComIntruso((intruso) => {
+      intruso.textContent = 'palavra de negócio';
+    });
+    expect(sobra).toBe('palavra de negócio');
+  });
+
+  it.each(ATRIBUTOS_QUE_SE_LEEM)('o varredor enxerga palavra estranha no atributo %s', async (nome) => {
+    const sobra = await sobraComIntruso((intruso) => intruso.setAttribute(nome, 'palavra de negócio'));
+    expect(sobra).toBe('palavra de negócio');
+  });
+
+  it('o varredor não acusa nada quando só há o que veio das props', async () => {
+    expect(await sobraComIntruso(() => undefined)).toBe('');
+  });
+
+  it.each([
+    ['fechado', () => bloqueio({ title: '', reason: '', reopenDeniedNote: '' })],
+    [
+      'com permissão de reabrir',
+      () =>
+        bloqueioReabrivel({
+          title: '',
+          reason: '',
+          reopenLabel: '',
+          reopenReasonLabel: '',
+          reopenReasonRequiredNote: '',
+        }),
+    ],
+  ])('%s, com todos os textos vazios, nada é escrito: nem texto, nem atributo', async (_rotulo, arvore) => {
+    const { container } = await montar(arvore());
+    expect(container.textContent).toBe('');
+    expect(valoresDeAtributoQueSeLe(container)).toEqual([]);
   });
 });
 
