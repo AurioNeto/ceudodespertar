@@ -217,6 +217,7 @@ describe('PeriodLock: sem permissão de reabrir', () => {
       reopenLabel: ACAO_DE_REABRIR,
       reopenReasonLabel: ROTULO_DO_MOTIVO,
       reopenReasonRequiredNote: AVISO_DE_MOTIVO_OBRIGATORIO,
+      reopenReasonMaxLength: 500,
       onReopen: aoReabrir,
     };
     // @ts-expect-error
@@ -432,9 +433,25 @@ describe('PeriodLock: o aviso de motivo obrigatório descreve o campo', () => {
   });
 });
 
+describe('PeriodLock: o tamanho do motivo', () => {
+  it('repassa ao campo o limite recebido', async () => {
+    const { container } = await montar(bloqueioReabrivel({ reopenReasonMaxLength: 120 }));
+    expect(caixaDoMotivo(container).maxLength).toBe(120);
+  });
+
+  it('sem limite recebido, o campo não impõe nenhum', async () => {
+    const { container } = await montar(bloqueioReabrivel());
+    expect(caixaDoMotivo(container).hasAttribute('maxlength')).toBe(false);
+  });
+});
+
 describe('PeriodLock: o contrato de tipos (a prova é o typecheck)', () => {
   it('quem pode reabrir é obrigado a entregar o onReopen, que recebe o motivo e mais nada', () => {
     expectTypeOf<PeriodLockReopenableProps['onReopen']>().toEqualTypeOf<(reopenReason: string) => void>();
+  });
+
+  it('quem pode reabrir pode, se quiser, limitar o tamanho do motivo', () => {
+    expectTypeOf<PeriodLockReopenableProps['reopenReasonMaxLength']>().toEqualTypeOf<number | undefined>();
   });
 
   it('o período fechado sem reabertura não aceita nada do que é de quem reabre', () => {

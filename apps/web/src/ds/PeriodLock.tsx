@@ -16,6 +16,7 @@ export interface PeriodLockClosedProps extends PeriodLockBaseProps {
   reopenLabel?: never;
   reopenReasonLabel?: never;
   reopenReasonRequiredNote?: never;
+  reopenReasonMaxLength?: never;
   onReopen?: never;
 }
 
@@ -24,6 +25,7 @@ export interface PeriodLockReopenableProps extends PeriodLockBaseProps {
   reopenLabel: string;
   reopenReasonLabel: string;
   reopenReasonRequiredNote: string;
+  reopenReasonMaxLength?: number;
   onReopen: (reopenReason: string) => void;
 }
 
@@ -33,10 +35,17 @@ interface ReopenWithReasonProps {
   label: string;
   reasonLabel: string;
   reasonRequiredNote: string;
+  reasonMaxLength?: number;
   onReopen: (reopenReason: string) => void;
 }
 
-function ReopenWithReason({ label, reasonLabel, reasonRequiredNote, onReopen }: ReopenWithReasonProps) {
+function ReopenWithReason({
+  label,
+  reasonLabel,
+  reasonRequiredNote,
+  reasonMaxLength,
+  onReopen,
+}: ReopenWithReasonProps) {
   const [typedReason, setTypedReason] = useState('');
   const reasonRequiredNoteId = useId();
   const reopenReason = typedReason.trim();
@@ -49,6 +58,7 @@ function ReopenWithReason({ label, reasonLabel, reasonRequiredNote, onReopen }: 
         multiline
         aria-required="true"
         aria-describedby={reasonMissing ? reasonRequiredNoteId : undefined}
+        maxLength={reasonMaxLength}
         value={typedReason}
         onChange={(event) => setTypedReason(event.target.value)}
       />
@@ -90,6 +100,7 @@ export function PeriodLock(props: PeriodLockProps) {
             label={props.reopenLabel}
             reasonLabel={props.reopenReasonLabel}
             reasonRequiredNote={props.reopenReasonRequiredNote}
+            reasonMaxLength={props.reopenReasonMaxLength}
             onReopen={props.onReopen}
           />
         ) : (
