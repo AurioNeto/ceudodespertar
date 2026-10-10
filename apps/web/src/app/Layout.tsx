@@ -8,6 +8,13 @@ import { TELAS, type RegistroDeTelas } from './telas';
 import { useSessao } from './sessao';
 import { filaDeVerificacaoInicial } from '../mocks/verificacao';
 
+const TEXTOS_DO_SHELL = {
+  institution: 'Céu do Despertar',
+  unit: 'CDD',
+  brand: { lines: ['Céu do', 'Despertar'], tagline: 'Sistema de gestão' },
+  userLabel: 'Meu perfil',
+} as const;
+
 export interface LayoutProps {
   readonly telas?: RegistroDeTelas;
 }
@@ -31,9 +38,10 @@ export function Layout({ telas = TELAS }: LayoutProps) {
 
   return (
     <AppShell
-      unit="CDD"
+      {...TEXTOS_DO_SHELL}
       density={densidade}
       user={{ name: usuario.nome, group: usuario.grupoNome }}
+      userActive={ativo === 'perfil'}
       nav={filtrarNavPorAcesso(nav, telas, pode)}
       activeId={ativo}
       onNavigate={(id) => navigate(ROTAS[id as RotaId] ?? '/')}

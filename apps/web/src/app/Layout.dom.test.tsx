@@ -37,6 +37,19 @@ async function montarLayoutEm(
 
 const faixas = (tela: TelaMontada) => tela.container.querySelectorAll('[role="note"]');
 
+const simularCampo = (): (() => void) => {
+  const original = window.matchMedia;
+  window.matchMedia = ((consulta: string) => ({
+    media: consulta,
+    matches: true,
+    addEventListener: () => undefined,
+    removeEventListener: () => undefined,
+  })) as unknown as typeof window.matchMedia;
+  return () => {
+    window.matchMedia = original;
+  };
+};
+
 beforeEach(() => {
   vi.stubEnv('VITE_SESSAO_DE_DEMONSTRACAO', '');
 });
@@ -161,5 +174,57 @@ describe('acesso por permissão no Layout', () => {
     expect(tela.texto()).toContain('Você não tem acesso a Relatórios');
     expect(tela.texto()).toContain('financeiro.dre.ler');
     expect(tela.texto()).not.toContain('financeiro.resultado_evento.ler');
+  });
+});
+
+describe('AppShell dentro do Layout', () => {
+  const restaurar: (() => void)[] = [];
+
+  afterEach(() => {
+    for (const desfazer of restaurar.splice(0)) desfazer();
+  });
+
+  const lateral = (tela: TelaMontada) => tela.container.querySelector('aside');
+  const barraDeContexto = (tela: TelaMontada) => tela.container.querySelector('header');
+  const chip = (tela: TelaMontada) => tela.container.querySelector('button[title="Meu perfil"]');
+  const botaoDoMenu = (tela: TelaMontada) =>
+    Array.from(tela.container.querySelectorAll<HTMLButtonElement>('nav button')).find(
+      (botao) => botao.textContent === 'Menu',
+    );
+  const perfilNoMenu = () =>
+    Array.from(document.querySelectorAll<HTMLButtonElement>('[role="dialog"] nav button')).find((botao) =>
+      botao.textContent?.includes('Meu perfil'),
+    );
+
+  it('passa à casca os textos da casa: marca, legenda, instituição, unidade e o nome do perfil', async () => {
+    const tela = await montarLayoutEm(ROTAS.painel, TELAS);
+    expect(lateral(tela)?.textContent).toContain('Céu doDespertar');
+    expect(lateral(tela)?.textContent).toContain('Sistema de gestão');
+    expect(barraDeContexto(tela)?.textContent).toContain('Céu do Despertar');
+    expect(barraDeContexto(tela)?.textContent).toContain('CDD');
+    expect(chip(tela)).not.toBeNull();
+  });
+
+  it('em escritório só na página do perfil o chip do usuário é a página atual', async () => {
+    const noPerfil = await montarLayoutEm(ROTAS.perfil, TELAS);
+    expect(chip(noPerfil)?.getAttribute('aria-current')).toBe('page');
+    const noPainel = await montarLayoutEm(ROTAS.painel, TELAS);
+    expect(chip(noPainel)?.hasAttribute('aria-current')).toBe(false);
+  });
+
+  it('em campo, na página do perfil o Menu é realçado e o Meu perfil do menu é a página atual', async () => {
+    restaurar.push(simularCampo());
+    const tela = await montarLayoutEm(ROTAS.perfil, TELAS);
+    expect(botaoDoMenu(tela)?.style.color).toBe('var(--color-royal)');
+    await tela.clicar('Menu');
+    expect(perfilNoMenu()?.getAttribute('aria-current')).toBe('page');
+  });
+
+  it('em campo, nas outras páginas o Menu não é realçado por causa do perfil e o Meu perfil não é a página atual', async () => {
+    restaurar.push(simularCampo());
+    const tela = await montarLayoutEm(ROTAS.painel, TELAS);
+    expect(botaoDoMenu(tela)?.style.color).toBe('var(--text-secondary)');
+    await tela.clicar('Menu');
+    expect(perfilNoMenu()?.hasAttribute('aria-current')).toBe(false);
   });
 });
