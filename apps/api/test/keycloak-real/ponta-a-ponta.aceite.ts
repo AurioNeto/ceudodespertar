@@ -242,19 +242,32 @@ describe('aceite do convite contra o Keycloak e o Mailpit reais — ciclo de vid
     expect(eu.status).toBe(200);
   });
 
-  it('usuário não consegue editar o próprio e-mail nem o username pela Account API — 400 e o e-mail segue o do convite', async () => {
+  it('usuário não consegue editar o próprio e-mail nem o username pela Account API — cada troca é recusada e ambos seguem os do convite', async () => {
     const redirectDoConsole = `${ambiente.emissor}/account/`;
     const { corpo } = await keycloak.entrarPorCodigoComPkce('account-console', redirectDoConsole, convidada.email, SENHA_DA_CONVIDADA);
+    const token = textoDe(corpo['access_token']);
     const novoEmail = emailNovo('troca');
+    const base = { firstName: 'Maria', lastName: 'Silva' };
 
-    const edicao = await keycloak.pedirComToken(`${ambiente.emissor}/account`, textoDe(corpo['access_token']), {
+    const trocaDoEmail = await keycloak.pedirComToken(`${ambiente.emissor}/account`, token, {
       metodo: 'POST',
-      corpo: { username: novoEmail, email: novoEmail, firstName: 'Maria', lastName: 'Silva' },
+      corpo: { ...base, username: convidada.email, email: novoEmail },
     });
+    const trocaDoUsername = await keycloak.pedirComToken(`${ambiente.emissor}/account`, token, {
+      metodo: 'POST',
+      corpo: { ...base, username: novoEmail, email: convidada.email },
+    });
+    const erroDoEmail = JSON.stringify(await trocaDoEmail.json());
+    const erroDoUsername = JSON.stringify(await trocaDoUsername.json());
+    const depois = await keycloak.usuarioPorEmail(convidada.email);
 
-    expect(edicao.status).toBe(400);
+    expect(trocaDoEmail.status).toBe(400);
+    expect(erroDoEmail).toContain('error-user-attribute-read-only');
+    expect(trocaDoUsername.status).toBe(400);
+    expect(erroDoUsername).toContain('error-user-attribute-read-only');
+    expect(depois?.username).toBe(convidada.email);
+    expect(depois?.email).toBe(convidada.email);
     expect(await keycloak.usuarioPorEmail(novoEmail)).toBeUndefined();
-    expect((await keycloak.usuarioPorEmail(convidada.email))?.username).toBe(convidada.email);
   });
 
   it('reuso do link do Keycloak — recusa com a página de link expirado e a senha segue a primeira definida', async () => {

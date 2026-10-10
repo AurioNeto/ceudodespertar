@@ -25,13 +25,27 @@ export ACEITE_PORTA_API="${ACEITE_PORTA_API:-$(porta_livre)}"
 projeto="cdd-aceite-$$"
 compose=(docker compose -p "$projeto" --env-file .env -f compose.yaml -f infra/aceite/compose.aceite.yaml)
 
+diretorio_do_log="$(mktemp -d "${TMPDIR:-/tmp}/cdd-aceite-api-XXXXXX")"
+export ACEITE_DIRETORIO_DO_LOG="$diretorio_do_log"
+
 derrubar() {
   local status=$?
   trap - EXIT INT TERM
   case "$projeto" in
-    cdd-aceite-?*) "${compose[@]}" down -v --remove-orphans >/dev/null 2>&1 || true ;;
+    cdd-aceite-?*)
+      if "${compose[@]}" down -v --remove-orphans >/dev/null 2>&1; then
+        echo "aceite-keycloak: projeto $projeto derrubado"
+      else
+        echo "aceite-keycloak: FALHA ao derrubar o projeto $projeto; derrube à mão: docker compose -p $projeto down -v --remove-orphans" >&2
+        [ "$status" -eq 0 ] && status=1
+      fi
+      ;;
   esac
-  echo "aceite-keycloak: projeto $projeto derrubado"
+  if [ "$status" -eq 0 ]; then
+    rm -rf "$diretorio_do_log"
+  else
+    echo "aceite-keycloak: log da API mantido em $diretorio_do_log/api.log" >&2
+  fi
   exit "$status"
 }
 trap derrubar EXIT INT TERM

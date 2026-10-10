@@ -63,7 +63,8 @@ async function exigirPortaLivre(url: string): Promise<void> {
 export async function setup(projeto: ProjetoDoVitest): Promise<() => Promise<void>> {
   await exigirPortaLivre(`http://localhost:${process.env['ACEITE_PORTA_API']}`);
   const raizDaApi = fileURLToPath(new URL('../..', import.meta.url));
-  const caminhoDoLog = join(mkdtempSync(join(tmpdir(), 'cdd-aceite-api-')), 'api.log');
+  const diretorioDoLog = process.env['ACEITE_DIRETORIO_DO_LOG'] ?? mkdtempSync(join(tmpdir(), 'cdd-aceite-api-'));
+  const caminhoDoLog = join(diretorioDoLog, 'api.log');
   const descritorDoLog = openSync(caminhoDoLog, 'w');
   const processo = spawn(process.execPath, ['--enable-source-maps', 'dist/main.js'], {
     cwd: raizDaApi,
