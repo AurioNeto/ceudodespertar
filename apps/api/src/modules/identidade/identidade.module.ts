@@ -14,6 +14,9 @@ import { ConcederPermissaoAoGrupo } from './application/grupos/conceder-permissa
 import { LeitorDeGrupos } from './application/grupos/leitor-de-grupos.js';
 import { RenomearGrupo } from './application/grupos/renomear-grupo.js';
 import { RevogarPermissaoDoGrupo } from './application/grupos/revogar-permissao-do-grupo.js';
+import { BootstrapDaIdentidade } from './application/bootstrap/bootstrap-da-identidade.js';
+import { PersistenciaDoBootstrap } from './application/bootstrap/persistencia-do-bootstrap.js';
+import { SemeadorDeGrupos } from './application/bootstrap/semeador-de-grupos.js';
 import { AtivarConvite } from './application/convite/ativar-convite.js';
 import { ConferidorDeSujeito } from './application/convite/conferidor-de-sujeito.js';
 import { EntregaDeConvite } from './application/convite/entrega-de-convite.js';
@@ -39,6 +42,7 @@ import { ReenviarConvite } from './application/usuarios/reenviar-convite.js';
 import { RepositorioDeGrupo } from './domain/grupo/grupo.repo.js';
 import { PoliticaDoUltimoAdministrador } from './domain/servicos/politica-do-ultimo-administrador.js';
 import { RepositorioDeUsuario } from './domain/usuario/usuario.repo.js';
+import { PersistenciaDoBootstrapKysely } from './infrastructure/bootstrap/persistencia-do-bootstrap.kysely.js';
 import { LeitorDaAdministracaoKysely } from './infrastructure/administracao/leitor-da-administracao.kysely.js';
 import { TravaDaAdministracaoAdvisory } from './infrastructure/administracao/trava-da-administracao.advisory.js';
 import { LeitorDeGruposKysely } from './infrastructure/grupos/leitor-de-grupos.kysely.js';
@@ -134,10 +138,13 @@ import { GestaoDeUsuariosController } from './interface/http/gestao-de-usuarios.
     ListarUsuarios,
     ObterUsuario,
     SemeadorDeGruposDeSistema,
+    { provide: SemeadorDeGrupos, useExisting: SemeadorDeGruposDeSistema },
+    { provide: PersistenciaDoBootstrap, useClass: PersistenciaDoBootstrapKysely },
+    BootstrapDaIdentidade,
     ObterEu,
     InvalidadorDoCacheDeAcesso,
     ResolvedorDeContextoDeAcessoDaIdentidade,
   ],
-  exports: [ResolvedorDeContextoDeAcessoDaIdentidade, SemeadorDeGruposDeSistema],
+  exports: [ResolvedorDeContextoDeAcessoDaIdentidade, SemeadorDeGruposDeSistema, BootstrapDaIdentidade],
 })
 export class IdentidadeModule {}

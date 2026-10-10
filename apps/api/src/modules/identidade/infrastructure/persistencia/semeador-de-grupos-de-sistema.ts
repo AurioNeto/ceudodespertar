@@ -4,13 +4,16 @@ import { sql } from 'kysely';
 import { ContextoDaRequisicao } from '../../../../shared/infrastructure/contexto-da-requisicao.js';
 import { UnidadeDeTrabalho } from '../../../../shared/infrastructure/banco/unidade-de-trabalho.js';
 import { gerarUuidV7 } from '../../../../shared/kernel/ids.js';
+import { SemeadorDeGrupos } from '../../application/bootstrap/semeador-de-grupos.js';
 import { GRUPOS_DE_SISTEMA } from '../../domain/grupo/grupos-de-sistema.js';
 
 const CHAVE_DO_TRAVAMENTO_DO_SEED = 'identidade.semear-grupos-de-sistema';
 
 @Injectable()
-export class SemeadorDeGruposDeSistema {
-  constructor(private readonly unidadeDeTrabalho: UnidadeDeTrabalho) {}
+export class SemeadorDeGruposDeSistema extends SemeadorDeGrupos {
+  constructor(private readonly unidadeDeTrabalho: UnidadeDeTrabalho) {
+    super();
+  }
 
   semear(instituicaoId: string): Promise<void> {
     return ContextoDaRequisicao.executar({ correlacaoId: randomUUID(), instituicaoId }, () =>

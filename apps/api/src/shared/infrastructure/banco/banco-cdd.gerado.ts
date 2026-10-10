@@ -23,6 +23,12 @@ export type JsonValue = JsonArray | JsonObject | JsonPrimitive;
 
 export type Timestamp = ColumnType<Date, Date | string, Date | string>;
 
+export interface IdentidadeBootstrapExecutado {
+  admin_usuario_id: string;
+  criado_em: Timestamp;
+  id: Generated<boolean>;
+}
+
 export interface IdentidadeConvite {
   criado_em: Generated<Timestamp>;
   criado_por: string;
@@ -136,6 +142,7 @@ export interface SharedOutbox {
 }
 
 export interface DB {
+  "identidade.bootstrap_executado": IdentidadeBootstrapExecutado;
   "identidade.convite": IdentidadeConvite;
   "identidade.grupo": IdentidadeGrupo;
   "identidade.grupo_permissao": IdentidadeGrupoPermissao;
