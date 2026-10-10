@@ -104,6 +104,13 @@ const numerosDoDetalhe = (container: HTMLElement) => {
   return textosDasFolhas(grade);
 };
 
+const elementosDoCartaoDoDetalhe = (container: HTMLElement) => {
+  const principal = folhasComTexto(container, 'Principal')[0];
+  const cartao = principal?.parentElement?.parentElement?.parentElement;
+  if (!cartao) throw new Error('detalhe não encontrado');
+  return Array.from(cartao.children);
+};
+
 const linhasDeDevolucoes = (container: HTMLElement) =>
   todos<HTMLTableRowElement>(container, 'tbody tr').map(textosDasFolhas);
 
@@ -236,6 +243,25 @@ describe('EmprestimosPage em escritório: lista e detalhe', () => {
     expect(
       folhasComTexto(container, 'Devolução combinada sem prazo fechado, conforme a condição dele.'),
     ).toHaveLength(1);
+  });
+
+  it.each([
+    { contraparte: 'Érico Santana', rotulo: 'Concedido', cor: 'var(--color-royal-ink)' },
+    { contraparte: 'Marta Neto', rotulo: 'Recebido', cor: 'var(--color-pending)' },
+  ])('selo de $contraparte no detalhe — diz $rotulo no tom $cor', async ({ contraparte, rotulo, cor }) => {
+    const { container } = await montar(<EmprestimosPage />);
+    await abrirEmprestimo(container, contraparte);
+
+    expect((folhasComTexto(container, rotulo)[0] as HTMLElement).style.color).toBe(cor);
+  });
+
+  it('detalhe sem observação — não reserva um espaço vazio para ela no cartão', async () => {
+    const { container } = await montar(<EmprestimosPage />);
+    const filhosComObservacao = elementosDoCartaoDoDetalhe(container).length;
+
+    await abrirEmprestimo(container, 'Zé Ferreira');
+
+    expect(elementosDoCartaoDoDetalhe(container)).toHaveLength(filhosComObservacao - 1);
   });
 
   it('detalhe de um empréstimo recebido — troca o selo, o verbo e o rótulo do saldo', async () => {

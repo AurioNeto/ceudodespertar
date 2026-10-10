@@ -305,6 +305,51 @@ describe('AdiantamentosPage: o que cada perspectiva vê', () => {
   });
 });
 
+describe('AdiantamentosPage: selo e borda de cada estado', () => {
+  it.each([
+    { secao: 'A ressarcir', pessoa: 'Paty Munay', motivo: 'camisetas', selo: 'A ressarcir', cor: 'var(--color-royal-ink)', borda: 'var(--color-royal)' },
+    { secao: 'Fechados', pessoa: 'Carlos Andrade', motivo: 'diesel', selo: 'Ressarcido', cor: 'var(--color-confirmed)', borda: 'var(--color-confirmed)' },
+  ])('linha $selo — o selo e a borda esquerda seguem o estado', async ({ secao, pessoa, motivo, selo, cor, borda }) => {
+    const { container } = await montar(<AdiantamentosPage />);
+
+    const linha = linhaDe(container, secao, pessoa, motivo);
+
+    expect((folhasComTexto(linha, selo)[0] as HTMLElement).style.color).toBe(cor);
+    expect(linha.style.borderLeft).toContain(borda);
+  });
+
+  it('linha aguardando autorização — o selo e a borda esquerda ficam no tom pending', async () => {
+    const { container } = await montar(<AdiantamentosPage />);
+    await verComo(container, 'Marta Neto');
+
+    const linha = linhaDe(container, ...LINHA_DE_PATY_A_AUTORIZAR);
+
+    expect((folhasComTexto(linha, 'Aguardando autorização')[0] as HTMLElement).style.color).toBe('var(--color-pending)');
+    expect(linha.style.borderLeft).toContain('var(--color-pending)');
+  });
+
+  it('linha recusada — o selo e a borda esquerda ficam no tom attention', async () => {
+    const { container } = await montar(<AdiantamentosPage />);
+    await verComo(container, 'Marta Neto');
+    await clicar(botaoComTexto(linhaDe(container, ...LINHA_DE_PATY_A_AUTORIZAR), 'Recusar'));
+    await digitar(campoPeloRotulo(container, 'Motivo da recusa'), 'sem nota');
+    await clicar(botaoComTexto(linhaDe(container, ...LINHA_DE_PATY_A_AUTORIZAR), 'Recusar'));
+
+    const linha = linhaDe(container, 'Fechados', 'Paty Munay', 'compras da cozinha');
+
+    expect((folhasComTexto(linha, 'Recusado')[0] as HTMLElement).style.color).toBe('var(--color-attention)');
+    expect(linha.style.borderLeft).toContain('var(--color-attention)');
+  });
+
+  it('selo de idade — a ressarcir há mais de 30 dias leva o selo no tom attention', async () => {
+    const { container } = await montar(<AdiantamentosPage />);
+
+    const selo = folhasComTexto(linhaDe(container, ...LINHA_DE_PATY_A_RESSARCIR), 'há 53 dias')[0] as HTMLElement;
+
+    expect(selo.style.color).toBe('var(--color-attention)');
+  });
+});
+
 describe('AdiantamentosPage: autorizar', () => {
   it('autorizar com vínculo de madrinha — o adiantamento passa a a ressarcir, autorizado por ela hoje, e o recado avisa a tesouraria', async () => {
     const { container } = await montar(<AdiantamentosPage />);

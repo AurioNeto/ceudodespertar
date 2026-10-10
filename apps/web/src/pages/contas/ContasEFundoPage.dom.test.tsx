@@ -250,6 +250,18 @@ describe('ContasEFundoPage: cartão de cada conta', () => {
     expect(cartaoDaConta(container, nome).style.borderLeft).toBe(borda);
   });
 
+  it.each([
+    { nome: 'Cora PJ', selo: 'Conciliada ontem', cor: 'var(--color-confirmed)' },
+    { nome: 'Espécie', selo: 'Contagem pendente', cor: 'var(--color-pending)' },
+    { nome: 'Nubank Paty', selo: 'A conferir', cor: 'var(--color-pending)' },
+  ])('selo da conta $nome — diz $selo no tom $cor', async ({ nome, selo, cor }) => {
+    const { container } = await montar(<ContasEFundoPage />);
+
+    const folha = folhasComTexto(cartaoDaConta(container, nome), selo)[0] as HTMLElement;
+
+    expect(folha.style.color).toBe(cor);
+  });
+
   it('Itaú Munay — o selo diz Conciliada ontem mesmo com o último movimento em 22/08', async () => {
     const { container } = await montar(<ContasEFundoPage />);
 

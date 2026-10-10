@@ -203,6 +203,19 @@ describe('FaturasPage em escritório: cabeçalho, cartões e lista de faturas', 
     expect(folhasComTexto(container, 'Faturas de Cartão Cora PJ')).toHaveLength(1);
   });
 
+  it.each([
+    { competencia: 'setembro de 2026', rotulo: 'Aberta', cor: 'var(--color-royal-ink)', fundo: 'var(--color-royal-soft)' },
+    { competencia: 'agosto de 2026', rotulo: 'Fechada, a pagar', cor: 'var(--color-pending)', fundo: 'var(--color-pending-soft)' },
+    { competencia: 'julho de 2026', rotulo: 'Paga', cor: 'var(--color-confirmed)', fundo: 'var(--color-confirmed-soft)' },
+  ])('selo da fatura de $competencia — diz $rotulo no tom $cor', async ({ competencia, rotulo, cor, fundo }) => {
+    const { container } = await montar(<FaturasPage />);
+
+    const linha = botoesDaListaDeFaturas(container).find((botao) => botao.textContent?.includes(competencia)) as HTMLElement;
+    const selo = folhasComTexto(linha, rotulo)[0] as HTMLElement;
+
+    expect([selo.style.color, selo.style.background]).toEqual([cor, fundo]);
+  });
+
   it('fatura aberta de início — é a primeira fechada do conjunto, e não a primeira da lista', async () => {
     const { container } = await montar(<FaturasPage />);
 
