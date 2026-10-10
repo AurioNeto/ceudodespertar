@@ -27,6 +27,13 @@ vi.mock('@/mocks/contratacoes', async (importarOriginal) => {
   };
 });
 
+vi.mock('@/mocks/financeiro', async (importarOriginal) => {
+  const original = await importarOriginal<typeof import('@/mocks/financeiro')>();
+  const [cora, especie, ...demais] = original.contas;
+  const contaEncerrada = Object.assign({}, especie, { id: 'encerrada', nome: 'Conta encerrada', ativa: false });
+  return { ...original, contas: [cora, especie, contaEncerrada, ...demais] };
+});
+
 beforeEach(() => {
   fixarDensidade('office');
   vi.setSystemTime(AGORA_FIXO);
