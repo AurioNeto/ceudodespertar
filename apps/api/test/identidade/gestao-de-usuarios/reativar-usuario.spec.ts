@@ -1,6 +1,7 @@
 import { Logger } from '@nestjs/common';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { LiberacaoDiretaDoAcesso } from '../../../src/modules/identidade/application/usuarios/liberacao-direta-do-acesso.js';
+import { LeitorDoSujeitoQueResponde } from '../keycloak/leitor-do-sujeito-que-responde.js';
 import { ControleDeAcessoQueRegistra } from '../keycloak/controle-de-acesso-que-registra.js';
 import { ReativarUsuario } from '../../../src/modules/identidade/application/usuarios/reativar-usuario.js';
 import type { ComandoDeReativacao } from '../../../src/modules/identidade/application/usuarios/reativar-usuario.js';
@@ -26,9 +27,10 @@ function montar(situacao: Parameters<typeof usuarioEm>[1]) {
   const repositorio = new RepositorioDeUsuarioEmMemoria([usuario]);
   const unidadeDeTrabalho = new UnidadeDeTrabalhoFalsa();
   const controle = new ControleDeAcessoQueRegistra();
-  const liberacao = new LiberacaoDiretaDoAcesso(controle);
+  const leitor = new LeitorDoSujeitoQueResponde();
+  const liberacao = new LiberacaoDiretaDoAcesso(controle, leitor);
   const reativar = new ReativarUsuario(unidadeDeTrabalho, repositorio, new RelogioFixo(), liberacao);
-  return { usuario, repositorio, unidadeDeTrabalho, controle, liberacao, reativar };
+  return { usuario, repositorio, unidadeDeTrabalho, controle, leitor, liberacao, reativar };
 }
 
 describe('ReativarUsuario', () => {
@@ -105,6 +107,41 @@ describe('ReativarUsuario', () => {
     await liberacao.aguardarLiberacoes();
 
     expect(controle.chamadas).toEqual([{ operacao: 'liberar', sujeito: 'sub' }]);
+  });
+
+  it('relê a situação atual na instituição do acesso antes de liberar', async () => {
+    const { unidadeDeTrabalho, leitor, liberacao, reativar } = montar('SUSPENSO');
+
+    await reativar.executar(ACESSO, comando());
+    unidadeDeTrabalho.confirmar();
+    await liberacao.aguardarLiberacoes();
+
+    expect(leitor.leituras).toEqual([{ usuarioId: ALVO, instituicaoId: ACESSO.instituicaoId }]);
+  });
+
+  it('não libera quando a situação mudou para suspenso entre o commit e a liberação', async () => {
+    const { unidadeDeTrabalho, controle, leitor, liberacao, reativar } = montar('SUSPENSO');
+
+    await reativar.executar(ACESSO, comando());
+    leitor.sujeito = { subjectId: 'sub', situacao: 'SUSPENSO' };
+    unidadeDeTrabalho.confirmar();
+    await liberacao.aguardarLiberacoes();
+
+    expect(controle.chamadas).toEqual([]);
+  });
+
+  it.each([
+    ['sem subject_id', { subjectId: null, situacao: 'ATIVO' as const }],
+    ['inexistente', undefined],
+  ])('não libera usuário %s no momento da liberação', async (_descricao, sujeito) => {
+    const { unidadeDeTrabalho, controle, leitor, liberacao, reativar } = montar('SUSPENSO');
+
+    await reativar.executar(ACESSO, comando());
+    leitor.sujeito = sujeito;
+    unidadeDeTrabalho.confirmar();
+    await liberacao.aguardarLiberacoes();
+
+    expect(controle.chamadas).toEqual([]);
   });
 
   it('usuário já ativo também libera no provedor, para curar acesso travado', async () => {

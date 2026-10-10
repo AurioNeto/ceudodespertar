@@ -35,7 +35,7 @@ export class ReativarUsuario {
       if (reativado.tipo === 'erro') return reativado;
 
       const versao = await salvarSeAlterado(this.usuarios, usuario);
-      if (usuario.subjectId !== null) this.liberacao.depoisDoCommit(contexto, usuario.subjectId);
+      this.liberacao.depoisDoCommit(contexto, { usuarioId: comando.usuarioId, instituicaoId: acesso.instituicaoId });
       return ok({ situacao: usuario.situacao, versao });
     });
   }

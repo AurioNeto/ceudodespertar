@@ -14,6 +14,7 @@ import { AlteracaoQuePodeTirarAdministrador } from '../../src/modules/identidade
 import type { TravaDaAdministracao } from '../../src/modules/identidade/application/administracao/trava-da-administracao.js';
 import { DefinirGruposDoUsuario } from '../../src/modules/identidade/application/usuarios/definir-grupos-do-usuario.js';
 import { DesativarUsuario } from '../../src/modules/identidade/application/usuarios/desativar-usuario.js';
+import { LeitorDoSujeitoQueResponde } from './keycloak/leitor-do-sujeito-que-responde.js';
 import { LiberacaoDiretaDoAcesso } from '../../src/modules/identidade/application/usuarios/liberacao-direta-do-acesso.js';
 import { ReativarUsuario } from '../../src/modules/identidade/application/usuarios/reativar-usuario.js';
 import { PoliticaDoUltimoAdministrador } from '../../src/modules/identidade/domain/servicos/politica-do-ultimo-administrador.js';
@@ -68,7 +69,7 @@ export function montarCasosDeUsoDaGestao(
       ambiente.unidadeDeTrabalho,
       ambiente.usuarios,
       relogio,
-      new LiberacaoDiretaDoAcesso(new ControleDeAcessoQueRegistra()),
+      new LiberacaoDiretaDoAcesso(new ControleDeAcessoQueRegistra(), new LeitorDoSujeitoQueResponde()),
     ),
     definirGrupos: new DefinirGruposDoUsuario(alteracao, ambiente.usuarios, relogio),
   };
