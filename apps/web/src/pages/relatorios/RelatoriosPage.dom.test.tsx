@@ -77,6 +77,12 @@ const painelDaGaveta = (container: HTMLElement) => gaveta(container)?.firstEleme
 const linhasDaGaveta = (container: HTMLElement) =>
   Array.from(painelDaGaveta(container)?.children[1]?.children ?? []).map((linha) => linha.textContent);
 
+const valoresDaGaveta = (container: HTMLElement) =>
+  Array.from(painelDaGaveta(container)?.children[1]?.children ?? []).map((linha) => {
+    const valor = linha.lastElementChild as HTMLElement;
+    return { texto: valor.textContent, cor: valor.style.color };
+  });
+
 const cabecalhoDaGaveta = (container: HTMLElement) =>
   Array.from(painelDaGaveta(container)?.firstElementChild?.firstElementChild?.children ?? []).map((parte) => parte.textContent);
 
@@ -716,6 +722,27 @@ describe('RelatoriosPage: gaveta com os lançamentos de um recorte', () => {
       `23/08reforma do telhadoCDD · Cora PJ${MENOS}953,86`,
       '04/08venda de velasCozinha · Cora PJ+ 2.586,84',
     ]);
+  });
+
+  it('conta — o valor da entrada leva a cor de confirmado e o da saída a cor primária', async () => {
+    const { container } = await montar(<RelatoriosPage />);
+
+    await clicar(botaoDeConta(container, 'Cora PJ'));
+
+    expect(valoresDaGaveta(container)).toEqual([
+      { texto: `${MENOS}538,55`, cor: COR_PRIMARIA },
+      { texto: `${MENOS}1.122,97`, cor: COR_PRIMARIA },
+      { texto: `${MENOS}953,86`, cor: COR_PRIMARIA },
+      { texto: '+ 2.586,84', cor: COR_CONFIRMADA },
+    ]);
+  });
+
+  it('conta com transferência — o valor sem sinal leva a cor primária', async () => {
+    const { container } = await montar(<RelatoriosPage />);
+
+    await clicar(botaoDeConta(container, 'Itaú Munay'));
+
+    expect(valoresDaGaveta(container)).toEqual([{ texto: '605,68', cor: COR_PRIMARIA }]);
   });
 
   it('conta — o total da gaveta soma entradas e saídas como valores positivos, e não bate com o resultado da conta', async () => {
