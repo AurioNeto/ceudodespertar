@@ -67,6 +67,7 @@ const VERBOS_DE_LEITURA_SQL = /^(select|values|table|explain|show)$/;
 const DML_DENTRO_DE_WITH = /\b(insert|update|delete|merge)\b/i;
 const VERBOS_DE_SESSAO_SQL = /^(set|reset)$/;
 const MEMBROS_QUE_EXECUTAM_SQL: ReadonlySet<string> = new Set(['execute', 'executeTakeFirst', 'executeTakeFirstOrThrow']);
+const MEMBROS_QUE_EXPOEM_O_SERVIDOR: ReadonlySet<string> = new Set(['getInstance', 'getHttpServer']);
 const CHAMADA_DE_SET_CONFIG = /\bset_config\b/i;
 const PROFUNDIDADE_MAXIMA_DE_CONSTANTE = 8;
 
@@ -76,17 +77,50 @@ function semComentarios(sql: string): string {
   return sql.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/--[^\n]*/g, ' ');
 }
 
-function categoriaDoSql(texto: string, ehInstrucao: boolean): CategoriaDeSql {
-  const limpo = semComentarios(texto);
-  if (CHAMADA_DE_SET_CONFIG.test(limpo)) return 'set-config';
-  const verbo = /^\s*(\w+)/.exec(limpo)?.[1]?.toLowerCase() ?? '';
+const GRAVIDADE_DA_CATEGORIA: readonly CategoriaDeSql[] = [
+  'fragmento',
+  'leitura',
+  'controle',
+  'escrita',
+  'set',
+  'set-config',
+];
+
+function instrucoesDe(sql: string): readonly string[] {
+  const instrucoes: string[] = [];
+  let atual = '';
+  let aspas: string | undefined;
+  for (const caractere of sql) {
+    if (aspas === undefined && caractere === ';') {
+      instrucoes.push(atual);
+      atual = '';
+      continue;
+    }
+    if (caractere === "'" || caractere === '"') aspas = aspas === caractere ? undefined : (aspas ?? caractere);
+    atual += caractere;
+  }
+  instrucoes.push(atual);
+  return instrucoes;
+}
+
+function categoriaDaInstrucao(instrucao: string): CategoriaDeSql {
+  const verbo = /^\s*(\w+)/.exec(instrucao)?.[1]?.toLowerCase() ?? '';
   if (VERBOS_DE_SESSAO_SQL.test(verbo)) return 'set';
   if (VERBOS_DE_ESCRITA_SQL.test(verbo)) return 'escrita';
-  if (!ehInstrucao) return 'fragmento';
-  if (verbo === 'with') return DML_DENTRO_DE_WITH.test(limpo) ? 'escrita' : 'leitura';
+  if (verbo === 'with') return DML_DENTRO_DE_WITH.test(instrucao) ? 'escrita' : 'leitura';
   if (VERBOS_DE_CONTROLE_SQL.test(verbo)) return 'controle';
   if (VERBOS_DE_LEITURA_SQL.test(verbo)) return 'leitura';
   return 'fragmento';
+}
+
+function categoriaDoSql(texto: string): CategoriaDeSql {
+  const limpo = semComentarios(texto);
+  if (CHAMADA_DE_SET_CONFIG.test(limpo)) return 'set-config';
+  return instrucoesDe(limpo)
+    .map(categoriaDaInstrucao)
+    .reduce((pior, categoria) =>
+      GRAVIDADE_DA_CATEGORIA.indexOf(categoria) > GRAVIDADE_DA_CATEGORIA.indexOf(pior) ? categoria : pior,
+    );
 }
 
 function textoLiteral(checker: ts.TypeChecker, expressao: ts.Expression, profundidade = 0): string | undefined {
@@ -140,15 +174,20 @@ function textoDoTemplateMarcado(modelo: ts.TemplateLiteral): string {
   return modelo.head.text + modelo.templateSpans.map((trecho) => `?${trecho.literal.text}`).join('');
 }
 
-function ehExecutadoComoInstrucao(no: ts.Node): boolean {
-  const pai = no.parent;
-  if (ts.isPropertyAccessExpression(pai) && pai.expression === no) {
+function semParenteses(no: ts.Node): ts.Node {
+  let atual = no;
+  while (ts.isParenthesizedExpression(atual.parent)) atual = atual.parent;
+  return atual;
+}
+
+function ehExecucaoDireta(no: ts.Node): boolean {
+  const alvo = semParenteses(no);
+  const pai = alvo.parent;
+  if (ts.isPropertyAccessExpression(pai) && pai.expression === alvo) {
     const chamada = pai.parent;
     return ts.isCallExpression(chamada) && chamada.expression === pai && MEMBROS_QUE_EXECUTAM_SQL.has(pai.name.text);
   }
-  if (!ts.isCallExpression(pai) || !pai.arguments.includes(no as ts.Expression)) return false;
-  const nome = nomeDoMembro(pai);
-  return nome !== undefined && nome.text === 'executeQuery';
+  return false;
 }
 
 function comecaComInterpolacao(modelo: ts.TemplateLiteral): boolean {
@@ -218,6 +257,7 @@ class Coletor {
   analisar(): void {
     percorrer(this.arquivoDoPrograma, (no) => {
       if (ts.isIdentifier(no)) this.usoDeIdentificador(no);
+      if (ts.isIdentifier(no) && MEMBROS_QUE_EXPOEM_O_SERVIDOR.has(no.text)) this.acessoAoServidor(no);
       if (ts.isElementAccessExpression(no)) this.usoPorIndice(no);
       if (ts.isCallExpression(no)) {
         this.sqlDeChamada(no);
@@ -274,7 +314,7 @@ class Coletor {
     const ehSqlCru = nomeDoCallee.text === 'raw' && declaradoEm(simbolo, PACOTES_DE_DADOS);
     if (!ehExecutarSqlDoOrm && !ehSqlCru) return;
     const texto = textoLiteral(this.checker, primeiro);
-    this.avaliarSql(chamada, nomeDoCallee.text, texto, ehExecutarSqlDoOrm || ehExecutadoComoInstrucao(chamada));
+    this.avaliarSql(chamada, nomeDoCallee.text, texto);
   }
 
   private sqlDeTemplateMarcado(marcado: ts.TaggedTemplateExpression): void {
@@ -282,19 +322,19 @@ class Coletor {
     const simbolo = simboloResolvido(this.checker, marcado.tag);
     const ehSqlDoKysely = simbolo !== undefined && simbolo.getName() === 'sql' && declaradoEm(simbolo, PACOTE_KYSELY);
     if (!ehSqlDoKysely) return;
-    const indeterminado = comecaComInterpolacao(marcado.template) && ehExecutadoComoInstrucao(marcado);
+    const indeterminado = comecaComInterpolacao(marcado.template) && this.ehExecutado(marcado);
     const texto = indeterminado ? undefined : textoDoTemplateMarcado(marcado.template);
-    this.avaliarSql(marcado, 'sql', texto, true);
+    this.avaliarSql(marcado, 'sql', texto);
   }
 
-  private avaliarSql(no: ts.Node, origem: string, texto: string | undefined, ehInstrucao: boolean): void {
+  private avaliarSql(no: ts.Node, origem: string, texto: string | undefined): void {
     const zona = zonaDoArquivo(this.relativo);
     if (zona === 'fora') return;
     if (texto === undefined) {
       if (EXCECOES_DE_SQL_INDETERMINADO[this.relativo] === undefined) this.violar(no, 'sql-indeterminado', origem);
       return;
     }
-    const categoria = categoriaDoSql(texto, ehInstrucao);
+    const categoria = categoriaDoSql(texto);
     if (categoria === 'escrita') this.achar('escrita', `sql:${origem}`);
     const mexeNaSessao = categoria === 'set' || categoria === 'set-config';
     if (mexeNaSessao) this.achar('set-config', categoria);
@@ -306,6 +346,22 @@ class Coletor {
     if (zona === 'leitura' && !ehLeitura) this.violar(no, 'leitura-fora-da-allowlist', `sql:${categoria}`);
   }
 
+  private ehExecutado(no: ts.Node): boolean {
+    if (ehExecucaoDireta(no)) return true;
+    const alvo = semParenteses(no);
+    const declaracao = alvo.parent;
+    if (!ts.isVariableDeclaration(declaracao) || declaracao.initializer !== alvo || !ts.isIdentifier(declaracao.name)) {
+      return false;
+    }
+    const simbolo = this.checker.getSymbolAtLocation(declaracao.name);
+    let executado = false;
+    percorrer(this.arquivoDoPrograma, (candidato) => {
+      const ehUso = ts.isIdentifier(candidato) && this.checker.getSymbolAtLocation(candidato) === simbolo;
+      if (ehUso && ehExecucaoDireta(candidato)) executado = true;
+    });
+    return executado;
+  }
+
   private podeAjustarASessao(): boolean {
     return this.relativo.startsWith(PASTA_DO_BANCO) || ARQUIVOS_QUE_PODEM_AJUSTAR_A_SESSAO.includes(this.relativo);
   }
@@ -313,10 +369,6 @@ class Coletor {
   private rotaForaDoNest(chamada: ts.CallExpression): void {
     const nome = nomeDoMembro(chamada);
     if (nome === undefined || nome === chamada.expression) return;
-    if (nome.text === 'getInstance') {
-      this.instanciaDoServidor(chamada, nome);
-      return;
-    }
     const ehUse = nome.text === 'use';
     if (!ehUse && !VERBOS_HTTP.has(nome.text)) return;
     const simbolo = this.checker.getSymbolAtLocation(nome);
@@ -335,12 +387,12 @@ class Coletor {
     if (!excecoes.includes(nome.text) || comCaminho) this.violar(chamada, 'rota-fora-do-nest', nome.text);
   }
 
-  private instanciaDoServidor(chamada: ts.CallExpression, nome: ts.Identifier): void {
-    const simbolo = this.checker.getSymbolAtLocation(nome);
+  private acessoAoServidor(identificador: ts.Identifier): void {
+    const simbolo = simboloDoUso(this.checker, identificador);
     if (simbolo === undefined || !declaradoEm(simbolo, PACOTES_HTTP)) return;
-    this.achar('rota-fora-do-nest', nome.text);
+    this.achar('rota-fora-do-nest', identificador.text);
     const excecoes = EXCECOES_DE_ROTA_FORA_DO_NEST[this.relativo] ?? [];
-    if (!excecoes.includes(nome.text)) this.violar(chamada, 'rota-fora-do-nest', nome.text);
+    if (!excecoes.includes(identificador.text)) this.violar(identificador, 'rota-fora-do-nest', identificador.text);
   }
 }
 

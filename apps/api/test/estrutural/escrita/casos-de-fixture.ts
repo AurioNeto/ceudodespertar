@@ -137,6 +137,34 @@ export const CASOS_POSITIVOS: readonly CasoDeFixture[] = [
     caso: 'rota-use-com-caminho-na-excecao',
     violacoes: esperar('composicao/aplicacao.ts', 'rota-fora-do-nest', 'use'),
   },
+  {
+    caso: 'multiplas-instrucoes',
+    violacoes: esperar('modules/m/infrastructure/leitor-s.kysely.ts', 'leitura-fora-da-allowlist', 'sql:escrita'),
+  },
+  {
+    caso: 'raw-executado-por-indireto',
+    violacoes: esperar(
+      'modules/m/infrastructure/leitor-q.kysely.ts',
+      'leitura-fora-da-allowlist',
+      'sql:controle',
+      'sql:controle',
+    ).concat(esperar('modules/m/infrastructure/leitor-q.kysely.ts', 'sql-indeterminado', 'sql', 'sql')),
+  },
+  {
+    caso: 'raw-sessao-em-fragmento',
+    violacoes: esperar('modules/m/infrastructure/fragmento.ts', 'set-config-restrito', 'set', 'set'),
+  },
+  {
+    caso: 'servidor-http-por-desestruturacao',
+    violacoes: esperar(
+      'modules/m/interface/http/servidor.ts',
+      'rota-fora-do-nest',
+      'getHttpServer',
+      'getInstance',
+      'getInstance',
+      'getInstance',
+    ),
+  },
 ];
 
 export const CASOS_NEGATIVOS: readonly CasoDeFixture[] = [
@@ -153,4 +181,5 @@ export const CASOS_NEGATIVOS: readonly CasoDeFixture[] = [
   { caso: 'application-passa-contexto-adiante', violacoes: [] },
   { caso: 'controle-de-transacao-em-sql', violacoes: [] },
   { caso: 'http-adapter-sem-caminho', violacoes: [] },
+  { caso: 'template-com-interpolacao-nao-executado', violacoes: [] },
 ];
