@@ -34,7 +34,7 @@ function esperarCompilacaoDeOutroArquivo(marcadorDePronto: string): void {
 }
 
 export function compilarOCli(): void {
-  const diretorioDaCompilacao = join(tmpdir(), `cdd-compilacao-do-cli-${process.ppid}`);
+  const diretorioDaCompilacao = join(inject('diretorioDaExecucao'), 'compilacao-do-cli');
   const marcadorDePronto = join(diretorioDaCompilacao, 'pronto');
   try {
     mkdirSync(diretorioDaCompilacao);

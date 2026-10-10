@@ -1,5 +1,7 @@
 import { ProvedorDeIdentidadeIndisponivel } from '../../../src/modules/identidade/application/convite/conferidor-de-sujeito.js';
 import { LocalizadorDeSujeito } from '../../../src/modules/identidade/application/seed-demo/localizador-de-sujeito.js';
+import { PersistenciaDaDemonstracao } from '../../../src/modules/identidade/application/seed-demo/persistencia-da-demonstracao.js';
+import type { UsuarioExistenteDaDemonstracao } from '../../../src/modules/identidade/application/seed-demo/persistencia-da-demonstracao.js';
 import { SemeaduraDeDemonstracao } from '../../../src/modules/identidade/application/seed-demo/semeadura-de-demonstracao.js';
 import type { RepositorioDeUsuario } from '../../../src/modules/identidade/domain/usuario/usuario.repo.js';
 import { PersistenciaDoBootstrapKysely } from '../../../src/modules/identidade/infrastructure/bootstrap/persistencia-do-bootstrap.kysely.js';
@@ -28,13 +30,56 @@ export class LocalizadorQueResponde extends LocalizadorDeSujeito {
 export interface PecasDaSemeadura {
   readonly localizador?: LocalizadorDeSujeito;
   readonly usuarios?: RepositorioDeUsuario;
+  readonly demonstracao?: PersistenciaDaDemonstracao;
+}
+
+const ESPERA_DO_PORTAO_EM_MS = 400;
+
+export class PortaoDeChegada {
+  private chegadas = 0;
+  private liberarQuemEspera: (() => void) | undefined;
+
+  passar(): Promise<void> {
+    this.chegadas += 1;
+    if (this.chegadas >= 2) {
+      this.liberarQuemEspera?.();
+      return Promise.resolve();
+    }
+    return new Promise((resolver) => {
+      this.liberarQuemEspera = resolver;
+      setTimeout(resolver, ESPERA_DO_PORTAO_EM_MS);
+    });
+  }
+}
+
+export class PersistenciaDaDemonstracaoComPortao extends PersistenciaDaDemonstracao {
+  constructor(
+    private readonly real: PersistenciaDaDemonstracao,
+    private readonly portao: PortaoDeChegada,
+  ) {
+    super();
+  }
+
+  instituicaoExiste(id: string): Promise<boolean> {
+    return this.real.instituicaoExiste(id);
+  }
+
+  async existeInstituicaoAlemDe(id: string): Promise<boolean> {
+    const existe = await this.real.existeInstituicaoAlemDe(id);
+    await this.portao.passar();
+    return existe;
+  }
+
+  usuarioPorEmail(email: string): Promise<UsuarioExistenteDaDemonstracao | undefined> {
+    return this.real.usuarioPorEmail(email);
+  }
 }
 
 export function montarSemeadura(ambiente: AmbienteDaIdentidade, pecas: PecasDaSemeadura = {}): SemeaduraDeDemonstracao {
   return new SemeaduraDeDemonstracao(
     ambiente.unidadeDeTrabalho,
     new PersistenciaDoBootstrapKysely(ambiente.unidadeDeTrabalho),
-    new PersistenciaDaDemonstracaoKysely(ambiente.unidadeDeTrabalho),
+    pecas.demonstracao ?? new PersistenciaDaDemonstracaoKysely(ambiente.unidadeDeTrabalho),
     ambiente.semeador,
     new LeitorDeGruposDaInstituicaoKysely(ambiente.unidadeDeTrabalho),
     pecas.usuarios ?? ambiente.usuarios,

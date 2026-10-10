@@ -10,6 +10,9 @@ import {
   USUARIOS_FICTICIOS,
 } from '../../../src/modules/identidade/application/seed-demo/conteudo-da-demonstracao.js';
 import type { ResumoDaSemeadura } from '../../../src/modules/identidade/application/seed-demo/semeadura-de-demonstracao.js';
+import { PersistenciaDoBootstrap } from '../../../src/modules/identidade/application/bootstrap/persistencia-do-bootstrap.js';
+import { PersistenciaDoBootstrapKysely } from '../../../src/modules/identidade/infrastructure/bootstrap/persistencia-do-bootstrap.kysely.js';
+import { PersistenciaDaDemonstracaoKysely } from '../../../src/modules/identidade/infrastructure/seed-demo/persistencia-da-demonstracao.kysely.js';
 import { RepositorioDeUsuario } from '../../../src/modules/identidade/domain/usuario/usuario.repo.js';
 import type { Usuario } from '../../../src/modules/identidade/domain/usuario/usuario.js';
 import { CacheDeContextoDeAcesso } from '../../../src/modules/identidade/infrastructure/acesso/cache-de-contexto-de-acesso.js';
@@ -29,11 +32,46 @@ import { COMANDO_POR_CONVITE, BANCO_VAZIO, contagensDoBanco, montarBootstrap, pe
 import { abrirAmbienteDaIdentidade, eventosDoOutbox } from '../apoio.js';
 import type { AmbienteDaIdentidade } from '../apoio.js';
 import { CAMINHO_DOS_USUARIOS, RelogioManual, ServidorKeycloakFalso } from '../keycloak/servidor-keycloak-falso.js';
-import { fotoDoBanco, LocalizadorQueResponde, montarSemeadura, OUTRO_SUB_DO_DEV, SUB_DO_DEV } from './apoio-da-semeadura.js';
+import {
+  fotoDoBanco,
+  LocalizadorQueResponde,
+  montarSemeadura,
+  OUTRO_SUB_DO_DEV,
+  PersistenciaDaDemonstracaoComPortao,
+  PortaoDeChegada,
+  SUB_DO_DEV,
+} from './apoio-da-semeadura.js';
 
 const TOTAL_DE_USUARIOS = 1 + USUARIOS_FICTICIOS.length;
 const GRUPOS_DE_SISTEMA = 6;
 const TOTAL_DE_ATIVADOS = 1 + USUARIOS_FICTICIOS.filter(({ situacao }) => situacao !== 'CONVITE_PENDENTE').length;
+
+class PersistenciaDoBootstrapComPortao extends PersistenciaDoBootstrap {
+  constructor(
+    private readonly real: PersistenciaDoBootstrap,
+    private readonly portao: PortaoDeChegada,
+  ) {
+    super();
+  }
+
+  adquirirTravaGlobal(): Promise<void> {
+    return this.real.adquirirTravaGlobal();
+  }
+
+  async jaFoiExecutado(): Promise<boolean> {
+    const executado = await this.real.jaFoiExecutado();
+    await this.portao.passar();
+    return executado;
+  }
+
+  criarInstituicao(id: string, nome: string): Promise<void> {
+    return this.real.criarInstituicao(id, nome);
+  }
+
+  registrarExecucao(...argumentos: Parameters<PersistenciaDoBootstrap['registrarExecucao']>): Promise<void> {
+    return this.real.registrarExecucao(...argumentos);
+  }
+}
 
 class RepositorioQueFalhaNaGravacao extends RepositorioDeUsuario {
   private gravacoes = 0;
@@ -291,10 +329,28 @@ describe('SemeaduraDeDemonstracao com Postgres real', () => {
 
       expect(resumo).toMatchObject({ usuariosCriados: 1, usuariosJaExistentes: TOTAL_DE_USUARIOS - 1 });
       expect(await contagensDoBanco(banco)).toMatchObject({ usuarios: TOTAL_DE_USUARIOS });
+      const dev = await usuarioPorEmail(USERNAME_DO_DEV);
+      const recriado = await usuarioPorEmail(emailDoFicticio('leitura'));
+      const [convite] = await consultar<{ criado_por: string }>('select criado_por from identidade.convite where usuario_id = $1', [recriado.id]);
+      expect(convite?.criado_por).toBe(dev.id);
     });
   });
 
   describe('guarda de dados', () => {
+    it('seed e bootstrap concorrentes: a trava global deixa uma só instituição no banco', async () => {
+      const portao = new PortaoDeChegada();
+      const demonstracao = new PersistenciaDaDemonstracaoComPortao(new PersistenciaDaDemonstracaoKysely(ambiente.unidadeDeTrabalho), portao);
+      const persistencia = new PersistenciaDoBootstrapComPortao(new PersistenciaDoBootstrapKysely(ambiente.unidadeDeTrabalho), portao);
+
+      const resultados = await Promise.all([
+        montarSemeadura(ambiente, { demonstracao }).executar(),
+        montarBootstrap(ambiente, { persistencia }).executar(COMANDO_POR_CONVITE),
+      ]);
+
+      expect(resultados.filter(({ tipo }) => tipo === 'ok')).toHaveLength(1);
+      expect((await contagensDoBanco(banco)).instituicoes).toBe(1);
+    });
+
     it('recusa quando existe instituição que não é a de demonstração (depois de um bootstrap) e não grava nada', async () => {
       sucessoDeBootstrap(await montarBootstrap(ambiente).executar(COMANDO_POR_CONVITE));
       const antes = await fotoDoBanco(banco);
