@@ -24,7 +24,8 @@ Provado, com a leitura feita pelo compilador do TypeScript:
      conta como import de efeito, porque com verbatimModuleSyntax ele emite import {} from, e por isso
      difere de import type { X };
   4. cada arquivo exporta os mesmos nomes (barrels incluídos) apontando para as mesmas declarações;
-     uma declaração privada só passa a ser exportada se outro arquivo do HEAD a importa;
+     uma declaração privada só passa a ser exportada se outro arquivo do HEAD a importa; um barrel
+     só ganha nome de declaração que saiu do seu arquivo na etapa e que a base já exportava;
   5. o index.ts novo só reexporta nomes que a base já exportava, com o mesmo alvo.
 
 Arquivo que não é código tem de manter os bytes: trocar o caminho de um @import de css falha.

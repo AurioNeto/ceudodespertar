@@ -977,6 +977,28 @@ describe('conferir-movimento: ligações', { timeout: TEMPO_DO_CENARIO_EM_MS }, 
       );
     });
 
+    it('passa quando o barrel que já existia ganha o nome de uma declaração que mudou de arquivo nesta etapa', () => {
+      const tela = (densidade: string, ds: string): string =>
+        codigo(densidade, ds, '', 'export const tela = (): string => usarDensidade() + Botao();');
+      const resultado = executarCenario({
+        base: {
+          'lib/densidade.ts': codigo("export const usarDensidade = (): string => 'office';"),
+          'ds/Botao.ts': BOTAO,
+          'ds/index.ts': codigo("export { Botao } from './Botao';"),
+          'pages/Tela.ts': tela("import { usarDensidade } from '../lib/densidade';", "import { Botao } from '../ds';"),
+        },
+        depois: (repositorio) => {
+          repositorio.mover('lib/densidade.ts', 'ds/fundacao/densidade.ts');
+          repositorio.escrever({
+            'ds/index.ts': codigo("export { Botao } from './Botao';", "export { usarDensidade } from './fundacao/densidade';"),
+            'pages/Tela.ts': tela('', "import { Botao, usarDensidade } from '../ds';"),
+          });
+        },
+      });
+
+      passou(resultado);
+    });
+
     it('falha quando o barrel que já existia perde uma exportação', () => {
       const resultado = conferirComODsNovo(codigo("export { Botao } from './atoms/Botao';"));
 
