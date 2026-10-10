@@ -1,3 +1,4 @@
+import type { ItemNaFila } from '@cdd/contracts';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { botaoComTexto, clicar, desmontarTudo, digitar, elemento, montar, todos } from '@/testes/montagem';
 import { VerificacaoLotePage } from './VerificacaoLotePage';
@@ -8,6 +9,19 @@ import {
   digitarNaCaixa,
   usarDensidade,
 } from './apoioDeTeste';
+
+type Transformacao = (lista: readonly ItemNaFila[]) => readonly ItemNaFila[];
+
+const fila = vi.hoisted(() => ({ transformar: ((lista) => lista) as Transformacao }));
+vi.mock('../../mocks/verificacao', async (importarOriginal) => {
+  const original = await importarOriginal<{ filaDeVerificacaoInicial: readonly ItemNaFila[] }>();
+  return {
+    ...original,
+    get filaDeVerificacaoInicial() {
+      return fila.transformar(original.filaDeVerificacaoInicial);
+    },
+  };
+});
 
 const MOTIVOS_DA_FILA = [
   'mercado cerimônia mãe divina',
@@ -58,6 +72,7 @@ const FILA_INICIAL = [
 ];
 
 beforeEach(() => {
+  fila.transformar = (lista) => lista;
   usarDensidade('office');
 });
 
@@ -163,6 +178,13 @@ describe('VerificacaoLotePage: cabeçalho e linhas da fila', () => {
 
     expect(linha[1]).toContain('Nubank Paty → Cora PJ');
     expect(linha[3]).toBe('1.500,00');
+  });
+
+  it('item sem categoria — a meta da linha diz sem categoria', async () => {
+    fila.transformar = (lista) => lista.map((item) => (item.id === lista[0]?.id ? { ...item, categoria: null } : item));
+    const { container } = await montar(<VerificacaoLotePage />);
+
+    expect(tabelaDaFila(container)[0]?.[1]).toBe('28/08/2026 · Foto de comprovante · Lucia Prado · sem categoria');
   });
 
   it('cada linha tem uma caixa de seleção com o nome do motivo, o botão do motivo e o botão Revisar', async () => {
@@ -296,6 +318,17 @@ describe('VerificacaoLotePage: seleção', () => {
     await clicar(caixaDeTodos(container) as HTMLInputElement);
 
     expect(rotuloDaSelecao(container)).toBe('4 selecionados');
+  });
+
+  it('uma só linha marcada — a caixa de todos continua desmarcada, e tocar nela marca as doze', async () => {
+    const { container } = await montar(<VerificacaoLotePage />);
+    await marcar(container, 'Enel — conta de luz');
+    const antes = (caixaDeTodos(container) as HTMLInputElement).checked;
+
+    await clicar(caixaDeTodos(container) as HTMLInputElement);
+
+    expect(antes).toBe(false);
+    expect(rotuloDaSelecao(container)).toBe('12 selecionados');
   });
 
   it('todas visíveis marcadas à mão — a caixa de todos marca sozinha', async () => {

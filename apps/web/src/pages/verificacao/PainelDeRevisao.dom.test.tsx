@@ -161,6 +161,12 @@ describe('PainelDeRevisao: o que mostra do item', () => {
     expect(campoComRotulo(container, 'Categoria').value).toBe('');
   });
 
+  it('transferência sem conta de destino — o campo de destino começa vazio', async () => {
+    const { container } = await montarPainel({ ...TRANSFERENCIA, contaDestino: null }).montagem;
+
+    expect(campoComRotulo(container, 'Conta de destino').value).toBe('');
+  });
+
   it('a caixa de devolução não aparece antes de pedir', async () => {
     const { container } = await montarPainel(SAIDA).montagem;
 

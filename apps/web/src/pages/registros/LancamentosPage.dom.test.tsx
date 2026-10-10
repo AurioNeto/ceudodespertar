@@ -192,6 +192,14 @@ describe('LancamentosPage: cabeçalho e lista nas duas densidades', () => {
     expect(tabelaDoEscritorio(container)).toEqual(PAGINA_2_DE_AGOSTO);
   });
 
+  it('escritório — lançamento sem fornecedor — a linha mostra o traço no lugar do fornecedor', async () => {
+    livro.transformar = (lista) =>
+      lista.map((registro) => (registro.id === lista[0]?.id ? { ...registro, contraparte: null } : registro));
+    const { container } = await montar(<LancamentosPage />);
+
+    expect(tabelaDoEscritorio(container)[0]?.[2]).toBe('— · Cora PJ');
+  });
+
   it('campo — as linhas mostram descrição, valor com o sinal do tipo e data, tipo e quem lançou', async () => {
     usarDensidade('field');
     const { container } = await montar(<LancamentosPage />);
@@ -551,7 +559,16 @@ describe('LancamentosPage: paginação', () => {
     expect(proxima(container).disabled).toBe(true);
   });
 
-  it('trocar um filtro na segunda página — volta para a primeira', async () => {
+  it('trocar um filtro na segunda página — volta para a primeira, mesmo quando o novo recorte também tem várias páginas', async () => {
+    const { container } = await montar(<LancamentosPage />);
+    await clicar(proxima(container));
+
+    await filtrarPor(container, 'Período', 'todos');
+
+    expect(textoDaPaginacao(container)).toBe('Página 1 de 3 · 17 lançamentos');
+  });
+
+  it('trocar um filtro na segunda página para um recorte de uma página só — mostra a primeira e única', async () => {
     const { container } = await montar(<LancamentosPage />);
     await clicar(proxima(container));
 
@@ -696,6 +713,14 @@ describe('LancamentosPage: gaveta de detalhe', () => {
       ['27/08/2026 09:14', 'Lançado por Lucia Prado.'],
       ['—', 'Aguardando conferência da tesouraria.'],
     ]);
+  });
+
+  it('lançamento a conferir — Estornar fica habilitado, embora só o consolidado se corrija por estorno (Doc 2, L2)', async () => {
+    const { container } = await montar(<LancamentosPage />);
+
+    await abrirLinhaDoEscritorio(container, 'material de obra do dormitório');
+
+    expect(botaoComTexto(gaveta(container) as HTMLElement, 'Estornar').disabled).toBe(false);
   });
 
   it('lançamento estornado — a situação é Estornado e o histórico ganha a linha do estorno', async () => {

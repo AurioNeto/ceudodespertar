@@ -1535,6 +1535,18 @@ describe('RegistrarLancamentoPage: registrar e recibo', () => {
     expect(temRecibo(container)).toBe(false);
   });
 
+  it('escritório — escrever o fornecedor mantém o texto no campo, e o recibo da saída não o leva', async () => {
+    const { container } = await montar(<RegistrarLancamentoPage />);
+    await digitar(campoRotulado<HTMLInputElement>(container, 'Fornecedor'), 'Assaí Atacadista');
+    const noCampo = campoRotulado<HTMLInputElement>(container, 'Fornecedor').value;
+
+    await registrar(container);
+
+    expect(noCampo).toBe('Assaí Atacadista');
+    expect(lerRecibo(container).linhas.flat()).not.toContain('Assaí Atacadista');
+    expect(campoRotulado<HTMLInputElement>(container, 'Fornecedor').value).toBe('');
+  });
+
   it('transferência com a mesma conta forçada pela troca — o registro grava a transferência com origem e destino diferentes', async () => {
     const { container } = await montar(<RegistrarLancamentoPage />);
     await escolherOpcao(campoRotulado<HTMLSelectElement>(container, 'Conta de saída'), 'nubank');
