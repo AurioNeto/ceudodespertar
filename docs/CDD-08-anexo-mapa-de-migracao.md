@@ -110,17 +110,17 @@ Os destinos são agrupados por área: `app/`, `dados/`, `lib/`, `ds/`, `testes/`
 |---|---|---|---|
 | `ds/AmountInput.tsx:26` | soma sem tirar o milhar | corrige a divergência 1 | `lerSoma` |
 | `pages/lancamento/useFormularioDeLancamento.ts:78` | soma com o milhar tirado (referência) | lado correto da divergência 1 | `lerSoma` |
-| `pages/verificacao/PainelDeRevisao.tsx:36` | tira o milhar | — | `lerValorDigitado` |
+| `pages/verificacao/PainelDeRevisao.tsx:36` | tira o milhar | recusa `1e3` e `12abc` (decisão da seção 15) | `lerValorDigitado` |
 | `pages/ayahuasca/AyahuascaPage.tsx:47` | não tira o milhar: `1.500,00` vira 1,5 | corrige a divergência 2 (mesma causa) | `lerValorDigitado` |
-| `pages/contas/GerenciarContasModal.tsx:40` | tira o milhar | — | `lerValorDigitado` |
+| `pages/contas/GerenciarContasModal.tsx:40` | tira o milhar | recusa `1e3` e `12abc` (decisão da seção 15) | `lerValorDigitado` |
 | `pages/emprestimos/EmprestimosPage.tsx:50` e `:96` | `Number` sem tirar o milhar: NaN | corrige a divergência 2 | `lerValorDigitado` |
 | `pages/adiantamentos/AdiantamentosPage.tsx:502` | `Number` sem tirar o milhar: NaN | corrige a divergência 2 | `lerValorDigitado` |
-| `pages/eventos/InscricaoPage.tsx:120` e `:703` | tira o milhar | — | `lerValorDigitado` |
-| `pages/publico/InscricaoPublicaPage.tsx:126` e `:708` | tira o milhar | — | `lerValorDigitado` |
+| `pages/eventos/InscricaoPage.tsx:120` e `:703` | tira o milhar | recusa `1e3` e `12abc` (decisão da seção 15) | `lerValorDigitado` |
+| `pages/publico/InscricaoPublicaPage.tsx:126` e `:708` | tira o milhar | recusa `1e3` e `12abc` (decisão da seção 15) | `lerValorDigitado` |
 | `pages/estoque/FeitioPage.tsx:48` e `:398` | `Number` sem tirar o milhar: vira 0 | corrige a divergência 2 (mesma causa) | `lerValorDigitado` |
 | `pages/agenda/AgendaPage.tsx:66` (litros) e `:53` (contribuições) | `:66` não tira o milhar: vira 1,5; `:53` separa a lista por vírgula | `:66` corrige a divergência 2 (mesma causa); `:53` fora da divergência | `:66` `lerValorDigitado`; `:53` fora desta etapa (Documento 8, seção 15: só inteiros) |
 
-- Os cinco que já tiram o milhar só trocam a chamada, sem mudar valor (`fundir`).
+- Os cinco que já tiram o milhar mantêm o valor das entradas válidas e passam a recusar notação científica e texto depois do número (`1e3`, `12abc`), pela decisão da seção 15 do Documento 8 (`fundir`).
 - `AgendaPage.tsx:53` separa a lista de contribuições por vírgula, que também é o separador decimal. `lerValorDigitado` não serve a esse campo. Decisão do dono: só valores inteiros, com o valor com centavos recusado (Documento 8, seções 14 e 15), em PR próprio depois da caracterização de eventos.
 
 ---
@@ -313,40 +313,62 @@ Os testes do #58 e do #59 se repartem por describe entre as unidades de destino.
 | Origem | Destino | Ação | Etapa |
 |---|---|---|---|
 | `pages/adiantamentos/AdiantamentosPage.tsx` | `pages/financeiro/AdiantamentosPage/AdiantamentosPage.tsx` | mover | Mover financeiro I |
+| `pages/adiantamentos/AdiantamentosPage.dom.test.tsx` (entra com o #83) | `pages/financeiro/AdiantamentosPage/AdiantamentosPage.dom.test.tsx` | mover | Mover financeiro I |
 | `mocks/adiantamentos.ts` | `pages/financeiro/AdiantamentosPage/mocks/adiantamentos.ts` | mover | Mover financeiro I |
 | `pages/contas/ContasEFundoPage.tsx` | `pages/financeiro/ContasEFundoPage/ContasEFundoPage.tsx` | mover | Mover financeiro I |
+| `pages/contas/ContasEFundoPage.dom.test.tsx` (entra com o #83) | `pages/financeiro/ContasEFundoPage/ContasEFundoPage.dom.test.tsx` | mover | Mover financeiro I |
 | `pages/contas/ContasEFundoPage.tsx`: `ehCaixa` (usado pela tela e pelo modal) | `pages/financeiro/ContasEFundoPage/utils/conta.ts` | repartir por export | Mover financeiro I |
 | `pages/contas/ContasEFundoPage.tsx`: `CORES_DE_RESERVA`, `corDaReserva` | `pages/financeiro/ContasEFundoPage/utils/reservas.ts` | repartir por export | Mover financeiro I |
 | `pages/contas/ContasEFundoPage.tsx`: `contaVazia`, `fundoVazio` (só o modal) | `pages/financeiro/ContasEFundoPage/components/GerenciarContasModal/utils/novos.ts` | repartir por export | Mover financeiro I |
 | `pages/contas/GerenciarContasModal.tsx` | `pages/financeiro/ContasEFundoPage/components/GerenciarContasModal/GerenciarContasModal.tsx` | mover | Mover financeiro I |
+| `pages/contas/GerenciarContasModal.dom.test.tsx` (entra com o #83) | `pages/financeiro/ContasEFundoPage/components/GerenciarContasModal/GerenciarContasModal.dom.test.tsx` | mover | Mover financeiro I |
+| `pages/contas/apoioDeTeste.tsx` (entra com o #83; usado pelos testes de Contas e fundo e do modal) | `pages/financeiro/ContasEFundoPage/apoioDeTeste.tsx` | mover | Mover financeiro I |
 | `mocks/financeiro.ts`: `fundos` | `pages/financeiro/ContasEFundoPage/mocks/fundos.ts` | repartir por export | Mocks transversais |
 | `pages/emprestimos/EmprestimosPage.tsx` | `pages/financeiro/EmprestimosPage/EmprestimosPage.tsx` | mover | Mover financeiro I |
+| `pages/emprestimos/EmprestimosPage.dom.test.tsx` (entra com o #83) | `pages/financeiro/EmprestimosPage/EmprestimosPage.dom.test.tsx` | mover | Mover financeiro I |
 | `mocks/emprestimos.ts` | `pages/financeiro/EmprestimosPage/mocks/emprestimos.ts` | mover | Mover financeiro I |
 | `pages/faturas/FaturasPage.tsx` | `pages/financeiro/FaturasPage/FaturasPage.tsx` | mover | Mover financeiro I |
+| `pages/faturas/FaturasPage.dom.test.tsx` (entra com o #83; amplia o teste que já existe na main) | `pages/financeiro/FaturasPage/FaturasPage.dom.test.tsx` | mover | Mover financeiro I |
 | `mocks/faturas.ts` | `pages/financeiro/FaturasPage/mocks/faturas.ts` | mover | Mover financeiro I |
 | `pages/relatorios/RelatoriosPage.tsx` | `pages/financeiro/RelatoriosPage/RelatoriosPage.tsx` | mover | Mover financeiro II |
+| `pages/relatorios/RelatoriosPage.dom.test.tsx` (entra com o #84) | `pages/financeiro/RelatoriosPage/RelatoriosPage.dom.test.tsx` | mover | Mover financeiro II |
 | `pages/relatorios/GraficoSerie.tsx` | `pages/financeiro/RelatoriosPage/components/GraficoSerie/GraficoSerie.tsx` | mover | Mover financeiro II |
+| `pages/relatorios/GraficoSerie.dom.test.tsx` (entra com o #84) | `pages/financeiro/RelatoriosPage/components/GraficoSerie/GraficoSerie.dom.test.tsx` | mover | Mover financeiro II |
 | `pages/relatorios/PainelDeQuebra.tsx` | `pages/financeiro/RelatoriosPage/components/PainelDeQuebra/PainelDeQuebra.tsx` | mover | Mover financeiro II |
+| `pages/relatorios/PainelDeQuebra.dom.test.tsx` (entra com o #84) | `pages/financeiro/RelatoriosPage/components/PainelDeQuebra/PainelDeQuebra.dom.test.tsx` | mover | Mover financeiro II |
 | `pages/relatorios/useRelatorio.ts` | `pages/financeiro/RelatoriosPage/hooks/useRelatorio.ts` | mover | Mover financeiro II |
+| `pages/relatorios/useRelatorio.dom.test.tsx` (entra com o #84) | `pages/financeiro/RelatoriosPage/hooks/useRelatorio.dom.test.tsx` | mover | Mover financeiro II |
 | `mocks/relatorios.ts` | `pages/financeiro/RelatoriosPage/mocks/relatorios.ts` | mover | Mover financeiro II |
 | `pages/fechamento/FechamentoPage.tsx` | `pages/financeiro/FechamentoPage/FechamentoPage.tsx` | mover | Mover financeiro II |
+| `pages/fechamento/FechamentoPage.dom.test.tsx` (entra com o #84) | `pages/financeiro/FechamentoPage/FechamentoPage.dom.test.tsx` | mover (`vi.mock('@/mocks/financeiro')`, export `contas`: na etapa Mocks transversais, alvo `@/pages/mocks/contas`; `vi.mock('@/mocks/lancamentos')`, export `lancamentos`: na etapa Mover lancamentos, alvo `@/pages/financeiro/mocks/lancamentos`) | Mover financeiro II |
 | `pages/conciliacao/ConciliacaoPage.tsx` | `pages/financeiro/ConciliacaoPage/ConciliacaoPage.tsx` | mover | Mover financeiro II |
+| `pages/conciliacao/ConciliacaoPage.dom.test.tsx` (entra com o #84) | `pages/financeiro/ConciliacaoPage/ConciliacaoPage.dom.test.tsx` | mover | Mover financeiro II |
 | `mocks/conciliacao.ts` | `pages/financeiro/ConciliacaoPage/mocks/conciliacao.ts` | mover | Mover financeiro II |
 | `pages/prestacao/PrestacaoDeContasPage.tsx` | `pages/financeiro/PrestacaoDeContasPage/PrestacaoDeContasPage.tsx` | mover | Mover financeiro II |
+| `pages/prestacao/PrestacaoDeContasPage.dom.test.tsx` (entra com o #84) | `pages/financeiro/PrestacaoDeContasPage/PrestacaoDeContasPage.dom.test.tsx` | mover | Mover financeiro II |
 | `mocks/prestacao.ts` | `pages/financeiro/PrestacaoDeContasPage/mocks/prestacao.ts` | mover | Mover financeiro II |
 | `pages/parametros/ParametrosPage.tsx` (1ª permissão `financeiro.plano_contas.gerenciar`) | `pages/financeiro/ParametrosPage/ParametrosPage.tsx` | mover | Mover financeiro II |
+| `pages/parametros/ParametrosPage.dom.test.tsx` (entra com o #84) | `pages/financeiro/ParametrosPage/ParametrosPage.dom.test.tsx` | mover | Mover financeiro II |
 | `mocks/parametros.ts` | `pages/financeiro/ParametrosPage/mocks/parametros.ts` | mover | Mover financeiro II |
 | `pages/lancamento/RegistrarLancamentoPage.tsx` | `pages/financeiro/lancamentos/RegistrarLancamentoPage/RegistrarLancamentoPage.tsx` | mover | Mover lancamentos |
+| `pages/lancamento/RegistrarLancamentoPage.dom.test.tsx` (entra com o #82; o #82 troca o `vi.mock('../../app/sessao')` da main por `@/app/sessao`) | `pages/financeiro/lancamentos/RegistrarLancamentoPage/RegistrarLancamentoPage.dom.test.tsx` | mover (na etapa app/ em subpastas, `useSessao` sai de `app/sessao.tsx`; o `vi.mock` passa a `@/app/sessao/SessaoProvider`) | Mover lancamentos |
 | `pages/lancamento/useFormularioDeLancamento.ts` | `pages/financeiro/lancamentos/RegistrarLancamentoPage/hooks/useFormularioDeLancamento.ts` | mover | Mover lancamentos |
+| `pages/lancamento/useFormularioDeLancamento.dom.test.ts` (entra com o #82) | `pages/financeiro/lancamentos/RegistrarLancamentoPage/hooks/useFormularioDeLancamento.dom.test.ts` | mover | Mover lancamentos |
 | `mocks/opcoes.ts` | `pages/financeiro/lancamentos/RegistrarLancamentoPage/mocks/opcoes.ts` | mover | Mover lancamentos |
 | `components/Campo.tsx`: `CampoDeTags`, `CampoDeTagsProps` | `pages/financeiro/lancamentos/RegistrarLancamentoPage/components/CampoDeTags/` | repartir por export | Mover lancamentos |
 | `pages/registros/LancamentosPage.tsx` | `pages/financeiro/lancamentos/LancamentosPage/LancamentosPage.tsx` | mover | Mover lancamentos |
+| `pages/registros/LancamentosPage.dom.test.tsx` (entra com o #82) | `pages/financeiro/lancamentos/LancamentosPage/LancamentosPage.dom.test.tsx` | mover | Mover lancamentos |
 | `mocks/lancamentos.ts`: `corDoTipo` (só Lançamentos) | `pages/financeiro/lancamentos/LancamentosPage/utils/corDoTipo.ts` | repartir por export | Mover lancamentos |
 | `pages/registros/MeusRegistrosPage.tsx` | `pages/financeiro/lancamentos/MeusRegistrosPage/MeusRegistrosPage.tsx` | mover | Mover lancamentos |
+| `pages/registros/MeusRegistrosPage.dom.test.tsx` (entra com o #82) | `pages/financeiro/lancamentos/MeusRegistrosPage/MeusRegistrosPage.dom.test.tsx` | mover | Mover lancamentos |
+| `pages/registros/apoioDeTeste.tsx` (entra com o #82; usado pelos testes de Lançamentos e Meus registros) | `pages/financeiro/lancamentos/apoioDeTeste.tsx` | mover | Mover lancamentos |
 | `mocks/lancamentos.ts`: `meusLancamentos` | `pages/financeiro/lancamentos/MeusRegistrosPage/mocks/meusLancamentos.ts` | repartir por export | Mover lancamentos |
 | `mocks/sessao.ts`: `NOME_DO_REGISTRADOR_DE_EXEMPLO` (só `meusLancamentos`) | `pages/financeiro/lancamentos/MeusRegistrosPage/mocks/meusLancamentos.ts` | repartir por export | Mover lancamentos |
 | `pages/verificacao/VerificacaoLotePage.tsx` | `pages/financeiro/lancamentos/VerificacaoLotePage/VerificacaoLotePage.tsx` | mover | Mover lancamentos |
+| `pages/verificacao/VerificacaoLotePage.dom.test.tsx` (entra com o #82) | `pages/financeiro/lancamentos/VerificacaoLotePage/VerificacaoLotePage.dom.test.tsx` | mover | Mover lancamentos |
 | `pages/verificacao/PainelDeRevisao.tsx` | `pages/financeiro/lancamentos/VerificacaoLotePage/components/PainelDeRevisao/PainelDeRevisao.tsx` | mover | Mover lancamentos |
+| `pages/verificacao/PainelDeRevisao.dom.test.tsx` (entra com o #82) | `pages/financeiro/lancamentos/VerificacaoLotePage/components/PainelDeRevisao/PainelDeRevisao.dom.test.tsx` | mover | Mover lancamentos |
+| `pages/verificacao/apoioDeTeste.tsx` (entra com o #82; usado pelos testes da Verificação de lote e do Painel de revisão) | `pages/financeiro/lancamentos/VerificacaoLotePage/apoioDeTeste.tsx` | mover | Mover lancamentos |
 | `components/Paginacao.tsx` (usado por Lançamentos e Meus registros) | `pages/financeiro/lancamentos/components/Paginacao/Paginacao.tsx` | mover | Mover lancamentos |
 | `lib/recibo.ts` (inteiro: os 5 exports têm os mesmos 2 consumidores) | `pages/financeiro/lancamentos/utils/recibo.ts` | mover | Mover lancamentos |
 | `mocks/lancamentos.ts`: `lancamentos` (Lançamentos, Meus registros e Fechamento) | `pages/financeiro/mocks/lancamentos.ts` | repartir por export | Mover lancamentos |
@@ -377,6 +399,8 @@ Os testes do #58 e do #59 se repartem por describe entre as unidades de destino.
 | `mocks/adiantamentos.ts#diasDesde` | `AdiantamentosPage/utils/diasDesde.ts` (+ teste) | repartir por export | Dividir Adiantamentos |
 | `RelatoriosPage.tsx`: `Drill`, `PERIODOS`, `comOpcaoTodos`; recorte, KPIs, linhas do drill; `Cartao`, `Numero`, `Chip`, `CampoDeMes`; seções | `RelatoriosPage/constantes.ts`; `utils/recorte.ts` (+ teste); `components/{Cartao, PainelDeFiltros (+ components/{Chip, CampoDeMes}), CartoesDeKpi, MovimentoPorConta (+ components/Numero), MetasDoFundo, CustoPorCerimonia, GavetaDeRecorte}/` | dividir | Dividir Relatórios |
 | `useRelatorio.ts`: `indice`, `doIndice`, `analisar`, `intervaloDe`, `deslocar`, `rotuloDoPonto`; `somar`, `agrupar`; `textoDoDelta`, `corDoDelta`; `Periodo`, `Comparacao`, `Unidade`, `Filtros`, `FILTROS_LIMPOS`, `Ponto` | `RelatoriosPage/utils/periodo.ts`, `utils/agregacao.ts`, `utils/delta.ts` (+ testes); `tipos.ts`; `constantes.ts` | dividir | Dividir Relatórios |
+| `pages/relatorios/useRelatorio.test.ts` (entra com o #84) | `pages/financeiro/RelatoriosPage/hooks/useRelatorio.test.ts` | mover, ao lado do sujeito | Mover financeiro II |
+| `RelatoriosPage/hooks/useRelatorio.test.ts` | `pages/financeiro/RelatoriosPage/utils/delta.test.ts` | mover (os dois describes são de `textoDoDelta` e `corDoDelta`, que vão para `utils/delta.ts`; não se reparte) | Dividir Relatórios |
 | `mocks/relatorios.ts#PALETA` (mapa de apresentação sai do mock; só `PainelDeQuebra` usa) | `RelatoriosPage/components/PainelDeQuebra/constantes.ts` | repartir por export | Dividir Relatórios |
 | `GraficoSerie.tsx`: `ItemDaLegenda`; pontos da linha | `GraficoSerie/components/ItemDaLegenda/` e `GraficoSerie/utils/pontosDaLinha.ts` (+ teste) | dividir | Dividir Relatórios |
 | `PainelDeQuebra.tsx`: fatias; vistas | `PainelDeQuebra/utils/fatias.ts` (+ teste) e `components/{VistaEmBarras, VistaEmRosca}/` | dividir | Dividir Relatórios |
@@ -403,23 +427,34 @@ Os testes do #58 e do #59 se repartem por describe entre as unidades de destino.
 | Origem | Destino | Ação | Etapa |
 |---|---|---|---|
 | `pages/agenda/AgendaPage.tsx` | `pages/eventos/AgendaPage/AgendaPage.tsx` | mover | Mover eventos |
+| `pages/agenda/AgendaPage.dom.test.tsx` (entra com o #85) | `pages/eventos/AgendaPage/AgendaPage.dom.test.tsx` | mover | Mover eventos |
 | `pages/agenda/CalendarioMensal.tsx` | `pages/eventos/AgendaPage/components/CalendarioMensal/CalendarioMensal.tsx` | mover | Mover eventos |
+| `pages/agenda/CalendarioMensal.dom.test.tsx` (entra com o #85) | `pages/eventos/AgendaPage/components/CalendarioMensal/CalendarioMensal.dom.test.tsx` | mover | Mover eventos |
 | `pages/agenda/DetalheDoTrabalho.tsx` | `pages/eventos/AgendaPage/components/DetalheDoTrabalho/DetalheDoTrabalho.tsx` | mover | Mover eventos |
+| `pages/agenda/DetalheDoTrabalho.dom.test.tsx` (entra com o #85) | `pages/eventos/AgendaPage/components/DetalheDoTrabalho/DetalheDoTrabalho.dom.test.tsx` | mover | Mover eventos |
 | `pages/agenda/FormularioDeTrabalho.tsx` (componente) | `pages/eventos/AgendaPage/components/FormularioDeTrabalho/FormularioDeTrabalho.tsx` | repartir por export | Mover eventos |
 | `pages/agenda/FormularioDeTrabalho.tsx`: `rascunhoVazio`, `rascunhoDe`, `RascunhoDeTrabalho` (a `AgendaPage` também os usa) | `pages/eventos/AgendaPage/utils/rascunhoDeTrabalho.ts` | repartir por export | Mover eventos |
+| `pages/agenda/FormularioDeTrabalho.dom.test.tsx` (entra com o #85) | `pages/eventos/AgendaPage/components/FormularioDeTrabalho/FormularioDeTrabalho.dom.test.tsx` | mover inteiro (o import de `rascunhoVazio` e `rascunhoDe` passa a `utils/rascunhoDeTrabalho.ts`) | Mover eventos |
+| `FormularioDeTrabalho.dom.test.tsx`, describes `rascunhoVazio` e `rascunhoDe` | `pages/eventos/AgendaPage/utils/rascunhoDeTrabalho.test.ts` | repartir por describe; levam a constante `TRABALHO_EXISTENTE` e uma fábrica de trabalho sem DOM, porque o `.test.ts` roda no projeto `logica` | Dividir Agenda |
+| `pages/agenda/apoioDeTeste.tsx` (entra com o #85; usado pelos testes de Agenda, Calendário, Detalhe e Formulário) | `pages/eventos/AgendaPage/apoioDeTeste.tsx` | mover (o `import type` de `./DetalheDoTrabalho` segue o componente, na mesma etapa) | Mover eventos |
 | `lib/formato.ts`: `nomeDoMes` | `pages/eventos/AgendaPage/utils/nomeDoMes.ts` | repartir por export | lib/formato por export |
 | `mocks/agenda.ts` | `pages/eventos/AgendaPage/mocks/agenda.ts` | mover | Mover eventos |
 | `pages/eventos/ContratacoesPage.tsx` | `pages/eventos/ContratacoesPage/ContratacoesPage.tsx` | mover | Mover eventos |
+| `pages/eventos/ContratacoesPage.dom.test.tsx` (entra com o #85) | `pages/eventos/ContratacoesPage/ContratacoesPage.dom.test.tsx` | mover (`vi.mock('@/mocks/contratacoes')` e o `import type` do mesmo módulo seguem o mock na mesma etapa; `vi.mock('@/mocks/financeiro')`, export `contas`: na etapa Mocks transversais, alvo `@/pages/mocks/contas`) | Mover eventos |
 | `mocks/contratacoes.ts` | `pages/eventos/ContratacoesPage/mocks/contratacoes.ts` | mover | Mover eventos |
 | `mocks/contratacoes.ts`: `STATUS_ROTULO`, `FORMA_ROTULO`, `FORMA_EXPLICACAO` (mapas de apresentação; só `ContratacoesPage` usa) | `pages/eventos/ContratacoesPage/constantes.ts` | repartir por export | Mover eventos |
 | `pages/eventos/DevolucoesPage.tsx` (1ª permissão `eventos.devolucao.efetivar`; o menu continua em Financeiro) | `pages/eventos/DevolucoesPage/DevolucoesPage.tsx` | mover | Mover eventos |
+| `pages/eventos/DevolucoesPage.dom.test.tsx` (entra com o #85) | `pages/eventos/DevolucoesPage/DevolucoesPage.dom.test.tsx` | mover (`vi.mock('@/mocks/financeiro')`, export `contas`: na etapa Mocks transversais, alvo `@/pages/mocks/contas`) | Mover eventos |
 | `mocks/devolucoes.ts` | `pages/eventos/DevolucoesPage/mocks/devolucoes.ts` | mover | Mover eventos |
 | `pages/eventos/LeitosPage.tsx` | `pages/eventos/LeitosPage/LeitosPage.tsx` | mover | Mover eventos |
+| `pages/eventos/LeitosPage.dom.test.tsx` (entra com o #85) | `pages/eventos/LeitosPage/LeitosPage.dom.test.tsx` | mover | Mover eventos |
+| `pages/eventos/apoioDeTeste.tsx` (entra com o #85; usado pelos testes de Contratações, Devoluções e Leitos) | `pages/eventos/apoioDeTeste.tsx` | manter | Mover eventos |
 | `mocks/leitos.ts` | `pages/eventos/LeitosPage/mocks/leitos.ts` | mover | Mover eventos |
 | `mocks/leitos.ts`: `TIPO_LEITO_ROTULO` (mapa de apresentação; só `LeitosPage` usa) | `pages/eventos/LeitosPage/constantes.ts` | repartir por export | Mover eventos |
 | `pages/eventos/InscricaoPage.tsx` | `pages/eventos/inscricao/InscricaoPage/InscricaoPage.tsx` | mover | Mover inscricao |
+| `pages/eventos/InscricaoPage.dom.test.tsx` (entra com o #86) | `pages/eventos/inscricao/InscricaoPage/InscricaoPage.dom.test.tsx` | mover | Mover inscricao |
 | `pages/publico/InscricaoPublicaPage.tsx` (tela pública, no módulo do recurso que cria) | `pages/eventos/inscricao/InscricaoPublicaPage/InscricaoPublicaPage.tsx` | mover | Mover inscricao |
-| `pages/publico/InscricaoPublicaPage.dom.test.tsx` | `pages/eventos/inscricao/InscricaoPublicaPage/InscricaoPublicaPage.dom.test.tsx` | mover | Mover inscricao |
+| `pages/publico/InscricaoPublicaPage.dom.test.tsx` (entra com o #86; amplia o teste que já existe na main) | `pages/eventos/inscricao/InscricaoPublicaPage/InscricaoPublicaPage.dom.test.tsx` | mover (os imports relativos `../../ds` e `../../app/apoioDeTeste` trocam de caminho nesta etapa; o segundo é só de efeito e sai em `testes/ global` (seção 5)) | Mover inscricao |
 | `components/Anamnese.tsx`: `BlocoDePergunta`, `Opcao`, `Resposta`, `MotivoDaPergunta` (só a pública consome) | `pages/eventos/inscricao/InscricaoPublicaPage/components/BlocoDePergunta/BlocoDePergunta.tsx` | repartir por export | Mover inscricao |
 | `components/Anamnese.tsx`: `respondida`, `disparaAlerta` | `pages/eventos/inscricao/InscricaoPublicaPage/utils/regraDeAlerta.ts` | repartir por export | Mover inscricao |
 | `mocks/inscricao.ts`: `EventoParaInscricao`, `eventos` (usados pela `InscricaoPage` e pelo mock da pública) | `pages/eventos/inscricao/mocks/eventos.ts` | repartir por export | Mover inscricao |
@@ -460,9 +495,11 @@ Os testes do #58 e do #59 se repartem por describe entre as unidades de destino.
 | Origem | Destino | Ação | Etapa |
 |---|---|---|---|
 | `pages/ayahuasca/AyahuascaPage.tsx` (1ª permissão `estoque.saldo.ler`) | `pages/estoque/AyahuascaPage/AyahuascaPage.tsx` | mover | Mover pessoas e estoque |
+| `pages/ayahuasca/AyahuascaPage.dom.test.tsx` (entra com o #87) | `pages/estoque/AyahuascaPage/AyahuascaPage.dom.test.tsx` | mover | Mover pessoas e estoque |
 | `mocks/ayahuasca.ts` | `pages/estoque/AyahuascaPage/mocks/ayahuasca.ts` | mover | Mover pessoas e estoque |
 | `mocks/ayahuasca.ts`: `rotuloDoMovimento` (mapa de apresentação; só `AyahuascaPage` usa) | `pages/estoque/AyahuascaPage/constantes.ts` | repartir por export | Mover pessoas e estoque |
 | `pages/estoque/FeitioPage.tsx` | `pages/estoque/FeitioPage/FeitioPage.tsx` | mover | Mover pessoas e estoque |
+| `pages/estoque/FeitioPage.dom.test.tsx` (entra com o #87) | `pages/estoque/FeitioPage/FeitioPage.dom.test.tsx` | mover | Mover pessoas e estoque |
 | `mocks/feitio.ts` | `pages/estoque/FeitioPage/mocks/feitio.ts` | mover | Mover pessoas e estoque |
 | `AyahuascaPage.tsx`: `Aba`, `ModoDoFormulario`, `RascunhoDeMovimento`, `SITUACAO`, `litros`, `valorTabular`, `corDoMovimento`; saldos; erro do formulário; rascunhos; estado e salvar; `Kpi`, `FichaDoLote`, `Dado`, `ModalDeMovimento`; abas | `AyahuascaPage/tipos.ts` e `constantes.ts`; `utils/{saldos, validarMovimento, rascunhoDeMovimento}.ts` (+ testes); `hooks/useEstoqueDeDaime.ts`; `components/{Kpi, AbaDeLotes, AbaDeMovimentos, AbaDeReservas, ModalDeMovimento, FichaDoLote (+ components/Dado)}/` | dividir | Dividir Ayahuasca e Feitio |
 | `FeitioPage.tsx`: concluir e estado; `PorQueApurar`, `FeitioEmCurso`, `Secao`, `PainelDeConclusao`, `Comparacao`, `Barra`, `Anteriores` | `FeitioPage/hooks/useFeitio.ts`; `components/{PorQueApurar, PainelDeConclusao, Anteriores, FeitioEmCurso (+ components/Secao), Comparacao (+ components/Barra)}/` | dividir | Dividir Ayahuasca e Feitio |
@@ -475,8 +512,11 @@ Os testes do #58 e do #59 se repartem por describe entre as unidades de destino.
 | Origem | Destino | Ação | Etapa |
 |---|---|---|---|
 | `pages/pessoas/PessoasPage.tsx` | `pages/pessoas/PessoasPage/PessoasPage.tsx` | mover | Mover pessoas e estoque |
+| `pages/pessoas/PessoasPage.dom.test.tsx` (entra com o #87) | `pages/pessoas/PessoasPage/PessoasPage.dom.test.tsx` | mover | Mover pessoas e estoque |
 | `mocks/pessoas.ts` | `pages/pessoas/PessoasPage/mocks/pessoas.ts` | mover | Mover pessoas e estoque |
 | `pages/pessoas/AnamnesePage.tsx` | `pages/pessoas/AnamnesePage/AnamnesePage.tsx` | mover | Mover pessoas e estoque |
+| `pages/pessoas/AnamnesePage.dom.test.tsx` (entra com o #87) | `pages/pessoas/AnamnesePage/AnamnesePage.dom.test.tsx` | mover | Mover pessoas e estoque |
+| `pages/pessoas/apoioDeTeste.tsx` (entra com o #87; usado pelos testes de Pessoas e Anamnese) | `pages/pessoas/apoioDeTeste.tsx` | manter | Mover pessoas e estoque |
 | `mocks/anamnese.ts` | `pages/pessoas/AnamnesePage/mocks/anamnese.ts` | mover | Mover pessoas e estoque |
 | `AnamnesePage.tsx`: `TOM_DA_SITUACAO`, `rotuloLabel`, `RascunhoDePergunta`; `mocks/anamnese.ts#TIPOS_DE_PERGUNTA` | `AnamnesePage/constantes.ts` e `tipos.ts` | dividir | Dividir Pessoas e Anamnese |
 | `AnamnesePage.tsx`: publicar, criar rascunho, trocar posição; `Cartao`, `BotaoDaPergunta` | `AnamnesePage/utils/versoes.ts` (+ teste); `hooks/useVersoesDoFormulario.ts`; `components/{Cartao, ListaDeVersoes, CabecalhoDaVersao, HistoricoDaVersao, PerguntasDaVersao (+ components/{BotaoDaPergunta, FormularioDeNovaPergunta})}/` | dividir | Dividir Pessoas e Anamnese |
@@ -594,3 +634,4 @@ Os testes do #58 e do #59 se repartem por describe entre as unidades de destino.
 - **`gerarHash`.** Tratado como função falsa da demonstração, que fica no mock (`mocks/prestacao.ts`), e não como regra de domínio: é um hex aleatório (`mocks/prestacao.ts:180-181`), sem regra de negócio.
 - **`AgendaPage.tsx:53`.** Decidido: só inteiros (Documento 8, seção 15). Ver a seção 3.1.
 - **Iniciais.** O `AppShell` e o Meu perfil calculam iniciais de jeitos diferentes. Ver a seção 14 do Documento 8 antes de adotar o `Avatar` no `AppShell` (seção 4.3).
+- **Apoios de teste repetidos.** Helpers iguais entre telas (`usarDensidade`, `fixarDensidade`, `definirDensidade`, `campoRotulado`, `textosDasFolhas` e outros) são consolidados depois que as seis caracterizações (#82 a #87) entrarem. O stub de `matchMedia` chega a `src/testes/configurarDom.ts` (Doc 8, §8.2) na etapa "testes/ global e setupFiles", com o corpo de hoje, sem ouvintes. O corpo passa à versão com ouvintes, a única que alcança a troca de densidade, no PR de consolidação dos apoios, fora de etapa de mover. Os helpers de consulta ainda não têm destino em §8.2 e ficam em aberto até a consolidação.
