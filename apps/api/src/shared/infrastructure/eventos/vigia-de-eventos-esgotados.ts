@@ -1,8 +1,10 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import type { OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { ContextoDaRequisicao } from '../contexto-da-requisicao.js';
 import { UnidadeDeTrabalho } from '../banco/unidade-de-trabalho.js';
 import { foraDaTransacaoAtiva } from '../banco/unidade-de-trabalho.mikro-orm.js';
+import { MODO_DO_PROCESSO } from './modo-do-processo.js';
+import type { ModoDoProcesso } from './modo-do-processo.js';
 import { TETO_DE_TENTATIVAS } from './teto-de-tentativas.js';
 
 export const MENSAGEM_DE_EVENTOS_ESGOTADOS = 'outbox: eventos esgotados';
@@ -36,9 +38,13 @@ export class VigiaDeEventosEsgotados implements OnModuleInit, OnModuleDestroy {
   private temporizador: NodeJS.Timeout | undefined;
   private quantidadeConhecida = 0;
 
-  constructor(private readonly unidadeDeTrabalho: UnidadeDeTrabalho) {}
+  constructor(
+    private readonly unidadeDeTrabalho: UnidadeDeTrabalho,
+    @Inject(MODO_DO_PROCESSO) private readonly modoDoProcesso: ModoDoProcesso,
+  ) {}
 
   onModuleInit(): void {
+    if (this.modoDoProcesso === 'cli') return;
     this.temporizador = setInterval(() => this.agendarVerificacao(), INTERVALO_DA_VIGIA_EM_MS);
   }
 

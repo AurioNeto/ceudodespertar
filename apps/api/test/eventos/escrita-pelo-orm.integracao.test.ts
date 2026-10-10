@@ -77,7 +77,7 @@ describe('Despachante · escrita pelo ORM dentro do savepoint do consumidor', ()
     const registro = {
       consumidoresPara: (tipo: string) => (tipo === TIPO_DO_EVENTO ? consumidores : []),
     } as unknown as RegistroDeConsumidores;
-    return new Despachante(unidadeDeTrabalho, registro, new SinalizadorDeEventos(), TIMEOUT_DO_CONSUMIDOR_EM_MS);
+    return new Despachante(unidadeDeTrabalho, registro, new SinalizadorDeEventos(), TIMEOUT_DO_CONSUMIDOR_EM_MS, 'api');
   }
 
   async function gravarEventoNoOutbox(): Promise<string> {

@@ -74,6 +74,7 @@ describe('Despachante · aborto por timeout do consumidor', () => {
       registro,
       new SinalizadorDeEventos(),
       TIMEOUT_DO_CONSUMIDOR_EM_MS,
+      'api',
     );
   }
 

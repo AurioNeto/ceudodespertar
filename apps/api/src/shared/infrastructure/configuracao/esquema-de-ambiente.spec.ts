@@ -39,6 +39,11 @@ describe('analisarAmbiente', () => {
     });
   });
 
+  it('mantém CDD_AMBIENTE opcional e a repassa quando presente', () => {
+    expect(analisarAmbiente({ ...OIDC_VALIDO }).CDD_AMBIENTE).toBeUndefined();
+    expect(analisarAmbiente({ ...OIDC_VALIDO, CDD_AMBIENTE: 'local' }).CDD_AMBIENTE).toBe('local');
+  });
+
   it('lança ErroDeAmbienteInvalido listando todos os problemas', () => {
     expect.assertions(4);
 
