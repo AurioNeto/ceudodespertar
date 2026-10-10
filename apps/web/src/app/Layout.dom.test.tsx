@@ -156,9 +156,12 @@ describe('acesso por permissão no Layout', () => {
   it('link direto sem permissão mostra o PermissionDenied, sem faixa e sem a tela', async () => {
     const tela = await montarLayoutEm(ROTAS.lote, TELAS, REGISTRO);
     expect(tela.texto()).toContain('Você não tem acesso a Verificação de lote');
-    expect(tela.texto()).toContain('financeiro.lancamento.confirmar');
-    expect(tela.texto()).toContain('Tesouraria');
-    expect(tela.texto()).toContain('o administrador');
+    expect(tela.texto()).toContain(
+      'Seu grupo é Tesouraria. Falta a permissão financeiro.lancamento.confirmar. ' +
+        'Se você precisa desse acesso, fale com o administrador.',
+    );
+    expect(tela.container.querySelector('p b')?.textContent).toBe('Tesouraria');
+    expect(tela.container.querySelector('p code')?.textContent).toBe('financeiro.lancamento.confirmar');
     expect(faixas(tela).length).toBe(0);
     expect(tela.texto()).not.toContain('conteudo-da-tela');
   });

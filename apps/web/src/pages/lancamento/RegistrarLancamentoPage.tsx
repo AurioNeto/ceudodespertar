@@ -40,6 +40,17 @@ const TIPOS: readonly { valor: TipoLancamento; label: string }[] = [
   { valor: 'TRANSFERENCIA', label: 'Transferência' },
 ];
 
+const TEXTOS_DO_ANEXO = {
+  label: 'Anexar comprovante',
+  hint: 'Um toque, direto da câmera. Nunca obrigatório.',
+  removeLabel: 'Remover comprovante',
+} as const;
+
+const TEXTOS_DA_SOMA = {
+  sumLabel: 'Soma reconhecida:',
+  sumNote: 'o valor composto vira pendência na conferência.',
+} as const;
+
 const TOM_DO_RECIBO: Record<TipoLancamento, ReceiptTone> = {
   ENTRADA: 'entrada',
   SAIDA: 'saida',
@@ -164,6 +175,7 @@ export function RegistrarLancamentoPage() {
 
         <AmountInput
           label={f.labelValor}
+          {...TEXTOS_DA_SOMA}
           value={f.campos.valor}
           onChange={(v) => f.alterar('valor', v)}
           hint="Escreva como você fala. Soma vale: 65+70."
@@ -228,6 +240,7 @@ export function RegistrarLancamentoPage() {
                 </div>
               )}
               <AttachmentCapture
+                {...TEXTOS_DO_ANEXO}
                 density={densidade}
                 filename={f.campos.anexo}
                 onRemove={() => f.alterar('anexo', null)}
@@ -235,7 +248,7 @@ export function RegistrarLancamentoPage() {
             </div>
           ) : (
             <AttachmentCapture
-              label="Anexar comprovante"
+              {...TEXTOS_DO_ANEXO}
               density={densidade}
               onCapture={() => f.alterar('anexo', 'IMG_2481.jpg')}
             />

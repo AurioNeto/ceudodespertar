@@ -3,7 +3,9 @@ import { Icon } from './Icon';
 import type { Density } from './Button';
 
 export interface AttachmentCaptureProps {
-  label?: string;
+  label: string;
+  hint: string;
+  removeLabel: string;
   filename?: string | null;
   onCapture?: () => void;
   onRemove?: () => void;
@@ -12,7 +14,9 @@ export interface AttachmentCaptureProps {
 }
 
 export function AttachmentCapture({
-  label = 'Comprovante',
+  label,
+  hint,
+  removeLabel,
   filename,
   onCapture,
   onRemove,
@@ -53,7 +57,7 @@ export function AttachmentCapture({
         <button
           type="button"
           onClick={onRemove}
-          title="Remover comprovante"
+          title={removeLabel}
           style={{
             minWidth: 'var(--tap-min)',
             minHeight: 'var(--tap-min)',
@@ -94,7 +98,7 @@ export function AttachmentCapture({
           {label}
         </span>
         <span style={{ display: 'block', font: 'var(--text-small)', color: 'var(--text-secondary)' }}>
-          Um toque, direto da câmera. Nunca obrigatório.
+          {hint}
         </span>
       </span>
     </button>
