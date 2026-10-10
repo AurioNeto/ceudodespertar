@@ -1,0 +1,12 @@
+services:
+  postgres:
+    ports: !override
+      - "127.0.0.1:${ACEITE_PORTA_POSTGRES}:5432"
+  mailpit:
+    ports: !override
+      - "127.0.0.1:${ACEITE_PORTA_MAILPIT}:8025"
+  keycloak:
+    environment:
+      KC_HOSTNAME: http://localhost:${ACEITE_PORTA_KEYCLOAK}
+    ports: !override
+      - "127.0.0.1:${ACEITE_PORTA_KEYCLOAK}:8080"
