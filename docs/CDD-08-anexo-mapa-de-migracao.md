@@ -108,7 +108,7 @@ Os destinos são agrupados por área: `app/`, `dados/`, `lib/`, `ds/`, `testes/`
 
 | Arquivo (linhas) | Parse hoje | Seção 14 do Documento 8 | Destino |
 |---|---|---|---|
-| `ds/AmountInput.tsx:24` | soma sem tirar o milhar | corrige a divergência 1 | `lerSoma` |
+| `ds/AmountInput.tsx:26` | soma sem tirar o milhar | corrige a divergência 1 | `lerSoma` |
 | `pages/lancamento/useFormularioDeLancamento.ts:78` | soma com o milhar tirado (referência) | lado correto da divergência 1 | `lerSoma` |
 | `pages/verificacao/PainelDeRevisao.tsx:36` | tira o milhar | — | `lerValorDigitado` |
 | `pages/ayahuasca/AyahuascaPage.tsx:47` | não tira o milhar: `1.500,00` vira 1,5 | corrige a divergência 2 (mesma causa) | `lerValorDigitado` |
@@ -206,10 +206,11 @@ Os destinos são agrupados por área: `app/`, `dados/`, `lib/`, `ds/`, `testes/`
 | novo (`GerenciarContasModal`, modal da Ayahuasca, `FormularioDeTrabalho`) | variante central do `PainelDeAcao`; `ds/organisms/Modal/` só se o protótipo não couber | criar | Primitivos novos e adoção do catálogo |
 | novo (padding por densidade repetido nas telas) | `ds/templates/CorpoDaTela/` | criar | Rotulo e CorpoDaTela |
 | `ds/AppShell.tsx`: `NavLink`, `NavSection`, `NavEntry`, `isSection` | `ds/templates/AppShell/navegacao.ts` | repartir por export | Dividir app/shell, sessão e ds |
-| `ds/AppShell.tsx`: `NavItem`, rail, chip do usuário, barra de contexto, navegação inferior | `ds/templates/AppShell/components/{NavItem, RailDeNavegacao, ChipDoUsuario, BarraDeContexto, NavInferior}/` | dividir | Dividir app/shell, sessão e ds |
+| `ds/AppShell.tsx`: `NavItem`, rail, chip do usuário, barra de contexto, navegação inferior (`ItemDaBarra`, `BotaoDoMenu`), menu de campo (`MenuDeCampo`, `GrupoNoMenu`, `PerfilNoMenu`), `SeloDoUsuario`, `SeloDeContagem` e `RotuloDeSecao` (do #67) | `ds/templates/AppShell/components/{NavItem, RailDeNavegacao, ChipDoUsuario, BarraDeContexto, NavInferior, MenuDeCampo, SeloDoUsuario, SeloDeContagem, RotuloDeSecao}/`; `SeloDoUsuario` some na adoção do `Avatar` | dividir | Dividir app/shell, sessão e ds |
+| `ds/AppShell.tsx`: `useMenuDeCampo`, `useDestinoDoFocoDeReserva` e `agruparForaDaBarra` (do #67) | `ds/templates/AppShell/hooks/` e `ds/templates/AppShell/utils/agruparForaDaBarra.ts` | dividir | Dividir app/shell, sessão e ds |
 | `ds/Button.tsx`: `VARIANTS`, `HOVER` | `ds/atoms/Button/constantes.ts` | dividir | Dividir app/shell, sessão e ds |
 | `ds/Icon.tsx`: `REGISTRY` | `ds/atoms/Icon/registro.ts` | dividir | Dividir app/shell, sessão e ds |
-| `ds/StatusBadge.tsx`: `TONES` | `ds/atoms/StatusBadge/constantes.ts` | dividir | Dividir app/shell, sessão e ds |
+| `ds/StatusBadge.tsx`: `TONES` (só as cores `bg` e `fg` desde o #72) | `ds/atoms/StatusBadge/constantes.ts` | dividir | Dividir app/shell, sessão e ds |
 | `ds/RegimeVocabulary.tsx`: `VOCAB`, `useTermo` | `ds/providers/RegimeVocabulary/{constantes.ts, useTermo.ts}` | dividir | Dividir app/shell, sessão e ds |
 | `ds/estados.tsx`: `Bar` | `ds/molecules/SkeletonList/components/BarraDeEsqueleto/` | dividir | Dividir app/shell, sessão e ds |
 | novo (`CorpoDaTela` aplicado nas 29 telas e em `TelaSemAcesso`) | `ds/templates/CorpoDaTela/` | criar | Rotulo e CorpoDaTela |
@@ -220,7 +221,7 @@ Cada adoção que muda o JSX passa pela captura de telas (seção 13.6 do Docume
 
 | Origem | Destino | Ação | Etapa |
 |---|---|---|---|
-| `pages/fechamento/FechamentoPage.tsx`: bloqueio do período e confirmação de reabertura (`confirmarReabertura`), re-implementados | `ds/molecules/PeriodLock/` e `ds/molecules/ConfirmAction/` | fundir | Primitivos novos e adoção do catálogo |
+| `pages/fechamento/FechamentoPage.tsx`: bloqueio do período e confirmação de reabertura (`confirmarReabertura`), re-implementados. Na adoção, o placeholder do motivo (`:386`) não tem prop no `PeriodLock`, e o `PeriodLock` não tem estado de envio | `ds/molecules/PeriodLock/` e `ds/molecules/ConfirmAction/` | fundir | Primitivos novos e adoção do catálogo |
 | valores em centavos exibidos nas telas (`formatarBRL` e `formatarDinheiro` no JSX; nenhuma página usa `AmountDisplay` hoje) | `ds/atoms/AmountDisplay/` | fundir | Primitivos novos e adoção do catálogo |
 | gavetas de detalhe: `GavetaDeDetalhe` (`LancamentosPage`), `PainelDeRevisao` (`VerificacaoLotePage`), `PainelDeQuebra` (`RelatoriosPage`), `ModalDeMovimento` (`AyahuascaPage`) | `ds/organisms/PainelDeAcao/` (do #55) | fundir | Primitivos novos e adoção do catálogo |
 | avatar com iniciais: `pages/perfil/MeuPerfilPage.tsx` (`iniciais`) e `ds/AppShell.tsx` (`slice(0, 2)`) | `ds/atoms/Avatar/` | fundir | Primitivos novos e adoção do catálogo |
