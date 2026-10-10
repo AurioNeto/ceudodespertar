@@ -760,7 +760,7 @@ Títulos na ordem de leitura. Dependências por título.
 | Mover fundação do ds (concluída) | Primitivos para o ds | — |
 | Mover financeiro I (concluída) | Mover fundação do ds | — |
 | Mover financeiro II (concluída) | Mover financeiro I | — |
-| Mover lancamentos | Mover financeiro II | — |
+| Mover lancamentos (concluída) | Mover financeiro II | — |
 | Mover eventos | Mover lancamentos | — |
 | Mover inscricao | Mover eventos | — |
 | Mover pessoas e estoque | Mover inscricao | — |
