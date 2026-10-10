@@ -261,3 +261,5 @@ export const CATALOGO_DO_DOC_3_SECAO_11: readonly CasoDoDoc3[] = [
     etapa: 'B0',
   },
 ];
+
+export const MARCAS_COBERTAS_NO_ACEITE: readonly string[] = ['T26 · Keycloak'];

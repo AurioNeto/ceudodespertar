@@ -169,6 +169,18 @@ export function lacunasComProblema(
     });
 }
 
+export function lacunasSemCoberturaNoAceite(
+  catalogo: readonly CasoDoDoc3[],
+  marcasCobertasNoAceite: readonly string[],
+  testesDoAceite: readonly TesteExtraido[],
+): readonly string[] {
+  return catalogo
+    .flatMap((caso) => caso.lacunasDeclaradas ?? [])
+    .map(({ marca }) => marca)
+    .filter((marca) => marcasCobertasNoAceite.includes(marca))
+    .filter((marca) => !temTesteAtivo(testesDoAceite, marca));
+}
+
 export interface ConfiguracaoDoVitest {
   readonly nome: string;
   readonly include: readonly string[];

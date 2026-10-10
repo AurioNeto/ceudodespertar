@@ -46,6 +46,14 @@ export function lerTestesDaApi(configs: readonly ConfiguracaoDoVitest[]): readon
   return testesDosArquivos(RAIZ_DA_API, executados);
 }
 
+export function lerTestesDoAceite(): readonly TesteExtraido[] {
+  const pasta = 'test/keycloak-real';
+  const aceites = readdirSync(join(RAIZ_DA_API, pasta))
+    .filter((nome) => nome.endsWith('.aceite.ts'))
+    .map((nome) => `${pasta}/${nome}`);
+  return testesDosArquivos(RAIZ_DA_API, aceites);
+}
+
 export function lerTestesDosContratos(workflow: string): readonly TesteExtraido[] {
   const { scripts } = JSON.parse(ler('packages', 'contracts', 'package.json')) as Pacote;
   const rodaNoCi = workflow.includes('pnpm --filter @cdd/contracts test');
