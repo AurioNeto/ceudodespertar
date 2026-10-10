@@ -1293,6 +1293,21 @@ describe('InscricaoPage: valor devido na tela', () => {
     expect(folhaComTexto(container, 'span', 'R$ 100,00 de contribuição · R$ 18,00 de alimentação')).toBeDefined();
   });
 
+  it('refeição marcada em segundo lugar e desmarcada — a marcada em primeiro lugar continua na soma', async () => {
+    const container = await abrirComPessoa('Helena Duarte');
+    await trocarEvento(container, JORNADA);
+    await digitar(campoDoValor(container), '100');
+    await clicar(opcaoEmLinha(container, 'Jantar'));
+    await clicar(opcaoEmLinha(container, 'Café da manhã'));
+
+    await clicar(opcaoEmLinha(container, 'Café da manhã'));
+
+    expect(marcado(opcaoEmLinha(container, 'Jantar'))).toBe(true);
+    expect(marcado(opcaoEmLinha(container, 'Café da manhã'))).toBe(false);
+    expect(folhaComTexto(container, 'span', 'R$ 130,00')).toBeDefined();
+    expect(folhaComTexto(container, 'span', 'R$ 100,00 de contribuição · R$ 30,00 de alimentação')).toBeDefined();
+  });
+
   it.each([
     { digitado: '1.500,50', total: 'R$ 1.500,50' },
     { digitado: '1.500.000,00', total: 'R$ 1.500.000,00' },
