@@ -3,7 +3,9 @@ import type { CSSProperties } from 'react';
 import { formatarValor } from '../lib/formato';
 
 export interface AmountInputProps {
-  label?: string;
+  label: string;
+  sumLabel: string;
+  sumNote: string;
   value?: string;
   onChange?: (value: string) => void;
   hint?: string;
@@ -14,7 +16,7 @@ export interface AmountInputProps {
  * Aceita expressão somada ("40+25,50"): o valor composto é reconhecido na hora
  * e vira pendência na conferência, em vez de travar o registro (Doc 1 §5.3).
  */
-export function AmountInput({ label = 'Quanto foi', value = '', onChange, hint, style }: AmountInputProps) {
+export function AmountInput({ label, sumLabel, sumNote, value = '', onChange, hint, style }: AmountInputProps) {
   const [interno, setInterno] = useState(value);
   const val = onChange ? value : interno;
   const set = (x: string) => (onChange ? onChange(x) : setInterno(x));
@@ -80,11 +82,11 @@ export function AmountInput({ label = 'Quanto foi', value = '', onChange, hint, 
 
       {total != null ? (
         <div style={{ marginTop: 9, font: 'var(--text-small)', color: 'var(--color-royal-ink)' }}>
-          Soma reconhecida:{' '}
+          {sumLabel}{' '}
           <b data-numeric style={{ font: 'var(--text-amount)' }}>
             {formatarValor(total)}
           </b>{' '}
-          — o valor composto vira pendência na conferência.
+          {`— ${sumNote}`}
         </div>
       ) : hint ? (
         <div style={{ marginTop: 9, font: 'var(--text-small)', color: 'var(--text-secondary)' }}>{hint}</div>
