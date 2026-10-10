@@ -1,0 +1,1 @@
+export { VerificacaoLotePage } from './VerificacaoLotePage';

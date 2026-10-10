@@ -1,4 +1,4 @@
-import type { SheetOption } from '../ds';
+import type { SheetOption } from '@/ds';
 
 /**
  * Listas parametrizáveis. Na v1 elas nascem de seed (Doc 1 §4.8); aqui são

@@ -1,8 +1,8 @@
 import type { LancamentoNaLista } from '@cdd/contracts';
-import type { ReceiptLine, ReceiptTone, RecordStatus } from '../ds';
-import type { NaturezaVisual } from '../ds';
-import { formatarData } from './formato';
-import { rotuloDaSituacao, rotuloDoTipo } from '../mocks/lancamentos';
+import type { ReceiptLine, ReceiptTone, RecordStatus } from '@/ds';
+import type { NaturezaVisual } from '@/ds';
+import { formatarData } from '@/lib/formato';
+import { rotuloDaSituacao, rotuloDoTipo } from './rotulosDoLancamento';
 
 export const tomDoRecibo = (tipo: LancamentoNaLista['tipo']): ReceiptTone =>
   tipo === 'ENTRADA' ? 'entrada' : tipo === 'TRANSFERENCIA' ? 'transferencia' : 'saida';

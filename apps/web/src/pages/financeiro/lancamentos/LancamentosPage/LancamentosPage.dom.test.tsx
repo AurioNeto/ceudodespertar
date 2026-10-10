@@ -21,12 +21,12 @@ import {
   valorDeEntrada,
   valorDeSaida,
   valorDeTransferencia,
-} from './apoioDeTeste';
+} from '../apoioDeTeste';
 
 type Transformacao = (lista: readonly LancamentoNaLista[]) => readonly LancamentoNaLista[];
 
 const livro = vi.hoisted(() => ({ transformar: ((lista) => lista) as Transformacao }));
-vi.mock('@/mocks/lancamentos', async (importarOriginal) => {
+vi.mock('@/pages/financeiro/mocks/lancamentos', async (importarOriginal) => {
   const original = await importarOriginal<{ lancamentos: readonly LancamentoNaLista[] }>();
   return {
     ...original,

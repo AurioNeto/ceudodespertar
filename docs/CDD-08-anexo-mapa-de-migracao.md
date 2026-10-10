@@ -242,7 +242,7 @@ Os testes do #58, do #59, do #61 e do #62 se repartem por describe entre as unid
 | `components/Blocos.dom.test.tsx`, describes `Th` e `Td` | `ds/atoms/Th/Th.dom.test.tsx` e `ds/atoms/Td/Td.dom.test.tsx` | repartir por describe | Primitivos para o ds |
 | `components/Blocos.dom.test.tsx`, describes `Recado`, `Cartao` e `BarraDeProporcao` | `ds/molecules/Recado/`, `ds/atoms/Cartao/` e `ds/atoms/BarraDeProporcao/` (`.dom.test.tsx`) | repartir por describe | Primitivos para o ds |
 | `components/Campo.dom.test.tsx` (entra com o #58), describes `RotuloDeCampo`, `Select`, `SeletorDeTipo` e `Interruptor` | `ds/atoms/RotuloDeCampo/`, `ds/molecules/Select/`, `ds/molecules/SeletorDeTipo/` e `ds/atoms/Interruptor/` (`.dom.test.tsx`) | repartir por describe | Primitivos para o ds |
-| `components/Campo.dom.test.tsx`, describe `CampoDeTags` | `pages/financeiro/lancamentos/RegistrarLancamentoPage/components/CampoDeTags/CampoDeTags.dom.test.tsx` | repartir por describe | Mover lancamentos |
+| `components/Campo.dom.test.tsx`, describe `CampoDeTags` | `pages/financeiro/lancamentos/RegistrarLancamentoPage/components/CampoDeTags/CampoDeTags.dom.test.tsx` | mover (o arquivo só tinha esse describe desde Primitivos para o ds) | Mover lancamentos |
 | `lib/recibo.test.ts` (entra com o #58) | `pages/financeiro/lancamentos/utils/recibo.test.ts` | mover | Mover lancamentos |
 | `lib/formato.test.ts` (entra com o #58), describe `iniciais` | `ds/atoms/Avatar/utils/iniciais.test.ts` | repartir por describe | Primitivos novos e adoção do catálogo |
 | `lib/formato.test.ts`, describes `formatarDinheiro`, `formatarBRL`, `formatarInteiro`, `formatarLitros`, `formatarDiaMes`, `formatarCompetencia`, `competenciaPorExtenso`, `pluralizar` e o `it` de `formatarData` no describe de fuso | `pages/utils/formato.test.ts` | repartir por describe (e por `it`, no fuso) | lib/formato por export |
@@ -369,15 +369,15 @@ Os testes do #58, do #59, do #61 e do #62 se repartem por describe entre as unid
 | `pages/lancamento/useFormularioDeLancamento.ts` | `pages/financeiro/lancamentos/RegistrarLancamentoPage/hooks/useFormularioDeLancamento.ts` | mover | Mover lancamentos |
 | `pages/lancamento/useFormularioDeLancamento.dom.test.ts` (entra com o #82) | `pages/financeiro/lancamentos/RegistrarLancamentoPage/hooks/useFormularioDeLancamento.dom.test.ts` | mover | Mover lancamentos |
 | `mocks/opcoes.ts` | `pages/financeiro/lancamentos/RegistrarLancamentoPage/mocks/opcoes.ts` | mover | Mover lancamentos |
-| `components/Campo.tsx`: `CampoDeTags`, `CampoDeTagsProps` | `pages/financeiro/lancamentos/RegistrarLancamentoPage/components/CampoDeTags/` | repartir por export | Mover lancamentos |
+| `components/Campo.tsx`: `CampoDeTags`, `CampoDeTagsProps` | `pages/financeiro/lancamentos/RegistrarLancamentoPage/components/CampoDeTags/CampoDeTags.tsx` (+ `index.ts`, só com `CampoDeTags`) | mover (o arquivo só tinha essas duas declarações desde Primitivos para o ds) | Mover lancamentos |
 | `pages/registros/LancamentosPage.tsx` | `pages/financeiro/lancamentos/LancamentosPage/LancamentosPage.tsx` | mover | Mover lancamentos |
 | `pages/registros/LancamentosPage.dom.test.tsx` (entra com o #82) | `pages/financeiro/lancamentos/LancamentosPage/LancamentosPage.dom.test.tsx` | mover | Mover lancamentos |
 | `mocks/lancamentos.ts`: `corDoTipo` (só Lançamentos) | `pages/financeiro/lancamentos/LancamentosPage/utils/corDoTipo.ts` | repartir por export | Mover lancamentos |
 | `pages/registros/MeusRegistrosPage.tsx` | `pages/financeiro/lancamentos/MeusRegistrosPage/MeusRegistrosPage.tsx` | mover | Mover lancamentos |
 | `pages/registros/MeusRegistrosPage.dom.test.tsx` (entra com o #82) | `pages/financeiro/lancamentos/MeusRegistrosPage/MeusRegistrosPage.dom.test.tsx` | mover | Mover lancamentos |
 | `pages/registros/apoioDeTeste.tsx` (entra com o #82; usado pelos testes de Lançamentos e Meus registros) | `pages/financeiro/lancamentos/apoioDeTeste.tsx` | mover | Mover lancamentos |
-| `mocks/lancamentos.ts`: `meusLancamentos` | `pages/financeiro/lancamentos/MeusRegistrosPage/mocks/meusLancamentos.ts` | repartir por export | Mover lancamentos |
-| `mocks/sessao.ts`: `NOME_DO_REGISTRADOR_DE_EXEMPLO` (só `meusLancamentos`) | `pages/financeiro/lancamentos/MeusRegistrosPage/mocks/meusLancamentos.ts` | repartir por export | Mover lancamentos |
+| `mocks/lancamentos.ts`: `meusLancamentos` | `pages/financeiro/mocks/lancamentos.ts`, junto de `lancamentos`. Destino final: `pages/financeiro/lancamentos/MeusRegistrosPage/mocks/meusLancamentos.ts`. Descer troca o módulo do `vi.mock` de `MeusRegistrosPage.dom.test.tsx`, e o conferir-movimento acusa essa troca; desce na etapa que declarar a diferença | repartir por export (fica no arquivo de `lancamentos`) | Mover lancamentos |
+| `mocks/sessao.ts`: `NOME_DO_REGISTRADOR_DE_EXEMPLO` (só `meusLancamentos`) | `mocks/sessao.ts`. Destino final: `pages/financeiro/lancamentos/MeusRegistrosPage/mocks/meusLancamentos.ts`, junto de `meusLancamentos` | manter (desce com `meusLancamentos`) | Mover lancamentos |
 | `pages/verificacao/VerificacaoLotePage.tsx` | `pages/financeiro/lancamentos/VerificacaoLotePage/VerificacaoLotePage.tsx` | mover | Mover lancamentos |
 | `pages/verificacao/VerificacaoLotePage.dom.test.tsx` (entra com o #82) | `pages/financeiro/lancamentos/VerificacaoLotePage/VerificacaoLotePage.dom.test.tsx` | mover | Mover lancamentos |
 | `pages/verificacao/PainelDeRevisao.tsx` | `pages/financeiro/lancamentos/VerificacaoLotePage/components/PainelDeRevisao/PainelDeRevisao.tsx` | mover | Mover lancamentos |

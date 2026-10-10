@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { CampoDeTags } from './Campo';
+import { CampoDeTags } from './CampoDeTags';
 import {
   botaoComTexto,
   clicar,

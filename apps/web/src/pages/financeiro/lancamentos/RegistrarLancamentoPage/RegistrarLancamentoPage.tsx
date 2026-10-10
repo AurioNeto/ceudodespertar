@@ -22,8 +22,8 @@ import {
   SeletorDeTipo,
   Interruptor,
 } from '@/ds';
-import { useSessao } from '../../app/sessao';
-import { CampoDeTags } from '../../components/Campo';
+import { useSessao } from '@/app/sessao';
+import { CampoDeTags } from './components/CampoDeTags';
 import {
   opcoesDeCategoria,
   opcoesDeCerimonia,
@@ -34,8 +34,8 @@ import {
   opcoesDePagamento,
   opcoesDePessoa,
   opcoesDeUnidade,
-} from '../../mocks/opcoes';
-import { useFormularioDeLancamento, type CampoComPicker } from './useFormularioDeLancamento';
+} from './mocks/opcoes';
+import { useFormularioDeLancamento, type CampoComPicker } from './hooks/useFormularioDeLancamento';
 
 const TIPOS: readonly { valor: TipoLancamento; label: string }[] = [
   { valor: 'SAIDA', label: 'Saída' },

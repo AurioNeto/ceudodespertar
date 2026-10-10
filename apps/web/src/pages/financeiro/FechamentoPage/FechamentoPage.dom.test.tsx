@@ -35,7 +35,7 @@ vi.mock('@/mocks/financeiro', async (importarOriginal) => {
   };
 });
 
-vi.mock('@/mocks/lancamentos', async (importarOriginal) => {
+vi.mock('@/pages/financeiro/mocks/lancamentos', async (importarOriginal) => {
   const original = await importarOriginal<{ lancamentos: readonly LancamentoNaLista[] }>();
   return {
     ...original,

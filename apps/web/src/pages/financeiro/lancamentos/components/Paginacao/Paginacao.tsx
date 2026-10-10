@@ -1,4 +1,4 @@
-import type { Density } from '../ds';
+import type { Density } from '@/ds';
 
 export interface PaginacaoProps {
   pagina: number;

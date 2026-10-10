@@ -4,7 +4,7 @@ import { Button, Icon, ScreenHeader, StatusBadge, type BadgeTone, type IconName,
 import { ROTAS, type RotaId } from '@/app/navegacao';
 import { competenciaPorExtenso, formatarCompetencia, formatarDinheiro, pluralizar } from '@/lib/formato';
 import { contas } from '@/mocks/financeiro';
-import { lancamentos } from '@/mocks/lancamentos';
+import { lancamentos } from '../mocks/lancamentos';
 import { filaDeVerificacaoInicial } from '@/mocks/verificacao';
 import { competenciaAtual } from '@/mocks/sessao';
 
