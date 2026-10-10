@@ -738,3 +738,72 @@ As seis questões da v2.0 foram respondidas. Registro das decisões e do que cad
 2. **Consumo médio por consagrante.** Um número inicial arbitrado pela coordenação basta; o sistema recalibra sozinho com o histórico (Doc 2, EC4). Sem ele, a estimativa não sai do papel.
 3. **Quem, na prática, vai registrar o consumo real?** A permissão está em dois grupos. Se for sempre a mesma pessoa e ela não for do acolhimento, talvez seja vínculo (`DIRIGENTE`) e não grupo — mesma discussão de §8.
 4. **Revisão de acessos.** Com seis pessoas isso se resolve numa conversa. Vale marcar quando: sugestão de revisar a matriz ao fim da Fase 1, quando o uso real já mostrar o que ficou apertado ou frouxo demais.
+
+---
+
+## 14. Notas de implementação do B0
+
+Registro do que o código do B0 fixou ou ajustou em relação a este documento (outubro/2026). O corpo acima não foi reescrito; onde ele diverge, vale o que está aqui.
+
+### 14.1 Catálogo com 64 permissões
+
+O catálogo em código (`packages/contracts/src/identidade/permissoes.ts`) tem **64** permissões, uma a menos que as 65 de §4: `pessoas.anamnese.responder_por_terceiro` saiu porque não tem caso de uso (Doc 6 §2.6). A migration `b0-003-catalogo-de-permissoes/catalogo.sql` espelha o mesmo conjunto no banco. Dois testes conferem o espelho, em código, módulo e descrição: o T29(c) compara o INSERT das migrations com o catálogo em código (`packages/contracts/test/catalogo.test.mjs:144`), e o T29(d) compara a tabela `identidade.permissao` do banco migrado com o mesmo catálogo (`apps/api/test/banco/garantias/t29d-catalogo-de-permissoes.integracao.test.ts:18`). Os dois são desdobramentos do T29 de §11, que trata de outra garantia: toda permissão concedida existe no catálogo.
+
+| Módulo | Permissões |
+|---|---:|
+| `financeiro` | 26 |
+| `eventos` | 18 |
+| `pessoas` | 11 |
+| `estoque` | 5 |
+| `sistema` | 4 |
+| **Total** | **64** |
+
+### 14.2 Os seis grupos de sistema no código
+
+Fonte: `apps/api/src/modules/identidade/domain/grupo/grupos-de-sistema.ts`. Os rótulos são os de §5.
+
+| Código | Nome | Permissões |
+|---|---|---:|
+| `ADMINISTRADOR` | Administrador | 64 (o catálogo inteiro) |
+| `GOVERNANCA` | Governança | 18 |
+| `TESOURARIA` | Tesouraria | 38 |
+| `ACOLHIMENTO` | Acolhimento e Organização | 28 |
+| `REGISTRO` | Registro rápido | 4 |
+| `LEITURA` | Leitura | 5 |
+
+O `ACOLHIMENTO` do código segue a matriz de §6, e não a lista de §12: não tem `pessoas.anamnese.responder_por_terceiro`, que saiu do catálogo, nem `financeiro.plano_contas.ler`, que §6.1 marca como não concedida ao grupo.
+
+### 14.3 TESOURARIA enumerada
+
+§12 deixa a lista da Tesouraria como `/* ver matriz §6 */`. No código ela tem **38** permissões:
+
+- **Financeiro (24):** `financeiro.lancamento.registrar`, `financeiro.lancamento.confirmar`, `financeiro.lancamento.estornar`, `financeiro.lancamento.ler`, `financeiro.lancamento.ler_proprios`, `financeiro.transferencia.registrar`, `financeiro.conta.ler`, `financeiro.conta.gerenciar`, `financeiro.fundo.gerenciar`, `financeiro.fatura.gerenciar`, `financeiro.emprestimo.gerenciar`, `financeiro.adiantamento.registrar`, `financeiro.adiantamento.ressarcir`, `financeiro.reembolsos.ler`, `financeiro.importacao.executar`, `financeiro.conciliacao.executar`, `financeiro.periodo.fechar`, `financeiro.plano_contas.ler`, `financeiro.plano_contas.gerenciar`, `financeiro.dre.ler`, `financeiro.fluxo_caixa.ler`, `financeiro.resultado_evento.ler`, `financeiro.prestacao_contas.gerar`, `financeiro.prestacao_contas.detalhada`
+- **Eventos (7):** `eventos.inscricao.ler`, `eventos.pagamento.registrar`, `eventos.arrecadacao.ler`, `eventos.devolucao.solicitar`, `eventos.devolucao.efetivar`, `eventos.operacao.ler`, `eventos.contratacao.gerenciar`
+- **Pessoas (3):** `pessoas.pessoa.registrar`, `pessoas.pessoa.editar`, `pessoas.pessoa.ler`
+- **Estoque (4):** `estoque.item.gerenciar`, `estoque.movimento.registrar`, `estoque.feitio.gerenciar`, `estoque.saldo.ler`
+
+Fica de fora `financeiro.periodo.reabrir`, que é só do `ADMINISTRADOR` (§6.1), e nenhuma permissão `sistema.*` é concedida à Tesouraria.
+
+### 14.4 Desativar é a situação `SUSPENSO`
+
+§2 modela o usuário com `ativo: boolean`. No código, o usuário tem uma situação: `ATIVO`, `CONVITE_PENDENTE`, `SUSPENSO` ou `REVOGADO` (`packages/contracts/src/identidade/tipos.ts:12`). **Desativar leva o usuário a `SUSPENSO`** e emite `USUARIO_SUSPENSO`. Reativar só sai de `SUSPENSO` e volta a `ATIVO` (`usuario.ts`, métodos `desativar` e `reativar`). Na API, isso corresponde a `POST /api/v1/identidade/usuarios/:id/desativar` e `.../reativar`, ambos com motivo (#45). O "usuário inativo" de US4 e T26 é, portanto, o usuário fora de `ATIVO`.
+
+### 14.5 Exceção ao T24: `GET /eu` sem grupo responde 200
+
+T24 pede 403 para usuário sem grupo em **qualquer** endpoint. A exceção é deliberada: **um usuário `ATIVO` sem nenhum grupo recebe 200 em `GET /api/v1/eu`**, com `grupos` e `permissoes` vazios. A rota usa a marca `@ApenasUsuarioAtivo()`, que exige um usuário ativo mas nenhuma permissão (`eu.controller.ts:22`). É por essa rota que o front descobre que o usuário não tem grupo.
+
+- A marca foi criada no #27, e a rota entrou no #39.
+- O teste estrutural de rotas acusa `usuario-ativo-fora-do-eu` se a marca aparecer em outra rota (`apps/api/test/estrutural/rotas/verificar-rotas.ts:49-51`; rota permitida em `politica-de-rotas.ts:3` e `:7`).
+- A varredura do T24 deixa a rota de fora do teste de 403 (`apps/api/test/autorizacao/t24-usuario-sem-grupo.spec.ts:112-115`).
+- O 200 com listas vazias está provado em `apps/api/test/identidade/acesso/contexto-de-acesso-e-eu.integracao.test.ts:109-117`.
+
+Também ficam fora da varredura, por motivos próprios, `POST /api/v1/eu/ativacao` (marca `apenas-identificado`, que não exige usuário porque é ela que o vincula) e as rotas públicas de saúde (`politica-de-rotas.ts:8-10`).
+
+### 14.6 T26: usuário desativado no provedor não obtém token
+
+T26 é coberto em duas camadas:
+
+- **Na API**, o usuário fora de `ATIVO` recebe 401 com o código da situação (`USUARIO_SUSPENSO`, `USUARIO_CONVITE_PENDENTE`, `USUARIO_REVOGADO`; `contexto-de-acesso-e-eu.integracao.test.ts:128-144`). O contexto de acesso fica em cache por 60 s (`cache-de-contexto-de-acesso.ts:5`). A desativação pela API limpa o cache pelo evento `USUARIO_SUSPENSO`, via outbox (`invalidador-do-cache-de-acesso.ts:21`). Se a suspensão vier sem evento (por exemplo, direto no banco), as outras rotas ainda aceitam o usuário até o fim do TTL ou até ele chamar `GET /eu`, que relê a situação, responde 401 e limpa o cache (`contexto-de-acesso-e-eu.integracao.test.ts:146-163`).
+- **No Keycloak**, a suspensão é refletida no provedor (#79). O aceite real (`apps/api/test/keycloak-real/ponta-a-ponta.aceite.ts:229`, teste `T26 · Keycloak`) prova que o login com a senha certa responde 400 `invalid_grant`, sem `access_token` nem `refresh_token`. O aceite roda no job `e2e` da CI (#94).
+
+O catálogo da suíte declara `T26 · Keycloak` como lacuna da etapa B0, a ser coberta no aceite (`apps/api/test/autorizacao/catalogo-do-doc-3-secao-11.ts:235` e `:265`). A verificação **M5** do meta-teste (`meta-da-suite.spec.ts:290`) exige que, enquanto essa lacuna estiver declarada, exista em `apps/api/test/keycloak-real/*.aceite.ts` um teste **ativo** (não `todo` nem `skip`) com a marca no título. Ela também exige que `T26 · Keycloak` continue na lista de marcas cobertas no aceite. A M5 não confere o resultado do teste. Quem prova o comportamento é o próprio aceite.

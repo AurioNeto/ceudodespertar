@@ -393,6 +393,27 @@ E as correções de modelo que as telas ainda não receberam (§2.5, *Onde cada 
 
 > As três regressões estruturais (T28, T29, T30) entram **aqui**, com o primeiro endpoint. Depois de vinte endpoints, T30 vira uma tarde de descobrir o que ficou aberto.
 
+#### Estado ao fim do B0 (outubro/2026)
+
+O backend do B0 foi mesclado na `main` entre 28/09/2026 (#2, #3 e #12) e 10/10/2026 (#94). **Não há produção.** Nenhum ambiente fora da máquina do dono existe, e a aplicação roda só na máquina do dono e na CI. Localmente, `pnpm infra:subir` sobe só a infraestrutura (Postgres, storage, Mailpit e Keycloak), e a API sobe à parte (`pnpm --filter @cdd/api dev`). A entrega "em produção" prevista acima continua pendente, à espera da decisão de topologia e provedor de deploy.
+
+| Frente | O que ficou na `main` | PRs |
+|---|---|---|
+| Identidade | Agregados `Usuario` e `Grupo`, persistência com trava otimista e outbox na mesma transação, seed dos seis grupos por instituição, guarda global com JWT e marcas de rota, `GET /eu` | #25, #26, #27, #38, #39 |
+| Gestão de usuários e grupos | Convite, reenvio limitado a um por minuto (429), listagem e detalhe; desativar, reativar e definir grupos sem zerar os administradores; listar grupos, conceder e revogar permissão, renomear; ativação do convite em `POST /eu/ativacao` | #45, #48, #49, #74, #76 |
+| Auditoria | Trilha de auditoria síncrona e consulta da trilha | #41 |
+| Outbox e despachante | Outbox transacional, despachante e `@ReageA`, ligados na aplicação; evento esgotado vira alerta por log, e não prontidão | #24, #40, #35 |
+| Keycloak real | O convite sai pelo Keycloak e o e-mail fica travado no realm; suspensão e reativação refletidas no provedor | #65, #79 |
+| Bootstrap e seed | `pnpm db:identidade:bootstrap` cria a instituição e o primeiro administrador, uma vez só; `pnpm db:identidade:seed-demo` é recusado fora de `local`/`ci` | #81, #89, #90, #91 |
+| Suítes estruturais e de autorização | Catálogo do Doc 3 §11 com meta-teste por etapa e T24; T30 (toda rota tem marca de acesso e escrita exige permissão); T28a (escrita no banco só pela persistência); T28b (comparação com nome de grupo proibida). T29(c) confere que o INSERT das migrations espelha o catálogo do código, e T29(d), que a tabela do banco migrado também. O T29(c) roda no pacote `@cdd/contracts`; o resto, na API | #13, #17, #53, #66, #75, #78 |
+| CI | Job de qualidade (typecheck, lint, fronteiras e testes unitários), job de integração e job `e2e`, que roda o aceite real com Keycloak e Mailpit; os três disparam em todo PR e em push na `main` | #16, #17, #94 |
+| Front | Camada de dados, tema CDD do Keycloak e login real por OIDC | #28, #29, #30 |
+
+**Ficou para depois:**
+- **Front `/entrar` e T28a/T28b do web.** A ativação do convite na tela de entrada e as duas regressões estruturais do lado do web estão na issue #77, à espera da refatoração do front que está em andamento.
+- **Reenvio do convite inicial do bootstrap pelo CLI.** É um comando opcional e não foi iniciado. Se o envio falhar depois do commit, a recuperação está no README (*Bootstrap da identidade*). Não confundir com o reenvio de convite pela API (`POST /api/v1/identidade/usuarios/:id/convite/reenviar`), que já existe.
+- **Notificação real de evento esgotado.** Hoje a `VigiaDeEventosEsgotados` só registra `outbox: eventos esgotados` no log, verificando a cada 60 s e escrevendo só quando a contagem muda. Fora do log, ninguém é avisado.
+
 ### B1 — Financeiro, o núcleo · ~6 semanas · **a etapa que decide**
 
 `Unidade` (com regime), `Categoria`, `Conta`, `Lancamento` (com `Pendencia`, L1–L11), `Transferencia`, `PeriodoContabil`, `Fundo`. Read models: fila de conferência, meus registros, lançamentos, contas e saldos, DRE, fluxo de caixa, resultado por cerimônia.
