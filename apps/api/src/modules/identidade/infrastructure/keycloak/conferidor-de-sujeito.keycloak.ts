@@ -17,7 +17,8 @@ export class ConferidorDeSujeitoKeycloak extends ConferidorDeSujeito {
       return await this.cliente.executar({ renovarTokenEm401: true }, async (sessao) => {
         const resposta = await sessao.requisitar({ metodo: 'GET', caminho: `/users/${encodeURIComponent(sujeito)}` });
         const usuario = UsuarioNoKeycloak.safeParse(resposta.json());
-        return usuario.success ? usuario.data.email : undefined;
+        if (!usuario.success) throw new KeycloakIndisponivel('resposta fora do formato esperado');
+        return usuario.data.email;
       });
     } catch (erro) {
       if (erro instanceof UsuarioNaoExisteNoKeycloak) return undefined;

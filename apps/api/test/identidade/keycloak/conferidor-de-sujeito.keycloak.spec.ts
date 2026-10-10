@@ -52,7 +52,7 @@ describe('ConferidorDeSujeitoKeycloak', () => {
     ]);
   });
 
-  it('usuário inexistente no Keycloak (404) vira e-mail ausente', async () => {
+  it('usuário inexistente no Keycloak (404) segue sendo e-mail ausente, que a aplicação trata como outro sujeito, não como indisponibilidade', async () => {
     servidor.definir('GET', CAMINHO_DO_SUJEITO, { status: 404 });
 
     expect(await conferidor().emailDo(SUJEITO)).toBeUndefined();
@@ -64,10 +64,15 @@ describe('ConferidorDeSujeitoKeycloak', () => {
     expect(await conferidor().emailDo(SUJEITO)).toBeUndefined();
   });
 
-  it('resposta com e-mail de tipo errado vira e-mail ausente', async () => {
-    servidor.definir('GET', CAMINHO_DO_SUJEITO, { status: 200, corpo: { email: 42 } });
+  it.each([
+    ['e-mail de tipo errado', { email: 42 }],
+    ['corpo que é lista', [{ email: 'maria@casa.org' }]],
+    ['corpo nulo', null],
+    ['corpo que é texto', 'maria@casa.org'],
+  ])('resposta fora do formato (%s) vira ProvedorDeIdentidadeIndisponivel, não e-mail ausente', async (_descricao, corpo) => {
+    servidor.definir('GET', CAMINHO_DO_SUJEITO, { status: 200, corpo });
 
-    expect(await conferidor().emailDo(SUJEITO)).toBeUndefined();
+    await expect(conferidor().emailDo(SUJEITO)).rejects.toBeInstanceOf(ProvedorDeIdentidadeIndisponivel);
   });
 
   it.each([
