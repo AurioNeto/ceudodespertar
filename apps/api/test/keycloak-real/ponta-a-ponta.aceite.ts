@@ -7,7 +7,13 @@ import { ClienteDoKeycloak, conviteDaUrlDeRetorno, conviteDoLinkDoEmail, subDoTo
 import type { UsuarioDoKeycloak } from './cliente-do-keycloak.js';
 import { aguardarAte } from './espera.js';
 import { extrairLinks, Mailpit } from './mailpit.js';
-import { lerUsuarioNoBanco, recuarCriacaoDoConviteVigente, semearInstituicaoComGestor } from './semeadura.js';
+import {
+  lerGrupoDoGestor,
+  lerTrilhaDoAgregado,
+  lerUsuarioNoBanco,
+  recuarCriacaoDoConviteVigente,
+  semearInstituicaoComGestor,
+} from './semeadura.js';
 
 const SENHA_DO_GESTOR = 'Gestor-Aceite-1x';
 const SENHA_DA_CONVIDADA = 'Senha-Maria-1x';
@@ -26,6 +32,7 @@ let keycloak: ClienteDoKeycloak;
 let api: ClienteDaApi;
 let mailpit: Mailpit;
 let instituicaoId: string;
+let gestorId: string;
 let tokenDoGestor: string;
 
 function textoDe(valor: unknown): string {
@@ -106,6 +113,7 @@ beforeAll(async () => {
     nome: 'Gestor Aceite',
   });
   instituicaoId = semeado.instituicaoId;
+  gestorId = semeado.gestorId;
 });
 
 describe('aceite do convite contra o Keycloak e o Mailpit reais — ciclo de vida da convidada', () => {
@@ -218,11 +226,13 @@ describe('aceite do convite contra o Keycloak e o Mailpit reais — ciclo de vid
     expect((await keycloak.usuarioPorId(idNoKeycloak)).enabled).toBe(false);
   });
 
-  it('login durante a suspensão — o Keycloak recusa com a conta desabilitada', async () => {
+  it('T26 · Keycloak · usuário desativado no provedor não obtém token — o login com a senha certa é recusado e nenhum token é emitido', async () => {
     const resposta = await keycloak.entrarComSenha(convidada.email, SENHA_DA_CONVIDADA);
 
     expect(resposta.status).toBe(400);
     expect(resposta.corpo['error']).toBe('invalid_grant');
+    expect(resposta.corpo['access_token']).toBeUndefined();
+    expect(resposta.corpo['refresh_token']).toBeUndefined();
   });
 
   it('reativar pela API — o login volta e nome, sobrenome, e-mail, atributos e verificação ficam como antes', async () => {
@@ -240,6 +250,25 @@ describe('aceite do convite contra o Keycloak e o Mailpit reais — ciclo de vid
     expect(depois?.enabled).toBe(true);
     expect(instantaneoDoPerfil(depois as UsuarioDoKeycloak)).toEqual(convidada.perfilAntesDeSuspender);
     expect(eu.status).toBe(200);
+  });
+
+  it('trilha de auditoria — convite, ativação, suspensão e reativação feitos pela API real ficam gravados em ordem, com autor, motivo e sensibilidade', async () => {
+    const gruposDoGestor = await lerGrupoDoGestor(ambiente.urlDoBancoDoDono, instituicaoId, gestorId);
+
+    const trilha = await lerTrilhaDoAgregado(ambiente.urlDoBancoDoDono, instituicaoId, convidada.id);
+
+    expect(gruposDoGestor).toHaveLength(1);
+    expect(trilha.map((linha) => linha.operacao)).toEqual(['USUARIO_CONVIDADO', 'USUARIO_ATIVADO', 'USUARIO_SUSPENSO', 'USUARIO_REATIVADO']);
+    expect(trilha.map((linha) => linha.autor_usuario_id)).toEqual([gestorId, convidada.id, gestorId, gestorId]);
+    expect(trilha.map((linha) => linha.autor_tipo)).toEqual(['USUARIO', 'USUARIO', 'USUARIO', 'USUARIO']);
+    expect(trilha[2]?.autor_grupos).toEqual(gruposDoGestor);
+    expect(trilha.map((linha) => linha.detalhes)).toEqual([
+      [],
+      [],
+      [{ rotulo: 'Motivo', valor: 'aceite contra o Keycloak real' }],
+      [{ rotulo: 'Motivo', valor: 'aceite contra o Keycloak real' }],
+    ]);
+    expect(trilha.map((linha) => linha.sensivel)).toEqual([false, false, true, true]);
   });
 
   it('usuário não consegue editar o próprio e-mail nem o username pela Account API — cada troca é recusada e ambos seguem os do convite', async () => {
