@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { ButtonHTMLAttributes, CSSProperties, ReactNode } from 'react';
-import { Icon, type IconName } from './Icon';
+import { Icon, type IconName } from './atoms/Icon';
 
 export type ButtonVariant = 'primary' | 'ghost' | 'quiet' | 'suggest' | 'onChrome';
 export type Density = 'office' | 'field';

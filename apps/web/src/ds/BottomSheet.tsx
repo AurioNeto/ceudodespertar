@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react';
-import { Icon } from './Icon';
+import { Icon } from './atoms/Icon';
 
 export interface SheetOption {
   value: string;
