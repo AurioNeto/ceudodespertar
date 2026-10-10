@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react';
-import { Button, type Density } from '../../Button';
+import { Button } from '../../atoms/Button';
+import type { Density } from '../../fundacao/densidade';
 import { Icon } from '../../atoms/Icon';
 
 export interface ConfirmActionProps {

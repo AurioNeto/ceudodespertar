@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import type { ButtonHTMLAttributes, CSSProperties, ReactNode } from 'react';
-import { Icon, type IconName } from './atoms/Icon';
+import type { Density } from '../../fundacao/densidade';
+import { Icon, type IconName } from '../Icon';
 
 export type ButtonVariant = 'primary' | 'ghost' | 'quiet' | 'suggest' | 'onChrome';
-export type Density = 'office' | 'field';
 
 const VARIANTS: Record<ButtonVariant, CSSProperties> = {
   primary: { background: 'var(--action-bg)', color: 'var(--action-fg)', border: '1.5px solid transparent' },

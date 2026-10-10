@@ -2,7 +2,7 @@ import { Fragment, useId, useRef, useState } from 'react';
 import type { CSSProperties, MouseEvent, ReactNode } from 'react';
 import { Icon, type IconName } from '../../atoms/Icon';
 import { PainelDeAcao } from '../../organisms/PainelDeAcao';
-import type { Density } from '../../Button';
+import type { Density } from '../../fundacao/densidade';
 
 export interface NavLink {
   id: string;

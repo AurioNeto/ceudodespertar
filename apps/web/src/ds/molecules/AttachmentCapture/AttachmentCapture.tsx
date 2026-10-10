@@ -1,6 +1,6 @@
 import type { CSSProperties } from 'react';
 import { Icon } from '../../atoms/Icon';
-import type { Density } from '../../Button';
+import type { Density } from '../../fundacao/densidade';
 
 export interface AttachmentCaptureProps {
   label: string;

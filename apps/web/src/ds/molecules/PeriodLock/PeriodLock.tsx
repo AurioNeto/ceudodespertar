@@ -1,6 +1,6 @@
 import { useId, useState } from 'react';
 import type { CSSProperties } from 'react';
-import { Button } from '../../Button';
+import { Button } from '../../atoms/Button';
 import { Icon } from '../../atoms/Icon';
 import { TextField } from '../TextField';
 

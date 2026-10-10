@@ -1,5 +1,5 @@
 import type { CSSProperties, ReactNode } from 'react';
-import type { Density } from '../../Button';
+import type { Density } from '../../fundacao/densidade';
 
 export interface ScreenHeaderProps {
   /** Código da tela no mapa de telas (T-02, F-09...). */

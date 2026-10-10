@@ -1,8 +1,9 @@
 import { act } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { clicar, desmontarTudo, elemento, folhaComTexto, montar, todos } from '@/testes/montagem';
-import { errosAoClicar } from './apoioDeTeste';
-import { BottomSheet, type SheetOption } from './BottomSheet';
+import { errosAoClicar } from '../../apoioDeTeste';
+import { BottomSheet } from './BottomSheet';
+import type { SheetOption } from '../../fundacao/opcao';
 
 afterEach(desmontarTudo);
 

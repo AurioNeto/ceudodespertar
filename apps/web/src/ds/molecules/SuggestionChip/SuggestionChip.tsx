@@ -1,6 +1,6 @@
 import type { CSSProperties, ReactNode } from 'react';
 import { Icon } from '../../atoms/Icon';
-import type { Density } from '../../Button';
+import type { Density } from '../../fundacao/densidade';
 
 export interface SuggestionChipProps {
   children: ReactNode;

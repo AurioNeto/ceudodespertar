@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import type { CSSProperties, ReactNode } from 'react';
 import { AmountDisplay, type NaturezaVisual } from '../../atoms/AmountDisplay';
-import type { Density } from '../../Button';
+import type { Density } from '../../fundacao/densidade';
 
 export type RecordStatus = 'pending' | 'confirmed' | 'reversed';
 

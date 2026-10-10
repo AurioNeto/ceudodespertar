@@ -1,7 +1,7 @@
 import { useEffect, useId, useRef } from 'react';
 import type { KeyboardEvent, ReactNode } from 'react';
 import { createPortal } from 'react-dom';
-import type { Density } from '../../Button';
+import type { Density } from '../../fundacao/densidade';
 import { Icon } from '../../atoms/Icon';
 
 export type VarianteDoPainel = 'folha' | 'lateral';

@@ -1,11 +1,6 @@
 import type { CSSProperties } from 'react';
-import { Icon } from './atoms/Icon';
-
-export interface SheetOption {
-  value: string;
-  label: string;
-  meta?: string;
-}
+import { Icon } from '../../atoms/Icon';
+import type { SheetOption } from '../../fundacao/opcao';
 
 export interface BottomSheetProps {
   open?: boolean;

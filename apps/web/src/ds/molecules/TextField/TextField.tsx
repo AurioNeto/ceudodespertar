@@ -1,6 +1,6 @@
 import { useId } from 'react';
 import type { CSSProperties, InputHTMLAttributes, ReactNode, TextareaHTMLAttributes } from 'react';
-import type { Density } from '../../Button';
+import type { Density } from '../../fundacao/densidade';
 import { Icon, type IconName } from '../../atoms/Icon';
 
 type NativeProps = Omit<
