@@ -114,6 +114,13 @@ async function autorizarComoMadrinha(container: HTMLElement, linha: readonly [st
   await clicar(botaoComTexto(linhaDe(container, ...linha), 'Autorizar'));
 }
 
+async function ressarcirOsDoisDaDemonstracao(container: HTMLElement) {
+  await clicar(botaoComTexto(linhaDe(container, ...LINHA_DE_PATY_A_RESSARCIR), 'Ressarcir'));
+  await clicar(botaoComTexto(linhaDe(container, ...LINHA_DE_PATY_A_RESSARCIR), 'Confirmar'));
+  await clicar(botaoComTexto(linhaDe(container, ...LINHA_DE_LUCIA_A_RESSARCIR), 'Ressarcir'));
+  await clicar(botaoComTexto(linhaDe(container, ...LINHA_DE_LUCIA_A_RESSARCIR), 'Confirmar'));
+}
+
 async function abrirNovoAdiantamento(container: HTMLElement) {
   await clicar(botaoComTexto(container, 'Novo adiantamento'));
 }
@@ -302,6 +309,16 @@ describe('AdiantamentosPage: o que cada perspectiva vê', () => {
       'Paty Munay',
       'Lucia Prado',
     ]);
+  });
+
+  it('trocar de perspectiva com o recado na tela — tira o recado', async () => {
+    const { container } = await montar(<AdiantamentosPage />);
+    await autorizarComoMadrinha(container, LINHA_DE_PATY_A_AUTORIZAR);
+    expect(recadoMostrado(container)).not.toBeNull();
+
+    await verComo(container, 'Aurio Neto');
+
+    expect(recadoMostrado(container)).toBeNull();
   });
 });
 
@@ -592,6 +609,17 @@ describe('AdiantamentosPage: ressarcir', () => {
     expect(folhasComTexto(container, 'Ninguém esperando dinheiro de volta')).toHaveLength(1);
     expect(folhasComTexto(container, 'Todo adiantamento autorizado já foi ressarcido.')).toHaveLength(1);
     expect(blocoDoRotulo(container, 'A ressarcir')).toEqual(['A ressarcir', '0,00', 'nada pendente']);
+  });
+
+  it('a ressarcir só com despesa de hoje — o resumo mostra o valor e diz nada pendente', async () => {
+    const { container } = await montar(<AdiantamentosPage />);
+    await ressarcirOsDoisDaDemonstracao(container);
+    await registrarNovoAdiantamento(container, '100', 'tinta');
+
+    await autorizarComoMadrinha(container, ['Aguardando sua autorização', 'Paty Munay', 'tinta']);
+
+    expect(textosDasLinhas(container, 'A ressarcir')).toHaveLength(1);
+    expect(blocoDoRotulo(container, 'A ressarcir')).toEqual(['A ressarcir', '100,00', 'nada pendente']);
   });
 
   it('Voltar — fecha o formulário da linha e não ressarce', async () => {
@@ -905,5 +933,38 @@ describe('AdiantamentosPage: variações que a demonstração não alcança', ()
 
     expect(textosDasLinhas(container, 'A ressarcir')[0]).not.toContain('há 27 dias');
     expect(blocoDoRotulo(container, 'A ressarcir')[2]).toBe('o mais antigo há 27 dias');
+  });
+
+  it.each([
+    { dias: 30, dataDespesa: '2026-08-03', selo: [] },
+    { dias: 31, dataDespesa: '2026-08-02', selo: ['há 31 dias'] },
+  ])('a ressarcir há $dias dias — o selo de idade só aparece acima de 30', async ({ dataDespesa, selo }) => {
+    const demonstracao = (await vi.importActual<typeof import('@/mocks/adiantamentos')>('@/mocks/adiantamentos'))
+      .adiantamentos;
+    cenario.adiantamentos = demonstracao
+      .filter((adiantamento) => adiantamento.id !== 'a-3')
+      .map((adiantamento) =>
+        adiantamento.id === 'a-4' ? Object.assign({}, adiantamento, { dataDespesa }) : adiantamento,
+      );
+    const { container } = await montar(<AdiantamentosPage />);
+
+    expect(textosDasLinhas(container, 'A ressarcir')[0]?.filter((texto) => texto.startsWith('há '))).toEqual(selo);
+  });
+
+  it('aguardando autorização há mais de 30 dias — a fila não mostra o selo de idade', async () => {
+    const demonstracao = (await vi.importActual<typeof import('@/mocks/adiantamentos')>('@/mocks/adiantamentos'))
+      .adiantamentos;
+    cenario.adiantamentos = demonstracao.map((adiantamento) =>
+      adiantamento.id === 'a-1' ? Object.assign({}, adiantamento, { dataDespesa: '2026-07-01' }) : adiantamento,
+    );
+    const { container } = await montar(<AdiantamentosPage />);
+    await verComo(container, 'Marta Neto');
+
+    expect(linhaDe(container, ...LINHA_DE_PATY_A_AUTORIZAR).textContent).toContain('01/07/2026');
+    expect(
+      textosDasLinhas(container, 'Aguardando sua autorização')
+        .flat()
+        .filter((texto) => texto.startsWith('há ')),
+    ).toEqual([]);
   });
 });
