@@ -2,7 +2,9 @@
 
 ## Documento 7 — Backend: arquitetura, banco de dados e plano de construção
 
-**Versão 1.1** · setembro/2026 · Status: proposta
+**Versão 1.2** · outubro/2026 · Status: proposta (B0 entregue)
+
+Alterações em relação à v1.1: encerramento do B0. As seções 2, 5, 6, 7, 8, 9, 12, 13, 22 e 25 passam a descrever o que o código do B0 faz — versões reais, borda transacional, ativação do convite, contexto da instituição, despachante e vigia do outbox, catálogo de erros, CLI da identidade e migrações `b0-000` a `b0-011`. Onde o desenho original continua valendo como alvo das etapas seguintes, o texto diz isso.
 
 Alterações em relação à v1.0: corte "lógica de negócio sai do banco" (issue #11). Toda regra de negócio fica no domínio; no banco ficam estrutura, isolamento, segurança e as guardas mínimas de histórico. As migrations passam a ser a fonte do banco, e o esquema de referência vira documentação congelada. O que fica e o que sai, objeto a objeto, está no anexo.
 
@@ -59,18 +61,18 @@ Um processo, um banco, um bucket, um provedor de identidade. Nada de fila extern
 
 | Camada | Escolha | Por quê, aqui |
 |---|---|---|
-| Linguagem | TypeScript estrito, Node 22 LTS | O mesmo `packages/contracts` serve front e back; tipos de domínio não se duplicam |
-| Framework HTTP | NestJS 11 | Módulos, injeção e guards casam com a fronteira por módulo e com `@RequerPermissao`; o domínio não depende dele |
-| ORM | MikroORM 6 (Data Mapper + Unit of Work) | Agregado sem anotação de ORM na camada de domínio; UoW é o que permite gravar agregado + outbox + auditoria numa transação |
-| Leitura | SQL direto (Kysely) sobre as tabelas | Read model é consulta, não agregado; passar por ORM para ler é custo sem ganho |
-| Banco | PostgreSQL 16 | RLS, `EXCLUDE` com `btree_gist`, `daterange`, `jsonb` |
-| Validação | Zod, nos comandos, compartilhado com o front | A mesma regra de forma nos dois lados; a regra de negócio fica no domínio |
-| Identidade | Keycloak 26 (OIDC) | Só autenticação. Autorização é domínio (Doc 3 §10.1) |
-| Arquivos | S3 compatível — Cloudflare R2 em produção, MinIO local | URL assinada curta; o arquivo nunca passa pelo processo da API na leitura |
-| PDF | HTML + Chromium headless (Playwright) | A prestação de contas usa os mesmos componentes visuais do relatório |
-| Observabilidade | Pino (JSON) + OpenTelemetry + Sentry | Um `correlacao_id` liga log, trace e linha de auditoria |
-| Testes | Vitest, Testcontainers, Playwright | §26 |
-| Execução | Docker; Fly.io ou Railway (ou VPS) | Uma imagem, um Postgres gerenciado, deploy por push |
+| Linguagem | TypeScript estrito (`strict` em `tsconfig.base.json`, TypeScript `^5.7`); Node 24 (`.nvmrc`, usado pela CI), com piso `>=22.17` em `engines` | O mesmo `packages/contracts` serve front e back; tipos de domínio não se duplicam |
+| Framework HTTP | NestJS `^12.1` (`@nestjs/common`, `core`, `platform-express`) | Módulos, injeção e guards casam com a fronteira por módulo e com `@RequerPermissao`; o domínio não depende dele |
+| ORM | MikroORM `^7.2` (`@mikro-orm/postgresql` e `migrations`; Data Mapper + Unit of Work) | Agregado sem anotação de ORM na camada de domínio; UoW é o que permite gravar agregado + outbox + auditoria numa transação |
+| Leitura | SQL direto (Kysely `^0.29`, tipos gerados do banco migrado por `kysely-codegen`) sobre as tabelas | Read model é consulta, não agregado; passar por ORM para ler é custo sem ganho |
+| Banco | PostgreSQL 16 (imagem `postgres:16.15` no compose) | RLS, `EXCLUDE` com `btree_gist`, `daterange`, `jsonb` |
+| Validação | Zod `^4.6`, nos comandos, compartilhado com o front | A mesma regra de forma nos dois lados; a regra de negócio fica no domínio |
+| Identidade | Keycloak 26 (`quay.io/keycloak/keycloak:26.4.7`, OIDC); e-mail local pelo Mailpit | Só autenticação. Autorização é domínio (Doc 3 §10.1) |
+| Arquivos | S3 compatível. Alvo: Cloudflare R2 em produção. Local: SeaweedFS (`chrislusf/seaweedfs:3.97`), no lugar do MinIO, que deixou de ter imagem pública (comentário em `compose.yaml`) | URL assinada curta; o arquivo nunca passa pelo processo da API na leitura. No B0 a API ainda não tem cliente de storage: `shared.anexo` entra na B1 |
+| PDF | HTML + Chromium headless (Playwright) | A prestação de contas usa os mesmos componentes visuais do relatório. Entra na B2 |
+| Observabilidade | Pino `^10` (JSON, via `nestjs-pino`), com `correlacaoId` por requisição | Um `correlacaoId` liga log e linha de auditoria. OpenTelemetry e Sentry **não existem** no B0; o alerta de evento esgotado é um log `error` (§13) |
+| Testes | Vitest `^4.1`; Testcontainers (`@testcontainers/postgresql`) na integração; aceite real com Keycloak e Mailpit (§13) | §26. Playwright fica para a suíte ponta a ponta das telas |
+| Execução | Só `local` (Docker Compose) e CI no B0 | Provedor e topologia de deploy são decisão pendente da coordenação (§13) |
 
 ## 3. Módulos e fronteiras
 
@@ -119,15 +121,15 @@ A regra que vale a pena repetir: **o domínio não sabe que existe banco.** As i
 
 ## 5. O caminho de uma escrita
 
-`POST /api/v1/financeiro/lancamentos/{id}/confirmar`, pela Tesouraria, na Verificação de lote:
+`POST /api/v1/financeiro/lancamentos/{id}/confirmar`, pela Tesouraria, na Verificação de lote (rota da B1; os nomes de infraestrutura são os do B0):
 
 | # | Onde | O que acontece |
 |:--:|---|---|
-| 1 | `AuthGuard` (shared) | Valida o JWT contra o JWKS do Keycloak; lê `sub` |
-| 2 | `ContextoGuard` (shared) | Resolve `sub` → `Usuario` → instituição, pessoa e permissões efetivas (união dos grupos). Usuário `SUSPENSO` ou `REVOGADO` para aqui com 401 |
+| 1 | `GuardaDeAcesso` (`APP_GUARD`, shared) | Valida o JWT contra o JWKS do Keycloak; lê `sub` |
+| 2 | `GuardaDeAcesso`, pelo resolvedor da identidade | Resolve `sub` → `Usuario` → instituição, pessoa e permissões efetivas (união dos grupos). Usuário `SUSPENSO` ou `REVOGADO` para aqui com 401 (§7.1) |
 | 3 | `@RequerPermissao('financeiro.lancamento.confirmar')` | Sem a permissão: **404**, não 403, quando o recurso não é visível para o grupo (T16b); 403 quando é visível mas a ação não é permitida |
 | 4 | Pipe Zod | Valida o corpo contra o schema do comando, vindo de `packages/contracts` |
-| 5 | `UnitOfWork.transacao()` | Abre a transação em `READ COMMITTED` — o repositório toma trava consultiva de período pela aplicação (§18.5) — e executa `SET LOCAL app.instituicao_id = …` **antes de qualquer consulta** |
+| 5 | `BordaTransacionalInterceptor` → `UnidadeDeTrabalho.transacao(modo)` | Abre a transação da requisição no modo da rota — `escrita` e `leitura-que-grava` em `READ COMMITTED`, `leitura` em `REPEATABLE READ` somente leitura — e executa `set_config('app.instituicao_id', …, true)` (o equivalente a `SET LOCAL`) **antes de qualquer consulta**. O repositório toma a trava consultiva de período pela aplicação (§18.5) |
 | 6 | Handler | Carrega o agregado pelo repositório (`SELECT … FOR UPDATE` implícito na versão), chama `lancamento.confirmar(por, ajustes)` |
 | 7 | Agregado | Aplica L7, L8, L10…; devolve `Result<void, DomainError>` e acumula `LancamentoConfirmado` |
 | 8 | Handler | Se `Result` é erro, a transação é desfeita e o erro sobe com seu código (§12) |
@@ -137,13 +139,17 @@ A regra que vale a pena repetir: **o domínio não sabe que existe banco.** As i
 
 **Ordem na aplicação e onde a instituição entra.** `AppModule` registra, nesta ordem: a guarda de acesso (`APP_GUARD`, passos 1–3) → `BordaTransacionalInterceptor` (passo 5) → `IdempotenciaInterceptor`. O `LoggerErrorInterceptor` do log, instalado por `useGlobalInterceptors`, fica por **dentro** dos dois (ordem efetiva: borda, idempotência, logger) e só vê o que o handler lança. O que a borda e a idempotência lançam — `Result` de erro virado exceção, falha no `COMMIT`, conflito de chave — não passa por ele; o filtro global de erros (§12) fecha a resposta de qualquer um deles e registra em `error`, com a `correlacaoId`, todo erro que vira 500. A instituição entra na borda pelo `ProvedorDeContextoDeInstituicao`, que lê o contexto de acesso que a guarda pôs na requisição (`instituicaoId` e `usuarioId`); a borda o publica em `ContextoDaRequisicao` e a unidade de trabalho grava `app.instituicao_id` antes da primeira consulta. Rota `@Publico` ou `@ApenasIdentificado` não tem contexto de acesso: a transação abre sem instituição e a RLS nega o acesso (fail-closed). A idempotência roda **dentro** da borda — reaproveita a transação e a instituição dela — e só vale em `POST` com `Idempotency-Key`. A rota que roda sem instituição no contexto — `@Publico` ou `@ApenasIdentificado`, como a ativação do primeiro acesso, que descobre a instituição dentro do próprio caso de uso — leva `@SemIdempotencia`: o interceptor ignora o `Idempotency-Key` que o front envia sozinho em todo `POST` e executa o handler, sem gravar chave, e a idempotência dessa rota vem do domínio. A aplicação recusa partir com `@SemIdempotencia` em rota que tenha permissão ou instituição no contexto (`@RequerPermissao`, `@RequerAlgumaPermissao`, `@ApenasUsuarioAtivo`) ou sem marca de acesso.
 
-**Modo de transação da rota.** Rota sem `@ModoDeTransacao` abre transação `leitura`. Por isso `POST`, `PUT`, `PATCH` e `DELETE` precisam declarar `escrita` ou `leitura-que-grava`, no método ou na classe: a aplicação recusa partir sem isso, em vez de falhar com 500 só quando chegar uma `Idempotency-Key`. A rota que não usa o banco da aplicação — `/saude/viva` e `/saude/pronta`, que têm pool próprio — se marca com `@SemTransacaoNaBorda` e a borda a deixa passar sem abrir transação; rota que muda estado não pode dispensar a transação, e a aplicação também recusa partir com `@SemTransacaoNaBorda` em `POST`, `PUT`, `PATCH`, `DELETE` ou `ALL`.
+**Modo de transação da rota.** Rota sem `@ModoDeTransacao` abre transação `leitura`. Por isso `POST`, `PUT`, `PATCH` e `DELETE` precisam declarar `escrita` ou `leitura-que-grava`, no método ou na classe: a aplicação recusa partir sem isso, em vez de falhar com 500 só quando chegar uma `Idempotency-Key`. A rota que não usa o banco da aplicação — `/saude/viva` e `/saude/pronta`, que têm pool próprio — se marca com `@SemTransacaoNaBorda` e a borda a deixa passar sem abrir transação. Em `POST`, `PUT`, `PATCH`, `DELETE` ou `ALL`, a aplicação só aceita `@SemTransacaoNaBorda` junto de `@SemIdempotencia` (`VerificadorDeModoDeTransacaoDasRotas`, na partida); sem a segunda marca, recusa partir. É o caso de `POST /eu/ativacao`, que chega sem instituição e abre as próprias transações curtas dentro do caso de uso (§7.2).
+
+**Ganchos depois do commit.** O contexto da transação oferece `aoConfirmar(gancho)`. Os ganchos rodam só depois do `COMMIT` da transação de fora, nunca em rollback nem em `Result` de erro; um gancho que lança vira log `error` e não desfaz nada, porque o commit já aconteceu. É por eles que saem os efeitos externos ao banco: o sinal que acorda o despachante quando o outbox recebeu linha (§9), o envio do convite pelo Keycloak e a liberação direta do acesso na reativação (§7.2). O outbox em si **não** é gancho: as linhas de `shared.outbox` entram na mesma transação do agregado e da trilha (passo 9).
+
+Ilustrativo — o comando é da B1; a assinatura da unidade de trabalho é a do B0 (`transacao(modo, fn)`), e o contexto da instituição vem da borda, não de parâmetro:
 
 ```ts
 // application/comandos/confirmar-lancamento.handler.ts
 @RequerPermissao('financeiro.lancamento.confirmar')
 async executar(cmd: ConfirmarLancamento, ctx: Contexto): Promise<Result<void, DomainError>> {
-  return this.uow.transacao(ctx, async () => {
+  return this.uow.transacao('escrita', async () => {
     const lancamento = await this.lancamentos.porId(cmd.lancamentoId);
     if (!lancamento) return erro('LANCAMENTO_NAO_ENCONTRADO');
 
@@ -182,7 +188,14 @@ async montar(eventoId: EventoId, ctx: Contexto): Promise<PainelDoEvento> {
 
 O bloco sem permissão **não é consultado e não aparece na resposta** — a chave está ausente, não nula. O teste confere a ausência da chave, nunca a invisibilidade na tela (Doc 6 §10). É o mesmo princípio de Doc 3 §10.2 levado a nível de bloco: dado que o usuário não pode ver não sai do banco.
 
-**Leitura de dado de saúde é escrita.** A consulta que devolve uma `RespostaDeAnamnese` grava `pessoas.registro_de_acesso` na mesma transação (RA3). Por isso ela é a única consulta que roda dentro de `uow.transacao()` e não na conexão de leitura: se o registro falhar, a leitura falha.
+**Como a leitura roda no B0.** Os leitores são portas da camada `application` (`LeitorDeUsuarios`, `LeitorDeGrupos`, `LeitorDoEu`…) implementadas em `infrastructure` com Kysely (`*.kysely.ts`). Cada leitor pede `unidadeDeTrabalho.transacao('leitura', ({ kysely }) => …)` e consulta pelo Kysely do próprio contexto da transação — nunca por uma conexão avulsa:
+
+- **Na requisição HTTP**, a borda já abriu a transação da rota (rota sem `@ModoDeTransacao` abre `leitura`; as listagens declaram `leitura` explicitamente). O pedido do leitor é aninhado e **reaproveita** essa transação, com a instituição que a borda gravou ao abri-la. Uma transação aninhada pode pedir `leitura` dentro de `escrita`, mas não o contrário: pedir modo gravável dentro de uma `leitura` aberta lança `ErroDeModoDeTransacaoIncompativel`.
+- **A transação de leitura** é `REPEATABLE READ` e `READ ONLY`: todas as consultas de uma resposta veem o mesmo instantâneo, e uma escrita acidental falha no banco.
+- **O isolamento vem da RLS**, não de `WHERE instituicao_id` no leitor: sem instituição no contexto, a consulta devolve vazio (§8).
+- **Fora da borda** — a guarda de acesso, que roda antes dela, o caso de uso da ativação e o CLI —, quem lê fixa a instituição com `emContextoDaInstituicao(instituicaoId, fn)` antes de abrir a transação. No consumidor do outbox a transação já vem aberta pelo despachante, que grava a instituição do evento nela (§8, §9).
+
+**Leitura de dado de saúde é escrita.** A consulta que devolve uma `RespostaDeAnamnese` grava `pessoas.registro_de_acesso` na mesma transação (RA3). Por isso ela roda em transação gravável (`leitura-que-grava`), não na de leitura: se o registro falhar, a leitura falha. `GET /eu` já usa esse modo no B0 para atualizar `ultimo_acesso_em` (§7.1).
 
 ## 7. Identidade, autenticação e o link público
 
@@ -190,11 +203,13 @@ O bloco sem permissão **não é consultado e não aparece na resposta** — a c
 
 - O SPA autentica no Keycloak com **Authorization Code + PKCE**. Nada de senha passa pela API.
 - A API valida o token (assinatura, `iss`, `aud`, expiração) e usa só o `sub`. **Grupos do Keycloak não são lidos** — o realm não tem papel de negócio nenhum (Doc 3 §10.1). Quem pode o quê está em `identidade.usuario_grupo` + `identidade.grupo_permissao`.
-- O `sub` chega sem instituição, e `identidade.usuario` tem RLS FORCE: sem contexto, nem o dono dos objetos leria a linha para descobri-la. No passo 2 de §5 (`ContextoGuard`), a API chama `identidade.resolver_sujeito(sub)` — função `SECURITY DEFINER` de dono próprio, `cdd_resolvedor_identidade` (**não** `BYPASSRLS`, política só dele — mesmo desenho do link público, §7.3, §8), que devolve só `instituicao_id` e `usuario_id`. A partir daí o contexto é montado (`SET LOCAL app.instituicao_id`) e o resto — pessoa, grupos, permissões efetivas — vem de uma consulta normal de `cdd_app`, já sob a RLS de sempre.
+- O `sub` chega sem instituição, e `identidade.usuario` tem RLS FORCE: sem contexto, nem o dono dos objetos leria a linha para descobri-la. No passo 2 de §5 (`GuardaDeAcesso`), a API chama `identidade.resolver_sujeito(sub)` — função `SECURITY DEFINER` de dono próprio, `cdd_resolvedor_identidade` (**não** `BYPASSRLS`, política só dele — mesmo desenho do link público, §7.3, §8), que devolve só `instituicao_id` e `usuario_id`. A partir daí o contexto é montado (`emContextoDaInstituicao` e `set_config` ao abrir a transação, §8) e o resto — pessoa, grupos, permissões efetivas — vem de uma consulta normal de `cdd_app`, já sob a RLS de sempre.
 - Resolvida a instituição, a guarda lê a situação do usuário e as permissões efetivas (grupos **ativos** do usuário × `grupo_permissao`, reduzidos por `PermissoesEfetivas`) numa transação de leitura aberta já com `app.instituicao_id`. `CONVITE_PENDENTE`, `SUSPENSO` e `REVOGADO` recusam com o código próprio (401); sujeito sem usuário recusa com `USUARIO_DESCONHECIDO`. A guarda roda antes da borda transacional, então o adaptador monta o contexto da requisição por conta própria.
 - O resultado (contexto ou recusa) fica em cache em memória por `sub`, por 60 s. O cache é invalidado no próprio processo, depois do commit, pelos consumidores de outbox da identidade: `GRUPO_ALTERADO`, `USUARIO_ATIVADO`, `USUARIO_SUSPENSO` e `USUARIO_REATIVADO` esquecem o usuário do evento; `GRUPO_EDITADO` esquece todos os usuários da instituição do evento. Uma leitura iniciada antes de uma invalidação não grava o resultado velho no cache. O consumidor do outbox roda numa só réplica: com mais de uma, as demais servem o cache velho até 60 s, e esse TTL é o limite do atraso. Sujeito desconhecido não entra no cache.
 - `GET /eu` é a única rota sem permissão específica (`@ApenasUsuarioAtivo`, Doc 3 §10–§11) e relê do banco o nome, a situação, os grupos e as permissões, sem usar o cache. Se a situação não for `ATIVO`, ele esquece o cache daquele `sub` e responde 401, com o desafio `WWW-Authenticate: Bearer` como toda resposta 401, e o código da situação (`USUARIO_CONVITE_PENDENTE`, `USUARIO_SUSPENSO` ou `USUARIO_REVOGADO`), mesmo dentro dos 60 s de TTL; a guarda ainda decide com o contexto em cache, então a recusa chega ao `/eu` por essa releitura e às demais rotas pela invalidação feita nela. A rota roda em transação `leitura-que-grava` e atualiza `ultimo_acesso_em` com um `UPDATE` condicional — só quando o valor gravado é nulo ou anterior a uma hora —, sem alterar `versao`: um comando concorrente sobre o mesmo usuário não toma conflito por causa do acesso. A falha dessa escrita vira log de aviso, sem dado pessoal, e não afeta a resposta.
 - Token de acesso de 5 min, refresh de 8 h com rotação. Suspender um usuário revoga as sessões no Keycloak **e** falha no passo 2 de §5 — as duas coisas, porque a segunda não depende da primeira ter funcionado.
+- **Suspensão e reativação no provedor (B0).** Desativar (`POST /identidade/usuarios/:id/desativar`) leva o usuário a `SUSPENSO` e reativar o devolve a `ATIVO`; os dois emitem evento na mesma transação. O `SincronizadorDoAcessoNoProvedor` reage a `USUARIO_SUSPENSO` e `USUARIO_REATIVADO` pelo outbox e é **convergente**: não aplica o evento, relê a situação atual no banco e põe o Keycloak de acordo — `ATIVO` reabilita a conta (`enabled: true`); qualquer outra situação desabilita e encerra as sessões (`PUT /users/{sub}` com `enabled: false` e `POST /users/{sub}/logout`). Assim, eventos que chegam fora de ordem ou repetidos terminam no mesmo estado. Conta que o Keycloak não conhece conta como convergida (log de aviso). A reativação também agenda uma **liberação direta** no `aoConfirmar` (`LiberacaoDiretaDoAcesso`), que relê a situação antes de reabilitar, para não esperar o ciclo do despachante; se ela falhar, vira log e o consumidor converge depois. O aceite real confere que o usuário suspenso não obtém token (T26, §13).
+- **Adaptador do Keycloak.** A API fala com a Admin API do realm por uma conta de serviço própria, com token obtido por `client_credentials` (`KEYCLOAK_ADMIN_CLIENT_ID` e `CDD_KC_ADMIN_SEGREDO`) e guardado em cache até perto de expirar. Cada chamada tem 3 s de limite e cada operação, 15 s de orçamento (`configuracao-do-keycloak.ts`). Falha de rede ou resposta fora do formato vira `PROVEDOR_DE_IDENTIDADE_INDISPONIVEL` (503) no caso de uso que precisa da resposta — a ativação e o bootstrap por vínculo.
 
 ### 7.2 Convite
 
@@ -203,6 +218,19 @@ O bloco sem permissão **não é consultado e não aparece na resposta** — a c
 A ativação chega sem instituição no contexto, e `identidade.convite` tem RLS FORCE. A API descobre a casa do convite por `identidade.resolver_convite(hash)`, no mesmo desenho de `resolver_sujeito` (§7.1, §8): devolve só `instituicao_id` e `usuario_id` e não olha validade. Vencido, usado ou revogado é regra do caso de uso, conferida depois, já com o contexto da instituição.
 
 **Convite vencido e não revogado continua vigente para o índice.** `convite_vigente_unico` (§15) só sai do caminho de um usuário quando `usado_em` ou `revogado_em` deixam de ser nulos — a expiração por si só não grava nada. O reenvio de convite, então, precisa **revogar o anterior na mesma transação** antes de criar o novo; sem isso, o `INSERT` do novo convite esbarra no índice único mesmo com o velho havendo expirado horas atrás.
+
+**Envio pelo Keycloak.** Convidar (`POST /identidade/usuarios`) e reenviar (`POST /identidade/usuarios/:id/convite/reenviar`) gravam o convite e só no `aoConfirmar` (§5) chamam o `EnviadorDeConvite`: ele cria o usuário no realm — ou adota o que já existe com o mesmo e-mail, se ele não pertencer a outro usuário do CDD — e dispara o `execute-actions-email` do Keycloak, com validade igual ao que resta do convite e `redirect_uri` para `<APP_URL_BASE>/entrar?convite=<token>`. A pessoa define a senha no tema do CDD, volta ao SPA e o SPA chama a ativação. Falha no envio vira log `error` com o id do usuário e o tipo da falha, sem e-mail nem token; o commit já aconteceu.
+
+**Reenvio com limite.** Reenviar antes de 60 s desde o convite vigente é recusado pelo domínio com **429 `CONVITE_REENVIADO_RECENTEMENTE`**, com a espera em `detalhes.retryAfterSegundos` (entre 1 e 60). O filtro global copia esse valor para o cabeçalho `Retry-After` **só quando o status é 429** e o valor é um inteiro ≥ 1 (`retry-after.ts`); nenhuma outra resposta leva `Retry-After`.
+
+**Ativação: `POST /eu/ativacao`.** A rota é `@ApenasIdentificado` (token válido, sem usuário resolvido), `@SemIdempotencia` e `@SemTransacaoNaBorda`, e recebe `{ convite }`. Ela não tem transação na borda porque a instituição só é descoberta pelo convite, e porque uma das etapas é uma chamada HTTP ao Keycloak, que não pode segurar conexão nem transação aberta. O caso de uso `AtivarConvite` faz, nesta ordem:
+
+1. Resolve o hash do token por `identidade.resolver_convite`. Token desconhecido devolve `CONVITE_INVALIDO` sem chamar o Keycloak.
+2. Entra em `emContextoDaInstituicao` e abre uma **leitura curta**, que avalia a ativação no agregado (vencido, usado, revogado, situação do usuário). O mesmo `sub` já ativo responde 200 aqui — é daí que vem a idempotência da rota.
+3. **Fora de transação**, confere no Keycloak que o e-mail do `sub` é o do convite. Divergente: `CONVITE_DE_OUTRO_SUJEITO` (403); Keycloak indisponível: `PROVEDOR_DE_IDENTIDADE_INDISPONIVEL` (503).
+4. Abre uma **escrita curta** que relê o usuário e **reavalia** a ativação antes de gravar `subject_id`, a trilha e o outbox — o estado pode ter mudado durante a chamada ao Keycloak. Um `sub` já ligado a outro usuário vira `SUJEITO_JA_VINCULADO` (409). Duas ativações concorrentes terminam em 200 ou 409, nunca 500 (corpo do #76).
+
+**Normalização do e-mail.** `normalizarEmail` (`application/convite/normalizar-email.ts`) apara as pontas, aplica a normalização Unicode **NFC** (composição canônica: o mesmo caractere acentuado digitado de formas diferentes vira a mesma sequência) e passa a minúsculas. Ela é usada em três pontos, todos de comparação ou gravação contra o Keycloak: na ativação (passo 3, nos dois lados), no bootstrap (normaliza o `--admin-email` antes de gravar e compara com o e-mail do `sub` no modo vínculo) e no `EnviadorDeConvite`, ao procurar no realm o usuário de mesmo e-mail para adotar. O convite comum pela API não passa por ela: o schema do contrato (`comandos/identidade.ts`) apara e passa a minúsculas, sem NFC.
 
 ### 7.3 O link público de inscrição
 
@@ -222,6 +250,15 @@ A rota `/i/:token` é a única porta do sistema aberta sem login (Doc 6 §2.6). 
 >
 > Até a conferência, a resposta da API para CPF conhecido diz apenas *"encontramos seu cadastro"* — nem nome, nem situação da anamnese. **Muda a tela `/i/:token`** (um campo a mais no passo de identificação) e é **decisão da coordenação** (§27, #1).
 
+### 7.4 Primeiro administrador e seed de demonstração
+
+Banco novo não tem instituição nem usuário, e sem administrador ninguém convida ninguém. Os dois caminhos de entrada são subcomandos do CLI da identidade (`apps/api/src/identidade-cli/`), não rotas HTTP; a operação está em §13 e no README.
+
+- **Bootstrap** (`pnpm db:identidade:bootstrap`): numa só transação de escrita, sob `emContextoDaInstituicao` com o id da instituição nova, toma uma trava global, recusa se já houver o marcador `identidade.bootstrap_executado` ou qualquer instituição (`BOOTSTRAP_JA_EXECUTADO`), cria a instituição, semeia os seis grupos, cria o administrador pelo agregado `Usuario` e grava o marcador (§8, §22). No modo convite, o envio pelo Keycloak acontece depois do commit; no modo vínculo (`--sujeito`), o e-mail do `sub` é conferido no Keycloak **antes** da transação, e o administrador já nasce `ATIVO`.
+- **Seed de demonstração** (`pnpm db:identidade:seed-demo`): cria pelo domínio a instituição de demonstração, liga o `dev@cdd.local` do realm local a um administrador ativo e cria usuários fictícios (`*@demo.cdd.invalid`, `sub` `demo:<grupo>`). Só roda com `CDD_AMBIENTE=local` ou `ci` e banco e Keycloak em loopback (§13); não escreve o marcador do bootstrap.
+
+O CLI fixa `CDD_PROCESSO=cli` antes de carregar qualquer módulo (`identidade-cli/cli.ts`), e com isso o despachante e a vigia do outbox não sobem no processo do CLI (§9): os eventos gravados ficam no outbox e a API os entrega quando subir.
+
 ## 8. Multi-instituição
 
 O CDD é uma instituição. O desenho é multi-instituição desde o início porque o Doc 1 §4.2 pede — e porque a mesma garantia que separa duas casas separa, de graça, o que um bug poderia misturar.
@@ -232,9 +269,13 @@ O CDD é uma instituição. O desenho é multi-instituição desde o início por
 |---|---|---|
 | **RLS com FORCE** em toda tabela com `instituicao_id` | banco | Ler ou gravar linha de outra instituição. Aplicada por varredura no fim do esquema — tabela nova não escapa, e o teste T23 confere |
 | **FK composta** `(instituicao_id, x_id)` dentro do schema | banco | Apontar para linha de outra instituição sabendo o id. FK ignora RLS; a composta não |
-| **Filtro global do MikroORM** | aplicação | Segunda camada na consulta, e o que torna o erro legível quando a RLS barra |
+| **Filtro global do MikroORM** | aplicação | Segunda camada na consulta, e o que torna o erro legível quando a RLS barra. **Não existe no B0**: a segunda camada hoje é a persistência da identidade, que toma a instituição do contexto da requisição (`instituicaoDoContexto()`) e falha sem ela |
 
-**Como o contexto chega ao banco.** `SET LOCAL app.instituicao_id` no início de cada transação, pelo `UnitOfWork`. `SET LOCAL` morre no fim da transação, então a conexão volta limpa ao pool — não há como uma requisição herdar a instituição da anterior. Consulta fora de transação não tem contexto e **devolve vazio** (`shared.instituicao_atual()` é *fail-closed*): esquecer o contexto produz tela vazia, nunca vazamento.
+**Como o contexto chega ao banco.** A instituição vive no `ContextoDaRequisicao` (um `AsyncLocalStorage`), e a `UnidadeDeTrabalho` a grava com `select set_config('app.instituicao_id', $1, true)` — o terceiro argumento faz o valor valer só na transação, como `SET LOCAL` — logo depois de abrir a transação e antes de qualquer consulta. O valor morre no fim da transação, então a conexão volta limpa ao pool — não há como uma requisição herdar a instituição da anterior. Consulta fora de transação não tem contexto e **devolve vazio** (`shared.instituicao_atual()` é *fail-closed*): esquecer o contexto produz tela vazia, nunca vazamento.
+
+- **Só a transação de fora grava.** O `set_config` roda apenas quando a `UnidadeDeTrabalho` abre a transação externa; uma transação aninhada reaproveita a aberta e não toca a variável. Trocar a instituição no meio de uma transação, portanto, não tem efeito no banco.
+- **`emContextoDaInstituicao(instituicaoId, fn)`** (`shared/infrastructure/contexto-da-instituicao.ts`) põe a instituição no `ContextoDaRequisicao` para quem não passa pela borda: a guarda de acesso depois de resolver o `sub`, a ativação depois de resolver o convite, o bootstrap com a instituição recém-gerada, o seed de demonstração e os leitores usados pelos consumidores. Como a regra acima, ela só chega ao banco se for chamada **antes** de a transação abrir.
+- **Na borda HTTP**, a instituição vem do contexto de acesso que a guarda pôs na requisição (§5); rota sem usuário resolvido abre a transação sem instituição.
 
 **Papéis do banco.**
 
@@ -246,15 +287,23 @@ O CDD é uma instituição. O desenho é multi-instituição desde o início por
 | `cdd_resolvedor_link` | dono só de `eventos.resolver_link`; lê quatro colunas de `link_de_inscricao` por uma política só dele | **não** |
 | `cdd_resolvedor_identidade` | dono só de `identidade.resolver_sujeito` e `identidade.resolver_convite`; lê três colunas de `identidade.usuario` e três de `identidade.convite`, cada tabela por uma política só dele | **não** |
 
-Há três exceções desenhadas. O despachante do outbox: `shared.outbox` não tem RLS porque ele lê eventos de todas as instituições; antes de entregar cada um, abre transação com o `instituicao_id` do evento. E os resolvedores que chegam sem instituição: o do link público, que lê o token de qualquer instituição sem `BYPASSRLS` — por uma política `FOR SELECT TO cdd_resolvedor_link` — e devolve só a instituição e o evento; e o do sujeito autenticado (§7.1), que lê o `sub` de qualquer instituição sem `BYPASSRLS` — por uma política `FOR SELECT TO cdd_resolvedor_identidade` — e devolve só a instituição e o usuário; e o do convite (§7.2), que pelo mesmo papel e por uma política `FOR SELECT TO cdd_resolvedor_identidade` em `identidade.convite` acha o convite pelo SHA-256 do token e devolve só a instituição e o usuário. Em produção, quem roda a migration precisa poder assumir os dois papéis para passar as funções a eles: `GRANT cdd_resolvedor_link TO cdd_owner WITH INHERIT FALSE` e `GRANT cdd_resolvedor_identidade TO cdd_owner WITH INHERIT FALSE`. Sem o `INHERIT FALSE`, o dono herdaria a política de um dos resolvedores e leria sem contexto as linhas de todas as instituições.
+Há três exceções desenhadas. O despachante do outbox: `shared.outbox` não tem RLS (a varredura o exclui pelo nome) porque ele lê eventos de todas as instituições; abre a transação sem instituição, escolhe o próximo evento e, antes de entregá-lo, grava nela o `instituicao_id` do evento com o mesmo `set_config` (§9). E os resolvedores que chegam sem instituição: o do link público, que lê o token de qualquer instituição sem `BYPASSRLS` — por uma política `FOR SELECT TO cdd_resolvedor_link` — e devolve só a instituição e o evento; e o do sujeito autenticado (§7.1), que lê o `sub` de qualquer instituição sem `BYPASSRLS` — por uma política `FOR SELECT TO cdd_resolvedor_identidade` — e devolve só a instituição e o usuário; e o do convite (§7.2), que pelo mesmo papel e por uma política `FOR SELECT TO cdd_resolvedor_identidade` em `identidade.convite` acha o convite pelo SHA-256 do token e devolve só a instituição e o usuário. Em produção, quem roda a migration precisa poder assumir os dois papéis para passar as funções a eles: `GRANT cdd_resolvedor_link TO cdd_owner WITH INHERIT FALSE` e `GRANT cdd_resolvedor_identidade TO cdd_owner WITH INHERIT FALSE`. Sem o `INHERIT FALSE`, o dono herdaria a política de um dos resolvedores e leria sem contexto as linhas de todas as instituições.
+
+**Uma tabela de propósito sem `instituicao_id`: o marcador do bootstrap.** `identidade.bootstrap_executado` (`b0-011`) tem linha única (`id boolean PRIMARY KEY DEFAULT true CHECK (id)`), `criado_em` e `admin_usuario_id`, e `cdd_app` só pode ler e inserir nela. Ela registra que o primeiro administrador já foi criado **no banco**, não numa instituição. Se tivesse `instituicao_id`, a varredura lhe aplicaria RLS FORCE, e a guarda do bootstrap — que roda sob o contexto da instituição recém-gerada — leria 0 linhas e nunca enxergaria o marcador gravado antes. Sem a coluna, a varredura não a alcança, e a recusa da segunda execução funciona em qualquer contexto.
 
 ## 9. Eventos de domínio e integração entre módulos
 
-**Outbox transacional, despacho no mesmo processo.** O agregado acumula eventos; o UoW grava-os em `shared.outbox` na mesma transação. Um laço no processo (a cada 1 s, e imediatamente após cada commit que gravou evento) lê o lote pendente com `FOR UPDATE SKIP LOCKED`, entrega a cada assinante e marca `publicado_em`. Falha incrementa `tentativas` e grava o próximo instante de tentativa em `proxima_tentativa_em` (backoff exponencial); após 10, o evento está esgotado e dispara o alerta de evento esgotado (§13). A consulta do laço — `publicado_em IS NULL AND tentativas < 10 AND coalesce(proxima_tentativa_em, '-infinity') <= now() ORDER BY id` — é servida pelo índice parcial `outbox_pendentes (id) WHERE publicado_em IS NULL AND tentativas < 10`: o backoff entra como filtro de execução, não como predicado do índice, porque depende do relógio e não pode ser fixado na hora de criar o índice. O teto (10) vai **literal** nessa consulta — como parâmetro de uma rotina preparada, o planner passa a usar plano genérico e deixa de enxergar que o índice parcial cobre o predicado, caindo para full scan.
+**Outbox transacional, despacho no mesmo processo.** O agregado acumula eventos; o UoW grava-os em `shared.outbox` na mesma transação. Um laço no processo, o `Despachante` (a cada 1 s, `INTERVALO_DE_POLLING_EM_MS = 1000`, e imediatamente após cada commit que gravou evento, pelo sinal do `aoConfirmar`), processa **um evento por transação** — até 100 por ciclo —: escolhe o próximo com `FOR UPDATE SKIP LOCKED` e `LIMIT 1`, grava na transação a instituição do evento (§8), entrega a cada consumidor num savepoint próprio e marca `publicado_em`. Falha de um consumidor desfaz só o savepoint dele, incrementa `tentativas`, grava `ultimo_erro` (só a classe do erro, o SQLSTATE e o nome da restrição, quando há — nunca a mensagem nem o `detail` do driver, que podem trazer dado pessoal) e agenda `proxima_tentativa_em` com backoff exponencial — 1 s × 2^(n−1), com teto de 5 min (`backoff.ts`). O teto é `TETO_DE_TENTATIVAS = 10` (`teto-de-tentativas.ts`): ao chegar a 10, o despachante loga `error` com o `evento_id` e o evento está **esgotado** — sai da consulta do laço e passa a contar para a vigia (abaixo e §13). Consumidor que não responde em 30 s (padrão de `TIMEOUT_DO_CONSUMIDOR_EM_MS`) aborta a transação inteira do evento, e a falha é registrada numa transação separada. A consulta do laço — `publicado_em IS NULL AND tentativas < 10 AND coalesce(proxima_tentativa_em, '-infinity') <= now() ORDER BY id` — é servida pelo índice parcial `outbox_pendentes (id) WHERE publicado_em IS NULL AND tentativas < 10`: o backoff entra como filtro de execução, não como predicado do índice, porque depende do relógio e não pode ser fixado na hora de criar o índice. O teto (10) vai **literal** nessa consulta — como parâmetro de uma rotina preparada, o planner passa a usar plano genérico e deixa de enxergar que o índice parcial cobre o predicado, caindo para full scan.
 
 `id` é ordem global de inserção, não ordem por agregado: com o filtro de backoff, o evento n+1 de um agregado pode ficar livre para sair enquanto o n ainda espera (o estorno antes da confirmação, por exemplo). Manter a ordem por agregado é dever do **despachante** (B0), não do índice: antes de entregar um evento, ele confere que não há evento anterior do mesmo agregado ainda pendente — `NOT EXISTS (SELECT 1 FROM shared.outbox anterior WHERE anterior.agregado_tipo = e.agregado_tipo AND anterior.agregado_id = e.agregado_id AND anterior.id < e.id AND anterior.publicado_em IS NULL)`. Um evento que estourou o teto de tentativas trava o agregado inteiro atrás dele — é para isso que ele dispara o alerta: destravar exige uma decisão humana, não uma nova tentativa automática (§13, linha "Evento esgotado").
 
-**Quem roda na aplicação.** `EventosModule` faz parte do `AppModule`: o despachante (a cada 1 s e após cada commit que gravou evento), a vigia de eventos esgotados (a cada minuto) e a descoberta dos consumidores `@ReageA` — entre eles o invalidador do cache de acesso da identidade (§7.1) — sobem com a API. O expurgo das chaves de idempotência (`IdempotenciaModule`) roda na partida e a cada hora. Os repositórios da identidade e o semeador de grupos de sistema entram no `IdentidadeModule` junto com o outbox, de que dependem.
+**Quem roda na aplicação.** `EventosModule` faz parte do `AppModule`: o despachante (a cada 1 s e após cada commit que gravou evento), a vigia de eventos esgotados e a descoberta dos consumidores `@ReageA` — no B0, o invalidador do cache de acesso e o sincronizador do acesso no Keycloak (§7.1) — sobem com a API.
+
+**Vigia de eventos esgotados.** A `VigiaDeEventosEsgotados` conta, a cada 60 s (`INTERVALO_DA_VIGIA_EM_MS = 60_000`), os eventos com `publicado_em IS NULL AND tentativas >= 10` — consulta servida pelo índice parcial `outbox_esgotados` (`b0-006`). Ela **só loga quando a contagem muda** em relação à última verificação do processo: mudou para um valor maior que zero (para cima ou para baixo), `error` `outbox: eventos esgotados` com `quantidade` e `maisAntigoEm`; voltou a zero, `info` `outbox: nenhum evento esgotado`. Contagem igual não gera linha, então um esgotado parado aparece uma vez por processo, não a cada minuto. Falha na própria contagem vira `warn`.
+
+**Seguidores travados.** Como o despachante só entrega um evento quando não há anterior pendente do mesmo agregado (consulta acima), um evento esgotado trava **todos os eventos seguintes do mesmo agregado**, inclusive os que ainda não falharam. A prontidão não os conta como atraso (§13): é a vigia que avisa, e destravar é decisão humana.
+
+**Modo do processo.** `ModoDoProcesso` (`modo-do-processo.ts`) é `'api'` ou `'cli'`, lido de `CDD_PROCESSO` (ausente = `'api'`; outro valor impede a partida). Em `'cli'`, o despachante e a vigia não ligam temporizador nem ouvem o sinal de commit. O CLI da identidade (§7.4) fixa `CDD_PROCESSO=cli` na primeira linha; os eventos que ele grava ficam no outbox e são entregues pela API quando ela subir. O expurgo das chaves de idempotência (`IdempotenciaModule`) roda na partida e a cada hora. Os repositórios da identidade e o semeador de grupos de sistema entram no `IdentidadeModule` junto com o outbox, de que dependem.
 
 **Todo assinante é idempotente.** Antes de agir, grava `(consumidor, evento_id)` em `shared.evento_processado` na mesma transação do efeito; se a linha já existe, não faz nada. Entrega "pelo menos uma vez" + consumidor idempotente = efeito exatamente uma vez.
 
@@ -270,7 +319,8 @@ Há três exceções desenhadas. O despachante do outbox: `shared.outbox` não t
 | `FeitioConcluido` | estoque | financeiro (leitura) | Congela o custo por litro; aparece no relatório |
 | `LancamentoConfirmado` / `Estornado` | financeiro | estoque | Recalcula custo parcial de feitio em andamento |
 | `FormularioPublicado` | pessoas | pessoas | Recalcula pendências de anamnese das inscrições abertas |
-| `GrupoAlterado`, `UsuarioSuspenso` | identidade | identidade | Invalida o cache de permissões |
+| `GRUPO_ALTERADO`, `GRUPO_EDITADO`, `USUARIO_ATIVADO`, `USUARIO_SUSPENSO`, `USUARIO_REATIVADO` | identidade | identidade (`InvalidadorDoCacheDeAcesso`) | Invalida o cache de contexto de acesso (§7.1). **Existe no B0** |
+| `USUARIO_SUSPENSO`, `USUARIO_REATIVADO` | identidade | identidade (`SincronizadorDoAcessoNoProvedor`) | Converge a conta no Keycloak com a situação atual (§7.1). **Existe no B0** |
 
 **Portas síncronas** são usadas quando a resposta decide o comando — e só então:
 
@@ -313,27 +363,45 @@ Há três exceções desenhadas. O despachante do outbox: `shared.outbox` não t
 { "erro": "PERIODO_FECHADO", "detalhes": { "unidade": "CDD", "competencia": "2026-07" } }
 ```
 
-Os códigos vivem em `packages/contracts/erros.ts` e vêm de três fontes, todas traduzidas para o mesmo formato:
+Os códigos vivem em `CODIGOS_DE_ERRO`, em `packages/contracts/src/erros.ts` — **49 códigos** ao fim do B0 —, e o status de cada um em `STATUS_POR_CODIGO` (`apps/api/src/shared/infrastructure/http/status-por-codigo.ts`), um `Record` tipado pelo catálogo: código sem status não compila. Eles vêm de três fontes, todas traduzidas para o mesmo formato:
 
 | Fonte | Exemplo | Como vira código |
 |---|---|---|
-| Agregado ou comando (`Result.err`) | `SEM_VINCULO_PARA_AUTORIZAR_ADIANTAMENTO` (A1), `PERIODO_FECHADO`, `ETIQUETAS_NAO_FECHAM`, `CATEGORIA_OBRIGATORIA`, `SALDO_INSUFICIENTE` | Direto |
-| Guardas mínimas de banco (§15) | `LANCAMENTO_IMUTAVEL`, `TRANSFERENCIA_IMUTAVEL`, `FEITIO_IMUTAVEL`, `REGISTRO_IMUTAVEL` | Prefixo da mensagem antes de `:`. O domínio recusa antes; se um desses chega à API, alguém escreveu código que contorna o agregado — é erro de programação: 500 com alerta ao Sentry |
-| Restrição nomeada | `i1_fitid_unico`, `ml1_vaga_livre_no_evento`, `uma_declaracao_por_cerimonia` | Tabela `nome da restrição → código` — é por isso que as restrições que o domínio mapeia **têm nome** no esquema |
+| Agregado ou comando (`Result.err`) | No B0: `ULTIMO_ADMINISTRADOR`, `CONVITE_EXPIRADO`, `GRUPO_PROTEGIDO`. Desenho: `SEM_VINCULO_PARA_AUTORIZAR_ADIANTAMENTO` (A1, entra na B2), `PERIODO_FECHADO`, `ETIQUETAS_NAO_FECHAM` | Direto |
+| Guardas mínimas de banco (§15) | `LANCAMENTO_IMUTAVEL`, `TRANSFERENCIA_IMUTAVEL`, `FEITIO_IMUTAVEL`, `REGISTRO_IMUTAVEL` | Prefixo da mensagem antes de `:` (`guardas-minimas-do-banco.ts`). O domínio recusa antes; se um desses chega à API, alguém escreveu código que contorna o agregado — é erro de programação: 500, registrado em `error` pelo filtro global com a `correlacaoId` (o Sentry não existe no B0) |
+| Restrição nomeada | No B0 (`restricao-para-codigo.ts`): `usuario_email_unico` → `EMAIL_JA_CADASTRADO`, `usuario_pessoa_unica` → `PESSOA_JA_TEM_USUARIO`, `grupo_nome_unico` → `GRUPO_JA_EXISTE`, `convite_vigente_unico` → `CONVITE_JA_PENDENTE`, `usuario_grupo_grupo_fk` → `GRUPO_INEXISTENTE`. Desenho: `i1_fitid_unico`, `ml1_vaga_livre_no_evento` | Tabela `nome da restrição → código` — é por isso que as restrições que o domínio mapeia **têm nome** no esquema |
+
+**Códigos do B0 e seus status.** Além dos genéricos (`NAO_AUTENTICADO` 401, `SEM_PERMISSAO` 403, `RECURSO_NAO_ENCONTRADO` 404, `CORPO_INVALIDO` 400, `VERSAO_DESATUALIZADA` 409, `VERSAO_OBRIGATORIA` 428, `CHAVE_DE_IDEMPOTENCIA_REUTILIZADA` 422, `CONFLITO_DE_CONCORRENCIA` 409, `SERVICO_INDISPONIVEL` 503, `ERRO_INTERNO` 500, `CORPO_GRANDE_DEMAIS` 413), a identidade usa:
+
+| Tema | Código → status |
+|---|---|
+| Situação do usuário na guarda e no `/eu` (§7.1) | `USUARIO_DESCONHECIDO`, `USUARIO_CONVITE_PENDENTE`, `USUARIO_SUSPENSO`, `USUARIO_REVOGADO` → 401 |
+| Provedor de identidade fora (JWKS ou Admin API) | `PROVEDOR_DE_IDENTIDADE_INDISPONIVEL` → 503 |
+| Gestão de usuários | `EMAIL_JA_CADASTRADO`, `PESSOA_JA_TEM_USUARIO`, `CONVITE_JA_PENDENTE`, `SITUACAO_DO_USUARIO_NAO_PERMITE` → 409; `ULTIMO_ADMINISTRADOR`, `MOTIVO_OBRIGATORIO`, `MOTIVO_LONGO_DEMAIS` → 422; `CONVITE_REENVIADO_RECENTEMENTE` → 429, com `Retry-After` (§7.2) |
+| Gestão de grupos | `GRUPO_JA_EXISTE`, `GRUPO_PROTEGIDO`, `GRUPO_COM_USUARIOS_ATIVOS` → 409; `GRUPO_INEXISTENTE`, `PERMISSAO_INEXISTENTE` → 404 |
+| Ativação do convite (§7.2) | `CONVITE_INVALIDO` → 400; `CONVITE_EXPIRADO` → 410; `CONVITE_JA_USADO`, `SUJEITO_JA_VINCULADO` → 409; `CONVITE_DE_OUTRO_SUJEITO` → 403 |
+| Bootstrap e seed de demonstração (§7.4) — saem pelo CLI como código de saída, não por HTTP | `BOOTSTRAP_JA_EXECUTADO`, `INSTITUICAO_NAO_DEMO_EXISTENTE`, `SUJEITO_DO_DEV_DIVERGENTE`, `DEV_COM_CONVITE_PENDENTE` → 409; `EMAIL_DO_SUJEITO_DIVERGENTE` → 403; `SUJEITO_INEXISTENTE`, `DEV_NAO_ENCONTRADO_NO_PROVEDOR` → 404 |
+
+Os oito códigos do Financeiro e do Estoque já estão no catálogo (`CATEGORIA_OBRIGATORIA`, `ETIQUETAS_NAO_FECHAM`, `PERIODO_FECHADO`, `SALDO_INSUFICIENTE` → 422; as quatro guardas mínimas → 500), à espera das etapas que os produzem.
 
 O status HTTP de cada código vem do catálogo (`STATUS_POR_CODIGO`), nunca da exceção que o carrega. Uma `HttpException` cujo corpo traz um código do catálogo (`{ "erro": "USUARIO_SUSPENSO" }`) é traduzida por esse código, com a `correlacaoId` do filtro; status sem código no corpo cai no mapa genérico (400, 401, 403 e 404), e qualquer outro vira 500.
 
-Erro de banco que chega à API **sem** mapeamento é bug: vira 500, vai ao Sentry, e o teste de contrato (§26) falha. Se o domínio está certo, a trava do banco nunca dispara em uso normal — quando dispara, alguém escreveu código que contorna o agregado.
+Erro de banco que chega à API **sem** mapeamento é bug: vira 500, é registrado em `error` com a `correlacaoId`, e o teste de contrato (§26) falha. Se o domínio está certo, a trava do banco nunca dispara em uso normal — quando dispara, alguém escreveu código que contorna o agregado.
 
 ## 13. Operação
 
 | Tema | Decisão |
 |---|---|
-| Ambientes | `local` (Docker Compose: Postgres, Keycloak, MinIO), `homologacao` (dados sintéticos, nunca cópia de produção — tem anamnese), `producao` |
-| Deploy | Imagem única; migration roda como passo separado **antes** de a nova versão receber tráfego; migrations em duas fases (expandir → migrar → contrair) para não exigir parada |
+| Ambientes | **No B0 só existem `local` e a CI.** `local` é o Docker Compose da raiz: `postgres`, `storage` (SeaweedFS) e `storage-bucket`, `mailpit` e `keycloak` — a API roda fora do compose (`pnpm --filter @cdd/api dev`). `homologacao` (dados sintéticos, nunca cópia de produção — tem anamnese) e `producao` são o desenho; topologia e provedor são decisão pendente da coordenação, com o requisito da linha "Sessão silenciosa" |
+| Deploy | Desenho, ainda sem ambiente: imagem única; migration roda como passo separado **antes** de a nova versão receber tráfego (`pnpm db:migrar`, como `cdd_owner` por `BANCO_URL_MIGRACAO`); migrations em duas fases (expandir → migrar → contrair) para não exigir parada |
 | Configuração | Variáveis de ambiente validadas por Zod na partida; segredo nunca em arquivo versionado |
-| Saúde | `/saude/viva` (processo) e `/saude/pronta` (banco + Keycloak + bucket + outbox sem atraso > 5 min). O atraso conta só eventos sob o teto de tentativas que não estão travados atrás de um anterior esgotado do mesmo agregado: evento esgotado — e o que fica preso atrás dele (§9) — é alerta, não prontidão; tirar a task do ar não conserta um consumidor com bug |
+| Saúde | `/saude/viva` (processo) e `/saude/pronta`. No B0 a prontidão confere **banco e outbox** (sem evento pendente há mais de 5 min, `ATRASO_MAXIMO_DO_OUTBOX_EM_SEGUNDOS`); Keycloak e bucket entram na prontidão quando houver deploy. O atraso conta só eventos sob o teto de tentativas que não estão travados atrás de um anterior esgotado do mesmo agregado: evento esgotado — e o que fica preso atrás dele (§9) — é alerta, não prontidão; tirar a task do ar não conserta um consumidor com bug |
 | Evento esgotado | **Alerta:** log `error` `outbox: eventos esgotados`, com `quantidade` e `maisAntigoEm`, emitido por processo quando muda a contagem de eventos pendentes com 10 tentativas (verificada a cada minuto); ao zerar, `info` `outbox: nenhum evento esgotado`. **Efeito:** os eventos seguintes do mesmo agregado ficam travados atrás dele (§9). **Destravar:** ler `ultimo_erro`, corrigir o consumidor e implantar; depois zerar `tentativas` e `proxima_tentativa_em` da linha (`UPDATE shared.outbox SET tentativas = 0, proxima_tentativa_em = NULL WHERE evento_id = …`) — consumidores que já tinham processado o evento não repetem o efeito (`shared.evento_processado`). Descartar o evento (`publicado_em = now()` sem entregá-lo) só com decisão explícita registrada, citando o `evento_id` |
+| CLI da identidade | Dois subcomandos, ambos depois de `pnpm infra:subir && pnpm db:migrar` e ambos como `cdd_app` (`BANCO_URL`), sob RLS: `pnpm db:identidade:bootstrap --instituicao-nome … --admin-nome … --admin-email … [--sujeito …]` cria a instituição e o primeiro administrador, uma vez por banco; `pnpm db:identidade:seed-demo`, sem flags, prepara o login local do `dev@cdd.local` (§7.4). Flags, modos e recuperação do envio de convite que falhou estão no README |
+| Códigos de saída do CLI | `0` sucesso; `1` infraestrutura (banco ou Keycloak indisponível, falha no envio do convite depois do commit, erro inesperado); `2` uso ou validação (flag inválida, dado recusado pelo domínio, ambiente recusado pela guarda do seed); `3` regra de negócio (bootstrap já executado, sujeito inexistente ou já vinculado, e-mail do sujeito divergente, conflitos do seed). A saída nunca traz token, hash, `sub`, URL de convite nem segredo (`identidade-cli/codigos-de-saida.ts`, README) |
+| Guarda do seed de demonstração | Antes de abrir banco ou Keycloak, `ambientePermiteSeedDemo` exige `CDD_AMBIENTE` igual a `local` ou `ci` — `homologacao`, `producao`, ausente ou desconhecida recusam — e `KEYCLOAK_URL_BASE` e `BANCO_URL` com host de loopback **literal**: `localhost`, `127.0.0.1` ou `[::1]`. Nome de serviço do compose (`postgres`) não conta, e `CI=true` não prova nada. Recusa sai com código `2`. A guarda barra erro de configuração, não quem controla o `.env`. `CDD_AMBIENTE` só é lida pelo CLI |
+| Aceite real | `pnpm test:keycloak` (`apps/api/scripts/aceite-keycloak.sh`) sobe Postgres, Keycloak e Mailpit num projeto compose isolado (`cdd-aceite-<pid>`), compila a API, migra e roda `apps/api/test/keycloak-real/`: login real, convite lido no Mailpit, suspensão e reativação, trilha de auditoria, T26 (usuário suspenso não obtém token), bootstrap e seed de demonstração. O script derruba só o próprio projeto ao sair |
+| CI | `.github/workflows/ci.yaml`, em todo PR e em push na `main`, três jobs em paralelo: `qualidade` (typecheck, lint, fronteiras do `dependency-cruiser`, testes unitários, build do web), `integracao` (`test:integracao` com Testcontainers, que inclui a verificação de garantias do banco, e a conferência dos tipos Kysely contra o banco migrado) e `e2e` (o aceite real acima, ~70 s medidos, limite de 10 min; em falha publica o `api.log` como artefato `aceite-log-da-api`, retido por 3 dias). Só o `e2e` usa Keycloak real |
 | Logs | Pino JSON; **nunca** corpo de requisição nem resposta de anamnese; CPF mascarado |
 | Backup | `pg_dump` diário cifrado para bucket de outra conta, retenção de 35 dias + 12 mensais; PITR do provedor quando disponível. RPO/RTO de 24 h (Doc 1 §5) |
 | Restauração | **Testada todo mês**, por rotina que restaura o último backup num banco descartável e roda a verificação de garantias (`apps/api/test/banco/garantias/`) e a contagem de linhas. Backup que nunca foi restaurado é hipótese |
@@ -643,6 +711,23 @@ A regra do último administrador é uma dessas travas: toda alteração que pode
 ## 22. Migrações, seed e evolução
 
 - **As migrations em SQL do MikroORM são a fonte de verdade.** Escritas à mão, por etapa (a partir do B0), pelo desenho mínimo do corte. RLS, gatilhos, `EXCLUDE` e FKs compostas são codificadas nas migrations, não geradas. O esquema de referência (`cdd-07-esquema.sql`) é documentação congelada em set/2026 do desenho aprovado — não roda em CI.
+- **As migrations do B0**, na ordem de `MIGRACOES_DO_CDD` (`apps/api/src/banco/migracoes/lista.ts`), cada uma numa pasta com o SQL de subida, o `desfazer.sql` e a classe que os carrega:
+
+  | Migration | O que cria |
+  |---|---|
+  | `b0-000-esquemas` | Os schemas `shared` e `identidade` e o `USAGE` para `cdd_app`. Os papéis de cluster vêm da infra (`infra/postgres/papeis.sql`), não de migration |
+  | `b0-001-shared` | `shared.instituicao_atual()`, `somente_insercao()`, as duas varreduras (`aplicar_isolamento_por_instituicao`, `proibir_truncate`), `shared.instituicao`, `outbox` (com o índice `outbox_pendentes`), `evento_processado` e `chave_de_idempotencia`. `shared.anexo` fica para a B1 |
+  | `b0-002-identidade` | `permissao`, `grupo`, `grupo_permissao`, `usuario`, `usuario_grupo`, `convite` e `registro_de_auditoria`, com os índices únicos (`usuario_email_unico`, `convite_vigente_unico`…), os índices da trilha e `identidade.resolver_sujeito` |
+  | `b0-003-catalogo-de-permissoes` | O `INSERT` das 64 permissões, espelho de `packages/contracts/src/identidade/permissoes.ts` |
+  | `b0-004-idempotencia` | `corpo_hash` em `chave_de_idempotencia`, para detectar reuso da chave com outro corpo |
+  | `b0-005-outbox-por-agregado` | Índice `outbox_por_agregado`, que serve o `NOT EXISTS` da ordem por agregado (§9) |
+  | `b0-006-outbox-esgotados` | Índice parcial `outbox_esgotados` (`tentativas >= 10`), que serve a vigia (§9) |
+  | `b0-007-idempotencia-expurgo` | Índice `(instituicao_id, criada_em)` para o expurgo das chaves vencidas |
+  | `b0-008-auditoria-grupo-editado` | `GRUPO_EDITADO` na enumeração de operações da trilha |
+  | `b0-009-usuario-grupo-por-grupo` | Índices `usuario_grupo_por_grupo` e `usuario_por_nome`, e o nome explícito da FK composta que vira `GRUPO_INEXISTENTE` |
+  | `b0-010-resolver-convite` | `identidade.resolver_convite(hash)`, com dono `cdd_resolvedor_identidade` (§7.2, §8) |
+  | `b0-011-bootstrap` | O marcador `identidade.bootstrap_executado`, sem `instituicao_id` (§8) |
+
 - **Verificação de garantias em CI** (§26): `apps/api/test/banco/garantias/` prova, contra o banco migrado, o que o §15 diz que o banco garante — isolamento, resolvedores, só-inserção, `TRUNCATE`, imutabilidade simples e as restrições de forma. Cresce por etapa, com as tabelas. As regras de negócio têm os seus testes no domínio.
 - **Duas funções que toda migration chama, no fim, depois de criar suas tabelas** — ambas idempotentes, então uma migration de etapa posterior pode chamá-las de novo sobre o esquema inteiro sem duplicar nem falhar:
   - `shared.aplicar_isolamento_por_instituicao()` — a política de RLS não é escrita tabela a tabela; a função varre `information_schema` atrás de `instituicao_id` e aplica `ENABLE`+`FORCE`+a política a quem ainda não tem. O teste T23 falha se alguma tabela ficar de fora.
@@ -651,7 +736,8 @@ A regra do último administrador é uma dessas travas: toda alteração que pode
 - **Duas fases para mudança destrutiva:** expandir (coluna nova, preenchida em paralelo) → migrar leitura e escrita → contrair (remover a antiga) numa versão seguinte.
 - **Catálogo de permissões:** é uma migration, não um seed. Cada permissão nova ou alterada entra por uma migration nova, que aparece no diff do PR, e o T29 confere o conjunto contra o contrato.
 - **Seed por instituição** (`semear`, idempotente, desde o B0): os seis grupos com suas permissões (Doc 3 §12) nascem uma vez por instituição, com `ON CONFLICT DO NOTHING` — editar um grupo protegido depois não é revertido por uma nova execução. Unidades e categorias do plano de contas aprovado entram pelo mesmo caminho no B1.
-- **Seed de homologação**: dados sintéticos gerados a partir dos mocks do front — os mesmos personagens das telas (Clarice, Helena, Eduardo, Aline) —, o que faz a demonstração do protótipo e a de homologação contarem a mesma história.
+- **Seed de demonstração** (desde o B0, `pnpm db:identidade:seed-demo`): só identidade — a instituição de demonstração, o `dev@cdd.local` como administrador e usuários fictícios, sem CPF, telefone, endereço nem dado de saúde —, tudo pelo domínio e numa única transação. **Só roda em `local` e `ci`**, com banco e Keycloak em loopback (§7.4, §13).
+- **Seed de homologação — adiado para a B1 em diante.** A versão anterior deste documento previa dados sintéticos gerados a partir dos mocks do front, com os mesmos personagens das telas (Clarice, Helena, Eduardo, Aline), para a demonstração do protótipo e a de homologação contarem a mesma história. Isso não foi construído no B0: não há ambiente de homologação, e o único seed existente recusa `CDD_AMBIENTE=homologacao`. Quando homologação existir, o seed dela é uma decisão nova, com guarda própria.
 - **Migração da planilha** (Doc 6, transversal): módulo `migracao` com CLI que carrega os 1.760 lançamentos com `origem = 'MIGRACAO'`, cria as competências históricas **fechadas** com hash, e emite o relatório de conciliação. Como o domínio impede lançamento em competência fechada, a carga é feita com os períodos abertos e o fechamento é o último passo — se o relatório não bater, nada é fechado.
 
 ## 23. Dados pessoais e LGPD no banco
@@ -697,7 +783,7 @@ As etapas são as do Doc 6 §6, na mesma ordem e com as mesmas estimativas. O qu
 
 | Etapa | Banco | API e infraestrutura | Aceite |
 |---|---|---|---|
-| **B0 · Fundação** · ~3 sem | `shared` e `identidade` inteiros; varredura de RLS; papéis; catálogo de permissões (migration) e grupos semeados por instituição | NestJS, UoW com `SET LOCAL`, guards, catálogo de erros, outbox + despachante, storage, Keycloak com tema do CDD, CI com `dependency-cruiser`, T23, T28–T30 e **a verificação de garantias na CI** | Login real; os seis grupos; um endpoint de escrita qualquer com decorator e trilha; teste de vazamento entre instituições verde |
+| **B0 · Fundação** · ~3 sem · **entregue na API** (último merge: #94) | `shared` e `identidade` inteiros (`b0-000` a `b0-011`, §22); varredura de RLS; papéis; catálogo de permissões (migration) e grupos semeados por instituição | NestJS, UoW com contexto da instituição por `set_config`, guards, catálogo de erros, outbox + despachante, ~~storage~~ (adiado para a B1, com `shared.anexo`), Keycloak com tema do CDD, CI com `dependency-cruiser`, T23, T28–T30 e **a verificação de garantias na CI** | Login real; os seis grupos; um endpoint de escrita qualquer com decorator e trilha; teste de vazamento entre instituições verde |
 | **B1 · Financeiro núcleo** · ~6 sem | `unidade`, `grupo_de_custo`, `categoria`, `conta`, `lancamento` + etiquetas + pendência, `transferencia` (simples), `periodo_contabil`, `reabertura`, `fundo`; read models; `pessoas.pessoa` **mínima** (nome, tipo, documento) | Registrar, confirmar, estornar, pendência (abrir, responder), fechar, reabrir; read models de fila, meus registros, lançamentos, contas, DRE, fluxo de caixa | **O fechamento do sistema bate com o da planilha por dois meses consecutivos** |
 | **B2 · Financeiro, o resto** · ~3 sem | `fatura`, `emprestimo`, `adiantamento`, `prestacao_de_contas`; `pessoas.vinculo` | Porta `VinculoAtivoNaData` (A1); PDF com hash | Percurso 4 do Doc 4 §11: um administrador sem vínculo tenta autorizar adiantamento e o domínio recusa |
 | **B3 · Importação e conciliação** · ~3 sem | `importacao_de_extrato`, `linha_extrato` | Parser OFX/CSV, motor de sugestão, fila de conciliação, faturamento contra o teto | Reimportar o mesmo extrato não cria nenhuma linha; o lançamento esquecido aparece |
@@ -705,6 +791,12 @@ As etapas são as do Doc 6 §6, na mesma ordem e com as mesmas estimativas. O qu
 | **B5 · Eventos** · ~5 sem | `eventos` inteiro | Link público com sessão e fator de conferência (§7.3), inscrição pelos dois canais, pagamento → receita, devolução → estorno, contratação, leitos, preparo | Percursos 2 e 3 do Doc 4 §11; uma inscrição completa pelo link, do CPF à confirmação, sem login |
 | **B6 · Estoque** · ~3 sem | `estoque` inteiro | Movimento, consumo por lote, feitio com custo congelado, estimativa e calibragem (EC4) | Duas saídas simultâneas do mesmo lote não deixam saldo negativo; custo por litro de um feitio concluído não muda depois de um estorno |
 | **Migração** · ~2 sem, em paralelo a B1–B2 | — | CLI `migracao`, relatório de conciliação | As onze decisões humanas do Doc 1 §7.2 tomadas; relatório sem divergência |
+
+**Estado do B0 (10/10/2026).** O backend do B0 está mesclado na `main`; o que falta é de front, opcional ou foi adiado para etapas seguintes.
+
+- **Entregue:** unidade de trabalho e borda transacional (§5), guarda de acesso com cache e `GET /eu` (§7.1), idempotência com expurgo, outbox com despachante e vigia (§9), filtro global e catálogo de erros (§12), persistência da identidade com trava otimista e outbox, trilha de auditoria síncrona, gestão de usuários e de grupos, convite, reenvio com limite e ativação pelo Keycloak (§7.2), suspensão e reativação convergentes no provedor, CLI de bootstrap e seed de demonstração (§7.4, §13), tema do Keycloak e login OIDC no SPA. Testes: verificação de garantias e T23 na integração, T29 (catálogo contra o contrato), T30 (marcas de rota), T28a e T28b na API, e o aceite real com Keycloak no job `e2e` da CI (#94).
+- **Critérios de aceite da tabela:** login real e escrita auditada com token real são cobertos pelo aceite (`apps/api/test/keycloak-real/`); os seis grupos nascem pelo bootstrap e pelo seed; o isolamento entre instituições é um caso da verificação de garantias (`apps/api/test/banco/garantias/casos/01-isolamento-por-instituicao.sql`).
+- **Ainda não entregue:** a rota `/entrar` do SPA, que chama `POST /eu/ativacao`, e o T28a/T28b do web (issue #77, aberta); o cliente de storage (B1); um comando opcional para reenviar o convite inicial do bootstrap (hoje a recuperação é manual, README); qualquer ambiente fora de `local` e CI (§13).
 
 > **B1 depende de uma `pessoa` mínima**, e B4 a completa. A tabela é criada inteira em B1 — com as colunas nulas que B4 vai preencher —, para não haver migration de reforma no meio do Financeiro em uso.
 
