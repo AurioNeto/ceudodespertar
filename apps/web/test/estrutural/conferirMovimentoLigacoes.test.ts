@@ -854,6 +854,53 @@ describe('conferir-movimento: ligações', { timeout: TEMPO_DO_CENARIO_EM_MS }, 
 
       passou(resultado);
     });
+
+    it('falha quando dois vi.mock de pacotes externos com fábricas distintas trocam de caminho', () => {
+      const resultado = trocarNoLugar(
+        'pages/Telas.dom.test.ts',
+        mocks('react-router-dom', '@tanstack/react-query', ''),
+        mocks('@tanstack/react-query', 'react-router-dom', ''),
+      );
+
+      falhou(resultado);
+      expect(resultado.erro).toContain("corpo mudou: vi.mock('<modulo>', () => ({ formatar");
+      expect(resultado.erro).toContain("corpo mudou: vi.mock('<modulo>', () => ({ padrao");
+    });
+
+    it('passa quando declarações sem import() saem de um arquivo que tem import()', () => {
+      const resultado = executarCenario({
+        base: {
+          ...MODULOS,
+          'util.ts': codigo(
+            "export const carregar = () => import('./pages/A');",
+            'export const UM = 1;',
+            'export const DOIS = 2;',
+          ),
+        },
+        depois: (repositorio) =>
+          repositorio.escrever({
+            'util.ts': codigo("export const carregar = () => import('./pages/A');"),
+            'numeros/numeros.ts': codigo('export const UM = 1;', 'export const DOIS = 2;'),
+          }),
+      });
+
+      passou(resultado);
+    });
+
+    it('passa quando o arquivo movido chama função com texto que parece caminho relativo', () => {
+      const navegacao = codigo(
+        "export const ir = (navegar: (caminho: string) => void): void => navegar('./detalhe');",
+        "export const voltar = (navegar: (caminho: string) => void): void => navegar('../lista');",
+        '',
+        ...PREENCHIMENTO,
+      );
+      const resultado = executarCenario({
+        base: { ...MODULOS, 'pages/navegacao.ts': navegacao },
+        depois: (repositorio) => repositorio.mover('pages/navegacao.ts', 'pages/telas/navegacao.ts'),
+      });
+
+      passou(resultado);
+    });
   });
 
   describe('imports por alias do tsconfig', () => {
