@@ -1,18 +1,10 @@
-import {
-  alvoDeDeclaracao,
-  alvoDeModulo,
-  chaveDaLigacao,
-  chaveDoAlvo,
-  descreverAlvo,
-} from './alvos.mjs';
+import { chaveDaLigacao, chaveDoAlvo, descreverAlvo } from './alvos.mjs';
 import { lerLigacoes } from './ligacoes.mjs';
+import { criarMapeador } from './mapeador.mjs';
 
-const SEPARADOR_DA_CHAVE = '\0';
 const ROTULO_DA_EXPORTACAO = 'exportação';
 const ROTULO_DO_IMPORT = 'ligação de import';
 const ROTULO_DA_REFERENCIA = 'referência de módulo';
-
-const chaveDeSimbolo = (arquivo, simbolo) => `${arquivo}${SEPARADOR_DA_CHAVE}${simbolo}`;
 
 const rotuloDaCategoria = (categoria) => {
   switch (categoria) {
@@ -36,33 +28,6 @@ function descreverLigacao({ categoria, apenasTipo, nome, alvo }) {
     default:
       return `${apenasTipo ? 'type ' : ''}${nome} <- ${origem}`;
   }
-}
-
-function criarMapeador(renomeacoes, correspondencias) {
-  const renomeados = new Map(renomeacoes.map(({ de, para }) => [de, para]));
-  const movidas = new Map(
-    correspondencias.flatMap(({ origem, destino }) =>
-      origem.simbolos.map((simbolo, indice) => [
-        chaveDeSimbolo(origem.arquivo, simbolo),
-        alvoDeDeclaracao(destino.arquivo, destino.simbolos[indice] ?? simbolo),
-      ]),
-    ),
-  );
-  const noHead = (arquivo) => renomeados.get(arquivo) ?? arquivo;
-
-  return (alvo) => {
-    switch (alvo.tipo) {
-      case 'declaracao':
-        return (
-          movidas.get(chaveDeSimbolo(alvo.arquivo, alvo.nome)) ??
-          alvoDeDeclaracao(noHead(alvo.arquivo), alvo.nome)
-        );
-      case 'modulo':
-        return alvoDeModulo(noHead(alvo.arquivo));
-      default:
-        return alvo;
-    }
-  };
 }
 
 function acrescentar(mapa, chave, valor) {
@@ -169,14 +134,15 @@ function registrarLigacoes(registrar, situacao, arquivo, ligacoes) {
 
 export function conferirLigacoes({
   repositorio,
+  resolvedores,
   entradas,
   renomeacoes,
   correspondencias,
   barrels,
   registrar,
 }) {
-  const base = lerLigacoes(repositorio.arvoreDaBase);
-  const head = lerLigacoes(repositorio.arvoreDoHead);
+  const base = lerLigacoes(repositorio.arvoreDaBase, resolvedores.base);
+  const head = lerLigacoes(repositorio.arvoreDoHead, resolvedores.head);
   const mapear = criarMapeador(renomeacoes, correspondencias);
   const { origens, destinos } = relacionarArquivos({ base, head, entradas, correspondencias });
   const alvosImportados = memoizarUmaVez(() => importadasNoHead(head));

@@ -1,5 +1,7 @@
+import { criarAlvosDosEspecificadores } from './alvosDosEspecificadores.mjs';
 import { conferirLigacoes } from './conferenciaDeLigacoes.mjs';
 import { conteudoComparavel, declaracoesDe, ehBarrel, ehCodigo } from './declaracoes.mjs';
+import { criarResolvedor } from './resolucao.mjs';
 
 const SEPARADOR_DA_CHAVE = '\0';
 
@@ -60,9 +62,9 @@ function incorporarParesDeArquivo(repositorio, entradas, pares, registrar) {
   }, entradas);
 }
 
-const temOMesmoConteudo = (repositorio, { de, para }) =>
-  conteudoComparavel(de, repositorio.conteudoDaBase(de)) ===
-  conteudoComparavel(para, repositorio.conteudoDoHead(para));
+const temOMesmoConteudo = (leitor, { de, para }) =>
+  conteudoComparavel(de, leitor.conteudoDaBase(de), leitor.alvoNaBase) ===
+  conteudoComparavel(para, leitor.conteudoDoHead(para), leitor.alvoNoHead);
 
 function mensagemDeArquivoQueNaoEhCodigo(entrada) {
   if (entrada.de === null) {
@@ -74,13 +76,16 @@ function mensagemDeArquivoQueNaoEhCodigo(entrada) {
     : `arquivo que não é código foi alterado: ${entrada.para}`;
 }
 
-function lerEntrada(repositorio, entrada) {
-  const itensDe = (caminho, conteudoDe) => declaracoesDe(caminho, comoTexto(conteudoDe(caminho)));
+function lerEntrada(leitor, entrada) {
+  const itensDe = (caminho, conteudoDe, alvoDoEspecificador) =>
+    declaracoesDe(caminho, comoTexto(conteudoDe(caminho)), alvoDoEspecificador);
 
   return {
     entrada,
-    base: entrada.de === null ? [] : itensDe(entrada.de, repositorio.conteudoDaBase),
-    head: entrada.para === null ? [] : itensDe(entrada.para, repositorio.conteudoDoHead),
+    base:
+      entrada.de === null ? [] : itensDe(entrada.de, leitor.conteudoDaBase, leitor.alvoNaBase),
+    head:
+      entrada.para === null ? [] : itensDe(entrada.para, leitor.conteudoDoHead, leitor.alvoNoHead),
   };
 }
 
@@ -104,17 +109,17 @@ function casarNoLugar({ base, head }) {
   };
 }
 
-function declaracoesDivergem(repositorio, entrada) {
-  const { livresDaBase, livresDoHead } = casarNoLugar(lerEntrada(repositorio, entrada));
+function declaracoesDivergem(leitor, entrada) {
+  const { livresDaBase, livresDoHead } = casarNoLugar(lerEntrada(leitor, entrada));
 
   return livresDaBase.length > 0 || livresDoHead.length > 0;
 }
 
-const podeSerComparadaPorDeclaracao = (repositorio, entrada) =>
+const podeSerComparadaPorDeclaracao = (leitor, entrada) =>
   !entrada.explicito &&
   ehCodigo(entrada.de) &&
   ehCodigo(entrada.para) &&
-  declaracoesDivergem(repositorio, entrada);
+  declaracoesDivergem(leitor, entrada);
 
 function casarParesDeDeclaracao(pares, { baseLivre, headLivre, casar, registrar }) {
   const localizar = (livres, { arquivo, nome }) =>
@@ -168,8 +173,8 @@ function casarAjudantesDeTesteRepetidos(todasDaBase, { headLivre, casar }) {
   }
 }
 
-function casarDeclaracoes(repositorio, entradas, paresDeDeclaracao, registrar) {
-  const lidas = entradas.map((entrada) => lerEntrada(repositorio, entrada));
+function casarDeclaracoes(leitor, entradas, paresDeDeclaracao, registrar) {
+  const lidas = entradas.map((entrada) => lerEntrada(leitor, entrada));
   const baseLivre = new Set();
   const headLivre = new Set();
   const correspondencias = [];
@@ -269,10 +274,15 @@ export function conferirMovimento(repositorio, pares = {}) {
     registrar,
   );
   const renomeacoes = entradas.filter(ehRenomeacao);
-  const puras = renomeacoes.filter((renomeacao) => temOMesmoConteudo(repositorio, renomeacao));
+  const resolvedores = {
+    base: criarResolvedor(repositorio.arvoreDaBase),
+    head: criarResolvedor(repositorio.arvoreDoHead),
+  };
+  const leitor = { ...repositorio, ...criarAlvosDosEspecificadores(resolvedores, renomeacoes) };
+  const puras = renomeacoes.filter((renomeacao) => temOMesmoConteudo(leitor, renomeacao));
   const impuras = renomeacoes.filter((renomeacao) => !puras.includes(renomeacao));
   const porDeclaracao = impuras.filter((renomeacao) =>
-    podeSerComparadaPorDeclaracao(repositorio, renomeacao),
+    podeSerComparadaPorDeclaracao(leitor, renomeacao),
   );
 
   impuras
@@ -289,7 +299,7 @@ export function conferirMovimento(repositorio, pares = {}) {
   const deCodigo = aComparar.filter((entrada) => !semCodigo.includes(entrada));
 
   const { correspondencias, baseLivre, headLivre } = casarDeclaracoes(
-    repositorio,
+    leitor,
     deCodigo,
     pares.declaracoes ?? [],
     registrar,
@@ -308,6 +318,7 @@ export function conferirMovimento(repositorio, pares = {}) {
   acusarDeclaracoesPerdidasENovas({ baseLivre, headLivre, registrar });
   const ligacoes = conferirLigacoes({
     repositorio,
+    resolvedores,
     entradas,
     renomeacoes,
     correspondencias,

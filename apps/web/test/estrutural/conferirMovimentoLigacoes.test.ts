@@ -591,6 +591,185 @@ describe('conferir-movimento: ligações', { timeout: TEMPO_DO_CENARIO_EM_MS }, 
     });
   });
 
+  describe('referências de módulo presas à sua declaração', () => {
+    const PREENCHIMENTO = [
+      'export const LARGURA = 320;',
+      'export const ALTURA = 480;',
+      'export const TITULO = "rotas";',
+      'export const SUBTITULO = "subtitulo";',
+      'export const RODAPE = "rodape";',
+    ];
+
+    const MODULOS = {
+      'pages/A.ts': codigo("export const PaginaA = (): string => 'a';"),
+      'pages/B.ts': codigo("export const PaginaB = (): string => 'b';"),
+      'pages/C.ts': codigo("export const PaginaC = (): string => 'c';"),
+      'lib/formato.ts': FORMATO,
+      'lib/padrao.ts': codigo("export const padrao = (): string => 'padrao';"),
+    };
+
+    const rotasEmObjeto = (alvos: string[], prefixo = './pages/'): string =>
+      codigo(
+        'export const rotas = {',
+        ...alvos.map((alvo, indice) => `  r${indice}: () => import('${prefixo}${alvo}'),`),
+        '};',
+        '',
+        ...PREENCHIMENTO,
+      );
+
+    const rotasEmDeclaracoes = (primeiro: string, segundo: string): string =>
+      codigo(
+        `export const rotaA = () => import('./pages/${primeiro}');`,
+        `export const rotaB = () => import('./pages/${segundo}');`,
+        '',
+        ...PREENCHIMENTO,
+      );
+
+    const tiposDeModulo = (primeiro: string, segundo: string): string =>
+      codigo(
+        `export type ModuloA = typeof import('./pages/${primeiro}');`,
+        `export type ModuloB = typeof import('./pages/${segundo}');`,
+        '',
+        ...PREENCHIMENTO,
+      );
+
+    const mocks = (primeiro: string, segundo: string, prefixo = '../lib/'): string =>
+      codigo(
+        "import { vi } from 'vitest';",
+        '',
+        `vi.mock('${prefixo}${primeiro}', () => ({ formatar: () => 'formatado' }));`,
+        `vi.mock('${prefixo}${segundo}', () => ({ padrao: () => 'simulado' }));`,
+        '',
+        ...PREENCHIMENTO,
+      );
+
+    const trocarNoLugar = (arquivo: string, antes: string, depois: string): Resultado =>
+      executarCenario({
+        base: { ...MODULOS, [arquivo]: antes },
+        depois: (repositorio) => repositorio.escrever({ [arquivo]: depois }),
+      });
+
+    const trocarMudandoDePasta = (de: string, para: string, antes: string, depois: string): Resultado =>
+      executarCenario({
+        base: { ...MODULOS, [de]: antes },
+        depois: (repositorio) => {
+          repositorio.mover(de, para);
+          repositorio.escrever({ [para]: depois });
+        },
+      });
+
+    it('falha quando dois import() da mesma declaração trocam de alvo', () => {
+      const resultado = trocarNoLugar('rotas.ts', rotasEmObjeto(['A', 'B']), rotasEmObjeto(['B', 'A']));
+
+      falhou(resultado);
+      expect(resultado.erro).toContain(
+        `corpo mudou: rotas (${emSrc('rotas.ts')} -> ${emSrc('rotas.ts')})`,
+      );
+    });
+
+    it('falha quando só o segundo e o terceiro import() da declaração trocam de alvo', () => {
+      const resultado = trocarNoLugar(
+        'rotas.ts',
+        rotasEmObjeto(['A', 'B', 'C']),
+        rotasEmObjeto(['A', 'C', 'B']),
+      );
+
+      falhou(resultado);
+      expect(resultado.erro).toContain(
+        `corpo mudou: rotas (${emSrc('rotas.ts')} -> ${emSrc('rotas.ts')})`,
+      );
+    });
+
+    it('falha quando dois import() de declarações com o mesmo corpo trocam de alvo', () => {
+      const resultado = trocarNoLugar('rotas.ts', rotasEmDeclaracoes('A', 'B'), rotasEmDeclaracoes('B', 'A'));
+
+      falhou(resultado);
+      expect(resultado.erro).toContain('corpo mudou: rotaA');
+      expect(resultado.erro).toContain('corpo mudou: rotaB');
+    });
+
+    it('falha quando dois import type trocam de alvo', () => {
+      const resultado = trocarNoLugar('tipos.ts', tiposDeModulo('A', 'B'), tiposDeModulo('B', 'A'));
+
+      falhou(resultado);
+      expect(resultado.erro).toContain('corpo mudou: ModuloA');
+      expect(resultado.erro).toContain('corpo mudou: ModuloB');
+    });
+
+    it('falha quando dois vi.mock com fábricas distintas trocam de caminho', () => {
+      const resultado = trocarNoLugar(
+        'pages/Telas.dom.test.ts',
+        mocks('formato', 'padrao'),
+        mocks('padrao', 'formato'),
+      );
+
+      falhou(resultado);
+      expect(resultado.erro).toContain("corpo mudou: vi.mock('<modulo>', () => ({ formatar");
+      expect(resultado.erro).toContain("corpo mudou: vi.mock('<modulo>', () => ({ padrao");
+    });
+
+    it('falha quando o arquivo movido troca os alvos de dois import()', () => {
+      const resultado = trocarMudandoDePasta(
+        'rotas.ts',
+        'app/rotas.ts',
+        rotasEmObjeto(['A', 'B']),
+        rotasEmObjeto(['B', 'A'], '../pages/'),
+      );
+
+      falhou(resultado);
+      expect(resultado.erro).toContain(
+        `corpo mudou: rotas (${emSrc('rotas.ts')} -> ${emSrc('app/rotas.ts')})`,
+      );
+    });
+
+    it('falha quando o arquivo de teste movido troca os caminhos de dois vi.mock', () => {
+      const resultado = trocarMudandoDePasta(
+        'pages/Telas.dom.test.ts',
+        'pages/telas/Telas.dom.test.ts',
+        mocks('formato', 'padrao'),
+        mocks('padrao', 'formato', '../../lib/'),
+      );
+
+      falhou(resultado);
+    });
+
+    it('passa quando o arquivo movido ajusta os caminhos e cada import() mantém o seu alvo', () => {
+      passou(
+        trocarMudandoDePasta(
+          'rotas.ts',
+          'app/rotas.ts',
+          rotasEmObjeto(['A', 'B']),
+          rotasEmObjeto(['A', 'B'], '../pages/'),
+        ),
+      );
+    });
+
+    it('passa quando o import() acompanha o módulo movido', () => {
+      const resultado = executarCenario({
+        base: { ...MODULOS, 'rotas.ts': rotasEmObjeto(['A', 'B']) },
+        depois: (repositorio) => {
+          repositorio.mover('pages/A.ts', 'pages/a/A.ts');
+          repositorio.escrever({ 'rotas.ts': rotasEmObjeto(['a/A', 'B']) });
+        },
+      });
+
+      passou(resultado);
+    });
+
+    it('passa quando o arquivo e o módulo do import() mudam de lugar juntos', () => {
+      const resultado = executarCenario({
+        base: { ...MODULOS, 'rotas.ts': rotasEmObjeto(['A', 'B']) },
+        depois: (repositorio) => {
+          repositorio.mover('pages/A.ts', 'pages/a/A.ts');
+          repositorio.mover('rotas.ts', 'app/rotas.ts');
+          repositorio.escrever({ 'app/rotas.ts': rotasEmObjeto(['a/A', 'B'], '../pages/') });
+        },
+      });
+
+      passou(resultado);
+    });
+  });
+
   describe('imports por alias do tsconfig', () => {
     const TSCONFIG = JSON.stringify({ compilerOptions: { baseUrl: '.', paths: { '@/*': ['./src/*'] } } });
 

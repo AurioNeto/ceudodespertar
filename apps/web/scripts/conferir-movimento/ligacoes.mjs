@@ -2,7 +2,6 @@ import { ehCodigo, lerArquivo, nomesDeclarados } from './declaracoes.mjs';
 import { alvoDeDeclaracao, ligacao } from './alvos.mjs';
 import { exportacoesDoArquivo } from './exportacoes.mjs';
 import { importacoesDoArquivo } from './importacoes.mjs';
-import { criarResolvedor } from './resolucao.mjs';
 
 function memoizar(calcular, valorEmAndamento) {
   const cache = new Map();
@@ -23,10 +22,10 @@ function locaisDoArquivo(leitor, arquivo) {
   return new Map(nomes.map((nome) => [nome, alvoDeDeclaracao(arquivo, nome)]));
 }
 
-export function lerLigacoes(arvore) {
+export function lerLigacoes(arvore, resolver) {
   const codigos = new Set([...arvore.arquivos].filter(ehCodigo));
   const conteudos = arvore.conteudos([...codigos]);
-  const leitor = { resolver: criarResolvedor(arvore) };
+  const leitor = { resolver };
   const doCodigo = (calcular, vazio) => (arquivo) => (codigos.has(arquivo) ? calcular(arquivo) : vazio);
 
   leitor.fonte = memoizar((arquivo) => lerArquivo(arquivo, conteudos.get(arquivo).toString('utf8')));

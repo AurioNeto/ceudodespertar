@@ -64,7 +64,7 @@ const mascaraDe = (arquivo, no, substituto) => ({
   substituto,
 });
 
-export function especificadoresDeModulo(arquivo) {
+export function especificadoresDeModulo(raiz) {
   const especificadores = [];
   const visitar = (no) => {
     const especificador = especificadorDoNo(no);
@@ -76,10 +76,17 @@ export function especificadoresDeModulo(arquivo) {
     ts.forEachChild(no, visitar);
   };
 
-  visitar(arquivo);
+  visitar(raiz);
 
   return especificadores;
 }
+
+const alvosDoStatement = (arquivo, statement, alvoDoEspecificador) =>
+  especificadoresDeModulo(statement).map((especificador) =>
+    alvoDoEspecificador(especificador.text, arquivo.fileName),
+  );
+
+const comOsAlvos = (texto, alvos) => JSON.stringify([texto, alvos]);
 
 const mascarasDeEspecificadores = (arquivo) =>
   especificadoresDeModulo(arquivo).map((especificador) =>
@@ -217,15 +224,16 @@ function corpoDaDeclaracao(arquivo, statement, noDoNome, mascarasDoArquivo) {
   return aplicarMascaras(arquivo.text, statement.getStart(arquivo), statement.end, mascaras).trim();
 }
 
-function criarDeclaracao(arquivo, statement, mascaras) {
+function criarDeclaracao(arquivo, statement, mascaras, alvoDoEspecificador) {
   const { nome, noDoNome, chamadaDeTeste } = identificar(arquivo, statement);
   const corpo = corpoDaDeclaracao(arquivo, statement, noDoNome, mascaras);
+  const alvos = alvosDoStatement(arquivo, statement, alvoDoEspecificador);
 
   return {
     arquivo: arquivo.fileName,
     emTeste: ehArquivoDeTeste(arquivo.fileName),
     nome: nome ?? primeiraLinha(corpo),
-    hash: resumir(corpo),
+    hash: resumir(comOsAlvos(corpo, alvos)),
     simbolos: nomesDeclarados(statement),
     chamadaDeTeste,
   };
@@ -236,16 +244,16 @@ const statementsDeDeclaracao = (arquivo) =>
     (statement) => !ehLinhaDeImport(statement) && !ts.isEmptyStatement(statement),
   );
 
-export function declaracoesDe(caminho, conteudo) {
+export function declaracoesDe(caminho, conteudo, alvoDoEspecificador) {
   const arquivo = lerArquivo(caminho, conteudo);
   const mascaras = mascarasDeEspecificadores(arquivo);
 
   return statementsDeDeclaracao(arquivo).map((statement) =>
-    criarDeclaracao(arquivo, statement, mascaras),
+    criarDeclaracao(arquivo, statement, mascaras, alvoDoEspecificador),
   );
 }
 
-export function conteudoComparavel(caminho, conteudo) {
+export function conteudoComparavel(caminho, conteudo, alvoDoEspecificador) {
   if (!ehCodigo(caminho)) {
     return conteudo.toString('latin1');
   }
@@ -255,7 +263,10 @@ export function conteudoComparavel(caminho, conteudo) {
   const textosDosStatements = arquivo.statements
     .filter((statement) => !ehLinhaDeImport(statement))
     .map((statement) =>
-      aplicarMascaras(arquivo.text, statement.pos, statement.end, mascaras).trim(),
+      comOsAlvos(
+        aplicarMascaras(arquivo.text, statement.pos, statement.end, mascaras).trim(),
+        alvosDoStatement(arquivo, statement, alvoDoEspecificador),
+      ),
     );
   const fimDoArquivo = arquivo.text.slice(arquivo.endOfFileToken.pos).trim();
 
