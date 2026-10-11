@@ -3,8 +3,9 @@ import type { KeyboardEvent, ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import type { Density } from '../../fundacao/densidade';
 import { Icon } from '../../atoms/Icon';
+import { DIALOGO_POR_VARIANTE, FUNDO_POR_VARIANTE } from './constantes';
 
-export type VarianteDoPainel = 'folha' | 'lateral';
+export type VarianteDoPainel = 'folha' | 'lateral' | 'central';
 
 export interface PainelDeAcaoProps {
   aberto: boolean;
@@ -20,7 +21,6 @@ const SELETOR_DE_FOCAVEL =
   'a[href], button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex="-1"])';
 const SELETOR_DE_CAMPO = 'input:not(:disabled), select:not(:disabled), textarea:not(:disabled)';
 const ALVO_MINIMO_DE_TOQUE = 44;
-const LARGURA_LATERAL = 'min(440px, 100vw)';
 
 const focaveisDe = (raiz: HTMLElement): HTMLElement[] =>
   Array.from(raiz.querySelectorAll<HTMLElement>(SELETOR_DE_FOCAVEL));
@@ -113,8 +113,6 @@ function PainelAberto({
     circularFocoComTab(evento);
   };
 
-  const lateral = variante === 'lateral';
-
   return (
     <div
       ref={fundo}
@@ -133,9 +131,8 @@ function PainelAberto({
         inset: 0,
         background: 'var(--bg-scrim)',
         display: 'flex',
-        alignItems: lateral ? 'stretch' : 'flex-end',
-        justifyContent: lateral ? 'flex-end' : 'center',
         zIndex: 40,
+        ...FUNDO_POR_VARIANTE[variante],
       }}
     >
       <div
@@ -150,14 +147,9 @@ function PainelAberto({
         style={{
           display: 'flex',
           flexDirection: 'column',
-          width: lateral ? LARGURA_LATERAL : '100%',
-          height: lateral ? '100%' : undefined,
-          maxHeight: lateral ? undefined : '90dvh',
           background: 'var(--bg-card)',
-          borderRadius: lateral ? 0 : 'var(--radius-lg) var(--radius-lg) 0 0',
-          boxShadow: lateral ? 'var(--shadow-raised)' : 'var(--shadow-sheet)',
-          borderLeft: lateral ? 'var(--border-hairline)' : undefined,
           outline: 'none',
+          ...DIALOGO_POR_VARIANTE[variante],
         }}
       >
         <div
