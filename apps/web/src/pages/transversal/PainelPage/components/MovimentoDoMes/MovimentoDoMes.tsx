@@ -1,7 +1,7 @@
 import { Icon } from '@/ds';
 import { competenciaAnterior, movimentoDoMes } from '../../mocks/resumoFinanceiro';
 import { competenciaAtual } from '@/pages/mocks/relogio';
-import { competenciaPorExtenso, formatarCompetencia, formatarDinheiro } from '@/pages/utils/formato';
+import { competenciaPorExtenso, formatarBRL, formatarCompetencia } from '@/pages/utils/formato';
 import { numeroGrande, rotuloLabel } from '../../constantes';
 import { ColunaDeMovimento } from './components/ColunaDeMovimento';
 
@@ -59,10 +59,10 @@ export function MovimentoDoMes() {
             <span style={{ font: 'var(--text-body)', color: 'var(--text-secondary)' }}>resultado</span>
           </div>
           <div style={{ ...numeroGrande, color: 'var(--color-royal-deep)' }}>
-            + {formatarDinheiro(movimentoDoMes.resultado)}
+            + {formatarBRL(movimentoDoMes.resultado)}
           </div>
           <div style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>
-            + {formatarDinheiro(movimentoDoMes.resultadoAnterior)} no mês anterior — o mês fecha melhor se nada
+            + {formatarBRL(movimentoDoMes.resultadoAnterior)} no mês anterior — o mês fecha melhor se nada
             grande entrar até o fim de {competenciaPorExtenso(competenciaAtual).split(' ')[0]}
           </div>
         </div>

@@ -1,4 +1,4 @@
-import { formatarDinheiro } from '@/pages/utils/formato';
+import { formatarBRL } from '@/pages/utils/formato';
 import { numeroGrande, rotuloLabel } from '../../../../../../constantes';
 
 export function ValorDaUltima({
@@ -27,7 +27,7 @@ export function ValorDaUltima({
       <span style={rotuloLabel}>{rotulo}</span>
       <span style={{ ...numeroGrande, color: cor }}>
         {sinal ? '+ ' : ''}
-        {formatarDinheiro(valor)}
+        {formatarBRL(valor)}
       </span>
     </div>
   );

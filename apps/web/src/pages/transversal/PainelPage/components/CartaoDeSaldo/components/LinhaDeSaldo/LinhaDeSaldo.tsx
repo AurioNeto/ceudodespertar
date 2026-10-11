@@ -1,4 +1,4 @@
-import { formatarDinheiro } from '@/pages/utils/formato';
+import { formatarBRL } from '@/pages/utils/formato';
 
 export function LinhaDeSaldo({ rotulo, valor }: { rotulo: string; valor: number }) {
   return (
@@ -12,7 +12,7 @@ export function LinhaDeSaldo({ rotulo, valor }: { rotulo: string; valor: number 
           color: 'var(--text-primary)',
         }}
       >
-        {formatarDinheiro(valor)}
+        {formatarBRL(valor)}
       </span>
     </div>
   );

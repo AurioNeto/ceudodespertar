@@ -1,7 +1,6 @@
-import { Icon } from '@/ds';
+import { AmountDisplay, Icon } from '@/ds';
 import { saldoConsolidado, saldoEmBanco, saldoEmCaixa } from '../../mocks/resumoFinanceiro';
 import { fundoProprio } from '@/pages/mocks/contas';
-import { formatarDinheiro } from '@/pages/utils/formato';
 import { rotuloLabel } from '../../constantes';
 import { LinhaDeSaldo } from './components/LinhaDeSaldo';
 
@@ -26,15 +25,8 @@ export function CartaoDeSaldo() {
         <div style={rotuloLabel}>Saldo consolidado da unidade</div>
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-        <div
-          style={{
-            font: 'var(--text-amount-hero)',
-            letterSpacing: 'var(--tracking-amount)',
-            fontVariantNumeric: 'tabular-nums',
-            color: 'var(--color-royal-deep)',
-          }}
-        >
-          {formatarDinheiro(saldoConsolidado)}
+        <div style={{ display: 'flex' }}>
+          <AmountDisplay value={saldoConsolidado / 100} size="hero" style={{ color: 'var(--color-royal-deep)' }} />
         </div>
         <div style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>
           em reais · posição de hoje, 09:12
