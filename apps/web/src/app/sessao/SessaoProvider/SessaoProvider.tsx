@@ -1,11 +1,13 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo } from 'react';
 import type { ReactNode } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { Eu, Permissao } from '@cdd/contracts';
 import type { ServicoDeEntrada } from '@/dados';
 import { destinoSeguro } from '@/app/rotas';
-import { estadoDoErroDoEu, usuarioDaSessao } from '../estadoDaSessao';
+import { usuarioDaSessao } from '../estadoDaSessao';
 import type { EstadoDaSessao, UsuarioDaSessao } from '../estadoDaSessao';
+import { useExisteUsuarioOidc } from '../hooks/useExisteUsuarioOidc';
+import { derivarEstado } from '../utils/derivarEstado';
 
 export const CHAVE_DO_EU = ['eu'] as const;
 
@@ -27,33 +29,6 @@ export interface SessaoProviderProps {
 }
 
 const Contexto = createContext<Sessao | null>(null);
-
-function derivarEstado(
-  temUsuario: boolean | null,
-  consulta: { status: 'pending' | 'error' | 'success'; data: Eu | undefined; error: unknown },
-): EstadoDaSessao {
-  if (temUsuario === null) return { tipo: 'verificando' };
-  if (!temUsuario) return { tipo: 'sem-sessao' };
-  if (consulta.status === 'pending') return { tipo: 'verificando' };
-  if (consulta.status === 'error') return estadoDoErroDoEu(consulta.error);
-  return consulta.data ? { tipo: 'ativa', eu: consulta.data } : { tipo: 'falha' };
-}
-
-function useExisteUsuarioOidc(entrada: ServicoDeEntrada) {
-  const [temUsuario, setTemUsuario] = useState<boolean | null>(null);
-
-  useEffect(() => {
-    let vivo = true;
-    void entrada.recuperarSessao().then((existe) => {
-      if (vivo) setTemUsuario(existe);
-    });
-    return () => {
-      vivo = false;
-    };
-  }, [entrada]);
-
-  return [temUsuario, setTemUsuario] as const;
-}
 
 export function SessaoProvider({ entrada, aoEncerrar, buscarEu, children }: SessaoProviderProps) {
   const clienteDeConsultas = useQueryClient();

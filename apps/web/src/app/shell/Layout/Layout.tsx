@@ -1,5 +1,5 @@
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { AppShell, PermissionDenied, ScreenHeader, useDensidade } from '@/ds';
+import { AppShell, useDensidade } from '@/ds';
 import { filtrarNavPorAcesso, podeVerTela } from '../acesso';
 import { construirNav } from '../menu';
 import { ROTAS, type RotaId } from '@/app/rotas';
@@ -7,7 +7,9 @@ import { rotaAtiva } from '../rotaAtiva';
 import { FaixaDeDemonstracao, sessaoDeDemonstracaoLigada } from '@/app/demonstracao';
 import { TELAS, type RegistroDeTelas } from '../telas';
 import { useSessao } from '@/app/sessao';
-import { filaDeVerificacaoInicial } from '@/mocks/verificacao';
+import { TelaSemAcesso } from '../components/TelaSemAcesso';
+import { useContagemDoLote } from '../hooks/useContagemDoLote';
+import { nomeDaTela } from '../utils/nomeDaTela';
 
 const TEXTOS_DO_SHELL = {
   institution: 'Céu do Despertar',
@@ -27,15 +29,14 @@ export function Layout({ telas = TELAS }: LayoutProps) {
 
   const { usuario, pode } = useSessao();
   const densidade = useDensidade();
+  const contagemDoLote = useContagemDoLote();
 
   if (!usuario) return null;
 
-  const nav = construirNav(filaDeVerificacaoInicial.length);
+  const nav = construirNav(contagemDoLote);
   const registro = telas[ativo];
   const liberada = podeVerTela(registro, pode);
   const mostraFaixa = liberada && (sessaoDeDemonstracaoLigada() || registro.fonte === 'mock');
-  const rotuloDaTela = nav.find((entrada) => 'id' in entrada && entrada.id === ativo);
-  const nomeDaTela = rotuloDaTela && 'label' in rotuloDaTela ? rotuloDaTela.label : ativo;
 
   return (
     <AppShell
@@ -52,20 +53,12 @@ export function Layout({ telas = TELAS }: LayoutProps) {
       {liberada ? (
         <Outlet />
       ) : (
-        <>
-          <ScreenHeader title={nomeDaTela} density={densidade} />
-          <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 760 }}>
-            <PermissionDenied
-              title={`Você não tem acesso a ${nomeDaTela}`}
-              description={
-                <>
-                  Seu grupo é <b>{usuario.grupoNome}</b>. Falta a permissão <code>{registro.acesso[0] ?? ''}</code>. Se
-                  você precisa desse acesso, fale com o administrador.
-                </>
-              }
-            />
-          </div>
-        </>
+        <TelaSemAcesso
+          nomeDaTela={nomeDaTela(nav, ativo)}
+          grupoNome={usuario.grupoNome}
+          permissaoQueFalta={registro.acesso[0] ?? ''}
+          densidade={densidade}
+        />
       )}
     </AppShell>
   );
