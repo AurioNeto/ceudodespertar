@@ -1,6 +1,5 @@
-import { Icon, type IconName } from '@/ds';
+import { AmountDisplay, Icon, type IconName } from '@/ds';
 import { formatarBRL } from '@/pages/utils/formato';
-import { numeroGrande } from '../../../../constantes';
 
 export function ColunaDeMovimento({
   icone,
@@ -37,7 +36,7 @@ export function ColunaDeMovimento({
         <Icon name={icone} size={16} color={cor} />
         <span style={{ font: 'var(--text-body)', color: 'var(--text-secondary)' }}>{rotulo}</span>
       </div>
-      <div style={{ ...numeroGrande, color: cor }}>{formatarBRL(valor)}</div>
+      <AmountDisplay value={valor / 100} size="lg" style={{ color: cor }} />
       <div style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>
         {formatarBRL(anterior)} no mês anterior —{' '}
         <span style={{ color: corDaComparacao, fontWeight: 600, whiteSpace: 'nowrap' }}>

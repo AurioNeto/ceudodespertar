@@ -1,5 +1,4 @@
-import { Rotulo } from '@/ds';
-import { formatarBRL } from '@/pages/utils/formato';
+import { AmountDisplay, Rotulo } from '@/ds';
 import { numeroGrande } from '../../../../../../constantes';
 
 export function ValorDaUltima({
@@ -28,7 +27,7 @@ export function ValorDaUltima({
       <Rotulo>{rotulo}</Rotulo>
       <span style={{ ...numeroGrande, color: cor }}>
         {sinal ? '+ ' : ''}
-        {formatarBRL(valor)}
+        <AmountDisplay value={valor / 100} size="lg" style={{ color: 'inherit' }} />
       </span>
     </div>
   );

@@ -1,4 +1,4 @@
-import { Cartao, ListaDividida, Rotulo, type Density } from '@/ds';
+import { AmountDisplay, Cartao, ListaDividida, Rotulo, type Density } from '@/ds';
 import { formatarBRL, formatarLitros } from '@/pages/utils/formato';
 import { anteriores } from '../../mocks/feitio';
 import { custoPorLitro, custoTotal } from '../../utils/custoDoFeitio';
@@ -28,9 +28,7 @@ export function Anteriores({ densidade }: AnterioresProps) {
               <span data-numeric style={{ font: 'var(--text-small)', color: 'var(--text-secondary)', minWidth: 62 }}>
                 {formatarLitros(f.litrosProduzidos ?? 0)} L
               </span>
-              <span data-numeric style={{ font: 'var(--text-small)', color: 'var(--text-secondary)', minWidth: 86 }}>
-                {formatarBRL(t)}
-              </span>
+              <AmountDisplay value={t / 100} size="sm" style={{ minWidth: 86 }} />
               <span data-numeric style={{ font: 'var(--text-amount)', color: 'var(--color-royal-deep)' }}>
                 {formatarBRL(porLitro)}/L
               </span>

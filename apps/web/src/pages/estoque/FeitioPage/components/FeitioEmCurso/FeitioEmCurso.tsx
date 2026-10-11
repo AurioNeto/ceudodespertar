@@ -1,4 +1,4 @@
-import { Aviso, Cartao, Icon, Rotulo, StatusBadge, type Density } from '@/ds';
+import { AmountDisplay, Aviso, Cartao, Icon, Rotulo, StatusBadge, type Density } from '@/ds';
 import { formatarBRL, formatarLitros, pluralizar } from '@/pages/utils/formato';
 import type { FeitioNaTela } from '../../mocks/feitio';
 import { custoDaMateriaPrima, custoDosLancamentos } from '../../utils/custoDoFeitio';
@@ -99,9 +99,7 @@ export function FeitioEmCurso({
             <span style={{ font: 'var(--text-small)', color: 'var(--text-meta)', flex: 1, minWidth: 170 }}>
               {m.origem}
             </span>
-            <span data-numeric style={{ font: 'var(--text-small)', color: 'var(--text-primary)' }}>
-              {formatarBRL(m.custo)}
-            </span>
+            <AmountDisplay value={m.custo / 100} size="sm" />
           </div>
         ))}
       </Secao>
@@ -125,9 +123,7 @@ export function FeitioEmCurso({
               {c.categoria}
             </span>
             <code style={{ font: 'var(--text-code)' }}>{c.lancamentoId}</code>
-            <span data-numeric style={{ font: 'var(--text-small)', color: 'var(--text-primary)' }}>
-              {formatarBRL(c.valor)}
-            </span>
+            <AmountDisplay value={c.valor / 100} size="sm" />
           </div>
         ))}
       </Secao>
