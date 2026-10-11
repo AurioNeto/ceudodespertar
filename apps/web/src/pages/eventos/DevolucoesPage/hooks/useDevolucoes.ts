@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { formatarBRL, formatarCompetencia } from '@/pages/utils/formato';
 import { contas } from '@/pages/mocks/contas';
+import { contaPadraoDoEvento } from '@/pages/eventos/utils/contaPadraoDoEvento';
 import { fila as filaInicial, pagas as pagasIniciais, type DevolucaoNaFila } from '../mocks/devolucoes';
 import type { Paga } from '../tipos';
 import { competenciaDaSaida } from '../utils/competenciaDaSaida';
@@ -15,7 +16,7 @@ export function useDevolucoes() {
     pagasIniciais.map((p) => ({ ...p, id: p.id as string, valor: p.valor as number })),
   );
   const [pagando, setPagando] = useState<string | null>(null);
-  const [conta, setConta] = useState(contas[0]!.id as string);
+  const [conta, setConta] = useState(contaPadraoDoEvento);
   const [data, setData] = useState(HOJE);
   const [motivo, setMotivo] = useState('');
   const [recado, setRecado] = useState<string | null>(null);

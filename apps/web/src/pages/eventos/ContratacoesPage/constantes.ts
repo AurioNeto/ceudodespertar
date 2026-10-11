@@ -26,5 +26,3 @@ export const TOM: Record<StatusContratacao, BadgeTone> = {
   REALIZADA: 'confirmed',
   CANCELADA: 'neutral',
 };
-
-export const CONTA_PADRAO_DO_RECEBIMENTO = 'cora';

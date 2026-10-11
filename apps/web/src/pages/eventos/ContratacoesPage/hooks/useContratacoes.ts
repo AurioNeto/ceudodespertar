@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { formatarBRL } from '@/pages/utils/formato';
 import { contas } from '@/pages/mocks/contas';
+import { contaPadraoDoEvento } from '@/pages/eventos/utils/contaPadraoDoEvento';
 import { contratacoes as contratacoesIniciais, munay, type ContratacaoNaTela } from '../mocks/contratacoes';
-import { contaPadraoDoRecebimento } from '../utils/contaPadraoDoRecebimento';
 import { recebidoNaSessao } from '../utils/recebidoNaSessao';
 
 const HOJE = '11/09/2026';
@@ -10,7 +10,7 @@ const HOJE = '11/09/2026';
 export function useContratacoes() {
   const [lista, setLista] = useState<readonly ContratacaoNaTela[]>(contratacoesIniciais);
   const [recebendo, setRecebendo] = useState<string | null>(null);
-  const [conta, setConta] = useState(contaPadraoDoRecebimento);
+  const [conta, setConta] = useState(contaPadraoDoEvento);
   const [data, setData] = useState(HOJE);
   const [recado, setRecado] = useState<string | null>(null);
 
