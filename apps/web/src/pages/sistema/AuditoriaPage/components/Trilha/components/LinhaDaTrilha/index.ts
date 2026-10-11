@@ -1,0 +1,1 @@
+export { LinhaDaTrilha } from './LinhaDaTrilha';

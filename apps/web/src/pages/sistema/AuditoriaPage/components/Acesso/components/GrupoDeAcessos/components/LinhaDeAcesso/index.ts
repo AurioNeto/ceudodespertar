@@ -1,0 +1,1 @@
+export { LinhaDeAcesso } from './LinhaDeAcesso';

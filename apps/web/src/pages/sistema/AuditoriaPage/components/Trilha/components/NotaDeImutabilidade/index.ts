@@ -1,0 +1,1 @@
+export { NotaDeImutabilidade } from './NotaDeImutabilidade';
