@@ -1,5 +1,5 @@
-import { Fragment } from 'react';
 import type { ReactNode, Ref } from 'react';
+import { Marca } from '../../../../atoms/Marca';
 import { isSection, type NavEntry } from '../../navegacao';
 import type { AppShellBrand } from '../../tipos';
 import { NavItem } from '../NavItem';
@@ -28,32 +28,7 @@ export function RailDeNavegacao({ ref, brand, nav, activeId, onNavigate, childre
       }}
     >
       <div style={{ padding: '0 18px 18px' }}>
-        <div
-          style={{
-            font: '800 15px/1.05 var(--font-display)',
-            letterSpacing: '.01em',
-            textTransform: 'uppercase',
-            color: 'var(--color-ink-brand)',
-          }}
-        >
-          {brand.lines.map((linha, posicao) => (
-            <Fragment key={`${posicao}-${linha}`}>
-              {posicao > 0 ? <br /> : null}
-              {linha}
-            </Fragment>
-          ))}
-        </div>
-        <div
-          style={{
-            marginTop: 7,
-            font: 'var(--text-label)',
-            letterSpacing: 'var(--tracking-label)',
-            textTransform: 'uppercase',
-            color: 'var(--text-field-label)',
-          }}
-        >
-          {brand.tagline}
-        </div>
+        <Marca linhas={brand.lines} legenda={brand.tagline} tamanho="pequeno" />
         <div style={{ marginTop: 14, height: 1, background: 'var(--color-line-gold)' }} />
       </div>
 
