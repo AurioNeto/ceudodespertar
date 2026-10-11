@@ -1,5 +1,4 @@
-import { Rotulo, StatusBadge } from '@/ds';
-import { formatarBRL } from '@/pages/utils/formato';
+import { AmountDisplay, Rotulo, StatusBadge } from '@/ds';
 
 export interface HistoricoDeFechamentosProps {
   historico: readonly { periodo: string; meta: string; resultado: number }[];
@@ -37,7 +36,7 @@ export function HistoricoDeFechamentos({ historico }: HistoricoDeFechamentosProp
             }}
           >
             {h.resultado >= 0 ? '+ ' : '− '}
-            {formatarBRL(Math.abs(h.resultado))}
+            <AmountDisplay value={Math.abs(h.resultado) / 100} size="sm" style={{ color: 'inherit' }} />
           </span>
         </div>
       ))}

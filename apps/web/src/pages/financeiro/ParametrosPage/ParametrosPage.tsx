@@ -1,4 +1,4 @@
-import { CorpoDaTela, Icon, ScreenHeader, useDensidade, SeletorDeTipo, Recado } from '@/ds';
+import { Aviso, CorpoDaTela, ScreenHeader, useDensidade, SeletorDeTipo, Recado } from '@/ds';
 import { pluralizar } from '@/pages/utils/formato';
 import { BuracoDoRelatorio } from './components/BuracoDoRelatorio';
 import { ListaDeUnidades } from './components/ListaDeUnidades';
@@ -39,22 +39,7 @@ export function ParametrosPage() {
             {tela.semLinha.length > 0 ? (
               <BuracoDoRelatorio quantidade={tela.semLinha.length} lancamentos={tela.semLinha.reduce((s, c) => s + c.lancamentos, 0)} />
             ) : (
-              <div
-                style={{
-                  background: 'var(--color-confirmed-soft)',
-                  border: '1px solid var(--color-confirmed-border)',
-                  borderRadius: 'var(--radius)',
-                  padding: '13px 16px',
-                  display: 'flex',
-                  gap: 11,
-                  alignItems: 'center',
-                }}
-              >
-                <Icon name="circle-check" size={18} color="var(--color-confirmed)" />
-                <span style={{ font: 'var(--text-body)', color: 'var(--text-primary)' }}>
-                  Toda categoria ativa tem linha de relatório. Nada fica fora do DRE.
-                </span>
-              </div>
+              <Aviso tom="confirmado">Toda categoria ativa tem linha de relatório. Nada fica fora do DRE.</Aviso>
             )}
 
             <TabelaDeCategorias
@@ -73,27 +58,10 @@ export function ParametrosPage() {
         {tela.aba === 'unidades' ? (
           <>
             {tela.semRegime.length > 0 ? (
-              <div
-                style={{
-                  background: 'var(--color-pending-soft)',
-                  border: '1px solid var(--color-pending-border)',
-                  borderRadius: 'var(--radius)',
-                  padding: '14px 16px',
-                  display: 'flex',
-                  gap: 12,
-                }}
-              >
-                <Icon name="message-circle-question" size={19} color="var(--color-pending)" style={{ marginTop: 2 }} />
-                <div>
-                  <div style={{ font: 'var(--text-body-strong)', color: 'var(--text-primary)' }}>
-                    {pluralizar(tela.semRegime.length, 'unidade')} sem regime definido
-                  </div>
-                  <p style={{ marginTop: 5, font: 'var(--text-small)', color: 'var(--text-secondary)', maxWidth: '70ch' }}>
-                    O regime governa o vocabulário da tela, quais categorias a unidade aceita e se a receita gera
-                    obrigação fiscal. É decisão da coordenação, não do sistema — e trava o seed das unidades.
-                  </p>
-                </div>
-              </div>
+              <Aviso tom="pendente" titulo={`${pluralizar(tela.semRegime.length, 'unidade')} sem regime definido`}>
+                O regime governa o vocabulário da tela, quais categorias a unidade aceita e se a receita gera obrigação
+                fiscal. É decisão da coordenação, não do sistema — e trava o seed das unidades.
+              </Aviso>
             ) : null}
             <ListaDeUnidades densidade={densidade} />
           </>

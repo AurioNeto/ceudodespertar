@@ -1,5 +1,5 @@
 import { reais } from '@cdd/contracts';
-import { Button, Icon, rotuloCaixaAlta, type Density } from '@/ds';
+import { AmountDisplay, Button, PainelDeAcao, rotuloCaixaAlta, varianteDoPainel, type Density } from '@/ds';
 import { formatarBRL, pluralizar } from '@/pages/utils/formato';
 import type { LinhaDoRelatorio } from '../../mocks/relatorios';
 import type { Drill } from '../../tipos';
@@ -23,50 +23,16 @@ export function GavetaDeRecorte({
   onFechar,
   onAvisar,
 }: GavetaDeRecorteProps) {
-  const campo = densidade === 'field';
-
   return (
-    <div
-      onClick={onFechar}
-      style={{
-        position: 'fixed',
-        inset: 0,
-        background: 'rgba(59,38,23,.38)',
-        display: 'flex',
-        alignItems: campo ? 'flex-end' : 'stretch',
-        justifyContent: 'flex-end',
-        zIndex: 40,
-      }}
+    <PainelDeAcao
+      aberto
+      titulo={drill.valor}
+      descricao={`${pluralizar(linhasDoDrill.length, 'lançamento')} · ${formatarBRL(reais(totalDoDrill))} · ${rotuloPeriodo}`}
+      variante={varianteDoPainel(densidade)}
+      aoFechar={onFechar}
     >
-      <div
-        onClick={(e) => e.stopPropagation()}
-        style={{
-          width: campo ? '100%' : 'min(520px, 100%)',
-          maxHeight: campo ? '86%' : '100%',
-          overflow: 'auto',
-          background: 'var(--bg-app)',
-          borderLeft: campo ? 0 : '1px solid var(--color-line-strong)',
-          borderRadius: campo ? 'var(--radius-lg) var(--radius-lg) 0 0' : 0,
-          boxShadow: 'var(--shadow-sheet)',
-          padding: '18px 20px 24px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 14,
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={rotuloCaixaAlta}>{drill.rotulo}</div>
-            <div style={{ font: 'var(--text-title-sm)', color: 'var(--text-title)' }}>{drill.valor}</div>
-            <div style={{ font: 'var(--text-small)', color: 'var(--text-secondary)', marginTop: 4 }}>
-              {pluralizar(linhasDoDrill.length, 'lançamento')} · {formatarBRL(reais(totalDoDrill))} · {rotuloPeriodo}
-            </div>
-          </div>
-          <button type="button" onClick={onFechar} aria-label="Fechar recorte" style={{ color: 'var(--text-meta)' }}>
-            <Icon name="x" size={20} />
-          </button>
-        </div>
-
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <div style={rotuloCaixaAlta}>{drill.rotulo}</div>
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           {linhasDoDrill.slice(0, 40).map((l) => (
             <div
@@ -102,12 +68,11 @@ export function GavetaDeRecorte({
                 }}
               >
                 {l.tipo === 'entrada' ? '+ ' : l.tipo === 'saida' ? '− ' : ''}
-                {formatarBRL(reais(l.valor))}
+                <AmountDisplay value={l.valor} size="sm" style={{ color: 'inherit' }} />
               </span>
             </div>
           ))}
         </div>
-
         <Button
           variant="ghost"
           iconName="file-spreadsheet"
@@ -116,6 +81,6 @@ export function GavetaDeRecorte({
           Exportar este recorte
         </Button>
       </div>
-    </div>
+    </PainelDeAcao>
   );
 }

@@ -1,4 +1,4 @@
-import { CorpoDaTela, Icon, Rotulo, ScreenHeader, useDensidade } from '@/ds';
+import { Aviso, CorpoDaTela, Rotulo, ScreenHeader, useDensidade } from '@/ds';
 import { pluralizar } from '@/pages/utils/formato';
 import { AcaoDeFechamento } from './components/AcaoDeFechamento';
 import { FaixaDoPeriodo } from './components/FaixaDoPeriodo';
@@ -23,23 +23,9 @@ export function FechamentoPage() {
 
       <CorpoDaTela densidade={densidade} larguraMaxima={1000}>
         {tela.mensagem ? (
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              gap: 12,
-              background: 'var(--color-royal-soft)',
-              border: '1px solid var(--color-royal-border)',
-              borderRadius: 'var(--radius)',
-              padding: '10px 14px',
-            }}
-          >
-            <span style={{ font: 'var(--text-body)', color: 'var(--color-royal-deep)' }}>{tela.mensagem}</span>
-            <button type="button" aria-label="fechar aviso" onClick={tela.fecharAviso} style={{ color: 'var(--color-royal-deep)' }}>
-              <Icon name="x" size={16} />
-            </button>
-          </div>
+          <Aviso tom="informacao" aoFechar={tela.fecharAviso} rotuloDeFechar="fechar aviso">
+            {tela.mensagem}
+          </Aviso>
         ) : null}
 
         <FaixaDoPeriodo
@@ -74,12 +60,10 @@ export function FechamentoPage() {
           fechado={tela.fechado}
           bloqueios={tela.bloqueios}
           reabrindo={tela.reabrindo}
-          motivo={tela.motivo}
           densidade={densidade}
           onFechar={tela.fechar}
           onAvisar={tela.avisar}
           onAbrirReabertura={tela.abrirReabertura}
-          onMotivo={tela.setMotivo}
           onConfirmarReabertura={tela.confirmarReabertura}
           onCancelarReabertura={tela.cancelarReabertura}
         />

@@ -1,4 +1,4 @@
-import { formatarBRL } from '@/pages/utils/formato';
+import { AmountDisplay } from '@/ds';
 import type { LinhaDePrestacao, NivelDeDetalhe } from '../../../../mocks/prestacao';
 
 export function Linha({ linha, nivel }: { linha: LinhaDePrestacao; nivel: NivelDeDetalhe }) {
@@ -11,9 +11,7 @@ export function Linha({ linha, nivel }: { linha: LinhaDePrestacao; nivel: NivelD
           <span style={{ font: 'var(--text-small)', color: 'var(--color-pending)' }}>{linha.nominal}</span>
         ) : null}
       </span>
-      <span data-numeric style={{ font: 'var(--text-amount)', color: 'var(--text-primary)', whiteSpace: 'nowrap' }}>
-        {formatarBRL(linha.valor)}
-      </span>
+      <AmountDisplay value={linha.valor / 100} size="sm" />
     </div>
   );
 }

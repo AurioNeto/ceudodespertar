@@ -1,8 +1,7 @@
-import { reais } from '@cdd/contracts';
-import { formatarBRL } from '@/pages/utils/formato';
+import { AmountDisplay, Cartao } from '@/ds';
 import type { useRelatorio } from '../../hooks/useRelatorio';
 import type { Drill } from '../../tipos';
-import { Cartao } from '../Cartao';
+import { tituloDoCartao } from '../../constantes';
 
 export interface CustoPorCerimoniaProps {
   porCerimonia: ReturnType<typeof useRelatorio>['porCerimonia'];
@@ -11,7 +10,8 @@ export interface CustoPorCerimoniaProps {
 
 export function CustoPorCerimonia({ porCerimonia, onAbrirDrill }: CustoPorCerimoniaProps) {
   return (
-    <Cartao titulo="Custo por cerimônia">
+    <Cartao>
+      <span style={tituloDoCartao}>Custo por cerimônia</span>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         {porCerimonia.map((c) => (
           <button
@@ -24,15 +24,7 @@ export function CustoPorCerimonia({ porCerimonia, onAbrirDrill }: CustoPorCerimo
           >
             <span style={{ display: 'flex', justifyContent: 'space-between', gap: 10, width: '100%' }}>
               <span style={{ font: 'var(--text-small)', color: 'var(--text-primary)' }}>{c.nome}</span>
-              <span
-                style={{
-                  font: 'var(--text-small)',
-                  color: 'var(--text-secondary)',
-                  fontVariantNumeric: 'tabular-nums',
-                }}
-              >
-                {formatarBRL(reais(c.valor))}
-              </span>
+              <AmountDisplay value={c.valor} size="sm" style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }} />
             </span>
             <span
               style={{

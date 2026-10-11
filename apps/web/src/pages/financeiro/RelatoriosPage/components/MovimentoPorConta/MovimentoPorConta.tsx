@@ -1,10 +1,7 @@
-import { Rotulo, type Density } from '@/ds';
-import { reais } from '@cdd/contracts';
-import { formatarBRL } from '@/pages/utils/formato';
+import { AmountDisplay, Cartao, Rotulo, type Density } from '@/ds';
 import type { useRelatorio } from '../../hooks/useRelatorio';
 import type { Drill } from '../../tipos';
-import { Cartao } from '../Cartao';
-import { Numero } from './components/Numero';
+import { tituloDoCartao } from '../../constantes';
 
 export interface MovimentoPorContaProps {
   porConta: ReturnType<typeof useRelatorio>['porConta'];
@@ -18,7 +15,8 @@ export function MovimentoPorConta({ porConta, rotuloPeriodo, densidade, onAbrirD
   const campo = densidade === 'field';
 
   return (
-    <Cartao titulo="Movimento por conta">
+    <Cartao>
+      <span style={tituloDoCartao}>Movimento por conta</span>
       <div style={{ display: 'flex', flexDirection: 'column' }}>
         {!campo ? (
           <div
@@ -61,22 +59,19 @@ export function MovimentoPorConta({ porConta, rotuloPeriodo, densidade, onAbrirD
               {c.nome}
             </button>
             {campo ? (
-              <span
-                style={{
-                  font: 'var(--text-amount)',
-                  fontVariantNumeric: 'tabular-nums',
-                  color: c.resultado >= 0 ? 'var(--color-confirmed)' : 'var(--color-attention)',
-                }}
-              >
-                {formatarBRL(reais(c.resultado))}
-              </span>
+              <AmountDisplay
+                value={c.resultado}
+                size="sm"
+                style={{ color: c.resultado >= 0 ? 'var(--color-confirmed)' : 'var(--color-attention)' }}
+              />
             ) : (
               <>
-                <Numero valor={c.entradas} cor="var(--color-confirmed)" />
-                <Numero valor={c.saidas} cor="var(--color-attention)" />
-                <Numero
-                  valor={c.resultado}
-                  cor={c.resultado >= 0 ? 'var(--text-primary)' : 'var(--color-attention)'}
+                <AmountDisplay value={c.entradas} size="sm" style={{ justifyContent: 'flex-end', color: 'var(--color-confirmed)' }} />
+                <AmountDisplay value={c.saidas} size="sm" style={{ justifyContent: 'flex-end', color: 'var(--color-attention)' }} />
+                <AmountDisplay
+                  value={c.resultado}
+                  size="sm"
+                  style={{ justifyContent: 'flex-end', color: c.resultado >= 0 ? 'var(--text-primary)' : 'var(--color-attention)' }}
                 />
                 <span style={{ textAlign: 'right' }}>
                   <button

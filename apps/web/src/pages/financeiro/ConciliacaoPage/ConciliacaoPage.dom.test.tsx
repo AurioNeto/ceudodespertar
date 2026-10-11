@@ -25,18 +25,18 @@ const TITULO_DOS_LANCAMENTOS = 'Registramos algo que não saiu do banco';
 
 const SUGESTAO_ASSAI =
   'Alta confiançamesmo valor, mesma data, mesma conta' +
-  'No bancoASSAI ATACADISTA IBIUNA02/09R$ 487,40' +
-  'No sistemamercado do trabalho de setembro02/09R$ 487,40' +
+  'No bancoASSAI ATACADISTA IBIUNA02/09R$487,40' +
+  'No sistemamercado do trabalho de setembro02/09R$487,40' +
   'CasarNão é o mesmo';
 const SUGESTAO_POSTO =
   'Alta confiançamesmo valor, um dia de diferença' +
-  'No bancoPOSTO IPIRANGA IBIUNA05/09R$ 320,00' +
-  'No sistemacombustível da van04/09R$ 320,00' +
+  'No bancoPOSTO IPIRANGA IBIUNA05/09R$320,00' +
+  'No sistemacombustível da van04/09R$320,00' +
   'CasarNão é o mesmo';
 const SUGESTAO_CORREIOS =
   'Média confiançamesmo valor, quatro dias de diferença' +
-  'No bancoCORREIOS AGF IBIUNA30/08R$ 517,90' +
-  'No sistemaenvio de camisetas da lojinha26/08R$ 517,90' +
+  'No bancoCORREIOS AGF IBIUNA30/08R$517,90' +
+  'No sistemaenvio de camisetas da lojinha26/08R$517,90' +
   'CasarNão é o mesmo';
 
 const MOTIVOS = [
@@ -211,11 +211,11 @@ describe('ConciliacaoPage: coluna de linhas do banco sem lançamento', () => {
 
     expect(contagemDaColuna(container, TITULO_DAS_LINHAS)).toBe('5');
     expect(textosDaColuna(container, TITULO_DAS_LINHAS)).toEqual([
-      `03/09TRANSF PIX MARIA S SANTOS${MENOS}R$ 1.480,00Registrar lançamentoIgnorar`,
-      '01/09TED RECEBIDA J R OLIVEIRA+ R$ 2.500,00Registrar lançamentoIgnorar',
-      `06/09SUPERMERCADO BOM PRECO${MENOS}R$ 230,00Registrar lançamentoIgnorar`,
-      `09/09TARIFA PACOTE SERVICOS${MENOS}R$ 45,00Registrar lançamentoIgnorar`,
-      `12/09NETFLIX.COM${MENOS}R$ 89,90Registrar lançamentoIgnorar`,
+      `03/09TRANSF PIX MARIA S SANTOS${MENOS}R$1.480,00Registrar lançamentoIgnorar`,
+      '01/09TED RECEBIDA J R OLIVEIRA+ R$2.500,00Registrar lançamentoIgnorar',
+      `06/09SUPERMERCADO BOM PRECO${MENOS}R$230,00Registrar lançamentoIgnorar`,
+      `09/09TARIFA PACOTE SERVICOS${MENOS}R$45,00Registrar lançamentoIgnorar`,
+      `12/09NETFLIX.COM${MENOS}R$89,90Registrar lançamentoIgnorar`,
     ]);
   });
 
@@ -364,8 +364,8 @@ describe('ConciliacaoPage: coluna de sugestões de casamento', () => {
 
     await clicar(botaoComTexto(cartaoDaSugestao(container, 'ASSAI'), 'Não é o mesmo'));
 
-    expect(textosDaColuna(container, TITULO_DAS_LINHAS)[0]).toBe(`02/09ASSAI ATACADISTA IBIUNA${MENOS}R$ 487,40Registrar lançamentoIgnorar`);
-    expect(textosDaColuna(container, TITULO_DOS_LANCAMENTOS)[0]).toBe(`02/09mercado do trabalho de setembro${MENOS}R$ 487,40Cora PJ · Aurio Neto`);
+    expect(textosDaColuna(container, TITULO_DAS_LINHAS)[0]).toBe(`02/09ASSAI ATACADISTA IBIUNA${MENOS}R$487,40Registrar lançamentoIgnorar`);
+    expect(textosDaColuna(container, TITULO_DOS_LANCAMENTOS)[0]).toBe(`02/09mercado do trabalho de setembro${MENOS}R$487,40Cora PJ · Aurio Neto`);
     expect([contagemDaColuna(container, TITULO_DAS_LINHAS), contagemDaColuna(container, TITULO_DAS_SUGESTOES), contagemDaColuna(container, TITULO_DOS_LANCAMENTOS)]).toEqual(['6', '2', '4']);
   });
 
@@ -373,20 +373,20 @@ describe('ConciliacaoPage: coluna de sugestões de casamento', () => {
     {
       recusada: 'ASSAI',
       ficam: [SUGESTAO_POSTO, SUGESTAO_CORREIOS],
-      linha: `02/09ASSAI ATACADISTA IBIUNA${MENOS}R$ 487,40Registrar lançamentoIgnorar`,
-      lancamento: `02/09mercado do trabalho de setembro${MENOS}R$ 487,40Cora PJ · Aurio Neto`,
+      linha: `02/09ASSAI ATACADISTA IBIUNA${MENOS}R$487,40Registrar lançamentoIgnorar`,
+      lancamento: `02/09mercado do trabalho de setembro${MENOS}R$487,40Cora PJ · Aurio Neto`,
     },
     {
       recusada: 'POSTO',
       ficam: [SUGESTAO_ASSAI, SUGESTAO_CORREIOS],
-      linha: `05/09POSTO IPIRANGA IBIUNA${MENOS}R$ 320,00Registrar lançamentoIgnorar`,
-      lancamento: `04/09combustível da van${MENOS}R$ 320,00Cora PJ · Chico Aguiar`,
+      linha: `05/09POSTO IPIRANGA IBIUNA${MENOS}R$320,00Registrar lançamentoIgnorar`,
+      lancamento: `04/09combustível da van${MENOS}R$320,00Cora PJ · Chico Aguiar`,
     },
     {
       recusada: 'CORREIOS',
       ficam: [SUGESTAO_ASSAI, SUGESTAO_POSTO],
-      linha: `30/08CORREIOS AGF IBIUNA${MENOS}R$ 517,90Registrar lançamentoIgnorar`,
-      lancamento: `26/08envio de camisetas da lojinha${MENOS}R$ 517,90Cora PJ · Paty Munay`,
+      linha: `30/08CORREIOS AGF IBIUNA${MENOS}R$517,90Registrar lançamentoIgnorar`,
+      lancamento: `26/08envio de camisetas da lojinha${MENOS}R$517,90Cora PJ · Paty Munay`,
     },
   ])(
     'Não é o mesmo $recusada — só ela sai da lista, e a linha e o lançamento dela voltam para o topo de cada coluna',
@@ -460,9 +460,9 @@ describe('ConciliacaoPage: coluna de lançamentos sem linha no banco', () => {
 
     expect(contagemDaColuna(container, TITULO_DOS_LANCAMENTOS)).toBe('3');
     expect(textosDaColuna(container, TITULO_DOS_LANCAMENTOS)).toEqual([
-      `28/08mercado cerimônia mãe divina${MENOS}R$ 187,40Cora PJ · Aurio Neto`,
-      '22/08venda de camisetas na lojinha+ R$ 285,00Cora PJ · Paty Munay',
-      `05/09diesel do caminhão${MENOS}R$ 370,70Cora PJ · Chico Aguiar`,
+      `28/08mercado cerimônia mãe divina${MENOS}R$187,40Cora PJ · Aurio Neto`,
+      '22/08venda de camisetas na lojinha+ R$285,00Cora PJ · Paty Munay',
+      `05/09diesel do caminhão${MENOS}R$370,70Cora PJ · Chico Aguiar`,
     ]);
   });
 
@@ -498,7 +498,7 @@ describe('ConciliacaoPage: coluna de lançamentos sem linha, com a lista de demo
 
     const { container } = await montar(<ConciliacaoPage />);
 
-    expect(textosDaColuna(container, TITULO_DOS_LANCAMENTOS)).toEqual([`28/08mercado cerimônia mãe divina${MENOS}R$ 187,40Cora PJ · Aurio Neto`]);
+    expect(textosDaColuna(container, TITULO_DOS_LANCAMENTOS)).toEqual([`28/08mercado cerimônia mãe divina${MENOS}R$187,40Cora PJ · Aurio Neto`]);
     expect(contagemDaColuna(container, TITULO_DOS_LANCAMENTOS)).toBe('1');
   });
 });

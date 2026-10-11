@@ -171,7 +171,17 @@ const cartaoDeAcao = (container: HTMLElement) => {
 const botaoDeFechar = (container: HTMLElement) =>
   todos<HTMLButtonElement>(container, 'button').find((b) => b.textContent?.startsWith('Fechar ')) as HTMLButtonElement;
 
-const caixaDoMotivo = (container: HTMLElement) => elemento<HTMLTextAreaElement>(container, 'textarea[aria-label="Motivo da reabertura"]');
+const caixaDoMotivo = (container: HTMLElement) => {
+  const etiqueta = todos<HTMLLabelElement>(container, 'label').find((l) => l.textContent === 'Motivo da reabertura');
+  const caixa = etiqueta ? document.getElementById(etiqueta.htmlFor) : null;
+  if (!(caixa instanceof HTMLTextAreaElement)) throw new Error('caixa do motivo não encontrada');
+  return caixa;
+};
+
+const perguntaAberta = (container: HTMLElement) => {
+  const pergunta = todos(container, 'div').find((d) => d.childElementCount === 0 && d.textContent === 'Por que este período precisa ser reaberto?');
+  return pergunta !== undefined && pergunta.closest('[hidden]') === null;
+};
 
 async function digitarMotivo(container: HTMLElement, texto: string) {
   const definirValor = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value')?.set;
@@ -472,7 +482,7 @@ describe('FechamentoPage: totais do mês, com e sem estorno', () => {
   it('dados de demonstração — soma as entradas, as saídas sem o estornado e o resultado', async () => {
     const { container } = await montarFechamento();
 
-    expect(resumoDoMes(container)).toEqual(['R$ 4.425,00', 'R$ 3.038,35', 'R$ 1.386,65']);
+    expect(resumoDoMes(container)).toEqual(['R$4.425,00', 'R$3.038,35', 'R$1.386,65']);
   });
 
   it('entrada estornada — fica fora das entradas, como a saída estornada fica fora das saídas', async () => {
@@ -487,7 +497,7 @@ describe('FechamentoPage: totais do mês, com e sem estorno', () => {
     };
     const { container } = await montarFechamento();
 
-    expect(resumoDoMes(container)).toEqual(['R$ 100,00', 'R$ 30,00', 'R$ 70,00']);
+    expect(resumoDoMes(container)).toEqual(['R$100,00', 'R$30,00', 'R$70,00']);
   });
 
   it('transferência e lançamento de outra competência — ficam fora de entradas e saídas', async () => {
@@ -501,7 +511,7 @@ describe('FechamentoPage: totais do mês, com e sem estorno', () => {
     };
     const { container } = await montarFechamento();
 
-    expect(resumoDoMes(container)).toEqual(['R$ 0,00', 'R$ 10,00', 'R$ -10,00']);
+    expect(resumoDoMes(container)).toEqual(['R$0,00', 'R$10,00', 'R$-10,00']);
   });
 
   it('saldo por conta — lista as contas ativas com o saldo e o total', async () => {
@@ -509,8 +519,8 @@ describe('FechamentoPage: totais do mês, com e sem estorno', () => {
 
     const texto = container.textContent ?? '';
     expect(texto).toContain('Saldo por conta que fica registrado no fechamento');
-    expect(texto).toContain('Cora PJR$ 41.902,10EspécieR$ 3.180,40Nubank PatyR$ 1.240,55Itaú MunayR$ 37.994,85');
-    expect(texto).toContain('TotalR$ 84.317,90');
+    expect(texto).toContain('Cora PJR$41.902,10EspécieR$3.180,40Nubank PatyR$1.240,55Itaú MunayR$37.994,85');
+    expect(texto).toContain('TotalR$84.317,90');
   });
 
   it('saldo por conta — conta inativa fica fora da lista e do total', async () => {
@@ -518,7 +528,7 @@ describe('FechamentoPage: totais do mês, com e sem estorno', () => {
     const { container } = await montarFechamento();
 
     expect(container.textContent).not.toContain('37.994,85');
-    expect(container.textContent).toContain('TotalR$ 46.323,05');
+    expect(container.textContent).toContain('TotalR$46.323,05');
   });
 });
 
@@ -558,11 +568,13 @@ describe('FechamentoPage: fechar o período', () => {
   it('com bloqueios — o cartão de ação diz Fechamento bloqueado e lista os itens que bloqueiam', async () => {
     const { container } = await montarFechamento();
 
-    expect(cartaoDeAcao(container)).toMatchObject({
-      titulo: 'Fechamento bloqueado',
-      explicacao:
-        'Fila de verificação zerada · Lançamentos conferidos na competência · Contas conciliadas com o extrato · Contagem do caixa em espécie',
-    });
+    expect(cartaoDeAcao(container).titulo).toBe('Fechamento bloqueado');
+    expect(todos(cartaoDeAcao(container).cartao, 'li').map((li) => li.textContent)).toEqual([
+      'Fila de verificação zerada',
+      'Lançamentos conferidos na competência',
+      'Contas conciliadas com o extrato',
+      'Contagem do caixa em espécie',
+    ]);
   });
 
   it('clicar no botão desativado — não fecha o período', async () => {
@@ -579,10 +591,8 @@ describe('FechamentoPage: fechar o período', () => {
 
     expect(botaoDeFechar(container).disabled).toBe(false);
     expect(botaoDeFechar(container).title).toBe('');
-    expect(cartaoDeAcao(container)).toMatchObject({
-      titulo: 'Tudo pronto',
-      explicacao: 'Ao fechar, os saldos acima viram o registro oficial de agosto.',
-    });
+    expect(cartaoDeAcao(container).titulo).toBe('Tudo pronto');
+    expect(cartaoDeAcao(container).cartao.textContent).toContain('Ao fechar, os saldos acima viram o registro oficial de agosto.');
   });
 
   it('Fechar — o período passa a Fechado, em verde, com quem fechou e a regra do bloqueio', async () => {
@@ -663,8 +673,8 @@ describe('FechamentoPage: reabrir o período', () => {
 
     await clicar(botaoComTexto(container, 'Reabrir período'));
 
-    expect(container.textContent).toContain('Por que este período precisa ser reaberto?');
-    expect(caixaDoMotivo(container).placeholder).toBe('o motivo fica no histórico do período, de forma permanente');
+    expect(perguntaAberta(container)).toBe(true);
+    expect(container.textContent).toContain('o motivo fica no histórico do período, de forma permanente');
     expect(caixaDoMotivo(container).rows).toBe(3);
     expect(caixaDoMotivo(container).hasAttribute('maxlength')).toBe(false);
   });
@@ -740,7 +750,7 @@ describe('FechamentoPage: reabrir o período', () => {
 
     await clicar(botaoComTexto(container, 'Cancelar'));
 
-    expect(container.textContent).not.toContain('Por que este período precisa ser reaberto?');
+    expect(perguntaAberta(container)).toBe(false);
     expect(estadoDoPeriodo(container).situacao).toBe('Fechado');
 
     await clicar(botaoComTexto(container, 'Reabrir período'));
@@ -754,10 +764,10 @@ describe('FechamentoPage: meses anteriores', () => {
     const { container } = await montarFechamento();
 
     const texto = container.textContent ?? '';
-    expect(texto).toContain('Julho de 2026fechado por Aurio Neto em 03/08 · reaberto uma vezFechado+ R$ 4.180,22');
-    expect(texto).toContain('Junho de 2026fechado por Lucia Prado em 02/07Fechado+ R$ 2.905,10');
-    expect(texto).toContain(`Maio de 2026fechado por Aurio Neto em 04/06Fechado${MENOS}R$ 1.244,80`);
-    expect(texto).toContain('Abril de 2026fechado por Aurio Neto em 05/05Fechado+ R$ 6.512,45');
+    expect(texto).toContain('Julho de 2026fechado por Aurio Neto em 03/08 · reaberto uma vezFechado+ R$4.180,22');
+    expect(texto).toContain('Junho de 2026fechado por Lucia Prado em 02/07Fechado+ R$2.905,10');
+    expect(texto).toContain(`Maio de 2026fechado por Aurio Neto em 04/06Fechado${MENOS}R$1.244,80`);
+    expect(texto).toContain('Abril de 2026fechado por Aurio Neto em 05/05Fechado+ R$6.512,45');
   });
 
   it('cada mês anterior leva o selo Fechado em verde', async () => {

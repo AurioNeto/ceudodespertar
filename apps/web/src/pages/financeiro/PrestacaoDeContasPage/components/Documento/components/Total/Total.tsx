@@ -1,4 +1,4 @@
-import { formatarBRL } from '@/pages/utils/formato';
+import { AmountDisplay } from '@/ds';
 
 export function Total({ rotulo, valor }: { rotulo: string; valor: number }) {
   return (
@@ -14,9 +14,7 @@ export function Total({ rotulo, valor }: { rotulo: string; valor: number }) {
       }}
     >
       <span style={{ font: 'var(--text-body-strong)', color: 'var(--text-primary)' }}>{rotulo}</span>
-      <span data-numeric style={{ font: 'var(--text-amount)', color: 'var(--text-primary)' }}>
-        {formatarBRL(valor)}
-      </span>
+      <AmountDisplay value={valor / 100} size="sm" />
     </div>
   );
 }

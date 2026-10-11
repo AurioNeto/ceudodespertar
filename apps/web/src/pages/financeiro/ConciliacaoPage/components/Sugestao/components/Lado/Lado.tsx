@@ -1,8 +1,10 @@
+import { AmountDisplay } from '@/ds';
+
 export interface LadoProps {
   rotulo: string;
   texto: string;
   data: string;
-  valor: string;
+  valor: number;
 }
 
 export function Lado({ rotulo, texto, data, valor }: LadoProps) {
@@ -13,9 +15,7 @@ export function Lado({ rotulo, texto, data, valor }: LadoProps) {
       <span data-numeric style={{ font: 'var(--text-small)', color: 'var(--text-meta)' }}>
         {data.slice(0, 5)}
       </span>
-      <span data-numeric style={{ font: 'var(--text-amount)', color: 'var(--text-primary)' }}>
-        {valor}
-      </span>
+      <AmountDisplay value={valor / 100} size="sm" />
     </div>
   );
 }

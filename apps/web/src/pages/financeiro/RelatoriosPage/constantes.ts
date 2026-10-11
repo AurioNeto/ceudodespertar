@@ -8,3 +8,5 @@ export const FILTROS_LIMPOS: Filtros = {
   cerimonia: 'todas',
   situacao: 'todas',
 };
+
+export const tituloDoCartao = { font: 'var(--text-body-strong)', color: 'var(--text-primary)' } as const;

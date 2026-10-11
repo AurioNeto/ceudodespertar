@@ -1,6 +1,4 @@
-import { reais } from '@cdd/contracts';
-import type { Density } from '@/ds';
-import { formatarBRL } from '@/pages/utils/formato';
+import { AmountDisplay, type Density } from '@/ds';
 import { RAIO } from '../../constantes';
 import type { FatiaDaQuebra } from '../../tipos';
 import type { fatiasDaQuebra } from '../../utils/fatias';
@@ -129,17 +127,7 @@ export function VistaEmRosca({ fatias, emFoco, total, densidade, onAbrir, onHove
         >
           {emFoco ? emFoco.nome : 'saídas'}
         </span>
-        <span
-          style={{
-            marginLeft: 'auto',
-            font: 'var(--text-amount)',
-            letterSpacing: 'var(--tracking-amount)',
-            fontVariantNumeric: 'tabular-nums',
-            color: 'var(--text-primary)',
-          }}
-        >
-          {formatarBRL(reais(emFoco ? emFoco.valor : total))}
-        </span>
+        <AmountDisplay value={emFoco ? emFoco.valor : total} size="sm" style={{ marginLeft: 'auto' }} />
       </div>
     </>
   );
