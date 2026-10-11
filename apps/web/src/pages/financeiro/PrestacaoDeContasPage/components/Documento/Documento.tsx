@@ -1,5 +1,5 @@
 import type { Density } from '@/ds';
-import { formatarDinheiro } from '@/pages/utils/formato';
+import { formatarBRL } from '@/pages/utils/formato';
 import type { DadosDaPrestacao, NivelDeDetalhe } from '../../mocks/prestacao';
 import { Linha } from './components/Linha';
 import { Secao } from './components/Secao';
@@ -17,6 +17,7 @@ export interface DocumentoProps {
 
 export function Documento({ dados, nivel, unidadeRotulo, densidade, totalReceitas, totalDespesas, resultado }: DocumentoProps) {
   const campo = densidade === 'field';
+  const larguraDaColunaDeSaldo = campo ? 110 : 120;
   return (
     <article
       style={{
@@ -85,7 +86,7 @@ export function Documento({ dados, nivel, unidadeRotulo, densidade, totalReceita
           }}
         >
           {resultado >= 0 ? '+ ' : '− '}
-          {formatarDinheiro(Math.abs(resultado))}
+          {formatarBRL(Math.abs(resultado))}
         </span>
       </div>
 
@@ -103,10 +104,10 @@ export function Documento({ dados, nivel, unidadeRotulo, densidade, totalReceita
         <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, paddingBottom: 4 }}>
           <span style={{ font: 'var(--text-small)', color: 'var(--text-meta)' }}>conta</span>
           <span style={{ display: 'flex', gap: campo ? 18 : 40 }}>
-            <span style={{ font: 'var(--text-small)', color: 'var(--text-meta)', width: campo ? 78 : 96, textAlign: 'right' }}>
+            <span style={{ font: 'var(--text-small)', color: 'var(--text-meta)', width: larguraDaColunaDeSaldo, textAlign: 'right' }}>
               início
             </span>
-            <span style={{ font: 'var(--text-small)', color: 'var(--text-meta)', width: campo ? 78 : 96, textAlign: 'right' }}>
+            <span style={{ font: 'var(--text-small)', color: 'var(--text-meta)', width: larguraDaColunaDeSaldo, textAlign: 'right' }}>
               fim
             </span>
           </span>
@@ -117,15 +118,15 @@ export function Documento({ dados, nivel, unidadeRotulo, densidade, totalReceita
             <span style={{ display: 'flex', gap: campo ? 18 : 40 }}>
               <span
                 data-numeric
-                style={{ font: 'var(--text-amount)', color: 'var(--text-secondary)', width: campo ? 78 : 96, textAlign: 'right' }}
+                style={{ font: 'var(--text-amount)', color: 'var(--text-secondary)', width: larguraDaColunaDeSaldo, textAlign: 'right', whiteSpace: 'nowrap' }}
               >
-                {formatarDinheiro(s.inicio)}
+                {formatarBRL(s.inicio)}
               </span>
               <span
                 data-numeric
-                style={{ font: 'var(--text-amount)', color: 'var(--text-primary)', width: campo ? 78 : 96, textAlign: 'right' }}
+                style={{ font: 'var(--text-amount)', color: 'var(--text-primary)', width: larguraDaColunaDeSaldo, textAlign: 'right', whiteSpace: 'nowrap' }}
               >
-                {formatarDinheiro(s.fim)}
+                {formatarBRL(s.fim)}
               </span>
             </span>
           </div>
@@ -151,7 +152,7 @@ export function Documento({ dados, nivel, unidadeRotulo, densidade, totalReceita
                 {c.nome} · {c.data}
               </span>
               <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>
-                contribuições {formatarDinheiro(c.contribuicoes)} · custos {formatarDinheiro(c.custos)}
+                contribuições {formatarBRL(c.contribuicoes)} · custos {formatarBRL(c.custos)}
               </span>
               <span
                 data-numeric
@@ -163,7 +164,7 @@ export function Documento({ dados, nivel, unidadeRotulo, densidade, totalReceita
                 }}
               >
                 {r >= 0 ? '+ ' : '− '}
-                {formatarDinheiro(Math.abs(r))}
+                {formatarBRL(Math.abs(r))}
               </span>
             </div>
           );
