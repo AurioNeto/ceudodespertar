@@ -1302,17 +1302,17 @@ describe('AyahuascaPage: modal de saída', () => {
     expect(textosDasFolhas(cartaoDoLote(container, 'Lote 06/2026')).slice(0, 2)).toEqual(['Lote 06/2026', 'Lacrado']);
   });
 
-  it('saída com duas casas decimais — o saldo do lote guarda uma casa só: 0,25 L tira 0,2 L e o movimento mostra 0,3 L', async () => {
+  it('saída com duas casas decimais — o saldo do lote guarda duas casas: 0,25 L tira 0,25 L e o movimento mostra 0,25 L', async () => {
     const container = await montarAyahuasca();
 
     await registrarSaida(container, '0,25', 'Teste de bancada');
 
-    expect(textosDasFolhas(cartaoDoLote(container, 'Lote 12/2025'))[3]).toBe('23,3 L');
+    expect(textosDasFolhas(cartaoDoLote(container, 'Lote 12/2025'))[3]).toBe('23,25 L');
     await abrirAba(container, 'Movimentos');
-    expect(linhasDeMovimento(container)[0]).toContain('− 0,3 L');
+    expect(linhasDeMovimento(container)[0]).toContain('− 0,25 L');
   });
 
-  it('saída que deixa menos de 0,05 L — o lote vira Esgotado com saldo que ainda existia', async () => {
+  it('saída que deixa menos de 0,05 L — o lote continua Em uso, com o saldo que ainda existe', async () => {
     const container = await montarAyahuasca();
     await abrirSaida(container);
     await escolherOpcao(campo<HTMLSelectElement>(container, 'Lote'), '3');
@@ -1321,9 +1321,9 @@ describe('AyahuascaPage: modal de saída', () => {
 
     expect(textosDasFolhas(cartaoDoLote(container, 'Lote 03/2026')).slice(0, 4)).toEqual([
       'Lote 03/2026',
-      'Esgotado',
+      'Em uso',
       'Recebido do Céu do Mar · 14/03/2026',
-      '0,0 L',
+      '0,04 L',
     ]);
   });
 

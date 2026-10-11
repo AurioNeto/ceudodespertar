@@ -67,7 +67,7 @@ export function useEstoqueDeDaime() {
       setMensagem(`${novo.codigo} criado com ${litros(quantidade)}.`);
     } else {
       const lote = lotes.find((l) => String(l.id) === form.loteId)!;
-      const restante = +(lote.restante - quantidade).toFixed(1);
+      const restante = +(lote.restante - quantidade).toFixed(2);
       setLotes((lista) =>
         lista.map((l) =>
           l.id === lote.id ? { ...l, restante, situacao: restante === 0 ? 'esgotado' : l.situacao } : l,
