@@ -16,6 +16,8 @@ export function Comparacao({ feitio: f, concluido, total, densidade }: Comparaca
   const porLitro = concluido ? custoPorLitro(total, f.litrosProduzidos) : null;
   const externo = aquisicaoExterna.custoPorLitro;
   const economia = porLitro !== null ? (externo - porLitro) * (f.litrosProduzidos ?? 0) : null;
+  const saiuMaisCaro = economia !== null && economia < 0;
+  const comparativo = saiuMaisCaro ? 'mais caro' : 'mais barato';
 
   return (
     <Cartao campo={campo} style={{ gap: 12 }}>
@@ -40,8 +42,8 @@ export function Comparacao({ feitio: f, concluido, total, densidade }: Comparaca
 
       {economia !== null ? (
         <span style={{ font: 'var(--text-body)', color: 'var(--text-secondary)', maxWidth: '78ch' }}>
-          Fazer saiu <b style={{ color: 'var(--color-confirmed)' }}>{formatarBRL(externo - porLitro!)} mais barato por
-          litro</b> — {formatarBRL(economia)} no total deste feitio. O trabalho de quem ficou três dias na casa está
+          Fazer saiu <b style={{ color: saiuMaisCaro ? 'var(--color-attention)' : 'var(--color-confirmed)' }}>{formatarBRL(Math.abs(externo - porLitro!))} {comparativo} por
+          litro</b> — {formatarBRL(Math.abs(economia))} no total deste feitio. O trabalho de quem ficou três dias na casa está
           contado aqui como ajuda de custo; o que não está, e nunca vai estar, é o que o feitio significa.
         </span>
       ) : (

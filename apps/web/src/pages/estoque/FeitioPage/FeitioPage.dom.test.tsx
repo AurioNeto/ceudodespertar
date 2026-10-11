@@ -709,13 +709,13 @@ describe('FeitioPage: feitio concluído', () => {
     );
   });
 
-  it('Concluir com custo por litro acima do preço de fora — a frase continua dizendo "mais barato", com valores negativos', async () => {
+  it('Concluir com custo por litro acima do preço de fora — a frase diz "mais caro", com valores positivos', async () => {
     const container = await montarFeitio();
 
     await concluirComLitros(container, '10');
 
     expect(cartaoDe(container, 'Fazer ou comprar').textContent).toContain(
-      'Fazer saiu R$ -1.126,00 mais barato por litro — R$ -11.260,00 no total deste feitio.',
+      'Fazer saiu R$ 1.126,00 mais caro por litro — R$ 11.260,00 no total deste feitio.',
     );
   });
 
