@@ -1,3 +1,4 @@
+import { act } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { botaoComTexto, clicar, desmontarTudo, digitar, elemento, escolherOpcao, montar, todos } from '@/testes/montagem';
 import { RelatoriosPage } from './RelatoriosPage';
@@ -70,21 +71,34 @@ const barraDoPainel = (container: HTMLElement, titulo: string, nome: string) => 
   return achado;
 };
 
-const gaveta = (container: HTMLElement) => todos<HTMLDivElement>(container, 'div').find((d) => d.style.position === 'fixed') ?? null;
+const gaveta = (container: HTMLElement) => container.ownerDocument.querySelector<HTMLElement>('[data-testid="painel-de-acao-fundo"]');
 
 const painelDaGaveta = (container: HTMLElement) => gaveta(container)?.firstElementChild as HTMLElement;
 
+const conteudoDaGaveta = (container: HTMLElement) => painelDaGaveta(container)?.children[1]?.firstElementChild;
+
 const linhasDaGaveta = (container: HTMLElement) =>
-  Array.from(painelDaGaveta(container)?.children[1]?.children ?? []).map((linha) => linha.textContent);
+  Array.from(conteudoDaGaveta(container)?.children[1]?.children ?? []).map((linha) => linha.textContent);
 
 const valoresDaGaveta = (container: HTMLElement) =>
-  Array.from(painelDaGaveta(container)?.children[1]?.children ?? []).map((linha) => {
+  Array.from(conteudoDaGaveta(container)?.children[1]?.children ?? []).map((linha) => {
     const valor = linha.lastElementChild as HTMLElement;
     return { texto: valor.textContent, cor: valor.style.color };
   });
 
-const cabecalhoDaGaveta = (container: HTMLElement) =>
-  Array.from(painelDaGaveta(container)?.firstElementChild?.firstElementChild?.children ?? []).map((parte) => parte.textContent);
+const cabecalhoDaGaveta = (container: HTMLElement) => [
+  conteudoDaGaveta(container)?.firstElementChild?.textContent,
+  painelDaGaveta(container)?.querySelector('h2')?.textContent,
+  painelDaGaveta(container)?.querySelector('h2 + p')?.textContent,
+];
+
+async function clicarNoFundo(container: HTMLElement) {
+  const fundo = gaveta(container) as HTMLElement;
+  await act(async () => {
+    fundo.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true }));
+    fundo.click();
+  });
+}
 
 const botaoDeConta = (container: HTMLElement, nome: string) => {
   const cartao = cartaoComTitulo(container, 'Movimento por conta');
@@ -791,11 +805,11 @@ describe('RelatoriosPage: gaveta com os lançamentos de um recorte', () => {
     expect(linhasDaGaveta(container)).toHaveLength(40);
   });
 
-  it('Fechar recorte — fecha a gaveta', async () => {
+  it('Fechar — fecha a gaveta', async () => {
     const { container } = await montar(<RelatoriosPage />);
     await clicar(barraDoPainel(container, 'Saídas por grupo', 'Chácara (Infraestrutura)'));
 
-    await clicar(elemento<HTMLButtonElement>(container, 'button[aria-label="Fechar recorte"]'));
+    await clicar(elemento<HTMLButtonElement>(painelDaGaveta(container), 'button[aria-label="Fechar"]'));
 
     expect(gaveta(container)).toBeNull();
   });
@@ -804,7 +818,7 @@ describe('RelatoriosPage: gaveta com os lançamentos de um recorte', () => {
     const { container } = await montar(<RelatoriosPage />);
     await clicar(barraDoPainel(container, 'Saídas por grupo', 'Chácara (Infraestrutura)'));
 
-    await clicar(gaveta(container) as HTMLElement);
+    await clicarNoFundo(container);
 
     expect(gaveta(container)).toBeNull();
   });
@@ -822,7 +836,7 @@ describe('RelatoriosPage: gaveta com os lançamentos de um recorte', () => {
     const { container } = await montar(<RelatoriosPage />);
     await clicar(barraDoPainel(container, 'Saídas por categoria', 'Manutenção'));
 
-    await clicar(botaoComTexto(container, 'Exportar este recorte'));
+    await clicar(botaoComTexto(painelDaGaveta(container), 'Exportar este recorte'));
 
     expect(container.textContent).toContain('Recorte exportado com 2 lançamentos.');
     expect(gaveta(container)).not.toBeNull();
@@ -834,7 +848,7 @@ describe('RelatoriosPage: gaveta com os lançamentos de um recorte', () => {
     await clicar(barraDoPainel(container, 'Saídas por grupo', 'Chácara (Infraestrutura)'));
 
     expect(gaveta(container)?.style.alignItems).toBe('stretch');
-    expect(painelDaGaveta(container).style.maxHeight).toBe('100%');
+    expect(painelDaGaveta(container).style.height).toBe('100%');
   });
 
   it('campo — a gaveta sobe da base, ocupa a largura e deixa folga em cima', async () => {
@@ -844,6 +858,6 @@ describe('RelatoriosPage: gaveta com os lançamentos de um recorte', () => {
     await clicar(barraDoPainel(container, 'Saídas por grupo', 'Chácara (Infraestrutura)'));
 
     expect(gaveta(container)?.style.alignItems).toBe('flex-end');
-    expect([painelDaGaveta(container).style.width, painelDaGaveta(container).style.maxHeight]).toEqual(['100%', '86%']);
+    expect([painelDaGaveta(container).style.width, painelDaGaveta(container).style.maxHeight]).toEqual(['100%', '90dvh']);
   });
 });
