@@ -568,11 +568,13 @@ describe('FechamentoPage: fechar o período', () => {
   it('com bloqueios — o cartão de ação diz Fechamento bloqueado e lista os itens que bloqueiam', async () => {
     const { container } = await montarFechamento();
 
-    expect(cartaoDeAcao(container)).toMatchObject({
-      titulo: 'Fechamento bloqueado',
-      explicacao:
-        'Fila de verificação zerada · Lançamentos conferidos na competência · Contas conciliadas com o extrato · Contagem do caixa em espécie',
-    });
+    expect(cartaoDeAcao(container).titulo).toBe('Fechamento bloqueado');
+    expect(todos(cartaoDeAcao(container).cartao, 'li').map((li) => li.textContent)).toEqual([
+      'Fila de verificação zerada',
+      'Lançamentos conferidos na competência',
+      'Contas conciliadas com o extrato',
+      'Contagem do caixa em espécie',
+    ]);
   });
 
   it('clicar no botão desativado — não fecha o período', async () => {
@@ -589,10 +591,8 @@ describe('FechamentoPage: fechar o período', () => {
 
     expect(botaoDeFechar(container).disabled).toBe(false);
     expect(botaoDeFechar(container).title).toBe('');
-    expect(cartaoDeAcao(container)).toMatchObject({
-      titulo: 'Tudo pronto',
-      explicacao: 'Ao fechar, os saldos acima viram o registro oficial de agosto.',
-    });
+    expect(cartaoDeAcao(container).titulo).toBe('Tudo pronto');
+    expect(cartaoDeAcao(container).cartao.textContent).toContain('Ao fechar, os saldos acima viram o registro oficial de agosto.');
   });
 
   it('Fechar — o período passa a Fechado, em verde, com quem fechou e a regra do bloqueio', async () => {
