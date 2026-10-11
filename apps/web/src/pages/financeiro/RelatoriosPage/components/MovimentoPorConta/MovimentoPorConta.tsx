@@ -1,7 +1,6 @@
-import type { Density } from '@/ds';
+import { Rotulo, type Density } from '@/ds';
 import { reais } from '@cdd/contracts';
 import { formatarBRL } from '@/pages/utils/formato';
-import { rotuloLabel } from '../../constantes';
 import type { useRelatorio } from '../../hooks/useRelatorio';
 import type { Drill } from '../../tipos';
 import { Cartao } from '../Cartao';
@@ -31,9 +30,9 @@ export function MovimentoPorConta({ porConta, rotuloPeriodo, densidade, onAbrirD
             }}
           >
             {['Conta', 'Entradas', 'Saídas', 'Resultado', ''].map((c, i) => (
-              <span key={c || 'acoes'} style={{ ...rotuloLabel, textAlign: i === 0 ? 'left' : 'right' }}>
+              <Rotulo key={c || 'acoes'} style={{ textAlign: i === 0 ? 'left' : 'right' }}>
                 {c}
-              </span>
+              </Rotulo>
             ))}
           </div>
         ) : null}

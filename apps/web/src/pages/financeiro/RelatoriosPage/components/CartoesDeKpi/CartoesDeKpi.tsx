@@ -1,7 +1,6 @@
-import type { Density } from '@/ds';
+import { Rotulo, type Density } from '@/ds';
 import { reais } from '@cdd/contracts';
 import { formatarBRL } from '@/pages/utils/formato';
-import { rotuloLabel } from '../../constantes';
 import type { Comparacao } from '../../tipos';
 import { corDoDelta, textoDoDelta } from '../../utils/delta';
 import type { kpisDoRelatorio } from '../../utils/recorte';
@@ -36,7 +35,7 @@ export function CartoesDeKpi({ kpis, comparar, densidade }: CartoesDeKpiProps) {
             gap: 4,
           }}
         >
-          <span style={rotuloLabel}>{k.label}</span>
+          <Rotulo>{k.label}</Rotulo>
           <span
             style={{
               font: campo ? 'var(--text-amount)' : 'var(--text-amount-lg)',

@@ -1,6 +1,5 @@
-import { StatusBadge } from '@/ds';
+import { Rotulo, StatusBadge } from '@/ds';
 import { formatarBRL } from '@/pages/utils/formato';
-import { rotuloLabel } from '../../constantes';
 
 export interface HistoricoDeFechamentosProps {
   historico: readonly { periodo: string; meta: string; resultado: number }[];
@@ -9,7 +8,7 @@ export interface HistoricoDeFechamentosProps {
 export function HistoricoDeFechamentos({ historico }: HistoricoDeFechamentosProps) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-      <span style={rotuloLabel}>Meses anteriores</span>
+      <Rotulo>Meses anteriores</Rotulo>
       {historico.map((h) => (
         <div
           key={h.periodo}

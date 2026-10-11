@@ -1,6 +1,7 @@
 import type { Conta } from '@cdd/contracts';
 import { formatarBRL } from '@/pages/utils/formato';
-import { rotuloLabel, valorGrande } from '../../constantes';
+import { Rotulo } from '@/ds';
+import { valorGrande } from '../../constantes';
 
 export interface SaldosDoFechamentoProps {
   contasAtivas: readonly Conta[];
@@ -20,7 +21,7 @@ export function SaldosDoFechamento({ contasAtivas, totalSaldos }: SaldosDoFecham
         gap: 12,
       }}
     >
-      <span style={rotuloLabel}>Saldo por conta que fica registrado no fechamento</span>
+      <Rotulo>Saldo por conta que fica registrado no fechamento</Rotulo>
       {contasAtivas.map((c) => (
         <div key={c.id} style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
           <span style={{ font: 'var(--text-body)', color: 'var(--text-primary)' }}>{c.nome}</span>

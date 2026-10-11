@@ -1,5 +1,6 @@
 import { formatarBRL } from '@/pages/utils/formato';
-import { rotuloLabel, valorGrande } from '../../../../constantes';
+import { Rotulo } from '@/ds';
+import { valorGrande } from '../../../../constantes';
 
 export function ColunaDeResumo({
   rotulo,
@@ -23,7 +24,7 @@ export function ColunaDeResumo({
         borderLeft: divisor ? '1px solid var(--border-brand)' : undefined,
       }}
     >
-      <span style={rotuloLabel}>{rotulo}</span>
+      <Rotulo>{rotulo}</Rotulo>
       <span style={{ ...valorGrande, color: cor }}>{formatarBRL(valor)}</span>
     </div>
   );
