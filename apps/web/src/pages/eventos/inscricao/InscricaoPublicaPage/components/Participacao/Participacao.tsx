@@ -1,5 +1,6 @@
 import type { Hospedagem, NivelDeContribuicao, Refeicao } from '@cdd/contracts';
 import { Button, Cartao, Icon, Rotulo, TextField, type Density } from '@/ds';
+import { lerValorDigitado } from '@/lib/numero';
 import { formatarBRL, formatarDinheiro, pluralizar } from '@/pages/utils/formato';
 import { eventoDoLink } from '../../../mocks/linkDaCerimonia';
 import { Passos } from '../Passos';
@@ -33,7 +34,7 @@ export function Participacao(props: ParticipacaoProps) {
   const campo = props.densidade === 'field';
   const social = eventoDoLink.contribuicoes[0]!.valor;
   const prospero = eventoDoLink.contribuicoes[2]!.valor;
-  const digitado = Math.round(Number(props.valor.replace(/\./g, '').replace(',', '.')) * 100) || 0;
+  const digitado = Math.round(lerValorDigitado(props.valor) * 100) || 0;
 
   return (
     <Passos

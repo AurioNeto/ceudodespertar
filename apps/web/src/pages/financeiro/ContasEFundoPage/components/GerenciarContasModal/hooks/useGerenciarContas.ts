@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import type { Conta, ContaId, Fundo, FundoId } from '@cdd/contracts';
 import { reais } from '@cdd/contracts';
+import { lerValorDigitado } from '@/lib/numero';
 import { formatarDinheiro } from '@/pages/utils/formato';
 import { contaVazia, fundoVazio } from '../utils/novos';
-import { paraNumero } from '../utils/paraNumero';
 
 type Aba = 'contas' | 'fundos';
 type Formulario = { modo: 'conta'; conta: Conta } | { modo: 'fundo'; fundo: Fundo; valor: string } | null;
@@ -19,7 +19,8 @@ export function useGerenciarContas(onSalvarConta: (conta: Conta) => void, onSalv
       onSalvarConta(form.conta);
     } else {
       if (!form.fundo.nome.trim()) return;
-      onSalvarFundo({ ...form.fundo, valorReservado: reais(paraNumero(form.valor)) });
+      const lido = lerValorDigitado(form.valor);
+      onSalvarFundo({ ...form.fundo, valorReservado: reais(Number.isNaN(lido) ? 0 : lido) });
     }
     setForm(null);
   };

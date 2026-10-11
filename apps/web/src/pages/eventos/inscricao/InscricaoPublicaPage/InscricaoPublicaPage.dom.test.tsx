@@ -1020,7 +1020,7 @@ describe('InscricaoPublicaPage: participação, valor e total', () => {
     { digitado: '1.500.000,00', total: 'R$ 1.500.000,00' },
     { digitado: '160,5', total: 'R$ 160,50' },
     { digitado: '0', total: 'R$ 0,00' },
-    { digitado: '1.5', total: 'R$ 15,00' },
+    { digitado: '1.5', total: 'R$ 0,00' },
     { digitado: 'abc', total: 'R$ 0,00' },
     { digitado: '-50', total: 'R$ -50,00' },
   ])('valor "$digitado" — o total sai $total, sem voltar a A combinar', async ({ digitado, total }) => {

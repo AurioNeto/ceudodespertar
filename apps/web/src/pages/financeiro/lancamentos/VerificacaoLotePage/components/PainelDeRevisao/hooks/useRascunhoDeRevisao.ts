@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import type { ItemNaFila } from '@cdd/contracts';
 import { reais } from '@cdd/contracts';
+import { lerValorDigitado } from '@/lib/numero';
 import { formatarDinheiro } from '@/pages/utils/formato';
-import { paraNumero } from '../utils/paraNumero';
 
 export function useRascunhoDeRevisao(item: ItemNaFila) {
   const [rascunho, setRascunho] = useState<ItemNaFila>(item);
@@ -15,7 +15,8 @@ export function useRascunhoDeRevisao(item: ItemNaFila) {
 
   const alterarValor = (v: string) => {
     setValorTexto(v);
-    alterar('valor', reais(paraNumero(v)));
+    const lido = lerValorDigitado(v);
+    alterar('valor', reais(Number.isNaN(lido) ? 0 : lido));
   };
 
   const abrirDevolucao = () => setDevolvendo(true);

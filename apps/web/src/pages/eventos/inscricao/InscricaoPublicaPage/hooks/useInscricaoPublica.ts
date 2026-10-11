@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import type { Hospedagem, NivelDeContribuicao, Refeicao } from '@cdd/contracts';
+import { lerValorDigitado } from '@/lib/numero';
 import { eventoDoLink } from '../../mocks/linkDaCerimonia';
 import { NOVO_VAZIO } from '../constantes';
 import { cadastros, formularioInteiro, type CadastroEncontrado } from '../mocks/inscricaoPublica';
@@ -76,7 +77,7 @@ export function useInscricaoPublica() {
   );
 
   const opcaoHosp = eventoDoLink.hospedagens.find((h) => h.tipo === hospedagem)!;
-  const contribuicao = Math.round(Number(valor.replace(/\./g, '').replace(',', '.')) * 100) || 0;
+  const contribuicao = Math.round(lerValorDigitado(valor) * 100) || 0;
   const custoHospedagem = opcaoHosp.valorDiaria * dias;
   const custoRefeicoes = refeicoes.reduce(
     (s, r) => s + (eventoDoLink.refeicoes.find((x) => x.refeicao === r)?.valor ?? 0),

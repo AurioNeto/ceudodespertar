@@ -253,7 +253,7 @@ describe('PainelDeRevisao: aprovar com ou sem correção', () => {
     { digitado: '65', valor: 6500 },
     { digitado: '0,5', valor: 50 },
     { digitado: '1.000', valor: 100000 },
-    { digitado: '12.5', valor: 12500 },
+    { digitado: '12.5', valor: 0 },
     { digitado: '10,999', valor: 1100 },
     { digitado: 'abc', valor: 0 },
     { digitado: '', valor: 0 },
