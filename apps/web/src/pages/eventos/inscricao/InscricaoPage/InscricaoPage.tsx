@@ -57,7 +57,7 @@ export function InscricaoPage() {
 
         <EscolhaDoEvento eventoId={tela.eventoId} onTrocar={tela.trocarEvento} densidade={densidade} />
 
-        <LinkDaCerimonia densidade={densidade} copiado={tela.linkCopiado} onCopiar={tela.copiarLink} />
+        <LinkDaCerimonia link={tela.link} densidade={densidade} copiado={tela.linkCopiado} onCopiar={tela.copiarLink} />
 
         {tela.pessoa === null ? (
           <BuscaDePessoa busca={tela.busca} onBusca={tela.buscar} onEscolher={tela.escolher} densidade={densidade} />

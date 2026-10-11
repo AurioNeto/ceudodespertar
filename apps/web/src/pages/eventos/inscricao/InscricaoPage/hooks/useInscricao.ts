@@ -9,6 +9,7 @@ import type {
 import { lerValorDigitado } from '@/lib/numero';
 import { pluralizar } from '@/pages/utils/formato';
 import { eventos } from '../../mocks/eventos';
+import { linkDoEvento } from '../../mocks/linkDaCerimonia';
 import { CONSAGRA_POR_PADRAO } from '../constantes';
 import type { PessoaDoDiretorio } from '../mocks/inscricao';
 import type { Pendencia } from '../tipos';
@@ -18,6 +19,7 @@ import { pendenciasDaInscricao } from '../utils/pendenciasDaInscricao';
 export function useInscricao() {
   const [eventoId, setEventoId] = useState(eventos[0]!.id as string);
   const evento = eventos.find((e) => (e.id as string) === eventoId)!;
+  const link = linkDoEvento(evento.id);
 
   const [busca, setBusca] = useState('');
   const [pessoa, setPessoa] = useState<PessoaDoDiretorio | null>(null);
@@ -177,6 +179,7 @@ export function useInscricao() {
 
   return {
     evento,
+    link,
     eventoId,
     busca,
     pessoa,

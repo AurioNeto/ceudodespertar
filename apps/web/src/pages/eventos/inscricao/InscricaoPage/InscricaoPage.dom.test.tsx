@@ -189,13 +189,13 @@ describe('InscricaoPage: abertura e escolha do evento', () => {
     expect(linkEstaCopiado(container)).toBe(true);
   });
 
-  it('evento trocado para a Jornada — o cartão do link continua com o endereço e os números da Lua Cheia', async () => {
+  it('evento trocado para a Jornada — o cartão do link passa ao endereço e aos números da Jornada', async () => {
     const container = await abrir();
 
     await trocarEvento(container, JORNADA);
 
-    expect(folhaComTexto(container, 'code', 'ceudodespertar.org/i/lua-cheia-1209-7k3f')).toBeDefined();
-    expect(folhaComTexto(container, 'span', '96 aberturas · 34 inscrições')).toBeDefined();
+    expect(folhaComTexto(container, 'code', 'ceudodespertar.org/i/jornada-2410-q8m2')).toBeDefined();
+    expect(folhaComTexto(container, 'span', '61 aberturas · 14 inscrições')).toBeDefined();
     expect(folhaComTexto(container, 'span', '18 de 40 · 11 leitos livres')).toBeDefined();
   });
 
