@@ -1017,14 +1017,14 @@ describe('InscricaoPage: contribuição', () => {
     expect(pendenciasMostradas(container)).toEqual(SEM_PENDENCIA);
   });
 
-  it('trocar de evento com um nível marcado — o nível e o texto do campo ficam, e o valor do nível muda', async () => {
+  it('trocar de evento com um nível marcado — o nível e o valor do campo recomeçam, e os níveis passam a mostrar os valores da Jornada', async () => {
     const container = await abrirComPessoa('Helena Duarte');
     await clicarNoNivel(container, 'Sustentável');
 
     await trocarEvento(container, JORNADA);
 
-    expect(marcado(botaoDoNivel(container, 'Sustentável'))).toBe(true);
-    expect(campoDoValor(container).value).toBe('160,00');
+    expect(marcado(botaoDoNivel(container, 'Sustentável'))).toBe(false);
+    expect(campoDoValor(container).value).toBe('');
     expect(elemento(botaoDoNivel(container, 'Sustentável'), '[data-numeric]').textContent).toBe('R$ 360,00');
     expect(textoDe(container)).not.toContain('No nível sustentável.');
   });
@@ -1123,7 +1123,7 @@ describe('InscricaoPage: hospedagem e leito', () => {
     expect(textoDe(container)).toContain('R$ 270,00 de acomodação, à parte da contribuição.');
   });
 
-  it('diárias escolhidas para uma pessoa e outra pessoa escolhida em seguida — a segunda abre o beliche com as diárias da primeira', async () => {
+  it('diárias escolhidas para uma pessoa e outra pessoa escolhida em seguida — a segunda abre o beliche em 1 diária', async () => {
     const container = await abrirComPessoa('Helena Duarte');
     await escolherHospedagem(container, 'Beliche no dormitório');
     await escolherDiarias(container, '3');
@@ -1132,19 +1132,19 @@ describe('InscricaoPage: hospedagem e leito', () => {
 
     await escolherHospedagem(container, 'Beliche no dormitório');
 
-    expect(seletorDeDiarias(container).value).toBe('3');
-    expect(textoDe(container)).toContain('R$ 150,00 de acomodação, à parte da contribuição.');
+    expect(seletorDeDiarias(container).value).toBe('1');
+    expect(textoDe(container)).toContain('R$ 50,00 de acomodação, à parte da contribuição.');
   });
 
-  it('diárias escolhidas e evento trocado — a Jornada mantém as diárias e o custo da acomodação', async () => {
+  it('diárias escolhidas e evento trocado — a Jornada volta a 1 diária e ao custo de uma diária de acomodação', async () => {
     const container = await abrirComPessoa('Helena Duarte');
     await escolherHospedagem(container, 'Beliche no dormitório');
     await escolherDiarias(container, '3');
 
     await trocarEvento(container, JORNADA);
 
-    expect(seletorDeDiarias(container).value).toBe('3');
-    expect(textoDe(container)).toContain('R$ 150,00 de acomodação, à parte da contribuição.');
+    expect(seletorDeDiarias(container).value).toBe('1');
+    expect(textoDe(container)).toContain('R$ 50,00 de acomodação, à parte da contribuição.');
   });
 
   it('Beliche — abre a pendência IN9 com o rótulo em minúsculas e os leitos livres do evento', async () => {
@@ -1662,7 +1662,7 @@ describe('InscricaoPage: confirmar e salvar como pendente', () => {
     expect(linkEstaCopiado(container)).toBe(true);
   });
 
-  it('Jornada, beliche e três diárias, inscrição salva como pendente — a Jornada fica marcada e a próxima pessoa abre o beliche em três diárias', async () => {
+  it('Jornada, beliche e três diárias, inscrição salva como pendente — a Jornada fica marcada e a próxima pessoa abre o beliche em 1 diária', async () => {
     const container = await abrirComPessoa('Helena Duarte');
     await trocarEvento(container, JORNADA);
     await escolherHospedagem(container, 'Beliche no dormitório');
@@ -1673,11 +1673,11 @@ describe('InscricaoPage: confirmar e salvar como pendente', () => {
     await escolherHospedagem(container, 'Beliche no dormitório');
 
     expect(marcado(botaoComTexto(container, JORNADA))).toBe(true);
-    expect(seletorDeDiarias(container).value).toBe('3');
-    expect(textoDe(container)).toContain('R$ 150,00 de acomodação, à parte da contribuição.');
+    expect(seletorDeDiarias(container).value).toBe('1');
+    expect(textoDe(container)).toContain('R$ 50,00 de acomodação, à parte da contribuição.');
   });
 
-  it('Jornada, beliche e três diárias, inscrição confirmada — a Jornada fica marcada e a próxima pessoa abre o beliche em três diárias', async () => {
+  it('Jornada, beliche e três diárias, inscrição confirmada — a Jornada fica marcada e a próxima pessoa abre o beliche em 1 diária', async () => {
     const container = await abrirComPessoa('Sérgio Bittencourt');
     await trocarEvento(container, JORNADA);
     await escolherHospedagem(container, 'Beliche no dormitório');
@@ -1689,8 +1689,8 @@ describe('InscricaoPage: confirmar e salvar como pendente', () => {
     await escolherHospedagem(container, 'Beliche no dormitório');
 
     expect(marcado(botaoComTexto(container, JORNADA))).toBe(true);
-    expect(seletorDeDiarias(container).value).toBe('3');
-    expect(textoDe(container)).toContain('R$ 150,00 de acomodação, à parte da contribuição.');
+    expect(seletorDeDiarias(container).value).toBe('1');
+    expect(textoDe(container)).toContain('R$ 50,00 de acomodação, à parte da contribuição.');
   });
 });
 

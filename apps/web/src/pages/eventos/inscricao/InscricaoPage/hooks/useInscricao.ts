@@ -40,6 +40,12 @@ export function useInscricao() {
   const [recado, setRecado] = useState<string | null>(null);
   const [linkCopiado, setLinkCopiado] = useState(false);
 
+  const recomecarContribuicaoEDiarias = () => {
+    setNivel(null);
+    setValor('');
+    setDias(1);
+  };
+
   const escolher = (p: PessoaDoDiretorio) => {
     setPessoa(p);
     setBusca('');
@@ -50,8 +56,7 @@ export function useInscricao() {
     setAcolhimentoFeito(p.acolhimento === 'REALIZADO');
     setResponsavel('');
     setModalidade('PERMANECE_SOB_SUPERVISAO');
-    setNivel(null);
-    setValor('');
+    recomecarContribuicaoEDiarias();
     setHospedagem('SEM_HOSPEDAGEM');
     setLeitoAlocado(false);
     setRefeicoes([]);
@@ -133,7 +138,9 @@ export function useInscricao() {
   const fecharRecado = () => setRecado(null);
 
   const trocarEvento = (v: string) => {
+    if (v === eventoId) return;
     setEventoId(v);
+    recomecarContribuicaoEDiarias();
     setRefeicoes([]);
     setLeitoAlocado(false);
   };
