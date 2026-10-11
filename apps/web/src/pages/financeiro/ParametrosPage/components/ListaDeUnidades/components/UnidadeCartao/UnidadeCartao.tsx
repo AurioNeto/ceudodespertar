@@ -1,5 +1,5 @@
 import { StatusBadge, Cartao, type Density } from '@/ds';
-import { formatarDinheiro } from '@/pages/utils/formato';
+import { formatarBRL } from '@/pages/utils/formato';
 import { REGIME_ROTULO } from '../../../../constantes';
 import type { UnidadeDoPlano } from '../../../../mocks/parametros';
 
@@ -34,7 +34,7 @@ export function UnidadeCartao({ unidade: u, densidade }: { unidade: UnidadeDoPla
               Faturamento no ano contra o teto do regime
             </span>
             <span data-numeric style={{ font: 'var(--text-amount)', color: 'var(--text-primary)' }}>
-              {formatarDinheiro(u.faturamentoNoAno)} de {formatarDinheiro(u.tetoFaturamentoAnual)}
+              {formatarBRL(u.faturamentoNoAno)} de {formatarBRL(u.tetoFaturamentoAnual)}
             </span>
           </div>
           <div style={{ height: 8, borderRadius: 'var(--radius-pill)', background: 'var(--bg-sunken)', overflow: 'hidden' }}>
