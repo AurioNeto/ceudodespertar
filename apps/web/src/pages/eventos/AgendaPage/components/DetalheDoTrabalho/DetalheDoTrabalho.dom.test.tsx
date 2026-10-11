@@ -433,7 +433,7 @@ describe('DetalheDoTrabalho: anamnese e participantes', () => {
     const { container } = await montarDetalhe({ trabalho: umTrabalho({ id: 9, confirmados: 1, contribuicoes: [60] }) });
 
     expect(linhasDeParticipantes(container)[0]!.textContent).toBe(
-      'Eduardo Munayfardado desde 2008Anamnese em diaConfirmadoR$ 60,00',
+      'Eduardo Munayfardado desde 2008Anamnese em diaConfirmadoR$60,00',
     );
   });
 

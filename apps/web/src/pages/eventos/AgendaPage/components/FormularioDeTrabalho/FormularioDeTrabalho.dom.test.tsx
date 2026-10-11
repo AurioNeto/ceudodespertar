@@ -1,3 +1,4 @@
+import { act } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { botaoComTexto, clicar, desmontarTudo, digitar, elemento, escolherOpcao, montar, todos } from '@/testes/montagem';
 import { FormularioDeTrabalho } from './FormularioDeTrabalho';
@@ -9,7 +10,7 @@ afterEach(desmontarTudo);
 const montarFormulario = async (inicial: RascunhoDeTrabalho = rascunhoVazio()) => {
   const props = { inicial, onCancelar: vi.fn(), onSalvar: vi.fn<(rascunho: RascunhoDeTrabalho) => void>() };
   const montado = await montar(<FormularioDeTrabalho {...props} />);
-  return { ...montado, props };
+  return { ...montado, container: document.body, props };
 };
 
 const entradaDaTarefa = (container: HTMLElement, posicao: number) =>
@@ -50,7 +51,7 @@ describe('FormularioDeTrabalho: campos', () => {
     const { container } = await montarFormulario();
 
     expect(container.textContent).toContain('Nova cerimônia');
-    expect(botaoPeloRotuloAcessivel(container, 'fechar')).toBeDefined();
+    expect(botaoPeloRotuloAcessivel(container, 'Fechar')).toBeDefined();
   });
 
   it('rascunho de um trabalho existente — o título é Editar cerimônia', async () => {
@@ -210,7 +211,7 @@ describe('FormularioDeTrabalho: salvar e fechar', () => {
   it('x do cabeçalho — chama onCancelar uma vez', async () => {
     const { container, props } = await montarFormulario();
 
-    await clicar(botaoPeloRotuloAcessivel(container, 'fechar'));
+    await clicar(botaoPeloRotuloAcessivel(container, 'Fechar'));
 
     expect(props.onCancelar).toHaveBeenCalledTimes(1);
   });
@@ -218,7 +219,11 @@ describe('FormularioDeTrabalho: salvar e fechar', () => {
   it('clique no fundo escurecido — chama onCancelar', async () => {
     const { container, props } = await montarFormulario();
 
-    await clicar(container.firstElementChild as HTMLElement);
+    const fundo = elemento(container, '[data-testid="painel-de-acao-fundo"]');
+    await act(async () => {
+      fundo.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true }));
+    });
+    await clicar(fundo);
 
     expect(props.onCancelar).toHaveBeenCalledTimes(1);
   });

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { Dormitorio, Leito } from '@cdd/contracts';
-import { Button, Cartao, Select, StatusBadge, TextField, type Density } from '@/ds';
+import { Button, Cartao, ListaDividida, Select, StatusBadge, TextField, type Density } from '@/ds';
 import { pluralizar } from '@/pages/utils/formato';
 import { TIPO_LEITO_ROTULO } from '../../constantes';
 import { QuestaoAberta } from './components/QuestaoAberta';
@@ -69,20 +69,9 @@ export function Cadastro({
             </span>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            {d.leitos.map((l, i) => (
-              <div
-                key={l.id}
-                style={{
-                  display: 'flex',
-                  flexWrap: 'wrap',
-                  gap: '6px 12px',
-                  alignItems: 'center',
-                  padding: '9px 0',
-                  borderTop: i === 0 ? undefined : '1px solid var(--color-line)',
-                  opacity: l.ativo ? 1 : 0.6,
-                }}
-              >
+          <ListaDividida itens={d.leitos} chave={(l) => l.id} alinhamento="centro" esmaecido={(l) => !l.ativo}>
+            {(l) => (
+              <>
                 <span style={{ font: 'var(--text-body)', color: 'var(--text-primary)', flex: 1, minWidth: 130 }}>
                   {l.identificacao}
                 </span>
@@ -108,9 +97,9 @@ export function Cadastro({
                     </Button>
                   );
                 })()}
-              </div>
-            ))}
-          </div>
+              </>
+            )}
+          </ListaDividida>
 
           {novoEm === (d.id as string) ? (
             <div

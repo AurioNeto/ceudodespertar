@@ -1,7 +1,6 @@
-import { Button } from '@/ds';
+import { Button, Numero } from '@/ds';
 import type { ParticipanteDoTrabalho } from '../../../../tipos';
 import { Bloco } from '../Bloco';
-import { Numero } from '../Numero';
 import { VERSAO_DO_FORMULARIO } from './mocks/formulario';
 
 export interface AnamneseDoTrabalhoProps {
@@ -23,10 +22,10 @@ export function AnamneseDoTrabalho({ semAnamnese, vencidas, emDia, comAtencao, o
       }
     >
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(140px,1fr))', gap: 12 }}>
-        <Numero rotulo="Em dia" valor={`${emDia.length}`} cor="var(--color-confirmed)" />
-        <Numero rotulo="Vencidas" valor={`${vencidas.length}`} cor="var(--color-suggest)" />
-        <Numero rotulo="Sem resposta" valor={`${semAnamnese.length}`} cor="var(--color-pending)" />
-        <Numero rotulo="Pontos de atenção" valor={`${comAtencao.length}`} cor="var(--color-attention)" />
+        <Numero destaque rotulo="Em dia" valor={`${emDia.length}`} cor="var(--color-confirmed)" />
+        <Numero destaque rotulo="Vencidas" valor={`${vencidas.length}`} cor="var(--color-suggest)" />
+        <Numero destaque rotulo="Sem resposta" valor={`${semAnamnese.length}`} cor="var(--color-pending)" />
+        <Numero destaque rotulo="Pontos de atenção" valor={`${comAtencao.length}`} cor="var(--color-attention)" />
       </div>
 
       {comAtencao.length ? (

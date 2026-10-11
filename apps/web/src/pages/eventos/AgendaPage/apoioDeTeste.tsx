@@ -69,7 +69,7 @@ export const chipDoCalendario = (origem: ParentNode, nome: string): HTMLButtonEl
 export const botaoPeloRotuloAcessivel = (origem: ParentNode, rotulo: string) =>
   elemento<HTMLButtonElement>(origem, `button[aria-label="${rotulo}"]`);
 
-export const formularioAberto = (origem: ParentNode) => elemento<HTMLDivElement>(origem, 'div[style*="position: fixed"]');
+export const formularioAberto = () => elemento<HTMLDivElement>(document.body, '[role="dialog"]');
 
 export const textoDoNumero = (origem: ParentNode, rotulo: string): string => {
   const etiqueta = todos<HTMLSpanElement>(origem, 'span').find(

@@ -1,8 +1,7 @@
-import { Button, Cartao, Rotulo, StatusBadge, type Density } from '@/ds';
+import { AmountDisplay, Button, Cartao, Leitura, Rotulo, StatusBadge, type Density } from '@/ds';
 import { formatarBRL, formatarCompetencia, pluralizar } from '@/pages/utils/formato';
 import type { DevolucaoNaFila } from '../../mocks/devolucoes';
 import { diasEsperando } from '../../utils/diasEsperando';
-import { Linha } from './components/Linha';
 import { PainelDePagamento } from './components/PainelDePagamento';
 
 export interface CartaoDeDevolucaoProps {
@@ -46,22 +45,14 @@ export function CartaoDeDevolucao({
         {d.aContratante ? <StatusBadge tone="royal">Contratante</StatusBadge> : null}
         {dias > 30 ? <StatusBadge tone="attention">{pluralizar(dias, 'dia')} esperando</StatusBadge> : null}
         <span style={{ flex: 1 }} />
-        <span data-numeric style={{ font: 'var(--text-amount-lg)', color: 'var(--color-royal-deep)' }}>
-          {formatarBRL(d.valor)}
-        </span>
+        <AmountDisplay value={d.valor / 100} size="lg" style={{ color: 'var(--color-royal-deep)' }} />
       </div>
 
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px 16px' }}>
-        <Linha rotulo="Evento">
-          {d.evento} · {d.dataDoEvento}
-        </Linha>
-        <Linha rotulo="Pagou em">
-          {d.pagouEm} · {d.meioDoPagamento}
-        </Linha>
-        <Linha rotulo="Pediu em">
-          {d.solicitadaEm} · há {pluralizar(dias, 'dia')}
-        </Linha>
-        <Linha rotulo="Quem registrou">{d.solicitadaPor}</Linha>
+        <Leitura rotulo="Evento" valor={`${d.evento} · ${d.dataDoEvento}`} tamanho="pequeno" />
+        <Leitura rotulo="Pagou em" valor={`${d.pagouEm} · ${d.meioDoPagamento}`} tamanho="pequeno" />
+        <Leitura rotulo="Pediu em" valor={`${d.solicitadaEm} · há ${pluralizar(dias, 'dia')}`} tamanho="pequeno" />
+        <Leitura rotulo="Quem registrou" valor={d.solicitadaPor} tamanho="pequeno" />
       </div>
 
       <div

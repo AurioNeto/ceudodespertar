@@ -126,7 +126,7 @@ describe('DevolucoesPage: cartões da fila', () => {
     const { container } = await montar(<DevolucoesPage />);
 
     expect(cartaoDaFila(container, CARLOS).textContent).toBe(
-      'Carlos MenezesR$ 210,00' +
+      'Carlos MenezesR$210,00' +
         'EventoTrabalho de Cura · 22/08/2026' +
         'Pagou em14/08/2026 · Pix · Cora PJ' +
         'Pediu em25/08/2026 · há 17 dias' +
@@ -141,7 +141,7 @@ describe('DevolucoesPage: cartões da fila', () => {
     const { container } = await montar(<DevolucoesPage />);
 
     expect(cartaoDaFila(container, OTAVIO).textContent).toBe(
-      'Otávio Lins54 dias esperandoR$ 540,00' +
+      'Otávio Lins54 dias esperandoR$540,00' +
         'EventoJornada de julho · 18/07/2026' +
         'Pagou em02/07/2026 · Pix · Cora PJ' +
         'Pediu em19/07/2026 · há 54 dias' +
@@ -156,7 +156,7 @@ describe('DevolucoesPage: cartões da fila', () => {
     const { container } = await montar(<DevolucoesPage />);
 
     expect(cartaoDaFila(container, INSTITUTO).textContent).toBe(
-      'Instituto Semente VivaContratanteR$ 1.800,00' +
+      'Instituto Semente VivaContratanteR$1.800,00' +
         'EventoCerimônia contratada · 30/08/2026' +
         'Pagou em10/08/2026 · Transferência · Cora PJ' +
         'Pediu em28/08/2026 · há 14 dias' +
@@ -309,8 +309,8 @@ describe('DevolucoesPage: confirmar a devolução', () => {
     await confirmar(cartaoDaFila(container, CARLOS));
 
     expect(jaDevolvidas(container)).toEqual([
-      'Carlos MenezesTrabalho de Cura · 22/08 · 11/09/2026 · Cora PJsai-8712R$ 210,00',
-      'Helena DuarteConcentração · 12/07 · 24/07/2026 · Cora PJsai-8402R$ 160,00',
+      'Carlos MenezesTrabalho de Cura · 22/08 · 11/09/2026 · Cora PJsai-8712R$210,00',
+      'Helena DuarteConcentração · 12/07 · 24/07/2026 · Cora PJsai-8402R$160,00',
     ]);
   });
 
@@ -333,7 +333,7 @@ describe('DevolucoesPage: confirmar a devolução', () => {
 
     await confirmar(cartaoDaFila(container, CARLOS));
 
-    expect(jaDevolvidas(container)[0]).toBe('Carlos MenezesTrabalho de Cura · 22/08 · 15/09/2026 · Espéciesai-8712R$ 210,00');
+    expect(jaDevolvidas(container)[0]).toBe('Carlos MenezesTrabalho de Cura · 22/08 · 15/09/2026 · Espéciesai-8712R$210,00');
     expect(recadoDaTela(container)).toContain('devolvidos a Carlos Menezes por Espécie.');
   });
 
@@ -348,7 +348,7 @@ describe('DevolucoesPage: confirmar a devolução', () => {
       'R$ 540,00 devolvidos a Otávio Lins por Cora PJ. A saída entrou na competência 09/2026, vinculada ao evento Jornada de julho; lanc-8390 não foi alterado. ' +
         'Motivo registrado: “Julho já foi prestado e fechado.”',
     );
-    expect(jaDevolvidas(container)[0]).toBe('Otávio LinsJornada de julho · 18/07 · 11/09/2026 · Cora PJsai-8390R$ 540,00');
+    expect(jaDevolvidas(container)[0]).toBe('Otávio LinsJornada de julho · 18/07 · 11/09/2026 · Cora PJsai-8390R$540,00');
   });
 
   it('data da saída apagada — recusa com a mensagem no campo e a devolução segue na fila', async () => {
@@ -370,7 +370,7 @@ describe('DevolucoesPage: confirmar a devolução', () => {
     await confirmar(cartaoDaFila(container, INSTITUTO));
 
     expect(jaDevolvidas(container)[0]).toBe(
-      'Instituto Semente VivaCerimônia contratada · 30/08 · 11/09/2026 · Cora PJsai-8801R$ 1.800,00',
+      'Instituto Semente VivaCerimônia contratada · 30/08 · 11/09/2026 · Cora PJsai-8801R$1.800,00',
     );
   });
 
@@ -456,9 +456,9 @@ describe('DevolucoesPage: o que a tela explica', () => {
 
     expect(cartao.textContent).toContain('3 pessoas · R$ 600,00 que continuam com a casa');
     expect(itensDaListaDoCartao(cartao)).toEqual([
-      'Rosa SilveiraTrabalho de Cura · 22/08R$ 160,00',
-      'Tobias AguiarTrabalho de Cura · 22/08R$ 80,00',
-      'Bruna CamargoJornada de julho · 18/07R$ 360,00',
+      'Rosa SilveiraTrabalho de Cura · 22/08R$160,00',
+      'Tobias AguiarTrabalho de Cura · 22/08R$80,00',
+      'Bruna CamargoJornada de julho · 18/07R$360,00',
     ]);
   });
 
@@ -474,7 +474,7 @@ describe('DevolucoesPage: o que a tela explica', () => {
   it('já devolvidas — começa com uma devolução da Helena Duarte', async () => {
     const { container } = await montar(<DevolucoesPage />);
 
-    expect(jaDevolvidas(container)).toEqual(['Helena DuarteConcentração · 12/07 · 24/07/2026 · Cora PJsai-8402R$ 160,00']);
+    expect(jaDevolvidas(container)).toEqual(['Helena DuarteConcentração · 12/07 · 24/07/2026 · Cora PJsai-8402R$160,00']);
   });
 });
 

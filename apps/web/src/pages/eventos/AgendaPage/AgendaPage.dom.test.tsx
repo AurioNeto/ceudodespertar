@@ -38,7 +38,7 @@ const mesNaTela = (container: HTMLElement) => textoDaFolhaQueCasaCom(container, 
 const contagemDoMes = (container: HTMLElement) =>
   textoDaFolhaQueCasaCom(container, /^(nenhuma cerimônia|\d+ cerimônias? no mês)$/);
 const avisoDaAgenda = (container: HTMLElement) =>
-  container.querySelector('button[aria-label="fechar aviso"]')?.parentElement?.textContent ?? null;
+  container.querySelector('button[aria-label="fechar aviso"]')?.previousElementSibling?.textContent ?? null;
 const itensDaLista = (container: HTMLElement) =>
   todos<HTMLButtonElement>(container, 'button').filter((botao) => /^\d{2}\/\d{2}/.test(botao.textContent ?? ''));
 const textosDaLista = (container: HTMLElement) => itensDaLista(container).map((item) => item.textContent);
@@ -61,7 +61,7 @@ interface DadosDaCerimonia {
 
 async function preencherEEnviarNovaCerimonia(container: HTMLElement, dados: DadosDaCerimonia) {
   await clicar(botaoComTexto(container, 'Nova cerimônia'));
-  const formulario = formularioAberto(container);
+  const formulario = formularioAberto();
   await digitar(campoDoRotulo(formulario, 'Nome'), dados.nome);
   await digitar(campoDoRotulo(formulario, 'Data'), dados.data ?? DATA_PADRAO_DA_CERIMONIA);
   if (dados.previstos !== undefined) await digitar(campoDoRotulo(formulario, 'Previstos'), dados.previstos);
@@ -579,7 +579,7 @@ describe('AgendaPage: nova cerimônia', () => {
 
     await clicar(botaoComTexto(container, 'Nova cerimônia'));
 
-    const formulario = formularioAberto(container);
+    const formulario = formularioAberto();
     expect(campoDoRotulo(formulario, 'Nome').value).toBe('');
     expect(campoDoRotulo<HTMLSelectElement>(formulario, 'Tipo').value).toBe('Concentração');
     expect(campoDoRotulo(formulario, 'Horário').value).toBe('20:00 às 04:00');
@@ -589,11 +589,11 @@ describe('AgendaPage: nova cerimônia', () => {
   it('formulário — fechar sem salvar não cria nada e não avisa', async () => {
     const { container } = await montar(<AgendaPage />);
     await clicar(botaoComTexto(container, 'Nova cerimônia'));
-    await digitar(campoDoRotulo(formularioAberto(container), 'Nome'), 'Rascunho abandonado');
+    await digitar(campoDoRotulo(formularioAberto(), 'Nome'), 'Rascunho abandonado');
 
-    await clicar(botaoComTexto(formularioAberto(container), 'Cancelar'));
+    await clicar(botaoComTexto(formularioAberto(), 'Cancelar'));
 
-    expect(container.querySelector('div[style*="position: fixed"]')).toBeNull();
+    expect(document.querySelector('[role="dialog"]')).toBeNull();
     expect(avisoDaAgenda(container)).toBeNull();
     expect(contagemDoMes(container)).toBe('4 cerimônias no mês');
   });
@@ -603,7 +603,7 @@ describe('AgendaPage: nova cerimônia', () => {
 
     await preencherEEnviarNovaCerimonia(container, { nome: 'Cerimônia de teste', data: '' });
 
-    expect(formularioAberto(container).textContent).toContain(MENSAGEM_DE_DATA_INVALIDA);
+    expect(formularioAberto().textContent).toContain(MENSAGEM_DE_DATA_INVALIDA);
     expect(avisoDaAgenda(container)).toBeNull();
     expect(contagemDoMes(container)).toBe('4 cerimônias no mês');
   });
@@ -614,7 +614,7 @@ describe('AgendaPage: nova cerimônia', () => {
 
     await preencherEEnviarNovaCerimonia(container, { nome: 'Cerimônia de agosto', data: '' });
 
-    expect(formularioAberto(container).textContent).toContain(MENSAGEM_DE_DATA_INVALIDA);
+    expect(formularioAberto().textContent).toContain(MENSAGEM_DE_DATA_INVALIDA);
     expect(mesNaTela(container)).toBe('agosto de 2026');
     expect(chipsDoCalendario(container).map((chip) => chip.textContent)).not.toContain('Cerimônia de agosto');
   });
@@ -633,7 +633,7 @@ describe('AgendaPage: nova cerimônia', () => {
 
     await preencherEEnviarNovaCerimonia(container, { nome: 'Cerimônia impossível', data: '31/02/2026' });
 
-    expect(formularioAberto(container).textContent).toContain(MENSAGEM_DE_DATA_INVALIDA);
+    expect(formularioAberto().textContent).toContain(MENSAGEM_DE_DATA_INVALIDA);
     expect(mesNaTela(container)).toBe('setembro de 2026');
     expect(contagemDoMes(container)).toBe('4 cerimônias no mês');
   });
@@ -643,7 +643,7 @@ describe('AgendaPage: nova cerimônia', () => {
 
     await preencherEEnviarNovaCerimonia(container, { nome: 'Cerimônia sem data certa', data: 'em breve' });
 
-    expect(formularioAberto(container).textContent).toContain(MENSAGEM_DE_DATA_INVALIDA);
+    expect(formularioAberto().textContent).toContain(MENSAGEM_DE_DATA_INVALIDA);
     expect(mesNaTela(container)).toBe('setembro de 2026');
     expect(nomesPorDiaNoCalendario(container)['1']).toBeUndefined();
   });
@@ -727,9 +727,9 @@ describe('AgendaPage: nova cerimônia', () => {
 
       await preencherEEnviarNovaCerimonia(container, { nome: 'Cerimônia de teste', contribuicoes: digitado });
 
-      const campo = campoDoRotulo(formularioAberto(container), 'Contribuições sugeridas');
+      const campo = campoDoRotulo(formularioAberto(), 'Contribuições sugeridas');
       expect(campo.getAttribute('aria-invalid')).toBe('true');
-      expect(formularioAberto(container).textContent).toContain('Use só valores inteiros em reais, separados por vírgula e espaço: 40, 60, 90.');
+      expect(formularioAberto().textContent).toContain('Use só valores inteiros em reais, separados por vírgula e espaço: 40, 60, 90.');
       expect(contagemDoMes(container)).toBe('4 cerimônias no mês');
     },
   );
@@ -771,7 +771,7 @@ describe('AgendaPage: nova cerimônia', () => {
   it('tarefas do formulário — tarefa em branco é descartada, o título e o responsável são aparados', async () => {
     const { container } = await montar(<AgendaPage />);
     await clicar(botaoComTexto(container, 'Nova cerimônia'));
-    const formulario = formularioAberto(container);
+    const formulario = formularioAberto();
     await digitar(campoDoRotulo(formulario, 'Nome'), 'Cerimônia de teste');
     await digitar(campoDoRotulo(formulario, 'Data'), DATA_PADRAO_DA_CERIMONIA);
     await digitar(elemento<HTMLInputElement>(formulario, 'input[aria-label="tarefa 1"]'), '  Varrer o pátio  ');
@@ -796,7 +796,7 @@ describe('AgendaPage: nova cerimônia', () => {
   it('cerimônia com todas as tarefas em branco — salva sem tarefas e a lista de preparo diz sem tarefas', async () => {
     const { container } = await montar(<AgendaPage />);
     await clicar(botaoComTexto(container, 'Nova cerimônia'));
-    const formulario = formularioAberto(container);
+    const formulario = formularioAberto();
     await digitar(campoDoRotulo(formulario, 'Nome'), 'Cerimônia de teste');
     await digitar(campoDoRotulo(formulario, 'Data'), DATA_PADRAO_DA_CERIMONIA);
     await digitar(elemento<HTMLInputElement>(formulario, 'input[aria-label="tarefa 1"]'), '');
@@ -811,7 +811,7 @@ describe('AgendaPage: nova cerimônia', () => {
   it('tipo escolhido no formulário — vale para o chip e para o selo do detalhe', async () => {
     const { container } = await montar(<AgendaPage />);
     await clicar(botaoComTexto(container, 'Nova cerimônia'));
-    const formulario = formularioAberto(container);
+    const formulario = formularioAberto();
     await digitar(campoDoRotulo(formulario, 'Nome'), 'Bailado novo');
     await digitar(campoDoRotulo(formulario, 'Data'), DATA_PADRAO_DA_CERIMONIA);
     await escolherOpcao(campoDoRotulo<HTMLSelectElement>(formulario, 'Tipo'), 'Bailado');
@@ -830,7 +830,7 @@ describe('AgendaPage: editar', () => {
 
     await clicar(botaoComTexto(container, 'Editar'));
 
-    const formulario = formularioAberto(container);
+    const formulario = formularioAberto();
     const valores = ['Nome', 'Data', 'Horário', 'Local', 'Dirigente', 'Previstos', 'Litros previstos', 'Contribuições sugeridas'].map(
       (rotulo) => campoDoRotulo(formulario, rotulo).value,
     );
@@ -842,12 +842,12 @@ describe('AgendaPage: editar', () => {
     const { container } = await montar(<AgendaPage />);
     await abrirDetalhe(container, 'Mãe Divina');
     await clicar(botaoComTexto(container, 'Editar'));
-    await digitar(campoDoRotulo(formularioAberto(container), 'Nome'), 'Mãe Divina — edição');
+    await digitar(campoDoRotulo(formularioAberto(), 'Nome'), 'Mãe Divina — edição');
 
-    await clicar(botaoComTexto(formularioAberto(container), 'Salvar cerimônia'));
+    await clicar(botaoComTexto(formularioAberto(), 'Salvar cerimônia'));
 
     expect(avisoDaAgenda(container)).toBe('Cerimônia atualizada.');
-    expect(container.querySelector('div[style*="position: fixed"]')).toBeNull();
+    expect(document.querySelector('[role="dialog"]')).toBeNull();
     expect(container.textContent).toContain('05/09 · Mãe Divina — edição');
     expect(container.textContent).toContain('Confirmada');
     expect(textoDoNumero(container, 'Confirmados')).toBe('Confirmados61de 84 previstos');
@@ -857,9 +857,9 @@ describe('AgendaPage: editar', () => {
     const { container } = await montar(<AgendaPage />);
     await abrirDetalhe(container, 'Mãe Divina');
     await clicar(botaoComTexto(container, 'Editar'));
-    await digitar(campoDoRotulo(formularioAberto(container), 'Dirigente'), 'Lucia Prado');
+    await digitar(campoDoRotulo(formularioAberto(), 'Dirigente'), 'Lucia Prado');
 
-    await clicar(botaoComTexto(formularioAberto(container), 'Salvar cerimônia'));
+    await clicar(botaoComTexto(formularioAberto(), 'Salvar cerimônia'));
 
     const texto = container.textContent ?? '';
     expect(texto).toContain('Salão principalLucia Prado9 L previstos');
@@ -870,8 +870,8 @@ describe('AgendaPage: editar', () => {
     const { container } = await montar(<AgendaPage />);
     await abrirDetalhe(container, 'Mãe Divina');
     await clicar(botaoComTexto(container, 'Editar'));
-    await digitar(campoDoRotulo(formularioAberto(container), 'Data'), '06/09/2026');
-    await clicar(botaoComTexto(formularioAberto(container), 'Salvar cerimônia'));
+    await digitar(campoDoRotulo(formularioAberto(), 'Data'), '06/09/2026');
+    await clicar(botaoComTexto(formularioAberto(), 'Salvar cerimônia'));
 
     await clicar(botaoComTexto(container, 'Voltar para a agenda'));
 
@@ -883,8 +883,8 @@ describe('AgendaPage: editar', () => {
     const { container } = await montar(<AgendaPage />);
     await abrirDetalhe(container, 'Mãe Divina');
     await clicar(botaoComTexto(container, 'Editar'));
-    await digitar(campoDoRotulo(formularioAberto(container), 'Data'), '10/10/2026');
-    await clicar(botaoComTexto(formularioAberto(container), 'Salvar cerimônia'));
+    await digitar(campoDoRotulo(formularioAberto(), 'Data'), '10/10/2026');
+    await clicar(botaoComTexto(formularioAberto(), 'Salvar cerimônia'));
 
     await clicar(botaoComTexto(container, 'Voltar para a agenda'));
 
@@ -897,11 +897,11 @@ describe('AgendaPage: editar', () => {
     const { container } = await montar(<AgendaPage />);
     await abrirDetalhe(container, 'Mãe Divina');
     await clicar(botaoComTexto(container, 'Editar'));
-    await digitar(campoDoRotulo(formularioAberto(container), 'Contribuições sugeridas'), '45,50');
+    await digitar(campoDoRotulo(formularioAberto(), 'Contribuições sugeridas'), '45,50');
 
-    await clicar(botaoComTexto(formularioAberto(container), 'Salvar cerimônia'));
+    await clicar(botaoComTexto(formularioAberto(), 'Salvar cerimônia'));
 
-    expect(formularioAberto(container).textContent).toContain('Use só valores inteiros em reais, separados por vírgula e espaço: 40, 60, 90.');
+    expect(formularioAberto().textContent).toContain('Use só valores inteiros em reais, separados por vírgula e espaço: 40, 60, 90.');
     expect(textoDoNumero(container, 'Contribuição')).toBe('ContribuiçãoR$ 40 · R$ 60 · R$ 90opções sugeridas');
   });
 
@@ -910,8 +910,8 @@ describe('AgendaPage: editar', () => {
     await abrirDetalhe(container, 'Mãe Divina');
     await clicar(todos<HTMLInputElement>(container, 'input[type="checkbox"]')[0]!);
     await clicar(botaoComTexto(container, 'Editar'));
-    await clicar(todos<HTMLButtonElement>(formularioAberto(container), 'button[aria-label="descer"]')[0]!);
-    await clicar(botaoComTexto(formularioAberto(container), 'Salvar cerimônia'));
+    await clicar(todos<HTMLButtonElement>(formularioAberto(), 'button[aria-label="descer"]')[0]!);
+    await clicar(botaoComTexto(formularioAberto(), 'Salvar cerimônia'));
 
     const tarefas = todos<HTMLLabelElement>(container, 'label');
     expect(tarefas[0]!.textContent).toBe('Compra de mantimentosDona Rosa · marcado pelo link, hoje 14:02');

@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react';
-import { Rotulo } from '@/ds';
-import { formatarBRL } from '@/pages/utils/formato';
+import { AmountDisplay, Rotulo } from '@/ds';
 
 export interface LadoProps {
   titulo: string;
@@ -36,9 +35,7 @@ export function Lado({
     >
       <Rotulo>{titulo}</Rotulo>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px 9px', alignItems: 'baseline' }}>
-        <span data-numeric style={{ font: 'var(--text-amount)', color: cor }}>
-          {formatarBRL(total)}
-        </span>
+        <AmountDisplay value={total / 100} size="sm" style={{ color: cor }} />
         <span style={{ font: 'var(--text-small)', color: 'var(--text-meta)' }}>{natureza}</span>
       </div>
       <code style={{ font: 'var(--text-code)', alignSelf: 'flex-start' }}>{categoria}</code>

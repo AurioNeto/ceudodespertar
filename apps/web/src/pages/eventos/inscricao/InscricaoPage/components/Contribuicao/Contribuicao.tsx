@@ -1,7 +1,7 @@
 import type { NivelDeContribuicao } from '@cdd/contracts';
-import { Cartao, Rotulo, StatusBadge, TextField, type Density } from '@/ds';
+import { AmountDisplay, Cartao, Rotulo, StatusBadge, TextField, type Density } from '@/ds';
 import { lerValorDigitado } from '@/lib/numero';
-import { formatarBRL, formatarDinheiro } from '@/pages/utils/formato';
+import { formatarDinheiro } from '@/pages/utils/formato';
 import type { eventos } from '../../../mocks/eventos';
 
 export interface ContribuicaoProps {
@@ -78,9 +78,7 @@ export function Contribuicao({ evento, isento, nivel, valor, onNivel, onValor, d
               <span style={{ font: 'var(--text-body-strong)', color: marcado ? 'var(--color-royal-ink)' : 'var(--text-primary)' }}>
                 {c.rotulo}
               </span>
-              <span data-numeric style={{ font: 'var(--text-amount)', color: 'var(--color-royal-deep)' }}>
-                {formatarBRL(c.valor)}
-              </span>
+              <AmountDisplay value={c.valor / 100} size="sm" style={{ color: 'var(--color-royal-deep)' }} />
               <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>{c.explicacao}</span>
             </button>
           );

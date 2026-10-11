@@ -1,6 +1,4 @@
-import { reais } from '@cdd/contracts';
-import { Icon, StatusBadge } from '@/ds';
-import { formatarBRL } from '@/pages/utils/formato';
+import { AmountDisplay, Icon, StatusBadge } from '@/ds';
 import type { ParticipanteDoTrabalho } from '../../../../tipos';
 import { Bloco } from '../Bloco';
 import { TEXTO_DA_ANAMNESE, TOM_DA_ANAMNESE } from './constantes';
@@ -60,18 +58,7 @@ export function ListaDeParticipantes({
             <StatusBadge tone={p.situacao === 'confirmado' ? 'royal' : 'pending'}>
               {p.situacao === 'confirmado' ? 'Confirmado' : 'Em espera'}
             </StatusBadge>
-            {p.contribuicao ? (
-              <span
-                style={{
-                  font: 'var(--text-amount)',
-                  letterSpacing: 'var(--tracking-amount)',
-                  fontVariantNumeric: 'tabular-nums',
-                  color: 'var(--text-primary)',
-                }}
-              >
-                {formatarBRL(reais(p.contribuicao))}
-              </span>
-            ) : null}
+            {p.contribuicao ? <AmountDisplay value={p.contribuicao} size="sm" /> : null}
           </button>
         ))}
       </div>
