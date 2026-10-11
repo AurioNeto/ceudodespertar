@@ -20,7 +20,6 @@ export type { Column } from './organisms/DataTable';
 export { DefaultField } from './molecules/DefaultField';
 export { DomainError } from './molecules/DomainError';
 export { EmptyState } from './molecules/EmptyState';
-export { FaixaDeDemonstracao, TEXTO_DA_FAIXA_DE_DEMONSTRACAO } from './FaixaDeDemonstracao';
 export { FlowerOfLife } from './atoms/FlowerOfLife';
 export { Icon } from './atoms/Icon';
 export type { IconName } from './atoms/Icon';

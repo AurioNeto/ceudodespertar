@@ -774,7 +774,7 @@ Títulos na ordem de leitura. Dependências por título.
 | Caracterizar inscrição (concluída, #86) | — | — |
 | Caracterizar pessoas e estoque (concluída, #87) | — | — |
 | testes/ global e setupFiles (concluída) | lib/formato por export | — |
-| app/ em subpastas | testes/ global e setupFiles | e2e do B0 e ajustes do login |
+| app/ em subpastas (concluída) | testes/ global e setupFiles | — |
 | dados/ sem efeito e sem ciclo | app/ em subpastas | e2e do B0 e ajustes do login |
 | Portao no ds | dados/ sem efeito e sem ciclo | e2e do B0 e ajustes do login |
 | Mover sistema | Portao no ds | e2e do B0 e ajustes do login |

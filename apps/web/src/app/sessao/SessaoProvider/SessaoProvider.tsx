@@ -1,15 +1,11 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Navigate, useLocation } from 'react-router-dom';
 import type { Eu, Permissao } from '@cdd/contracts';
-import type { ServicoDeEntrada } from '../dados/oidc';
-import { Portao } from '../pages/entrada/Portao';
-import { SkeletonList } from '../ds';
-import { destinoSeguro } from './destino';
-import { estadoDoErroDoEu, usuarioDaSessao } from './estadoDaSessao';
-import type { EstadoDaSessao, UsuarioDaSessao } from './estadoDaSessao';
-import { ROTAS_PUBLICAS } from './navegacao';
+import type { ServicoDeEntrada } from '@/dados/oidc';
+import { destinoSeguro } from '@/app/rotas';
+import { estadoDoErroDoEu, usuarioDaSessao } from '../estadoDaSessao';
+import type { EstadoDaSessao, UsuarioDaSessao } from '../estadoDaSessao';
 
 export const CHAVE_DO_EU = ['eu'] as const;
 
@@ -129,21 +125,4 @@ export function useSessao(): Sessao {
   const sessao = useContext(Contexto);
   if (!sessao) throw new Error('useSessao fora do SessaoProvider');
   return sessao;
-}
-
-export function ExigeSessao({ children }: { children: ReactNode }) {
-  const { estado } = useSessao();
-  const { pathname, search } = useLocation();
-
-  if (estado.tipo === 'ativa') return <>{children}</>;
-
-  if (estado.tipo === 'verificando') {
-    return (
-      <Portao titulo="Verificando seu acesso" descricao="Só um instante.">
-        <SkeletonList rows={2} />
-      </Portao>
-    );
-  }
-
-  return <Navigate to={ROTAS_PUBLICAS.entrar} replace state={{ de: `${pathname}${search}` }} />;
 }

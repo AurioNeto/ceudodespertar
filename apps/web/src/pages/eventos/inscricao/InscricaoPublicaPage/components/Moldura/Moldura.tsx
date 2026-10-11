@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
-import { FaixaDeDemonstracao, FlowerOfLife, type Density } from '@/ds';
+import { FlowerOfLife, type Density } from '@/ds';
+import { FaixaDeDemonstracao } from '@/app/demonstracao';
 import { eventoDoLink } from '../../../mocks/linkDaCerimonia';
 import type { Passo } from '../../tipos';
 import { ORDEM } from './constantes';

@@ -37,27 +37,29 @@ Os destinos são agrupados por área: `app/`, `dados/`, `lib/`, `ds/`, `testes/`
 | `app/estadoDaSessao.test.ts` | `app/sessao/estadoDaSessao.test.ts` | mover | app/ em subpastas |
 | `app/Layout.tsx` | `app/shell/Layout/Layout.tsx` (+ `index.ts`; composição de app, fora da escala atômica) | mover | app/ em subpastas |
 | `app/Layout.dom.test.tsx` | `app/shell/Layout/Layout.dom.test.tsx` | mover | app/ em subpastas |
-| `app/navegacao.ts`: `Rota`, `ROTAS`, `RotaId`, `ROTAS_PUBLICAS`, `ROTAS_ANTIGAS_DA_ENTRADA` | `app/rotas/rotas.ts` | repartir por export | app/ em subpastas |
+| `app/navegacao.ts`: `Rota`, `ROTAS`, `RotaId`, `ROTAS_PUBLICAS`, `ROTAS_ANTIGAS_DA_ENTRADA` (o comentário de prosa sobre `ROTAS_PUBLICAS`, fora do corpo, não foi levado) | `app/rotas/rotas.ts` (`app/rotas/index.ts` usa `export * from './rotas'`: `RotaId` sai como tipo para `shell` e para o `ItemDoChecklist`, e `export type` num index novo é acusado pelo `conferir-movimento`; com isso `Rota`, sem consumidor, também sai pelo index) | repartir por export | app/ em subpastas |
 | `app/navegacao.ts`: `construirNav` | `app/shell/menu.ts` | repartir por export | app/ em subpastas |
 | `app/navegacao.ts`: `POR_CAMINHO`, `rotaAtiva` | `app/shell/rotaAtiva.ts` | repartir por export | app/ em subpastas |
 | `app/navegacao.test.ts` (testa só `rotaAtiva`) | `app/shell/rotaAtiva.test.ts` | mover | app/ em subpastas |
 | `app/rotasAntigasDaEntrada.tsx` | `app/rotas/rotasAntigasDaEntrada.tsx` | mover | app/ em subpastas |
 | `app/router.tsx` | `app/router.tsx` | manter (só linhas de import mudam a cada etapa que move uma página, e em app/ em subpastas; ao fim importa só o `index.ts` de cada página) | app/ em subpastas |
 | `app/router.dom.test.tsx` | `app/router.dom.test.tsx` | manter | app/ em subpastas |
-| `app/sessao.tsx`: `CHAVE_DO_EU`, `Sessao`, `SessaoProviderProps`, `Contexto`, `SessaoProvider`, `useSessao` (`useSessao` fica com o contexto privado) | `app/sessao/SessaoProvider/SessaoProvider.tsx` (+ `index.ts`) | repartir por export | app/ em subpastas |
+| `app/sessao.tsx`: `CHAVE_DO_EU`, `Sessao`, `SessaoProviderProps`, `Contexto`, `SessaoProvider`, `useSessao` (`useSessao` fica com o contexto privado; `derivarEstado` e `useExisteUsuarioOidc` ficam no arquivo até a divisão) | `app/sessao/SessaoProvider/SessaoProvider.tsx` (+ `index.ts`; o `index.ts` da unidade e o `app/sessao/index.ts` usam `export * from './SessaoProvider'`, porque `SessaoProviderProps` sai como tipo para o `main.tsx`) | repartir por export | app/ em subpastas |
 | `app/sessao.tsx`: `ExigeSessao` | `app/sessao/ExigeSessao/ExigeSessao.tsx` (+ `index.ts`) | repartir por export | app/ em subpastas |
 | `app/sessao.tsx`: `derivarEstado` (sai na divisão) | `app/sessao/utils/derivarEstado.ts` (+ teste) | dividir | Dividir app/shell, sessão e ds |
 | `app/sessao.tsx`: `useExisteUsuarioOidc` (sai na divisão) | `app/sessao/hooks/useExisteUsuarioOidc.ts` | dividir | Dividir app/shell, sessão e ds |
-| `app/sessao.test.tsx` (describe da linha 44) | `app/sessao/SessaoProvider/SessaoProvider.dom.test.tsx` | repartir por export (por describe) | app/ em subpastas |
+| `app/sessao.test.tsx` (describe da linha 44; `let tela` e o `afterEach` vão copiados para os três arquivos desta etapa e ficam no de origem) | `app/sessao/SessaoProvider/SessaoProvider.dom.test.tsx` | repartir por export (por describe) | app/ em subpastas |
 | `app/sessao.test.tsx` (linha 220) | `app/sessao/ExigeSessao/ExigeSessao.dom.test.tsx` | repartir por export (por describe) | app/ em subpastas |
 | `app/sessao.test.tsx` (linha 393) | `app/rotas/rotasAntigasDaEntrada.dom.test.tsx` | repartir por export (por describe) | app/ em subpastas |
-| `app/sessao.test.tsx` (linha 276, testes de entrada) | `pages/transversal/entrada/EntrarPage/EntrarPage.dom.test.tsx` | repartir por export (por describe) | Mover transversal |
-| `app/sessao.test.tsx` (linha 366, testes de entrada) | `pages/transversal/entrada/RetornoPage/RetornoPage.dom.test.tsx` | repartir por export (por describe) | Mover transversal |
+| `app/sessao.test.tsx` (describe `EntrarPage`, linha 22 depois de app/ em subpastas, que deixou no arquivo só os testes de entrada) | `pages/transversal/entrada/EntrarPage/EntrarPage.dom.test.tsx` | repartir por export (por describe) | Mover transversal |
+| `app/sessao.test.tsx` (describe `RetornoPage`, linha 112 depois de app/ em subpastas) | `pages/transversal/entrada/RetornoPage/RetornoPage.dom.test.tsx` | repartir por export (por describe) | Mover transversal |
 | `app/sessao.test.tsx` (`Sonda`, linha 30; privada, só os testes do `SessaoProvider` a usam) | `app/sessao/SessaoProvider/SessaoProvider.dom.test.tsx` | mover | app/ em subpastas |
 | `app/sessao.test.tsx` (`ler`, linha 42; privado) | `testes/sessaoDeTeste.tsx` (os testes que o usam se repartem entre `app/sessao` e `pages/transversal/entrada`; ancestral comum: `src/`). `ler` passa a receber a tela por parâmetro, porque hoje lê a variável `tela` do arquivo | repartir por export (`ler` muda de assinatura, só em apoio de teste) | testes/ global e setupFiles |
-| `app/sessaoDeDemonstracao.ts` | `app/demonstracao/sessaoDeDemonstracao.ts` | mover | app/ em subpastas |
+| `app/sessaoDeDemonstracao.ts` | `app/demonstracao/sessaoDeDemonstracao.ts` (fora do `app/demonstracao/index.ts`: o `main.tsx` o carrega por `import()` pelo caminho do arquivo, e reexportá-lo no index o puxaria para o chunk principal) | mover | app/ em subpastas |
 | `app/telas.ts` | `app/shell/telas.ts` | mover | app/ em subpastas |
 | `app/telas.test.ts` | `app/shell/telas.test.ts` | mover | app/ em subpastas |
+| novo (`index.ts` das áreas, seções 3 e 11 do Documento 8; cada um reexporta só o que se importa de fora da área, exceto o `export *` das linhas de `rotas.ts` e `SessaoProvider`) | `app/rotas/index.ts`, `app/sessao/index.ts`, `app/demonstracao/index.ts`, `app/shell/index.ts` | criar | app/ em subpastas |
+| `captura/ambiente.mjs` (`MODULO_DAS_ROTAS`) e `captura/sessaoDaCaptura.mjs` (`MODULO_DA_SESSAO_DE_DEMONSTRACAO`), fora de `src` | os mesmos arquivos, com `/src/app/rotas/rotas.ts` e `**/src/app/demonstracao/sessaoDeDemonstracao.ts*` | manter | app/ em subpastas |
 | `app/Layout.tsx` (estado sem acesso) | `app/shell/components/TelaSemAcesso/` | dividir | Dividir app/shell, sessão e ds |
 | `app/Layout.tsx` (nome da tela) | `app/shell/utils/nomeDaTela.ts` (+ teste) | dividir | Dividir app/shell, sessão e ds |
 | `app/Layout.tsx` (contagem da fila de demonstração) | `app/shell/hooks/useContagemDoLote.ts` | dividir | Dividir app/shell, sessão e ds |
@@ -164,7 +166,7 @@ Os destinos são agrupados por área: `app/`, `dados/`, `lib/`, `ds/`, `testes/`
 | `ds/index.ts` (ganha `useDensidade`) | `ds/index.ts` | manter | Mover fundação do ds |
 | `ds/index.ts` (ganha os primitivos promovidos) | `ds/index.ts` | manter | Primitivos para o ds |
 | `ds/index.ts` (ganha `Portao`) | `ds/index.ts` | manter | Portao no ds |
-| `ds/index.ts` (perde `FaixaDeDemonstracao`) | `ds/index.ts` | manter | app/ em subpastas |
+| `ds/index.ts` (perde `FaixaDeDemonstracao` e `TEXTO_DA_FAIXA_DE_DEMONSTRACAO`, que passam a sair por `app/demonstracao/index.ts`; são as 2 diferenças do `conferir-movimento` na etapa, exportação perdida do barrel) | `ds/index.ts` | manter | app/ em subpastas |
 | `ds/PainelDeAcao.tsx` (PR #55) | `ds/organisms/PainelDeAcao/PainelDeAcao.tsx` | mover (do #55) | Mover ds em níveis |
 | `ds/PainelDeAcao.dom.test.tsx` (PR #55) | `ds/organisms/PainelDeAcao/PainelDeAcao.dom.test.tsx` | mover (do #55) | Mover ds em níveis |
 | `ds/TextField.dom.test.tsx` (do #55) | `ds/molecules/TextField/TextField.dom.test.tsx` | mover (do #55) | Mover ds em níveis |
@@ -365,7 +367,7 @@ Os testes do #58, do #59, do #61 e do #62 se repartem por describe entre as unid
 | `pages/parametros/ParametrosPage.dom.test.tsx` (entra com o #84) | `pages/financeiro/ParametrosPage/ParametrosPage.dom.test.tsx` | mover | Mover financeiro II |
 | `mocks/parametros.ts` | `pages/financeiro/ParametrosPage/mocks/parametros.ts` | mover | Mover financeiro II |
 | `pages/lancamento/RegistrarLancamentoPage.tsx` | `pages/financeiro/lancamentos/RegistrarLancamentoPage/RegistrarLancamentoPage.tsx` | mover | Mover lancamentos |
-| `pages/lancamento/RegistrarLancamentoPage.dom.test.tsx` (entra com o #82; o #82 troca o `vi.mock('../../app/sessao')` da main por `@/app/sessao`) | `pages/financeiro/lancamentos/RegistrarLancamentoPage/RegistrarLancamentoPage.dom.test.tsx` | mover (na etapa app/ em subpastas, `useSessao` sai de `app/sessao.tsx`; o `vi.mock` passa a `@/app/sessao/SessaoProvider`) | Mover lancamentos |
+| `pages/lancamento/RegistrarLancamentoPage.dom.test.tsx` (entra com o #82; o #82 troca o `vi.mock('../../app/sessao')` da main por `@/app/sessao`) | `pages/financeiro/lancamentos/RegistrarLancamentoPage/RegistrarLancamentoPage.dom.test.tsx` | mover (na etapa app/ em subpastas, `useSessao` sai de `app/sessao.tsx`; o `vi.mock` passa a `@/app/sessao/SessaoProvider/SessaoProvider`, o arquivo que declara `useSessao`: é o módulo que ele substituía na base, e o `index.ts` da unidade seria outro módulo para o `conferir-movimento`) | Mover lancamentos |
 | `pages/lancamento/useFormularioDeLancamento.ts` | `pages/financeiro/lancamentos/RegistrarLancamentoPage/hooks/useFormularioDeLancamento.ts` | mover | Mover lancamentos |
 | `pages/lancamento/useFormularioDeLancamento.dom.test.ts` (entra com o #82) | `pages/financeiro/lancamentos/RegistrarLancamentoPage/hooks/useFormularioDeLancamento.dom.test.ts` | mover | Mover lancamentos |
 | `mocks/opcoes.ts` | `pages/financeiro/lancamentos/RegistrarLancamentoPage/mocks/opcoes.ts` | mover | Mover lancamentos |
@@ -620,7 +622,7 @@ Os testes do #58, do #59, do #61 e do #62 se repartem por describe entre as unid
 | `pages/entrada/EntrarPage.tsx` | `pages/transversal/entrada/EntrarPage/EntrarPage.tsx` | mover | Mover transversal |
 | `pages/entrada/MensagemDeEntradaNaTela.tsx` | `pages/transversal/entrada/components/MensagemDeEntradaNaTela/MensagemDeEntradaNaTela.tsx` | mover | Mover transversal |
 | `pages/entrada/mensagens.ts`: `MensagemDeEntrada` (tipo, usado por `EntrarPage` e `MensagemDeEntradaNaTela`) | `pages/transversal/entrada/tipos.ts` | repartir por export | Mover transversal |
-| `pages/entrada/mensagens.ts`: `MENSAGENS_DE_RECUSA`, `MENSAGEM_DE_INDISPONIBILIDADE`, `MENSAGEM_DE_FALHA`, `MENSAGEM_DE_FALHA_AO_INICIAR` (só `EntrarPage` em produção) | `pages/transversal/entrada/EntrarPage/constantes.ts` | repartir por export | Mover transversal |
+| `pages/entrada/mensagens.ts`: `MENSAGENS_DE_RECUSA`, `MENSAGEM_DE_INDISPONIBILIDADE`, `MENSAGEM_DE_FALHA`, `MENSAGEM_DE_FALHA_AO_INICIAR` (só `EntrarPage` em produção; o tipo `CodigoDeRecusa` chega por `@/app/sessao/estadoDaSessao` desde app/ em subpastas, porque `export type` no `app/sessao/index.ts` seria acusado pelo `conferir-movimento`) | `pages/transversal/entrada/EntrarPage/constantes.ts` | repartir por export | Mover transversal |
 | `pages/entrada/mensagens.ts`: `MENSAGEM_DE_ERRO_NO_RETORNO` (só `RetornoPage`) | `pages/transversal/entrada/RetornoPage/constantes.ts` | repartir por export | Mover transversal |
 | `pages/entrada/RetornoPage.tsx` | `pages/transversal/entrada/RetornoPage/RetornoPage.tsx` | mover | Mover transversal |
 

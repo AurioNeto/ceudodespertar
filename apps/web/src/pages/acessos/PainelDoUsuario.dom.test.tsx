@@ -4,7 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { GrupoId, UsuarioId, UsuarioListado } from '@cdd/contracts';
 import { assentar, criarAvisoDeEncerramentoFalso, criarEntradaFalsa, criarEu } from '@/testes/sessaoDeTeste';
-import { ClienteHttpProvider } from '../../app/clienteHttp';
+import { ClienteHttpProvider } from '@/app/providers';
 import { SessaoProvider } from '../../app/sessao';
 import { ErroDaApi } from '../../dados/erros';
 import {

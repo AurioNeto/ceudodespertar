@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, Icon, ScreenHeader, type IconName } from '../../ds';
-import { ROTAS } from '../../app/navegacao';
+import { ROTAS } from '@/app/rotas';
 import { proximaCerimonia, ultimaCerimonia } from '../../mocks/cerimonias';
 import {
   movimentoDoMes,

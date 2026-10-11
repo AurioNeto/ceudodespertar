@@ -9,7 +9,7 @@ import type {
 } from '@cdd/contracts';
 import { criarComando } from '../../dados/consultaEComando';
 import type { ClienteHttp } from '../../dados/clienteHttp';
-import { useClienteHttp } from '../../app/clienteHttp';
+import { useClienteHttp } from '@/app/providers';
 
 export interface MudancaDeSituacao {
   readonly usuarioId: UsuarioId;

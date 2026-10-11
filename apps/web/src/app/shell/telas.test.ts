@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { PERMISSOES, type Permissao } from '@cdd/contracts';
 import { TELAS } from './telas';
-import type { RotaId } from './navegacao';
+import type { RotaId } from '@/app/rotas';
 
 const LIVRES: readonly RotaId[] = ['painel', 'perfil'];
 const registros = Object.entries(TELAS) as [RotaId, (typeof TELAS)[RotaId]][];

@@ -26,7 +26,7 @@ export const FUSO = 'America/Sao_Paulo';
 export const IDIOMA = 'pt-BR';
 
 export const TOKEN_DA_INSCRICAO = 'lua-cheia-1209-7k3f';
-export const MODULO_DAS_ROTAS = '/src/app/navegacao.ts';
+export const MODULO_DAS_ROTAS = '/src/app/rotas/rotas.ts';
 
 export const CAMINHO_DA_API = '/api';
 export const PREFIXO_DA_API = `${CAMINHO_DA_API}/`;

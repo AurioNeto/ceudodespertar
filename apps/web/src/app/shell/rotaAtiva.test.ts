@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { ROTAS, rotaAtiva, type RotaId } from './navegacao';
+import { ROTAS, type RotaId } from '@/app/rotas';
+import { rotaAtiva } from './rotaAtiva';
 
 describe('rotaAtiva', () => {
   it.each(Object.entries(ROTAS) as [RotaId, string][])('caminho exato de %s', (id, caminho) => {

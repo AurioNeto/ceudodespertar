@@ -1,5 +1,5 @@
 import type { Eu } from '@cdd/contracts';
-import { ErroDaApi } from '../dados/erros';
+import { ErroDaApi } from '@/dados/erros';
 
 export type CodigoDeRecusa =
   | 'USUARIO_CONVITE_PENDENTE'

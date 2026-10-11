@@ -1,4 +1,4 @@
-const MODULO_DA_SESSAO_DE_DEMONSTRACAO = '**/src/app/sessaoDeDemonstracao.ts*';
+const MODULO_DA_SESSAO_DE_DEMONSTRACAO = '**/src/app/demonstracao/sessaoDeDemonstracao.ts*';
 
 const SESSAO_COMECA_ATIVA = /let ativa = true/;
 const CONCLUSAO_DA_ENTRADA = /concluirEntrada:\s*\(\)\s*=>\s*Promise\.resolve\([^)]*\)/;

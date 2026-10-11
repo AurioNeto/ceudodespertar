@@ -1,6 +1,6 @@
 import type { Permissao } from '@cdd/contracts';
-import type { NavEntry } from '../ds';
-import type { RotaId } from './navegacao';
+import type { NavEntry } from '@/ds';
+import type { RotaId } from '@/app/rotas';
 import type { RegistroDaTela, RegistroDeTelas } from './telas';
 
 export type Pode = (permissao: Permissao) => boolean;
