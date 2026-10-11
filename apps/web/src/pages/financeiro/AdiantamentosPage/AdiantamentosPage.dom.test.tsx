@@ -611,7 +611,7 @@ describe('AdiantamentosPage: ressarcir', () => {
     expect(blocoDoRotulo(container, 'A ressarcir')).toEqual(['A ressarcir', '0,00', 'nada pendente']);
   });
 
-  it('a ressarcir só com despesa de hoje — o resumo mostra o valor e diz nada pendente', async () => {
+  it('a ressarcir só com despesa de hoje — o resumo mostra o valor e diz que o mais antigo é de hoje', async () => {
     const { container } = await montar(<AdiantamentosPage />);
     await ressarcirOsDoisDaDemonstracao(container);
     await registrarNovoAdiantamento(container, '100', 'tinta');
@@ -619,7 +619,7 @@ describe('AdiantamentosPage: ressarcir', () => {
     await autorizarComoMadrinha(container, ['Aguardando sua autorização', 'Paty Munay', 'tinta']);
 
     expect(textosDasLinhas(container, 'A ressarcir')).toHaveLength(1);
-    expect(blocoDoRotulo(container, 'A ressarcir')).toEqual(['A ressarcir', '100,00', 'nada pendente']);
+    expect(blocoDoRotulo(container, 'A ressarcir')).toEqual(['A ressarcir', '100,00', 'o mais antigo é de hoje']);
   });
 
   it('Voltar — fecha o formulário da linha e não ressarce', async () => {

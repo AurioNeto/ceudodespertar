@@ -58,7 +58,13 @@ export function AdiantamentosPage() {
             <Numero
               rotulo="A ressarcir"
               valor={formatarDinheiro(tela.totalARessarcir)}
-              nota={tela.maisAntigo > 0 ? `o mais antigo há ${pluralizar(tela.maisAntigo, 'dia')}` : 'nada pendente'}
+              nota={
+                tela.aRessarcir.length === 0
+                  ? 'nada pendente'
+                  : tela.maisAntigo === 0
+                    ? 'o mais antigo é de hoje'
+                    : `o mais antigo há ${pluralizar(tela.maisAntigo, 'dia')}`
+              }
               destaque
             />
             <Numero rotulo="Fechados" valor={String(tela.fechados.length)} nota="ressarcidos ou recusados" />
