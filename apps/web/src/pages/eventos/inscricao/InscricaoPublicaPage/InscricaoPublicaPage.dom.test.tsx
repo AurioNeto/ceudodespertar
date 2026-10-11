@@ -1226,14 +1226,14 @@ describe('InscricaoPublicaPage: inscrição enviada', () => {
     expect(textoDe(container)).toContain('Nada disso impede a sua participação.');
   });
 
-  it('Clarice com medicação contínua herdada como Sim — o ponto de atenção da resposta herdada não chega à tela final', async () => {
+  it('Clarice com medicação contínua herdada como Sim — o ponto de atenção da resposta herdada chega à tela final', async () => {
     const container = await chegarEmParticipacaoComoClarice();
     await clicar(botaoComTexto(container, 'Não tenho nenhuma'));
 
     await clicar(botaoDeEnviar(container));
 
-    expect(textoDe(container)).not.toContain('O que você declarou e a casa vai ler com atenção');
-    expect(textoDe(container)).not.toContain('Uso de medicação contínua declarado');
+    expect(textoDe(container)).toContain('O que você declarou e a casa vai ler com atenção');
+    expect(textoDe(container)).toContain('Uso de medicação contínua declarado.');
   });
 
   it('Clarice — o resumo final usa o primeiro nome do cadastro e não oferece a conversa de primeira vez', async () => {

@@ -110,6 +110,7 @@ export const PERGUNTAS_V3: readonly Pergunta[] = [
 
 const porId = new Map(PERGUNTAS_V3.map((x) => [x.id as string, x]));
 const pergunta = (n: string): Pergunta => porId.get(n)!;
+export const perguntaDaV3 = (perguntaId: PerguntaId): Pergunta | undefined => porId.get(perguntaId as string);
 
 /* ── Quem o CPF encontra ─────────────────────────────────────────────────── */
 

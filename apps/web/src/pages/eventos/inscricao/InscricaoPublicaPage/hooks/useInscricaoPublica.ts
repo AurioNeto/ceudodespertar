@@ -6,7 +6,7 @@ import { NOVO_VAZIO } from '../constantes';
 import { cadastros, formularioInteiro, type CadastroEncontrado } from '../mocks/inscricaoPublica';
 import type { Novo, Passo } from '../tipos';
 import { mascararCpf, soDigitos } from '../utils/cpf';
-import { disparaAlerta, respondida } from '../utils/regraDeAlerta';
+import { alertaDaHerdada, disparaAlerta, respondida } from '../utils/regraDeAlerta';
 
 export function useInscricaoPublica() {
   const [passo, setPasso] = useState<Passo>('IDENTIFICACAO');
@@ -68,13 +68,13 @@ export function useInscricaoPublica() {
     (x) => x.pergunta.obrigatoria && !respondida(valores[x.pergunta.id as string]),
   );
 
-  const pontos = useMemo(
-    () =>
-      pendentes
-        .map((x) => disparaAlerta(x.pergunta, valores[x.pergunta.id as string]))
-        .filter((m): m is string => m !== null),
-    [pendentes, valores],
-  );
+  const pontos = useMemo(() => {
+    const herdadasEmVigor = cadastro && !refazendo ? cadastro.herdadas : [];
+    return [
+      ...herdadasEmVigor.map(alertaDaHerdada),
+      ...pendentes.map((x) => disparaAlerta(x.pergunta, valores[x.pergunta.id as string])),
+    ].filter((m): m is string => m !== null);
+  }, [cadastro, refazendo, pendentes, valores]);
 
   const opcaoHosp = eventoDoLink.hospedagens.find((h) => h.tipo === hospedagem)!;
   const contribuicao = Math.round(lerValorDigitado(valor) * 100) || 0;
