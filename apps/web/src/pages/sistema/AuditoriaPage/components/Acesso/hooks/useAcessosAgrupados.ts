@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { acessos } from '../../../mocks/auditoria';
-import type { Agrupamento } from '../../../tipos';
+import type { Agrupamento } from '../tipos';
 import { agruparAcessos } from '../utils/agruparAcessos';
 
 export function useAcessosAgrupados() {

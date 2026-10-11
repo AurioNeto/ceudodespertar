@@ -1,5 +1,5 @@
 import type { RegistroDeAcesso } from '@cdd/contracts';
-import type { Agrupamento } from '../../../tipos';
+import type { Agrupamento } from '../tipos';
 
 export interface GrupoDeAcesso {
   chave: string;
