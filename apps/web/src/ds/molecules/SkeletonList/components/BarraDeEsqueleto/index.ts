@@ -1,0 +1,1 @@
+export { BarraDeEsqueleto } from './BarraDeEsqueleto';

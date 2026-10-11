@@ -1,29 +1,10 @@
 import { useState } from 'react';
-import type { ButtonHTMLAttributes, CSSProperties, ReactNode } from 'react';
+import type { ButtonHTMLAttributes, ReactNode } from 'react';
 import type { Density } from '../../fundacao/densidade';
 import { Icon, type IconName } from '../Icon';
+import { HOVER, VARIANTS } from './constantes';
 
 export type ButtonVariant = 'primary' | 'ghost' | 'quiet' | 'suggest' | 'onChrome';
-
-const VARIANTS: Record<ButtonVariant, CSSProperties> = {
-  primary: { background: 'var(--action-bg)', color: 'var(--action-fg)', border: '1.5px solid transparent' },
-  ghost: { background: 'transparent', color: 'var(--color-royal)', border: '1.5px solid var(--color-royal-border)' },
-  quiet: { background: 'var(--bg-sunken)', color: 'var(--text-primary)', border: '1px solid var(--color-line)' },
-  suggest: {
-    background: 'var(--color-suggest-soft)',
-    color: 'var(--color-suggest)',
-    border: '1.5px solid var(--color-suggest-border)',
-  },
-  onChrome: { background: 'rgba(255,255,255,.12)', color: '#FFFFFF', border: '1.5px solid rgba(255,255,255,.28)' },
-};
-
-const HOVER: Record<ButtonVariant, string> = {
-  primary: 'var(--action-bg-hover)',
-  ghost: 'var(--color-royal-soft)',
-  quiet: 'var(--color-line)',
-  suggest: 'var(--color-suggest-border)',
-  onChrome: 'rgba(255,255,255,.2)',
-};
 
 export interface ButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children'> {
   children?: ReactNode;
