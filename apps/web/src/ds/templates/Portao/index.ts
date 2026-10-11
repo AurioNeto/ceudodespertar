@@ -1,0 +1,1 @@
+export { Portao } from './Portao';

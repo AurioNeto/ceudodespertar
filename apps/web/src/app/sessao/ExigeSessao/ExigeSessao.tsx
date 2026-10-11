@@ -1,7 +1,6 @@
 import type { ReactNode } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import { Portao } from '@/pages/entrada/Portao';
-import { SkeletonList } from '@/ds';
+import { Portao, SkeletonList } from '@/ds';
 import { ROTAS_PUBLICAS } from '@/app/rotas';
 import { useSessao } from '../SessaoProvider';
 

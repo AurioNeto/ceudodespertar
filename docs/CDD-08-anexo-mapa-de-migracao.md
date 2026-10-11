@@ -178,7 +178,7 @@ Os destinos são agrupados por área: `app/`, `dados/`, `lib/`, `ds/`, `testes/`
 | `styles/tokens/fonts.css` | `ds/fundacao/tokens/fonts.css` | mover | Mover fundação do ds |
 | `styles/tokens/spacing.css` | `ds/fundacao/tokens/spacing.css` | mover | Mover fundação do ds |
 | `styles/tokens/typography.css` | `ds/fundacao/tokens/typography.css` | mover | Mover fundação do ds |
-| `pages/entrada/Portao.tsx` (sem a prop `volta`, que sai antes) | `ds/templates/Portao/Portao.tsx` | mover | Portao no ds |
+| `pages/entrada/Portao.tsx` (a prop `volta`, sem consumidor, sai na própria etapa, com o `Link` e o `Icon` que só ela usava, e o `ds` deixa de depender do `react-router`; são as 4 diferenças do `conferir-movimento` na etapa: corpo mudou em `Portao` e em `PortaoProps` e ligação de import perdida de `Link` e de `Icon`. `ExigeSessao`, `EntrarPage` e `RetornoPage` importam o `Portao` de `@/ds`, e as duas páginas trocam o `../../ds` que já tinham por `@/ds`) | `ds/templates/Portao/Portao.tsx` (+ `index.ts`) | mover | Portao no ds |
 
 ### 4.2 Primitivos promovidos e divisões de primitivos
 

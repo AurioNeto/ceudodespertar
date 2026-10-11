@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import { Button, SkeletonList, useDensidade } from '../../ds';
+import { Button, Portao, SkeletonList, useDensidade } from '@/ds';
 import { destinoDaNavegacao } from '@/app/rotas';
 import { useSessao } from '../../app/sessao';
 import { MensagemDeEntradaNaTela } from './MensagemDeEntradaNaTela';
@@ -11,7 +11,6 @@ import {
   MENSAGEM_DE_INDISPONIBILIDADE,
 } from './mensagens';
 import type { MensagemDeEntrada } from './mensagens';
-import { Portao } from './Portao';
 
 const DESCRICAO_DA_ENTRADA = 'O acesso é pessoal: cada lançamento fica no nome de quem o registrou.';
 

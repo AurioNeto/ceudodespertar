@@ -1,15 +1,14 @@
 import type { ReactNode } from 'react';
-import { Link } from 'react-router-dom';
-import { FlowerOfLife, Icon, useDensidade } from '../../ds';
+import { FlowerOfLife } from '../../atoms/FlowerOfLife';
+import { useDensidade } from '../../fundacao/useDensidade';
 
 export interface PortaoProps {
   titulo: string;
   descricao?: string;
   children: ReactNode;
-  volta?: { para: string; rotulo: string };
 }
 
-export function Portao({ titulo, descricao, children, volta }: PortaoProps) {
+export function Portao({ titulo, descricao, children }: PortaoProps) {
   const campo = useDensidade() === 'field';
 
   return (
@@ -49,24 +48,6 @@ export function Portao({ titulo, descricao, children, volta }: PortaoProps) {
           ) : null}
 
           <div style={{ marginTop: 24 }}>{children}</div>
-
-          {volta ? (
-            <div style={{ marginTop: 22, display: 'flex', justifyContent: 'center' }}>
-              <Link
-                to={volta.para}
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 7,
-                  font: 'var(--text-small)',
-                  border: 0,
-                }}
-              >
-                <Icon name="arrow-left" size={15} />
-                {volta.rotulo}
-              </Link>
-            </div>
-          ) : null}
         </div>
       </div>
     </div>
