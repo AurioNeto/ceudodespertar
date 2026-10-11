@@ -22,16 +22,18 @@ Regras:
      main.tsx e router.tsx não são PascalCase e ficam de fora;
   3. o módulo de cada tela de TELAS (app/shell/telas.ts) é o prefixo da primeira permissão dela, ou
      transversal quando não há permissão, e é a pasta de módulo (pages/<modulo>/) da página que o router
-     (app/router.tsx) importa para o element da rota da tela (ERRO). Primeira permissão que não é texto
-     literal, ou element que não é um componente importado de pages/, é AVISO de não determinável;
+     (app/router.tsx) dá à rota da tela, pelo element (import estático) ou pelo lazy.Component (import())
+     (ERRO). Primeira permissão que não é texto literal, ou página que não se lê como componente
+     importado de pages/, é AVISO de não determinável;
   4. todo fluxo (pages/<modulo>/<fluxo>/, pasta minúscula que não é components, hooks, utils nem mocks)
      tem pasta de tipo compartilhada: components/, hooks/, utils/, mocks/ ou constantes.ts (ERRO);
-  5. toda RotaId (chave de ROTAS em app/rotas/rotas.ts) tem caminho literal, item em TELAS e elemento no
-     router, um objeto com path: ROTAS.<id> e element (ERRO).
+  5. toda RotaId (chave de ROTAS em app/rotas/rotas.ts) tem caminho literal, item em TELAS e página no
+     router, um objeto com path: ROTAS.<id> e element ou lazy: { Component } (ERRO). Rota com
+     Component direto, ou com lazy em forma de função, acusa "sem página no router".
 
 Não confere: se a pasta de tipo do fluxo é usada por duas ou mais telas dele (a regra do ancestral comum,
-seção 6.1, não tem verificador); rota declarada sem element (lazy, Component); as rotas públicas, fora de
-RotaId; e o que o typecheck já garante (TELAS com chave que não é RotaId, ROTAS.<id> inexistente).`;
+seção 6.1, não tem verificador); as rotas públicas, fora de RotaId; e o que o typecheck já garante
+(TELAS com chave que não é RotaId, ROTAS.<id> inexistente).`;
 
 function lerOpcoes() {
   const { values } = parseArgs({

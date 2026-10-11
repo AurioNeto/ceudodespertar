@@ -77,6 +77,19 @@ export function percorrer(no, visitar) {
   ts.forEachChild(no, (filho) => percorrer(filho, visitar));
 }
 
+function primeiroDescendente(no, aceita) {
+  return aceita(no) ? no : ts.forEachChild(no, (filho) => primeiroDescendente(filho, aceita));
+}
+
+const ehImportDinamico = (no) => ts.isCallExpression(no) && no.expression.kind === ts.SyntaxKind.ImportKeyword;
+
+export function paginaDoImportDinamico(carregar) {
+  const leitura = primeiroDescendente(carregar, ts.isPropertyAccessExpression);
+  const importacao = leitura && primeiroDescendente(leitura.expression, ehImportDinamico);
+
+  return importacao && { componente: leitura.name.text, especificador: textoLiteral(importacao.arguments[0]) };
+}
+
 export function componenteDoJsx(expressao) {
   const abertura =
     expressao !== undefined && ts.isJsxElement(expressao) ? expressao.openingElement : expressao;

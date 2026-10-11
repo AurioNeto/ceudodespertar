@@ -6,6 +6,7 @@ import {
   lerFonte,
   nomeDaPropriedade,
   objetoDaConstante,
+  paginaDoImportDinamico,
   percorrer,
   textoLiteral,
   valorDaPropriedade,
@@ -20,6 +21,9 @@ const CONSTANTE_DAS_TELAS = 'TELAS';
 const PROPRIEDADE_DO_ACESSO = 'acesso';
 const PROPRIEDADE_DO_CAMINHO = 'path';
 const PROPRIEDADE_DO_ELEMENTO = 'element';
+const PROPRIEDADE_DO_CARREGAMENTO = 'lazy';
+const PROPRIEDADE_DO_COMPONENTE = 'Component';
+const PAGINA_NAO_DETERMINAVEL = { componente: undefined, especificador: undefined };
 
 const valorLiteral = (propriedade) =>
   ts.isPropertyAssignment(propriedade) ? textoLiteral(desembrulhar(propriedade.initializer)) : undefined;
@@ -62,22 +66,43 @@ function rotaIdDoCaminho(expressao) {
   return ehMembroDasRotas ? expressao.name.text : undefined;
 }
 
-export function lerElementosDoRouter(arvore) {
+function paginaDoElemento(elemento, especificadores) {
+  const componente = componenteDoJsx(elemento);
+
+  return { componente, especificador: especificadores.get(componente) };
+}
+
+function carregarDoLazy(rota) {
+  const carregamento = valorDaPropriedade(rota, PROPRIEDADE_DO_CARREGAMENTO);
+
+  return carregamento && ts.isObjectLiteralExpression(carregamento)
+    ? valorDaPropriedade(carregamento, PROPRIEDADE_DO_COMPONENTE)
+    : undefined;
+}
+
+function paginaDaRota(rota, especificadores) {
+  const elemento = valorDaPropriedade(rota, PROPRIEDADE_DO_ELEMENTO);
+  if (elemento !== undefined) return paginaDoElemento(elemento, especificadores);
+
+  const carregar = carregarDoLazy(rota);
+
+  return carregar && (paginaDoImportDinamico(carregar) ?? PAGINA_NAO_DETERMINAVEL);
+}
+
+export function lerPaginasDoRouter(arvore) {
   const fonte = lerFonte(arvore, ARQUIVO_DO_ROUTER);
   const especificadores = especificadoresImportados(fonte);
-  const elementos = new Map();
+  const paginas = new Map();
 
   percorrer(fonte, (no) => {
     if (!ts.isObjectLiteralExpression(no)) return;
 
     const rotaId = rotaIdDoCaminho(valorDaPropriedade(no, PROPRIEDADE_DO_CAMINHO));
-    const elemento = valorDaPropriedade(no, PROPRIEDADE_DO_ELEMENTO);
+    if (rotaId === undefined || paginas.has(rotaId)) return;
 
-    if (rotaId === undefined || elemento === undefined || elementos.has(rotaId)) return;
-
-    const componente = componenteDoJsx(elemento);
-    elementos.set(rotaId, { componente, especificador: especificadores.get(componente) });
+    const pagina = paginaDaRota(no, especificadores);
+    if (pagina !== undefined) paginas.set(rotaId, pagina);
   });
 
-  return elementos;
+  return paginas;
 }
