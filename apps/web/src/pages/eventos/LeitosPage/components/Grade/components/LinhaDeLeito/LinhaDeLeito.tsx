@@ -9,8 +9,8 @@ export interface LinhaDeLeitoProps {
   densidade: Density;
   ocupantesDe: (leitoId: string, noite: string) => readonly string[];
   escolhendo: { leitoId: string; noite: NoiteId } | null;
-  onEscolher: (leitoId: string, noite: NoiteId) => void;
-  onLiberar: (leitoId: string, noite: string, inscricaoId: string) => void;
+  onEscolher?: (leitoId: string, noite: NoiteId) => void;
+  onLiberar?: (leitoId: string, noite: string, inscricaoId: string) => void;
 }
 
 export function LinhaDeLeito({
@@ -42,8 +42,8 @@ export function LinhaDeLeito({
           ocupantes={ocupantesDe(leitoId, n.chave)}
           selecionada={escolhendo?.leitoId === leitoId && escolhendo.noite === n.chave}
           mostrarLiberado={liberado && n.chave === eventoDoMapa.noites[0].chave}
-          onEscolher={() => onEscolher(leitoId, n.chave)}
-          onLiberar={(inscricaoId) => onLiberar(leitoId, n.chave, inscricaoId)}
+          onEscolher={onEscolher && (() => onEscolher(leitoId, n.chave))}
+          onLiberar={onLiberar && ((inscricaoId) => onLiberar(leitoId, n.chave, inscricaoId))}
         />
       ))}
     </div>

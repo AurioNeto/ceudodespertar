@@ -17,6 +17,8 @@ import {
   textoDoNumero,
 } from './apoioDeTeste';
 
+vi.mock('@/app/sessao/SessaoProvider/SessaoProvider', () => ({ useSessao: () => ({ pode: () => true }) }));
+
 beforeEach(() => {
   fixarDensidade('office');
   vi.setSystemTime(AGORA_FIXO);

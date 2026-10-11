@@ -1,6 +1,7 @@
 import type { Leito } from '@cdd/contracts';
 import type { Density } from '@/ds';
 import { conflitoDeAgenda, hospedes, liberadoPorCancelamento, type eventoDoMapa } from '../../../../../../mocks/leitos';
+import { ESTILO_DO_OCUPANTE } from './constantes';
 
 export interface CelulaProps {
   leito: Leito;
@@ -9,8 +10,8 @@ export interface CelulaProps {
   ocupantes: readonly string[];
   selecionada: boolean;
   mostrarLiberado: boolean;
-  onEscolher: () => void;
-  onLiberar: (inscricaoId: string) => void;
+  onEscolher?: () => void;
+  onLiberar?: (inscricaoId: string) => void;
 }
 
 /**
@@ -31,6 +32,27 @@ export function Celula({
   const campo = densidade === 'field';
   const conflita = n.chave === conflitoDeAgenda.noite;
   const temVaga = ocupantes.length < l.capacidade;
+  const estiloDaVagaLivre = {
+    padding: '3px 5px',
+    borderRadius: 'var(--radius-sm)',
+    border: ocupantes.length > 0 ? '1px dashed var(--color-line-strong)' : 0,
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: 2,
+  } as const;
+  const vagaLivre = (
+    <>
+      <span style={{ font: 'var(--text-small)', color: 'var(--text-meta)' }}>
+        {ocupantes.length > 0 ? `livre · cabe mais ${l.capacidade - ocupantes.length}` : 'livre'}
+      </span>
+      {mostrarLiberado ? (
+        <span style={{ font: 'var(--text-small)', color: 'var(--color-confirmed)', textAlign: 'center' }}>
+          liberado em {liberadoPorCancelamento.quando}
+        </span>
+      ) : null}
+    </>
+  );
 
   if (!l.ativo) {
     return (
@@ -76,54 +98,42 @@ export function Celula({
     >
       {ocupantes.map((inscricaoId) => {
         const nome = hospedes.find((h) => (h.inscricaoId as string) === inscricaoId)?.nome ?? inscricaoId;
-        return (
+        const nomeEmDuasLinhas = (
+          <>
+            <span style={{ font: 'var(--text-small)', fontWeight: 600 }}>{nome.split(' ')[0]}</span>
+            <span style={{ font: 'var(--text-small)', opacity: 0.7 }}>{nome.split(' ').slice(1).join(' ')}</span>
+          </>
+        );
+        return onLiberar ? (
           <button
             key={inscricaoId}
             type="button"
             aria-label={`liberar ${l.identificacao} na ${n.rotulo} — ${nome}`}
             onClick={() => onLiberar(inscricaoId)}
-            style={{
-              background: 'transparent',
-              color: 'var(--color-royal-ink)',
-              cursor: 'pointer',
-              textAlign: 'left',
-              padding: '2px 5px',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 1,
-            }}
+            style={{ ...ESTILO_DO_OCUPANTE, cursor: 'pointer' }}
           >
-            <span style={{ font: 'var(--text-small)', fontWeight: 600 }}>{nome.split(' ')[0]}</span>
-            <span style={{ font: 'var(--text-small)', opacity: 0.7 }}>{nome.split(' ').slice(1).join(' ')}</span>
+            {nomeEmDuasLinhas}
           </button>
+        ) : (
+          <div key={inscricaoId} style={ESTILO_DO_OCUPANTE}>
+            {nomeEmDuasLinhas}
+          </div>
         );
       })}
 
       {temVaga ? (
-        <button
-          type="button"
-          aria-label={`alocar em ${l.identificacao} na ${n.rotulo}`}
-          onClick={onEscolher}
-          style={{
-            cursor: 'pointer',
-            padding: '3px 5px',
-            borderRadius: 'var(--radius-sm)',
-            border: ocupantes.length > 0 ? '1px dashed var(--color-line-strong)' : 0,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: 2,
-          }}
-        >
-          <span style={{ font: 'var(--text-small)', color: 'var(--text-meta)' }}>
-            {ocupantes.length > 0 ? `livre · cabe mais ${l.capacidade - ocupantes.length}` : 'livre'}
-          </span>
-          {mostrarLiberado ? (
-            <span style={{ font: 'var(--text-small)', color: 'var(--color-confirmed)', textAlign: 'center' }}>
-              liberado em {liberadoPorCancelamento.quando}
-            </span>
-          ) : null}
-        </button>
+        onEscolher ? (
+          <button
+            type="button"
+            aria-label={`alocar em ${l.identificacao} na ${n.rotulo}`}
+            onClick={onEscolher}
+            style={{ ...estiloDaVagaLivre, cursor: 'pointer' }}
+          >
+            {vagaLivre}
+          </button>
+        ) : (
+          <div style={estiloDaVagaLivre}>{vagaLivre}</div>
+        )
       ) : null}
     </div>
   );

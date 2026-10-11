@@ -19,9 +19,9 @@ export interface DetalheDoTrabalhoProps {
   onVoltar: () => void;
   onAlternarTarefa: (indice: number) => void;
   onAlternarWebhook: () => void;
-  onEditar: () => void;
-  onDuplicar: () => void;
-  onCancelar: () => void;
+  onEditar?: () => void;
+  onDuplicar?: () => void;
+  onCancelar?: () => void;
   onAviso: (texto: string) => void;
 }
 

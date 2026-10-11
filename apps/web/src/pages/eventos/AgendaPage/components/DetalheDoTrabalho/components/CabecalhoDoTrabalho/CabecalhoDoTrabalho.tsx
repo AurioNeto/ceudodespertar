@@ -6,9 +6,9 @@ import { Meta } from './components/Meta';
 
 export interface CabecalhoDoTrabalhoProps {
   trabalho: Trabalho;
-  onEditar: () => void;
-  onDuplicar: () => void;
-  onCancelar: () => void;
+  onEditar?: () => void;
+  onDuplicar?: () => void;
+  onCancelar?: () => void;
 }
 
 export function CabecalhoDoTrabalho({ trabalho: ev, onEditar, onDuplicar, onCancelar }: CabecalhoDoTrabalhoProps) {
@@ -65,23 +65,31 @@ export function CabecalhoDoTrabalho({ trabalho: ev, onEditar, onDuplicar, onCanc
           {ev.litros > 0 ? <Meta icone="flask-conical">{ev.litros} L previstos</Meta> : null}
         </div>
 
-        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'flex-start' }}>
-          <Button variant="ghost" iconName="pencil" onClick={onEditar}>
-            Editar
-          </Button>
-          <Button variant="quiet" iconName="copy" onClick={onDuplicar}>
-            Duplicar
-          </Button>
-          <Button
-            variant="quiet"
-            iconName="circle-x"
-            disabled={cancelada}
-            blockedReason={cancelada ? 'Esta cerimônia já está cancelada.' : undefined}
-            onClick={onCancelar}
-          >
-            Cancelar
-          </Button>
-        </div>
+        {onEditar || onDuplicar || onCancelar ? (
+          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'flex-start' }}>
+            {onEditar ? (
+              <Button variant="ghost" iconName="pencil" onClick={onEditar}>
+                Editar
+              </Button>
+            ) : null}
+            {onDuplicar ? (
+              <Button variant="quiet" iconName="copy" onClick={onDuplicar}>
+                Duplicar
+              </Button>
+            ) : null}
+            {onCancelar ? (
+              <Button
+                variant="quiet"
+                iconName="circle-x"
+                disabled={cancelada}
+                blockedReason={cancelada ? 'Esta cerimônia já está cancelada.' : undefined}
+                onClick={onCancelar}
+              >
+                Cancelar
+              </Button>
+            ) : null}
+          </div>
+        ) : null}
       </div>
     </div>
   );

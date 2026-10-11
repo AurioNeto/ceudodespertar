@@ -1,4 +1,5 @@
 import { ScreenHeader, useDensidade, SeletorDeTipo, Cartao, Numero, Recado } from '@/ds';
+import { useSessao } from '@/app/sessao';
 import { pluralizar } from '@/pages/utils/formato';
 import { eventoDoMapa } from './mocks/leitos';
 import { AvisoDeConflito } from './components/AvisoDeConflito';
@@ -29,8 +30,13 @@ import { useAlocacaoDeLeitos } from './hooks/useAlocacaoDeLeitos';
 export function LeitosPage() {
   const densidade = useDensidade();
   const campo = densidade === 'field';
+  const { pode } = useSessao();
+  const gerencia = pode('eventos.operacao.gerenciar');
 
   const tela = useAlocacaoDeLeitos();
+  const acoesDeAlocacao = gerencia
+    ? { onEscolher: tela.escolherLeito, onLiberar: tela.liberar, onAlocar: tela.alocar }
+    : {};
 
   return (
     <>
@@ -51,15 +57,17 @@ export function LeitosPage() {
           minWidth: 0,
         }}
       >
-        <SeletorDeTipo
-          opcoes={[
-            { valor: 'mapa', label: 'Mapa do evento' },
-            { valor: 'cadastro', label: 'Dormitórios e leitos' },
-          ]}
-          valor={tela.aba}
-          onEscolher={tela.escolherAba}
-          densidade={densidade}
-        />
+        {gerencia ? (
+          <SeletorDeTipo
+            opcoes={[
+              { valor: 'mapa', label: 'Mapa do evento' },
+              { valor: 'cadastro', label: 'Dormitórios e leitos' },
+            ]}
+            valor={tela.aba}
+            onEscolher={tela.escolherAba}
+            densidade={densidade}
+          />
+        ) : null}
 
         {tela.recado ? <Recado texto={tela.recado} onFechar={tela.fecharRecado} /> : null}
 
@@ -96,11 +104,9 @@ export function LeitosPage() {
               densidade={densidade}
               ocupantesDe={tela.ocupantesDe}
               escolhendo={tela.escolhendo}
-              onEscolher={tela.escolherLeito}
               onFechar={tela.fecharEscolha}
-              onLiberar={tela.liberar}
-              onAlocar={tela.alocar}
               pendencias={tela.pendencias}
+              {...acoesDeAlocacao}
             />
 
             <SemLeito lista={tela.semLeito} densidade={densidade} />
