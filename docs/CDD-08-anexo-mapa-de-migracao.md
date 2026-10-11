@@ -74,8 +74,8 @@ Os destinos são agrupados por área: `app/`, `dados/`, `lib/`, `ds/`, `testes/`
 |---|---|---|---|
 | `dados/index.ts` (barrel sem efeito colateral) | `dados/index.ts` | repartir por export | dados/ sem efeito e sem ciclo |
 | `dados/index.ts`: `gerenciadorOidc`, `credencial`, `servicoDeEntrada`, `clienteHttp`, `consulta`, `comando` | `dados/instancias.ts` (importado só por `main.tsx`) | repartir por export | dados/ sem efeito e sem ciclo |
-| `dados/clienteDeConsultas.ts`: `JANELA_DE_FRESCOR_EM_MS` (o #55 a importa do arquivo, fora do barrel; `testes/sessaoDeTeste.tsx` herdou o import, como `@/dados/clienteDeConsultas`. O barrel passa a reexportá-la, e o apoio a importá-la dele, quando o barrel deixar de ter efeito: até lá, importar `@/dados` no vitest roda `lerAmbienteOidc`, que lança sem `VITE_OIDC_EMISSOR`) | `dados/index.ts` | manter | dados/ sem efeito e sem ciclo |
-| `dados/oidc.ts`: `CAMINHO_DA_ENTRADA`, `CAMINHO_DE_RETORNO`, `CAMINHO_DA_RENOVACAO_SILENCIOSA`, `ESPERA_DA_RENOVACAO_SILENCIOSA_EM_SEGUNDOS`, `ESCOPO_OIDC` (quebra o ciclo `oidc.ts` ↔ `credencialOidc.ts`) | `dados/caminhosOidc.ts` | repartir por export | dados/ sem efeito e sem ciclo |
+| `dados/clienteDeConsultas.ts`: `JANELA_DE_FRESCOR_EM_MS` (o #55 a importa do arquivo, fora do barrel; `testes/sessaoDeTeste.tsx` herdou o import, como `@/dados/clienteDeConsultas`. O barrel passa a reexportá-la, e o apoio a importá-la dele, quando o barrel deixar de ter efeito: até lá, importar `@/dados` no vitest roda `lerAmbienteOidc`, que lança sem `VITE_OIDC_EMISSOR`. A reexportação é a única diferença do `conferir-movimento` na etapa, exportação nova do barrel) | `dados/index.ts` | manter | dados/ sem efeito e sem ciclo |
+| `dados/oidc.ts`: `CAMINHO_DA_ENTRADA`, `CAMINHO_DE_RETORNO`, `CAMINHO_DA_RENOVACAO_SILENCIOSA`, `ESPERA_DA_RENOVACAO_SILENCIOSA_EM_SEGUNDOS`, `ESCOPO_OIDC` (quebra o ciclo `oidc.ts` ↔ `credencialOidc.ts`; `oidc.ts` não as reexporta: `app/rotas/destino.ts` e `app/rotas/rotas.ts` passam a importá-las de `@/dados/caminhosOidc`, e os dois avisos `dados-so-pelo-barrel` só trocam de destino, porque reexportá-las no barrel seria exportação nova) | `dados/caminhosOidc.ts` | repartir por export | dados/ sem efeito e sem ciclo |
 | `dados/oidc.ts` (restante) | `dados/oidc.ts` | manter | dados/ sem efeito e sem ciclo |
 | `dados/oidc.dom.test.ts` | `dados/oidc.dom.test.ts` | manter | dados/ sem efeito e sem ciclo |
 | `dados/credencialOidc.ts` (passa a importar `ESPERA_DA_RENOVACAO_SILENCIOSA_EM_SEGUNDOS` de `caminhosOidc.ts`) | `dados/credencialOidc.ts` | manter | dados/ sem efeito e sem ciclo |
@@ -88,7 +88,7 @@ Os destinos são agrupados por área: `app/`, `dados/`, `lib/`, `ds/`, `testes/`
 | `dados/consultaEComando.ts` | `dados/consultaEComando.ts` | manter | dados/ sem efeito e sem ciclo |
 | `dados/consultaEComando.test.ts` | `dados/consultaEComando.test.ts` | manter | dados/ sem efeito e sem ciclo |
 | `dados/erros.ts` | `dados/erros.ts` | manter | dados/ sem efeito e sem ciclo |
-| `dados/erros.test.ts` (novo, para `erroDaResposta`) | `dados/erros.test.ts` | criar | dados/ sem efeito e sem ciclo |
+| `dados/erros.test.ts` (novo, para `erroDaResposta`) | `dados/erros.test.ts` | não criado: nenhuma etapa escreve teste novo (decisão do dono de 10/10/2026, seção 13.7 do Documento 8) | dados/ sem efeito e sem ciclo |
 | `dados/apoioDeTeste.ts` (consumidores: `clienteHttp.test.ts`, `consultaEComando.test.ts` e `credencialOidc.test.ts`) | `dados/apoioDeTeste.ts` | manter | dados/ sem efeito e sem ciclo |
 
 ---
@@ -295,7 +295,7 @@ Os testes do #58, do #59, do #61 e do #62 se repartem por describe entre as unid
 | `mocks/verificacao.ts`: `ORIGENS`, `CONFIANCA` (só Verificação e seu `PainelDeRevisao`) | `pages/financeiro/lancamentos/VerificacaoLotePage/constantes.ts` | repartir por export | Mover lancamentos |
 | `main.tsx` (passa a importar as instâncias de `dados/instancias.ts`; `fontesReais` fica aqui) | `main.tsx` | manter | dados/ sem efeito e sem ciclo |
 | `main.tsx`: `fontesReais`, `escolherFontesDaSessao` (opcional: fábrica que recebe as instâncias) | `app/sessao/fontesDaSessao.ts` (+ teste) | dividir | Dividir app/shell, sessão e ds |
-| `silencioso.ts` (usa `criarGerenciadorOidc` do barrel de dados) | `silencioso.ts` | manter | dados/ sem efeito e sem ciclo |
+| `silencioso.ts` (importa `configuracaoOidc` e `lerAmbienteOidc` de `dados/oidc.ts` e monta o `UserManager` ele mesmo; trocar para `criarGerenciadorOidc` pelo barrel muda o corpo, então o arquivo não mudou e o aviso `dados-so-pelo-barrel` dele fica na linha de base) | `silencioso.ts` | manter | dados/ sem efeito e sem ciclo |
 | `env.d.ts` | `env.d.ts` | manter | Fronteiras no depcruise |
 | `styles/global.css` (só a entrada; `@import` apontam para `../ds/fundacao/`, na mesma ordem; Tailwind mantido até a etapa "Remover o Tailwind") | `styles/global.css` | manter | Mover fundação do ds |
 
