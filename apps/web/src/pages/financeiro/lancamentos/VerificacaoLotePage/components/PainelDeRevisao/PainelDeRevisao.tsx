@@ -1,8 +1,7 @@
 import type { ItemNaFila } from '@cdd/contracts';
-import { Button, Icon, StatusBadge, type IconName } from '@/ds';
+import { Button, Icon, Rotulo, StatusBadge, type IconName } from '@/ds';
 import { formatarData } from '@/pages/utils/formato';
 import { CONFIANCA, ORIGENS } from '../../constantes';
-import { rotuloLabel } from './constantes';
 import { CampoDeTexto } from './components/CampoDeTexto';
 import { FormularioDeDevolucao } from './components/FormularioDeDevolucao';
 import { useRascunhoDeRevisao } from './hooks/useRascunhoDeRevisao';
@@ -64,7 +63,7 @@ export function PainelDeRevisao({ item, campo, onFechar, onAprovar, onDevolver }
             borderBottom: 'var(--border-hairline)',
           }}
         >
-          <span style={rotuloLabel}>Revisar lançamento</span>
+          <Rotulo>Revisar lançamento</Rotulo>
           <StatusBadge tone={confianca.tone}>{confianca.texto}</StatusBadge>
           <button
             type="button"

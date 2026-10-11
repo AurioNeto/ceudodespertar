@@ -1,5 +1,4 @@
-import { DefaultField } from '@/ds';
-import { rotuloLabel } from '../../constantes';
+import { DefaultField, rotuloCaixaAlta } from '@/ds';
 import { INICIAL } from '../../mocks/formularioInicial';
 import type { FormularioDeLancamento } from '../../tipos';
 import { FolhaDeTexto } from '../FolhaDeTexto';
@@ -11,7 +10,7 @@ export interface ClassificacaoEmCampoProps {
 export function ClassificacaoEmCampo({ formulario: f }: ClassificacaoEmCampoProps) {
   return (
     <>
-      <div style={rotuloLabel}>Preenchido por padrão — toque para trocar</div>
+      <div style={rotuloCaixaAlta}>Preenchido por padrão — toque para trocar</div>
       <DefaultField
         label={f.labelData}
         value={f.campos.data}

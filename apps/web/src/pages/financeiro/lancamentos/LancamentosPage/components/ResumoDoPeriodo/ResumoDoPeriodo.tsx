@@ -1,7 +1,6 @@
 import type { LancamentoNaLista } from '@cdd/contracts';
-import type { Density } from '@/ds';
+import { Rotulo, type Density } from '@/ds';
 import { formatarBRL } from '@/pages/utils/formato';
-import { rotuloLabel } from '../../constantes';
 import { totaisDoPeriodo } from '../../utils/totaisDoPeriodo';
 import { Total } from './components/Total';
 
@@ -35,7 +34,7 @@ export function ResumoDoPeriodo({ lista, densidade }: ResumoDoPeriodoProps) {
       />
       {campo ? null : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-          <span style={rotuloLabel}>A conferir</span>
+          <Rotulo>A conferir</Rotulo>
           <span style={{ font: 'var(--text-body-strong)', color: 'var(--color-pending)' }}>
             {aConferir} de {lista.length}
           </span>

@@ -1,5 +1,5 @@
-import { Button, Select, type Density } from '@/ds';
-import { CHIPS_TIPO, OPCOES_GRUPO, OPCOES_PERIODO, OPCOES_STATUS, OPCOES_TIPO, rotuloLabel } from '../../constantes';
+import { Button, Rotulo, Select, type Density } from '@/ds';
+import { CHIPS_TIPO, OPCOES_GRUPO, OPCOES_PERIODO, OPCOES_STATUS, OPCOES_TIPO } from '../../constantes';
 
 export interface FiltrosDoLivroProps {
   filtros: Record<string, string>;
@@ -75,7 +75,7 @@ export function FiltrosDoLivro({ filtros, densidade, onFiltrar, onLimpar }: Filt
         onChange={(v) => onFiltrar('status', v)}
       />
       <div style={{ display: 'flex', flexDirection: 'column' }}>
-        <span style={{ ...rotuloLabel, marginBottom: 7 }}>Busca</span>
+        <Rotulo style={{ marginBottom: 7 }}>Busca</Rotulo>
         <input
           value={filtros.busca ?? ''}
           onChange={(e) => onFiltrar('busca', e.target.value)}

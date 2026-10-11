@@ -3,7 +3,9 @@ import {
   AmountInput,
   BottomSheet,
   Button,
+  CorpoDaTela,
   PeriodLock,
+  Rotulo,
   ScreenHeader,
   TextField,
   useDensidade,
@@ -16,7 +18,7 @@ import { ClassificacaoNoEscritorio } from './components/ClassificacaoNoEscritori
 import { ComprovanteDoLancamento } from './components/ComprovanteDoLancamento';
 import { ReciboDoRegistro } from './components/ReciboDoRegistro';
 import { SugestoesDoCupom } from './components/SugestoesDoCupom';
-import { TEXTOS_DA_SOMA, TIPOS, rotuloLabel } from './constantes';
+import { TEXTOS_DA_SOMA, TIPOS } from './constantes';
 import { useFormularioDeLancamento } from './hooks/useFormularioDeLancamento';
 import { usePickerDeOpcao } from './hooks/usePickerDeOpcao';
 
@@ -43,107 +45,99 @@ export function RegistrarLancamentoPage() {
         density={densidade}
       />
 
-      <div
-        style={{
-          flex: 1,
-          padding: campo ? '14px 16px 18px' : '20px 24px 24px',
-          maxWidth: campo ? undefined : 860,
-          display: 'flex',
-          flexDirection: 'column',
-          gap: campo ? 12 : 16,
-          minWidth: 0,
-        }}
-      >
-        {f.recibo ? (
-          <ReciboDoRegistro recibo={f.recibo} consolida={consolida} densidade={densidade} />
-        ) : null}
-
-        {f.competenciaFechada ? (
-          <PeriodLock
-            title={`Período ${campo ? '07/2026' : '07/2026 · CDD'} está fechado`}
-            reason={
-              campo
-                ? 'O gasto é de julho e julho foi fechado em 05/08. Lance em 08/2026 explicando na descrição.'
-                : 'A data do gasto cai em julho, e julho foi fechado em 05/08 por Marcia Zubek. Lançar em período fechado mudaria um relatório que já foi assinado.'
-            }
-            reopenDeniedNote="Reabrir exige um administrador, e o motivo fica registrado de forma permanente."
-          />
-        ) : null}
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {campo ? null : <span style={rotuloLabel}>Tipo de lançamento</span>}
-          <SeletorDeTipo opcoes={TIPOS} valor={f.tipo} onEscolher={f.trocarTipo} densidade={densidade} />
-          {campo ? null : (
-            <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>{f.notaTipo}</span>
-          )}
-        </div>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-          <AmountInput
-            label={f.labelValor}
-            {...TEXTOS_DA_SOMA}
-            value={f.campos.valor}
-            onChange={(v) => f.alterar('valor', v)}
-            hint="Escreva como você fala. Soma vale: 65+70."
-          />
-          {f.erroDoValor ? (
-            <span style={{ font: 'var(--text-small)', color: 'var(--color-attention)' }}>{f.erroDoValor}</span>
+      <div style={{ flex: 1 }}>
+        <CorpoDaTela densidade={densidade} larguraMaxima={860} espaco="compacto">
+          {f.recibo ? (
+            <ReciboDoRegistro recibo={f.recibo} consolida={consolida} densidade={densidade} />
           ) : null}
-        </div>
 
-        <TextField
-          label={f.labelDescricao}
-          density={densidade}
-          value={f.campos.descricao}
-          onChange={(e) => f.alterar('descricao', e.target.value)}
-          placeholder={f.placeholderDescricao}
-        />
-
-        {campo ? null : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 14 }}>
-            <TextField
-              label={f.labelData}
-              value={f.campos.data}
-              onChange={(e) => f.alterar('data', e.target.value)}
-              error={f.competenciaFechada ? 'Cai em julho, período fechado.' : undefined}
+          {f.competenciaFechada ? (
+            <PeriodLock
+              title={`Período ${campo ? '07/2026' : '07/2026 · CDD'} está fechado`}
+              reason={
+                campo
+                  ? 'O gasto é de julho e julho foi fechado em 05/08. Lance em 08/2026 explicando na descrição.'
+                  : 'A data do gasto cai em julho, e julho foi fechado em 05/08 por Marcia Zubek. Lançar em período fechado mudaria um relatório que já foi assinado.'
+              }
+              reopenDeniedNote="Reabrir exige um administrador, e o motivo fica registrado de forma permanente."
             />
-            {f.temContraparte ? (
-              <TextField
-                label={f.labelContraparte}
-                value={f.campos.contraparte}
-                onChange={(e) => f.alterar('contraparte', e.target.value)}
-                placeholder={f.placeholderContraparte}
-              />
+          ) : null}
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {campo ? null : <Rotulo>Tipo de lançamento</Rotulo>}
+            <SeletorDeTipo opcoes={TIPOS} valor={f.tipo} onEscolher={f.trocarTipo} densidade={densidade} />
+            {campo ? null : (
+              <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>{f.notaTipo}</span>
+            )}
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <AmountInput
+              label={f.labelValor}
+              {...TEXTOS_DA_SOMA}
+              value={f.campos.valor}
+              onChange={(v) => f.alterar('valor', v)}
+              hint="Escreva como você fala. Soma vale: 65+70."
+            />
+            {f.erroDoValor ? (
+              <span style={{ font: 'var(--text-small)', color: 'var(--color-attention)' }}>{f.erroDoValor}</span>
             ) : null}
           </div>
-        )}
 
-        <ComprovanteDoLancamento
-          anexo={f.campos.anexo}
-          densidade={densidade}
-          onAlterarAnexo={(anexo) => f.alterar('anexo', anexo)}
-        />
-
-        {f.sugestoesPendentes.length ? (
-          <SugestoesDoCupom
-            sugestoes={f.sugestoesPendentes}
-            densidade={densidade}
-            onAceitar={f.aceitarSugestao}
-            onDescartar={f.descartarSugestao}
-            onAceitarTodas={f.aceitarTodas}
+          <TextField
+            label={f.labelDescricao}
+            density={densidade}
+            value={f.campos.descricao}
+            onChange={(e) => f.alterar('descricao', e.target.value)}
+            placeholder={f.placeholderDescricao}
           />
-        ) : null}
 
-        <div style={{ height: 1, background: 'var(--border-subtle)', margin: '2px 0' }} />
+          {campo ? null : (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 14 }}>
+              <TextField
+                label={f.labelData}
+                value={f.campos.data}
+                onChange={(e) => f.alterar('data', e.target.value)}
+                error={f.competenciaFechada ? 'Cai em julho, período fechado.' : undefined}
+              />
+              {f.temContraparte ? (
+                <TextField
+                  label={f.labelContraparte}
+                  value={f.campos.contraparte}
+                  onChange={(e) => f.alterar('contraparte', e.target.value)}
+                  placeholder={f.placeholderContraparte}
+                />
+              ) : null}
+            </div>
+          )}
 
-        {campo ? <ClassificacaoEmCampo formulario={f} /> : <ClassificacaoNoEscritorio formulario={f} />}
+          <ComprovanteDoLancamento
+            anexo={f.campos.anexo}
+            densidade={densidade}
+            onAlterarAnexo={(anexo) => f.alterar('anexo', anexo)}
+          />
 
-        <AvisosDoRegistro
-          consolida={consolida}
-          temRecibo={f.recibo !== null}
-          composto={f.composto}
-          densidade={densidade}
-        />
+          {f.sugestoesPendentes.length ? (
+            <SugestoesDoCupom
+              sugestoes={f.sugestoesPendentes}
+              densidade={densidade}
+              onAceitar={f.aceitarSugestao}
+              onDescartar={f.descartarSugestao}
+              onAceitarTodas={f.aceitarTodas}
+            />
+          ) : null}
+
+          <div style={{ height: 1, background: 'var(--border-subtle)', margin: '2px 0' }} />
+
+          {campo ? <ClassificacaoEmCampo formulario={f} /> : <ClassificacaoNoEscritorio formulario={f} />}
+
+          <AvisosDoRegistro
+            consolida={consolida}
+            temRecibo={f.recibo !== null}
+            composto={f.composto}
+            densidade={densidade}
+          />
+        </CorpoDaTela>
       </div>
 
       <ActionBar note={f.notaBarra}>

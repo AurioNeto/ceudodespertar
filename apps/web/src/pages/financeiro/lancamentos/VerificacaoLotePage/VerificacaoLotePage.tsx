@@ -1,4 +1,4 @@
-import { EmptyState, Icon, ScreenHeader, useDensidade } from '@/ds';
+import { CorpoDaTela, EmptyState, Icon, ScreenHeader, useDensidade } from '@/ds';
 import { PainelDeRevisao } from './components/PainelDeRevisao';
 import { BarraDeSelecao } from './components/BarraDeSelecao';
 import { FiltrosDeOrigem } from './components/FiltrosDeOrigem';
@@ -23,15 +23,7 @@ export function VerificacaoLotePage() {
         density={densidade}
       />
 
-      <div
-        style={{
-          padding: campo ? '14px 16px 22px' : '18px 24px 26px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 14,
-          maxWidth: campo ? undefined : 1020,
-        }}
-      >
+      <CorpoDaTela densidade={densidade} larguraMaxima={1020}>
         {fila.mensagem ? (
           <div
             style={{
@@ -126,7 +118,7 @@ export function VerificacaoLotePage() {
             ))}
           </div>
         )}
-      </div>
+      </CorpoDaTela>
 
       {fila.emRevisao ? (
         <PainelDeRevisao

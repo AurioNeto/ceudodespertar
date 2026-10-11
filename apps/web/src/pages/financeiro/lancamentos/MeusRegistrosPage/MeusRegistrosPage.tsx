@@ -1,4 +1,4 @@
-import { ScreenHeader, useDensidade, SeletorDeTipo } from '@/ds';
+import { CorpoDaTela, ScreenHeader, useDensidade, SeletorDeTipo } from '@/ds';
 import { CarrosselDeRecibos } from './components/CarrosselDeRecibos';
 import { ListaSimplificada } from './components/ListaSimplificada';
 import { useMeusRegistros } from './hooks/useMeusRegistros';
@@ -17,16 +17,7 @@ export function MeusRegistrosPage() {
         density={densidade}
       />
 
-      <div
-        style={{
-          padding: campo ? '14px 16px 20px' : '18px 24px 26px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: campo ? 12 : 18,
-          maxWidth: campo ? undefined : 1000,
-          minWidth: 0,
-        }}
-      >
+      <CorpoDaTela densidade={densidade} larguraMaxima={1000}>
         <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 12 }}>
           <SeletorDeTipo
             opcoes={[
@@ -57,7 +48,7 @@ export function MeusRegistrosPage() {
             onIrPara={meus.irPara}
           />
         )}
-      </div>
+      </CorpoDaTela>
     </>
   );
 }

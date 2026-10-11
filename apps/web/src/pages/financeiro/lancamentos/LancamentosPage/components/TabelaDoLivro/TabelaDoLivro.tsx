@@ -1,5 +1,5 @@
 import type { LancamentoNaLista } from '@cdd/contracts';
-import { rotuloLabel } from '../../constantes';
+import { Rotulo } from '@/ds';
 import { LinhaDoLivro } from './components/LinhaDoLivro';
 
 export interface TabelaDoLivroProps {
@@ -27,9 +27,9 @@ export function TabelaDoLivro({ registros, selecionado, onAbrir }: TabelaDoLivro
         }}
       >
         {['Data', 'Lançamento', 'Quem lançou', 'Grupo', 'Tipo', 'Valor'].map((c, i) => (
-          <span key={c} style={{ ...rotuloLabel, padding: '10px 13px', textAlign: i === 5 ? 'right' : 'left' }}>
+          <Rotulo key={c} style={{ padding: '10px 13px', textAlign: i === 5 ? 'right' : 'left' }}>
             {c}
-          </span>
+          </Rotulo>
         ))}
       </div>
 

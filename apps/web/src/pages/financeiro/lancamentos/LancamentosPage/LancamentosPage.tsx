@@ -1,4 +1,4 @@
-import { Button, ScreenHeader, EmptyState, useDensidade } from '@/ds';
+import { Button, CorpoDaTela, ScreenHeader, EmptyState, useDensidade } from '@/ds';
 import { Paginacao } from '../components/Paginacao';
 import { pluralizar } from '@/pages/utils/formato';
 import { FiltrosDoLivro } from './components/FiltrosDoLivro';
@@ -22,15 +22,7 @@ export function LancamentosPage() {
         density={densidade}
       />
 
-      <div
-        style={{
-          padding: campo ? '14px 16px 20px' : '18px 24px 26px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: campo ? 12 : 16,
-          minWidth: 0,
-        }}
-      >
+      <CorpoDaTela densidade={densidade} espaco="compacto">
         <FiltrosDoLivro
           filtros={livro.filtros}
           densidade={densidade}
@@ -66,7 +58,7 @@ export function LancamentosPage() {
             densidade={densidade}
           />
         ) : null}
-      </div>
+      </CorpoDaTela>
 
       {livro.selecionado ? (
         <GavetaDeDetalhe registro={livro.selecionado} densidade={densidade} onFechar={livro.fecharDetalhe} />

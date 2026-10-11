@@ -43,10 +43,3 @@ export const LISTAS: Record<CampoComPicker, { titulo: string; opcoes: readonly S
   reembolso: { titulo: 'Quem adiantou o dinheiro', opcoes: opcoesDeReembolso },
   unidade: { titulo: 'Unidade', opcoes: opcoesDeUnidade },
 };
-
-export const rotuloLabel = {
-  font: 'var(--text-label)',
-  textTransform: 'uppercase',
-  letterSpacing: 'var(--tracking-label)',
-  color: 'var(--text-field-label)',
-} as const;
