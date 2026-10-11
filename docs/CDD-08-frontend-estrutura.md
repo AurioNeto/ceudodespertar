@@ -71,7 +71,7 @@ O dono aprovou as recomendações da proposta em todos os pontos. Quatro decisõ
 | Gate do e2e do B0 (seção 13.5) | Antes do gate, só linhas de import de `app/`, `dados/`, sistema e transversal mudam. Nenhum arquivo dessas pastas é movido, dividido ou tem corpo alterado. | Promover primitivos, mover a fundação e mover telas de demonstração muda o caminho que esses arquivos importam. Esperar o gate pararia todo o plano. |
 | Operação de mover não muda corpo (seção 13.2) | Na etapa `lib/formato por export`, `formatarDinheiro` passa a chamar `formatarValor(centavos / 100)`, para não exportar o `Intl.NumberFormat` privado (BRL) de `lib/formato`. | `formatarValor` fica em `lib` e `formatarDinheiro` desce para `pages/utils`. É o mesmo formatador, com o mesmo resultado, coberto pelos testes de formato da etapa de caracterização de `lib/formato` e `components`. |
 | Regras de camada que proíbem importar `testes/` | `testes/` não está no alvo de `lib-e-folha`, `dados-sem-ui` e `ds-autonomo`. Quem barra é `apoio-de-teste-so-em-teste`, que isenta os `*.test.*`. | Os testes de `lib`, `dados` e `ds` precisam das fábricas de `src/testes` (ex.: a fábrica de `ErroDaApi` em `dados/clienteDeConsultas.test.ts`). Decisão do dono. |
-| `mock-global-so-dados` | Até a etapa de mocks transversais, `src/mocks/financeiro.ts` guarda só o que o Painel usa e importa `contas` de `@/pages/mocks/contas`. É 1 aviso previsto. | `contas` cruza financeiro e eventos e desce na etapa de mocks transversais. As sobras do Painel só descem quando o Painel mudar de pasta, depois do gate. |
+| `mock-global-so-dados` | Vale desde a etapa de mocks transversais até o Painel mudar de pasta: `src/mocks/financeiro.ts` guarda só o que o Painel usa e importa `contas` de `@/pages/mocks/contas`. É 1 aviso previsto. | `contas` cruza financeiro e eventos e desceu na etapa de mocks transversais. As sobras do Painel descem quando o Painel mudar de pasta (Mover transversal), depois do gate. |
 | Hook fora do `ds/` (seção 4.1) | `useDensidade` e o tipo `Density` ficam em `ds/fundacao/`. Hoje nenhum arquivo do `ds/` consome o hook; `app/shell/Layout` e as páginas consomem. | A densidade é token do design system (Documento 5, §3.4): as duas densidades, campo e escritório, são definidas no `ds/`. O hook que lê o token fica com ele. |
 | Regra do ancestral comum dentro de `app/` (seção 6.1) | Em `app/`, a área (`shell`, `sessao`, `rotas`, `providers`, `demonstracao`) é o nível de posse. Módulos, hooks, utils e componentes internos ficam em `app/<área>/{hooks,utils,components}` mesmo com um só consumidor (ex.: `derivarEstado` e `useExisteUsuarioOidc`, só do `SessaoProvider`; `nomeDaTela`, `useContagemDoLote` e `TelaSemAcesso`, só do `Layout`). | `app/` é composição de app e expõe cada área por um `index.ts`. Descer a regra de app para dentro das pastas de componente a espalharia sem ganho de leitura. |
 | Renome ao entrar numa unidade ou ao repartir (seção 10.1) | O arquivo pode perder o sufixo que repetia o dono (`consultasDeAcessos.ts` → `AcessosPage/consultas.ts`; `comandosDeAcessos.ts` → `comandos.ts`; `mensagemDeErroDeAcessos.ts` → `utils/mensagemDeErro.ts`) ou ganhar o nome da anatomia (`lib/chaveDeIdempotencia.ts` → `hooks/useChaveDeIdempotencia.ts`; `clienteHttp.tsx` → `ClienteHttpProvider/ClienteHttpProvider.tsx`). O conteúdo é idêntico, conferido pelo `conferir-movimento` com o par antigo → novo. `textosDeAcessos.ts` não é renome: reparte-se por export. Teste que acompanha um export repartido toma o nome do módulo de destino (`app/navegacao.test.ts`, que só testa `rotaAtiva`, vira `app/shell/rotaAtiva.test.ts`). | Dentro da unidade, o nome do dono já está no caminho. A anatomia (seção 5.1) é o que o leitor procura. |
@@ -297,11 +297,12 @@ pages/eventos/inscricao/              fluxo: InscricaoPage + InscricaoPublicaPag
   InscricaoPage/
     index.ts, InscricaoPage.tsx (só compõe), InscricaoPage.dom.test.tsx
     constantes.ts, tipos.ts
-    hooks/useInscricao.ts (+ .dom.test.ts)               os 19 useState num reducer
-    utils/pendenciasDaInscricao.ts (+ teste)
+    hooks/useInscricao.ts                                os 19 useState e os handlers, sem reducer
+    utils/pendenciasDaInscricao.ts
     mocks/inscricao.ts
-    components/Bloco/ EscolhaDoEvento/ LinkDaCerimonia/ BuscaDePessoa/ PessoaEscolhida/
-               EstadoDaAnamnese/ Contribuicao/ LinhaDeInterruptor/ Pendencias/ Fechamento/
+    components/Alimentacao/ Bloco/ BuscaDePessoa/ ComoParticipa/ Contribuicao/ DadosParaACasa/
+               EscolhaDaHospedagem/ EscolhaDoEvento/ EstadoDaAnamnese/ Fechamento/ LinhaDeInterruptor/
+               LinkDaCerimonia/ OpcaoEmLinha/ Pendencias/ PessoaEscolhida/
 ```
 
 A árvore-alvo completa está na seção 11; o destino de cada arquivo está no anexo.
@@ -428,7 +429,7 @@ Fluxo só existe com compartilhamento exclusivo entre telas do mesmo módulo. Fl
 | Fronteiras e estrutura | `apps/web/test/estrutural/fronteiras.test.ts` | estrutural (node), criado na etapa de fronteiras no depcruise |
 
 - Os projetos são escolhidos pelo sufixo, em `apps/web/vitest.config.ts`: `logica` roda `src/**/*.test.ts` em node, exceto `*.dom.test.ts`; `dom` roda `src/**/*.test.tsx` e `src/**/*.dom.test.ts` em jsdom. Mudar arquivo de pasta não muda o projeto.
-- Toda unidade nova tem teste. Durante a migração, unidade sem teste é aviso do `conferir-estrutura.mjs` (seção 12.4); ao fim dela, erro.
+- Toda unidade nova tem teste. Durante a migração, unidade sem teste é aviso do `conferir-estrutura.mjs` (seção 12.4); ao fim dela, erro. Enquanto a refatoração durar, as etapas não escrevem teste novo (decisão do dono de 10/10, seção 13.7); a cobertura das unidades novas fica para depois dela.
 
 ### 8.2 Apoio de teste
 
@@ -610,8 +611,8 @@ Todas as regras rodam no depcruise, com configuração `.dependency-cruiser.web.
 
 | Regra | O que proíbe | Severidade inicial | Linha de base (main) |
 |---|---|:--:|:--:|
-| `web-sem-ciclo` | Ciclo no grafo de `apps/web/src`, inclusive por `import type` | aviso | 2 |
-| `lib-e-folha` | `lib/` importar outra camada ou React | aviso | 8 |
+| `web-sem-ciclo` | Ciclo no grafo de `apps/web/src`, inclusive por `import type` | aviso | 1 |
+| `lib-e-folha` | `lib/` importar outra camada ou React | aviso | 4 |
 | `dados-sem-ui` | `dados/` importar UI ou React | erro | 0 |
 | `ds-autonomo` | `ds/` importar `app`, `components`, `dados`, `mocks`, `pages` ou `react-router` | erro | 0 |
 | `ds-so-pelo-barrel` | Fora do `ds/`, importar qualquer caminho do `ds/` que não seja `ds/index.ts` | erro | 0 |
@@ -622,7 +623,7 @@ Todas as regras rodam no depcruise, com configuração `.dependency-cruiser.web.
 | `dados-so-pelo-barrel` | Fora de `dados/`, importar arquivo que não seja `index.ts` ou `instancias.ts` | aviso | 25 |
 | `instancias-so-no-main` | Importar `dados/instancias.ts` fora de `main.tsx` | erro | 0 |
 | `app-nao-conhece-paginas` | `app/` importar `pages/`, exceto `router.tsx` e testes | aviso | 1 |
-| `roteador-so-pelo-index-da-pagina` | `router.tsx` importar `pages/` por outro caminho que não o `index.ts` de uma `*Page/` | aviso | 29 |
+| `roteador-so-pelo-index-da-pagina` | `router.tsx` importar `pages/` por outro caminho que não o `index.ts` de uma `*Page/` | aviso | 6 |
 | `paginas-so-pela-api-publica-do-app` | `pages/` importar `app/` fora de `sessao`, `rotas`, `providers` e `demonstracao` (pelo `index.ts`) | aviso | 22 |
 | `pagina-nao-importa-pagina` | Uma `*Page/` importar outra | erro | 0 |
 | `modulo-nao-importa-modulo` | Um módulo importar outro | erro | 0 |
@@ -630,26 +631,26 @@ Todas as regras rodam no depcruise, com configuração `.dependency-cruiser.web.
 | `compartilhado-de-pages-nao-importa-modulo` | `pages/{components,hooks,utils,mocks}` importar módulo | erro | 0 |
 | `unidade-so-pelo-index-0` a `-6` | De fora de uma unidade, importar algo que não seja o `index.ts` do topo dela (irmão, primo ou neto). Uma regra por profundidade da origem, de 0 a 6 unidades | erro | 0 cada |
 | `unidade-ate-6-niveis` | Sétima unidade aninhada | erro | 0 |
-| `producao-global-sem-mock` | `ds/`, `lib/` ou `dados/` importar mock | aviso | 1 |
+| `producao-global-sem-mock` | `ds/`, `lib/` ou `dados/` importar mock | aviso | 0 |
 | `mock-global-so-dados` | `src/mocks/` importar `app`, `components`, `dados`, `ds`, `pages`, `testes` ou biblioteca externa que não seja `@cdd/contracts` | aviso | 1 |
 | `tela-de-api-sem-mock` | Telas com fonte `api` e o fluxo de entrada inteiro (`transversal/entrada/`, inclusive `constantes.ts` e `components/`) importarem mock | erro | 0 |
 | `apoio-de-teste-so-em-teste` | Código de produção importar `apoioDeTeste`, `src/testes` ou `vitest` | erro | 0 |
-| `camada-cruzada-por-alias` | Atravessar camada, ou módulo dentro de `pages/`, sem alias `@/`. Passa a erro quando chegar a zero | aviso | 313 |
+| `camada-cruzada-por-alias` | Atravessar camada, ou módulo dentro de `pages/`, sem alias `@/`. Passa a erro quando chegar a zero | aviso | 87 |
 | `pasta-camel-case` | Pasta de agrupamento em camelCase sob `apps/web/src` (agrupamento é minúsculo; unidade é PascalCase), que escaparia das regras de unidade, pelos imports feitos de dentro dela | erro | 0 |
 | `pasta-camel-case-no-destino` | Importar arquivo de pasta camelCase, inclusive pasta só com arquivos-folha | erro | 0 |
 
-São 33 regras: 26 nomeadas acima e as 7 de `unidade-so-pelo-index`. As contagens são as da linha de base (arquivo `.dependency-cruiser-known-violations.web.json`, seção 12.2), regenerada na etapa Mover ds em níveis, em que `AmountDisplay` e `AmountInput` passaram a importar `@/lib/formato` e saíram 2 avisos de alias; os `comment` da configuração apontam para `pnpm fronteiras:web`, que lista os mesmos avisos.
+São 33 regras: 26 nomeadas acima e as 7 de `unidade-so-pelo-index`. As contagens são as da linha de base medida na main `e700dcc` (arquivo `.dependency-cruiser-known-violations.web.json`, seção 12.2): 147 avisos, 0 erros. Os `comment` da configuração apontam para `pnpm fronteiras:web`, que lista os mesmos avisos.
 
 ### 12.2 Linha de base
 
-- A linha de base é o arquivo `.dependency-cruiser-known-violations.web.json`, na raiz, ao lado da configuração: 402 avisos e 0 erros, com as contagens por regra da seção 12.1. São 60 avisos de sete regras, 29 do roteador e 313 da regra de alias. Cada entrada é uma regra com a origem e o destino do import. Os imports do apoio de teste já passaram ao alias `@/`.
+- A linha de base é o arquivo `.dependency-cruiser-known-violations.web.json`, na raiz, ao lado da configuração: 147 avisos e 0 erros, com as contagens por regra da seção 12.1. São 54 avisos de seis regras, 6 do roteador e 87 da regra de alias. Cada entrada é uma regra com a origem e o destino do import. Os imports do apoio de teste já passaram ao alias `@/`.
 - Catraca ligada: `pnpm fronteiras:web:catraca` sai com código diferente de 0 para qualquer violação fora do arquivo, de qualquer severidade. É a verificação "sem aviso novo" da seção 13.3 e a primeira metade do passo "fronteiras do web" do CI.
 - A catraca roda `.dependency-cruiser.web.catraca.mjs`, que é a configuração do web com toda regra elevada a erro, junto com `--ignore-known`. A elevação é necessária: o código de saída do depcruise conta só violação de severidade erro e `--ignore-known` não muda isso, então um aviso novo passaria com código 0. O teste estrutural confere a elevação, as mesmas opções do depcruise nas duas configurações e o script `fronteiras:web:catraca`.
 - `pnpm fronteiras:web` continua informativo: lista os avisos e só falha por regra em erro.
 - `pnpm fronteiras:web:linha-de-base` regenera o arquivo em modo `shrink-only`: tira as entradas cuja violação sumiu e nunca acrescenta. Quem corrige um aviso roda o comando no mesmo PR e commita o arquivo menor. A catraca sozinha só imprime as entradas obsoletas (`stale known violations`) e não falha por elas; quem falha é a segunda metade do passo do CI, que roda o `shrink-only` e confere com `git diff --exit-code` que o arquivo não mudou. Assim a linha de base é sempre igual às violações atuais, e um aviso corrigido não volta sem falhar a catraca. Por fim, num pull request, o passo compara o total de entradas com o da base do PR (o primeiro pai do commit de merge que o CI testa) e falha se ele subir. O teto não pega uma entrada nova trocada por uma corrigida na mesma etapa: essa troca aparece no diff do arquivo, que o revisor confere.
 - `pnpm fronteiras:web:linha-de-base:regenerar` roda o mesmo comando em modo `full`: reescreve o arquivo com as violações de agora, inclusive as novas. Só entra numa etapa de mover ou de dividir, ou numa alta de versão de dependência (os itens seguintes); fora delas, só o `shrink-only`.
 - Etapa de mover ou de dividir: a entrada é a regra mais a origem e o destino, então um arquivo movido, ou um import conhecido que a divisão leva para um arquivo novo da mesma tela, vira aviso novo, a catraca falha e o `shrink-only` não o absorve. Cada etapa de mover ou de dividir que caia nesse caso regenera o arquivo com `pnpm fronteiras:web:linha-de-base:regenerar` e commita o resultado. Antes de commitar, confira no diff do arquivo que só há renomes (a entrada sai e entra de novo com o caminho novo, a mesma regra e o mesmo import) e remoções, e que o total de entradas não sobe. Entrada com import que não existia antes da etapa é violação nova: corrija o import, não a linha de base. O aviso de alias some trocando o import por `@/`.
-- Alta de versão de dependência: 5 entradas têm destino em `node_modules/.pnpm/react@<versão>/…` ou `react-dom@<versão>_react@<versão>/…`, porque o depcruise resolve o link do pnpm até o caminho versionado. Uma alta de `react` ou `react-dom` muda esse caminho e a catraca falha sem mudança em `src`. Rode `pnpm fronteiras:web:linha-de-base:regenerar` e confira que o diff só troca o trecho versionado do destino, com o mesmo total. As 5 entradas são de `lib-e-folha` e somem quando `useDensidade`, `useValorComAtraso` e `chaveDeIdempotencia` (com o teste de DOM) saírem de `lib/`, nas etapas de mover.
+- Alta de versão de dependência: 4 entradas têm destino em `node_modules/.pnpm/react@<versão>/…` ou `react-dom@<versão>_react@<versão>/…`, porque o depcruise resolve o link do pnpm até o caminho versionado. Uma alta de `react` ou `react-dom` muda esse caminho e a catraca falha sem mudança em `src`. Rode `pnpm fronteiras:web:linha-de-base:regenerar` e confira que o diff só troca o trecho versionado do destino, com o mesmo total. As 4 entradas são de `lib-e-folha`: três vêm de `lib/chaveDeIdempotencia` (duas do teste de DOM e uma do hook) e uma de `lib/useValorComAtraso.ts`. Somem quando esses dois saírem de `lib/`, nas etapas de mover (`useDensidade` já saiu, na Mover fundação do ds).
 - A linha de base é a foto de antes da migração. Cada etapa de mover a reduz, e a etapa de fronteiras em erro fecha a conta.
 
 ### 12.3 Como cada regra é provada
@@ -779,7 +780,6 @@ Títulos na ordem de leitura. Dependências por título.
 | Mover sistema | Portao no ds | e2e do B0 e ajustes do login |
 | Mover transversal | Mover sistema | e2e do B0 e ajustes do login |
 | Fronteiras em erro | Mover transversal | — |
-| Caracterizar sistema e transversal | Mover transversal | — |
 | Dividir RegistrarLancamento (concluída) | Caracterizar fluxo lancamentos; Harness de captura de telas; lib/formato por export | — |
 | Dividir Lançamentos e Meus registros (concluída) | Caracterizar fluxo lancamentos; Harness; Dividir RegistrarLancamento | — |
 | Dividir Verificação de lote (concluída) | Caracterizar fluxo lancamentos; Harness; Dividir Lançamentos e Meus registros | — |
@@ -790,12 +790,12 @@ Títulos na ordem de leitura. Dependências por título.
 | Dividir Fechamento e Conciliação (concluída) | Caracterizar financeiro II; Harness; Dividir Relatórios | — |
 | Dividir Prestação e Parâmetros (concluída) | Caracterizar financeiro II; Harness; Dividir Fechamento e Conciliação | — |
 | Dividir Agenda (concluída) | Caracterizar eventos; Harness; Dividir Prestação e Parâmetros | — |
-| Dividir Inscrição | Caracterizar inscrição; Harness; Dividir Agenda | — |
-| Dividir Leitos, Contratações e Devoluções | Caracterizar eventos; Harness; Dividir Inscrição | — |
-| Dividir Ayahuasca e Feitio | Caracterizar pessoas e estoque; Harness; Dividir Leitos, Contratações e Devoluções | — |
-| Dividir Pessoas e Anamnese | Caracterizar pessoas e estoque; Harness; Dividir Ayahuasca e Feitio | — |
-| Dividir sistema, Meu perfil e entrada | Caracterizar sistema e transversal; Harness; Dividir Pessoas e Anamnese; Fronteiras em erro | herdado: e2e do B0 e ajustes do login |
-| Dividir Painel | Caracterizar sistema e transversal; Harness; Dividir sistema, Meu perfil e entrada | herdado |
+| Dividir Inscrição (concluída) | Caracterizar inscrição; Harness; Dividir Agenda | — |
+| Dividir Leitos, Contratações e Devoluções (concluída) | Caracterizar eventos; Harness; Dividir Inscrição | — |
+| Dividir Ayahuasca e Feitio (concluída) | Caracterizar pessoas e estoque; Harness; Dividir Leitos, Contratações e Devoluções | — |
+| Dividir Pessoas e Anamnese (concluída) | Caracterizar pessoas e estoque; Harness; Dividir Ayahuasca e Feitio | — |
+| Dividir sistema, Meu perfil e entrada | Harness; Dividir Pessoas e Anamnese; Fronteiras em erro | herdado: e2e do B0 e ajustes do login |
+| Dividir Painel | Harness; Dividir sistema, Meu perfil e entrada | herdado |
 | Dividir app/shell, sessão e ds | Fronteiras em erro; Caracterizar o restante do ds; Harness; Dividir Painel | herdado |
 | Leitura única de valor | Caracterizar primitivos do ds; Caracterizar fluxo lancamentos; Caracterizar financeiro I; Caracterizar eventos; Caracterizar inscrição; Caracterizar pessoas e estoque | — |
 | Correções de comportamento | Caracterização da tela correspondente (seções 14 e 15) | — |
@@ -807,13 +807,17 @@ Títulos na ordem de leitura. Dependências por título.
 | Remover o Tailwind | Harness de captura de telas | — |
 | Catraca de avisos (concluída, seção 12.2) | Fronteiras no depcruise; Caracterizar lib/formato e components; Caracterizar primitivos do ds | — |
 
+**Decisão do dono (10/10/2026): nenhuma etapa escreve teste novo.** Vale também para a util ou o hook que uma divisão extrai: o teste de caracterização que já existe passa sem edição. Com isso, a etapa Caracterizar sistema e transversal saiu da tabela, as marcas "(+ teste)", "(+ testes)" e "(+ .dom.test.ts)" do anexo deixam de valer, e a regra de unidade com teste (seções 5.1 e 8.1) fica suspensa durante a migração. O gate de cada etapa é: typecheck, testes existentes sem edição, catraca, build e captura 96/96.
+
 Etapas de divisão de telas de demonstração (de Dividir RegistrarLancamento a Dividir Pessoas e Anamnese) podem andar com o gate fechado. As seis caracterizações de telas de demonstração rodaram antes das etapas de mover do grupo, por decisão do dono (seção 15): os testes ficam ao lado das telas, nos caminhos de hoje, e cada etapa de mover os leva junto com a tela (anexo). Com isso, a leitura única de valor e as correções da seção 14 podem correr em paralelo com a cadeia de mover: quem entra depois rebaseia, e a etapa de mover continua provando só troca de caminho contra a `main` do momento. A etapa de leitura única de valor depende das caracterizações das 10 telas que fazem leitura de valor (primitivos do ds, fluxo de lançamentos, financeiro I, eventos, inscrição e pessoas e estoque). Na prática, Primitivos para o ds rodou depois de Mover fundação do ds e de Mover financeiro I, sobre a branch desta última; a tabela guarda a ordem de dependência.
 
 ---
 
 ## 14. Divergências de comportamento conhecidas
 
-Divergências são registradas como estão pela caracterização e corrigidas em PR próprio, nunca dentro de etapa estrutural. As evidências citam caminhos anteriores à migração. As divergências das seis caracterizações de telas estão na 14.3, e os padrões que atravessam telas, na 14.4.
+**Nota sobre as referências.** As referências `arquivo:linha` desta seção foram escritas antes das etapas de mover e dividir e apontam para o arquivo de origem. Para achar o código atual, procure pelo trecho citado. As referências que já trazem o caminho atual valem como estão.
+
+Divergências são registradas como estão pela caracterização e corrigidas em PR próprio, nunca dentro de etapa estrutural. As divergências das seis caracterizações de telas estão na 14.3, e os padrões que atravessam telas, na 14.4.
 
 | Divergência | Evidência | Quando corrigir |
 |---|---|---|
@@ -914,6 +918,11 @@ Uma tabela por grupo, na ordem das caracterizações. Os testes citados vêm dos
 | Botão sem ação e rótulo trocado: "Transferir entre contas" não faz nada ao clicar. O painel de contas chama de "Excluir" o que a nota chama de inativar | `pages/contas/ContasEFundoPage.tsx:168-170`; `pages/contas/GerenciarContasModal.tsx:226` e `:355`; testes `pages/contas/ContasEFundoPage.dom.test.tsx` e `pages/contas/GerenciarContasModal.dom.test.tsx` (entram com o #83) | PR próprio, depois da caracterização de financeiro I (#83) |
 | Registrar um empréstimo com o formulário de devolução aberto não fecha a devolução nem limpa o valor digitado, e a devolução passa a gravar no empréstimo novo | `pages/emprestimos/EmprestimosPage.tsx:75`; teste `pages/emprestimos/EmprestimosPage.dom.test.tsx` (entra com o #83) | PR próprio, depois da caracterização de financeiro I (#83); decisão da seção 15: fecha a devolução e limpa o valor |
 | O resumo de Adiantamentos diz "nada pendente" ao lado de valor a ressarcir quando o único item é de hoje | `pages/adiantamentos/AdiantamentosPage.tsx:193`; teste `pages/adiantamentos/AdiantamentosPage.dom.test.tsx` (entra com o #83) | PR próprio, depois da caracterização de financeiro I (#83); decisão da seção 15: diz "o mais antigo é de hoje" |
+| O recado da devolução que quita diz "A transferência entrou" também no empréstimo RECEBIDO ("A casa toma emprestado") | `pages/financeiro/EmprestimosPage/hooks/useEmprestimos.ts:126`; teste `pages/financeiro/EmprestimosPage/EmprestimosPage.dom.test.tsx:540` (entra com o #83) | PR de texto, depois da caracterização de financeiro I (#83) |
+| O placeholder do motivo diz "por que a casa emprestou" também no empréstimo RECEBIDO ("A casa toma emprestado") | `pages/financeiro/EmprestimosPage/components/FormularioDeEmprestimo/FormularioDeEmprestimo.tsx:76`; teste `pages/financeiro/EmprestimosPage/EmprestimosPage.dom.test.tsx:654` (entra com o #83) | PR de texto, depois da caracterização de financeiro I (#83) |
+| O detalhe do empréstimo mostra "Conta de origem" também no RECEBIDO | `pages/financeiro/EmprestimosPage/components/PainelDoEmprestimo/components/Detalhe/Detalhe.tsx:42`; teste `pages/financeiro/EmprestimosPage/EmprestimosPage.dom.test.tsx:248` (entra com o #83) | PR de texto, depois da caracterização de financeiro I (#83) |
+| A devolução grava "Aurio Neto" fixo como quem registrou, em qualquer empréstimo | `pages/financeiro/EmprestimosPage/hooks/useEmprestimos.ts:114`; teste `pages/financeiro/EmprestimosPage/EmprestimosPage.dom.test.tsx:558` (entra com o #83) | PR próprio, depois da caracterização de financeiro I (#83) |
+| O gráfico de fundo próprio divide cada reserva por `fundoProprio`: com fundo próprio 0, as barras e os percentuais viram Infinity ou NaN | `pages/financeiro/ContasEFundoPage/components/FundoProprio/FundoProprio.tsx:60` e `:85` | PR próprio, depois da caracterização de financeiro I (#83) |
 
 **Financeiro II (#84)**
 
@@ -934,6 +943,7 @@ Uma tabela por grupo, na ordem das caracterizações. Os testes citados vêm dos
 | "Escolher linha" abre com "Receita de contribuição" também para categoria de despesa, e lista as 15 linhas sem filtrar por natureza | `pages/parametros/ParametrosPage.tsx:31`, `:114` e `:291`; teste `pages/parametros/ParametrosPage.dom.test.tsx` (entra com o #84) | PR próprio, depois da caracterização de financeiro II (#84); decisão da seção 15: respeita a natureza e abre sem linha escolhida |
 | Parâmetros: texto e rótulo errados. O recado de trocar a linha diz que os lançamentos "estavam fora do relatório"; o tipo MANUTENCAO sai "Manutencao"; a Lojinha tem faturamento e não tem teto, e o bloco não aparece; "Editar" não faz nada | `pages/parametros/ParametrosPage.tsx:43`, `:264`, `:388` e `:429`; teste `pages/parametros/ParametrosPage.dom.test.tsx` (entra com o #84) | PR próprio, depois da caracterização de financeiro II (#84) |
 | Relatórios: "Fundo próprio contra as metas" fixa meta de 6.000 e 12.000 e não muda com o período nem com os filtros; em Contas e fundo, os dois fundos têm meta null | `mocks/relatorios.ts:122-144` (`metasDeFundo`) contra `mocks/financeiro.ts:89` e `:99`; teste `pages/relatorios/RelatoriosPage.dom.test.tsx` (entra com o #84) | PR próprio (dado de demonstração), depois da caracterização de financeiro II (#84) |
+| O `Cartao` local de Relatórios tem padding fixo de 16px 18px, gap 12 e raio `var(--radius-lg)`. O `Cartao` do `ds` usa 18px 20px no escritório e 15px 16px em campo, gap 14 e raio `var(--radius)` | `pages/financeiro/RelatoriosPage/components/Cartao/Cartao.tsx:6-23`; `ds/atoms/Cartao/Cartao.tsx` | Na adoção do `Cartao` do `ds` (anexo, seção 4.3), com captura de Relatórios |
 
 **Eventos (#85)**
 
@@ -1009,9 +1019,12 @@ Cada padrão aparece uma vez, com os lugares conferidos na `main`. Os detalhes d
 | `Date.now()` como id | `pages/ayahuasca/AyahuascaPage.tsx:96`, `:112` e `:133` (lote e movimento: dois salvamentos no mesmo milissegundo repetem a `key`); `pages/contas/GerenciarContasModal.tsx:171` e `:193`; `pages/adiantamentos/AdiantamentosPage.tsx:116` e `:126`; `pages/emprestimos/EmprestimosPage.tsx:59`; `pages/eventos/ContratacoesPage.tsx:60`; `pages/eventos/LeitosPage.tsx:700`; `pages/agenda/AgendaPage.tsx:79` e `:101`; `pages/prestacao/PrestacaoDeContasPage.tsx:45` | PR próprio por tela, depois da caracterização de cada uma (#83, #84, #85 e #87). Nenhuma tela lê o relógio para regra |
 | "Hoje" escrito na tela | Literal `'02/09/2026'`: `pages/pessoas/AnamnesePage.tsx:61`, `:62`, `:69`, `:90` e `:96`; `pages/ayahuasca/AyahuascaPage.tsx:99`, `:113` e `:134`. Literal `'11/09/2026'`: `pages/eventos/DevolucoesPage.tsx:24`, `pages/eventos/ContratacoesPage.tsx:39` e `pages/estoque/FeitioPage.tsx:30`. Ver a linha de "hoje" na tabela principal | Composição de domínio: uma data só, em `pages/mocks/relogio.ts` (seção 15) |
 | Ícones sem teste | 180 usos de `iconName=` e `<Icon name=` em 35 arquivos de `pages/`. Só `ds/` tem teste de ícone pela classe `lucide-<nome>` | Cobertura, não defeito: fixar o ícone pela classe ao dividir cada grupo (a inscrição já faz) |
-| Estado que passa para o formulário seguinte | Inscrição: `pages/eventos/InscricaoPage.tsx:76`, `:85` e `:207-215`. Devoluções e Contratações: `pages/eventos/DevolucoesPage.tsx:46` e `pages/eventos/ContratacoesPage.tsx:47`. Empréstimos e Adiantamentos: `pages/emprestimos/EmprestimosPage.tsx:36-37` e `:243`; `pages/adiantamentos/AdiantamentosPage.tsx:45` e `:47-48`. Faturas: `pages/faturas/FaturasPage.tsx:36-37`. Anamnese: `pages/pessoas/AnamnesePage.tsx:54` e `:80` | PR próprio por tela, depois da caracterização de cada grupo (#83, #85, #86, #87). Antes de dividir a inscrição (anexo, seção 9.2, divisão da `InscricaoPage` com reducer), varrer os handlers que zeram estado |
+| Estado que passa para o formulário seguinte | Inscrição: `pages/eventos/InscricaoPage.tsx:76`, `:85` e `:207-215`. Devoluções e Contratações: `pages/eventos/DevolucoesPage.tsx:46` e `pages/eventos/ContratacoesPage.tsx:47`. Empréstimos e Adiantamentos: `pages/emprestimos/EmprestimosPage.tsx:36-37` e `:243`; `pages/adiantamentos/AdiantamentosPage.tsx:45` e `:47-48`. Faturas: `pages/faturas/FaturasPage.tsx:36-37`. Anamnese: `pages/pessoas/AnamnesePage.tsx:54` e `:80` | PR próprio por tela, depois da caracterização de cada grupo (#83, #85, #86, #87). A divisão da `InscricaoPage` (anexo, seção 9.2) já saiu, com `useState` em `InscricaoPage/hooks/useInscricao.ts`, e os handlers que zeram estado estão nesse hook |
 | Sobreposição sem papel de diálogo, Esc nem foco | `pages/registros/LancamentosPage.tsx:413` (gaveta); `pages/verificacao/PainelDeRevisao.tsx:62`; `pages/ayahuasca/AyahuascaPage.tsx:585` e `:703`; `ds/BottomSheet.tsx` (seção 14). Contraste: `ds/PainelDeAcao.tsx:143` (`role="dialog"`) | PR próprio por tela, depois das caracterizações de lançamentos e pessoas e estoque (#82, #87). O anexo troca gavetas e o modal de movimento pelo `PainelDeAcao` (anexo, linhas 206 e 226) |
 | Texto ou botão que promete o que a tela não faz | `pages/lancamento/RegistrarLancamentoPage.tsx:136-152` (Desfazer, em campo); `pages/contas/ContasEFundoPage.tsx:168-170` ("Transferir entre contas"); `pages/conciliacao/ConciliacaoPage.tsx:350-352` ("Registrar lançamento"); `pages/parametros/ParametrosPage.tsx:429` ("Editar"); `pages/pessoas/AnamnesePage.tsx:82` ("descartar") | PR próprio por tela, depois das caracterizações (#82, #83, #84, #87). Para o Desfazer e o rascunho do registro vale a decisão da seção 15: o texto sai até haver comando no backend |
+| Cor literal fora de `var(--…)`, contra a seção 10.5 | `pages/eventos/AgendaPage/components/DetalheDoTrabalho/components/CabecalhoDoTrabalho/CabecalhoDoTrabalho.tsx:26` (`#fff`); `pages/eventos/AgendaPage/components/CalendarioMensal/CalendarioMensal.tsx:96` (`#fff`); `pages/eventos/AgendaPage/components/FormularioDeTrabalho/FormularioDeTrabalho.tsx:23` (`rgba(20,20,24,0.42)`) | PR próprio por tela, depois da caracterização de eventos (#85), trocando pelo token |
+| Rótulo de caixa alta copiado, com as mesmas propriedades em outra ordem de chaves | `pages/financeiro/RelatoriosPage/constantes.ts:3` (`rotuloLabel`) contra `ds/fundacao/estilos.ts:3` (`rotuloCaixaAlta`) | Etapa "Rotulo e CorpoDaTela" (seção 13.7) |
+| Grade repetida entre a tabela e a linha do livro: a mesma `gridTemplateColumns` nos dois | `pages/financeiro/lancamentos/LancamentosPage/components/TabelaDoLivro/TabelaDoLivro.tsx:24` e `pages/financeiro/lancamentos/LancamentosPage/components/TabelaDoLivro/components/LinhaDoLivro/LinhaDoLivro.tsx:21`; apontado na revisão do #107 | PR próprio, sem efeito visual: uma constante só |
 
 ---
 
