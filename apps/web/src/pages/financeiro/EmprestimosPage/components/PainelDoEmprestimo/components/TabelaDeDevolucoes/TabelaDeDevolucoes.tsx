@@ -1,6 +1,10 @@
+import type { ReactNode } from 'react';
 import type { Emprestimo } from '@cdd/contracts';
-import { EmptyState, Rotulo, Td, Th, type Density } from '@/ds';
+import { DataTable, EmptyState, Rotulo, type Density } from '@/ds';
 import { formatarBRL, formatarData, pluralizar } from '@/pages/utils/formato';
+import { COLUNAS_DAS_DEVOLUCOES, COLUNAS_SO_DO_ESCRITORIO } from './constantes';
+
+type LinhaDaDevolucao = Record<(typeof COLUNAS_DAS_DEVOLUCOES)[number]['key'], ReactNode>;
 
 export interface TabelaDeDevolucoesProps {
   emprestimo: Emprestimo;
@@ -9,6 +13,15 @@ export interface TabelaDeDevolucoesProps {
 
 export function TabelaDeDevolucoes({ emprestimo, densidade }: TabelaDeDevolucoesProps) {
   const campo = densidade === 'field';
+  const colunas = campo
+    ? COLUNAS_DAS_DEVOLUCOES.filter((coluna) => !COLUNAS_SO_DO_ESCRITORIO.has(coluna.key))
+    : COLUNAS_DAS_DEVOLUCOES;
+  const devolucoes: LinhaDaDevolucao[] = emprestimo.devolucoes.map((dv) => ({
+    data: <span data-numeric>{formatarData(dv.data)}</span>,
+    conta: dv.contaNome,
+    quem: dv.registradoPorNome,
+    valor: <span style={{ color: 'var(--color-confirmed)' }}>{formatarBRL(dv.valor)}</span>,
+  }));
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8, minWidth: 0 }}>
@@ -19,43 +32,7 @@ export function TabelaDeDevolucoes({ emprestimo, densidade }: TabelaDeDevolucoes
           description="Cada devolução entra aqui com a transferência que a acompanha."
         />
       ) : (
-        <div
-          style={{
-            border: 'var(--border-hairline)',
-            borderRadius: 'var(--radius)',
-            background: 'var(--bg-card)',
-            overflowX: 'auto',
-          }}
-        >
-          <table
-            style={{ width: '100%', borderCollapse: 'collapse', font: 'var(--text-small)', minWidth: campo ? 420 : undefined }}
-          >
-            <thead>
-              <tr style={{ background: 'var(--bg-sunken)' }}>
-                <Th>Data</Th>
-                <Th>Conta</Th>
-                {campo ? null : <Th>Quem registrou</Th>}
-                <Th alinharDireita>Valor</Th>
-              </tr>
-            </thead>
-            <tbody>
-              {emprestimo.devolucoes.map((dv) => (
-                <tr key={dv.id} style={{ borderTop: '1px solid var(--color-line)' }}>
-                  <Td>
-                    <span data-numeric>{formatarData(dv.data)}</span>
-                  </Td>
-                  <Td>{dv.contaNome}</Td>
-                  {campo ? null : <Td>{dv.registradoPorNome}</Td>}
-                  <Td alinharDireita>
-                    <span data-numeric style={{ font: 'var(--text-amount)', color: 'var(--color-confirmed)' }}>
-                      {formatarBRL(dv.valor)}
-                    </span>
-                  </Td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <DataTable columns={colunas} rows={devolucoes} />
       )}
       <span style={{ font: 'var(--text-small)', color: 'var(--text-meta)' }}>
         {pluralizar(emprestimo.devolucoes.length, 'devolução', 'devoluções')} · a soma nunca passa do principal.

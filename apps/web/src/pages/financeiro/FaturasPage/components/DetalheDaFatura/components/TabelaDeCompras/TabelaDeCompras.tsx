@@ -1,6 +1,10 @@
+import type { ReactNode } from 'react';
 import type { Fatura } from '@cdd/contracts';
-import { EmptyState, StatusBadge, Td, Th, type Density } from '@/ds';
+import { DataTable, EmptyState, StatusBadge, type Density } from '@/ds';
 import { formatarBRL, formatarData } from '@/pages/utils/formato';
+import { COLUNAS_DAS_COMPRAS, COLUNAS_SO_DO_ESCRITORIO } from './constantes';
+
+type LinhaDaCompra = Record<(typeof COLUNAS_DAS_COMPRAS)[number]['key'], ReactNode>;
 
 export interface TabelaDeComprasProps {
   fatura: Fatura;
@@ -20,66 +24,37 @@ export function TabelaDeCompras({ fatura, densidade, total }: TabelaDeComprasPro
     );
   }
 
-  return (
-    <div
-      style={{
-        border: 'var(--border-hairline)',
-        borderRadius: 'var(--radius)',
-        background: 'var(--bg-card)',
-        overflowX: 'auto',
-      }}
-    >
-      <table style={{ width: '100%', borderCollapse: 'collapse', font: 'var(--text-small)', minWidth: campo ? 460 : undefined }}>
-        <thead>
-          <tr style={{ background: 'var(--bg-sunken)' }}>
-            <Th>Data</Th>
-            <Th>Compra</Th>
-            {campo ? null : <Th>Grupo</Th>}
-            {campo ? null : <Th>Quem registrou</Th>}
-            <Th alinharDireita>Valor</Th>
-          </tr>
-        </thead>
-        <tbody>
-          {fatura.compras.map((c) => (
-            <tr key={c.id} style={{ borderTop: '1px solid var(--color-line)' }}>
-              <Td>
-                <span data-numeric style={{ color: 'var(--text-secondary)' }}>
-                  {formatarData(c.data).slice(0, 5)}
-                </span>
-              </Td>
-              <Td>
-                <span style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                  <span style={{ color: 'var(--text-primary)' }}>{c.motivo}</span>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: 7, flexWrap: 'wrap' }}>
-                    <span style={{ color: 'var(--text-meta)' }}>{c.categoria}</span>
-                    {c.status === 'A_CONFERIR' ? <StatusBadge tone="pending">A conferir</StatusBadge> : null}
-                  </span>
-                </span>
-              </Td>
-              {campo ? null : <Td>{c.grupo ?? '—'}</Td>}
-              {campo ? null : <Td>{c.registradoPorNome}</Td>}
-              <Td alinharDireita>
-                <span data-numeric style={{ font: 'var(--text-amount)', color: 'var(--text-primary)' }}>
-                  {formatarBRL(c.valor)}
-                </span>
-              </Td>
-            </tr>
-          ))}
-          <tr style={{ borderTop: '1px solid var(--color-line-strong)', background: 'var(--bg-sunken)' }}>
-            <Td>
-              <span style={{ font: 'var(--text-body-strong)', color: 'var(--text-primary)' }}>Total</span>
-            </Td>
-            <Td />
-            {campo ? null : <Td />}
-            {campo ? null : <Td />}
-            <Td alinharDireita>
-              <span data-numeric style={{ font: 'var(--text-amount)', color: 'var(--text-primary)' }}>
-                {formatarBRL(total)}
-              </span>
-            </Td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  );
+  const colunas = campo
+    ? COLUNAS_DAS_COMPRAS.filter((coluna) => !COLUNAS_SO_DO_ESCRITORIO.has(coluna.key))
+    : COLUNAS_DAS_COMPRAS;
+
+  const compras: LinhaDaCompra[] = fatura.compras.map((c) => ({
+    data: (
+      <span data-numeric style={{ color: 'var(--text-secondary)' }}>
+        {formatarData(c.data).slice(0, 5)}
+      </span>
+    ),
+    compra: (
+      <span style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+        <span style={{ color: 'var(--text-primary)' }}>{c.motivo}</span>
+        <span style={{ display: 'flex', alignItems: 'center', gap: 7, flexWrap: 'wrap' }}>
+          <span style={{ color: 'var(--text-meta)' }}>{c.categoria}</span>
+          {c.status === 'A_CONFERIR' ? <StatusBadge tone="pending">A conferir</StatusBadge> : null}
+        </span>
+      </span>
+    ),
+    grupo: c.grupo ?? '—',
+    quem: c.registradoPorNome,
+    valor: formatarBRL(c.valor),
+  }));
+
+  const linhaDoTotal: LinhaDaCompra = {
+    data: <span style={{ font: 'var(--text-body-strong)', color: 'var(--text-primary)' }}>Total</span>,
+    compra: null,
+    grupo: null,
+    quem: null,
+    valor: formatarBRL(total),
+  };
+
+  return <DataTable columns={colunas} rows={[...compras, linhaDoTotal]} />;
 }
