@@ -15,3 +15,5 @@ export const entrada = {
   color: 'var(--text-primary)',
   outline: 'none',
 } as const;
+
+export const MENSAGEM_DE_RESERVA_ZERADA = 'Informe um valor maior que zero.';

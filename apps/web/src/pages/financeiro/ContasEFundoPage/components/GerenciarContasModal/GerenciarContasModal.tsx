@@ -13,6 +13,7 @@ import { useGerenciarContas } from './hooks/useGerenciarContas';
 export interface GerenciarContasModalProps {
   contas: readonly Conta[];
   fundos: readonly Fundo[];
+  fundoProprio: number;
   onFechar: () => void;
   onSalvarConta: (conta: Conta) => void;
   onSalvarFundo: (fundo: Fundo) => void;
@@ -27,6 +28,7 @@ export interface GerenciarContasModalProps {
 export function GerenciarContasModal({
   contas,
   fundos,
+  fundoProprio,
   onFechar,
   onSalvarConta,
   onSalvarFundo,
@@ -43,8 +45,9 @@ export function GerenciarContasModal({
     editarFundo,
     mudarFundo,
     fecharFormulario,
+    erroDoValor,
     salvar,
-  } = useGerenciarContas(onSalvarConta, onSalvarFundo);
+  } = useGerenciarContas(fundos, fundoProprio, onSalvarConta, onSalvarFundo);
 
   return (
     <div
@@ -212,6 +215,7 @@ export function GerenciarContasModal({
             <FormularioDeFundo
               fundo={form.fundo}
               valor={form.valor}
+              erroDoValor={erroDoValor}
               onMudar={mudarFundo}
               onCancelar={fecharFormulario}
               onSalvar={salvar}

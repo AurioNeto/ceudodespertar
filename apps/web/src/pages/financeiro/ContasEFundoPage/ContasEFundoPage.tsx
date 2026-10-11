@@ -102,6 +102,7 @@ export function ContasEFundoPage() {
         <GerenciarContasModal
           contas={tela.contas}
           fundos={tela.fundos}
+          fundoProprio={tela.fundoProprio}
           onFechar={tela.fecharGerenciador}
           onSalvarConta={tela.salvarConta}
           onSalvarFundo={tela.salvarFundo}

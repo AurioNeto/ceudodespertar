@@ -625,18 +625,19 @@ describe('ContasEFundoPage: gerenciar contas e fundos', () => {
     expect(linhasDaReserva(container).at(-2)).toEqual(['Reforma da cozinha', '1.500,00', '4%']);
   });
 
-  it('fundo acima do que está livre — deixa o Livre negativo, com a barra em 0%, sem aviso nem bloqueio', async () => {
+  it('fundo acima do que está livre — o painel avisa e bloqueia, e o Livre não fica negativo', async () => {
     const { container } = await montar(<ContasEFundoPage />);
     await abrirGerenciador(container);
     await clicar(botaoComTexto(container, 'Fundos'));
 
     await criarFundo(container, 'Compra do terreno', '10.000,00');
 
+    expect(folhasComTexto(container, 'Passa do que está livre no fundo próprio: 5.635,40.')).toHaveLength(1);
     await fecharGerenciador(container);
-    expect(blocoDoRotulo(container, 'Já com destino')).toEqual(['Já com destino', '43.600,00']);
-    expect(blocoDoRotulo(container, 'Livre', 0)).toEqual(['Livre', '-4.364,60']);
-    expect(linhasDaReserva(container).at(-1)).toEqual(['Livre', 'sem destino combinado', '-4.364,60', '-11%']);
-    expect(segmentoDaBarra(container, 'Livre').style.width).toBe('0%');
+    expect(blocoDoRotulo(container, 'Já com destino')).toEqual(['Já com destino', '33.600,00']);
+    expect(blocoDoRotulo(container, 'Livre', 0)).toEqual(['Livre', '5.635,40']);
+    expect(linhasDaReserva(container).at(-1)).toEqual(['Livre', 'sem destino combinado', '5.635,40', '14%']);
+    expect(todos(container, 'div[title="Compra do terreno"]')).toHaveLength(0);
   });
 
   it('cores das reservas — seguem a ordem royal, confirmed, pending, attention e voltam ao royal no quinto fundo', async () => {
