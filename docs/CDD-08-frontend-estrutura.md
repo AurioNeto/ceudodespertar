@@ -932,6 +932,7 @@ Saem da tabela acima quando o PR que as corrige entra na `main`. Os testes citad
 - **`ConfirmAction` (#70).** Obrigatórias: `irreversibleNote`, `blockedGuidance`, `blockedHeadingForOneRule` e `blockedHeadingForManyRules`. `label` continua opcional, com "Confirmar" como padrão (seção 15). Com uma regra, o componente escreve a frase do consumidor e a regra num elemento próprio; com várias, o cabeçalho do consumidor e a lista. A `key` da lista é a posição; `onConfirm` é chamado sem argumento.
 - **`useTermo` (#71).** Regime fora do contrato usa o vocabulário de `CONTRIBUICAO`, sem normalizar: `'comercial'` minúsculo e `' COMERCIAL '` com espaços caem no padrão. `data-regime` mostra o regime aplicado, porque `styles/tokens/spacing.css` só define `--term-*` para os dois regimes do contrato.
 - **Demais componentes (#72, PR único).** Passam de opcionais a obrigatórias: `StatusBadge.children` (`ReactNode`; `TONES` guarda só as cores), `Receipt.title`, `AmountInput.label`, `sumLabel` e `sumNote`, `AttachmentCapture.label`, `hint` e `removeLabel`. O `PermissionDenied` recebe `title` e `description` inteiros (`ReactNode`); o `Layout` monta a frase.
+- **`Select` (#144).** Prop opcional `density`, com `'office'` como padrão: em `'field'` o campo tem altura mínima de `var(--target-field)` (56px). Só os seletores de responsável e de diárias da inscrição passam a densidade; os outros usos seguem com 44px em campo (padrão "Alvo de toque fixo" da seção 14.4).
 
 ### 14.3 Divergências das telas de demonstração
 
