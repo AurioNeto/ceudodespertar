@@ -2,8 +2,8 @@ import { useMemo } from 'react';
 import { infiniteQueryOptions } from '@tanstack/react-query';
 import type { GrupoId, GruposDaGestao, PaginaDeUsuarios, SituacaoUsuario, UsuarioId, UsuarioListado } from '@cdd/contracts';
 import { LIMITE_PADRAO_DA_LISTAGEM_DE_USUARIOS } from '@cdd/contracts';
-import { criarConsulta } from '@/dados/consultaEComando';
-import type { ClienteHttp } from '@/dados/clienteHttp';
+import { criarConsulta } from '@/dados';
+import type { ClienteHttp } from '@/dados';
 import { useClienteHttp } from '@/app/providers';
 
 export interface FiltroDaTela {

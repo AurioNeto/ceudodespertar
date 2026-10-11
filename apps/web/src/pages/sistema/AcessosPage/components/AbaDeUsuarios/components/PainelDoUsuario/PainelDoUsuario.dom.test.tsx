@@ -6,7 +6,7 @@ import type { GrupoId, UsuarioId, UsuarioListado } from '@cdd/contracts';
 import { assentar, criarAvisoDeEncerramentoFalso, criarEntradaFalsa, criarEu } from '@/testes/sessaoDeTeste';
 import { ClienteHttpProvider } from '@/app/providers';
 import { SessaoProvider } from '@/app/sessao';
-import { ErroDaApi } from '@/dados/erros';
+import { ErroDaApi } from '@/dados';
 import {
   alternarGrupoNoPainel,
   botaoDoPainel,

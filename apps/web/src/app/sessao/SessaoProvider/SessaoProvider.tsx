@@ -2,7 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import type { ReactNode } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { Eu, Permissao } from '@cdd/contracts';
-import type { ServicoDeEntrada } from '@/dados/oidc';
+import type { ServicoDeEntrada } from '@/dados';
 import { destinoSeguro } from '@/app/rotas';
 import { estadoDoErroDoEu, usuarioDaSessao } from '../estadoDaSessao';
 import type { EstadoDaSessao, UsuarioDaSessao } from '../estadoDaSessao';

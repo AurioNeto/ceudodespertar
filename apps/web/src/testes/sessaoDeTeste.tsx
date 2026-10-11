@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { vi } from 'vitest';
 import type { Eu, GrupoId, InstituicaoId, Permissao, UsuarioId } from '@cdd/contracts';
 import { JANELA_DE_FRESCOR_EM_MS } from '@/dados';
-import type { ServicoDeEntrada } from '@/dados/oidc';
+import type { ServicoDeEntrada } from '@/dados';
 import { SessaoProvider } from '@/app/sessao';
 
 declare global {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { CodigoDeErro } from '@cdd/contracts';
-import { ErroDaApi, ErroDeRede } from '@/dados/erros';
+import { ErroDaApi, ErroDeRede } from '@/dados';
 import {
   MENSAGEM_DE_INDISPONIBILIDADE_DE_ACESSOS,
   MENSAGEM_DE_REDE_DE_ACESSOS,

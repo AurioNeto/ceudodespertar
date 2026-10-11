@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { GrupoId, UsuarioId } from '@cdd/contracts';
-import type { ClienteHttp } from '@/dados/clienteHttp';
+import type { ClienteHttp } from '@/dados';
 import { SEM_FILTRO, criarConsultasDeAcessos, caminhoDaListagemDeUsuarios } from './consultas';
 
 describe('caminhoDaListagemDeUsuarios', () => {
