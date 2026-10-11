@@ -1,13 +1,10 @@
 import { Button, Icon, StatusBadge, type BadgeTone, Interruptor } from '@/ds';
 import { CartazSlot } from '@/pages/components/CartazSlot';
 import { formatarValor } from '@/lib/formato';
-import {
-  CORES_POR_TIPO,
-  VERSAO_DO_FORMULARIO,
-  participantesDe,
-  type EstadoDaAnamnese,
-  type Trabalho,
-} from '../../mocks/agenda';
+import { CORES_POR_TIPO } from '../../constantes';
+import { participantesDe } from '../../mocks/agenda';
+import type { EstadoDaAnamnese, Trabalho } from '../../tipos';
+import { VERSAO_DO_FORMULARIO } from './mocks/formulario';
 
 const MESES_CURTOS = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
 

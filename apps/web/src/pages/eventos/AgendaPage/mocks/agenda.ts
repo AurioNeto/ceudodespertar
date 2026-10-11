@@ -1,46 +1,6 @@
 /** Agenda de trabalhos — Doc 2 §2. */
 
-export type TipoDeTrabalho = 'Concentração' | 'Trabalho de cura' | 'Feitio' | 'Bailado' | 'Reunião do corpo';
-export type SituacaoDoTrabalho = 'planejada' | 'confirmada' | 'realizada' | 'cancelada';
-
-/** Cor por tipo de trabalho — a mesma no chip do calendário e na legenda. */
-export const CORES_POR_TIPO: Record<TipoDeTrabalho, string> = {
-  Concentração: 'oklch(0.52 0.13 265)',
-  'Trabalho de cura': 'oklch(0.64 0.12 155)',
-  Feitio: 'oklch(0.72 0.13 90)',
-  Bailado: 'oklch(0.58 0.15 25)',
-  'Reunião do corpo': 'oklch(0.62 0.11 205)',
-};
-
-export interface TarefaDePreparo {
-  titulo: string;
-  responsavel: string;
-}
-
-export interface Trabalho {
-  id: number;
-  nome: string;
-  tipo: TipoDeTrabalho;
-  ano: number;
-  mes: number;
-  dia: number;
-  horario: string;
-  local: string;
-  dirigente: string;
-  previstos: number;
-  confirmados: number;
-  visitantes: number;
-  litros: number;
-  /** Opções de contribuição sugerida — quem se inscreve escolhe uma. */
-  contribuicoes: readonly number[];
-  situacao: SituacaoDoTrabalho;
-  equipe: readonly (readonly [string, string])[];
-  preparo: readonly TarefaDePreparo[];
-  previstoGasto: number;
-  realizadoGasto: number;
-  arrecadado: number;
-  observacoes: string;
-}
+import type { EstadoDaAnamnese, ParticipanteDoTrabalho, Trabalho } from '../tipos';
 
 export const trabalhosIniciais: readonly Trabalho[] = [
   {
@@ -268,19 +228,6 @@ const ATENCOES_GERAIS = [
   'diabetes tipo 2',
 ];
 
-export type EstadoDaAnamnese = 'em dia' | 'vencida' | 'ausente';
-
-export interface ParticipanteDoTrabalho {
-  nome: string;
-  contato: string;
-  vinculo: 'Fardado' | 'Visitante';
-  situacao: 'confirmado' | 'espera';
-  contribuicao: number;
-  anamnese: EstadoDaAnamnese;
-  respondida: string;
-  atencao: string | null;
-}
-
 const hashDoNome = (nome: string): number => {
   let h = 0;
   for (let i = 0; i < nome.length; i++) h = (h * 31 + nome.charCodeAt(i)) % 100000;
@@ -336,5 +283,3 @@ export function participantesDe(ev: Trabalho): readonly ParticipanteDoTrabalho[]
 
   return lista;
 }
-
-export const VERSAO_DO_FORMULARIO = 3;

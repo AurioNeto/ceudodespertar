@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Button, Icon, TextField, Select } from '@/ds';
-import { CORES_POR_TIPO, type TarefaDePreparo, type TipoDeTrabalho } from '../../mocks/agenda';
+import { CORES_POR_TIPO } from '../../constantes';
+import type { TarefaDePreparo, TipoDeTrabalho } from '../../tipos';
 import type { RascunhoDeTrabalho } from '../../utils/rascunhoDeTrabalho';
 
 export interface FormularioDeTrabalhoProps {
