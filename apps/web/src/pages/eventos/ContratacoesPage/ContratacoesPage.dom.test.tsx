@@ -326,7 +326,7 @@ describe('ContratacoesPage: registrar recebimento', () => {
     const cartao = cartaoDaContratacao(container, ESTRELA_GUIA);
     expect(painelDeRecebimento(cartao)).toBeDefined();
     expect(campoDoRotulo<HTMLSelectElement>(cartao, 'Conta').value).toBe('cora');
-    expect(campoDoRotulo(cartao, 'Data do recebimento').value).toBe('11/09/2026');
+    expect(campoDoRotulo(cartao, 'Data do recebimento').value).toBe('02/09/2026');
     expect(cartao.textContent).toContain('A data de caixa.');
     expect(cartao.textContent).toContain(
       'Vai gerar receita de R$ 3.200,00 com categoria Cachê de contratação, unidade Munay, vinculada a este evento. A categoria e a unidade não se escolhem aqui: vêm da contratação.',
@@ -369,7 +369,7 @@ describe('ContratacoesPage: registrar recebimento', () => {
     await confirmarRecebimento(container, ESTRELA_GUIA);
 
     const cartao = cartaoDaContratacao(container, ESTRELA_GUIA);
-    expect(cartao.textContent).toContain('Recebido em 11/09/2026 · lanc-0731');
+    expect(cartao.textContent).toContain('Recebido em 02/09/2026 · lanc-0731');
     expect(cartao.textContent?.endsWith('Recebido e lançado')).toBe(true);
     expect(todos(cartao, 'button')).toHaveLength(0);
   });
@@ -430,7 +430,7 @@ describe('ContratacoesPage: registrar recebimento', () => {
 
     await registrarRecebimento(container, ESTRELA_GUIA);
 
-    expect(campoDoRotulo(cartaoDaContratacao(container, ESTRELA_GUIA), 'Data do recebimento').value).toBe('11/09/2026');
+    expect(campoDoRotulo(cartaoDaContratacao(container, ESTRELA_GUIA), 'Data do recebimento').value).toBe('02/09/2026');
   });
 
   it('x do recado — dispensa o aviso do recebimento', async () => {
@@ -450,7 +450,7 @@ describe('ContratacoesPage: registrar recebimento', () => {
     await registrarRecebimento(container, LUZ_DO_NORTE);
     await confirmarRecebimento(container, LUZ_DO_NORTE);
 
-    expect(cartaoDaContratacao(container, LUZ_DO_NORTE).textContent).toContain('Recebido em 11/09/2026 · lanc-0731');
+    expect(cartaoDaContratacao(container, LUZ_DO_NORTE).textContent).toContain('Recebido em 02/09/2026 · lanc-0731');
     expect(numero(container, 'A receber')).toBe('A receberR$ 3.200,001 contratação confirmada');
   });
 });

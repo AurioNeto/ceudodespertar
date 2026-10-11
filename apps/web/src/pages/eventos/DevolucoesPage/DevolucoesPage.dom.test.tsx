@@ -90,14 +90,14 @@ describe('DevolucoesPage: cabeçalho e totais', () => {
     const { container } = await montar(<DevolucoesPage />);
 
     expect(numero(container, 'A devolver')).toBe('A devolverR$ 2.550,003 pedidos');
-    expect(numero(container, 'Esperando há mais tempo')).toBe('Esperando há mais tempo54 diasOtávio Lins');
+    expect(numero(container, 'Esperando há mais tempo')).toBe('Esperando há mais tempo45 diasOtávio Lins');
     expect(numero(container, 'Devolvidas este ano')).toBe('Devolvidas este ano1já pagas');
   });
 
   it('espera de mais de 30 dias — o número de Esperando há mais tempo vem na cor de atenção', async () => {
     const { container } = await montar(<DevolucoesPage />);
 
-    const dias = folhaComTextoExato(container, '54 dias')!;
+    const dias = folhaComTextoExato(container, '45 dias')!;
 
     expect(dias.style.color).toBe('var(--color-attention)');
   });
@@ -109,8 +109,8 @@ describe('DevolucoesPage: cabeçalho e totais', () => {
     await registrarMotivo(container, OTAVIO);
     await confirmar(cartaoDaFila(container, OTAVIO));
 
-    const dias = folhaComTextoExato(container, '17 dias')!;
-    expect(numero(container, 'Esperando há mais tempo')).toBe('Esperando há mais tempo17 diasCarlos Menezes');
+    const dias = folhaComTextoExato(container, '8 dias')!;
+    expect(numero(container, 'Esperando há mais tempo')).toBe('Esperando há mais tempo8 diasCarlos Menezes');
     expect(dias.style.color).toBe('var(--text-primary)');
   });
 
@@ -122,14 +122,14 @@ describe('DevolucoesPage: cabeçalho e totais', () => {
 });
 
 describe('DevolucoesPage: cartões da fila', () => {
-  it('participante com 17 dias de espera — mostra evento, pagamento, pedido com os dias, quem registrou, motivo e a receita original', async () => {
+  it('participante com 8 dias de espera — mostra evento, pagamento, pedido com os dias, quem registrou, motivo e a receita original', async () => {
     const { container } = await montar(<DevolucoesPage />);
 
     expect(cartaoDaFila(container, CARLOS).textContent).toBe(
       'Carlos MenezesR$210,00' +
         'EventoTrabalho de Cura · 22/08/2026' +
         'Pagou em14/08/2026 · Pix · Cora PJ' +
-        'Pediu em25/08/2026 · há 17 dias' +
+        'Pediu em25/08/2026 · há 8 dias' +
         'Quem registrouMárcia Lemos · Acolhimento' +
         'Internação da mãe na véspera. Avisou no mesmo dia e pediu o valor de volta.' +
         'Receita originallanc-8712competência 08/2026' +
@@ -137,14 +137,14 @@ describe('DevolucoesPage: cartões da fila', () => {
     );
   });
 
-  it('pedido com 54 dias e período fechado — leva o selo de dias esperando e o de período fechado', async () => {
+  it('pedido com 45 dias e período fechado — leva o selo de dias esperando e o de período fechado', async () => {
     const { container } = await montar(<DevolucoesPage />);
 
     expect(cartaoDaFila(container, OTAVIO).textContent).toBe(
-      'Otávio Lins54 dias esperandoR$540,00' +
+      'Otávio Lins45 dias esperandoR$540,00' +
         'EventoJornada de julho · 18/07/2026' +
         'Pagou em02/07/2026 · Pix · Cora PJ' +
-        'Pediu em19/07/2026 · há 54 dias' +
+        'Pediu em19/07/2026 · há 45 dias' +
         'Quem registrouJoana Ribeiro · Acolhimento' +
         'Não conseguiu vir. Pediu a devolução no dia seguinte e ainda não recebeu.' +
         'Receita originallanc-8390competência 07/2026período fechado' +
@@ -152,14 +152,14 @@ describe('DevolucoesPage: cartões da fila', () => {
     );
   });
 
-  it('devolução a contratante — leva o selo Contratante e nenhum selo de espera, com 14 dias', async () => {
+  it('devolução a contratante — leva o selo Contratante e nenhum selo de espera, com 5 dias', async () => {
     const { container } = await montar(<DevolucoesPage />);
 
     expect(cartaoDaFila(container, INSTITUTO).textContent).toBe(
       'Instituto Semente VivaContratanteR$1.800,00' +
         'EventoCerimônia contratada · 30/08/2026' +
         'Pagou em10/08/2026 · Transferência · Cora PJ' +
-        'Pediu em28/08/2026 · há 14 dias' +
+        'Pediu em28/08/2026 · há 5 dias' +
         'Quem registrouTeresa Andrade · Governança' +
         'Contratação cancelada pelo contratante com dois dias de antecedência. Sinal integral a devolver.' +
         'Receita originallanc-8801competência 08/2026' +
@@ -171,7 +171,7 @@ describe('DevolucoesPage: cartões da fila', () => {
     const { container } = await montar(<DevolucoesPage />);
 
     expect(folhaComTextoExato(container, 'Contratante')!.style.color).toBe('var(--color-royal-ink)');
-    expect(folhaComTextoExato(container, '54 dias esperando')!.style.color).toBe('var(--color-attention)');
+    expect(folhaComTextoExato(container, '45 dias esperando')!.style.color).toBe('var(--color-attention)');
     expect(folhaComTextoExato(container, 'período fechado')!.style.color).toBe('var(--color-neutral)');
   });
 });
@@ -185,7 +185,7 @@ describe('DevolucoesPage: painel de pagamento', () => {
     const cartao = cartaoDaFila(container, CARLOS);
     expect(cartao.textContent).toContain('De onde sai e quando');
     expect(campoDoRotulo<HTMLSelectElement>(cartao, 'Conta').value).toBe('cora');
-    expect(campoDoRotulo(cartao, 'Data da saída').value).toBe('11/09/2026');
+    expect(campoDoRotulo(cartao, 'Data da saída').value).toBe('02/09/2026');
     expect(cartao.textContent).toContain('A data de caixa, não a da solicitação.');
   });
 
@@ -264,7 +264,7 @@ describe('DevolucoesPage: painel de pagamento', () => {
 
     await abrirPainel(container, CARLOS, 'R$ 210,00');
 
-    expect(campoDoRotulo(cartaoDaFila(container, CARLOS), 'Data da saída').value).toBe('11/09/2026');
+    expect(campoDoRotulo(cartaoDaFila(container, CARLOS), 'Data da saída').value).toBe('02/09/2026');
   });
 
   it('conta escolhida e painel cancelado — ao abrir o painel de outro cartão a conta continua a escolhida', async () => {
@@ -309,7 +309,7 @@ describe('DevolucoesPage: confirmar a devolução', () => {
     await confirmar(cartaoDaFila(container, CARLOS));
 
     expect(jaDevolvidas(container)).toEqual([
-      'Carlos MenezesTrabalho de Cura · 22/08 · 11/09/2026 · Cora PJsai-8712R$210,00',
+      'Carlos MenezesTrabalho de Cura · 22/08 · 02/09/2026 · Cora PJsai-8712R$210,00',
       'Helena DuarteConcentração · 12/07 · 24/07/2026 · Cora PJsai-8402R$160,00',
     ]);
   });
@@ -348,7 +348,7 @@ describe('DevolucoesPage: confirmar a devolução', () => {
       'R$ 540,00 devolvidos a Otávio Lins por Cora PJ. A saída entrou na competência 09/2026, vinculada ao evento Jornada de julho; lanc-8390 não foi alterado. ' +
         'Motivo registrado: “Julho já foi prestado e fechado.”',
     );
-    expect(jaDevolvidas(container)[0]).toBe('Otávio LinsJornada de julho · 18/07 · 11/09/2026 · Cora PJsai-8390R$540,00');
+    expect(jaDevolvidas(container)[0]).toBe('Otávio LinsJornada de julho · 18/07 · 02/09/2026 · Cora PJsai-8390R$540,00');
   });
 
   it('data da saída apagada — recusa com a mensagem no campo e a devolução segue na fila', async () => {
@@ -370,7 +370,7 @@ describe('DevolucoesPage: confirmar a devolução', () => {
     await confirmar(cartaoDaFila(container, INSTITUTO));
 
     expect(jaDevolvidas(container)[0]).toBe(
-      'Instituto Semente VivaCerimônia contratada · 30/08 · 11/09/2026 · Cora PJsai-8801R$1.800,00',
+      'Instituto Semente VivaCerimônia contratada · 30/08 · 02/09/2026 · Cora PJsai-8801R$1.800,00',
     );
   });
 
@@ -507,14 +507,14 @@ describe('DevolucoesPage: densidade', () => {
   });
 });
 
-describe('DevolucoesPage: dias esperando contra o hoje da tesouraria (11/09/2026)', () => {
+describe('DevolucoesPage: dias esperando contra o hoje da tesouraria (02/09/2026)', () => {
   it.each([
-    { pedido: '12/08/2026', dias: '30 dias', selo: false },
-    { pedido: '11/08/2026', dias: '31 dias', selo: true },
-    { pedido: '10/09/2026', dias: '1 dia', selo: false },
-    { pedido: '11/09/2026', dias: '0 dias', selo: false },
-    { pedido: '12/09/2026', dias: '0 dias', selo: false },
-    { pedido: '01/01/2026', dias: '253 dias', selo: true },
+    { pedido: '03/08/2026', dias: '30 dias', selo: false },
+    { pedido: '02/08/2026', dias: '31 dias', selo: true },
+    { pedido: '01/09/2026', dias: '1 dia', selo: false },
+    { pedido: '02/09/2026', dias: '0 dias', selo: false },
+    { pedido: '03/09/2026', dias: '0 dias', selo: false },
+    { pedido: '01/01/2026', dias: '244 dias', selo: true },
   ])('pedido em $pedido — conta $dias e o selo de dias esperando aparece: $selo', async ({ pedido, dias, selo }) => {
     cenario.solicitadasEm = [pedido];
 
@@ -526,7 +526,7 @@ describe('DevolucoesPage: dias esperando contra o hoje da tesouraria (11/09/2026
   });
 
   it('pedido de dois dias antes do hoje — a fila diz há 2 dias, no plural', async () => {
-    cenario.solicitadasEm = ['09/09/2026'];
+    cenario.solicitadasEm = ['31/08/2026'];
 
     const { container } = await montar(<DevolucoesPage />);
 
@@ -534,9 +534,9 @@ describe('DevolucoesPage: dias esperando contra o hoje da tesouraria (11/09/2026
   });
 
   it('pedido de 30 dias — o número de Esperando há mais tempo fica sem a cor de atenção; com 31 dias, ganha', async () => {
-    cenario.solicitadasEm = ['12/08/2026'];
+    cenario.solicitadasEm = ['03/08/2026'];
     const trinta = await montar(<DevolucoesPage />);
-    cenario.solicitadasEm = ['11/08/2026'];
+    cenario.solicitadasEm = ['02/08/2026'];
     const trintaEUm = await montar(<DevolucoesPage />);
 
     expect(folhaComTextoExato(trinta.container, '30 dias')!.style.color).toBe('var(--text-primary)');
@@ -548,7 +548,7 @@ describe('DevolucoesPage: dias esperando contra o hoje da tesouraria (11/09/2026
 
     const { container } = await montar(<DevolucoesPage />);
 
-    expect(numero(container, 'Esperando há mais tempo')).toBe('Esperando há mais tempo41 diasOtávio Lins');
+    expect(numero(container, 'Esperando há mais tempo')).toBe('Esperando há mais tempo32 diasOtávio Lins');
   });
 
   it('dois pedidos com a mesma espera — Esperando há mais tempo fica com o primeiro da fila', async () => {
@@ -556,6 +556,6 @@ describe('DevolucoesPage: dias esperando contra o hoje da tesouraria (11/09/2026
 
     const { container } = await montar(<DevolucoesPage />);
 
-    expect(numero(container, 'Esperando há mais tempo')).toBe('Esperando há mais tempo22 diasCarlos Menezes');
+    expect(numero(container, 'Esperando há mais tempo')).toBe('Esperando há mais tempo13 diasCarlos Menezes');
   });
 });

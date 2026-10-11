@@ -1,17 +1,16 @@
 import { useState } from 'react';
 import { lerValorDigitado } from '@/lib/numero';
-import { formatarBRL, formatarLitros } from '@/pages/utils/formato';
+import { formatarBRL, formatarData, formatarLitros } from '@/pages/utils/formato';
+import { hoje } from '@/pages/mocks/relogio';
 import { emAndamento, type FeitioNaTela } from '../mocks/feitio';
 import { custoConfirmado, custoDaMateriaPrima, custoPorLitro, custoTotal } from '../utils/custoDoFeitio';
-
-const HOJE = '11/09/2026';
 
 export function useFeitio() {
   const [feitio, setFeitio] = useState<FeitioNaTela>(emAndamento);
   const [concluindo, setConcluindo] = useState(false);
   const [litros, setLitros] = useState('');
   const [forca, setForca] = useState('Força 2');
-  const [dataFim, setDataFim] = useState(HOJE);
+  const [dataFim, setDataFim] = useState(formatarData(hoje));
   const [recado, setRecado] = useState<string | null>(null);
 
   const concluido = feitio.dataFim !== null;

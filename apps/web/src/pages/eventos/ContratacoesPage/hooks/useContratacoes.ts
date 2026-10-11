@@ -1,19 +1,18 @@
 import { useState } from 'react';
-import { formatarBRL } from '@/pages/utils/formato';
+import { formatarBRL, formatarData } from '@/pages/utils/formato';
 import { contas } from '@/pages/mocks/contas';
+import { hoje } from '@/pages/mocks/relogio';
 import { useDataDeCaixa } from '@/pages/eventos/hooks/useDataDeCaixa';
 import { contaPadraoDoEvento } from '@/pages/eventos/utils/contaPadraoDoEvento';
 import { ID_DO_CAMPO_DA_DATA_DO_RECEBIMENTO } from '../constantes';
 import { contratacoes as contratacoesIniciais, munay, type ContratacaoNaTela } from '../mocks/contratacoes';
 import { recebidoNaSessao } from '../utils/recebidoNaSessao';
 
-const HOJE = '11/09/2026';
-
 export function useContratacoes() {
   const [lista, setLista] = useState<readonly ContratacaoNaTela[]>(contratacoesIniciais);
   const [recebendo, setRecebendo] = useState<string | null>(null);
   const [conta, setConta] = useState(contaPadraoDoEvento);
-  const dataDoRecebimento = useDataDeCaixa(HOJE, ID_DO_CAMPO_DA_DATA_DO_RECEBIMENTO);
+  const dataDoRecebimento = useDataDeCaixa(formatarData(hoje), ID_DO_CAMPO_DA_DATA_DO_RECEBIMENTO);
   const [recado, setRecado] = useState<string | null>(null);
 
   const aReceber = lista.filter((c) => c.status === 'CONFIRMADA' && !c.recebidoEm);
