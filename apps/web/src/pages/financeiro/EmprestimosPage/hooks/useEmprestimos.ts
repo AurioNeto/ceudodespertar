@@ -30,12 +30,18 @@ export function useEmprestimos() {
     motivo: '',
   });
 
+  const dataDoNovoValida = novo.data !== '';
   const valorNovoEmCentavos = Math.round(lerValorDigitado(novo.valor) * 100);
   const novoValido =
     Number.isFinite(valorNovoEmCentavos) && valorNovoEmCentavos > 0 && novo.motivo.trim().length > 0;
 
+  const fecharDevolucao = () => {
+    setDevolvendo(false);
+    setValorDevolucao('');
+  };
+
   const criarEmprestimo = () => {
-    if (!novoValido) return;
+    if (!novoValido || !dataDoNovoValida) return;
     const conta = contasDeEmprestimo.find((c) => c.id === novo.conta)!;
     const contraparte = contrapartesConhecidas.find((c) => c.id === novo.contraparteId)!;
     const criado = montarEmprestimo({
@@ -49,6 +55,7 @@ export function useEmprestimos() {
     setAbertoId(criado.id);
     setFiltro('todos');
     setCriando(false);
+    fecharDevolucao();
     setNovo((n) => ({ ...n, valor: '', motivo: '' }));
     setRecado(
       novo.direcao === 'CONCEDIDO'
@@ -84,20 +91,21 @@ export function useEmprestimos() {
   const valorEmCentavos = Math.round(lerValorDigitado(valorDevolucao) * 100);
   const valorValido = Number.isFinite(valorEmCentavos) && valorEmCentavos > 0;
   const excedeSaldo = valorValido && valorEmCentavos > saldo;
+  const dataDevolucaoValida = dataDevolucao !== '';
 
   const escolherFiltro = (v: Filtro) => {
     setFiltro(v);
-    setDevolvendo(false);
+    fecharDevolucao();
   };
 
   const abrirEmprestimo = (id: EmprestimoId) => {
     setAbertoId(id);
-    setDevolvendo(false);
+    fecharDevolucao();
     setRecado(null);
   };
 
   const registrarDevolucao = () => {
-    if (!aberto || !valorValido || excedeSaldo) return;
+    if (!aberto || !valorValido || excedeSaldo || !dataDevolucaoValida) return;
     const conta = contasDeEmprestimo.find((c) => c.id === contaDevolucao)!;
     setEmprestimos((lista) =>
       lista.map((e) =>
@@ -120,8 +128,8 @@ export function useEmprestimos() {
       ),
     );
     const sobra = saldo - valorEmCentavos;
-    setDevolvendo(false);
-    setValorDevolucao('');
+    fecharDevolucao();
+    setDataDevolucao(hoje);
     setRecado(
       sobra === 0
         ? 'Devolução registrada e empréstimo quitado. A transferência entrou; nenhum lançamento de receita foi criado.'
@@ -130,11 +138,6 @@ export function useEmprestimos() {
   };
 
   const iniciarDevolucao = () => setDevolvendo(true);
-
-  const cancelarDevolucao = () => {
-    setDevolvendo(false);
-    setValorDevolucao('');
-  };
 
   const fecharRecado = () => setRecado(null);
 
@@ -146,6 +149,7 @@ export function useEmprestimos() {
     criando,
     novo,
     novoValido,
+    dataDoNovoValida,
     filtro,
     visiveis,
     aberto,
@@ -153,6 +157,7 @@ export function useEmprestimos() {
     saldo,
     valorDevolucao,
     dataDevolucao,
+    dataDevolucaoValida,
     contaDevolucao,
     excedeSaldo,
     valorValido,
@@ -167,7 +172,7 @@ export function useEmprestimos() {
     escolherDataDevolucao: setDataDevolucao,
     escolherContaDevolucao: setContaDevolucao,
     registrarDevolucao,
-    cancelarDevolucao,
+    cancelarDevolucao: fecharDevolucao,
     fecharRecado,
   };
 }

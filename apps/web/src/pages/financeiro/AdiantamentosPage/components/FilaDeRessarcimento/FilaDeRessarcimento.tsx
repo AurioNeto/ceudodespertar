@@ -12,6 +12,7 @@ export interface FilaDeRessarcimentoProps {
   ressarcindo: AdiantamentoId | null;
   conta: string;
   data: string;
+  dataValida: boolean;
   onIniciarRessarcimento: (id: AdiantamentoId) => void;
   onConta: (v: string) => void;
   onData: (v: string) => void;
@@ -26,6 +27,7 @@ export function FilaDeRessarcimento({
   ressarcindo,
   conta,
   data,
+  dataValida,
   onIniciarRessarcimento,
   onConta,
   onData,
@@ -49,6 +51,7 @@ export function FilaDeRessarcimento({
               <FormularioDeRessarcimento
                 conta={conta}
                 data={data}
+                dataValida={dataValida}
                 valor={a.valor}
                 onConta={onConta}
                 onData={onData}

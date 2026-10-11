@@ -3,16 +3,18 @@ import type { Conta, ContaId, Fatura, FaturaId } from '@cdd/contracts';
 import { dataLocal } from '@cdd/contracts';
 import { hoje } from '@/pages/mocks/relogio';
 import { cartoes, contasPagadoras, faturas as faturasIniciais } from '../mocks/faturas';
-import { dividaDoCartao } from '../utils/fatura';
+import { dividaDoCartao, faturaParaAbrir } from '../utils/fatura';
 
 export function useFaturas() {
   const [faturas, setFaturas] = useState<readonly Fatura[]>(faturasIniciais);
   const [cartaoId, setCartaoId] = useState<ContaId>(cartoes[0]!.id);
-  const [faturaId, setFaturaId] = useState(faturasIniciais.find((f) => f.status === 'FECHADA')!.id);
+  const [faturaId, setFaturaId] = useState(() => faturaParaAbrir(faturasIniciais, cartoes[0]!.id)?.id);
   const [pagando, setPagando] = useState(false);
   const [contaPagamento, setContaPagamento] = useState<string>(contasPagadoras[0]!.id);
   const [dataPagamento, setDataPagamento] = useState(hoje);
   const [recado, setRecado] = useState<string | null>(null);
+
+  const dataPagamentoValida = dataPagamento !== '';
 
   const doCartao = useMemo(() => faturas.filter((f) => f.contaId === cartaoId), [faturas, cartaoId]);
   const fatura = doCartao.find((f) => f.id === faturaId) ?? doCartao[0];
@@ -22,7 +24,7 @@ export function useFaturas() {
 
   const escolherCartao = (c: Conta) => {
     setCartaoId(c.id);
-    const primeira = faturas.find((f) => f.contaId === c.id && f.status !== 'PAGA') ?? faturas.find((f) => f.contaId === c.id);
+    const primeira = faturaParaAbrir(faturas, c.id);
     if (primeira) setFaturaId(primeira.id);
     setPagando(false);
     setRecado(null);
@@ -41,7 +43,7 @@ export function useFaturas() {
   };
 
   const pagar = () => {
-    if (!fatura) return;
+    if (!fatura || !dataPagamentoValida) return;
     setFaturas((lista) =>
       lista.map((f) =>
         f.id === fatura.id
@@ -50,6 +52,7 @@ export function useFaturas() {
       ),
     );
     setPagando(false);
+    setDataPagamento(hoje);
     setRecado('Pagamento registrado como transferência. Nenhuma despesa nova foi criada — as compras já estavam lançadas.');
   };
 
@@ -68,6 +71,7 @@ export function useFaturas() {
     pagando,
     contaPagamento,
     dataPagamento,
+    dataPagamentoValida,
     recado,
     dividaDe,
     escolherCartao,

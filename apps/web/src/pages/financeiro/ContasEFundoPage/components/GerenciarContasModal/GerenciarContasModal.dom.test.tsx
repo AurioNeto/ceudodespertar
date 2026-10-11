@@ -88,6 +88,7 @@ async function montarModal(sobrescritas: Partial<GerenciarContasModalProps> = {}
   const props: GerenciarContasModalProps = {
     contas: [contaDoBanco, contaDoCaixa, contaDeTerceiro, contaInativa],
     fundos: [fundoDaObra, fundoDoFeitio],
+    fundoProprio: reais(39235.4),
     onFechar: vi.fn(),
     onSalvarConta: vi.fn(),
     onSalvarFundo: vi.fn(),
@@ -109,6 +110,11 @@ const seloDaLinha = (linha: HTMLElement, texto: string) => {
   const achado = todos<HTMLSpanElement>(linha, 'span').find((no) => no.childElementCount === 0 && no.textContent === texto);
   if (!achado) throw new Error(`selo não encontrado: ${texto}`);
   return achado;
+};
+
+const mensagemDoCampo = (campo: HTMLElement) => {
+  const alvo = campo.getAttribute('aria-describedby');
+  return alvo ? (campo.ownerDocument.getElementById(alvo)?.textContent ?? null) : null;
 };
 
 const abrirAbaDeFundos = (container: HTMLElement) => clicar(botaoComTexto(container, 'Fundos'));
@@ -205,8 +211,8 @@ describe('GerenciarContasModal: aba de contas', () => {
   it.each([
     { nome: 'Banco da Casa', glifo: 'landmark' },
     { nome: 'Caixa da Chácara', glifo: 'wallet' },
-    { nome: 'Conta da Carla', glifo: 'landmark' },
-  ])('ícone da conta $nome — é $glifo: o painel só distingue caixa de banco, a conta pessoal de terceiro fica como banco', async ({ nome, glifo }) => {
+    { nome: 'Conta da Carla', glifo: 'credit-card' },
+  ])('ícone da conta $nome — é $glifo: caixa é carteira, conta pessoal de terceiro é cartão, o resto é banco', async ({ nome, glifo }) => {
     const { container } = await montarModal();
 
     expect(glifoDe(elemento(linhaGerenciavel(container, nome), 'svg'))).toBe(glifo);
@@ -546,14 +552,6 @@ describe('GerenciarContasModal: formulário de fundo', () => {
     { digitado: '1500', centavos: 150000 },
     { digitado: '1500,5', centavos: 150050 },
     { digitado: '0,99', centavos: 99 },
-    { digitado: '1.234.567,89', centavos: 123456789 },
-    { digitado: '', centavos: 0 },
-    { digitado: 'abc', centavos: 0 },
-    { digitado: 'R$ 10', centavos: 0 },
-    { digitado: '12abc', centavos: 0 },
-    { digitado: '1.5', centavos: 0 },
-    { digitado: '1,5,5', centavos: 0 },
-    { digitado: '-5', centavos: -500 },
   ])('valor digitado "$digitado" — o fundo é salvo com $centavos centavos', async ({ digitado, centavos }) => {
     const { container, props } = await montarModal();
     await abrirNovoFundo(container);
@@ -563,6 +561,28 @@ describe('GerenciarContasModal: formulário de fundo', () => {
     await clicar(botaoComTexto(container, 'Salvar fundo'));
 
     expect(props.onSalvarFundo).toHaveBeenCalledWith(expect.objectContaining({ valorReservado: centavos }));
+  });
+
+  it.each([
+    { digitado: '1.234.567,89', mensagem: 'Passa do que está livre no fundo próprio: 20.835,40.' },
+    { digitado: '', mensagem: 'Informe um valor maior que zero.' },
+    { digitado: 'abc', mensagem: 'Informe um valor maior que zero.' },
+    { digitado: 'R$ 10', mensagem: 'Informe um valor maior que zero.' },
+    { digitado: '12abc', mensagem: 'Informe um valor maior que zero.' },
+    { digitado: '1.5', mensagem: 'Informe um valor maior que zero.' },
+    { digitado: '1,5,5', mensagem: 'Informe um valor maior que zero.' },
+    { digitado: '-5', mensagem: 'Informe um valor maior que zero.' },
+  ])('valor digitado "$digitado" — o fundo não é salvo e o campo diz: $mensagem', async ({ digitado, mensagem }) => {
+    const { container, props } = await montarModal();
+    await abrirNovoFundo(container);
+    await digitar(campoRotulado(container, 'Nome do fundo'), 'Qualquer');
+    await digitar(campoRotulado(container, 'Valor alocado (R$)'), digitado);
+
+    await clicar(botaoComTexto(container, 'Salvar fundo'));
+
+    expect(props.onSalvarFundo).not.toHaveBeenCalled();
+    expect(campoRotulado(container, 'Valor alocado (R$)').value).toBe(digitado);
+    expect(mensagemDoCampo(campoRotulado(container, 'Valor alocado (R$)'))).toBe(mensagem);
   });
 
   it('salvar fundo com nome vazio — não entrega nada, não avisa e o formulário continua aberto', async () => {

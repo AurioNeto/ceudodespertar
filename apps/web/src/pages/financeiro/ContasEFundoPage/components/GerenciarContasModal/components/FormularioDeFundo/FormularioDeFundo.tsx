@@ -6,12 +6,13 @@ import { CampoDoModal } from '../CampoDoModal';
 export interface FormularioDeFundoProps {
   fundo: Fundo;
   valor: string;
+  erroDoValor?: string;
   onMudar: (f: Fundo, valor: string) => void;
   onCancelar: () => void;
   onSalvar: () => void;
 }
 
-export function FormularioDeFundo({ fundo, valor, onMudar, onCancelar, onSalvar }: FormularioDeFundoProps) {
+export function FormularioDeFundo({ fundo, valor, erroDoValor, onMudar, onCancelar, onSalvar }: FormularioDeFundoProps) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       <span style={rotuloLabel}>{fundo.nome ? `Editar ${fundo.nome}` : 'Novo fundo'}</span>
@@ -31,6 +32,7 @@ export function FormularioDeFundo({ fundo, valor, onMudar, onCancelar, onSalvar 
         rotulo="Valor alocado (R$)"
         valor={valor}
         placeholder="0,00"
+        erro={erroDoValor}
         onMudar={(v) => onMudar(fundo, v)}
       />
       <AcoesDoFormulario rotuloSalvar="Salvar fundo" onCancelar={onCancelar} onSalvar={onSalvar} />

@@ -1,10 +1,12 @@
 import { Button, Select, TextField } from '@/ds';
+import { MENSAGEM_DE_DATA_VAZIA } from '@/pages/financeiro/constantes';
 import { formatarDinheiro } from '@/pages/utils/formato';
 import { contasInstitucionais } from '../../../../mocks/adiantamentos';
 
 export interface FormularioDeRessarcimentoProps {
   conta: string;
   data: string;
+  dataValida: boolean;
   valor: number;
   onConta: (v: string) => void;
   onData: (v: string) => void;
@@ -15,6 +17,7 @@ export interface FormularioDeRessarcimentoProps {
 export function FormularioDeRessarcimento({
   conta,
   data,
+  dataValida,
   valor,
   onConta,
   onData,
@@ -29,10 +32,16 @@ export function FormularioDeRessarcimento({
         options={contasInstitucionais.map((c) => ({ value: c.id, label: c.nome }))}
         onChange={onConta}
       />
-      <TextField label="Data" type="date" value={data} onChange={(e) => onData(e.target.value)} />
+      <TextField
+        label="Data"
+        type="date"
+        value={data}
+        error={dataValida ? undefined : MENSAGEM_DE_DATA_VAZIA}
+        onChange={(e) => onData(e.target.value)}
+      />
       <TextField label="Valor" value={formatarDinheiro(valor)} readOnly hint="igual ao adiantado" />
       <div style={{ display: 'flex', gap: 8, alignItems: 'center', paddingTop: 24 }}>
-        <Button iconName="check" onClick={onConfirmar}>
+        <Button iconName="check" onClick={onConfirmar} disabled={!dataValida}>
           Confirmar
         </Button>
         <Button variant="quiet" onClick={onVoltar}>

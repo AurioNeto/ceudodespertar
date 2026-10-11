@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import type { Conta, ContaId, Fundo, FundoId } from '@cdd/contracts';
 import { contas as contasIniciais, fundoProprio } from '@/pages/mocks/contas';
+import { ultimaConciliacaoPorConta } from '../mocks/conciliacoes';
 import { fundos as fundosIniciais } from '../mocks/fundos';
+import { conciliacaoMaisRecente } from '../utils/conta';
 import { resumoDoSaldo } from '../utils/resumoDoSaldo';
 
 export function useContasEFundos() {
@@ -9,6 +11,10 @@ export function useContasEFundos() {
   const [fundos, setFundos] = useState<readonly Fundo[]>(fundosIniciais);
   const [gerenciando, setGerenciando] = useState(false);
   const [aba, setAba] = useState<'contas' | 'fundo'>('contas');
+
+  const resumo = resumoDoSaldo(contas, fundos, fundoProprio);
+
+  const ultimaConciliacaoDe = (conta: Conta) => ultimaConciliacaoPorConta.get(conta.id) ?? null;
 
   const abrirGerenciador = () => setGerenciando(true);
 
@@ -34,7 +40,9 @@ export function useContasEFundos() {
     contas,
     fundos,
     fundoProprio,
-    ...resumoDoSaldo(contas, fundos, fundoProprio),
+    ...resumo,
+    ultimaConciliacao: conciliacaoMaisRecente(resumo.contasAtivas.map(ultimaConciliacaoDe)),
+    ultimaConciliacaoDe,
     aba,
     escolherAba: setAba,
     gerenciando,

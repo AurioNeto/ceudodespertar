@@ -516,7 +516,7 @@ describe('AdiantamentosPage: recusar', () => {
     expect(textosDasLinhas(container, 'Fechados')).toHaveLength(1);
   });
 
-  it('motivo digitado e Voltar — o texto fica guardado e aparece no campo de outra linha', async () => {
+  it('motivo digitado e Voltar — o texto de uma linha não aparece no campo de outra', async () => {
     const { container } = await montar(<AdiantamentosPage />);
     await verComo(container, 'Marta Neto');
     await clicar(botaoComTexto(linhaDe(container, ...LINHA_DE_PATY_A_AUTORIZAR), 'Recusar'));
@@ -525,8 +525,8 @@ describe('AdiantamentosPage: recusar', () => {
 
     await clicar(botaoComTexto(linhaDe(container, ...LINHA_DE_CARLOS_A_AUTORIZAR), 'Recusar'));
 
-    expect(campoPeloRotulo(container, 'Motivo da recusa').value).toBe('sem nota fiscal');
-    expect(botaoComTexto(linhaDe(container, ...LINHA_DE_CARLOS_A_AUTORIZAR), 'Recusar').disabled).toBe(false);
+    expect(campoPeloRotulo(container, 'Motivo da recusa').value).toBe('');
+    expect(botaoComTexto(linhaDe(container, ...LINHA_DE_CARLOS_A_AUTORIZAR), 'Recusar').disabled).toBe(true);
   });
 
   it('trocar de perspectiva com o campo do motivo aberto — fecha o campo', async () => {
@@ -611,7 +611,7 @@ describe('AdiantamentosPage: ressarcir', () => {
     expect(blocoDoRotulo(container, 'A ressarcir')).toEqual(['A ressarcir', '0,00', 'nada pendente']);
   });
 
-  it('a ressarcir só com despesa de hoje — o resumo mostra o valor e diz nada pendente', async () => {
+  it('a ressarcir só com despesa de hoje — o resumo mostra o valor e diz que o mais antigo é de hoje', async () => {
     const { container } = await montar(<AdiantamentosPage />);
     await ressarcirOsDoisDaDemonstracao(container);
     await registrarNovoAdiantamento(container, '100', 'tinta');
@@ -619,7 +619,7 @@ describe('AdiantamentosPage: ressarcir', () => {
     await autorizarComoMadrinha(container, ['Aguardando sua autorização', 'Paty Munay', 'tinta']);
 
     expect(textosDasLinhas(container, 'A ressarcir')).toHaveLength(1);
-    expect(blocoDoRotulo(container, 'A ressarcir')).toEqual(['A ressarcir', '100,00', 'nada pendente']);
+    expect(blocoDoRotulo(container, 'A ressarcir')).toEqual(['A ressarcir', '100,00', 'o mais antigo é de hoje']);
   });
 
   it('Voltar — fecha o formulário da linha e não ressarce', async () => {
@@ -645,7 +645,7 @@ describe('AdiantamentosPage: ressarcir', () => {
     expect(campoPeloRotulo(container, 'Data').value).toBe('2026-09-15');
   });
 
-  it('ressarcimento confirmado — a conta e a data escolhidas continuam no formulário de outra linha', async () => {
+  it('ressarcimento confirmado — a conta escolhida continua no formulário de outra linha e a data volta a hoje', async () => {
     const { container } = await montar(<AdiantamentosPage />);
     await clicar(botaoComTexto(linhaDe(container, ...LINHA_DE_PATY_A_RESSARCIR), 'Ressarcir'));
     await escolherOpcao(campoPeloRotulo<HTMLSelectElement>(container, 'Conta de saída'), 'especie');
@@ -655,23 +655,20 @@ describe('AdiantamentosPage: ressarcir', () => {
     await clicar(botaoComTexto(linhaDe(container, ...LINHA_DE_LUCIA_A_RESSARCIR), 'Ressarcir'));
 
     expect(campoPeloRotulo<HTMLSelectElement>(container, 'Conta de saída').value).toBe('especie');
-    expect(campoPeloRotulo(container, 'Data').value).toBe('2026-09-10');
+    expect(campoPeloRotulo(container, 'Data').value).toBe('2026-09-02');
   });
 
-  it('data do ressarcimento apagada — o adiantamento fecha como Ressarcido, mas a linha não diz quando nem por qual conta', async () => {
+  it('data do ressarcimento apagada — o campo diz Informe a data e o adiantamento segue a ressarcir', async () => {
     const { container } = await montar(<AdiantamentosPage />);
     await clicar(botaoComTexto(linhaDe(container, ...LINHA_DE_PATY_A_RESSARCIR), 'Ressarcir'));
     await digitar(campoPeloRotulo(container, 'Data'), '');
 
     await clicar(botaoComTexto(linhaDe(container, ...LINHA_DE_PATY_A_RESSARCIR), 'Confirmar'));
 
-    expect(textosDasLinhas(container, 'Fechados')[0]).toEqual([
-      'Paty Munay',
-      'Ressarcido',
-      'camisetas da lojinha, lote de agosto · 11/07/2026 · Nubank Paty',
-      'autorizado por Marta Neto em 14/07/2026',
-      '1.700,86',
-    ]);
+    expect(mensagemDoCampo(campoPeloRotulo(container, 'Data'))).toBe('Informe a data');
+    expect(textosDasLinhas(container, 'A ressarcir')).toHaveLength(2);
+    expect(blocoDoRotulo(container, 'Fechados')[1]).toBe('1');
+    expect(recadoMostrado(container)).toBeNull();
   });
 
   it('trocar de perspectiva com o formulário de ressarcimento aberto — fecha o formulário', async () => {
@@ -820,7 +817,7 @@ describe('AdiantamentosPage: novo adiantamento', () => {
     );
   });
 
-  it('data da despesa apagada — o adiantamento é aceito e a linha mostra 01/01/1900', async () => {
+  it('data da despesa apagada — o campo diz Informe a data e o adiantamento não é registrado', async () => {
     const { container } = await montar(<AdiantamentosPage />);
     await abrirNovoAdiantamento(container);
     await digitar(campoPeloRotulo(container, 'Valor'), '100');
@@ -829,8 +826,9 @@ describe('AdiantamentosPage: novo adiantamento', () => {
 
     await clicar(botaoComTexto(container, 'Registrar'));
 
-    await verComo(container, 'Marta Neto');
-    expect(textosDasLinhas(container, 'Aguardando sua autorização')[0]?.[2]).toBe('tinta · 01/01/1900 · Nubank Paty');
+    expect(mensagemDoCampo(campoPeloRotulo(container, 'Data da despesa'))).toBe('Informe a data');
+    expect(blocoDoRotulo(container, 'Aguardando autorização')[1]).toBe('2');
+    expect(recadoMostrado(container)).toBeNull();
   });
 
   it('Cancelar — fecha o formulário sem registrar, e o que foi digitado não volta', async () => {

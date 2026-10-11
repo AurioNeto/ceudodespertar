@@ -28,6 +28,8 @@ export function useAdiantamentos() {
   const [dataRessarcimento, setDataRessarcimento] = useState(hoje);
   const [criando, setCriando] = useState(false);
 
+  const dataRessarcimentoValida = dataRessarcimento !== '';
+
   const { aguardando, aRessarcir, fechados } = particionarPorStatus(adiantamentos);
 
   const totalARessarcir = aRessarcir.reduce((s, a) => s + a.valor, 0);
@@ -63,16 +65,17 @@ export function useAdiantamentos() {
   };
 
   const recusar = (a: Adiantamento) => {
-    if (!motivoRecusa.trim()) return;
+    const motivo = motivoRecusa.trim();
+    if (!motivo) return;
     setAdiantamentos((lista) =>
-      lista.map((x) => (x.id === a.id ? { ...x, status: 'RECUSADO', recusaMotivo: motivoRecusa.trim() } : x)),
+      lista.map((x) => (x.id === a.id ? { ...x, status: 'RECUSADO', recusaMotivo: motivo } : x)),
     );
     setRecusando(null);
-    setMotivoRecusa('');
     setRecado(`Adiantamento de ${a.pessoaNome} recusado, com o motivo registrado.`);
   };
 
   const ressarcir = (a: Adiantamento) => {
+    if (!dataRessarcimentoValida) return;
     const conta = contasInstitucionais.find((c) => c.id === contaRessarcimento)!;
     setAdiantamentos((lista) =>
       lista.map((x) =>
@@ -82,6 +85,7 @@ export function useAdiantamentos() {
       ),
     );
     setRessarcindo(null);
+    setDataRessarcimento(hoje);
     setRecado(
       `Ressarcimento de ${formatarDinheiro(a.valor)} a ${a.pessoaNome} registrado como transferência de ${conta.nome}. Nenhuma despesa nova — ela já foi lançada em ${formatarData(a.dataDespesa)}.`,
     );
@@ -109,7 +113,10 @@ export function useAdiantamentos() {
 
   const cancelarNovo = () => setCriando(false);
   const fecharRecado = () => setRecado(null);
-  const iniciarRecusa = (id: AdiantamentoId) => setRecusando(id);
+  const iniciarRecusa = (id: AdiantamentoId) => {
+    setRecusando(id);
+    setMotivoRecusa('');
+  };
   const cancelarRecusa = () => setRecusando(null);
   const iniciarRessarcimento = (id: AdiantamentoId) => setRessarcindo(id);
   const cancelarRessarcimento = () => setRessarcindo(null);
@@ -123,6 +130,7 @@ export function useAdiantamentos() {
     ressarcindo,
     contaRessarcimento,
     dataRessarcimento,
+    dataRessarcimentoValida,
     criando,
     aguardando,
     aRessarcir,

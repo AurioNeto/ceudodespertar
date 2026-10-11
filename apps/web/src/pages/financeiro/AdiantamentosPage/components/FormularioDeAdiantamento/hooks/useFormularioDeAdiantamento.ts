@@ -22,7 +22,12 @@ export function useFormularioDeAdiantamento(onConfirmar: (d: DadosDoNovo) => voi
   const centavos = Math.round(lerValorDigitado(valor) * 100);
   const valido = Number.isFinite(centavos) && centavos > 0 && motivo.trim().length > 0 && contaId !== '';
 
-  const confirmar = () => onConfirmar({ pessoaId, contaId, valor: centavos, data, motivo: motivo.trim() });
+  const dataValida = data !== '';
+
+  const confirmar = () => {
+    if (!dataValida) return;
+    onConfirmar({ pessoaId, contaId, valor: centavos, data, motivo: motivo.trim() });
+  };
 
   return {
     pessoaId,
@@ -32,6 +37,7 @@ export function useFormularioDeAdiantamento(onConfirmar: (d: DadosDoNovo) => voi
     contaId,
     contasDaPessoa,
     valido,
+    dataValida,
     escolherPessoa,
     escolherValor: setValor,
     escolherData: setData,

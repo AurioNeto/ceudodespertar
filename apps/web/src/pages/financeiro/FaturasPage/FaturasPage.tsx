@@ -70,6 +70,7 @@ export function FaturasPage() {
               pagando={tela.pagando}
               contaPagamento={tela.contaPagamento}
               dataPagamento={tela.dataPagamento}
+              dataPagamentoValida={tela.dataPagamentoValida}
               onFechar={tela.fechar}
               onIniciarPagamento={tela.iniciarPagamento}
               onCancelarPagamento={tela.cancelarPagamento}

@@ -1,4 +1,4 @@
-import type { Conta } from '@cdd/contracts';
+import type { Conta, DataLocal } from '@cdd/contracts';
 import { Icon, StatusBadge } from '@/ds';
 import { formatarDiaMes, formatarDinheiro } from '@/pages/utils/formato';
 import { valorGrande } from '../../constantes';
@@ -6,10 +6,11 @@ import { iconeDaConta, textoDaConciliacao, tomDaConciliacao } from '../../utils/
 
 export interface CartaoDeContaProps {
   conta: Conta;
+  ultimaConciliacao: DataLocal | null;
 }
 
 /** O cartão estica na altura da linha: o conteúdo se distribui, sem sobra embaixo. */
-export function CartaoDeConta({ conta }: CartaoDeContaProps) {
+export function CartaoDeConta({ conta, ultimaConciliacao }: CartaoDeContaProps) {
   return (
     <div
       style={{
@@ -36,7 +37,7 @@ export function CartaoDeConta({ conta }: CartaoDeContaProps) {
             <Icon name="triangle-alert" size={17} color="var(--color-attention)" />
           </span>
         ) : null}
-        <StatusBadge tone={tomDaConciliacao(conta)}>{textoDaConciliacao(conta)}</StatusBadge>
+        <StatusBadge tone={tomDaConciliacao(conta)}>{textoDaConciliacao(conta, ultimaConciliacao)}</StatusBadge>
       </div>
 
       <div style={{ ...valorGrande, color: 'var(--text-primary)' }}>{formatarDinheiro(conta.saldo)}</div>

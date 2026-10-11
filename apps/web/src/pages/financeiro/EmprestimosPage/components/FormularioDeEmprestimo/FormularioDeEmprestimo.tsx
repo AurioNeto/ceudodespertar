@@ -1,4 +1,5 @@
 import { Button, Select, SeletorDeTipo, TextField, type Density } from '@/ds';
+import { MENSAGEM_DE_DATA_VAZIA } from '@/pages/financeiro/constantes';
 import { contasDeEmprestimo, contrapartesConhecidas } from '../../mocks/emprestimos';
 import type { ValoresDoNovo } from '../../utils/montarEmprestimo';
 
@@ -6,6 +7,7 @@ export interface FormularioDeEmprestimoProps {
   densidade: Density;
   valores: ValoresDoNovo;
   valido: boolean;
+  dataValida: boolean;
   onMudar: <K extends keyof ValoresDoNovo>(campo: K, valor: ValoresDoNovo[K]) => void;
   onConfirmar: () => void;
   onCancelar: () => void;
@@ -15,6 +17,7 @@ export function FormularioDeEmprestimo({
   densidade,
   valores,
   valido,
+  dataValida,
   onMudar,
   onConfirmar,
   onCancelar,
@@ -68,7 +71,13 @@ export function FormularioDeEmprestimo({
           value={valores.valor}
           onChange={(e) => onMudar('valor', e.target.value)}
         />
-        <TextField label="Data" type="date" value={valores.data} onChange={(e) => onMudar('data', e.target.value)} />
+        <TextField
+          label="Data"
+          type="date"
+          value={valores.data}
+          error={dataValida ? undefined : MENSAGEM_DE_DATA_VAZIA}
+          onChange={(e) => onMudar('data', e.target.value)}
+        />
       </div>
 
       <TextField
@@ -82,7 +91,7 @@ export function FormularioDeEmprestimo({
         <Button
           iconName="check"
           onClick={onConfirmar}
-          disabled={!valido}
+          disabled={!valido || !dataValida}
           blockedReason={!valido ? 'Informe um valor maior que zero e o motivo.' : undefined}
         >
           Registrar empréstimo

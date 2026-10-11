@@ -13,6 +13,7 @@ export interface PainelDoEmprestimoProps {
   saldo: number;
   valor: string;
   data: string;
+  dataValida: boolean;
   conta: string;
   excedeSaldo: boolean;
   valorValido: boolean;
@@ -31,6 +32,7 @@ export function PainelDoEmprestimo({
   saldo,
   valor,
   data,
+  dataValida,
   conta,
   excedeSaldo,
   valorValido,
@@ -65,6 +67,7 @@ export function PainelDoEmprestimo({
           direcao={emprestimo.direcao}
           valor={valor}
           data={data}
+          dataValida={dataValida}
           conta={conta}
           excedeSaldo={excedeSaldo}
           valorValido={valorValido}

@@ -516,7 +516,7 @@ describe('EmprestimosPage: registrar devolução', () => {
     expect(campoPeloRotulo(container, 'Valor').value).toBe('');
   });
 
-  it('devolução registrada com outra data e outra conta — o formulário do empréstimo seguinte abre com a data e a conta escolhidas', async () => {
+  it('devolução registrada com outra data e outra conta — o formulário do empréstimo seguinte abre com a conta escolhida e a data de hoje', async () => {
     const { container } = await montar(<EmprestimosPage />);
     await abrirFormularioDeDevolucao(container);
     await digitar(campoPeloRotulo(container, 'Valor'), '200');
@@ -527,7 +527,7 @@ describe('EmprestimosPage: registrar devolução', () => {
     await abrirEmprestimo(container, 'Marta Neto');
     await abrirFormularioDeDevolucao(container);
 
-    expect(campoPeloRotulo(container, 'Data').value).toBe('2026-09-15');
+    expect(campoPeloRotulo(container, 'Data').value).toBe('2026-09-02');
     expect(campoPeloRotulo<HTMLSelectElement>(container, 'Conta de saída').value).toBe('especie');
   });
 
@@ -558,15 +558,18 @@ describe('EmprestimosPage: registrar devolução', () => {
     expect(linhasDeDevolucoes(container).at(-1)).toEqual(['15/09/2026', 'Espécie', 'Aurio Neto', '200,00']);
   });
 
-  it('devolução com a data apagada — é aceita e a tabela mostra 01/01/1900', async () => {
+  it('devolução com a data apagada — o campo diz Informe a data e a devolução não é registrada', async () => {
     const { container } = await montar(<EmprestimosPage />);
     await abrirFormularioDeDevolucao(container);
     await digitar(campoPeloRotulo(container, 'Valor'), '200');
     await digitar(campoPeloRotulo(container, 'Data'), '');
+    const devolucoesAntes = linhasDeDevolucoes(container);
 
     await clicar(botaoComTexto(container, 'Registrar devolução'));
 
-    expect(linhasDeDevolucoes(container).at(-1)?.[0]).toBe('01/01/1900');
+    expect(mensagemDoCampo(campoPeloRotulo(container, 'Data'))).toBe('Informe a data');
+    expect(linhasDeDevolucoes(container)).toEqual(devolucoesAntes);
+    expect(recadoMostrado(container)).toBeNull();
   });
 
   it('devolução de um empréstimo recebido — atualiza o A devolver e o saldo da linha', async () => {
@@ -591,7 +594,7 @@ describe('EmprestimosPage: registrar devolução', () => {
     expect(linhasDeDevolucoes(container)).toHaveLength(1);
   });
 
-  it('valor digitado e empréstimo trocado — o formulário fecha, mas o valor vaza para o empréstimo seguinte', async () => {
+  it('valor digitado e empréstimo trocado — o formulário fecha e a devolução do empréstimo seguinte abre sem valor', async () => {
     const { container } = await montar(<EmprestimosPage />);
     await abrirFormularioDeDevolucao(container);
     await digitar(campoPeloRotulo(container, 'Valor'), '2000');
@@ -600,8 +603,8 @@ describe('EmprestimosPage: registrar devolução', () => {
     expect(formularioDeDevolucaoAberto(container)).toBe(false);
     await abrirFormularioDeDevolucao(container);
 
-    expect(campoPeloRotulo(container, 'Valor').value).toBe('2000');
-    expect(mensagemDoCampo(campoPeloRotulo(container, 'Valor'))).toBe('Passa do saldo de 1.500,00.');
+    expect(campoPeloRotulo(container, 'Valor').value).toBe('');
+    expect(mensagemDoCampo(campoPeloRotulo(container, 'Valor'))).toBe('saldo de 1.500,00');
   });
 
   it('escolher outro empréstimo — fecha o formulário e limpa o recado', async () => {
@@ -764,8 +767,9 @@ describe('EmprestimosPage: novo empréstimo', () => {
     );
   });
 
-  it('novo empréstimo com a data apagada — é aceito e o detalhe mostra 01/01/1900', async () => {
+  it('novo empréstimo com a data apagada — o campo diz Informe a data e o empréstimo não é registrado', async () => {
     const { container } = await montar(<EmprestimosPage />);
+    const listaAntes = textosDasLinhas(container);
     await abrirNovoEmprestimo(container);
     await digitar(campoPeloRotulo(container, 'Valor'), '300');
     await digitar(campoPeloRotulo(container, 'Data'), '');
@@ -773,7 +777,9 @@ describe('EmprestimosPage: novo empréstimo', () => {
 
     await clicar(botaoComTexto(container, 'Registrar empréstimo'));
 
-    expect(folhasComTexto(container, 'A casa emprestou em 01/01/1900 · adiantar a feira')).toHaveLength(1);
+    expect(mensagemDoCampo(campoPeloRotulo(container, 'Data'))).toBe('Informe a data');
+    expect(textosDasLinhas(container)).toEqual(listaAntes);
+    expect(recadoMostrado(container)).toBeNull();
   });
 
   it('empréstimo novo — não tem devolução: mostra o estado vazio da tabela e a contagem zerada', async () => {
@@ -864,7 +870,7 @@ describe('EmprestimosPage: novo empréstimo', () => {
     expect(todos(container, 'label').map((rotulo) => rotulo.textContent)).toContain('Motivo');
   });
 
-  it('registrar um empréstimo com a devolução aberta — a devolução continua aberta, com o valor digitado, e passa a ser do empréstimo novo', async () => {
+  it('registrar um empréstimo com a devolução aberta — a devolução fecha e o valor digitado nela se perde', async () => {
     const { container } = await montar(<EmprestimosPage />);
     await abrirNovoEmprestimo(container);
     await abrirFormularioDeDevolucao(container);
@@ -874,11 +880,12 @@ describe('EmprestimosPage: novo empréstimo', () => {
 
     await clicar(botaoComTexto(container, 'Registrar empréstimo'));
 
-    expect(formularioDeDevolucaoAberto(container)).toBe(true);
-    expect(campoPeloRotulo(container, 'Valor').value).toBe('100');
-    expect(mensagemDoCampo(campoPeloRotulo(container, 'Valor'))).toBe('saldo de 300,00');
+    expect(formularioDeDevolucaoAberto(container)).toBe(false);
     expect(linhaAtiva(container)).toEqual(['Érico Santana']);
     expect(textosDasLinhas(container)[0]).toEqual(['Érico Santana', '300,00', 'a receber']);
+    await abrirFormularioDeDevolucao(container);
+    expect(campoPeloRotulo(container, 'Valor').value).toBe('');
+    expect(mensagemDoCampo(campoPeloRotulo(container, 'Valor'))).toBe('saldo de 300,00');
   });
 });
 

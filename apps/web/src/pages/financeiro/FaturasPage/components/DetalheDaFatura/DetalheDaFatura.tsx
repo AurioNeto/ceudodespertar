@@ -15,6 +15,7 @@ export interface DetalheDaFaturaProps {
   pagando: boolean;
   contaPagamento: string;
   dataPagamento: string;
+  dataPagamentoValida: boolean;
   onFechar: () => void;
   onIniciarPagamento: () => void;
   onCancelarPagamento: () => void;
@@ -30,6 +31,7 @@ export function DetalheDaFatura({
   pagando,
   contaPagamento,
   dataPagamento,
+  dataPagamentoValida,
   onFechar,
   onIniciarPagamento,
   onCancelarPagamento,
@@ -98,6 +100,7 @@ export function DetalheDaFatura({
           densidade={densidade}
           conta={contaPagamento}
           data={dataPagamento}
+          dataValida={dataPagamentoValida}
           onEscolherConta={onEscolherConta}
           onEscolherData={onEscolherData}
           onConfirmar={onConfirmarPagamento}

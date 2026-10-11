@@ -1,4 +1,5 @@
 import { Button, Select, TextField, type Density } from '@/ds';
+import { MENSAGEM_DE_DATA_VAZIA } from '@/pages/financeiro/constantes';
 import { formatarDinheiro } from '@/pages/utils/formato';
 import { contasPagadoras } from '../../../../mocks/faturas';
 
@@ -7,6 +8,7 @@ export interface FormularioDePagamentoProps {
   densidade: Density;
   conta: string;
   data: string;
+  dataValida: boolean;
   onEscolherConta: (v: string) => void;
   onEscolherData: (v: string) => void;
   onConfirmar: () => void;
@@ -18,6 +20,7 @@ export function FormularioDePagamento({
   densidade,
   conta,
   data,
+  dataValida,
   onEscolherConta,
   onEscolherData,
   onConfirmar,
@@ -47,7 +50,13 @@ export function FormularioDePagamento({
           options={contasPagadoras.map((c) => ({ value: c.id, label: c.nome }))}
           onChange={onEscolherConta}
         />
-        <TextField label="Data do pagamento" type="date" value={data} onChange={(e) => onEscolherData(e.target.value)} />
+        <TextField
+          label="Data do pagamento"
+          type="date"
+          value={data}
+          error={dataValida ? undefined : MENSAGEM_DE_DATA_VAZIA}
+          onChange={(e) => onEscolherData(e.target.value)}
+        />
         <TextField
           label="Valor"
           value={formatarDinheiro(total)}
@@ -57,7 +66,7 @@ export function FormularioDePagamento({
       </div>
 
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center' }}>
-        <Button iconName="check" onClick={onConfirmar}>
+        <Button iconName="check" onClick={onConfirmar} disabled={!dataValida}>
           Confirmar pagamento
         </Button>
         <Button variant="quiet" onClick={onCancelar}>
