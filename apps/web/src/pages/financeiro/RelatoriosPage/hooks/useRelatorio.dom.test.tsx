@@ -94,12 +94,13 @@ describe('useRelatorio: totais por período (a base termina em agosto de 2026)',
     expect(ler().resultado).toBeCloseTo(588.84, 2);
   });
 
-  it('lançamento a conferir — entra no total e é contado à parte com o valor somado', async () => {
+  it('lançamento a conferir — entra no total e é contado à parte com o valor separado por tipo', async () => {
     const { ler } = await montarRelatorio();
 
     const r = ler();
     expect(r.aConferir.map((l) => [l.id, l.situacao])).toEqual([[134, 'a conferir']]);
-    expect(r.valorAConferir).toBeCloseTo(1543.68, 2);
+    expect([r.valoresAConferir.entradas, r.valoresAConferir.transferencias]).toEqual([0, 0]);
+    expect(r.valoresAConferir.saidas).toBeCloseTo(1543.68, 2);
     expect(r.saidas).toBeCloseTo(4159.06, 2);
   });
 });

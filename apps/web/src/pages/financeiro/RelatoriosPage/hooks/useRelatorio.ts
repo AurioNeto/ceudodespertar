@@ -91,7 +91,11 @@ export function useRelatorio() {
       resultado: entradas - saidas,
       transferenciasQtd: atual.filter((l) => l.tipo === 'transferencia').length,
       aConferir,
-      valorAConferir: aConferir.reduce((a, l) => a + l.valor, 0),
+      valoresAConferir: {
+        entradas: somar(aConferir, 'entrada'),
+        saidas: somar(aConferir, 'saida'),
+        transferencias: somar(aConferir, 'transferencia'),
+      },
       comparados: comparado
         ? {
             entradas: somar(comparado, 'entrada'),

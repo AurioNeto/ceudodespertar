@@ -73,7 +73,7 @@ export function RelatoriosPage() {
 
         <PainelDeFiltros relatorio={r} resumoDoRecorte={tela.resumoDoRecorte} densidade={densidade} />
 
-        <SituacaoDoRecorte aConferir={r.aConferir} valorAConferir={r.valorAConferir} />
+        <SituacaoDoRecorte aConferir={r.aConferir} valoresAConferir={r.valoresAConferir} />
 
         <CartoesDeKpi kpis={tela.kpis} comparar={r.comparar} densidade={densidade} />
 

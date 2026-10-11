@@ -1,13 +1,21 @@
 import { formatarValor } from '@/lib/formato';
 import { pluralizar } from '@/pages/utils/formato';
 import type { LinhaDoRelatorio } from '../../mocks/relatorios';
+import type { ValoresAConferir } from '../../tipos';
 
 export interface SituacaoDoRecorteProps {
   aConferir: readonly LinhaDoRelatorio[];
-  valorAConferir: number;
+  valoresAConferir: ValoresAConferir;
 }
 
-export function SituacaoDoRecorte({ aConferir, valorAConferir }: SituacaoDoRecorteProps) {
+const valoresPorTipo = ({ entradas, saidas, transferencias }: ValoresAConferir) =>
+  [
+    `entradas ${formatarValor(entradas)}`,
+    `saídas ${formatarValor(saidas)}`,
+    ...(transferencias > 0 ? [`transferências ${formatarValor(transferencias)}`] : []),
+  ].join(' · ');
+
+export function SituacaoDoRecorte({ aConferir, valoresAConferir }: SituacaoDoRecorteProps) {
   return (
     <div
       style={{
@@ -21,7 +29,7 @@ export function SituacaoDoRecorte({ aConferir, valorAConferir }: SituacaoDoRecor
     >
       {aConferir.length === 0
         ? 'Todos os lançamentos deste recorte estão consolidados.'
-        : `Inclui ${pluralizar(aConferir.length, 'lançamento a conferir', 'lançamentos a conferir')} (${formatarValor(valorAConferir)}) — os números podem mudar depois da conferência.`}
+        : `Inclui ${pluralizar(aConferir.length, 'lançamento a conferir', 'lançamentos a conferir')} (${valoresPorTipo(valoresAConferir)}) — os números podem mudar depois da conferência.`}
     </div>
   );
 }
