@@ -1,0 +1,1 @@
+export { CartaoDeContratacao } from './CartaoDeContratacao';

@@ -1,0 +1,1 @@
+export { LinhaDeLeito } from './LinhaDeLeito';

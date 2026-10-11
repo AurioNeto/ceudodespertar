@@ -1,0 +1,1 @@
+export { Celula } from './Celula';

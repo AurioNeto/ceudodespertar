@@ -1,0 +1,1 @@
+export { CartaoDeDevolucao } from './CartaoDeDevolucao';

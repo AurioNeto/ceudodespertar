@@ -1,0 +1,1 @@
+export { PainelDePagamento } from './PainelDePagamento';

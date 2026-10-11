@@ -1,0 +1,1 @@
+export { DeQuemEIsso } from './DeQuemEIsso';
