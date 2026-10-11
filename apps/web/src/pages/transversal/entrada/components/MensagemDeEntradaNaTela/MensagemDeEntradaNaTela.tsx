@@ -1,5 +1,5 @@
-import { Aviso } from './Aviso';
-import type { MensagemDeEntrada } from './mensagens';
+import { Aviso } from './components/Aviso';
+import type { MensagemDeEntrada } from '../../tipos';
 
 export function MensagemDeEntradaNaTela({ mensagem }: { mensagem: MensagemDeEntrada }) {
   return (

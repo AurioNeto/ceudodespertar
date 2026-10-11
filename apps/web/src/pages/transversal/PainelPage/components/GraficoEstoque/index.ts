@@ -1,0 +1,1 @@
+export { GraficoEstoque } from './GraficoEstoque';

@@ -1,6 +1,8 @@
 import { reais } from '@cdd/contracts';
 import { contas } from '@/pages/mocks/contas';
 
+export const competenciaAnterior = '2026-07';
+
 export const saldoEmCaixa = contas
   .filter((c) => c.tipo === 'DINHEIRO' && c.ativa)
   .reduce((soma, c) => soma + c.saldo, 0);

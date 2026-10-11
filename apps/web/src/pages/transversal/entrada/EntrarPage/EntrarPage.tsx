@@ -2,15 +2,15 @@ import { useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { Button, Portao, SkeletonList, useDensidade } from '@/ds';
 import { destinoDaNavegacao } from '@/app/rotas';
-import { useSessao } from '../../app/sessao';
-import { MensagemDeEntradaNaTela } from './MensagemDeEntradaNaTela';
+import { useSessao } from '@/app/sessao';
+import { MensagemDeEntradaNaTela } from '../components/MensagemDeEntradaNaTela';
 import {
   MENSAGENS_DE_RECUSA,
   MENSAGEM_DE_FALHA,
   MENSAGEM_DE_FALHA_AO_INICIAR,
   MENSAGEM_DE_INDISPONIBILIDADE,
-} from './mensagens';
-import type { MensagemDeEntrada } from './mensagens';
+} from './constantes';
+import type { MensagemDeEntrada } from '../tipos';
 
 const DESCRICAO_DA_ENTRADA = 'O acesso é pessoal: cada lançamento fica no nome de quem o registrou.';
 

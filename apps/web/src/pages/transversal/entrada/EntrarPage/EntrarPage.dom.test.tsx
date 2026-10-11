@@ -1,8 +1,7 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { MemoryRouter, Route, RouterProvider, Routes, createMemoryRouter } from 'react-router-dom';
-import { EntrarPage } from '../pages/entrada/EntrarPage';
-import { MENSAGENS_DE_RECUSA } from '../pages/entrada/mensagens';
-import { RetornoPage } from '../pages/entrada/RetornoPage';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { EntrarPage } from './EntrarPage';
+import { MENSAGENS_DE_RECUSA } from './constantes';
 import {
   criarEntradaFalsa,
   criarEu,
@@ -106,32 +105,5 @@ describe('EntrarPage', () => {
     await tela.clicar('Sair e usar outra conta');
 
     expect(entrada.sair).toHaveBeenCalledTimes(1);
-  });
-});
-
-describe('RetornoPage', () => {
-  async function concluirNoRetorno(destino: string) {
-    const entrada = criarEntradaFalsa(false);
-    entrada.concluirEntrada.mockResolvedValue(destino);
-    const roteador = createMemoryRouter(
-      [
-        { path: '/entrar/retorno', element: <RetornoPage /> },
-        { path: '/lancamentos', element: <p data-testid="destino">lancamentos</p> },
-      ],
-      { initialEntries: ['/entrar/retorno?code=abc&state=xyz'] },
-    );
-    tela = await montarComSessao(
-      { entrada, buscarEu: () => Promise.resolve(criarEu()) },
-      <RouterProvider router={roteador} />,
-    );
-    return roteador;
-  }
-
-  it('leva ao destino substituindo a entrada do retorno, para o code não ficar no histórico', async () => {
-    const roteador = await concluirNoRetorno('/lancamentos');
-
-    expect(ler(tela, 'destino')).toBe('lancamentos');
-    expect(roteador.state.historyAction).toBe('REPLACE');
-    expect(roteador.state.location.search).toBe('');
   });
 });

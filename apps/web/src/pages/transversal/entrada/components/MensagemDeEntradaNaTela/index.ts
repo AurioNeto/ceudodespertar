@@ -1,0 +1,1 @@
+export { MensagemDeEntradaNaTela } from './MensagemDeEntradaNaTela';

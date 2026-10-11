@@ -1,18 +1,18 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button, Icon, ScreenHeader, type IconName } from '../../ds';
+import { Button, Icon, ScreenHeader, type IconName } from '@/ds';
 import { ROTAS } from '@/app/rotas';
-import { proximaCerimonia, ultimaCerimonia } from '../../mocks/cerimonias';
+import { proximaCerimonia, ultimaCerimonia } from './mocks/cerimonias';
 import {
+  competenciaAnterior,
   movimentoDoMes,
   remessasEmLote,
   saldoConsolidado,
   saldoEmBanco,
   saldoEmCaixa,
-} from '../../mocks/financeiro';
+} from './mocks/resumoFinanceiro';
 import { fundoProprio } from '@/pages/mocks/contas';
-import { filaDeVerificacaoInicial } from '../../mocks/verificacao';
-import { competenciaAnterior } from '../../mocks/sessao';
+import { filaDeVerificacaoInicial } from '@/mocks/verificacao';
 import { competenciaAtual } from '@/pages/mocks/relogio';
 import {
   competenciaPorExtenso,
@@ -22,8 +22,8 @@ import {
   formatarLitros,
   pluralizar,
 } from '@/pages/utils/formato';
-import { GraficoEstoque } from './GraficoEstoque';
-import { GraficoResultado } from './GraficoResultado';
+import { GraficoEstoque } from './components/GraficoEstoque';
+import { GraficoResultado } from './components/GraficoResultado';
 import { CartazSlot } from '@/pages/components/CartazSlot';
 
 const PAINEIS = ['Próxima cerimônia', 'Resultado por cerimônia', 'Última cerimônia'] as const;

@@ -1,0 +1,1 @@
+export { PainelPage } from './PainelPage';
