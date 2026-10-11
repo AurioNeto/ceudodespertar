@@ -1,12 +1,13 @@
 import { InMemoryWebStorage, UserManager, WebStorageStateStore } from 'oidc-client-ts';
 import type { User, UserManagerSettings } from 'oidc-client-ts';
 import type { GerenciadorDeUsuario } from './credencialOidc';
-
-export const CAMINHO_DA_ENTRADA = '/entrar';
-export const CAMINHO_DE_RETORNO = '/entrar/retorno';
-export const CAMINHO_DA_RENOVACAO_SILENCIOSA = '/silencioso.html';
-export const ESPERA_DA_RENOVACAO_SILENCIOSA_EM_SEGUNDOS = 5;
-export const ESCOPO_OIDC = 'openid';
+import {
+  CAMINHO_DA_ENTRADA,
+  CAMINHO_DA_RENOVACAO_SILENCIOSA,
+  CAMINHO_DE_RETORNO,
+  ESCOPO_OIDC,
+  ESPERA_DA_RENOVACAO_SILENCIOSA_EM_SEGUNDOS,
+} from './caminhosOidc';
 
 export interface AmbienteOidc {
   readonly emissor: string;

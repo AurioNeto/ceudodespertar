@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { User, UserManager } from 'oidc-client-ts';
 import type { IWindow } from 'oidc-client-ts';
+import { CAMINHO_DE_RETORNO } from './caminhosOidc';
 import {
-  CAMINHO_DE_RETORNO,
   ErroDeConfiguracaoOidc,
   ErroDeEntrada,
   configuracaoOidc,
