@@ -1,0 +1,1 @@
+export { PontosDeAtencao } from './PontosDeAtencao';
