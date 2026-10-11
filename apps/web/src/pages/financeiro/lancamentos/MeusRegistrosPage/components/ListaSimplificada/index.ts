@@ -1,0 +1,1 @@
+export { ListaSimplificada } from './ListaSimplificada';
