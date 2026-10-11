@@ -70,7 +70,8 @@ const linhaGerenciavel = (container: HTMLElement, nome: string) => {
 };
 
 const abrirGerenciador = (container: HTMLElement) => clicar(botaoComTexto(container, 'Gerenciar contas e fundos'));
-const fecharGerenciador = (container: HTMLElement) => clicar(elemento(container, 'button[aria-label="fechar"]'));
+const painel = () => elemento(document.body, '[role="dialog"]');
+const fecharGerenciador = () => clicar(elemento(painel(), 'button[aria-label="Fechar"]'));
 
 async function criarConta(container: HTMLElement, nome: string, categoria?: string) {
   await clicar(botaoComTexto(container, '+ Nova conta'));
@@ -400,7 +401,7 @@ describe('ContasEFundoPage em campo', () => {
 
     await abrirGerenciador(container);
 
-    expect(elemento(container, 'button[aria-label="editar Cora PJ"]')).toBeTruthy();
+    expect(elemento(painel(), 'button[aria-label="editar Cora PJ"]')).toBeTruthy();
   });
 });
 
@@ -410,10 +411,10 @@ describe('ContasEFundoPage: gerenciar contas e fundos', () => {
     const antes = container.innerHTML;
 
     await abrirGerenciador(container);
-    expect(todos(container, 'button[aria-label="fechar"]')).toHaveLength(1);
-    await fecharGerenciador(container);
+    expect(todos(document.body, 'button[aria-label="Fechar"]')).toHaveLength(1);
+    await fecharGerenciador();
 
-    expect(todos(container, 'button[aria-label="fechar"]')).toHaveLength(0);
+    expect(todos(document.body, 'button[aria-label="Fechar"]')).toHaveLength(0);
     expect(container.innerHTML).toBe(antes);
   });
 
@@ -421,11 +422,11 @@ describe('ContasEFundoPage: gerenciar contas e fundos', () => {
     const { container } = await montar(<ContasEFundoPage />);
     await abrirGerenciador(container);
 
-    await clicar(botaoComTexto(linhaGerenciavel(container, 'Espécie'), 'Excluir'));
+    await clicar(botaoComTexto(linhaGerenciavel(painel(), 'Espécie'), 'Excluir'));
 
-    expect(textosDasFolhas(linhaGerenciavel(container, 'Espécie'))).toContain('Inativa');
-    expect(botaoComTexto(linhaGerenciavel(container, 'Espécie'), 'Reativar')).toBeTruthy();
-    await fecharGerenciador(container);
+    expect(textosDasFolhas(linhaGerenciavel(painel(), 'Espécie'))).toContain('Inativa');
+    expect(botaoComTexto(linhaGerenciavel(painel(), 'Espécie'), 'Reativar')).toBeTruthy();
+    await fecharGerenciador();
     expect(nomesDosCartoes(container)).toEqual(['Cora PJ', 'Nubank Paty', 'Itaú Munay']);
     expect(blocoDoRotulo(container, 'Saldo consolidado da unidade')).toEqual([
       'Saldo consolidado da unidade',
@@ -440,9 +441,9 @@ describe('ContasEFundoPage: gerenciar contas e fundos', () => {
     const { container } = await montar(<ContasEFundoPage />);
     await abrirGerenciador(container);
 
-    await clicar(botaoComTexto(linhaGerenciavel(container, 'Nubank Paty'), 'Excluir'));
+    await clicar(botaoComTexto(linhaGerenciavel(painel(), 'Nubank Paty'), 'Excluir'));
 
-    await fecharGerenciador(container);
+    await fecharGerenciador();
     expect(blocoDoRotulo(container, 'Em banco')).toEqual(['Em banco', 'R$ 79.896,95', '2 contas']);
     expect(blocoDoRotulo(container, 'Em espécie')).toEqual(['Em espécie', 'R$ 3.180,40', 'caixa da chácara']);
     expect(blocoDoRotulo(container, 'Saldo consolidado da unidade')).toEqual([
@@ -455,11 +456,11 @@ describe('ContasEFundoPage: gerenciar contas e fundos', () => {
   it('reativar uma conta — devolve o saldo aos totais e o cartão à tela', async () => {
     const { container } = await montar(<ContasEFundoPage />);
     await abrirGerenciador(container);
-    await clicar(botaoComTexto(linhaGerenciavel(container, 'Espécie'), 'Excluir'));
+    await clicar(botaoComTexto(linhaGerenciavel(painel(), 'Espécie'), 'Excluir'));
 
-    await clicar(botaoComTexto(linhaGerenciavel(container, 'Espécie'), 'Reativar'));
+    await clicar(botaoComTexto(linhaGerenciavel(painel(), 'Espécie'), 'Reativar'));
 
-    await fecharGerenciador(container);
+    await fecharGerenciador();
     expect(nomesDosCartoes(container)).toEqual(['Cora PJ', 'Espécie', 'Nubank Paty', 'Itaú Munay']);
     expect(blocoDoRotulo(container, 'Saldo consolidado da unidade')[1]).toBe('R$ 84.317,90');
   });
@@ -467,11 +468,11 @@ describe('ContasEFundoPage: gerenciar contas e fundos', () => {
   it('excluir um fundo — devolve o valor ao Livre e tira a reserva da lista, sem mexer no total do fundo', async () => {
     const { container } = await montar(<ContasEFundoPage />);
     await abrirGerenciador(container);
-    await clicar(botaoComTexto(container, 'Fundos'));
+    await clicar(botaoComTexto(painel(), 'Fundos'));
 
-    await clicar(botaoComTexto(linhaGerenciavel(container, 'Obra do dormitório'), 'Excluir'));
+    await clicar(botaoComTexto(linhaGerenciavel(painel(), 'Obra do dormitório'), 'Excluir'));
 
-    await fecharGerenciador(container);
+    await fecharGerenciador();
     expect(blocoDoRotulo(container, 'Total do fundo')).toEqual(['Total do fundo', 'R$ 39.235,40']);
     expect(blocoDoRotulo(container, 'Já com destino')).toEqual(['Já com destino', 'R$ 15.200,00']);
     expect(blocoDoRotulo(container, 'Livre', 0)).toEqual(['Livre', 'R$ 24.035,40']);
@@ -485,12 +486,12 @@ describe('ContasEFundoPage: gerenciar contas e fundos', () => {
   it('reativar um fundo — devolve a reserva à lista e o valor ao Já com destino, e o Livre volta ao que era', async () => {
     const { container } = await montar(<ContasEFundoPage />);
     await abrirGerenciador(container);
-    await clicar(botaoComTexto(container, 'Fundos'));
-    await clicar(botaoComTexto(linhaGerenciavel(container, 'Obra do dormitório'), 'Excluir'));
+    await clicar(botaoComTexto(painel(), 'Fundos'));
+    await clicar(botaoComTexto(linhaGerenciavel(painel(), 'Obra do dormitório'), 'Excluir'));
 
-    await clicar(botaoComTexto(linhaGerenciavel(container, 'Obra do dormitório'), 'Reativar'));
+    await clicar(botaoComTexto(linhaGerenciavel(painel(), 'Obra do dormitório'), 'Reativar'));
 
-    await fecharGerenciador(container);
+    await fecharGerenciador();
     expect(blocoDoRotulo(container, 'Total do fundo')).toEqual(['Total do fundo', 'R$ 39.235,40']);
     expect(blocoDoRotulo(container, 'Já com destino')).toEqual(['Já com destino', 'R$ 33.600,00']);
     expect(blocoDoRotulo(container, 'Livre', 0)).toEqual(['Livre', 'R$ 5.635,40']);
@@ -506,9 +507,9 @@ describe('ContasEFundoPage: gerenciar contas e fundos', () => {
     const { container } = await montar(<ContasEFundoPage />);
     await abrirGerenciador(container);
 
-    await criarConta(container, 'Reserva da obra');
+    await criarConta(painel(), 'Reserva da obra');
 
-    await fecharGerenciador(container);
+    await fecharGerenciador();
     expect(textosDasFolhas(cartaoDaConta(container, 'Reserva da obra'))).toEqual([
       'Reserva da obra',
       'Nova conta',
@@ -529,9 +530,9 @@ describe('ContasEFundoPage: gerenciar contas e fundos', () => {
     const { container } = await montar(<ContasEFundoPage />);
     await abrirGerenciador(container);
 
-    await criarConta(container, 'Cofre da lojinha', 'DINHEIRO');
+    await criarConta(painel(), 'Cofre da lojinha', 'DINHEIRO');
 
-    await fecharGerenciador(container);
+    await fecharGerenciador();
     expect(glifoDe(elemento(cartaoDaConta(container, 'Cofre da lojinha'), 'svg'))).toBe('wallet');
     expect(blocoDoRotulo(container, 'Em banco')).toEqual(['Em banco', 'R$ 81.137,50', '3 contas']);
   });
@@ -540,11 +541,11 @@ describe('ContasEFundoPage: gerenciar contas e fundos', () => {
     const { container } = await montar(<ContasEFundoPage />);
     await abrirGerenciador(container);
 
-    await clicar(elemento(container, 'button[aria-label="editar Cora PJ"]'));
-    await escolherOpcao(campoRotulado<HTMLSelectElement>(container, 'Categoria'), 'DINHEIRO');
-    await clicar(botaoComTexto(container, 'Salvar conta'));
+    await clicar(elemento(painel(), 'button[aria-label="editar Cora PJ"]'));
+    await escolherOpcao(campoRotulado<HTMLSelectElement>(painel(), 'Categoria'), 'DINHEIRO');
+    await clicar(botaoComTexto(painel(), 'Salvar conta'));
 
-    await fecharGerenciador(container);
+    await fecharGerenciador();
     expect(blocoDoRotulo(container, 'Em banco')).toEqual(['Em banco', 'R$ 39.235,40', '2 contas']);
     expect(blocoDoRotulo(container, 'Em espécie')).toEqual(['Em espécie', 'R$ 45.082,50', 'caixa da chácara']);
     expect(blocoDoRotulo(container, 'Saldo consolidado da unidade')[1]).toBe('R$ 84.317,90');
@@ -555,12 +556,12 @@ describe('ContasEFundoPage: gerenciar contas e fundos', () => {
     const { container } = await montar(<ContasEFundoPage />);
     await abrirGerenciador(container);
 
-    await clicar(elemento(container, 'button[aria-label="editar Itaú Munay"]'));
-    await digitar(campoRotulado(container, 'Nome da conta'), 'Itaú Lojinha');
-    await digitar(campoRotulado(container, 'Responsável'), 'Marília Prado');
-    await clicar(botaoComTexto(container, 'Salvar conta'));
+    await clicar(elemento(painel(), 'button[aria-label="editar Itaú Munay"]'));
+    await digitar(campoRotulado(painel(), 'Nome da conta'), 'Itaú Lojinha');
+    await digitar(campoRotulado(painel(), 'Responsável'), 'Marília Prado');
+    await clicar(botaoComTexto(painel(), 'Salvar conta'));
 
-    await fecharGerenciador(container);
+    await fecharGerenciador();
     expect(textosDasFolhas(cartaoDaConta(container, 'Itaú Lojinha'))).toEqual([
       'Itaú Lojinha',
       'unidade comercial · lojinha',
@@ -575,27 +576,27 @@ describe('ContasEFundoPage: gerenciar contas e fundos', () => {
   it('salvar conta com nome vazio — não muda a tela nem avisa nada, e o formulário continua aberto', async () => {
     const { container } = await montar(<ContasEFundoPage />);
     await abrirGerenciador(container);
-    await clicar(botaoComTexto(container, '+ Nova conta'));
-    await digitar(campoRotulado(container, 'Descrição'), 'sem nome ainda');
+    await clicar(botaoComTexto(painel(), '+ Nova conta'));
+    await digitar(campoRotulado(painel(), 'Descrição'), 'sem nome ainda');
 
-    await clicar(botaoComTexto(container, 'Salvar conta'));
+    await clicar(botaoComTexto(painel(), 'Salvar conta'));
 
-    expect(botaoComTexto(container, 'Salvar conta')).toBeTruthy();
-    expect(campoRotulado(container, 'Descrição').value).toBe('sem nome ainda');
-    expect(container.querySelector('[role="alert"]')).toBeNull();
+    expect(botaoComTexto(painel(), 'Salvar conta')).toBeTruthy();
+    expect(campoRotulado(painel(), 'Descrição').value).toBe('sem nome ainda');
+    expect(painel().querySelector('[role="alert"]')).toBeNull();
     expect(blocoDoRotulo(container, 'Saldo consolidado da unidade')[2]).toBe('última conciliação em 01/09 · 4 contas ativas');
   });
 
   it('editar um fundo — trocar o valor reajusta o que já tem destino e o Livre, e a reserva continua no mesmo lugar', async () => {
     const { container } = await montar(<ContasEFundoPage />);
     await abrirGerenciador(container);
-    await clicar(botaoComTexto(container, 'Fundos'));
+    await clicar(botaoComTexto(painel(), 'Fundos'));
 
-    await clicar(elemento(container, 'button[aria-label="editar Feitio de dezembro"]'));
-    await digitar(campoRotulado(container, 'Valor alocado (R$)'), '10.000,00');
-    await clicar(botaoComTexto(container, 'Salvar fundo'));
+    await clicar(elemento(painel(), 'button[aria-label="editar Feitio de dezembro"]'));
+    await digitar(campoRotulado(painel(), 'Valor alocado (R$)'), '10.000,00');
+    await clicar(botaoComTexto(painel(), 'Salvar fundo'));
 
-    await fecharGerenciador(container);
+    await fecharGerenciador();
     expect(blocoDoRotulo(container, 'Já com destino')).toEqual(['Já com destino', 'R$ 34.400,00']);
     expect(blocoDoRotulo(container, 'Livre', 0)).toEqual(['Livre', 'R$ 4.835,40']);
     expect(linhasDaReserva(container).map((linha) => linha[0])).toEqual([
@@ -615,11 +616,11 @@ describe('ContasEFundoPage: gerenciar contas e fundos', () => {
   it('novo fundo — com valor lido como 1.500,00, vira reserva de 1.500,00 e tira do Livre', async () => {
     const { container } = await montar(<ContasEFundoPage />);
     await abrirGerenciador(container);
-    await clicar(botaoComTexto(container, 'Fundos'));
+    await clicar(botaoComTexto(painel(), 'Fundos'));
 
-    await criarFundo(container, 'Reforma da cozinha', '1.500,00');
+    await criarFundo(painel(), 'Reforma da cozinha', '1.500,00');
 
-    await fecharGerenciador(container);
+    await fecharGerenciador();
     expect(blocoDoRotulo(container, 'Já com destino')).toEqual(['Já com destino', 'R$ 35.100,00']);
     expect(blocoDoRotulo(container, 'Livre', 0)).toEqual(['Livre', 'R$ 4.135,40']);
     expect(linhasDaReserva(container).at(-2)).toEqual(['Reforma da cozinha', 'R$ 1.500,00', '4%']);
@@ -628,12 +629,12 @@ describe('ContasEFundoPage: gerenciar contas e fundos', () => {
   it('fundo acima do que está livre — o painel avisa e bloqueia, e o Livre não fica negativo', async () => {
     const { container } = await montar(<ContasEFundoPage />);
     await abrirGerenciador(container);
-    await clicar(botaoComTexto(container, 'Fundos'));
+    await clicar(botaoComTexto(painel(), 'Fundos'));
 
-    await criarFundo(container, 'Compra do terreno', '10.000,00');
+    await criarFundo(painel(), 'Compra do terreno', '10.000,00');
 
-    expect(folhasComTexto(container, 'Passa do que está livre no fundo próprio: R$ 5.635,40.')).toHaveLength(1);
-    await fecharGerenciador(container);
+    expect(folhasComTexto(painel(), 'Passa do que está livre no fundo próprio: R$ 5.635,40.')).toHaveLength(1);
+    await fecharGerenciador();
     expect(blocoDoRotulo(container, 'Já com destino')).toEqual(['Já com destino', 'R$ 33.600,00']);
     expect(blocoDoRotulo(container, 'Livre', 0)).toEqual(['Livre', 'R$ 5.635,40']);
     expect(linhasDaReserva(container).at(-1)).toEqual(['Livre', 'sem destino combinado', 'R$ 5.635,40', '14%']);
@@ -643,12 +644,12 @@ describe('ContasEFundoPage: gerenciar contas e fundos', () => {
   it('cores das reservas — seguem a ordem royal, confirmed, pending, attention e voltam ao royal no quinto fundo', async () => {
     const { container } = await montar(<ContasEFundoPage />);
     await abrirGerenciador(container);
-    await clicar(botaoComTexto(container, 'Fundos'));
-    await criarFundo(container, 'Quarto', '1');
+    await clicar(botaoComTexto(painel(), 'Fundos'));
+    await criarFundo(painel(), 'Quarto', '1');
     vi.setSystemTime(new Date(UM_SEGUNDO_DEPOIS));
-    await criarFundo(container, 'Quinto', '1');
+    await criarFundo(painel(), 'Quinto', '1');
 
-    await fecharGerenciador(container);
+    await fecharGerenciador();
 
     expect(segmentoDaBarra(container, 'Quarto').style.background).toBe('var(--color-attention)');
     expect(segmentoDaBarra(container, 'Quinto').style.background).toBe('var(--color-royal)');
@@ -657,11 +658,11 @@ describe('ContasEFundoPage: gerenciar contas e fundos', () => {
   it('fundo inativado — a cor do fundo seguinte é contada entre os ativos na tela e entre todos no painel', async () => {
     const { container } = await montar(<ContasEFundoPage />);
     await abrirGerenciador(container);
-    await clicar(botaoComTexto(container, 'Fundos'));
+    await clicar(botaoComTexto(painel(), 'Fundos'));
 
-    await clicar(botaoComTexto(linhaGerenciavel(container, 'Obra do dormitório'), 'Excluir'));
+    await clicar(botaoComTexto(linhaGerenciavel(painel(), 'Obra do dormitório'), 'Excluir'));
 
-    const marcadorNoPainel = linhaGerenciavel(container, 'Feitio de dezembro').firstElementChild as HTMLElement;
+    const marcadorNoPainel = linhaGerenciavel(painel(), 'Feitio de dezembro').firstElementChild as HTMLElement;
     expect(marcadorNoPainel.style.background).toBe('var(--color-confirmed)');
     expect(segmentoDaBarra(container, 'Feitio de dezembro').style.background).toBe('var(--color-royal)');
   });

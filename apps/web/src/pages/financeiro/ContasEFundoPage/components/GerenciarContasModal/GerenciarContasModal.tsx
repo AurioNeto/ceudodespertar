@@ -1,5 +1,5 @@
 import type { Conta, ContaId, Fundo, FundoId } from '@cdd/contracts';
-import { Icon, Rotulo } from '@/ds';
+import { Icon, PainelDeAcao } from '@/ds';
 import { formatarBRL } from '@/pages/utils/formato';
 import { iconeDaConta } from '../../utils/conta';
 import { corDaReserva } from '../../utils/reservas';
@@ -50,66 +50,10 @@ export function GerenciarContasModal({
   } = useGerenciarContas(fundos, fundoProprio, onSalvarConta, onSalvarFundo);
 
   return (
-    <div
-      onClick={onFechar}
-      style={{
-        position: 'fixed',
-        inset: 0,
-        background: 'rgba(20,20,24,0.42)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 40,
-        padding: 30,
-      }}
-    >
-      <div
-        onClick={(e) => e.stopPropagation()}
-        style={{
-          width: 640,
-          maxWidth: '100%',
-          maxHeight: '100%',
-          display: 'flex',
-          flexDirection: 'column',
-          background: 'var(--bg-card)',
-          borderRadius: 'var(--radius-lg)',
-          boxShadow: 'var(--shadow-raised)',
-          overflow: 'hidden',
-        }}
-      >
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: 12,
-            padding: '16px 20px',
-            borderBottom: 'var(--border-hairline)',
-          }}
-        >
-          <Rotulo>Gerenciar contas e fundos</Rotulo>
-          <button
-            type="button"
-            aria-label="fechar"
-            onClick={onFechar}
-            style={{
-              width: 34,
-              height: 34,
-              border: '1px solid var(--color-line)',
-              background: 'var(--bg-card)',
-              borderRadius: 'var(--radius-pill)',
-              cursor: 'pointer',
-              color: 'var(--text-secondary)',
-              display: 'grid',
-              placeItems: 'center',
-            }}
-          >
-            <Icon name="x" size={16} />
-          </button>
-        </div>
-
+    <PainelDeAcao aberto titulo="Gerenciar contas e fundos" variante="central" aoFechar={onFechar}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         {form === null ? (
-          <div style={{ display: 'flex', gap: 8, padding: '16px 20px 0' }}>
+          <div style={{ display: 'flex', gap: 8 }}>
             {(['contas', 'fundos'] as const).map((a) => (
               <button
                 key={a}
@@ -133,17 +77,7 @@ export function GerenciarContasModal({
           </div>
         ) : null}
 
-        <div
-          style={{
-            flex: 1,
-            minHeight: 0,
-            overflow: 'auto',
-            padding: '16px 20px 20px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 10,
-          }}
-        >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {form === null && aba === 'contas' ? (
             <>
               <BotaoNovo
@@ -224,6 +158,6 @@ export function GerenciarContasModal({
           ) : null}
         </div>
       </div>
-    </div>
+    </PainelDeAcao>
   );
 }
