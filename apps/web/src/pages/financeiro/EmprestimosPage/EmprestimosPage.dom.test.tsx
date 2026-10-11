@@ -558,15 +558,18 @@ describe('EmprestimosPage: registrar devolução', () => {
     expect(linhasDeDevolucoes(container).at(-1)).toEqual(['15/09/2026', 'Espécie', 'Aurio Neto', '200,00']);
   });
 
-  it('devolução com a data apagada — é aceita e a tabela mostra 01/01/1900', async () => {
+  it('devolução com a data apagada — o campo diz Informe a data e a devolução não é registrada', async () => {
     const { container } = await montar(<EmprestimosPage />);
     await abrirFormularioDeDevolucao(container);
     await digitar(campoPeloRotulo(container, 'Valor'), '200');
     await digitar(campoPeloRotulo(container, 'Data'), '');
+    const devolucoesAntes = linhasDeDevolucoes(container);
 
     await clicar(botaoComTexto(container, 'Registrar devolução'));
 
-    expect(linhasDeDevolucoes(container).at(-1)?.[0]).toBe('01/01/1900');
+    expect(mensagemDoCampo(campoPeloRotulo(container, 'Data'))).toBe('Informe a data');
+    expect(linhasDeDevolucoes(container)).toEqual(devolucoesAntes);
+    expect(recadoMostrado(container)).toBeNull();
   });
 
   it('devolução de um empréstimo recebido — atualiza o A devolver e o saldo da linha', async () => {
@@ -764,8 +767,9 @@ describe('EmprestimosPage: novo empréstimo', () => {
     );
   });
 
-  it('novo empréstimo com a data apagada — é aceito e o detalhe mostra 01/01/1900', async () => {
+  it('novo empréstimo com a data apagada — o campo diz Informe a data e o empréstimo não é registrado', async () => {
     const { container } = await montar(<EmprestimosPage />);
+    const listaAntes = textosDasLinhas(container);
     await abrirNovoEmprestimo(container);
     await digitar(campoPeloRotulo(container, 'Valor'), '300');
     await digitar(campoPeloRotulo(container, 'Data'), '');
@@ -773,7 +777,9 @@ describe('EmprestimosPage: novo empréstimo', () => {
 
     await clicar(botaoComTexto(container, 'Registrar empréstimo'));
 
-    expect(folhasComTexto(container, 'A casa emprestou em 01/01/1900 · adiantar a feira')).toHaveLength(1);
+    expect(mensagemDoCampo(campoPeloRotulo(container, 'Data'))).toBe('Informe a data');
+    expect(textosDasLinhas(container)).toEqual(listaAntes);
+    expect(recadoMostrado(container)).toBeNull();
   });
 
   it('empréstimo novo — não tem devolução: mostra o estado vazio da tabela e a contagem zerada', async () => {

@@ -531,14 +531,17 @@ describe('FaturasPage: registrar o pagamento', () => {
     expect(campoPeloRotulo(container, 'Data do pagamento').value).toBe('2026-09-10');
   });
 
-  it('data do pagamento apagada — o pagamento é aceito e a fatura diz Paga em 01/01/1900', async () => {
+  it('data do pagamento apagada — o campo diz Informe a data e o pagamento não é registrado', async () => {
     const { container } = await montar(<FaturasPage />);
     await clicar(botaoComTexto(container, 'Registrar pagamento'));
     await digitar(campoPeloRotulo(container, 'Data do pagamento'), '');
 
     await clicar(botaoComTexto(container, 'Confirmar pagamento'));
 
-    expect(linhaDePagamento(container)).toBe('Paga em 01/01/1900 por transferência de Cora PJ.');
+    expect(folhasComTexto(container, 'Informe a data')).toHaveLength(1);
+    expect(linhaDePagamento(container)).toBeNull();
+    expect(linhasDaLista(container)[1]).toEqual(['agosto de 2026', 'Fechada, a pagar', '2.847,60', '6 compras']);
+    expect(recadoMostrado(container)).toBeNull();
   });
 
   it('conta e data escolhidas — ficam guardadas quando se cancela e se abre o formulário de novo', async () => {

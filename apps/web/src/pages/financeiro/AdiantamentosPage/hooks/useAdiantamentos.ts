@@ -28,6 +28,8 @@ export function useAdiantamentos() {
   const [dataRessarcimento, setDataRessarcimento] = useState(hoje);
   const [criando, setCriando] = useState(false);
 
+  const dataRessarcimentoValida = dataRessarcimento !== '';
+
   const { aguardando, aRessarcir, fechados } = particionarPorStatus(adiantamentos);
 
   const totalARessarcir = aRessarcir.reduce((s, a) => s + a.valor, 0);
@@ -73,6 +75,7 @@ export function useAdiantamentos() {
   };
 
   const ressarcir = (a: Adiantamento) => {
+    if (!dataRessarcimentoValida) return;
     const conta = contasInstitucionais.find((c) => c.id === contaRessarcimento)!;
     setAdiantamentos((lista) =>
       lista.map((x) =>
@@ -123,6 +126,7 @@ export function useAdiantamentos() {
     ressarcindo,
     contaRessarcimento,
     dataRessarcimento,
+    dataRessarcimentoValida,
     criando,
     aguardando,
     aRessarcir,

@@ -1,4 +1,5 @@
 import { Button, Rotulo, Select, TextField, type Density } from '@/ds';
+import { MENSAGEM_DE_DATA_VAZIA } from '@/pages/financeiro/constantes';
 import { quemAdianta } from '../../mocks/adiantamentos';
 import type { DadosDoNovo } from '../../utils/montarAdiantamento';
 import { useFormularioDeAdiantamento } from './hooks/useFormularioDeAdiantamento';
@@ -62,6 +63,7 @@ export function FormularioDeAdiantamento({ densidade, onConfirmar, onCancelar }:
           label="Data da despesa"
           type="date"
           value={formulario.data}
+          error={formulario.dataValida ? undefined : MENSAGEM_DE_DATA_VAZIA}
           onChange={(e) => formulario.escolherData(e.target.value)}
         />
       </div>
@@ -77,7 +79,7 @@ export function FormularioDeAdiantamento({ densidade, onConfirmar, onCancelar }:
         <Button
           iconName="check"
           onClick={formulario.confirmar}
-          disabled={!formulario.valido}
+          disabled={!formulario.valido || !formulario.dataValida}
           blockedReason={!formulario.valido ? 'Informe conta pessoal, valor maior que zero e a despesa.' : undefined}
         >
           Registrar

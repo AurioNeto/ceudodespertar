@@ -30,12 +30,13 @@ export function useEmprestimos() {
     motivo: '',
   });
 
+  const dataDoNovoValida = novo.data !== '';
   const valorNovoEmCentavos = Math.round(lerValorDigitado(novo.valor) * 100);
   const novoValido =
     Number.isFinite(valorNovoEmCentavos) && valorNovoEmCentavos > 0 && novo.motivo.trim().length > 0;
 
   const criarEmprestimo = () => {
-    if (!novoValido) return;
+    if (!novoValido || !dataDoNovoValida) return;
     const conta = contasDeEmprestimo.find((c) => c.id === novo.conta)!;
     const contraparte = contrapartesConhecidas.find((c) => c.id === novo.contraparteId)!;
     const criado = montarEmprestimo({
@@ -84,6 +85,7 @@ export function useEmprestimos() {
   const valorEmCentavos = Math.round(lerValorDigitado(valorDevolucao) * 100);
   const valorValido = Number.isFinite(valorEmCentavos) && valorEmCentavos > 0;
   const excedeSaldo = valorValido && valorEmCentavos > saldo;
+  const dataDevolucaoValida = dataDevolucao !== '';
 
   const escolherFiltro = (v: Filtro) => {
     setFiltro(v);
@@ -97,7 +99,7 @@ export function useEmprestimos() {
   };
 
   const registrarDevolucao = () => {
-    if (!aberto || !valorValido || excedeSaldo) return;
+    if (!aberto || !valorValido || excedeSaldo || !dataDevolucaoValida) return;
     const conta = contasDeEmprestimo.find((c) => c.id === contaDevolucao)!;
     setEmprestimos((lista) =>
       lista.map((e) =>
@@ -146,6 +148,7 @@ export function useEmprestimos() {
     criando,
     novo,
     novoValido,
+    dataDoNovoValida,
     filtro,
     visiveis,
     aberto,
@@ -153,6 +156,7 @@ export function useEmprestimos() {
     saldo,
     valorDevolucao,
     dataDevolucao,
+    dataDevolucaoValida,
     contaDevolucao,
     excedeSaldo,
     valorValido,

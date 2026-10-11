@@ -658,20 +658,17 @@ describe('AdiantamentosPage: ressarcir', () => {
     expect(campoPeloRotulo(container, 'Data').value).toBe('2026-09-10');
   });
 
-  it('data do ressarcimento apagada — o adiantamento fecha como Ressarcido, mas a linha não diz quando nem por qual conta', async () => {
+  it('data do ressarcimento apagada — o campo diz Informe a data e o adiantamento segue a ressarcir', async () => {
     const { container } = await montar(<AdiantamentosPage />);
     await clicar(botaoComTexto(linhaDe(container, ...LINHA_DE_PATY_A_RESSARCIR), 'Ressarcir'));
     await digitar(campoPeloRotulo(container, 'Data'), '');
 
     await clicar(botaoComTexto(linhaDe(container, ...LINHA_DE_PATY_A_RESSARCIR), 'Confirmar'));
 
-    expect(textosDasLinhas(container, 'Fechados')[0]).toEqual([
-      'Paty Munay',
-      'Ressarcido',
-      'camisetas da lojinha, lote de agosto · 11/07/2026 · Nubank Paty',
-      'autorizado por Marta Neto em 14/07/2026',
-      '1.700,86',
-    ]);
+    expect(mensagemDoCampo(campoPeloRotulo(container, 'Data'))).toBe('Informe a data');
+    expect(textosDasLinhas(container, 'A ressarcir')).toHaveLength(2);
+    expect(blocoDoRotulo(container, 'Fechados')[1]).toBe('1');
+    expect(recadoMostrado(container)).toBeNull();
   });
 
   it('trocar de perspectiva com o formulário de ressarcimento aberto — fecha o formulário', async () => {
@@ -820,7 +817,7 @@ describe('AdiantamentosPage: novo adiantamento', () => {
     );
   });
 
-  it('data da despesa apagada — o adiantamento é aceito e a linha mostra 01/01/1900', async () => {
+  it('data da despesa apagada — o campo diz Informe a data e o adiantamento não é registrado', async () => {
     const { container } = await montar(<AdiantamentosPage />);
     await abrirNovoAdiantamento(container);
     await digitar(campoPeloRotulo(container, 'Valor'), '100');
@@ -829,8 +826,9 @@ describe('AdiantamentosPage: novo adiantamento', () => {
 
     await clicar(botaoComTexto(container, 'Registrar'));
 
-    await verComo(container, 'Marta Neto');
-    expect(textosDasLinhas(container, 'Aguardando sua autorização')[0]?.[2]).toBe('tinta · 01/01/1900 · Nubank Paty');
+    expect(mensagemDoCampo(campoPeloRotulo(container, 'Data da despesa'))).toBe('Informe a data');
+    expect(blocoDoRotulo(container, 'Aguardando autorização')[1]).toBe('2');
+    expect(recadoMostrado(container)).toBeNull();
   });
 
   it('Cancelar — fecha o formulário sem registrar, e o que foi digitado não volta', async () => {

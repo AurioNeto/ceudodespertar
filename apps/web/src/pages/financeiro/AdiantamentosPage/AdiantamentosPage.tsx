@@ -104,6 +104,7 @@ export function AdiantamentosPage() {
             ressarcindo={tela.ressarcindo}
             conta={tela.contaRessarcimento}
             data={tela.dataRessarcimento}
+            dataValida={tela.dataRessarcimentoValida}
             onIniciarRessarcimento={tela.iniciarRessarcimento}
             onConta={tela.escolherContaRessarcimento}
             onData={tela.escolherDataRessarcimento}

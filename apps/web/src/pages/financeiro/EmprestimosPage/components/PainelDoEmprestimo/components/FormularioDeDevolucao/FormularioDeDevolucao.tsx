@@ -1,5 +1,6 @@
 import type { DirecaoEmprestimo } from '@cdd/contracts';
 import { Button, Select, TextField, type Density } from '@/ds';
+import { MENSAGEM_DE_DATA_VAZIA } from '@/pages/financeiro/constantes';
 import { formatarDinheiro } from '@/pages/utils/formato';
 import { contasDeEmprestimo } from '../../../../mocks/emprestimos';
 
@@ -9,6 +10,7 @@ export interface FormularioDeDevolucaoProps {
   direcao: DirecaoEmprestimo;
   valor: string;
   data: string;
+  dataValida: boolean;
   conta: string;
   excedeSaldo: boolean;
   valorValido: boolean;
@@ -25,6 +27,7 @@ export function FormularioDeDevolucao({
   direcao,
   valor,
   data,
+  dataValida,
   conta,
   excedeSaldo,
   valorValido,
@@ -64,7 +67,13 @@ export function FormularioDeDevolucao({
           hint={excedeSaldo ? undefined : `saldo de ${formatarDinheiro(saldo)}`}
           autoFocus
         />
-        <TextField label="Data" type="date" value={data} onChange={(e) => onData(e.target.value)} />
+        <TextField
+          label="Data"
+          type="date"
+          value={data}
+          error={dataValida ? undefined : MENSAGEM_DE_DATA_VAZIA}
+          onChange={(e) => onData(e.target.value)}
+        />
         <Select
           label={direcao === 'CONCEDIDO' ? 'Conta de entrada' : 'Conta de saída'}
           value={conta}
@@ -77,7 +86,7 @@ export function FormularioDeDevolucao({
         <Button
           iconName="check"
           onClick={onConfirmar}
-          disabled={!valorValido || excedeSaldo}
+          disabled={!valorValido || excedeSaldo || !dataValida}
           blockedReason={
             excedeSaldo
               ? 'A soma das devoluções não pode passar do principal emprestado.'

@@ -14,6 +14,8 @@ export function useFaturas() {
   const [dataPagamento, setDataPagamento] = useState(hoje);
   const [recado, setRecado] = useState<string | null>(null);
 
+  const dataPagamentoValida = dataPagamento !== '';
+
   const doCartao = useMemo(() => faturas.filter((f) => f.contaId === cartaoId), [faturas, cartaoId]);
   const fatura = doCartao.find((f) => f.id === faturaId) ?? doCartao[0];
   const cartao = cartoes.find((c) => c.id === cartaoId)!;
@@ -41,7 +43,7 @@ export function useFaturas() {
   };
 
   const pagar = () => {
-    if (!fatura) return;
+    if (!fatura || !dataPagamentoValida) return;
     setFaturas((lista) =>
       lista.map((f) =>
         f.id === fatura.id
@@ -68,6 +70,7 @@ export function useFaturas() {
     pagando,
     contaPagamento,
     dataPagamento,
+    dataPagamentoValida,
     recado,
     dividaDe,
     escolherCartao,

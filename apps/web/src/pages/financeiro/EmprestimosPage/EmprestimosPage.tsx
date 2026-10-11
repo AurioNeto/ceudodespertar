@@ -69,6 +69,7 @@ export function EmprestimosPage() {
             densidade={densidade}
             valores={tela.novo}
             valido={tela.novoValido}
+            dataValida={tela.dataDoNovoValida}
             onMudar={tela.mudarNovo}
             onConfirmar={tela.criarEmprestimo}
             onCancelar={tela.cancelarNovo}
@@ -120,6 +121,7 @@ export function EmprestimosPage() {
                 saldo={tela.saldo}
                 valor={tela.valorDevolucao}
                 data={tela.dataDevolucao}
+                dataValida={tela.dataDevolucaoValida}
                 conta={tela.contaDevolucao}
                 excedeSaldo={tela.excedeSaldo}
                 valorValido={tela.valorValido}
