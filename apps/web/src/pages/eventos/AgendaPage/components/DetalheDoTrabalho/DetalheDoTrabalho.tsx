@@ -1,5 +1,5 @@
 import { reais } from '@cdd/contracts';
-import { Icon, Rotulo } from '@/ds';
+import { Icon, Numero, Rotulo } from '@/ds';
 import { formatarBRL } from '@/pages/utils/formato';
 import { participantesDe } from '../../mocks/agenda';
 import type { Trabalho } from '../../tipos';
@@ -8,7 +8,6 @@ import { Bloco } from './components/Bloco';
 import { CabecalhoDoTrabalho } from './components/CabecalhoDoTrabalho';
 import { ListaDeParticipantes } from './components/ListaDeParticipantes';
 import { ListaDePreparo } from './components/ListaDePreparo';
-import { Numero } from './components/Numero';
 import { resumoDosParticipantes } from './utils/resumoDosParticipantes';
 
 export interface DetalheDoTrabalhoProps {
@@ -70,10 +69,11 @@ export function DetalheDoTrabalho({
           gap: 12,
         }}
       >
-        <Numero rotulo="Confirmados" valor={`${confirmados.length}`} nota={`de ${ev.previstos} previstos`} />
-        <Numero rotulo="Visitantes" valor={`${visitantes.length}`} nota="primeira vez ou convidados" />
-        <Numero rotulo="Litros previstos" valor={`${ev.litros}`} nota="reserva no estoque" />
+        <Numero destaque rotulo="Confirmados" valor={`${confirmados.length}`} nota={`de ${ev.previstos} previstos`} />
+        <Numero destaque rotulo="Visitantes" valor={`${visitantes.length}`} nota="primeira vez ou convidados" />
+        <Numero destaque rotulo="Litros previstos" valor={`${ev.litros}`} nota="reserva no estoque" />
         <Numero
+          destaque
           rotulo="Contribuição"
           valor={ev.contribuicoes.length ? ev.contribuicoes.map((c) => formatarBRL(reais(c)).replace(',00', '')).join(' · ') : '—'}
           nota={ev.contribuicoes.length > 1 ? 'opções sugeridas' : 'sem contribuição'}
@@ -118,15 +118,16 @@ export function DetalheDoTrabalho({
 
       <Bloco titulo="Dinheiro da cerimônia">
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(160px,1fr))', gap: 14 }}>
-          <Numero rotulo="Custo previsto" valor={formatarBRL(reais(ev.previstoGasto))} />
-          <Numero rotulo="Custo lançado" valor={formatarBRL(reais(ev.realizadoGasto))} cor="var(--color-attention)" />
+          <Numero destaque rotulo="Custo previsto" valor={formatarBRL(reais(ev.previstoGasto))} />
+          <Numero destaque rotulo="Custo lançado" valor={formatarBRL(reais(ev.realizadoGasto))} cor="var(--color-attention)" />
           <Numero
+            destaque
             rotulo="Contribuições esperadas"
             valor={formatarBRL(
               reais(participantes.filter((p) => p.situacao === 'confirmado').reduce((a, p) => a + p.contribuicao, 0)),
             )}
           />
-          <Numero rotulo="Contribuições recebidas" valor={formatarBRL(reais(ev.arrecadado))} cor="var(--color-confirmed)" />
+          <Numero destaque rotulo="Contribuições recebidas" valor={formatarBRL(reais(ev.arrecadado))} cor="var(--color-confirmed)" />
         </div>
         <p style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>
           O bloco vem dos lançamentos com esta cerimônia vinculada — o mesmo campo do registro.
