@@ -1,0 +1,1 @@
+export { FormularioDeRecusa } from './FormularioDeRecusa';

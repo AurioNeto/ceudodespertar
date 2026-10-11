@@ -1,0 +1,1 @@
+export { BlocoAusente } from './BlocoAusente';
