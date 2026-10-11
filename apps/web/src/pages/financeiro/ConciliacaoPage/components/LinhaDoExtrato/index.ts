@@ -1,0 +1,1 @@
+export { LinhaDoExtrato } from './LinhaDoExtrato';

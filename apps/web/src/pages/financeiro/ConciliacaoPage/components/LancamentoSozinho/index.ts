@@ -1,0 +1,1 @@
+export { LancamentoSozinho } from './LancamentoSozinho';

@@ -1,0 +1,1 @@
+export { AcaoDeFechamento } from './AcaoDeFechamento';

@@ -1,0 +1,1 @@
+export { ColunaDeResumo } from './ColunaDeResumo';
