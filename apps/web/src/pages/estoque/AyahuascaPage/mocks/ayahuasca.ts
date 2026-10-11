@@ -14,6 +14,7 @@ export interface LoteDeDaime {
   local: string;
   guardiao: string;
   situacao: SituacaoDoLote;
+  situacaoAntesDaQuarentena?: Exclude<SituacaoDoLote, 'quarentena'>;
   analise: string;
   garrafas: string;
 }

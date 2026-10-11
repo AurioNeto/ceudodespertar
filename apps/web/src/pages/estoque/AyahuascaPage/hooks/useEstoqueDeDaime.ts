@@ -11,6 +11,7 @@ import {
 } from '../mocks/ayahuasca';
 import type { Aba, ModoDoFormulario, RascunhoDeMovimento } from '../tipos';
 import { litros } from '../utils/litros';
+import { alternarQuarentenaDoLote } from '../utils/quarentena';
 import { rascunhoDeMovimento } from '../utils/rascunhoDeMovimento';
 import { saldos } from '../utils/saldos';
 import { erroDoFormulario } from '../utils/validarMovimento';
@@ -116,13 +117,7 @@ export function useEstoqueDeDaime() {
   const alternarQuarentena = () => {
     if (!detalhe) return;
     const emQuarentenaAgora = detalhe.situacao === 'quarentena';
-    setLotes((lista) =>
-      lista.map((l) =>
-        l.id === detalhe.id
-          ? { ...l, situacao: emQuarentenaAgora ? (l.restante > 0 ? 'em uso' : 'esgotado') : 'quarentena' }
-          : l,
-      ),
-    );
+    setLotes((lista) => lista.map((l) => (l.id === detalhe.id ? alternarQuarentenaDoLote(l) : l)));
     setMensagem(
       emQuarentenaAgora
         ? `${detalhe.codigo} saiu da quarentena.`
