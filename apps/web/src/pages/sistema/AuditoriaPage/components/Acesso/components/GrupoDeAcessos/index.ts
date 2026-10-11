@@ -1,0 +1,1 @@
+export { GrupoDeAcessos } from './GrupoDeAcessos';

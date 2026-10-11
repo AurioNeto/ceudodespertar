@@ -1,0 +1,1 @@
+export { ContrapesoDaGovernanca } from './ContrapesoDaGovernanca';

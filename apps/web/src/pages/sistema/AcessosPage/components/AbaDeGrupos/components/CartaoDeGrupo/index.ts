@@ -1,0 +1,1 @@
+export { CartaoDeGrupo } from './CartaoDeGrupo';

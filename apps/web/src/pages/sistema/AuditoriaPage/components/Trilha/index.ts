@@ -1,0 +1,1 @@
+export { Trilha } from './Trilha';

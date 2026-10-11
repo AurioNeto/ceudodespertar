@@ -1,35 +1,9 @@
-import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, Portao, SkeletonList, useDensidade } from '@/ds';
 import { ROTAS_PUBLICAS } from '@/app/rotas';
-import { useSessao } from '@/app/sessao';
 import { MensagemDeEntradaNaTela } from '../components/MensagemDeEntradaNaTela';
 import { MENSAGEM_DE_ERRO_NO_RETORNO } from './constantes';
-
-type SituacaoDoRetorno = 'concluindo' | 'falhou';
-
-function useConclusaoDoRetorno() {
-  const { concluirEntrada } = useSessao();
-  const navigate = useNavigate();
-  const [situacao, setSituacao] = useState<SituacaoDoRetorno>('concluindo');
-
-  useEffect(() => {
-    let vivo = true;
-    concluirEntrada(window.location.href).then(
-      (destino) => {
-        if (vivo) navigate(destino, { replace: true });
-      },
-      () => {
-        if (vivo) setSituacao('falhou');
-      },
-    );
-    return () => {
-      vivo = false;
-    };
-  }, [concluirEntrada, navigate]);
-
-  return situacao;
-}
+import { useConclusaoDoRetorno } from './hooks/useConclusaoDoRetorno';
 
 export function RetornoPage() {
   const densidade = useDensidade();
