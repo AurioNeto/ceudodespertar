@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import type { TipoLancamento } from '@cdd/contracts';
 import { INICIAL } from '../mocks/formularioInicial';
-import { SEM_CERIMONIA } from '../mocks/opcoes';
+import { SEM_CERIMONIA, SEM_REEMBOLSO } from '../mocks/opcoes';
 import { SUGESTOES_DO_CUPOM, type ChaveSugerida } from '../mocks/sugestoesDoCupom';
 import { regrasDoLancamento, type EstadoDoFormulario } from '../utils/regrasDoLancamento';
 import { textosPorTipo } from '../utils/textosPorTipo';
@@ -15,7 +15,10 @@ export type CampoComPicker =
   | 'cerimonia'
   | 'competencia'
   | 'pessoa'
+  | 'reembolso'
   | 'unidade';
+
+export type CampoDeTexto = 'data' | 'contraparte';
 
 export interface Recibo {
   total: number;
@@ -28,6 +31,7 @@ export function useFormularioDeLancamento(consolida: boolean) {
   const [tipo, setTipo] = useState<TipoLancamento>('SAIDA');
   const [campos, setCampos] = useState<EstadoDoFormulario>(INICIAL);
   const [picker, setPicker] = useState<CampoComPicker | null>(null);
+  const [folhaDeTexto, setFolhaDeTexto] = useState<CampoDeTexto | null>(null);
   const [resolvidas, setResolvidas] = useState<readonly ChaveSugerida[]>([]);
   const [recibo, setRecibo] = useState<Recibo | null>(null);
 
@@ -37,6 +41,7 @@ export function useFormularioDeLancamento(consolida: boolean) {
   const trocarTipo = (novo: TipoLancamento) => {
     setTipo(novo);
     setPicker(null);
+    setFolhaDeTexto(null);
     setCampos((c) => {
       if (novo === 'TRANSFERENCIA') {
         return {
@@ -50,6 +55,12 @@ export function useFormularioDeLancamento(consolida: boolean) {
       if (novo === 'ENTRADA') return { ...c, reembolso: false, pagamento: 'Pix' };
       return c;
     });
+  };
+
+  const escolherReembolso = (escolha: string) => {
+    const ligado = escolha !== SEM_REEMBOLSO;
+    setCampos((c) => ({ ...c, reembolso: ligado, ...(ligado ? { pessoa: escolha } : {}) }));
+    setPicker(null);
   };
 
   const alternarCategoria = (categoria: string) =>
@@ -85,6 +96,7 @@ export function useFormularioDeLancamento(consolida: boolean) {
     setCampos(INICIAL);
     setResolvidas([]);
     setPicker(null);
+    setFolhaDeTexto(null);
     setRecibo(null);
   };
 
@@ -143,23 +155,31 @@ export function useFormularioDeLancamento(consolida: boolean) {
     setCampos(INICIAL);
     setResolvidas([]);
     setPicker(null);
+    setFolhaDeTexto(null);
   };
+
+  const reembolsoA = campos.reembolso ? campos.pessoa : SEM_REEMBOLSO;
 
   return {
     tipo,
     campos,
     picker,
+    folhaDeTexto,
+    reembolsoA,
     recibo,
     sugestoesPendentes,
     ...derivado,
     alterar,
     trocarTipo,
     alternarCategoria,
+    escolherReembolso,
     aceitarSugestao,
     descartarSugestao,
     aceitarTodas,
     abrirPicker: setPicker,
     fecharPicker: () => setPicker(null),
+    abrirFolhaDeTexto: setFolhaDeTexto,
+    fecharFolhaDeTexto: () => setFolhaDeTexto(null),
     limpar,
     registrar,
     descartarRecibo: () => setRecibo(null),

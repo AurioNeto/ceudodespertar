@@ -755,7 +755,7 @@ describe('RegistrarLancamentoPage: competência fechada', () => {
     expect(container.textContent).toContain('Período 07/2026 está fechado');
     expect(container.textContent).toContain('Lance em 08/2026 explicando na descrição.');
     expect(container.textContent).not.toContain('rascunho');
-    expect(camposPadrao(container)[0]).toEqual(['Competência', '07/2026', 'da data do gasto']);
+    expect(camposPadrao(container)[2]).toEqual(['Competência', '07/2026', 'da data do gasto']);
     expect(botaoDeRegistrar(container).disabled).toBe(true);
   });
 
@@ -870,12 +870,15 @@ describe('RegistrarLancamentoPage: reembolso a uma pessoa', () => {
     await passarPara('field');
 
     expect(camposPadrao(container)).toEqual([
+      ['Data do gasto', '28/08/2026', 'hoje'],
+      ['Fornecedor', '— informar —', 'em branco'],
       ['Competência', '08/2026', 'mês corrente'],
       ['Conta de saída', 'Cora PJ', 'mais usada'],
       ['Grupo', 'Chácara (Infraestrutura)', 'último lançamento'],
       ['Categoria', '— escolher —', 'em branco'],
       ['Forma de pagamento', 'Pix', 'padrão da conta'],
       ['Cerimônia vinculada', 'Nenhuma — gasto da casa', 'sem vínculo'],
+      ['Unidade', 'CDD', 'último lançamento'],
       ['Reembolso a', 'Lucia Prado', 'conta a pagar'],
     ]);
     expect(container.querySelector('[role="switch"]')).toBeNull();
@@ -899,12 +902,16 @@ describe('RegistrarLancamentoPage: reembolso a uma pessoa', () => {
     expect(folhaAberta(container, 'Quem adiantou o dinheiro')).toBeNull();
   });
 
-  it('campo — não existe a chave de reembolso, então o campo da pessoa não aparece ao abrir em campo', async () => {
+  it('campo — não existe a chave de reembolso, mas o campo Reembolso a abre desligado, com Ninguém, e se edita por folha', async () => {
     usarDensidade('field');
     const { container } = await montar(<RegistrarLancamentoPage />);
 
     expect(container.querySelector('[role="switch"]')).toBeNull();
-    expect(camposPadrao(container).map(([rotulo]) => rotulo)).not.toContain('Reembolso a');
+    expect(lerCampoPadrao(botaoDoCampoPadrao(container, 'Reembolso a'))).toEqual([
+      'Reembolso a',
+      'Ninguém',
+      'sem reembolso',
+    ]);
   });
 });
 
@@ -976,32 +983,41 @@ describe('RegistrarLancamentoPage: campos padrão e folhas de escolha em campo',
     {
       tipo: 'Saída',
       campos: [
+        ['Data do gasto', '28/08/2026', 'hoje'],
+        ['Fornecedor', '— informar —', 'em branco'],
         ['Competência', '08/2026', 'mês corrente'],
         ['Conta de saída', 'Cora PJ', 'mais usada'],
         ['Grupo', 'Chácara (Infraestrutura)', 'último lançamento'],
         ['Categoria', '— escolher —', 'em branco'],
         ['Forma de pagamento', 'Pix', 'padrão da conta'],
         ['Cerimônia vinculada', 'Nenhuma — gasto da casa', 'sem vínculo'],
+        ['Unidade', 'CDD', 'último lançamento'],
+        ['Reembolso a', 'Ninguém', 'sem reembolso'],
       ],
     },
     {
       tipo: 'Entrada',
       campos: [
+        ['Data da entrada', '28/08/2026', 'hoje'],
+        ['De quem veio', '— informar —', 'em branco'],
         ['Competência', '08/2026', 'mês corrente'],
         ['Conta de entrada', 'Cora PJ', 'mais usada'],
         ['Grupo', 'Chácara (Infraestrutura)', 'último lançamento'],
         ['Categoria', '— escolher —', 'em branco'],
         ['Forma de recebimento', 'Pix', 'padrão da conta'],
         ['Cerimônia vinculada', 'Nenhuma — gasto da casa', 'sem vínculo'],
+        ['Unidade', 'CDD', 'último lançamento'],
       ],
     },
     {
       tipo: 'Transferência',
       campos: [
+        ['Data da transferência', '28/08/2026', 'hoje'],
         ['Competência', '08/2026', 'mês corrente'],
         ['Conta de origem', 'Cora PJ', 'mais usada'],
         ['Conta de destino', 'Nubank Paty', 'para onde vai'],
         ['Forma da transferência', 'Pix', 'padrão da conta'],
+        ['Unidade', 'CDD', 'último lançamento'],
       ],
     },
   ])('campo, tipo $tipo — os campos padrão são exatamente $campos', async ({ tipo, campos }) => {
@@ -1014,12 +1030,15 @@ describe('RegistrarLancamentoPage: campos padrão e folhas de escolha em campo',
     expect(container.textContent).toContain(ROTULO_DO_BLOCO_PADRAO);
   });
 
-  it('campo — só a descrição tem rótulo de campo: não há data, fornecedor, unidade nem selects (Doc 4, F-01: padrões todos editáveis)', async () => {
+  it('campo — só a descrição tem rótulo de campo, e data, fornecedor, unidade e reembolso entram nos padrões que abrem folha (Doc 4, F-01: padrões todos editáveis)', async () => {
     usarDensidade('field');
     const { container } = await montar(<RegistrarLancamentoPage />);
 
     expect(rotulosDeCampo(container)).toEqual(['O que foi']);
     expect(container.querySelector('select')).toBeNull();
+    expect(camposPadrao(container).map(([rotulo]) => rotulo)).toEqual(
+      expect.arrayContaining(['Data do gasto', 'Fornecedor', 'Unidade', 'Reembolso a']),
+    );
   });
 
   it('campo — nenhuma folha começa aberta', async () => {

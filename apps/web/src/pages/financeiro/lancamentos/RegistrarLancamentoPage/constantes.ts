@@ -9,6 +9,7 @@ import {
   opcoesDeGrupo,
   opcoesDePagamento,
   opcoesDePessoa,
+  opcoesDeReembolso,
   opcoesDeUnidade,
 } from './mocks/opcoes';
 import type { CampoComPicker } from './hooks/useFormularioDeLancamento';
@@ -39,6 +40,7 @@ export const LISTAS: Record<CampoComPicker, { titulo: string; opcoes: readonly S
   cerimonia: { titulo: 'Cerimônia vinculada', opcoes: opcoesDeCerimonia },
   competencia: { titulo: 'Competência', opcoes: opcoesDeCompetencia },
   pessoa: { titulo: 'Quem adiantou o dinheiro', opcoes: opcoesDePessoa },
+  reembolso: { titulo: 'Quem adiantou o dinheiro', opcoes: opcoesDeReembolso },
   unidade: { titulo: 'Unidade', opcoes: opcoesDeUnidade },
 };
 

@@ -9,6 +9,10 @@ export function usePickerDeOpcao(f: FormularioDeLancamento) {
       f.alternarCategoria(valor);
       return;
     }
+    if (f.picker === 'reembolso') {
+      f.escolherReembolso(valor);
+      return;
+    }
     if (f.picker) {
       f.alterar(f.picker, valor);
       f.fecharPicker();
@@ -16,7 +20,13 @@ export function usePickerDeOpcao(f: FormularioDeLancamento) {
   };
 
   const valorDoPicker =
-    f.picker === 'categoria' ? (f.campos.categorias.at(-1) ?? null) : f.picker ? f.campos[f.picker] : null;
+    f.picker === 'categoria'
+      ? (f.campos.categorias.at(-1) ?? null)
+      : f.picker === 'reembolso'
+        ? f.reembolsoA
+        : f.picker
+          ? f.campos[f.picker]
+          : null;
 
   return { pickerAberto, valorDoPicker, escolherNoPicker };
 }
