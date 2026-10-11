@@ -1,8 +1,7 @@
-import { Avatar, Aviso, Button, Icon, StatusBadge } from '@/ds';
+import { Avatar, Aviso, Button, Icon, Leitura, StatusBadge } from '@/ds';
 import { TEXTO_DA_ANAMNESE, TOM_DA_ANAMNESE } from '../../constantes';
 import type { AcessoAoSistema, GrupoDeAcesso, PessoaDaCasa } from '../../mocks/pessoas';
 import { Cartao } from './components/Cartao';
-import { Dado } from './components/Dado';
 import { ACESSO } from './constantes';
 
 export interface FichaDaPessoaProps {
@@ -72,10 +71,10 @@ export function FichaDaPessoa({
 
       <Cartao titulo="Dados">
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(190px,1fr))', gap: 12 }}>
-          <Dado rotulo="Telefone" valor={pessoa.telefone} />
-          <Dado rotulo="Nascimento" valor={pessoa.nascimento} />
-          <Dado rotulo="Cidade" valor={pessoa.cidade} />
-          <Dado rotulo="Contato de emergência" valor={pessoa.emergencia} />
+          <Leitura rotulo="Telefone" valor={pessoa.telefone} />
+          <Leitura rotulo="Nascimento" valor={pessoa.nascimento} />
+          <Leitura rotulo="Cidade" valor={pessoa.cidade} />
+          <Leitura rotulo="Contato de emergência" valor={pessoa.emergencia} />
         </div>
       </Cartao>
 

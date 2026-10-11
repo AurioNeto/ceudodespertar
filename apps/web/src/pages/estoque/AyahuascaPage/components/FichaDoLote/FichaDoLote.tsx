@@ -1,9 +1,8 @@
-import { BotaoDeIcone, Button, Rotulo, StatusBadge, type Density } from '@/ds';
+import { BotaoDeIcone, Button, Leitura, Rotulo, StatusBadge, type Density } from '@/ds';
 import { rotuloDoMovimento, SITUACAO, valorTabular } from '../../constantes';
 import type { LoteDeDaime, MovimentoDeDaime } from '../../mocks/ayahuasca';
 import { corDoMovimento } from '../../utils/corDoMovimento';
 import { litros } from '../../utils/litros';
-import { Dado } from './components/Dado';
 
 export interface FichaDoLoteProps {
   lote: LoteDeDaime;
@@ -61,14 +60,14 @@ export function FichaDoLote({ lote, movimentos, densidade, onFechar, onQuarenten
             gap: 12,
           }}
         >
-          <Dado rotulo="Restante" valor={litros(lote.restante)} />
-          <Dado rotulo="Entrada" valor={litros(lote.litros)} />
-          <Dado rotulo="Força" valor={lote.forca} />
-          <Dado rotulo="Origem" valor={lote.origem} />
-          <Dado rotulo="Local" valor={lote.local} />
-          <Dado rotulo="Guardião" valor={lote.guardiao} />
-          <Dado rotulo="Envase" valor={lote.garrafas} />
-          <Dado rotulo="Análise" valor={lote.analise} />
+          <Leitura rotulo="Restante" valor={litros(lote.restante)} />
+          <Leitura rotulo="Entrada" valor={litros(lote.litros)} />
+          <Leitura rotulo="Força" valor={lote.forca} />
+          <Leitura rotulo="Origem" valor={lote.origem} />
+          <Leitura rotulo="Local" valor={lote.local} />
+          <Leitura rotulo="Guardião" valor={lote.guardiao} />
+          <Leitura rotulo="Envase" valor={lote.garrafas} />
+          <Leitura rotulo="Análise" valor={lote.analise} />
         </div>
 
         <div

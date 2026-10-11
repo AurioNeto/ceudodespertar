@@ -1,9 +1,8 @@
 import type { Eu } from '@cdd/contracts';
-import { Button, type Density } from '@/ds';
+import { Button, Leitura, type Density } from '@/ds';
 import { iniciais } from '@/lib/formato';
 import { PermissoesPorModulo } from '@/pages/components/PermissoesPorModulo';
 import { Cartao } from './components/Cartao';
-import { Leitura } from './components/Leitura';
 
 interface PerfilDoEuProps {
   readonly eu: Eu;
