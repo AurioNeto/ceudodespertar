@@ -773,7 +773,7 @@ Títulos na ordem de leitura. Dependências por título.
 | Caracterizar eventos (concluída, #85) | — | — |
 | Caracterizar inscrição (concluída, #86) | — | — |
 | Caracterizar pessoas e estoque (concluída, #87) | — | — |
-| testes/ global e setupFiles | lib/formato por export | e2e do B0 e ajustes do login |
+| testes/ global e setupFiles (concluída) | lib/formato por export | — |
 | app/ em subpastas | testes/ global e setupFiles | e2e do B0 e ajustes do login |
 | dados/ sem efeito e sem ciclo | app/ em subpastas | e2e do B0 e ajustes do login |
 | Portao no ds | dados/ sem efeito e sem ciclo | e2e do B0 e ajustes do login |

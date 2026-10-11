@@ -72,7 +72,7 @@ Os destinos são agrupados por área: `app/`, `dados/`, `lib/`, `ds/`, `testes/`
 |---|---|---|---|
 | `dados/index.ts` (barrel sem efeito colateral) | `dados/index.ts` | repartir por export | dados/ sem efeito e sem ciclo |
 | `dados/index.ts`: `gerenciadorOidc`, `credencial`, `servicoDeEntrada`, `clienteHttp`, `consulta`, `comando` | `dados/instancias.ts` (importado só por `main.tsx`) | repartir por export | dados/ sem efeito e sem ciclo |
-| `dados/clienteDeConsultas.ts`: `JANELA_DE_FRESCOR_EM_MS` (o #55 a importa do arquivo, fora do barrel; o barrel passa a reexportá-la, na mesma etapa que cria `testes/sessaoDeTeste.tsx`) | `dados/index.ts` | manter | testes/ global e setupFiles |
+| `dados/clienteDeConsultas.ts`: `JANELA_DE_FRESCOR_EM_MS` (o #55 a importa do arquivo, fora do barrel; `testes/sessaoDeTeste.tsx` herdou o import, como `@/dados/clienteDeConsultas`. O barrel passa a reexportá-la, e o apoio a importá-la dele, quando o barrel deixar de ter efeito: até lá, importar `@/dados` no vitest roda `lerAmbienteOidc`, que lança sem `VITE_OIDC_EMISSOR`) | `dados/index.ts` | manter | dados/ sem efeito e sem ciclo |
 | `dados/oidc.ts`: `CAMINHO_DA_ENTRADA`, `CAMINHO_DE_RETORNO`, `CAMINHO_DA_RENOVACAO_SILENCIOSA`, `ESPERA_DA_RENOVACAO_SILENCIOSA_EM_SEGUNDOS`, `ESCOPO_OIDC` (quebra o ciclo `oidc.ts` ↔ `credencialOidc.ts`) | `dados/caminhosOidc.ts` | repartir por export | dados/ sem efeito e sem ciclo |
 | `dados/oidc.ts` (restante) | `dados/oidc.ts` | manter | dados/ sem efeito e sem ciclo |
 | `dados/oidc.dom.test.ts` | `dados/oidc.dom.test.ts` | manter | dados/ sem efeito e sem ciclo |
@@ -277,9 +277,9 @@ Os testes do #58, do #59, do #61 e do #62 se repartem por describe entre as unid
 
 | Origem | Destino | Ação | Etapa |
 |---|---|---|---|
-| `app/apoioDeTeste.tsx`: `IS_REACT_ACT_ENVIRONMENT` e stub de `matchMedia` | `testes/configurarDom.ts` (`setupFiles` do projeto dom) | repartir por export (do #55, que alterou o arquivo de origem) | testes/ global e setupFiles |
-| `app/apoioDeTeste.tsx`: `PERMISSAO_QUE_O_EU_TEM`, `PERMISSAO_QUE_O_EU_NAO_TEM`, `criarEu`, `EntradaFalsa`, `criarEntradaFalsa`, `AvisoDeEncerramentoFalso`, `criarAvisoDeEncerramentoFalso`, `CenarioDeSessao`, `TelaMontada`, `VOLTAS_PARA_ASSENTAR`, `proximoCiclo`, `assentar`, `montarComSessao` (os `PERMISSAO_*` ficam com `criarEu`; `ler` vem de `app/sessao.test.tsx`, seção 1) | `testes/sessaoDeTeste.tsx` | repartir por export (do #55, que alterou `montarComSessao`) | testes/ global e setupFiles |
-| `app/apoioDeTeste.tsx`: `erroDoEu`, unificado como `erroDaApi` (também usado por `dados/clienteDeConsultas.test.ts` e `app/estadoDaSessao.test.ts`) | `testes/fabricas.ts` | repartir por export (do #55, que alterou o arquivo de origem) | testes/ global e setupFiles |
+| `app/apoioDeTeste.tsx`: `IS_REACT_ACT_ENVIRONMENT` e stub de `matchMedia` (a atribuição e o stub; o arquivo fica sem import nem export, porque `declare global` só vale em módulo (TS2669) e um `export {}` seria declaração nova) | `testes/configurarDom.ts` (`setupFiles` do projeto dom) | repartir por export (do #55, que alterou o arquivo de origem) | testes/ global e setupFiles |
+| `app/apoioDeTeste.tsx`: `declare global` (tipo de `IS_REACT_ACT_ENVIRONMENT`), `PERMISSAO_QUE_O_EU_TEM`, `PERMISSAO_QUE_O_EU_NAO_TEM`, `criarEu`, `EntradaFalsa`, `criarEntradaFalsa`, `AvisoDeEncerramentoFalso`, `criarAvisoDeEncerramentoFalso`, `CenarioDeSessao`, `TelaMontada`, `VOLTAS_PARA_ASSENTAR`, `proximoCiclo`, `assentar`, `montarComSessao` (os `PERMISSAO_*` ficam com `criarEu`; `ler` vem de `app/sessao.test.tsx`, seção 1) | `testes/sessaoDeTeste.tsx` | repartir por export (do #55, que alterou `montarComSessao`) | testes/ global e setupFiles |
+| `app/apoioDeTeste.tsx`: `erroDoEu`, unificado como `erroDaApi` (também usado por `dados/clienteDeConsultas.test.ts` e `app/estadoDaSessao.test.ts`; os testes de sessão e de `estadoDaSessao` o importam com alias, `erroDoEu` e `erro`, e o corpo deles não muda) | `testes/fabricas.ts` | repartir por export (do #55, que alterou o arquivo de origem) | testes/ global e setupFiles |
 | novo (`montagem.tsx`, render global sem provider; entra com o #58 e o #59 traz o mesmo arquivo) | `testes/montagem.tsx` | criar | Caracterizar lib/formato e components |
 
 ---
@@ -644,7 +644,7 @@ Os testes do #58, do #59, do #61 e do #62 se repartem por describe entre as unid
 - **Nomes de arquivo nas divisões.** São propostos. A etapa confere no código da época e pode ajustar o nome, nunca a posse.
 - **Mocks com destinos em mais de uma etapa.** `mocks/sessao.ts`, `mocks/financeiro.ts` e `mocks/lancamentos.ts` se repartem em etapas diferentes. Cada parte aparece na linha da própria etapa.
 - **Fábrica `fontesDaSessao`.** É opcional, como indicado na linha de `main.tsx` (seção 6 deste anexo).
-- **#55 mesclado.** Mesclado em 09/10/2026 (`1812df6`). `ErroDoPainel`, `AvisoDeAtencao`, `useFocoNoPrimeiroCampoInvalido` e `ds/TextField.dom.test.tsx` estão na main. `app/apoioDeTeste.tsx` importa `JANELA_DE_FRESCOR_EM_MS` de `dados/clienteDeConsultas.ts`, fora do barrel: a linha de `dados/index.ts` (seção 2) o reexporta.
+- **#55 mesclado.** Mesclado em 09/10/2026 (`1812df6`). `ErroDoPainel`, `AvisoDeAtencao`, `useFocoNoPrimeiroCampoInvalido` e `ds/TextField.dom.test.tsx` estão na main. `app/apoioDeTeste.tsx` importava `JANELA_DE_FRESCOR_EM_MS` de `dados/clienteDeConsultas.ts`, fora do barrel, e `testes/sessaoDeTeste.tsx` herdou o import: a linha de `dados/index.ts` (seção 2) o reexporta na etapa dados/ sem efeito e sem ciclo.
 - **`EstadoDaAnamnese` e `StatusAnamnese`.** O tipo de UI (`em dia`, `vencida`, `ausente`) não é o `StatusAnamnese` de `@cdd/contracts` (`PENDENTE`, `OK`, `VENCIDA`, `NAO_APLICAVEL`). O mapeamento não existe no código e entra quando a tela ligar no backend.
 - **`gerarHash`.** Tratado como função falsa da demonstração, que fica no mock (`mocks/prestacao.ts`), e não como regra de domínio: é um hex aleatório (`mocks/prestacao.ts:180-181`), sem regra de negócio.
 - **`AgendaPage.tsx:53`.** Decidido: só inteiros (Documento 8, seção 15). Ver a seção 3.1.

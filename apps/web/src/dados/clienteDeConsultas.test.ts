@@ -5,12 +5,8 @@ import {
   deveTentarDeNovo,
   esperaAntesDeTentarDeNovo,
 } from './clienteDeConsultas';
-import { ErroDaApi, ErroDeRede } from './erros';
-import type { CodigoDeErro } from '@cdd/contracts';
-
-function erroDaApi(status: number, codigo: CodigoDeErro): ErroDaApi {
-  return new ErroDaApi({ status, codigo });
-}
+import { ErroDeRede } from './erros';
+import { erroDaApi } from '@/testes/fabricas';
 
 describe('retry do cliente de consultas', () => {
   it('tenta de novo em falha de rede', () => {
