@@ -677,7 +677,7 @@ describe('AnamnesePage: nova pergunta no rascunho', () => {
     expect(campoRotulado(container, 'Pergunta').value).toBe('Texto que ficou pela metade');
   });
 
-  it('formulário aberto, publicar e Novo rascunho — o rascunho novo abre com o formulário e o texto digitado na v4', async () => {
+  it('formulário aberto, publicar e Novo rascunho — o rascunho novo abre sem o formulário: o texto digitado na v4 não passa para ele', async () => {
     const container = await montarAnamnese();
     await abrirFormularioDeNovaPergunta(container);
     await digitar(campoRotulado(container, 'Pergunta'), 'Texto da v4');
@@ -688,8 +688,8 @@ describe('AnamnesePage: nova pergunta no rascunho', () => {
 
     expect(formularioNaPublicada).toBe(0);
     expect(tituloDaVersaoAberta(container)).toBe('Anamnese do corpo · v5');
-    expect(campoRotulado(container, 'Pergunta').value).toBe('Texto da v4');
-    expect(botaoPresente(container, 'Adicionar pergunta')).toBe(false);
+    expect(todos(container, 'input')).toHaveLength(0);
+    expect(botaoPresente(container, 'Adicionar pergunta')).toBe(true);
   });
 });
 
@@ -841,13 +841,13 @@ describe('AnamnesePage: Novo rascunho', () => {
     expect(tituloDaVersaoAberta(container)).toBe('Anamnese do corpo · v3');
   });
 
-  it('com um rascunho já aberto — a tela não oferece nenhuma ação de descartar o rascunho', async () => {
+  it('com um rascunho já aberto — a tela oferece a ação de descartar o rascunho', async () => {
     const container = await montarAnamnese();
     await abrirVersao(container, 'v4');
 
     const textosDosBotoes = todos<HTMLButtonElement>(container, 'button').map((botao) => botao.textContent);
 
-    expect(textosDosBotoes.filter((texto) => /descart|exclu|apag/i.test(texto ?? ''))).toEqual([]);
+    expect(textosDosBotoes.filter((texto) => /descart|exclu|apag/i.test(texto ?? ''))).toEqual(['Descartar rascunho']);
   });
 
   it('sem rascunho aberto — cria a versão seguinte no topo da lista, como rascunho, e abre essa versão', async () => {

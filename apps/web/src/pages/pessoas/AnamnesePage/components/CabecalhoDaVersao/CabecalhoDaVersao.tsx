@@ -2,15 +2,17 @@ import { Button, StatusBadge } from '@/ds';
 import { TOM_DA_SITUACAO } from '../../constantes';
 import type { VersaoDoFormulario } from '../../mocks/anamnese';
 import { Cartao } from '../Cartao';
+import { DescarteDoRascunho } from './components/DescarteDoRascunho';
 
 export interface CabecalhoDaVersaoProps {
   versao: VersaoDoFormulario;
   ehRascunho: boolean;
   onPublicar: () => void;
+  onDescartar: () => void;
   onCopiarLink: () => void;
 }
 
-export function CabecalhoDaVersao({ versao, ehRascunho, onPublicar, onCopiarLink }: CabecalhoDaVersaoProps) {
+export function CabecalhoDaVersao({ versao, ehRascunho, onPublicar, onDescartar, onCopiarLink }: CabecalhoDaVersaoProps) {
   return (
     <Cartao>
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, flexWrap: 'wrap' }}>
@@ -28,9 +30,12 @@ export function CabecalhoDaVersao({ versao, ehRascunho, onPublicar, onCopiarLink
 
       <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'flex-start' }}>
         {ehRascunho ? (
-          <Button iconName="check-check" onClick={onPublicar}>
-            Publicar versão
-          </Button>
+          <>
+            <Button iconName="check-check" onClick={onPublicar}>
+              Publicar versão
+            </Button>
+            <DescarteDoRascunho onDescartar={onDescartar} />
+          </>
         ) : null}
         {versao.situacao === 'publicada' ? (
           <Button variant="ghost" iconName="link" onClick={onCopiarLink}>

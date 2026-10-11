@@ -1,7 +1,14 @@
 import { useState } from 'react';
 import { versoesIniciais, type PerguntaDoFormulario, type VersaoDoFormulario } from '../mocks/anamnese';
 import type { RascunhoDePergunta } from '../tipos';
-import { descerPergunta, novoRascunho, publicarVersao, subirPergunta, temRascunhoAberto } from '../utils/versoes';
+import {
+  descerPergunta,
+  novoRascunho,
+  publicarVersao,
+  removerVersao,
+  subirPergunta,
+  temRascunhoAberto,
+} from '../utils/versoes';
 
 export function useVersoesDoFormulario() {
   const [versoes, setVersoes] = useState<readonly VersaoDoFormulario[]>(versoesIniciais);
@@ -22,9 +29,18 @@ export function useVersoesDoFormulario() {
 
   const publicar = () => {
     setVersoes((lista) => publicarVersao(lista, versao.id));
+    setNovaPergunta(null);
     setMensagem(
       `${versao.rotulo} publicada. A versão anterior foi arquivada, e as respostas dadas nela continuam presas a ela.`,
     );
+  };
+
+  const descartarRascunho = () => {
+    if (!ehRascunho) return;
+    setVersoes((lista) => removerVersao(lista, versao.id));
+    if (publicada) setSelecionada(publicada.id);
+    setNovaPergunta(null);
+    setMensagem(`${versao.rotulo} descartada. O formulário que está no ar não mudou.`);
   };
 
   const criarRascunho = () => {
@@ -82,6 +98,7 @@ export function useVersoesDoFormulario() {
     setValidade,
     setNovaPergunta,
     publicar,
+    descartarRascunho,
     criarRascunho,
     copiarLink,
     fecharMensagem,

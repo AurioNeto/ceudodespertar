@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { lerValorDigitado } from '@/lib/numero';
 import {
   lotesIniciais,
   movimentosIniciais,
@@ -10,7 +9,9 @@ import {
   type ReservaDeTrabalho,
 } from '../mocks/ayahuasca';
 import type { Aba, ModoDoFormulario, RascunhoDeMovimento } from '../tipos';
-import { litros } from '../utils/litros';
+import { codigoDoLote } from '../utils/codigoDoLote';
+import { lerLitros, litros } from '../utils/litros';
+import { alternarQuarentenaDoLote } from '../utils/quarentena';
 import { rascunhoDeMovimento } from '../utils/rascunhoDeMovimento';
 import { saldos } from '../utils/saldos';
 import { erroDoFormulario } from '../utils/validarMovimento';
@@ -34,12 +35,12 @@ export function useEstoqueDeDaime() {
 
   const salvar = () => {
     if (!form || erro) return;
-    const quantidade = lerValorDigitado(form.litros) || 0;
+    const quantidade = lerLitros(form.litros);
 
     if (form.modo === 'feitio') {
       const novo: LoteDeDaime = {
         id: Date.now(),
-        codigo: form.codigo.trim(),
+        codigo: codigoDoLote(form.codigo),
         origem: form.origem.trim() || 'Feitio · CDD',
         data: '02/09/2026',
         forca: form.forca || 'Força 2',
@@ -67,7 +68,7 @@ export function useEstoqueDeDaime() {
       setMensagem(`${novo.codigo} criado com ${litros(quantidade)}.`);
     } else {
       const lote = lotes.find((l) => String(l.id) === form.loteId)!;
-      const restante = +(lote.restante - quantidade).toFixed(1);
+      const restante = +(lote.restante - quantidade).toFixed(2);
       setLotes((lista) =>
         lista.map((l) =>
           l.id === lote.id ? { ...l, restante, situacao: restante === 0 ? 'esgotado' : l.situacao } : l,
@@ -116,13 +117,7 @@ export function useEstoqueDeDaime() {
   const alternarQuarentena = () => {
     if (!detalhe) return;
     const emQuarentenaAgora = detalhe.situacao === 'quarentena';
-    setLotes((lista) =>
-      lista.map((l) =>
-        l.id === detalhe.id
-          ? { ...l, situacao: emQuarentenaAgora ? (l.restante > 0 ? 'em uso' : 'esgotado') : 'quarentena' }
-          : l,
-      ),
-    );
+    setLotes((lista) => lista.map((l) => (l.id === detalhe.id ? alternarQuarentenaDoLote(l) : l)));
     setMensagem(
       emQuarentenaAgora
         ? `${detalhe.codigo} saiu da quarentena.`

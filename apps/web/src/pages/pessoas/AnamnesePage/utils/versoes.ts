@@ -21,6 +21,9 @@ export function publicarVersao(lista: readonly VersaoDoFormulario[], id: string)
   });
 }
 
+export const removerVersao = (lista: readonly VersaoDoFormulario[], id: string): VersaoDoFormulario[] =>
+  lista.filter((v) => v.id !== id);
+
 export const temRascunhoAberto = (versoes: readonly VersaoDoFormulario[]) =>
   versoes.some((v) => v.situacao === 'rascunho');
 

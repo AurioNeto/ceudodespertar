@@ -65,6 +65,7 @@ export function AnamnesePage() {
               versao={tela.versao}
               ehRascunho={tela.ehRascunho}
               onPublicar={tela.publicar}
+              onDescartar={tela.descartarRascunho}
               onCopiarLink={tela.copiarLink}
             />
 
