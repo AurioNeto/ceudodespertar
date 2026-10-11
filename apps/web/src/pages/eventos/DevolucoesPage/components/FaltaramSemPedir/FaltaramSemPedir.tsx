@@ -1,4 +1,4 @@
-import { Cartao, Rotulo, type Density } from '@/ds';
+import { Cartao, ListaDividida, Rotulo, type Density } from '@/ds';
 import { formatarBRL, pluralizar } from '@/pages/utils/formato';
 import { faltaramSemPedir } from '../../mocks/devolucoes';
 
@@ -23,20 +23,9 @@ export function FaltaramSemPedir({ densidade }: FaltaramSemPedirProps) {
         não recebe. Está aqui só para a ausência ser visível em vez de virar dúvida na reunião.
       </span>
 
-      <div style={{ display: 'flex', flexDirection: 'column' }}>
-        {faltaramSemPedir.map((x, i) => (
-          <div
-            key={x.nome}
-            style={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              gap: '4px 12px',
-              alignItems: 'baseline',
-              padding: '8px 0',
-              borderTop: i === 0 ? undefined : '1px solid var(--color-line)',
-              opacity: 0.75,
-            }}
-          >
+      <ListaDividida itens={faltaramSemPedir} chave={(x) => x.nome} esmaecido={() => true}>
+        {(x) => (
+          <>
             <span style={{ font: 'var(--text-body)', color: 'var(--text-primary)', flex: 1, minWidth: 150 }}>
               {x.nome}
             </span>
@@ -46,9 +35,9 @@ export function FaltaramSemPedir({ densidade }: FaltaramSemPedirProps) {
             <span data-numeric style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>
               {formatarBRL(x.valor)}
             </span>
-          </div>
-        ))}
-      </div>
+          </>
+        )}
+      </ListaDividida>
     </Cartao>
   );
 }

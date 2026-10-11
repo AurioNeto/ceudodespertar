@@ -1,4 +1,4 @@
-import { Cartao, Icon, Rotulo, type Density } from '@/ds';
+import { Cartao, Icon, ListaDividida, Rotulo, type Density } from '@/ds';
 import { pluralizar } from '@/pages/utils/formato';
 import type { Pendencia } from '../../tipos';
 import { rotuloDaNoite } from '../../utils/noites';
@@ -32,19 +32,9 @@ export function SemLeito({ lista, densidade }: SemLeitoProps) {
           {pluralizar(lista.length, 'pessoa')} — e inscrição com leito pendente não confirma
         </span>
       </div>
-      <div style={{ display: 'flex', flexDirection: 'column' }}>
-        {lista.map(({ hospede: h, faltam }, i) => (
-          <div
-            key={h.inscricaoId}
-            style={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              gap: '4px 12px',
-              alignItems: 'baseline',
-              padding: '9px 0',
-              borderTop: i === 0 ? undefined : '1px solid var(--color-line)',
-            }}
-          >
+      <ListaDividida itens={lista} chave={({ hospede: h }) => h.inscricaoId}>
+        {({ hospede: h, faltam }) => (
+          <>
             <span style={{ font: 'var(--text-body)', color: 'var(--text-primary)', flex: 1, minWidth: 150 }}>
               {h.nome}
             </span>
@@ -55,9 +45,9 @@ export function SemLeito({ lista, densidade }: SemLeitoProps) {
             {h.observacao ? (
               <span style={{ font: 'var(--text-small)', color: 'var(--color-suggest)' }}>{h.observacao}</span>
             ) : null}
-          </div>
-        ))}
-      </div>
+          </>
+        )}
+      </ListaDividida>
     </Cartao>
   );
 }

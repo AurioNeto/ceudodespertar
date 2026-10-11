@@ -1,4 +1,4 @@
-import { Cartao, Icon, Rotulo, type Density } from '@/ds';
+import { Cartao, Icon, ListaDividida, Rotulo, type Density } from '@/ds';
 import { formatarBRL } from '@/pages/utils/formato';
 import type { Paga } from '../../tipos';
 
@@ -12,19 +12,9 @@ export function JaPagas({ lista, densidade }: JaPagasProps) {
   return (
     <Cartao campo={campo} style={{ gap: 10 }}>
       <Rotulo>Já devolvidas</Rotulo>
-      <div style={{ display: 'flex', flexDirection: 'column' }}>
-        {lista.map((x, i) => (
-          <div
-            key={x.id}
-            style={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              gap: '4px 12px',
-              alignItems: 'baseline',
-              padding: '9px 0',
-              borderTop: i === 0 ? undefined : '1px solid var(--color-line)',
-            }}
-          >
+      <ListaDividida itens={lista} chave={(x) => x.id}>
+        {(x) => (
+          <>
             <Icon name="circle-check" size={15} color="var(--color-confirmed)" />
             <span style={{ font: 'var(--text-body)', color: 'var(--text-primary)', flex: 1, minWidth: 140 }}>
               {x.nome}
@@ -36,9 +26,9 @@ export function JaPagas({ lista, densidade }: JaPagasProps) {
             <span data-numeric style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>
               {formatarBRL(x.valor)}
             </span>
-          </div>
-        ))}
-      </div>
+          </>
+        )}
+      </ListaDividida>
     </Cartao>
   );
 }
