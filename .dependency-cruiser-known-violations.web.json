@@ -830,8 +830,8 @@
   {
     "type": "dependency",
     "from": "apps/web/src/app/rotas/destino.ts",
-    "to": "apps/web/src/dados/oidc.ts",
-    "unresolvedTo": "@/dados/oidc",
+    "to": "apps/web/src/dados/caminhosOidc.ts",
+    "unresolvedTo": "@/dados/caminhosOidc",
     "dependencyTypes": [
       "aliased",
       "aliased-tsconfig",
@@ -847,8 +847,8 @@
   {
     "type": "dependency",
     "from": "apps/web/src/app/rotas/rotas.ts",
-    "to": "apps/web/src/dados/oidc.ts",
-    "unresolvedTo": "@/dados/oidc",
+    "to": "apps/web/src/dados/caminhosOidc.ts",
+    "unresolvedTo": "@/dados/caminhosOidc",
     "dependencyTypes": [
       "aliased",
       "aliased-tsconfig",
@@ -1147,23 +1147,6 @@
   {
     "type": "dependency",
     "from": "apps/web/src/testes/sessaoDeTeste.tsx",
-    "to": "apps/web/src/dados/clienteDeConsultas.ts",
-    "unresolvedTo": "@/dados/clienteDeConsultas",
-    "dependencyTypes": [
-      "aliased",
-      "aliased-tsconfig",
-      "aliased-tsconfig-paths",
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "dados-so-pelo-barrel"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/testes/sessaoDeTeste.tsx",
     "to": "apps/web/src/dados/oidc.ts",
     "unresolvedTo": "@/dados/oidc",
     "dependencyTypes": [
@@ -1353,36 +1336,5 @@
       "severity": "error",
       "name": "roteador-so-pelo-index-da-pagina"
     }
-  },
-  {
-    "type": "cycle",
-    "from": "apps/web/src/dados/credencialOidc.ts",
-    "to": "apps/web/src/dados/oidc.ts",
-    "unresolvedTo": "./oidc",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "web-sem-ciclo"
-    },
-    "cycle": [
-      {
-        "name": "apps/web/src/dados/oidc.ts",
-        "dependencyTypes": [
-          "local",
-          "import"
-        ]
-      },
-      {
-        "name": "apps/web/src/dados/credencialOidc.ts",
-        "dependencyTypes": [
-          "local",
-          "type-only",
-          "import"
-        ]
-      }
-    ]
   }
 ]
