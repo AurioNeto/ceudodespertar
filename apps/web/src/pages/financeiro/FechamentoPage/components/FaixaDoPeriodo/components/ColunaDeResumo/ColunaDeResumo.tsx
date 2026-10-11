@@ -1,6 +1,4 @@
-import { formatarBRL } from '@/pages/utils/formato';
-import { Rotulo } from '@/ds';
-import { valorGrande } from '../../../../constantes';
+import { AmountDisplay, Rotulo } from '@/ds';
 
 export function ColunaDeResumo({
   rotulo,
@@ -25,7 +23,7 @@ export function ColunaDeResumo({
       }}
     >
       <Rotulo>{rotulo}</Rotulo>
-      <span style={{ ...valorGrande, color: cor }}>{formatarBRL(valor)}</span>
+      <AmountDisplay value={valor / 100} size="lg" style={{ color: cor }} />
     </div>
   );
 }

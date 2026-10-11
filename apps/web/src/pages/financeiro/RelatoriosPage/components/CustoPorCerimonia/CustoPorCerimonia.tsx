@@ -1,6 +1,4 @@
-import { reais } from '@cdd/contracts';
-import { Cartao } from '@/ds';
-import { formatarBRL } from '@/pages/utils/formato';
+import { AmountDisplay, Cartao } from '@/ds';
 import type { useRelatorio } from '../../hooks/useRelatorio';
 import type { Drill } from '../../tipos';
 import { tituloDoCartao } from '../../constantes';
@@ -26,15 +24,7 @@ export function CustoPorCerimonia({ porCerimonia, onAbrirDrill }: CustoPorCerimo
           >
             <span style={{ display: 'flex', justifyContent: 'space-between', gap: 10, width: '100%' }}>
               <span style={{ font: 'var(--text-small)', color: 'var(--text-primary)' }}>{c.nome}</span>
-              <span
-                style={{
-                  font: 'var(--text-small)',
-                  color: 'var(--text-secondary)',
-                  fontVariantNumeric: 'tabular-nums',
-                }}
-              >
-                {formatarBRL(reais(c.valor))}
-              </span>
+              <AmountDisplay value={c.valor} size="sm" style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }} />
             </span>
             <span
               style={{

@@ -188,12 +188,12 @@ describe('PrestacaoDeContasPage: documento de agosto de 2026, nível resumo', ()
     const { container } = await montar(<PrestacaoDeContasPage />);
 
     expect(linhasDaSecao(container, 'Receitas')).toEqual([
-      'Contribuição de cerimôniaR$ 41.300,00',
-      'Cachê de contrataçãoR$ 8.500,00',
-      'Venda de mercadoriaR$ 6.230,00',
-      'HospedagemR$ 4.850,00',
-      'Doações e apoioR$ 1.600,00',
-      'Total de receitasR$ 62.480,00',
+      'Contribuição de cerimôniaR$41.300,00',
+      'Cachê de contrataçãoR$8.500,00',
+      'Venda de mercadoriaR$6.230,00',
+      'HospedagemR$4.850,00',
+      'Doações e apoioR$1.600,00',
+      'Total de receitasR$62.480,00',
     ]);
   });
 
@@ -201,23 +201,23 @@ describe('PrestacaoDeContasPage: documento de agosto de 2026, nível resumo', ()
     const { container } = await montar(<PrestacaoDeContasPage />);
 
     expect(linhasDaSecao(container, 'Despesas')).toEqual([
-      'Custo de feitioR$ 11.200,00',
-      'Alimentação de cerimôniaR$ 9.412,30',
-      'Obra do dormitórioR$ 8.764,80',
-      'Cachê a músicoR$ 6.400,00',
-      'Manutenção e zeladoriaR$ 3.845,20',
-      'Custo da lojinhaR$ 3.517,90',
-      'CombustívelR$ 2.190,00',
-      'Prestadores de serviçoR$ 1.500,00',
-      'AdministrativoR$ 1.287,40',
-      'Total de despesasR$ 48.117,60',
+      'Custo de feitioR$11.200,00',
+      'Alimentação de cerimôniaR$9.412,30',
+      'Obra do dormitórioR$8.764,80',
+      'Cachê a músicoR$6.400,00',
+      'Manutenção e zeladoriaR$3.845,20',
+      'Custo da lojinhaR$3.517,90',
+      'CombustívelR$2.190,00',
+      'Prestadores de serviçoR$1.500,00',
+      'AdministrativoR$1.287,40',
+      'Total de despesasR$48.117,60',
     ]);
   });
 
   it('resultado do período — é receitas menos despesas, com sinal de mais e em verde', async () => {
     const { container } = await montar(<PrestacaoDeContasPage />);
 
-    expect(resultadoDoPeriodo(container)).toEqual({ texto: '+ R$ 14.362,40', cor: COR_CONFIRMADA });
+    expect(resultadoDoPeriodo(container)).toEqual({ texto: '+ R$14.362,40', cor: COR_CONFIRMADA });
   });
 
   it('movimentação patrimonial — explica que não entra no resultado e lista as três linhas', async () => {
@@ -227,9 +227,9 @@ describe('PrestacaoDeContasPage: documento de agosto de 2026, nível resumo', ()
       'Não entra no resultado: empréstimo e adiantamento movem patrimônio, não receita nem despesa.',
     );
     expect(linhasDaSecao(container, 'Movimentação patrimonial').slice(1)).toEqual([
-      'Devolução de empréstimo recebidaR$ 562,40',
-      'Devolução de empréstimo pagaR$ 1.500,00',
-      'Adiantamentos a ressarcir no fim do períodoR$ 1.969,26',
+      'Devolução de empréstimo recebidaR$562,40',
+      'Devolução de empréstimo pagaR$1.500,00',
+      'Adiantamentos a ressarcir no fim do períodoR$1.969,26',
     ]);
   });
 
@@ -238,11 +238,11 @@ describe('PrestacaoDeContasPage: documento de agosto de 2026, nível resumo', ()
 
     expect(linhasDaSecao(container, 'Saldos por conta')).toEqual([
       'containíciofim',
-      'Cora PJR$ 33.480,20R$ 41.902,10',
-      'EspécieR$ 2.940,00R$ 3.180,40',
-      'Nubank PatyR$ 2.140,45R$ 1.240,55',
-      'Itaú MunayR$ 31.394,85R$ 37.994,85',
-      'Saldo consolidado ao fimR$ 84.317,90',
+      'Cora PJR$33.480,20R$41.902,10',
+      'EspécieR$2.940,00R$3.180,40',
+      'Nubank PatyR$2.140,45R$1.240,55',
+      'Itaú MunayR$31.394,85R$37.994,85',
+      'Saldo consolidado ao fimR$84.317,90',
     ]);
   });
 
@@ -251,9 +251,9 @@ describe('PrestacaoDeContasPage: documento de agosto de 2026, nível resumo', ()
 
     expect(secao(container, 'Fundo próprio').textContent).toContain('Parte do saldo com destinação já combinada.');
     expect(linhasDaSecao(container, 'Fundo próprio').slice(1)).toEqual([
-      'Saldo do fundoR$ 39.235,40',
-      'Aportes no períodoR$ 4.000,00',
-      'Aplicações no períodoR$ 1.850,00',
+      'Saldo do fundoR$39.235,40',
+      'Aportes no períodoR$4.000,00',
+      'Aplicações no períodoR$1.850,00',
     ]);
   });
 
@@ -261,7 +261,7 @@ describe('PrestacaoDeContasPage: documento de agosto de 2026, nível resumo', ()
     const { container } = await montar(<PrestacaoDeContasPage />);
 
     expect(linhasDaSecao(container, 'Resultado por cerimônia')).toEqual([
-      'Cerimônia de Agosto · 15/08/2026contribuições R$ 12.480,00 · custos R$ 7.310,20+ R$ 5.169,80',
+      'Cerimônia de Agosto · 15/08/2026contribuições R$ 12.480,00 · custos R$ 7.310,20+ R$5.169,80',
     ]);
   });
 
@@ -290,12 +290,12 @@ describe('PrestacaoDeContasPage: nível detalhado mostra os nomes que o resumo e
     await clicar(botaoComTexto(container, 'Detalhado · uso interno'));
 
     expect(linhasDaSecao(container, 'Receitas')).toEqual([
-      'Contribuição de cerimôniaR$ 41.300,00',
-      'Cachê de contrataçãoInstituto Terra · cerimônia de 09/08R$ 8.500,00',
-      'Venda de mercadoriaR$ 6.230,00',
-      'HospedagemR$ 4.850,00',
-      'Doações e apoioMarta Neto · Chico Aguiar · dois anônimosR$ 1.600,00',
-      'Total de receitasR$ 62.480,00',
+      'Contribuição de cerimôniaR$41.300,00',
+      'Cachê de contrataçãoInstituto Terra · cerimônia de 09/08R$8.500,00',
+      'Venda de mercadoriaR$6.230,00',
+      'HospedagemR$4.850,00',
+      'Doações e apoioMarta Neto · Chico Aguiar · dois anônimosR$1.600,00',
+      'Total de receitasR$62.480,00',
     ]);
   });
 
@@ -304,11 +304,11 @@ describe('PrestacaoDeContasPage: nível detalhado mostra os nomes que o resumo e
 
     await clicar(botaoComTexto(container, 'Detalhado · uso interno'));
 
-    expect(linhasDaSecao(container, 'Despesas')).toContain('Cachê a músicoquatro músicos da MunayR$ 6.400,00');
-    expect(linhasDaSecao(container, 'Despesas')).toContain('Prestadores de serviçoZé Ferreira · diarista · pedreiroR$ 1.500,00');
-    expect(linhasDaSecao(container, 'Movimentação patrimonial')).toContain('Devolução de empréstimo recebidade Érico Santana, em 18/08R$ 562,40');
+    expect(linhasDaSecao(container, 'Despesas')).toContain('Cachê a músicoquatro músicos da MunayR$6.400,00');
+    expect(linhasDaSecao(container, 'Despesas')).toContain('Prestadores de serviçoZé Ferreira · diarista · pedreiroR$1.500,00');
+    expect(linhasDaSecao(container, 'Movimentação patrimonial')).toContain('Devolução de empréstimo recebidade Érico Santana, em 18/08R$562,40');
     expect(linhasDaSecao(container, 'Movimentação patrimonial')).toContain(
-      'Adiantamentos a ressarcir no fim do períodoPaty Munay R$ 1.700,86 · Lucia Prado R$ 268,40R$ 1.969,26',
+      'Adiantamentos a ressarcir no fim do períodoPaty Munay R$ 1.700,86 · Lucia Prado R$ 268,40R$1.969,26',
     );
   });
 
@@ -317,8 +317,8 @@ describe('PrestacaoDeContasPage: nível detalhado mostra os nomes que o resumo e
 
     await clicar(botaoComTexto(container, 'Detalhado · uso interno'));
 
-    expect(linhasDaSecao(container, 'Receitas').at(-1)).toBe('Total de receitasR$ 62.480,00');
-    expect(resultadoDoPeriodo(container).texto).toBe('+ R$ 14.362,40');
+    expect(linhasDaSecao(container, 'Receitas').at(-1)).toBe('Total de receitasR$62.480,00');
+    expect(resultadoDoPeriodo(container).texto).toBe('+ R$14.362,40');
     expect(documento(container).textContent).toContain('nível detalhado');
   });
 
@@ -328,9 +328,9 @@ describe('PrestacaoDeContasPage: nível detalhado mostra os nomes que o resumo e
     await clicar(botaoComTexto(container, 'Detalhado · uso interno'));
 
     expect(linhasDaSecao(container, 'Fundo próprio').slice(1)).toEqual([
-      'Saldo do fundoR$ 39.235,40',
-      'Aportes no períodoR$ 4.000,00',
-      'Aplicações no períodoR$ 1.850,00',
+      'Saldo do fundoR$39.235,40',
+      'Aportes no períodoR$4.000,00',
+      'Aplicações no períodoR$1.850,00',
     ]);
   });
 });
@@ -342,10 +342,10 @@ describe('PrestacaoDeContasPage: troca de período e de unidade', () => {
     await escolherOpcao(seletorDe(container, 'Período'), '2026-07');
 
     expect(elemento(documento(container), 'h2').textContent).toBe('julho de 2026');
-    expect(linhasDaSecao(container, 'Receitas').at(-1)).toBe('Total de receitasR$ 54.130,00');
-    expect(linhasDaSecao(container, 'Despesas').at(-1)).toBe('Total de despesasR$ 51.870,20');
-    expect(resultadoDoPeriodo(container).texto).toBe('+ R$ 2.259,80');
-    expect(linhasDaSecao(container, 'Saldos por conta').at(-1)).toBe('Saldo consolidado ao fimR$ 69.955,50');
+    expect(linhasDaSecao(container, 'Receitas').at(-1)).toBe('Total de receitasR$54.130,00');
+    expect(linhasDaSecao(container, 'Despesas').at(-1)).toBe('Total de despesasR$51.870,20');
+    expect(resultadoDoPeriodo(container).texto).toBe('+ R$2.259,80');
+    expect(linhasDaSecao(container, 'Saldos por conta').at(-1)).toBe('Saldo consolidado ao fimR$69.955,50');
   });
 
   it('julho — o resultado de uma cerimônia que custou mais que arrecadou sai com sinal de menos e em atenção', async () => {
@@ -354,7 +354,7 @@ describe('PrestacaoDeContasPage: troca de período e de unidade', () => {
     await escolherOpcao(seletorDe(container, 'Período'), '2026-07');
 
     expect(linhasDaSecao(container, 'Resultado por cerimônia')).toEqual([
-      `Cerimônia de Julho · 25/07/2026contribuições R$ 9.860,00 · custos R$ 11.420,50${MENOS}R$ 1.560,50`,
+      `Cerimônia de Julho · 25/07/2026contribuições R$ 9.860,00 · custos R$ 11.420,50${MENOS}R$1.560,50`,
     ]);
     const valor = secao(container, 'Resultado por cerimônia').querySelector('[data-numeric]') as HTMLElement;
     expect(valor.style.color).toBe(COR_DE_ATENCAO);
@@ -372,7 +372,7 @@ describe('PrestacaoDeContasPage: troca de período e de unidade', () => {
 
     await escolherOpcao(seletorDe(container, 'Período'), '2026-06');
 
-    expect(resultadoDoPeriodo(container)).toEqual({ texto: `${MENOS}R$ 45.870,00`, cor: COR_DE_ATENCAO });
+    expect(resultadoDoPeriodo(container)).toEqual({ texto: `${MENOS}R$45.870,00`, cor: COR_DE_ATENCAO });
   });
 
   it('trocar a unidade — muda só o nome no documento, e os números continuam os do consolidado', async () => {
@@ -381,7 +381,7 @@ describe('PrestacaoDeContasPage: troca de período e de unidade', () => {
     await escolherOpcao(seletorDe(container, 'Unidade'), 'MUNAY');
 
     expect(documento(container).textContent).toContain('Munay · nível resumo');
-    expect(linhasDaSecao(container, 'Receitas').at(-1)).toBe('Total de receitasR$ 62.480,00');
+    expect(linhasDaSecao(container, 'Receitas').at(-1)).toBe('Total de receitasR$62.480,00');
   });
 });
 

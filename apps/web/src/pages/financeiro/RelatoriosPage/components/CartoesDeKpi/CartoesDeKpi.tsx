@@ -1,6 +1,4 @@
-import { Rotulo, type Density } from '@/ds';
-import { reais } from '@cdd/contracts';
-import { formatarBRL } from '@/pages/utils/formato';
+import { AmountDisplay, Rotulo, type Density } from '@/ds';
 import type { Comparacao } from '../../tipos';
 import { corDoDelta, textoDoDelta } from '../../utils/delta';
 import type { kpisDoRelatorio } from '../../utils/recorte';
@@ -36,16 +34,7 @@ export function CartoesDeKpi({ kpis, comparar, densidade }: CartoesDeKpiProps) {
           }}
         >
           <Rotulo>{k.label}</Rotulo>
-          <span
-            style={{
-              font: campo ? 'var(--text-amount)' : 'var(--text-amount-lg)',
-              letterSpacing: 'var(--tracking-amount)',
-              fontVariantNumeric: 'tabular-nums',
-              color: k.cor,
-            }}
-          >
-            {formatarBRL(reais(k.valor))}
-          </span>
+          <AmountDisplay value={k.valor} size={campo ? 'sm' : 'lg'} style={{ color: k.cor }} />
           <span
             style={{
               font: 'var(--text-small)',

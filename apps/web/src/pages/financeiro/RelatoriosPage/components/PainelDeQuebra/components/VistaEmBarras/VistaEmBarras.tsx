@@ -1,4 +1,5 @@
 import { reais } from '@cdd/contracts';
+import { AmountDisplay } from '@/ds';
 import { formatarBRL } from '@/pages/utils/formato';
 import type { FatiaDaQuebra } from '../../tipos';
 import type { fatiasDaQuebra } from '../../utils/fatias';
@@ -34,11 +35,7 @@ export function VistaEmBarras({ fatias, itens, maior, onAbrir, onHover }: VistaE
         >
           <span style={{ display: 'flex', justifyContent: 'space-between', gap: 10, width: '100%' }}>
             <span style={{ font: 'var(--text-small)', color: 'var(--text-primary)' }}>{f.nome}</span>
-            <span
-              style={{ font: 'var(--text-small)', color: 'var(--text-secondary)', fontVariantNumeric: 'tabular-nums' }}
-            >
-              {formatarBRL(reais(f.valor))}
-            </span>
+            <AmountDisplay value={f.valor} size="sm" style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }} />
           </span>
           <span
             style={{

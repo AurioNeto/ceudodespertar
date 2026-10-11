@@ -1,5 +1,6 @@
 import type { LancamentoAConciliar } from '@cdd/contracts';
-import { formatarBRL, formatarData } from '@/pages/utils/formato';
+import { AmountDisplay } from '@/ds';
+import { formatarData } from '@/pages/utils/formato';
 
 export interface LancamentoSozinhoProps {
   lancamento: LancamentoAConciliar;
@@ -34,7 +35,7 @@ export function LancamentoSozinho({ lancamento }: LancamentoSozinhoProps) {
           }}
         >
           {lancamento.natureza === 'RECEITA' ? '+ ' : '− '}
-          {formatarBRL(lancamento.valor)}
+          <AmountDisplay value={lancamento.valor / 100} size="sm" style={{ color: 'inherit' }} />
         </span>
       </div>
       <span style={{ font: 'var(--text-small)', color: 'var(--text-meta)' }}>

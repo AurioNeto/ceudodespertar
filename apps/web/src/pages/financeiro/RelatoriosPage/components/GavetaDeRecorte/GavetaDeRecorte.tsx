@@ -1,5 +1,5 @@
 import { reais } from '@cdd/contracts';
-import { Button, PainelDeAcao, rotuloCaixaAlta, varianteDoPainel, type Density } from '@/ds';
+import { AmountDisplay, Button, PainelDeAcao, rotuloCaixaAlta, varianteDoPainel, type Density } from '@/ds';
 import { formatarBRL, pluralizar } from '@/pages/utils/formato';
 import type { LinhaDoRelatorio } from '../../mocks/relatorios';
 import type { Drill } from '../../tipos';
@@ -68,7 +68,7 @@ export function GavetaDeRecorte({
                 }}
               >
                 {l.tipo === 'entrada' ? '+ ' : l.tipo === 'saida' ? '− ' : ''}
-                {formatarBRL(reais(l.valor))}
+                <AmountDisplay value={l.valor} size="sm" style={{ color: 'inherit' }} />
               </span>
             </div>
           ))}

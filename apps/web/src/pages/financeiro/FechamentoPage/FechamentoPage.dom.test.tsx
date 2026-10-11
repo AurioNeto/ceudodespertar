@@ -482,7 +482,7 @@ describe('FechamentoPage: totais do mês, com e sem estorno', () => {
   it('dados de demonstração — soma as entradas, as saídas sem o estornado e o resultado', async () => {
     const { container } = await montarFechamento();
 
-    expect(resumoDoMes(container)).toEqual(['R$ 4.425,00', 'R$ 3.038,35', 'R$ 1.386,65']);
+    expect(resumoDoMes(container)).toEqual(['R$4.425,00', 'R$3.038,35', 'R$1.386,65']);
   });
 
   it('entrada estornada — fica fora das entradas, como a saída estornada fica fora das saídas', async () => {
@@ -497,7 +497,7 @@ describe('FechamentoPage: totais do mês, com e sem estorno', () => {
     };
     const { container } = await montarFechamento();
 
-    expect(resumoDoMes(container)).toEqual(['R$ 100,00', 'R$ 30,00', 'R$ 70,00']);
+    expect(resumoDoMes(container)).toEqual(['R$100,00', 'R$30,00', 'R$70,00']);
   });
 
   it('transferência e lançamento de outra competência — ficam fora de entradas e saídas', async () => {
@@ -511,7 +511,7 @@ describe('FechamentoPage: totais do mês, com e sem estorno', () => {
     };
     const { container } = await montarFechamento();
 
-    expect(resumoDoMes(container)).toEqual(['R$ 0,00', 'R$ 10,00', 'R$ -10,00']);
+    expect(resumoDoMes(container)).toEqual(['R$0,00', 'R$10,00', 'R$-10,00']);
   });
 
   it('saldo por conta — lista as contas ativas com o saldo e o total', async () => {
@@ -519,8 +519,8 @@ describe('FechamentoPage: totais do mês, com e sem estorno', () => {
 
     const texto = container.textContent ?? '';
     expect(texto).toContain('Saldo por conta que fica registrado no fechamento');
-    expect(texto).toContain('Cora PJR$ 41.902,10EspécieR$ 3.180,40Nubank PatyR$ 1.240,55Itaú MunayR$ 37.994,85');
-    expect(texto).toContain('TotalR$ 84.317,90');
+    expect(texto).toContain('Cora PJR$41.902,10EspécieR$3.180,40Nubank PatyR$1.240,55Itaú MunayR$37.994,85');
+    expect(texto).toContain('TotalR$84.317,90');
   });
 
   it('saldo por conta — conta inativa fica fora da lista e do total', async () => {
@@ -528,7 +528,7 @@ describe('FechamentoPage: totais do mês, com e sem estorno', () => {
     const { container } = await montarFechamento();
 
     expect(container.textContent).not.toContain('37.994,85');
-    expect(container.textContent).toContain('TotalR$ 46.323,05');
+    expect(container.textContent).toContain('TotalR$46.323,05');
   });
 });
 
@@ -764,10 +764,10 @@ describe('FechamentoPage: meses anteriores', () => {
     const { container } = await montarFechamento();
 
     const texto = container.textContent ?? '';
-    expect(texto).toContain('Julho de 2026fechado por Aurio Neto em 03/08 · reaberto uma vezFechado+ R$ 4.180,22');
-    expect(texto).toContain('Junho de 2026fechado por Lucia Prado em 02/07Fechado+ R$ 2.905,10');
-    expect(texto).toContain(`Maio de 2026fechado por Aurio Neto em 04/06Fechado${MENOS}R$ 1.244,80`);
-    expect(texto).toContain('Abril de 2026fechado por Aurio Neto em 05/05Fechado+ R$ 6.512,45');
+    expect(texto).toContain('Julho de 2026fechado por Aurio Neto em 03/08 · reaberto uma vezFechado+ R$4.180,22');
+    expect(texto).toContain('Junho de 2026fechado por Lucia Prado em 02/07Fechado+ R$2.905,10');
+    expect(texto).toContain(`Maio de 2026fechado por Aurio Neto em 04/06Fechado${MENOS}R$1.244,80`);
+    expect(texto).toContain('Abril de 2026fechado por Aurio Neto em 05/05Fechado+ R$6.512,45');
   });
 
   it('cada mês anterior leva o selo Fechado em verde', async () => {

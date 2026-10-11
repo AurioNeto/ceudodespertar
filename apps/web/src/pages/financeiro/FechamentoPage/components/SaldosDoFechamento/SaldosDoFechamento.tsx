@@ -1,7 +1,5 @@
 import type { Conta } from '@cdd/contracts';
-import { formatarBRL } from '@/pages/utils/formato';
-import { Rotulo } from '@/ds';
-import { valorGrande } from '../../constantes';
+import { AmountDisplay, Rotulo } from '@/ds';
 
 export interface SaldosDoFechamentoProps {
   contasAtivas: readonly Conta[];
@@ -25,16 +23,7 @@ export function SaldosDoFechamento({ contasAtivas, totalSaldos }: SaldosDoFecham
       {contasAtivas.map((c) => (
         <div key={c.id} style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
           <span style={{ font: 'var(--text-body)', color: 'var(--text-primary)' }}>{c.nome}</span>
-          <span
-            style={{
-              font: 'var(--text-amount)',
-              letterSpacing: 'var(--tracking-amount)',
-              fontVariantNumeric: 'tabular-nums',
-              color: 'var(--text-primary)',
-            }}
-          >
-            {formatarBRL(c.saldo)}
-          </span>
+          <AmountDisplay value={c.saldo / 100} size="sm" />
         </div>
       ))}
       <div
@@ -47,7 +36,7 @@ export function SaldosDoFechamento({ contasAtivas, totalSaldos }: SaldosDoFecham
         }}
       >
         <span style={{ font: 'var(--text-body-strong)', color: 'var(--text-primary)' }}>Total</span>
-        <span style={{ ...valorGrande, color: 'var(--color-royal-deep)' }}>{formatarBRL(totalSaldos)}</span>
+        <AmountDisplay value={totalSaldos / 100} size="lg" style={{ color: 'var(--color-royal-deep)' }} />
       </div>
     </div>
   );

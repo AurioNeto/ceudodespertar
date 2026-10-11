@@ -1,4 +1,4 @@
-import type { Density } from '@/ds';
+import { AmountDisplay, type Density } from '@/ds';
 import { formatarBRL } from '@/pages/utils/formato';
 import type { DadosDaPrestacao, NivelDeDetalhe } from '../../mocks/prestacao';
 import { Linha } from './components/Linha';
@@ -86,7 +86,7 @@ export function Documento({ dados, nivel, unidadeRotulo, densidade, totalReceita
           }}
         >
           {resultado >= 0 ? '+ ' : '− '}
-          {formatarBRL(Math.abs(resultado))}
+          <AmountDisplay value={Math.abs(resultado) / 100} size="lg" style={{ color: 'inherit' }} />
         </span>
       </div>
 
@@ -116,18 +116,12 @@ export function Documento({ dados, nivel, unidadeRotulo, densidade, totalReceita
           <div key={s.conta} style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'baseline' }}>
             <span style={{ font: 'var(--text-body)', color: 'var(--text-primary)' }}>{s.conta}</span>
             <span style={{ display: 'flex', gap: campo ? 18 : 40 }}>
-              <span
-                data-numeric
-                style={{ font: 'var(--text-amount)', color: 'var(--text-secondary)', width: larguraDaColunaDeSaldo, textAlign: 'right', whiteSpace: 'nowrap' }}
-              >
-                {formatarBRL(s.inicio)}
-              </span>
-              <span
-                data-numeric
-                style={{ font: 'var(--text-amount)', color: 'var(--text-primary)', width: larguraDaColunaDeSaldo, textAlign: 'right', whiteSpace: 'nowrap' }}
-              >
-                {formatarBRL(s.fim)}
-              </span>
+              <AmountDisplay
+                value={s.inicio / 100}
+                size="sm"
+                style={{ color: 'var(--text-secondary)', width: larguraDaColunaDeSaldo, justifyContent: 'flex-end' }}
+              />
+              <AmountDisplay value={s.fim / 100} size="sm" style={{ width: larguraDaColunaDeSaldo, justifyContent: 'flex-end' }} />
             </span>
           </div>
         ))}
@@ -164,7 +158,7 @@ export function Documento({ dados, nivel, unidadeRotulo, densidade, totalReceita
                 }}
               >
                 {r >= 0 ? '+ ' : '− '}
-                {formatarBRL(Math.abs(r))}
+                <AmountDisplay value={Math.abs(r) / 100} size="sm" style={{ color: 'inherit' }} />
               </span>
             </div>
           );
