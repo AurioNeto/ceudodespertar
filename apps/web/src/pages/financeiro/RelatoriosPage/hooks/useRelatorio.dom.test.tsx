@@ -431,14 +431,14 @@ describe('useRelatorio: período personalizado, como o texto De e Até é lido',
     expect(r.serie).toHaveLength(meses);
   });
 
-  it('ano com dois dígitos — é lido como o ano 25 depois de Cristo: rótulo sem ano e nenhum lançamento', async () => {
+  it('ano com dois dígitos — 03/25 é março de 2025: rótulo com o ano e os lançamentos do mês', async () => {
     const { ler, agir } = await montarRelatorio();
 
     await agir(personalizado('03/25', '03/25'));
 
     const r = ler();
-    expect(r.rotuloPeriodo).toBe('mar/');
-    expect(r.atual).toHaveLength(0);
+    expect(r.rotuloPeriodo).toBe('mar/25');
+    expect(r.atual).toHaveLength(7);
   });
 
   it('De depois de Até — o rótulo mostra os dois lados como foram escritos e nada é somado', async () => {
