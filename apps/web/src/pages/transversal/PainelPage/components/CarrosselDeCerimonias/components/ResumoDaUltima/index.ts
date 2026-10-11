@@ -1,0 +1,1 @@
+export { ResumoDaUltima } from './ResumoDaUltima';

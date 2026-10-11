@@ -1,0 +1,1 @@
+export { SetaDoCarrossel } from './SetaDoCarrossel';

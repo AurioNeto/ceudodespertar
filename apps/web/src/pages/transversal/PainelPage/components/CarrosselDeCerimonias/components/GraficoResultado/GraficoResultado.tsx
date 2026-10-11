@@ -1,4 +1,4 @@
-import { cerimoniasPassadas } from '../../mocks/cerimonias';
+import { cerimoniasPassadas } from '../../../../mocks/cerimonias';
 import { formatarValor } from '@/lib/formato';
 import { formatarDiaMes } from '@/pages/utils/formato';
 
