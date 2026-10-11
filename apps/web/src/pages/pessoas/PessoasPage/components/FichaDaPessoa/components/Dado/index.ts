@@ -1,1 +1,0 @@
-export { Dado } from './Dado';

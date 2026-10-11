@@ -90,7 +90,7 @@ const secaoDe = (container: HTMLElement, titulo: string) => {
 };
 
 const totalDaSecao = (container: HTMLElement, titulo: string) =>
-  textosDasFolhas(secaoDe(container, titulo).children[0] as HTMLElement)[1];
+  secaoDe(container, titulo).children[0]?.querySelector('[data-numeric]')?.textContent;
 
 const linhasDaSecao = (container: HTMLElement, titulo: string) =>
   Array.from(secaoDe(container, titulo).children[1]?.children ?? []).map((linha) => linha.textContent);
@@ -229,23 +229,23 @@ describe('FeitioPage: feitio em andamento', () => {
   it('matéria-prima — mostra o total e uma linha por insumo, com quantidade, origem e custo', async () => {
     const container = await montarFeitio();
 
-    expect(totalDaSecao(container, 'Matéria-prima')).toBe('R$ 12.100,00');
+    expect(totalDaSecao(container, 'Matéria-prima')).toBe('R$12.100,00');
     expect(linhasDaSecao(container, 'Matéria-prima')).toEqual([
-      'Jagube240 kgColheita própria · sítio do ChicoR$ 6.700,00',
-      'Chacrona180 kgCompra · Céu do MarR$ 4.500,00',
-      'Lenha3 m³Compra · Serraria IbiúnaR$ 900,00',
+      'Jagube240 kgColheita própria · sítio do ChicoR$6.700,00',
+      'Chacrona180 kgCompra · Céu do MarR$4.500,00',
+      'Lenha3 m³Compra · Serraria IbiúnaR$900,00',
     ]);
   });
 
   it('o resto do custo — mostra o total e uma linha por lançamento, com categoria, código e valor', async () => {
     const container = await montarFeitio();
 
-    expect(totalDaSecao(container, 'O resto do custo')).toBe('R$ 3.360,00');
+    expect(totalDaSecao(container, 'O resto do custo')).toBe('R$3.360,00');
     expect(linhasDaSecao(container, 'O resto do custo')).toEqual([
-      'Ajuda de custo aos que ficaramPrestadores de serviçolanc-9040R$ 1.700,00',
-      'Alimentação da equipe · três diasAlimentação de cerimônialanc-9041R$ 860,00',
-      'Diesel e deslocamento da colheitaCombustívellanc-9052R$ 540,00',
-      'Gás de cozinha · dois botijõesCusto de feitiolanc-9053R$ 260,00',
+      'Ajuda de custo aos que ficaramPrestadores de serviçolanc-9040R$1.700,00',
+      'Alimentação da equipe · três diasAlimentação de cerimônialanc-9041R$860,00',
+      'Diesel e deslocamento da colheitaCombustívellanc-9052R$540,00',
+      'Gás de cozinha · dois botijõesCusto de feitiolanc-9053R$260,00',
     ]);
   });
 
@@ -260,7 +260,7 @@ describe('FeitioPage: feitio em andamento', () => {
   it('o texto de porquê apurar — fica sempre na tela', async () => {
     const container = await montarFeitio();
 
-    expect(folhaComTexto(container, 'div', 'O feitio deixa de ser despesa dispersa')).toBeTruthy();
+    expect(folhaComTexto(container, 'span', 'O feitio deixa de ser despesa dispersa')).toBeTruthy();
     expect(container.textContent).toContain('quanto custa o litro que ela produz');
   });
 
@@ -288,9 +288,9 @@ describe('FeitioPage: feitio em andamento', () => {
     );
 
     expect(linhas).toEqual([
-      'Feitio de junhoLote 06/202630,0 LR$ 9.840,00R$ 328,00/L',
-      'Feitio de marçoLote 03/202648,0 LR$ 14.100,00R$ 293,75/L',
-      'Feitio de dezembroLote 12/202542,0 LR$ 12.180,00R$ 290,00/L',
+      'Feitio de junhoLote 06/202630,0 LR$9.840,00R$ 328,00/L',
+      'Feitio de marçoLote 03/202648,0 LR$14.100,00R$ 293,75/L',
+      'Feitio de dezembroLote 12/202542,0 LR$12.180,00R$ 290,00/L',
     ]);
   });
 
@@ -300,7 +300,7 @@ describe('FeitioPage: feitio em andamento', () => {
 
     const primeiraLinha = cartaoDe(container, 'Feitios anteriores').children[1]?.children[0];
 
-    expect(primeiraLinha?.textContent).toBe('Feitio de junhoLote 06/202630,5 LR$ 9.840,00R$ 322,62/L');
+    expect(primeiraLinha?.textContent).toBe('Feitio de junhoLote 06/202630,5 LR$9.840,00R$ 322,62/L');
   });
 });
 
@@ -767,7 +767,7 @@ describe('FeitioPage: feitio concluído', () => {
 
     await concluirComLitros(container, '40');
 
-    expect(totalDaSecao(container, 'Matéria-prima')).toBe('R$ 12.100,00');
+    expect(totalDaSecao(container, 'Matéria-prima')).toBe('R$12.100,00');
     expect(Array.from(cartaoDe(container, 'Feitios anteriores').children[1]?.children ?? [])).toHaveLength(3);
   });
 

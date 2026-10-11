@@ -104,12 +104,11 @@ const painelDaFicha = (container: HTMLElement) =>
 
 const fichaAberta = (container: HTMLElement) => container.querySelector('button[aria-label="Fechar ficha"]') !== null;
 
-const painelDoModal = (container: HTMLElement) =>
-  elemento(container, 'button[aria-label="fechar"]').parentElement?.parentElement as HTMLElement;
+const painelDoModal = (container: HTMLElement) => elemento(container, '[role="dialog"]');
 
-const modalAberto = (container: HTMLElement) => container.querySelector('button[aria-label="fechar"]') !== null;
+const modalAberto = (container: HTMLElement) => container.querySelector('[role="dialog"]') !== null;
 
-const tituloDoModal = (container: HTMLElement) => textosDasFolhas(painelDoModal(container))[0];
+const tituloDoModal = (container: HTMLElement) => elemento(painelDoModal(container), 'h2').textContent;
 
 const elementosDeMovimento = (container: HTMLElement) => {
   const ancora = folhasDe(container).find((folha) => /^\d\d\/\d\d\/\d{4}/.test(folha.textContent ?? ''));
@@ -129,8 +128,8 @@ const abaAtiva = (container: HTMLElement) =>
   todos<HTMLButtonElement>(container, 'button[aria-pressed="true"]').map((botao) => botao.textContent);
 
 async function montarAyahuasca() {
-  const montado = await montar(<AyahuascaPage />);
-  return montado.container;
+  await montar(<AyahuascaPage />);
+  return document.body;
 }
 
 const abrirAba = (container: HTMLElement, aba: 'Lotes' | 'Movimentos' | 'Reservas') =>
@@ -833,7 +832,7 @@ describe('AyahuascaPage: modal de movimento', () => {
     const container = await montarAyahuasca();
     await abrirSaida(container);
 
-    await clicar(elemento(container, 'button[aria-label="fechar"]'));
+    await clicar(elemento(container, 'button[aria-label="Fechar"]'));
 
     expect(modalAberto(container)).toBe(false);
   });
@@ -841,8 +840,10 @@ describe('AyahuascaPage: modal de movimento', () => {
   it('modal aberto — clicar no fundo escuro fecha', async () => {
     const container = await montarAyahuasca();
     await abrirSaida(container);
+    const fundo = painelDoModal(container).parentElement as HTMLElement;
 
-    await clicar(painelDoModal(container).parentElement as HTMLElement);
+    fundo.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true }));
+    await clicar(fundo);
 
     expect(modalAberto(container)).toBe(false);
   });
@@ -916,7 +917,7 @@ describe('AyahuascaPage: modal de entrada de feitio', () => {
 
     const erro = 'Dê um código ao lote (ex.: Lote 01/2027).';
     const botao = botaoComTexto(painelDoModal(container), 'Salvar');
-    expect(todos(painelDoModal(container), 'span').filter((span) => span.textContent === erro)).toHaveLength(2);
+    expect(folhasDe(painelDoModal(container)).filter((span) => span.textContent === erro)).toHaveLength(2);
     expect(botao.disabled).toBe(true);
     expect(botao.title).toBe(erro);
   });
@@ -1504,29 +1505,29 @@ describe('AyahuascaPage: acessibilidade do modal e da ficha', () => {
       document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
     });
 
-  it('modal de movimento — não se declara como diálogo: sem role dialog nem aria-modal', async () => {
+  it('modal de movimento — se declara como diálogo modal', async () => {
     const container = await montarAyahuasca();
 
     await abrirSaida(container);
 
-    expect(container.querySelector('[role="dialog"], [aria-modal]')).toBeNull();
+    expect(container.querySelector('[role="dialog"][aria-modal="true"]')).not.toBeNull();
   });
 
-  it('modal de movimento — Esc não fecha', async () => {
+  it('modal de movimento — Esc fecha', async () => {
     const container = await montarAyahuasca();
     await abrirSaida(container);
 
     await pressionarEsc();
 
-    expect(modalAberto(container)).toBe(true);
+    expect(modalAberto(container)).toBe(false);
   });
 
-  it('modal de movimento — abrir não move o foco para dentro dele', async () => {
+  it('modal de movimento — abrir move o foco para dentro dele', async () => {
     const container = await montarAyahuasca();
 
     await abrirSaida(container);
 
-    expect(painelDoModal(container).contains(document.activeElement)).toBe(false);
+    expect(painelDoModal(container).contains(document.activeElement)).toBe(true);
   });
 
   it('ficha do lote — não se declara como diálogo e Esc não fecha', async () => {

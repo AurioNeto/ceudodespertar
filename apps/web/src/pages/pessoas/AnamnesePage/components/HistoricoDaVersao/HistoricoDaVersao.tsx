@@ -1,5 +1,5 @@
+import { Cartao } from '@/ds';
 import type { VersaoDoFormulario } from '../../mocks/anamnese';
-import { Cartao } from '../Cartao';
 
 export interface HistoricoDaVersaoProps {
   historico: VersaoDoFormulario['historico'];

@@ -1,1 +1,0 @@
-export { Leitura } from './Leitura';

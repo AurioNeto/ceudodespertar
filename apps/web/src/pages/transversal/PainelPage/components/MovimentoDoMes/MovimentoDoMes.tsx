@@ -1,4 +1,4 @@
-import { Icon, rotuloCaixaAlta } from '@/ds';
+import { AmountDisplay, Icon, rotuloCaixaAlta } from '@/ds';
 import { competenciaAnterior, movimentoDoMes } from '../../mocks/resumoFinanceiro';
 import { competenciaAtual } from '@/pages/mocks/relogio';
 import { competenciaPorExtenso, formatarBRL, formatarCompetencia } from '@/pages/utils/formato';
@@ -59,7 +59,7 @@ export function MovimentoDoMes() {
             <span style={{ font: 'var(--text-body)', color: 'var(--text-secondary)' }}>resultado</span>
           </div>
           <div style={{ ...numeroGrande, color: 'var(--color-royal-deep)' }}>
-            + {formatarBRL(movimentoDoMes.resultado)}
+            + <AmountDisplay value={movimentoDoMes.resultado / 100} size="lg" style={{ color: 'inherit' }} />
           </div>
           <div style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>
             + {formatarBRL(movimentoDoMes.resultadoAnterior)} no mês anterior — o mês fecha melhor se nada

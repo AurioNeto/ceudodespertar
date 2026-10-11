@@ -1,8 +1,7 @@
-import { Avatar, Button, Icon, StatusBadge } from '@/ds';
+import { Avatar, Aviso, Button, Icon, Leitura, StatusBadge } from '@/ds';
 import { TEXTO_DA_ANAMNESE, TOM_DA_ANAMNESE } from '../../constantes';
 import type { AcessoAoSistema, GrupoDeAcesso, PessoaDaCasa } from '../../mocks/pessoas';
-import { Cartao } from './components/Cartao';
-import { Dado } from './components/Dado';
+import { CartaoDaFicha } from './components/CartaoDaFicha';
 import { ACESSO } from './constantes';
 
 export interface FichaDaPessoaProps {
@@ -70,16 +69,16 @@ export function FichaDaPessoa({
         </div>
       </div>
 
-      <Cartao titulo="Dados">
+      <CartaoDaFicha titulo="Dados">
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(190px,1fr))', gap: 12 }}>
-          <Dado rotulo="Telefone" valor={pessoa.telefone} />
-          <Dado rotulo="Nascimento" valor={pessoa.nascimento} />
-          <Dado rotulo="Cidade" valor={pessoa.cidade} />
-          <Dado rotulo="Contato de emergência" valor={pessoa.emergencia} />
+          <Leitura rotulo="Telefone" valor={pessoa.telefone} />
+          <Leitura rotulo="Nascimento" valor={pessoa.nascimento} />
+          <Leitura rotulo="Cidade" valor={pessoa.cidade} />
+          <Leitura rotulo="Contato de emergência" valor={pessoa.emergencia} />
         </div>
-      </Cartao>
+      </CartaoDaFicha>
 
-      <Cartao
+      <CartaoDaFicha
         titulo="Anamnese"
         nota={
           pessoa.respondidaEm
@@ -93,21 +92,9 @@ export function FichaDaPessoa({
         {pessoa.pontos.length ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {pessoa.pontos.map(([titulo, detalhe]) => (
-              <div
-                key={titulo}
-                style={{
-                  background: 'var(--color-attention-soft)',
-                  border: '1px solid var(--color-attention-border)',
-                  borderRadius: 'var(--radius)',
-                  padding: '11px 13px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 3,
-                }}
-              >
-                <span style={{ font: 'var(--text-body-strong)', color: 'var(--text-primary)' }}>{titulo}</span>
-                <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>{detalhe}</span>
-              </div>
+              <Aviso key={titulo} tom="atencao" titulo={titulo}>
+                {detalhe}
+              </Aviso>
             ))}
           </div>
         ) : (
@@ -115,9 +102,9 @@ export function FichaDaPessoa({
             Nenhum ponto de atenção declarado.
           </span>
         )}
-      </Cartao>
+      </CartaoDaFicha>
 
-      <Cartao titulo="Acesso ao sistema">
+      <CartaoDaFicha titulo="Acesso ao sistema">
         {acesso ? (
           <>
             <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
@@ -163,7 +150,7 @@ export function FichaDaPessoa({
             </Button>
           </>
         )}
-      </Cartao>
+      </CartaoDaFicha>
     </div>
   );
 }

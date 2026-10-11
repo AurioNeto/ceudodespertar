@@ -1,7 +1,6 @@
-import { Button, StatusBadge } from '@/ds';
+import { Button, Cartao, StatusBadge } from '@/ds';
 import type { PerguntaDoFormulario } from '../../mocks/anamnese';
 import type { RascunhoDePergunta } from '../../tipos';
-import { Cartao } from '../Cartao';
 import { BotaoDaPergunta } from './components/BotaoDaPergunta';
 import { FormularioDeNovaPergunta } from './components/FormularioDeNovaPergunta';
 

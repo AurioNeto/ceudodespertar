@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import type { GrupoId, UsuarioListado } from '@cdd/contracts';
-import { Button, PainelDeAcao, type Density, type VarianteDoPainel } from '@/ds';
+import { Aviso, Button, PainelDeAcao, type Density, type VarianteDoPainel } from '@/ds';
 import { useChaveDeIdempotencia } from '../../../../hooks/useChaveDeIdempotencia';
-import { AvisoDeAtencao } from './components/AvisoDeAtencao';
 import { CampoDeMotivo } from './components/CampoDeMotivo';
 import { useComandosDeAcessos } from '../../../../comandos';
 import { ErroDoPainel } from '../../../ErroDoPainel';
@@ -104,7 +103,7 @@ function PainelDoUsuarioAberto({
       focoDeReserva={focoDeReserva}
     >
     <div ref={raiz} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
-      {aviso ? <AvisoDeAtencao role="status">{aviso}</AvisoDeAtencao> : null}
+      {aviso ? <Aviso tom="atencao" role="status">{aviso}</Aviso> : null}
       {erro ? <ErroDoPainel>{erro}</ErroDoPainel> : null}
 
       <section style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>

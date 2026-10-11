@@ -1,4 +1,4 @@
-import { Cartao, Icon, Rotulo, StatusBadge, type Density } from '@/ds';
+import { AmountDisplay, Aviso, Cartao, Icon, Rotulo, StatusBadge, type Density } from '@/ds';
 import { formatarBRL, formatarLitros, pluralizar } from '@/pages/utils/formato';
 import type { FeitioNaTela } from '../../mocks/feitio';
 import { custoDaMateriaPrima, custoDosLancamentos } from '../../utils/custoDoFeitio';
@@ -99,9 +99,7 @@ export function FeitioEmCurso({
             <span style={{ font: 'var(--text-small)', color: 'var(--text-meta)', flex: 1, minWidth: 170 }}>
               {m.origem}
             </span>
-            <span data-numeric style={{ font: 'var(--text-small)', color: 'var(--text-primary)' }}>
-              {formatarBRL(m.custo)}
-            </span>
+            <AmountDisplay value={m.custo / 100} size="sm" />
           </div>
         ))}
       </Secao>
@@ -125,32 +123,17 @@ export function FeitioEmCurso({
               {c.categoria}
             </span>
             <code style={{ font: 'var(--text-code)' }}>{c.lancamentoId}</code>
-            <span data-numeric style={{ font: 'var(--text-small)', color: 'var(--text-primary)' }}>
-              {formatarBRL(c.valor)}
-            </span>
+            <AmountDisplay value={c.valor / 100} size="sm" />
           </div>
         ))}
       </Secao>
 
       {pendentes > 0 ? (
-        <div
-          style={{
-            background: 'var(--color-pending-soft)',
-            border: '1px solid var(--color-pending-border)',
-            borderRadius: 'var(--radius)',
-            padding: '12px 15px',
-            display: 'flex',
-            gap: 11,
-            alignItems: 'flex-start',
-          }}
-        >
-          <Icon name="circle-alert" size={17} color="var(--color-pending)" style={{ marginTop: 2 }} />
-          <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)', maxWidth: '74ch' }}>
-            {pluralizar(pendentes, 'lançamento ainda na fila de verificação', 'lançamentos ainda na fila de verificação')}
-            . O custo por litro que sair daqui é <b>parcial</b>: {formatarBRL(confirmado)} confirmados de{' '}
-            {formatarBRL(total)} registrados. Conferir a fila antes de concluir fecha a conta de verdade.
-          </span>
-        </div>
+        <Aviso tom="pendente">
+          {pluralizar(pendentes, 'lançamento ainda na fila de verificação', 'lançamentos ainda na fila de verificação')}
+          . O custo por litro que sair daqui é <b>parcial</b>: {formatarBRL(confirmado)} confirmados de{' '}
+          {formatarBRL(total)} registrados. Conferir a fila antes de concluir fecha a conta de verdade.
+        </Aviso>
       ) : null}
     </Cartao>
   );

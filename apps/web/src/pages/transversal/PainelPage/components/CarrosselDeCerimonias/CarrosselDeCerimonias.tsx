@@ -1,9 +1,8 @@
-import { Icon } from '@/ds';
-import { PAINEIS } from './constantes';
+import { BotaoDeIcone, Icon } from '@/ds';
+import { ESTILO_DA_SETA, PAINEIS } from './constantes';
 import { GraficoResultado } from './components/GraficoResultado';
 import { ResumoDaProxima } from './components/ResumoDaProxima';
 import { ResumoDaUltima } from './components/ResumoDaUltima';
-import { SetaDoCarrossel } from './components/SetaDoCarrossel';
 import { useCarrosselDeCerimonias } from './hooks/useCarrosselDeCerimonias';
 
 export function CarrosselDeCerimonias() {
@@ -57,8 +56,8 @@ export function CarrosselDeCerimonias() {
           >
             {slide + 1} / {PAINEIS.length}
           </span>
-          <SetaDoCarrossel rotulo="Painel anterior" icone="arrow-left" onClick={() => irPara(slide - 1)} />
-          <SetaDoCarrossel rotulo="Próximo painel" icone="arrow-right" onClick={() => irPara(slide + 1)} />
+          <BotaoDeIcone icone="arrow-left" aria-label="Painel anterior" style={ESTILO_DA_SETA} onClick={() => irPara(slide - 1)} />
+          <BotaoDeIcone icone="arrow-right" aria-label="Próximo painel" style={ESTILO_DA_SETA} onClick={() => irPara(slide + 1)} />
         </div>
       </div>
 

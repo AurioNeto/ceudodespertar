@@ -1,1 +1,0 @@
-export { AvisoDeAtencao } from './AvisoDeAtencao';
