@@ -4,7 +4,7 @@ import { dataLocal, reais } from '@cdd/contracts';
 import { lerValorDigitado } from '@/lib/numero';
 import { id as marcarId } from '@/mocks/ids';
 import { hoje } from '@/pages/mocks/relogio';
-import { formatarDinheiro } from '@/pages/utils/formato';
+import { formatarBRL } from '@/pages/utils/formato';
 import type { Filtro } from '../constantes';
 import { contasDeEmprestimo, contrapartesConhecidas, emprestimos as emprestimosIniciais } from '../mocks/emprestimos';
 import { montarEmprestimo, type ValoresDoNovo } from '../utils/montarEmprestimo';
@@ -59,8 +59,8 @@ export function useEmprestimos() {
     setNovo((n) => ({ ...n, valor: '', motivo: '' }));
     setRecado(
       novo.direcao === 'CONCEDIDO'
-        ? `Empréstimo registrado. A saída de ${formatarDinheiro(valorNovoEmCentavos)} é transferência para ${contraparte.nome}, não despesa.`
-        : `Empréstimo registrado. A entrada de ${formatarDinheiro(valorNovoEmCentavos)} é transferência de ${contraparte.nome}, não receita.`,
+        ? `Empréstimo registrado. A saída de ${formatarBRL(valorNovoEmCentavos)} é transferência para ${contraparte.nome}, não despesa.`
+        : `Empréstimo registrado. A entrada de ${formatarBRL(valorNovoEmCentavos)} é transferência de ${contraparte.nome}, não receita.`,
     );
   };
 
@@ -133,7 +133,7 @@ export function useEmprestimos() {
     setRecado(
       sobra === 0
         ? 'Devolução registrada e empréstimo quitado. A transferência entrou; nenhum lançamento de receita foi criado.'
-        : `Devolução registrada como transferência. Restam ${formatarDinheiro(sobra)}.`,
+        : `Devolução registrada como transferência. Restam ${formatarBRL(sobra)}.`,
     );
   };
 

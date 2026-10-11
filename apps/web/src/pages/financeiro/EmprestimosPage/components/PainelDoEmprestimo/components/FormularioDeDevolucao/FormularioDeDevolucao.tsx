@@ -1,7 +1,7 @@
 import type { DirecaoEmprestimo } from '@cdd/contracts';
 import { Button, Select, TextField, type Density } from '@/ds';
 import { MENSAGEM_DE_DATA_VAZIA } from '@/pages/financeiro/constantes';
-import { formatarDinheiro } from '@/pages/utils/formato';
+import { formatarBRL } from '@/pages/utils/formato';
 import { contasDeEmprestimo } from '../../../../mocks/emprestimos';
 
 export interface FormularioDeDevolucaoProps {
@@ -63,8 +63,8 @@ export function FormularioDeDevolucao({
           placeholder="0,00"
           value={valor}
           onChange={(e) => onValor(e.target.value)}
-          error={excedeSaldo ? `Passa do saldo de ${formatarDinheiro(saldo)}.` : undefined}
-          hint={excedeSaldo ? undefined : `saldo de ${formatarDinheiro(saldo)}`}
+          error={excedeSaldo ? `Passa do saldo de ${formatarBRL(saldo)}.` : undefined}
+          hint={excedeSaldo ? undefined : `saldo de ${formatarBRL(saldo)}`}
           autoFocus
         />
         <TextField

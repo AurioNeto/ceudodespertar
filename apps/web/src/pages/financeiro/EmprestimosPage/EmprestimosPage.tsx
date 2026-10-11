@@ -1,5 +1,5 @@
 import { Button, EmptyState, ScreenHeader, useDensidade, SeletorDeTipo, Cartao, Numero, Recado } from '@/ds';
-import { formatarDinheiro } from '@/pages/utils/formato';
+import { formatarBRL } from '@/pages/utils/formato';
 import { FormularioDeEmprestimo } from './components/FormularioDeEmprestimo';
 import { LinhaDoEmprestimo } from './components/LinhaDoEmprestimo';
 import { PainelDoEmprestimo } from './components/PainelDoEmprestimo';
@@ -44,13 +44,13 @@ export function EmprestimosPage() {
           >
             <Numero
               rotulo="A receber"
-              valor={formatarDinheiro(tela.aReceber)}
+              valor={formatarBRL(tela.aReceber)}
               nota="emprestado e ainda não devolvido"
               destaque
             />
             <Numero
               rotulo="A devolver"
-              valor={formatarDinheiro(tela.aDevolver)}
+              valor={formatarBRL(tela.aDevolver)}
               nota="a casa tomou e ainda deve"
               cor="var(--color-pending)"
             />

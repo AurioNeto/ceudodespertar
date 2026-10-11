@@ -1,6 +1,6 @@
 import type { Emprestimo } from '@cdd/contracts';
 import { BarraDeProporcao, StatusBadge, Cartao, Numero, type Density } from '@/ds';
-import { formatarData, formatarDinheiro } from '@/pages/utils/formato';
+import { formatarBRL, formatarData } from '@/pages/utils/formato';
 import { DIRECAO } from '../../../../constantes';
 import { devolvido, saldoDevedor } from '../../../../utils/saldo';
 
@@ -31,11 +31,11 @@ export function Detalhe({ emprestimo, densidade }: DetalheProps) {
           gap: 14,
         }}
       >
-        <Numero rotulo="Principal" valor={formatarDinheiro(emprestimo.valorPrincipal)} />
-        <Numero rotulo="Já devolvido" valor={formatarDinheiro(devolvido(emprestimo))} cor="var(--color-confirmed)" />
+        <Numero rotulo="Principal" valor={formatarBRL(emprestimo.valorPrincipal)} />
+        <Numero rotulo="Já devolvido" valor={formatarBRL(devolvido(emprestimo))} cor="var(--color-confirmed)" />
         <Numero
           rotulo={d.saldoRotulo}
-          valor={formatarDinheiro(saldo)}
+          valor={formatarBRL(saldo)}
           destaque
           cor={saldo === 0 ? 'var(--color-confirmed)' : undefined}
         />

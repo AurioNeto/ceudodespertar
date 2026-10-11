@@ -164,7 +164,7 @@ describe('EmprestimosPage em escritório: cabeçalho e resumo', () => {
 
     expect(blocoDoRotulo(container, 'A receber')).toEqual([
       'A receber',
-      '5.437,60',
+      'R$ 5.437,60',
       'emprestado e ainda não devolvido',
     ]);
   });
@@ -172,7 +172,7 @@ describe('EmprestimosPage em escritório: cabeçalho e resumo', () => {
   it('a devolver — soma o saldo dos empréstimos que a casa tomou e ainda deve', async () => {
     const { container } = await montar(<EmprestimosPage />);
 
-    expect(blocoDoRotulo(container, 'A devolver')).toEqual(['A devolver', '1.500,00', 'a casa tomou e ainda deve']);
+    expect(blocoDoRotulo(container, 'A devolver')).toEqual(['A devolver', 'R$ 1.500,00', 'a casa tomou e ainda deve']);
   });
 
   it('quitados — conta os empréstimos quitados e nomeia as contrapartes', async () => {
@@ -193,9 +193,9 @@ describe('EmprestimosPage em escritório: lista e detalhe', () => {
     const { container } = await montar(<EmprestimosPage />);
 
     expect(textosDasLinhas(container)).toEqual([
-      ['Érico Santana', '5.437,60', 'a receber'],
-      ['Marta Neto', '1.500,00', 'a devolver'],
-      ['Zé Ferreira', 'Quitado', '4.800,00', 'devolvido por inteiro'],
+      ['Érico Santana', 'R$ 5.437,60', 'a receber'],
+      ['Marta Neto', 'R$ 1.500,00', 'a devolver'],
+      ['Zé Ferreira', 'Quitado', 'R$ 4.800,00', 'devolvido por inteiro'],
     ]);
   });
 
@@ -240,11 +240,11 @@ describe('EmprestimosPage em escritório: lista e detalhe', () => {
     ).toHaveLength(1);
     expect(numerosDoDetalhe(container)).toEqual([
       'Principal',
-      '6.000,00',
+      'R$ 6.000,00',
       'Já devolvido',
-      '562,40',
+      'R$ 562,40',
       'A receber',
-      '5.437,60',
+      'R$ 5.437,60',
       'Conta de origem',
       'Cora PJ',
     ]);
@@ -283,11 +283,11 @@ describe('EmprestimosPage em escritório: lista e detalhe', () => {
     ).toHaveLength(1);
     expect(numerosDoDetalhe(container)).toEqual([
       'Principal',
-      '3.000,00',
+      'R$ 3.000,00',
       'Já devolvido',
-      '1.500,00',
+      'R$ 1.500,00',
       'A devolver',
-      '1.500,00',
+      'R$ 1.500,00',
       'Conta de origem',
       'Cora PJ',
     ]);
@@ -300,11 +300,11 @@ describe('EmprestimosPage em escritório: lista e detalhe', () => {
 
     expect(numerosDoDetalhe(container).slice(0, 6)).toEqual([
       'Principal',
-      '4.800,00',
+      'R$ 4.800,00',
       'Já devolvido',
-      '4.800,00',
+      'R$ 4.800,00',
       'A receber',
-      '0,00',
+      'R$ 0,00',
     ]);
     expect(container.textContent).toContain('Quitado. A soma das devoluções fechou com o principal.');
     expect(textosDosBotoes(container)).not.toContain('Registrar devolução');
@@ -325,7 +325,7 @@ describe('EmprestimosPage em escritório: lista e detalhe', () => {
       'Quem registrou',
       'Valor',
     ]);
-    expect(linhasDeDevolucoes(container)).toEqual([['18/08/2026', 'Cora PJ', 'Aurio Neto', '562,40']]);
+    expect(linhasDeDevolucoes(container)).toEqual([['18/08/2026', 'Cora PJ', 'Aurio Neto', 'R$ 562,40']]);
     expect(folhasComTexto(container, '1 devolução · a soma nunca passa do principal.')).toHaveLength(1);
   });
 
@@ -335,8 +335,8 @@ describe('EmprestimosPage em escritório: lista e detalhe', () => {
     await abrirEmprestimo(container, 'Zé Ferreira');
 
     expect(linhasDeDevolucoes(container)).toEqual([
-      ['15/05/2026', 'Cora PJ', 'Aurio Neto', '2.400,00'],
-      ['20/07/2026', 'Espécie', 'Chico Aguiar', '2.400,00'],
+      ['15/05/2026', 'Cora PJ', 'Aurio Neto', 'R$ 2.400,00'],
+      ['20/07/2026', 'Espécie', 'Chico Aguiar', 'R$ 2.400,00'],
     ]);
     expect(folhasComTexto(container, '2 devoluções · a soma nunca passa do principal.')).toHaveLength(1);
   });
@@ -345,7 +345,7 @@ describe('EmprestimosPage em escritório: lista e detalhe', () => {
     const { container } = await montar(<EmprestimosPage />);
 
     expect(textosDosBotoes(container)).toContain('Registrar devolução');
-    expect(folhasComTexto(container, 'Saldo de 5.437,60 · grava uma transferência.')).toHaveLength(1);
+    expect(folhasComTexto(container, 'Saldo de R$ 5.437,60 · grava uma transferência.')).toHaveLength(1);
   });
 
   it('escolher outro empréstimo — marca a linha e troca o detalhe', async () => {
@@ -410,7 +410,7 @@ describe('EmprestimosPage: registrar devolução', () => {
 
     expect(folhasComTexto(container, 'Registrar o que voltou')).toHaveLength(1);
     expect(campoPeloRotulo(container, 'Valor').placeholder).toBe('0,00');
-    expect(mensagemDoCampo(campoPeloRotulo(container, 'Valor'))).toBe('saldo de 5.437,60');
+    expect(mensagemDoCampo(campoPeloRotulo(container, 'Valor'))).toBe('saldo de R$ 5.437,60');
     expect(campoPeloRotulo(container, 'Data').value).toBe('2026-09-02');
     expect(campoPeloRotulo<HTMLSelectElement>(container, 'Conta de entrada').value).toBe('cora');
     expect(textosDosBotoes(container)).toEqual(expect.arrayContaining(['Registrar devolução', 'Cancelar']));
@@ -424,7 +424,7 @@ describe('EmprestimosPage: registrar devolução', () => {
 
     expect(folhasComTexto(container, 'Registrar o que a casa devolveu')).toHaveLength(1);
     expect(campoPeloRotulo<HTMLSelectElement>(container, 'Conta de saída').value).toBe('cora');
-    expect(mensagemDoCampo(campoPeloRotulo(container, 'Valor'))).toBe('saldo de 1.500,00');
+    expect(mensagemDoCampo(campoPeloRotulo(container, 'Valor'))).toBe('saldo de R$ 1.500,00');
   });
 
   it('botão sem valor — fica bloqueado, sem motivo escrito', async () => {
@@ -445,7 +445,7 @@ describe('EmprestimosPage: registrar devolução', () => {
 
     const campo = campoPeloRotulo(container, 'Valor');
     expect(campo.getAttribute('aria-invalid')).toBe('true');
-    expect(mensagemDoCampo(campo)).toBe('Passa do saldo de 5.437,60.');
+    expect(mensagemDoCampo(campo)).toBe('Passa do saldo de R$ 5.437,60.');
     expect(botaoComTexto(container, 'Registrar devolução').disabled).toBe(true);
     expect(folhasComTexto(container, 'A soma das devoluções não pode passar do principal emprestado.')).toHaveLength(1);
   });
@@ -474,14 +474,14 @@ describe('EmprestimosPage: registrar devolução', () => {
 
     expect(botaoComTexto(container, 'Registrar devolução').disabled).toBe(true);
     expect(folhasComTexto(container, motivo)).toHaveLength(1);
-    expect(mensagemDoCampo(campoPeloRotulo(container, 'Valor'))).toBe('saldo de 5.437,60');
+    expect(mensagemDoCampo(campoPeloRotulo(container, 'Valor'))).toBe('saldo de R$ 5.437,60');
   });
 
   it.each([
-    { digitado: '100', restam: '5.337,60' },
-    { digitado: '100,5', restam: '5.337,10' },
-    { digitado: '1.500', restam: '3.937,60' },
-    { digitado: '1.500,00', restam: '3.937,60' },
+    { digitado: '100', restam: 'R$ 5.337,60' },
+    { digitado: '100,5', restam: 'R$ 5.337,10' },
+    { digitado: '1.500', restam: 'R$ 3.937,60' },
+    { digitado: '1.500,00', restam: 'R$ 3.937,60' },
   ])('valor digitado "$digitado" — a devolução é aceita e restam $restam', async ({ digitado, restam }) => {
     const { container } = await montar(<EmprestimosPage />);
 
@@ -495,14 +495,14 @@ describe('EmprestimosPage: registrar devolução', () => {
 
     await devolver(container, '1000');
 
-    expect(recadoMostrado(container)).toBe('Devolução registrada como transferência. Restam 4.437,60.');
+    expect(recadoMostrado(container)).toBe('Devolução registrada como transferência. Restam R$ 4.437,60.');
     expect(linhasDeDevolucoes(container)).toEqual([
-      ['18/08/2026', 'Cora PJ', 'Aurio Neto', '562,40'],
-      ['02/09/2026', 'Cora PJ', 'Aurio Neto', '1.000,00'],
+      ['18/08/2026', 'Cora PJ', 'Aurio Neto', 'R$ 562,40'],
+      ['02/09/2026', 'Cora PJ', 'Aurio Neto', 'R$ 1.000,00'],
     ]);
-    expect(numerosDoDetalhe(container).slice(2, 6)).toEqual(['Já devolvido', '1.562,40', 'A receber', '4.437,60']);
-    expect(blocoDoRotulo(container, 'A receber')[1]).toBe('4.437,60');
-    expect(textosDasLinhas(container)[0]).toEqual(['Érico Santana', '4.437,60', 'a receber']);
+    expect(numerosDoDetalhe(container).slice(2, 6)).toEqual(['Já devolvido', 'R$ 1.562,40', 'A receber', 'R$ 4.437,60']);
+    expect(blocoDoRotulo(container, 'A receber')[1]).toBe('R$ 4.437,60');
+    expect(textosDasLinhas(container)[0]).toEqual(['Érico Santana', 'R$ 4.437,60', 'a receber']);
     expect(folhasComTexto(container, '2 devoluções · a soma nunca passa do principal.')).toHaveLength(1);
     expect(folhasComTexto(container, 'Registrar o que voltou')).toHaveLength(0);
   });
@@ -541,9 +541,9 @@ describe('EmprestimosPage: registrar devolução', () => {
     );
     expect(container.textContent).toContain('Quitado. A soma das devoluções fechou com o principal.');
     expect(textosDosBotoes(container)).not.toContain('Registrar devolução');
-    expect(textosDasLinhas(container)[0]).toEqual(['Érico Santana', 'Quitado', '6.000,00', 'devolvido por inteiro']);
+    expect(textosDasLinhas(container)[0]).toEqual(['Érico Santana', 'Quitado', 'R$ 6.000,00', 'devolvido por inteiro']);
     expect(blocoDoRotulo(container, 'Quitados')).toEqual(['Quitados', '2', 'Érico Santana · Zé Ferreira']);
-    expect(blocoDoRotulo(container, 'A receber')[1]).toBe('0,00');
+    expect(blocoDoRotulo(container, 'A receber')[1]).toBe('R$ 0,00');
   });
 
   it('devolução com outra conta e outra data — a linha da tabela traz a conta e a data escolhidas', async () => {
@@ -555,7 +555,7 @@ describe('EmprestimosPage: registrar devolução', () => {
 
     await clicar(botaoComTexto(container, 'Registrar devolução'));
 
-    expect(linhasDeDevolucoes(container).at(-1)).toEqual(['15/09/2026', 'Espécie', 'Aurio Neto', '200,00']);
+    expect(linhasDeDevolucoes(container).at(-1)).toEqual(['15/09/2026', 'Espécie', 'Aurio Neto', 'R$ 200,00']);
   });
 
   it('devolução com a data apagada — o campo diz Informe a data e a devolução não é registrada', async () => {
@@ -578,8 +578,8 @@ describe('EmprestimosPage: registrar devolução', () => {
 
     await devolver(container, '500');
 
-    expect(blocoDoRotulo(container, 'A devolver')[1]).toBe('1.000,00');
-    expect(textosDasLinhas(container)[1]).toEqual(['Marta Neto', '1.000,00', 'a devolver']);
+    expect(blocoDoRotulo(container, 'A devolver')[1]).toBe('R$ 1.000,00');
+    expect(textosDasLinhas(container)[1]).toEqual(['Marta Neto', 'R$ 1.000,00', 'a devolver']);
   });
 
   it('Cancelar — fecha o formulário e esquece o valor digitado', async () => {
@@ -604,7 +604,7 @@ describe('EmprestimosPage: registrar devolução', () => {
     await abrirFormularioDeDevolucao(container);
 
     expect(campoPeloRotulo(container, 'Valor').value).toBe('');
-    expect(mensagemDoCampo(campoPeloRotulo(container, 'Valor'))).toBe('saldo de 1.500,00');
+    expect(mensagemDoCampo(campoPeloRotulo(container, 'Valor'))).toBe('saldo de R$ 1.500,00');
   });
 
   it('escolher outro empréstimo — fecha o formulário e limpa o recado', async () => {
@@ -730,22 +730,22 @@ describe('EmprestimosPage: novo empréstimo', () => {
 
     await clicar(botaoComTexto(container, 'Registrar empréstimo'));
 
-    expect(textosDasLinhas(container)[0]).toEqual(['Lucia Prado', '2.000,00', 'a receber']);
+    expect(textosDasLinhas(container)[0]).toEqual(['Lucia Prado', 'R$ 2.000,00', 'a receber']);
     expect(linhaAtiva(container)).toEqual(['Lucia Prado']);
     expect(folhasComTexto(container, 'A casa emprestou em 10/09/2026 · compra de material')).toHaveLength(1);
     expect(numerosDoDetalhe(container)).toEqual([
       'Principal',
-      '2.000,00',
+      'R$ 2.000,00',
       'Já devolvido',
-      '0,00',
+      'R$ 0,00',
       'A receber',
-      '2.000,00',
+      'R$ 2.000,00',
       'Conta de origem',
       'Espécie',
     ]);
-    expect(blocoDoRotulo(container, 'A receber')[1]).toBe('7.437,60');
+    expect(blocoDoRotulo(container, 'A receber')[1]).toBe('R$ 7.437,60');
     expect(recadoMostrado(container)).toBe(
-      'Empréstimo registrado. A saída de 2.000,00 é transferência para Lucia Prado, não despesa.',
+      'Empréstimo registrado. A saída de R$ 2.000,00 é transferência para Lucia Prado, não despesa.',
     );
   });
 
@@ -759,11 +759,11 @@ describe('EmprestimosPage: novo empréstimo', () => {
 
     await clicar(botaoComTexto(container, 'Registrar empréstimo'));
 
-    expect(textosDasLinhas(container)[0]).toEqual(['Chico Aguiar', '750,25', 'a devolver']);
+    expect(textosDasLinhas(container)[0]).toEqual(['Chico Aguiar', 'R$ 750,25', 'a devolver']);
     expect(folhasComTexto(container, 'Recebido')).toHaveLength(1);
-    expect(blocoDoRotulo(container, 'A devolver')[1]).toBe('2.250,25');
+    expect(blocoDoRotulo(container, 'A devolver')[1]).toBe('R$ 2.250,25');
     expect(recadoMostrado(container)).toBe(
-      'Empréstimo registrado. A entrada de 750,25 é transferência de Chico Aguiar, não receita.',
+      'Empréstimo registrado. A entrada de R$ 750,25 é transferência de Chico Aguiar, não receita.',
     );
   });
 
@@ -791,7 +791,7 @@ describe('EmprestimosPage: novo empréstimo', () => {
     expect(folhasComTexto(container, 'Cada devolução entra aqui com a transferência que a acompanha.')).toHaveLength(1);
     expect(todos(container, 'table')).toHaveLength(0);
     expect(folhasComTexto(container, '0 devoluções · a soma nunca passa do principal.')).toHaveLength(1);
-    expect(folhasComTexto(container, 'Saldo de 300,00 · grava uma transferência.')).toHaveLength(1);
+    expect(folhasComTexto(container, 'Saldo de R$ 300,00 · grava uma transferência.')).toHaveLength(1);
   });
 
   it('registrar com um filtro ativo — volta o filtro para Todos e fecha o formulário', async () => {
@@ -882,10 +882,10 @@ describe('EmprestimosPage: novo empréstimo', () => {
 
     expect(formularioDeDevolucaoAberto(container)).toBe(false);
     expect(linhaAtiva(container)).toEqual(['Érico Santana']);
-    expect(textosDasLinhas(container)[0]).toEqual(['Érico Santana', '300,00', 'a receber']);
+    expect(textosDasLinhas(container)[0]).toEqual(['Érico Santana', 'R$ 300,00', 'a receber']);
     await abrirFormularioDeDevolucao(container);
     expect(campoPeloRotulo(container, 'Valor').value).toBe('');
-    expect(mensagemDoCampo(campoPeloRotulo(container, 'Valor'))).toBe('saldo de 300,00');
+    expect(mensagemDoCampo(campoPeloRotulo(container, 'Valor'))).toBe('saldo de R$ 300,00');
   });
 });
 
@@ -904,16 +904,16 @@ describe('EmprestimosPage em campo', () => {
   it('resumo e lista — trazem os mesmos valores do escritório', async () => {
     const { container } = await montar(<EmprestimosPage />);
 
-    expect(blocoDoRotulo(container, 'A receber')[1]).toBe('5.437,60');
-    expect(blocoDoRotulo(container, 'A devolver')[1]).toBe('1.500,00');
-    expect(textosDasLinhas(container)[0]).toEqual(['Érico Santana', '5.437,60', 'a receber']);
+    expect(blocoDoRotulo(container, 'A receber')[1]).toBe('R$ 5.437,60');
+    expect(blocoDoRotulo(container, 'A devolver')[1]).toBe('R$ 1.500,00');
+    expect(textosDasLinhas(container)[0]).toEqual(['Érico Santana', 'R$ 5.437,60', 'a receber']);
   });
 
   it('tabela de devoluções — esconde a coluna Quem registrou', async () => {
     const { container } = await montar(<EmprestimosPage />);
 
     expect(todos(container, 'th').map((cabecalho) => cabecalho.textContent)).toEqual(['Data', 'Conta', 'Valor']);
-    expect(linhasDeDevolucoes(container)).toEqual([['18/08/2026', 'Cora PJ', '562,40']]);
+    expect(linhasDeDevolucoes(container)).toEqual([['18/08/2026', 'Cora PJ', 'R$ 562,40']]);
   });
 
   it('devolução — registra do mesmo jeito que no escritório', async () => {
@@ -921,7 +921,7 @@ describe('EmprestimosPage em campo', () => {
 
     await devolver(container, '1000');
 
-    expect(recadoMostrado(container)).toBe('Devolução registrada como transferência. Restam 4.437,60.');
+    expect(recadoMostrado(container)).toBe('Devolução registrada como transferência. Restam R$ 4.437,60.');
   });
 
   it('novo empréstimo — registra do mesmo jeito que no escritório', async () => {
@@ -929,8 +929,8 @@ describe('EmprestimosPage em campo', () => {
 
     await registrarNovoEmprestimo(container, '2000', 'compra de material');
 
-    expect(textosDasLinhas(container)[0]).toEqual(['Érico Santana', '2.000,00', 'a receber']);
-    expect(blocoDoRotulo(container, 'A receber')[1]).toBe('7.437,60');
+    expect(textosDasLinhas(container)[0]).toEqual(['Érico Santana', 'R$ 2.000,00', 'a receber']);
+    expect(blocoDoRotulo(container, 'A receber')[1]).toBe('R$ 7.437,60');
   });
 });
 
