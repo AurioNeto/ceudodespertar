@@ -1,4 +1,4 @@
-import type { Aba } from '../constantes';
+import type { Aba } from '../tipos';
 
 interface PermissoesDasAbas {
   readonly podeGerenciarUsuarios: boolean;
