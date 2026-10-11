@@ -1,4 +1,4 @@
-import { Button, Icon, Select, TextField } from '@/ds';
+import { Aviso, Button, Icon, Select, TextField } from '@/ds';
 import type { LoteDeDaime } from '../../mocks/ayahuasca';
 import type { RascunhoDeMovimento } from '../../tipos';
 import { litros } from '../../utils/litros';
@@ -105,20 +105,7 @@ export function ModalDeMovimento({ form, erro, lotes, onMudar, onCancelar, onSal
           />
 
           {erro ? (
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 10,
-                background: 'var(--color-attention-soft)',
-                border: '1px solid var(--color-attention-border)',
-                borderRadius: 'var(--radius)',
-                padding: '10px 12px',
-              }}
-            >
-              <Icon name="triangle-alert" size={16} color="var(--color-attention)" />
-              <span style={{ font: 'var(--text-small)', color: 'var(--text-primary)' }}>{erro}</span>
-            </div>
+            <Aviso tom="atencao">{erro}</Aviso>
           ) : null}
         </div>
 

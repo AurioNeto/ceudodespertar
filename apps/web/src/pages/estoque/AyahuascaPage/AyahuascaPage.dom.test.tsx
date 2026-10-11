@@ -916,7 +916,7 @@ describe('AyahuascaPage: modal de entrada de feitio', () => {
 
     const erro = 'Dê um código ao lote (ex.: Lote 01/2027).';
     const botao = botaoComTexto(painelDoModal(container), 'Salvar');
-    expect(todos(painelDoModal(container), 'span').filter((span) => span.textContent === erro)).toHaveLength(2);
+    expect(folhasDe(painelDoModal(container)).filter((span) => span.textContent === erro)).toHaveLength(2);
     expect(botao.disabled).toBe(true);
     expect(botao.title).toBe(erro);
   });

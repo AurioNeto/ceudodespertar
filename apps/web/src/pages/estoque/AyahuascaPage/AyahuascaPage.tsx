@@ -1,4 +1,4 @@
-import { Button, CorpoDaTela, Icon, ScreenHeader, useDensidade, SeletorDeTipo } from '@/ds';
+import { Aviso, Button, CorpoDaTela, ScreenHeader, useDensidade, SeletorDeTipo } from '@/ds';
 import { pluralizar } from '@/pages/utils/formato';
 import { AbaDeLotes } from './components/AbaDeLotes';
 import { AbaDeMovimentos } from './components/AbaDeMovimentos';
@@ -39,23 +39,9 @@ export function AyahuascaPage() {
 
       <CorpoDaTela densidade={densidade} larguraMaxima={1080} espaco="compacto">
         {tela.mensagem ? (
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              gap: 12,
-              background: 'var(--color-royal-soft)',
-              border: '1px solid var(--color-royal-border)',
-              borderRadius: 'var(--radius)',
-              padding: '10px 14px',
-            }}
-          >
-            <span style={{ font: 'var(--text-body)', color: 'var(--color-royal-deep)' }}>{tela.mensagem}</span>
-            <button type="button" aria-label="fechar aviso" onClick={tela.fecharMensagem} style={{ color: 'var(--color-royal-deep)' }}>
-              <Icon name="x" size={16} />
-            </button>
-          </div>
+          <Aviso tom="informacao" aoFechar={tela.fecharMensagem} rotuloDeFechar="fechar aviso">
+            {tela.mensagem}
+          </Aviso>
         ) : null}
 
         <div
@@ -86,24 +72,11 @@ export function AyahuascaPage() {
         </div>
 
         {tela.previsto > tela.emEstoque || tela.emQuarentena > 0 ? (
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 12,
-              background: 'var(--color-pending-soft)',
-              border: '1px solid var(--color-pending-border)',
-              borderRadius: 'var(--radius)',
-              padding: '11px 14px',
-            }}
-          >
-            <Icon name="triangle-alert" size={18} color="var(--color-pending)" />
-            <span style={{ font: 'var(--text-body)', color: 'var(--text-primary)' }}>
-              {tela.previsto > tela.emEstoque
-                ? `Os trabalhos da agenda pedem ${litros(tela.previsto)} e o estoque tem ${litros(tela.emEstoque)}. Faltam ${litros(tela.previsto - tela.emEstoque)} até o bailado de 27/09.`
-                : `Há ${litros(tela.emQuarentena)} em quarentena, fora do estoque disponível.`}
-            </span>
-          </div>
+          <Aviso tom="pendente">
+            {tela.previsto > tela.emEstoque
+              ? `Os trabalhos da agenda pedem ${litros(tela.previsto)} e o estoque tem ${litros(tela.emEstoque)}. Faltam ${litros(tela.previsto - tela.emEstoque)} até o bailado de 27/09.`
+              : `Há ${litros(tela.emQuarentena)} em quarentena, fora do estoque disponível.`}
+          </Aviso>
         ) : null}
 
         <SeletorDeTipo

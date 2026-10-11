@@ -1,6 +1,5 @@
 import { useId } from 'react';
-import { TextField, type Density } from '@/ds';
-import { AvisoDeAtencao } from '../AvisoDeAtencao';
+import { Aviso, TextField, type Density } from '@/ds';
 import { AVISO_LGPD_DO_MOTIVO, LIMITE_DO_MOTIVO } from './constantes';
 
 const RESTANTE_PARA_ANUNCIAR_O_CONTADOR = 50;
@@ -18,7 +17,7 @@ export function CampoDeMotivo({ valor, aoMudar, erro, densidade }: CampoDeMotivo
   const pertoDoLimite = LIMITE_DO_MOTIVO - valor.length <= RESTANTE_PARA_ANUNCIAR_O_CONTADOR;
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
-      <AvisoDeAtencao id={idDoAviso}>{AVISO_LGPD_DO_MOTIVO}</AvisoDeAtencao>
+      <Aviso tom="atencao" id={idDoAviso}>{AVISO_LGPD_DO_MOTIVO}</Aviso>
       <TextField
         label="Motivo"
         multiline

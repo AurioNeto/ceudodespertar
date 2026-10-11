@@ -1,4 +1,4 @@
-import { Avatar, Button, Icon, StatusBadge } from '@/ds';
+import { Avatar, Aviso, Button, Icon, StatusBadge } from '@/ds';
 import { TEXTO_DA_ANAMNESE, TOM_DA_ANAMNESE } from '../../constantes';
 import type { AcessoAoSistema, GrupoDeAcesso, PessoaDaCasa } from '../../mocks/pessoas';
 import { Cartao } from './components/Cartao';
@@ -93,21 +93,9 @@ export function FichaDaPessoa({
         {pessoa.pontos.length ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {pessoa.pontos.map(([titulo, detalhe]) => (
-              <div
-                key={titulo}
-                style={{
-                  background: 'var(--color-attention-soft)',
-                  border: '1px solid var(--color-attention-border)',
-                  borderRadius: 'var(--radius)',
-                  padding: '11px 13px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 3,
-                }}
-              >
-                <span style={{ font: 'var(--text-body-strong)', color: 'var(--text-primary)' }}>{titulo}</span>
-                <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>{detalhe}</span>
-              </div>
+              <Aviso key={titulo} tom="atencao" titulo={titulo}>
+                {detalhe}
+              </Aviso>
             ))}
           </div>
         ) : (

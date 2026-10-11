@@ -260,7 +260,7 @@ describe('FeitioPage: feitio em andamento', () => {
   it('o texto de porquê apurar — fica sempre na tela', async () => {
     const container = await montarFeitio();
 
-    expect(folhaComTexto(container, 'div', 'O feitio deixa de ser despesa dispersa')).toBeTruthy();
+    expect(folhaComTexto(container, 'span', 'O feitio deixa de ser despesa dispersa')).toBeTruthy();
     expect(container.textContent).toContain('quanto custa o litro que ela produz');
   });
 
