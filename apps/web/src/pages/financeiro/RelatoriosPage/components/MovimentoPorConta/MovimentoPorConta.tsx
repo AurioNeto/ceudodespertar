@@ -1,9 +1,9 @@
-import { Rotulo, type Density } from '@/ds';
+import { Cartao, Rotulo, type Density } from '@/ds';
 import { reais } from '@cdd/contracts';
 import { formatarBRL } from '@/pages/utils/formato';
 import type { useRelatorio } from '../../hooks/useRelatorio';
 import type { Drill } from '../../tipos';
-import { Cartao } from '../Cartao';
+import { tituloDoCartao } from '../../constantes';
 import { Numero } from './components/Numero';
 
 export interface MovimentoPorContaProps {
@@ -18,7 +18,8 @@ export function MovimentoPorConta({ porConta, rotuloPeriodo, densidade, onAbrirD
   const campo = densidade === 'field';
 
   return (
-    <Cartao titulo="Movimento por conta">
+    <Cartao>
+      <span style={tituloDoCartao}>Movimento por conta</span>
       <div style={{ display: 'flex', flexDirection: 'column' }}>
         {!campo ? (
           <div

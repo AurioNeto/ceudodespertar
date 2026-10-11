@@ -1,11 +1,13 @@
 import { reais } from '@cdd/contracts';
+import { Cartao } from '@/ds';
 import { formatarBRL } from '@/pages/utils/formato';
 import { metasDeFundo } from '../../mocks/relatorios';
-import { Cartao } from '../Cartao';
+import { tituloDoCartao } from '../../constantes';
 
 export function MetasDoFundo() {
   return (
-    <Cartao titulo="Fundo próprio contra as metas">
+    <Cartao>
+      <span style={tituloDoCartao}>Fundo próprio contra as metas</span>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         {metasDeFundo.map((f) => (
           <div key={f.nome} style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>

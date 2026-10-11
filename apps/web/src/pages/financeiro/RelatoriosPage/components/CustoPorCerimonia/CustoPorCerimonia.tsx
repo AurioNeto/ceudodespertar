@@ -1,8 +1,9 @@
 import { reais } from '@cdd/contracts';
+import { Cartao } from '@/ds';
 import { formatarBRL } from '@/pages/utils/formato';
 import type { useRelatorio } from '../../hooks/useRelatorio';
 import type { Drill } from '../../tipos';
-import { Cartao } from '../Cartao';
+import { tituloDoCartao } from '../../constantes';
 
 export interface CustoPorCerimoniaProps {
   porCerimonia: ReturnType<typeof useRelatorio>['porCerimonia'];
@@ -11,7 +12,8 @@ export interface CustoPorCerimoniaProps {
 
 export function CustoPorCerimonia({ porCerimonia, onAbrirDrill }: CustoPorCerimoniaProps) {
   return (
-    <Cartao titulo="Custo por cerimônia">
+    <Cartao>
+      <span style={tituloDoCartao}>Custo por cerimônia</span>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         {porCerimonia.map((c) => (
           <button
