@@ -1,6 +1,6 @@
 import type { Adiantamento, AdiantamentoId } from '@cdd/contracts';
 import { Button, EmptyState, TwoAxisGuard, Rotulo, type Density } from '@/ds';
-import { formatarDinheiro } from '@/pages/utils/formato';
+import { formatarBRL } from '@/pages/utils/formato';
 import type { Perspectiva } from '../../mocks/adiantamentos';
 import { Linha } from '../Linha';
 import { FormularioDeRecusa } from './components/FormularioDeRecusa';
@@ -64,7 +64,7 @@ export function FilaDeAutorizacao({
       {barrado ? (
         <TwoAxisGuard
           explanation={`Autorizar adiantamento exige vínculo ativo de padrinho ou madrinha na data da despesa. ${quem.nome} tem a permissão do grupo ${quem.grupo}, e a operação mesmo assim falha — porque autoridade espiritual não se concede pela tela de acesso, e sim no cadastro de pessoas.`}
-          requirement={`Peça a um padrinho ou madrinha. O adiantamento de ${barrado.pessoaNome}, de ${formatarDinheiro(barrado.valor)}, continua aguardando.`}
+          requirement={`Peça a um padrinho ou madrinha. O adiantamento de ${barrado.pessoaNome}, de ${formatarBRL(barrado.valor)}, continua aguardando.`}
         />
       ) : null}
     </section>

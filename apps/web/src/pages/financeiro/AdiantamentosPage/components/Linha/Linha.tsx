@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import type { Adiantamento } from '@cdd/contracts';
 import { StatusBadge, type Density } from '@/ds';
-import { formatarData, formatarDinheiro } from '@/pages/utils/formato';
+import { formatarBRL, formatarData } from '@/pages/utils/formato';
 import { ROTULO, TOM } from './constantes';
 
 export interface LinhaProps {
@@ -57,7 +57,7 @@ export function Linha({ adiantamento, densidade, idade, children }: LinhaProps) 
       </div>
 
       <span data-numeric style={{ font: 'var(--text-amount-lg)', color: 'var(--text-primary)' }}>
-        {formatarDinheiro(a.valor)}
+        {formatarBRL(a.valor)}
       </span>
 
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>{children}</div>

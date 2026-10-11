@@ -3,7 +3,7 @@ import type { Adiantamento, AdiantamentoId, LancamentoId } from '@cdd/contracts'
 import { dataLocal } from '@cdd/contracts';
 import { id as marcarId } from '@/mocks/ids';
 import { hoje } from '@/pages/mocks/relogio';
-import { formatarData, formatarDinheiro } from '@/pages/utils/formato';
+import { formatarBRL, formatarData } from '@/pages/utils/formato';
 import {
   adiantamentos as adiantamentosIniciais,
   contasInstitucionais,
@@ -87,7 +87,7 @@ export function useAdiantamentos() {
     setRessarcindo(null);
     setDataRessarcimento(hoje);
     setRecado(
-      `Ressarcimento de ${formatarDinheiro(a.valor)} a ${a.pessoaNome} registrado como transferência de ${conta.nome}. Nenhuma despesa nova — ela já foi lançada em ${formatarData(a.dataDespesa)}.`,
+      `Ressarcimento de ${formatarBRL(a.valor)} a ${a.pessoaNome} registrado como transferência de ${conta.nome}. Nenhuma despesa nova — ela já foi lançada em ${formatarData(a.dataDespesa)}.`,
     );
   };
 

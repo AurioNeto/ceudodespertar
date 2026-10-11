@@ -167,8 +167,8 @@ describe('AdiantamentosPage: cabeçalho, perspectivas e resumo', () => {
   it('resumo — conta o que aguarda autorização e soma o valor, soma o que está a ressarcir e diz o mais antigo, e conta os fechados', async () => {
     const { container } = await montar(<AdiantamentosPage />);
 
-    expect(blocoDoRotulo(container, 'Aguardando autorização')).toEqual(['Aguardando autorização', '2', '1.497,67']);
-    expect(blocoDoRotulo(container, 'A ressarcir')).toEqual(['A ressarcir', '1.969,26', 'o mais antigo há 53 dias']);
+    expect(blocoDoRotulo(container, 'Aguardando autorização')).toEqual(['Aguardando autorização', '2', 'R$ 1.497,67']);
+    expect(blocoDoRotulo(container, 'A ressarcir')).toEqual(['A ressarcir', 'R$ 1.969,26', 'o mais antigo há 53 dias']);
     expect(blocoDoRotulo(container, 'Fechados')).toEqual(['Fechados', '1', 'ressarcidos ou recusados']);
   });
 
@@ -219,14 +219,14 @@ describe('AdiantamentosPage: o que cada perspectiva vê', () => {
         'há 53 dias',
         'camisetas da lojinha, lote de agosto · 11/07/2026 · Nubank Paty',
         'autorizado por Marta Neto em 14/07/2026',
-        '1.700,86',
+        'R$ 1.700,86',
       ],
       [
         'Lucia Prado',
         'A ressarcir',
         'ferragens do dormitório · 06/08/2026 · Nubank Paty',
         'autorizado por Marta Neto em 08/08/2026',
-        '268,40',
+        'R$ 268,40',
       ],
     ]);
     expect(linhasDaSecao(container, 'A ressarcir').map((linha) => textosDosBotoes(linha))).toEqual([
@@ -247,7 +247,7 @@ describe('AdiantamentosPage: o que cada perspectiva vê', () => {
         'Ressarcido',
         'diesel do feitio de junho · 19/06/2026 · Caixa Carlão',
         'autorizado por Aurio Neto (padrinho) em 20/06/2026 · ressarcido em 02/07/2026 por Cora PJ',
-        '612,00',
+        'R$ 612,00',
       ],
     ]);
     expect(linhasDaSecao(container, 'Fechados').map((linha) => textosDosBotoes(linha))).toEqual([[]]);
@@ -263,9 +263,9 @@ describe('AdiantamentosPage: o que cada perspectiva vê', () => {
         'Paty Munay',
         'Aguardando autorização',
         'compras da cozinha e tecidos do altar · 24/08/2026 · Cartão Itaú Paty',
-        '1.067,67',
+        'R$ 1.067,67',
       ],
-      ['Carlos Andrade', 'Aguardando autorização', 'conserto da bomba do poço · 01/09/2026 · Nubank Carlão', '430,00'],
+      ['Carlos Andrade', 'Aguardando autorização', 'conserto da bomba do poço · 01/09/2026 · Nubank Carlão', 'R$ 430,00'],
     ]);
     expect(linhasDaSecao(container, 'Aguardando sua autorização').map((linha) => textosDosBotoes(linha))).toEqual([
       ['Autorizar', 'Recusar'],
@@ -379,7 +379,7 @@ describe('AdiantamentosPage: autorizar', () => {
       'A ressarcir',
       'compras da cozinha e tecidos do altar · 24/08/2026 · Cartão Itaú Paty',
       'autorizado por Marta Neto em 02/09/2026',
-      '1.067,67',
+      'R$ 1.067,67',
       'a tesouraria ressarce',
     ]);
     expect(recadoMostrado(container)).toBe(
@@ -392,8 +392,8 @@ describe('AdiantamentosPage: autorizar', () => {
 
     await autorizarComoMadrinha(container, LINHA_DE_PATY_A_AUTORIZAR);
 
-    expect(blocoDoRotulo(container, 'Aguardando autorização')).toEqual(['Aguardando autorização', '1', '430,00']);
-    expect(blocoDoRotulo(container, 'A ressarcir')).toEqual(['A ressarcir', '3.036,93', 'o mais antigo há 53 dias']);
+    expect(blocoDoRotulo(container, 'Aguardando autorização')).toEqual(['Aguardando autorização', '1', 'R$ 430,00']);
+    expect(blocoDoRotulo(container, 'A ressarcir')).toEqual(['A ressarcir', 'R$ 3.036,93', 'o mais antigo há 53 dias']);
   });
 
   it('autorizar os dois — a fila fica vazia, com o estado vazio e o resumo nada parado', async () => {
@@ -417,7 +417,7 @@ describe('AdiantamentosPage: autorizar', () => {
     expect(container.textContent).toContain(
       'Autorizar adiantamento exige vínculo ativo de padrinho ou madrinha na data da despesa. Renato Dias tem a permissão do grupo Administrador, e a operação mesmo assim falha — porque autoridade espiritual não se concede pela tela de acesso, e sim no cadastro de pessoas.',
     );
-    expect(folhasComTexto(container, 'Peça a um padrinho ou madrinha. O adiantamento de Paty Munay, de 1.067,67, continua aguardando.')).toHaveLength(1);
+    expect(folhasComTexto(container, 'Peça a um padrinho ou madrinha. O adiantamento de Paty Munay, de R$ 1.067,67, continua aguardando.')).toHaveLength(1);
     expect(textosDasLinhas(container, 'Aguardando sua autorização')).toHaveLength(2);
     expect(recadoMostrado(container)).toBeNull();
   });
@@ -429,7 +429,7 @@ describe('AdiantamentosPage: autorizar', () => {
 
     await clicar(botaoComTexto(linhaDe(container, ...LINHA_DE_CARLOS_A_AUTORIZAR), 'Autorizar'));
 
-    expect(folhasComTexto(container, 'Peça a um padrinho ou madrinha. O adiantamento de Carlos Andrade, de 430,00, continua aguardando.')).toHaveLength(1);
+    expect(folhasComTexto(container, 'Peça a um padrinho ou madrinha. O adiantamento de Carlos Andrade, de R$ 430,00, continua aguardando.')).toHaveLength(1);
     await verComo(container, 'Marta Neto');
     expect(folhasComTexto(container, 'Você tem acesso a esta tela, mas não a esta operação')).toHaveLength(0);
   });
@@ -486,7 +486,7 @@ describe('AdiantamentosPage: recusar', () => {
       'Recusado',
       'compras da cozinha e tecidos do altar · 24/08/2026 · Cartão Itaú Paty',
       'recusado: sem nota fiscal',
-      '1.067,67',
+      'R$ 1.067,67',
     ]);
     expect(recadoMostrado(container)).toBe('Adiantamento de Paty Munay recusado, com o motivo registrado.');
     expect(blocoDoRotulo(container, 'Fechados')).toEqual(['Fechados', '2', 'ressarcidos ou recusados']);
@@ -549,7 +549,7 @@ describe('AdiantamentosPage: ressarcir', () => {
     const linha = linhaDe(container, ...LINHA_DE_PATY_A_RESSARCIR);
     expect(campoPeloRotulo<HTMLSelectElement>(linha, 'Conta de saída').value).toBe('cora');
     expect(campoPeloRotulo(linha, 'Data').value).toBe('2026-09-02');
-    expect(campoPeloRotulo(linha, 'Valor').value).toBe('1.700,86');
+    expect(campoPeloRotulo(linha, 'Valor').value).toBe('R$ 1.700,86');
     expect(campoPeloRotulo(linha, 'Valor').readOnly).toBe(true);
     expect(mensagemDoCampo(campoPeloRotulo(linha, 'Valor'))).toBe('igual ao adiantado');
     expect(textosDosBotoes(linha)).toEqual(['Confirmar', 'Voltar']);
@@ -581,10 +581,10 @@ describe('AdiantamentosPage: ressarcir', () => {
       'Ressarcido',
       'camisetas da lojinha, lote de agosto · 11/07/2026 · Nubank Paty',
       'autorizado por Marta Neto em 14/07/2026 · ressarcido em 10/09/2026 por Espécie',
-      '1.700,86',
+      'R$ 1.700,86',
     ]);
     expect(recadoMostrado(container)).toBe(
-      'Ressarcimento de 1.700,86 a Paty Munay registrado como transferência de Espécie. Nenhuma despesa nova — ela já foi lançada em 11/07/2026.',
+      'Ressarcimento de R$ 1.700,86 a Paty Munay registrado como transferência de Espécie. Nenhuma despesa nova — ela já foi lançada em 11/07/2026.',
     );
   });
 
@@ -594,7 +594,7 @@ describe('AdiantamentosPage: ressarcir', () => {
     await clicar(botaoComTexto(linhaDe(container, ...LINHA_DE_PATY_A_RESSARCIR), 'Ressarcir'));
     await clicar(botaoComTexto(linhaDe(container, ...LINHA_DE_PATY_A_RESSARCIR), 'Confirmar'));
 
-    expect(blocoDoRotulo(container, 'A ressarcir')).toEqual(['A ressarcir', '268,40', 'o mais antigo há 27 dias']);
+    expect(blocoDoRotulo(container, 'A ressarcir')).toEqual(['A ressarcir', 'R$ 268,40', 'o mais antigo há 27 dias']);
     expect(blocoDoRotulo(container, 'Fechados')).toEqual(['Fechados', '2', 'ressarcidos ou recusados']);
   });
 
@@ -608,7 +608,7 @@ describe('AdiantamentosPage: ressarcir', () => {
 
     expect(folhasComTexto(container, 'Ninguém esperando dinheiro de volta')).toHaveLength(1);
     expect(folhasComTexto(container, 'Todo adiantamento autorizado já foi ressarcido.')).toHaveLength(1);
-    expect(blocoDoRotulo(container, 'A ressarcir')).toEqual(['A ressarcir', '0,00', 'nada pendente']);
+    expect(blocoDoRotulo(container, 'A ressarcir')).toEqual(['A ressarcir', 'R$ 0,00', 'nada pendente']);
   });
 
   it('a ressarcir só com despesa de hoje — o resumo mostra o valor e diz que o mais antigo é de hoje', async () => {
@@ -619,7 +619,7 @@ describe('AdiantamentosPage: ressarcir', () => {
     await autorizarComoMadrinha(container, ['Aguardando sua autorização', 'Paty Munay', 'tinta']);
 
     expect(textosDasLinhas(container, 'A ressarcir')).toHaveLength(1);
-    expect(blocoDoRotulo(container, 'A ressarcir')).toEqual(['A ressarcir', '100,00', 'o mais antigo é de hoje']);
+    expect(blocoDoRotulo(container, 'A ressarcir')).toEqual(['A ressarcir', 'R$ 100,00', 'o mais antigo é de hoje']);
   });
 
   it('Voltar — fecha o formulário da linha e não ressarce', async () => {
@@ -791,7 +791,7 @@ describe('AdiantamentosPage: novo adiantamento', () => {
       'Paty Munay',
       'Aguardando autorização',
       'lâmpadas do corredor · 01/09/2026 · Cartão Itaú Paty',
-      '250,50',
+      'R$ 250,50',
     ]);
     expect(textosDasLinhas(container, 'Aguardando sua autorização')).toHaveLength(3);
   });
@@ -802,7 +802,7 @@ describe('AdiantamentosPage: novo adiantamento', () => {
     await registrarNovoAdiantamento(container, '250,5', 'lâmpadas do corredor');
 
     expect(recadoMostrado(container)).toBe('Adiantamento registrado. Aguarda autorização de um padrinho ou madrinha.');
-    expect(blocoDoRotulo(container, 'Aguardando autorização')).toEqual(['Aguardando autorização', '3', '1.748,17']);
+    expect(blocoDoRotulo(container, 'Aguardando autorização')).toEqual(['Aguardando autorização', '3', 'R$ 1.748,17']);
     expect(folhasComTexto(container, 'Novo adiantamento')).toHaveLength(0);
   });
 
@@ -887,8 +887,8 @@ describe('AdiantamentosPage em campo', () => {
   it('resumo e listas — trazem os mesmos valores do escritório', async () => {
     const { container } = await montar(<AdiantamentosPage />);
 
-    expect(blocoDoRotulo(container, 'Aguardando autorização')).toEqual(['Aguardando autorização', '2', '1.497,67']);
-    expect(blocoDoRotulo(container, 'A ressarcir')).toEqual(['A ressarcir', '1.969,26', 'o mais antigo há 53 dias']);
+    expect(blocoDoRotulo(container, 'Aguardando autorização')).toEqual(['Aguardando autorização', '2', 'R$ 1.497,67']);
+    expect(blocoDoRotulo(container, 'A ressarcir')).toEqual(['A ressarcir', 'R$ 1.969,26', 'o mais antigo há 53 dias']);
     expect(textosDasLinhas(container, 'A ressarcir')).toHaveLength(2);
     expect(textosDasLinhas(container, 'Fechados')).toHaveLength(1);
   });
