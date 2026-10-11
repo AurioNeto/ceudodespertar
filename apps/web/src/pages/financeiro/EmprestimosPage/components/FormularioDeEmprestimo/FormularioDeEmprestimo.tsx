@@ -1,4 +1,5 @@
 import { Button, Select, SeletorDeTipo, TextField, type Density } from '@/ds';
+import { CartaoDeFormulario } from '@/pages/financeiro/components/CartaoDeFormulario';
 import { MENSAGEM_DE_DATA_VAZIA } from '@/pages/financeiro/constantes';
 import { contasDeEmprestimo, contrapartesConhecidas } from '../../mocks/emprestimos';
 import type { ValoresDoNovo } from '../../utils/montarEmprestimo';
@@ -26,20 +27,7 @@ export function FormularioDeEmprestimo({
   const concedido = valores.direcao === 'CONCEDIDO';
 
   return (
-    <div
-      style={{
-        background: 'var(--bg-card)',
-        border: '1px solid var(--color-royal-border)',
-        borderLeft: 'var(--edge-state) solid var(--color-royal)',
-        borderRadius: 'var(--radius)',
-        padding: campo ? '15px 16px' : '18px 20px',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 15,
-      }}
-    >
-      <span style={{ font: 'var(--text-title-sm)', color: 'var(--text-title)' }}>Novo empréstimo</span>
-
+    <CartaoDeFormulario titulo="Novo empréstimo" densidade={densidade}>
       <SeletorDeTipo
         opcoes={[
           { valor: 'CONCEDIDO', label: 'A casa empresta' },
@@ -105,6 +93,6 @@ export function FormularioDeEmprestimo({
             : 'Grava uma transferência de entrada. Não entra como receita no mês.'}
         </span>
       </div>
-    </div>
+    </CartaoDeFormulario>
   );
 }

@@ -1,5 +1,6 @@
 import type { ItemNaFila } from '@cdd/contracts';
 import { Button, Icon, PainelDeAcao, StatusBadge, type IconName } from '@/ds';
+import { ROTULO_DO_VALOR } from '@/pages/financeiro/lancamentos/constantes';
 import { formatarData } from '@/pages/utils/formato';
 import { CONFIANCA, ORIGENS } from '../../constantes';
 import { CampoDeTexto } from './components/CampoDeTexto';
@@ -69,7 +70,7 @@ export function PainelDeRevisao({ item, campo, onFechar, onAprovar, onDevolver }
         ) : null}
 
         <CampoDeTexto
-          rotulo={ehTransferencia ? 'Quanto transferiu' : ehEntrada ? 'Quanto entrou' : 'Quanto foi'}
+          rotulo={ROTULO_DO_VALOR[item.tipo]}
           valor={valorTexto}
           onMudar={alterarValor}
         />

@@ -1,4 +1,5 @@
 import { Button, Rotulo, Select, type Density } from '@/ds';
+import { ChipDeFiltro } from '@/pages/financeiro/lancamentos/components/ChipDeFiltro';
 import { CHIPS_TIPO, OPCOES_GRUPO, OPCOES_PERIODO, OPCOES_STATUS, OPCOES_TIPO } from '../../constantes';
 
 export interface FiltrosDoLivroProps {
@@ -13,29 +14,16 @@ export function FiltrosDoLivro({ filtros, densidade, onFiltrar, onLimpar }: Filt
 
   return campo ? (
     <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-      {CHIPS_TIPO.map((c) => {
-        const on = filtros.tipo === c.value;
-        return (
-          <button
-            key={c.value}
-            type="button"
-            onClick={() => onFiltrar('tipo', c.value)}
-            aria-pressed={on}
-            style={{
-              font: 'var(--text-small)',
-              padding: '9px 13px',
-              minHeight: 40,
-              borderRadius: 'var(--radius-pill)',
-              cursor: 'pointer',
-              border: `1px solid ${on ? 'var(--color-royal-border)' : 'var(--color-line)'}`,
-              background: on ? 'var(--color-royal-soft)' : 'var(--bg-card)',
-              color: on ? 'var(--color-royal-deep)' : 'var(--text-secondary)',
-            }}
-          >
-            {c.label}
-          </button>
-        );
-      })}
+      {CHIPS_TIPO.map((c) => (
+        <ChipDeFiltro
+          key={c.value}
+          ativo={filtros.tipo === c.value}
+          tamanho="amplo"
+          onEscolher={() => onFiltrar('tipo', c.value)}
+        >
+          {c.label}
+        </ChipDeFiltro>
+      ))}
     </div>
   ) : (
     <div

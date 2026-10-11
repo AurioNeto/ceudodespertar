@@ -1,4 +1,5 @@
 import { Button, Rotulo, Select, TextField, type Density } from '@/ds';
+import { CartaoDeFormulario } from '@/pages/financeiro/components/CartaoDeFormulario';
 import { MENSAGEM_DE_DATA_VAZIA } from '@/pages/financeiro/constantes';
 import { quemAdianta } from '../../mocks/adiantamentos';
 import type { DadosDoNovo } from '../../utils/montarAdiantamento';
@@ -15,20 +16,7 @@ export function FormularioDeAdiantamento({ densidade, onConfirmar, onCancelar }:
   const formulario = useFormularioDeAdiantamento(onConfirmar);
 
   return (
-    <div
-      style={{
-        background: 'var(--bg-card)',
-        border: '1px solid var(--color-royal-border)',
-        borderLeft: 'var(--edge-state) solid var(--color-royal)',
-        borderRadius: 'var(--radius)',
-        padding: campo ? '15px 16px' : '18px 20px',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 15,
-      }}
-    >
-      <span style={{ font: 'var(--text-title-sm)', color: 'var(--text-title)' }}>Novo adiantamento</span>
-
+    <CartaoDeFormulario titulo="Novo adiantamento" densidade={densidade}>
       <div style={{ display: 'grid', gridTemplateColumns: campo ? 'minmax(0,1fr)' : 'repeat(2, minmax(0,1fr))', gap: 14 }}>
         <Select
           label="Quem adiantou"
@@ -91,6 +79,6 @@ export function FormularioDeAdiantamento({ densidade, onConfirmar, onCancelar }:
           Depois de registrado, precisa da autorização de um padrinho ou madrinha para entrar na fila de reembolso.
         </span>
       </div>
-    </div>
+    </CartaoDeFormulario>
   );
 }

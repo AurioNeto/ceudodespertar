@@ -174,7 +174,7 @@ describe('useFormularioDeLancamento: o que cada tipo mostra e como se chama', ()
         temCerimonia: false,
         temContraparte: false,
         temReembolso: false,
-        labelValor: 'Quanto transferir',
+        labelValor: 'Quanto transferiu',
         labelDescricao: 'Motivo da transferência',
         placeholderDescricao: 'repasse do caixa da lojinha para o Cora',
         labelData: 'Data da transferência',
