@@ -1,5 +1,6 @@
 import { Button, Cartao, type Density } from '@/ds';
 import { formatarBRL, pluralizar } from '@/pages/utils/formato';
+import { totalComContribuicaoACombinar } from '../../../utils/totalComContribuicaoACombinar';
 
 export interface FechamentoProps {
   densidade: Density;
@@ -39,7 +40,20 @@ export function Fechamento({
         </div>
       ) : semValor ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-          <span style={{ font: 'var(--text-amount-lg)', color: 'var(--text-secondary)' }}>A combinar</span>
+          {total > 0 ? (
+            <>
+              <span data-numeric style={{ font: 'var(--text-amount-lg)', color: 'var(--color-royal-deep)' }}>
+                {totalComContribuicaoACombinar(total)}
+              </span>
+              <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>
+                Contribuição a combinar
+                {custoHospedagem > 0 ? ` · ${formatarBRL(custoHospedagem)} de acomodação` : ''}
+                {custoRefeicoes > 0 ? ` · ${formatarBRL(custoRefeicoes)} de alimentação` : ''}
+              </span>
+            </>
+          ) : (
+            <span style={{ font: 'var(--text-amount-lg)', color: 'var(--text-secondary)' }}>A combinar</span>
+          )}
           <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)', maxWidth: '72ch' }}>
             A inscrição pode existir antes da conversa sobre valor — e “a combinar” é mais honesto do que R$ 0,00, que
             diria que a pessoa não deve nada.

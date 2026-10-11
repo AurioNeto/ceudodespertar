@@ -1040,14 +1040,15 @@ describe('InscricaoPublicaPage: participação, valor e total', () => {
     expect(folhaComTexto(container, 'span', 'A combinar')).toBeDefined();
   });
 
-  it('hospedagem paga com o campo de valor em branco — o total fica A combinar e a acomodação só aparece na linha da hospedagem', async () => {
+  it('hospedagem paga com o campo de valor em branco — o total mostra R$ 90,00 + a combinar e a acomodação entra no resumo', async () => {
     const container = await chegarEmParticipacaoComoHelena();
 
     await escolherHospedagem(container, 'Quarto');
 
-    expect(folhaComTexto(container, 'span', 'A combinar')).toBeDefined();
+    expect(folhaComTexto(container, 'span', 'R$ 90,00 + a combinar')).toBeDefined();
+    expect(folhaComTexto(container, 'span', 'Contribuição a combinar · R$ 90,00 de acomodação')).toBeDefined();
     expect(textoDe(container)).toContain('1 diária · R$ 90,00 de acomodação, à parte da contribuição.');
-    expect(textoDe(container)).not.toContain('de contribuição');
+    expect(textoDe(container)).not.toContain('A combinar');
   });
 });
 
@@ -1159,14 +1160,14 @@ describe('InscricaoPublicaPage: inscrição enviada', () => {
     expect(folhaComTexto(container, 'span', 'R$ 210,00 combinados.')).toBeDefined();
   });
 
-  it('enviar com hospedagem paga e sem valor digitado — o resumo diz a combinar e não cita a acomodação', async () => {
+  it('enviar com hospedagem paga e sem valor digitado — o resumo diz R$ 90,00 + a combinar com a recepção', async () => {
     const container = await chegarEmParticipacaoComoHelena();
     await escolherHospedagem(container, 'Quarto');
 
     await clicar(botaoDeEnviar(container));
 
-    expect(folhaComTexto(container, 'span', 'Valor a combinar com a recepção.')).toBeDefined();
-    expect(textoDe(container)).not.toContain('R$ 90,00');
+    expect(folhaComTexto(container, 'span', 'R$ 90,00 + a combinar com a recepção.')).toBeDefined();
+    expect(textoDe(container)).not.toContain('Valor a combinar');
   });
 
   it('quem já participou — não recebe o aviso da conversa de primeira vez', async () => {

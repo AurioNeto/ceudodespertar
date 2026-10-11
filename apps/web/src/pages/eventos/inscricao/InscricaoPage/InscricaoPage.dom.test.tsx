@@ -1444,24 +1444,26 @@ describe('InscricaoPage: valor devido na tela', () => {
     expect(folhaComTexto(container, 'span', 'R$ -50,00')).toBeDefined();
   });
 
-  it('hospedagem paga com o campo de valor em branco — o total fica A combinar e a acomodação não entra no resumo', async () => {
+  it('hospedagem paga com o campo de valor em branco — o total mostra R$ 90,00 + a combinar e a acomodação entra no resumo', async () => {
     const container = await abrirComPessoa('Helena Duarte');
 
     await escolherHospedagem(container, 'Quarto');
 
-    expect(folhaComTexto(container, 'span', 'A combinar')).toBeDefined();
+    expect(folhaComTexto(container, 'span', 'R$ 90,00 + a combinar')).toBeDefined();
+    expect(folhaComTexto(container, 'span', 'Contribuição a combinar · R$ 90,00 de acomodação')).toBeDefined();
     expect(textoDe(container)).toContain('R$ 90,00 de acomodação, à parte da contribuição.');
-    expect(todos(container, 'span').some((resumo) => resumo.textContent?.includes('de contribuição'))).toBe(false);
+    expect(textoDe(container)).not.toContain('A combinar');
   });
 
-  it('refeição marcada com o campo de valor em branco — o total fica A combinar e a alimentação não entra no resumo', async () => {
+  it('refeição marcada com o campo de valor em branco — o total mostra R$ 35,00 + a combinar e a alimentação entra no resumo', async () => {
     const container = await abrirComPessoa('Helena Duarte');
     await trocarEvento(container, JORNADA);
 
     await clicar(opcaoEmLinha(container, 'Almoço'));
 
-    expect(folhaComTexto(container, 'span', 'A combinar')).toBeDefined();
-    expect(textoDe(container)).not.toContain('de alimentação');
+    expect(folhaComTexto(container, 'span', 'R$ 35,00 + a combinar')).toBeDefined();
+    expect(folhaComTexto(container, 'span', 'Contribuição a combinar · R$ 35,00 de alimentação')).toBeDefined();
+    expect(textoDe(container)).not.toContain('A combinar');
   });
 
   it('equipe — o fechamento mostra Isento e não há valor devido, mesmo com valor digitado antes', async () => {

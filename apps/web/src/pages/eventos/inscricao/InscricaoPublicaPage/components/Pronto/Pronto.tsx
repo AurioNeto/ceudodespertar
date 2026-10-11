@@ -1,6 +1,7 @@
 import { Cartao, Icon, Rotulo, type Density } from '@/ds';
 import { formatarBRL } from '@/pages/utils/formato';
 import { eventoDoLink } from '../../../mocks/linkDaCerimonia';
+import { totalComContribuicaoACombinar } from '../../../utils/totalComContribuicaoACombinar';
 import { Passos } from '../Passos';
 
 export interface ProntoProps {
@@ -27,7 +28,11 @@ export function Pronto({ densidade, nome, primeiraVez, pontos, total, semValor }
           </span>
         </div>
         <span style={{ font: 'var(--text-body)', color: 'var(--text-secondary)' }}>
-          {semValor ? 'Valor a combinar com a recepção.' : `${formatarBRL(total)} combinados.`}
+          {semValor
+            ? total > 0
+              ? `${totalComContribuicaoACombinar(total)} com a recepção.`
+              : 'Valor a combinar com a recepção.'
+            : `${formatarBRL(total)} combinados.`}
         </span>
       </Cartao>
 
