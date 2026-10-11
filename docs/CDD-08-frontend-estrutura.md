@@ -429,7 +429,7 @@ Fluxo só existe com compartilhamento exclusivo entre telas do mesmo módulo. Fl
 | Fronteiras e estrutura | `apps/web/test/estrutural/fronteiras.test.ts` | estrutural (node), criado na etapa de fronteiras no depcruise |
 
 - Os projetos são escolhidos pelo sufixo, em `apps/web/vitest.config.ts`: `logica` roda `src/**/*.test.ts` em node, exceto `*.dom.test.ts`; `dom` roda `src/**/*.test.tsx` e `src/**/*.dom.test.ts` em jsdom. Mudar arquivo de pasta não muda o projeto.
-- Toda unidade nova tem teste. Durante a migração, unidade sem teste é aviso do `conferir-estrutura.mjs` (seção 12.4); ao fim dela, erro.
+- Toda unidade nova tem teste. Durante a migração, unidade sem teste é aviso do `conferir-estrutura.mjs` (seção 12.4); ao fim dela, erro. Enquanto a refatoração durar, as etapas não escrevem teste novo (decisão do dono de 10/10, seção 13.7); a cobertura das unidades novas fica para depois dela.
 
 ### 8.2 Apoio de teste
 
