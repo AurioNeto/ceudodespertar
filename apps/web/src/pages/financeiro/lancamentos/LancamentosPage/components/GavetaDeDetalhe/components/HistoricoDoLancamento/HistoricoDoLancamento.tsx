@@ -1,4 +1,4 @@
-import { rotuloLabel } from '../../../../constantes';
+import { Rotulo } from '@/ds';
 import type { EntradaDoHistorico } from '../../utils/historicoDoLancamento';
 
 export interface HistoricoDoLancamentoProps {
@@ -18,7 +18,7 @@ export function HistoricoDoLancamento({ historico }: HistoricoDoLancamentoProps)
         gap: 10,
       }}
     >
-      <span style={rotuloLabel}>Histórico</span>
+      <Rotulo>Histórico</Rotulo>
       {historico.map((h) => (
         <div key={h.texto} style={{ display: 'flex', gap: 10, alignItems: 'baseline' }}>
           <span

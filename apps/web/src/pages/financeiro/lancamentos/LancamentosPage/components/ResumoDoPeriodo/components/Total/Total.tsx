@@ -1,4 +1,5 @@
-import { rotuloLabel, valorTabular } from '../../../../constantes';
+import { Rotulo } from '@/ds';
+import { valorTabular } from '../../../../constantes';
 
 export interface TotalProps {
   rotulo: string;
@@ -9,7 +10,7 @@ export interface TotalProps {
 export function Total({ rotulo, valor, cor }: TotalProps) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-      <span style={rotuloLabel}>{rotulo}</span>
+      <Rotulo>{rotulo}</Rotulo>
       <span style={{ ...valorTabular, color: cor }}>{valor}</span>
     </div>
   );
