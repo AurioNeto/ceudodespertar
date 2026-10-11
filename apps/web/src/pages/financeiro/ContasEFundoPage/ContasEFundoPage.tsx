@@ -1,4 +1,4 @@
-import { Button, ScreenHeader, useDensidade, SeletorDeTipo } from '@/ds';
+import { Button, CorpoDaTela, ScreenHeader, useDensidade, SeletorDeTipo } from '@/ds';
 import { pluralizar } from '@/pages/utils/formato';
 import { GerenciarContasModal } from './components/GerenciarContasModal';
 import { ResumoDoSaldo } from './components/ResumoDoSaldo';
@@ -24,15 +24,7 @@ export function ContasEFundoPage() {
         density={densidade}
       />
 
-      <div
-        style={{
-          padding: campo ? '14px 16px 22px' : '18px 24px 26px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: campo ? 14 : 20,
-          maxWidth: campo ? undefined : 1000,
-        }}
-      >
+      <CorpoDaTela densidade={densidade} larguraMaxima={1000}>
         <ResumoDoSaldo
           contasAtivas={tela.contasAtivas}
           emBanco={tela.emBanco}
@@ -97,7 +89,7 @@ export function ContasEFundoPage() {
             densidade={densidade}
           />
         ) : null}
-      </div>
+      </CorpoDaTela>
 
       {tela.gerenciando ? (
         <GerenciarContasModal

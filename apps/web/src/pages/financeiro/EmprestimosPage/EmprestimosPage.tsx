@@ -1,4 +1,4 @@
-import { Button, EmptyState, ScreenHeader, useDensidade, SeletorDeTipo, Cartao, Numero, Recado } from '@/ds';
+import { Button, CorpoDaTela, EmptyState, ScreenHeader, useDensidade, SeletorDeTipo, Cartao, Numero, Recado } from '@/ds';
 import { formatarBRL } from '@/pages/utils/formato';
 import { FormularioDeEmprestimo } from './components/FormularioDeEmprestimo';
 import { LinhaDoEmprestimo } from './components/LinhaDoEmprestimo';
@@ -24,16 +24,7 @@ export function EmprestimosPage() {
         }
       />
 
-      <div
-        style={{
-          padding: campo ? '14px 16px 24px' : '18px 24px 30px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: campo ? 14 : 18,
-          maxWidth: campo ? undefined : 1180,
-          minWidth: 0,
-        }}
-      >
+      <CorpoDaTela densidade={densidade} larguraMaxima={1180}>
         <Cartao campo={campo}>
           <div
             style={{
@@ -135,7 +126,7 @@ export function EmprestimosPage() {
             ) : null}
           </div>
         )}
-      </div>
+      </CorpoDaTela>
     </>
   );
 }

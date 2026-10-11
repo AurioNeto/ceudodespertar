@@ -1,4 +1,4 @@
-import { EmptyState, ScreenHeader, useDensidade, Recado, Rotulo } from '@/ds';
+import { CorpoDaTela, EmptyState, ScreenHeader, useDensidade, Recado, Rotulo } from '@/ds';
 import { CartaoDoTopo } from './components/CartaoDoTopo';
 import { DetalheDaFatura } from './components/DetalheDaFatura';
 import { LinhaDaFatura } from './components/LinhaDaFatura';
@@ -18,16 +18,7 @@ export function FaturasPage() {
         density={densidade}
       />
 
-      <div
-        style={{
-          padding: campo ? '14px 16px 24px' : '18px 24px 30px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: campo ? 14 : 18,
-          maxWidth: campo ? undefined : 1180,
-          minWidth: 0,
-        }}
-      >
+      <CorpoDaTela densidade={densidade} larguraMaxima={1180}>
         <div style={{ display: 'grid', gridTemplateColumns: campo ? 'minmax(0,1fr)' : 'repeat(2, minmax(0,1fr))', gap: 12 }}>
           {tela.cartoes.map((c) => (
             <CartaoDoTopo
@@ -85,7 +76,7 @@ export function FaturasPage() {
             />
           )}
         </div>
-      </div>
+      </CorpoDaTela>
     </>
   );
 }

@@ -1,4 +1,4 @@
-import { Button, ScreenHeader, useDensidade, Cartao, Numero, Recado, Rotulo } from '@/ds';
+import { Button, CorpoDaTela, ScreenHeader, useDensidade, Cartao, Numero, Recado, Rotulo } from '@/ds';
 import { formatarBRL, pluralizar } from '@/pages/utils/formato';
 import { BlocoAusente } from './components/BlocoAusente';
 import { FilaDeAutorizacao } from './components/FilaDeAutorizacao';
@@ -29,16 +29,7 @@ export function AdiantamentosPage() {
         }
       />
 
-      <div
-        style={{
-          padding: campo ? '14px 16px 24px' : '18px 24px 30px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: campo ? 14 : 18,
-          maxWidth: campo ? undefined : 1080,
-          minWidth: 0,
-        }}
-      >
+      <CorpoDaTela densidade={densidade} larguraMaxima={1080}>
         <SeletorDePerspectiva atual={tela.quem} onTrocar={tela.trocarPerspectiva} densidade={densidade} />
 
         <Cartao campo={campo}>
@@ -127,7 +118,7 @@ export function AdiantamentosPage() {
             ))}
           </section>
         ) : null}
-      </div>
+      </CorpoDaTela>
     </>
   );
 }
