@@ -1,12 +1,12 @@
 import { BotaoDeIcone, Icon } from '@/ds';
+import { useCarrossel } from '@/pages/hooks/useCarrossel';
 import { ESTILO_DA_SETA, PAINEIS } from './constantes';
 import { GraficoResultado } from './components/GraficoResultado';
 import { ResumoDaProxima } from './components/ResumoDaProxima';
 import { ResumoDaUltima } from './components/ResumoDaUltima';
-import { useCarrosselDeCerimonias } from './hooks/useCarrosselDeCerimonias';
 
 export function CarrosselDeCerimonias() {
-  const { slide, irPara } = useCarrosselDeCerimonias();
+  const { atual: slide, irPara } = useCarrossel(PAINEIS.length);
 
   return (
     <div
