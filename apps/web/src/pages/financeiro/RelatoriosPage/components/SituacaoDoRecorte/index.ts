@@ -1,0 +1,1 @@
+export { SituacaoDoRecorte } from './SituacaoDoRecorte';
