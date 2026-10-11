@@ -1,5 +1,6 @@
+import { reais } from '@cdd/contracts';
 import { Icon, StatusBadge } from '@/ds';
-import { formatarValor } from '@/lib/formato';
+import { formatarBRL } from '@/pages/utils/formato';
 import type { ParticipanteDoTrabalho } from '../../../../tipos';
 import { Bloco } from '../Bloco';
 import { TEXTO_DA_ANAMNESE, TOM_DA_ANAMNESE } from './constantes';
@@ -68,7 +69,7 @@ export function ListaDeParticipantes({
                   color: 'var(--text-primary)',
                 }}
               >
-                {formatarValor(p.contribuicao)}
+                {formatarBRL(reais(p.contribuicao))}
               </span>
             ) : null}
           </button>

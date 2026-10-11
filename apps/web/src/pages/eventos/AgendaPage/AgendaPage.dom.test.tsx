@@ -470,8 +470,8 @@ describe('AgendaPage: duplicar e cancelar', () => {
 
     await clicar(botaoComTexto(container, 'Duplicar'));
 
-    expect(textoDoNumero(container, 'Custo lançado')).toBe('Custo lançado0,00');
-    expect(textoDoNumero(container, 'Contribuições recebidas')).toBe('Contribuições recebidas0,00');
+    expect(textoDoNumero(container, 'Custo lançado')).toBe('Custo lançadoR$ 0,00');
+    expect(textoDoNumero(container, 'Contribuições recebidas')).toBe('Contribuições recebidasR$ 0,00');
   });
 
   it('duplicar a cerimônia realizada de agosto — a original segue Realizada, com o custo lançado e as contribuições que tinha', async () => {
@@ -485,8 +485,8 @@ describe('AgendaPage: duplicar e cancelar', () => {
 
     expect(container.textContent).toContain('22/08 · Mãe Divina');
     expect(container.textContent).toContain('Realizada');
-    expect(textoDoNumero(container, 'Custo lançado')).toBe('Custo lançado1.288,40');
-    expect(textoDoNumero(container, 'Contribuições recebidas')).toBe('Contribuições recebidas940,00');
+    expect(textoDoNumero(container, 'Custo lançado')).toBe('Custo lançadoR$ 1.288,40');
+    expect(textoDoNumero(container, 'Contribuições recebidas')).toBe('Contribuições recebidasR$ 940,00');
   });
 
   it('duplicar — a cópia fica na mesma data da original: o calendário mostra dois chips no dia 5', async () => {
@@ -709,8 +709,8 @@ describe('AgendaPage: nova cerimônia', () => {
   });
 
   it.each([
-    { digitado: '40, 60, 90', numero: 'Contribuição40 · 60 · 90opções sugeridas' },
-    { digitado: '40', numero: 'Contribuição40sem contribuição' },
+    { digitado: '40, 60, 90', numero: 'ContribuiçãoR$ 40 · R$ 60 · R$ 90opções sugeridas' },
+    { digitado: '40', numero: 'ContribuiçãoR$ 40sem contribuição' },
     { digitado: '', numero: 'Contribuição—sem contribuição' },
   ])('contribuições digitadas como "$digitado" — o detalhe mostra $numero', async ({ digitado, numero }) => {
     const { container } = await montar(<AgendaPage />);
@@ -902,7 +902,7 @@ describe('AgendaPage: editar', () => {
     await clicar(botaoComTexto(formularioAberto(container), 'Salvar cerimônia'));
 
     expect(formularioAberto(container).textContent).toContain('Use só valores inteiros em reais, separados por vírgula e espaço: 40, 60, 90.');
-    expect(textoDoNumero(container, 'Contribuição')).toBe('Contribuição40 · 60 · 90opções sugeridas');
+    expect(textoDoNumero(container, 'Contribuição')).toBe('ContribuiçãoR$ 40 · R$ 60 · R$ 90opções sugeridas');
   });
 
   it('editar as tarefas — a marcação de pronto fica na posição, não na tarefa: trocar a ordem passa a marcação para outra', async () => {

@@ -182,10 +182,10 @@ describe('DetalheDoTrabalho: números', () => {
 
   it.each([
     { contribuicoes: [] as number[], numero: 'Contribuição—sem contribuição' },
-    { contribuicoes: [40], numero: 'Contribuição40sem contribuição' },
-    { contribuicoes: [40, 60, 90], numero: 'Contribuição40 · 60 · 90opções sugeridas' },
-    { contribuicoes: [1200, 80], numero: 'Contribuição1.200 · 80opções sugeridas' },
-    { contribuicoes: [45.5, 60], numero: 'Contribuição45,50 · 60opções sugeridas' },
+    { contribuicoes: [40], numero: 'ContribuiçãoR$ 40sem contribuição' },
+    { contribuicoes: [40, 60, 90], numero: 'ContribuiçãoR$ 40 · R$ 60 · R$ 90opções sugeridas' },
+    { contribuicoes: [1200, 80], numero: 'ContribuiçãoR$ 1.200 · R$ 80opções sugeridas' },
+    { contribuicoes: [45.5, 60], numero: 'ContribuiçãoR$ 45,50 · R$ 60opções sugeridas' },
   ])('contribuições $contribuicoes — o número mostra $numero', async ({ contribuicoes, numero }) => {
     const { container } = await montarDetalhe({ trabalho: umTrabalho({ contribuicoes }) });
 
@@ -398,7 +398,7 @@ describe('DetalheDoTrabalho: anamnese e participantes', () => {
       'Sofia Camargo— uso de medicação contínuaTobias Monteiro— histórico de crise de ansiedadeSérgio Bittencourt— cirurgia cardíaca em 2023',
     );
     expect(container.textContent).toContain('Participantes61 confirmados · 4 em espera · 12 visitantes · mostrando 12 de 65');
-    expect(textoDoNumero(container, 'Contribuições esperadas')).toBe('Contribuições esperadas3.690,00');
+    expect(textoDoNumero(container, 'Contribuições esperadas')).toBe('Contribuições esperadasR$ 3.690,00');
   });
 
   it('nota dos participantes — conta confirmados, em espera e visitantes, sem o aviso de corte até 12', async () => {
@@ -433,7 +433,7 @@ describe('DetalheDoTrabalho: anamnese e participantes', () => {
     const { container } = await montarDetalhe({ trabalho: umTrabalho({ id: 9, confirmados: 1, contribuicoes: [60] }) });
 
     expect(linhasDeParticipantes(container)[0]!.textContent).toBe(
-      'Eduardo Munayfardado desde 2008Anamnese em diaConfirmado60,00',
+      'Eduardo Munayfardado desde 2008Anamnese em diaConfirmadoR$ 60,00',
     );
   });
 
@@ -466,14 +466,14 @@ describe('DetalheDoTrabalho: anamnese e participantes', () => {
 });
 
 describe('DetalheDoTrabalho: dinheiro e observações', () => {
-  it('dinheiro da cerimônia — custo previsto, custo lançado e recebido formatados sem símbolo de moeda', async () => {
+  it('dinheiro da cerimônia — custo previsto, custo lançado e recebido formatados com R$', async () => {
     const { container } = await montarDetalhe({
       trabalho: umTrabalho({ previstoGasto: 1400, realizadoGasto: 187.4, arrecadado: 940 }),
     });
 
-    expect(textoDoNumero(container, 'Custo previsto')).toBe('Custo previsto1.400,00');
-    expect(textoDoNumero(container, 'Custo lançado')).toBe('Custo lançado187,40');
-    expect(textoDoNumero(container, 'Contribuições recebidas')).toBe('Contribuições recebidas940,00');
+    expect(textoDoNumero(container, 'Custo previsto')).toBe('Custo previstoR$ 1.400,00');
+    expect(textoDoNumero(container, 'Custo lançado')).toBe('Custo lançadoR$ 187,40');
+    expect(textoDoNumero(container, 'Contribuições recebidas')).toBe('Contribuições recebidasR$ 940,00');
   });
 
   it('contribuições esperadas — somam só as dos confirmados, sem as dos que estão em espera', async () => {
@@ -484,7 +484,7 @@ describe('DetalheDoTrabalho: dinheiro e observações', () => {
       linhas
         .filter((linha) => linha.textContent?.includes('Em espera') === aEspera)
         .reduce((soma, linha) => soma + Number((/(\d+),00$/.exec(linha.textContent ?? '') ?? [])[1] ?? 0), 0);
-    expect(textoDoNumero(container, 'Contribuições esperadas')).toBe('Contribuições esperadas610,00');
+    expect(textoDoNumero(container, 'Contribuições esperadas')).toBe('Contribuições esperadasR$ 610,00');
     expect(somaDasLinhas(false)).toBe(610);
     expect(somaDasLinhas(true)).toBeGreaterThan(0);
   });
@@ -492,7 +492,7 @@ describe('DetalheDoTrabalho: dinheiro e observações', () => {
   it('sem participantes — as contribuições esperadas ficam em 0,00', async () => {
     const { container } = await montarDetalhe();
 
-    expect(textoDoNumero(container, 'Contribuições esperadas')).toBe('Contribuições esperadas0,00');
+    expect(textoDoNumero(container, 'Contribuições esperadas')).toBe('Contribuições esperadasR$ 0,00');
   });
 
   it('observações — o bloco aparece com o texto quando existe', async () => {
