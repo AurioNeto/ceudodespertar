@@ -57,7 +57,7 @@ export function InscricaoPage() {
 
         <EscolhaDoEvento eventoId={tela.eventoId} onTrocar={tela.trocarEvento} densidade={densidade} />
 
-        <LinkDaCerimonia densidade={densidade} copiado={tela.linkCopiado} onCopiar={tela.copiarLink} />
+        <LinkDaCerimonia link={tela.link} densidade={densidade} copiado={tela.linkCopiado} onCopiar={tela.copiarLink} />
 
         {tela.pessoa === null ? (
           <BuscaDePessoa busca={tela.busca} onBusca={tela.buscar} onEscolher={tela.escolher} densidade={densidade} />
@@ -66,6 +66,7 @@ export function InscricaoPage() {
             <PessoaEscolhida pessoa={tela.pessoa} densidade={densidade} onTrocar={tela.trocarPessoa} />
 
             <ComoParticipa
+              pessoa={tela.pessoa}
               tipo={tela.tipo}
               responsavel={tela.responsavel}
               modalidade={tela.modalidade}

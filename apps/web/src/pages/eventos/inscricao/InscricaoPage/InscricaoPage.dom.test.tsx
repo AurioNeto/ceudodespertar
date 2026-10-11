@@ -180,22 +180,22 @@ describe('InscricaoPage: abertura e escolha do evento', () => {
     expect(botaoComTexto(container, 'Copiado').type).toBe('button');
   });
 
-  it('link da cerimônia copiado e evento trocado — o link continua Copiado', async () => {
+  it('link da cerimônia copiado e evento trocado — o link do evento novo volta a Copiar', async () => {
     const container = await abrir();
     await clicar(botaoComTexto(container, 'Copiar'));
 
     await trocarEvento(container, JORNADA);
 
-    expect(linkEstaCopiado(container)).toBe(true);
+    expect(linkEstaCopiado(container)).toBe(false);
   });
 
-  it('evento trocado para a Jornada — o cartão do link continua com o endereço e os números da Lua Cheia', async () => {
+  it('evento trocado para a Jornada — o cartão do link passa ao endereço e aos números da Jornada', async () => {
     const container = await abrir();
 
     await trocarEvento(container, JORNADA);
 
-    expect(folhaComTexto(container, 'code', 'ceudodespertar.org/i/lua-cheia-1209-7k3f')).toBeDefined();
-    expect(folhaComTexto(container, 'span', '96 aberturas · 34 inscrições')).toBeDefined();
+    expect(folhaComTexto(container, 'code', 'ceudodespertar.org/i/jornada-2410-q8m2')).toBeDefined();
+    expect(folhaComTexto(container, 'span', '61 aberturas · 14 inscrições')).toBeDefined();
     expect(folhaComTexto(container, 'span', '18 de 40 · 11 leitos livres')).toBeDefined();
   });
 
@@ -444,15 +444,20 @@ describe('InscricaoPage: ficha da pessoa escolhida', () => {
 
 describe('InscricaoPage: tipo de participação e consagração', () => {
   it.each([
-    { tipo: 'Participante', explicacao: 'Quem vem participar do trabalho. Contribui e faz anamnese.' },
-    { tipo: 'Convidado', explicacao: 'Convidado da casa ou de alguém da casa. Contribui e faz anamnese.' },
-    { tipo: 'Equipe', explicacao: 'Guardião, cuidadora, músico, cozinha. Não contribui — é isento, e isento não é zero.' },
+    { pessoa: 'Helena Duarte', tipo: 'Participante', explicacao: 'Quem vem participar do trabalho. Contribui e faz anamnese.' },
+    { pessoa: 'Helena Duarte', tipo: 'Convidado', explicacao: 'Convidado da casa ou de alguém da casa. Contribui e faz anamnese.' },
     {
+      pessoa: 'Helena Duarte',
+      tipo: 'Equipe',
+      explicacao: 'Guardião, cuidadora, músico, cozinha. Não contribui — é isento, e isento não é zero.',
+    },
+    {
+      pessoa: 'Antônio Duarte',
       tipo: 'Criança estelar',
       explicacao: 'Criança. Exige responsável, modalidade e autorização vigente para este trabalho.',
     },
-  ])('escolher $tipo — marca o botão e mostra a explicação do tipo', async ({ tipo, explicacao }) => {
-    const container = await abrirComPessoa('Helena Duarte');
+  ])('escolher $tipo — marca o botão e mostra a explicação do tipo', async ({ pessoa, tipo, explicacao }) => {
+    const container = await abrirComPessoa(pessoa);
 
     await trocarTipo(container, tipo);
 
@@ -461,12 +466,12 @@ describe('InscricaoPage: tipo de participação e consagração', () => {
   });
 
   it.each([
-    { tipo: 'Participante', consagra: 'true' },
-    { tipo: 'Convidado', consagra: 'true' },
-    { tipo: 'Equipe', consagra: 'true' },
-    { tipo: 'Criança estelar', consagra: 'false' },
-  ])('escolher $tipo — a consagração vai para $consagra, o padrão do tipo', async ({ tipo, consagra }) => {
-    const container = await abrirComPessoa('Helena Duarte');
+    { pessoa: 'Helena Duarte', tipo: 'Participante', consagra: 'true' },
+    { pessoa: 'Helena Duarte', tipo: 'Convidado', consagra: 'true' },
+    { pessoa: 'Helena Duarte', tipo: 'Equipe', consagra: 'true' },
+    { pessoa: 'Antônio Duarte', tipo: 'Criança estelar', consagra: 'false' },
+  ])('escolher $tipo — a consagração vai para $consagra, o padrão do tipo', async ({ pessoa, tipo, consagra }) => {
+    const container = await abrirComPessoa(pessoa);
     await clicar(interruptor(container, 'Consagra neste trabalho'));
 
     await trocarTipo(container, tipo);
@@ -579,15 +584,15 @@ describe('InscricaoPage: tipo de participação e consagração', () => {
     ]);
   });
 
-  it('Marina com a conversa registrada e depois como Convidado, evento trocado — o tipo e a conversa ficam', async () => {
+  it('Marina com a conversa registrada e depois como Convidado, evento trocado — o tipo e a conversa recomeçam', async () => {
     const container = await abrirComPessoa('Marina Tavares');
     await clicar(botaoComTexto(container, 'Registrar a conversa'));
     await trocarTipo(container, 'Convidado');
 
     await trocarEvento(container, JORNADA);
 
-    expect(marcado(botaoComTexto(container, 'Convidado'))).toBe(true);
-    expect(textoDe(container)).toContain('Conversa de acolhimento registrada.');
+    expect(marcado(botaoComTexto(container, 'Participante'))).toBe(true);
+    expect(textoDe(container)).toContain('Vai precisar da conversa de acolhimento antes de confirmar.');
   });
 
   it('link da cerimônia copiado, ida e volta pela equipe — o link continua Copiado', async () => {
@@ -701,7 +706,7 @@ describe('InscricaoPage: estado da anamnese', () => {
 });
 
 describe('InscricaoPage: criança estelar', () => {
-  it('Antônio — o seletor de responsável lista só os adultos do diretório, depois do convite a escolher', async () => {
+  it('Antônio — o seletor de responsável lista só quem o tem em responsavelDe, depois do convite a escolher', async () => {
     const container = await abrirComPessoa('Antônio Duarte');
 
     const opcoes = todos<HTMLOptionElement>(
@@ -709,14 +714,7 @@ describe('InscricaoPage: criança estelar', () => {
       'option',
     );
 
-    expect(opcoes.map((opcao) => opcao.textContent)).toEqual([
-      'Escolha quem responde por ela',
-      'Helena Duarte',
-      'Marina Tavares',
-      'Eduardo Pires',
-      'Sérgio Bittencourt',
-      'Bruna Camargo',
-    ]);
+    expect(opcoes.map((opcao) => opcao.textContent)).toEqual(['Escolha quem responde por ela', 'Helena Duarte']);
   });
 
   it('Antônio sem responsável — a pendência IN2 diz que criança não se inscreve sozinha', async () => {
@@ -734,24 +732,28 @@ describe('InscricaoPage: criança estelar', () => {
   });
 
   it.each([{ responsavel: 'Marina Tavares' }, { responsavel: 'Sérgio Bittencourt' }])(
-    'responsável $responsavel sem autorização vigente — abre a pendência de autorização por evento',
+    'responsável $responsavel sem a criança em responsavelDe — não é oferecido no seletor de responsável',
     async ({ responsavel }) => {
       const container = await abrirComPessoa('Antônio Duarte');
 
-      await escolherOpcao(campoRotulado<HTMLSelectElement>(container, 'Responsável neste trabalho'), responsavel);
+      const opcoes = todos<HTMLOptionElement>(seletorDeResponsavel(container), 'option');
 
-      expect(pendenciasMostradas(container)).toEqual([['Sem autorização vigente para este trabalho', 'IN2']]);
-      expect(textoDe(container)).toContain(
-        'A autorização é por evento — não existe autorizar para o ano. É colhida na chegada, com o responsável presente.',
-      );
+      expect(opcoes.map((opcao) => opcao.textContent)).not.toContain(responsavel);
     },
   );
 
-  it('autorização do responsável na Jornada — vale igual à da Lua Cheia: a pendência de autorização não olha o evento', async () => {
+  it('autorização do responsável na Jornada — a da Lua Cheia não vale: a autorização é por evento e a pendência de autorização abre', async () => {
     const container = await abrirComPessoa('Antônio Duarte');
     await escolherOpcao(campoRotulado<HTMLSelectElement>(container, 'Responsável neste trabalho'), 'Helena Duarte');
 
     await trocarEvento(container, JORNADA);
+
+    expect(pendenciasMostradas(container)).toEqual([['Sem autorização vigente para este trabalho', 'IN2']]);
+    expect(textoDe(container)).toContain(
+      'A autorização é por evento — não existe autorizar para o ano. É colhida na chegada, com o responsável presente.',
+    );
+
+    await trocarEvento(container, LUA_CHEIA);
 
     expect(pendenciasMostradas(container)).toEqual(SEM_PENDENCIA);
   });
@@ -787,14 +789,14 @@ describe('InscricaoPage: criança estelar', () => {
     expect(folhaComTexto(container, 'span', 'Não se aplica')).toBeDefined();
   });
 
-  it('modalidade Participa do ritual e evento trocado — a modalidade e a consagração ficam', async () => {
+  it('modalidade Participa do ritual e evento trocado — a modalidade e a consagração recomeçam', async () => {
     const container = await abrirComPessoa('Antônio Duarte');
     await clicar(botaoComTexto(container, 'Participa do ritual'));
 
     await trocarEvento(container, JORNADA);
 
-    expect(marcado(botaoComTexto(container, 'Participa do ritual'))).toBe(true);
-    expect(interruptor(container, 'Consagra neste trabalho').getAttribute('aria-checked')).toBe('true');
+    expect(marcado(botaoComTexto(container, 'Permanece sob supervisão'))).toBe(true);
+    expect(interruptor(container, 'Consagra neste trabalho').getAttribute('aria-checked')).toBe('false');
   });
 
   it('voltar a Criança estelar com o responsável e a modalidade Participa do ritual — a consagração volta ligada e o responsável continua escolhido', async () => {
@@ -837,42 +839,37 @@ describe('InscricaoPage: criança estelar', () => {
     expect(pendenciasMostradas(container)).toEqual([['Anamnese pendente', 'IN5']]);
   });
 
-  it('adulta com autorização marcada como Criança estelar, sem responsável — a pendência IN2 pede o responsável, como para o menino', async () => {
+  it('adulta com autorização — o seletor de tipo não oferece Criança estelar, só os três tipos de adulto', async () => {
     const container = await abrirComPessoa('Helena Duarte');
 
-    await trocarTipo(container, 'Criança estelar');
+    const tipos = todos<HTMLButtonElement>(container, 'button')
+      .map((botao) => botao.textContent)
+      .filter((texto) => ['Participante', 'Convidado', 'Equipe', 'Criança estelar'].includes(texto ?? ''));
 
-    expect(pendenciasMostradas(container)).toEqual([['Falta o responsável', 'IN2']]);
+    expect(tipos).toEqual(['Participante', 'Convidado', 'Equipe']);
   });
 
-  it('adulta com autorização marcada como Criança estelar e responsável sem autorização — nenhuma pendência: vale a autorização da própria pessoa', async () => {
+  it('adulta com autorização — sem o tipo Criança estelar não há seletor de responsável nem pendência de autorização', async () => {
     const container = await abrirComPessoa('Helena Duarte');
-    await trocarTipo(container, 'Criança estelar');
 
-    await escolherResponsavel(container, 'Marina Tavares');
-
+    expect(existeCampoRotulado(container, 'Responsável neste trabalho')).toBe(false);
     expect(pendenciasMostradas(container)).toEqual(SEM_PENDENCIA);
   });
 
-  it('Sérgio sem autorização marcado como Criança estelar — ele mesmo aparece entre os responsáveis e, escolhido, pede a autorização que lhe falta', async () => {
+  it('Sérgio sem autorização — o seletor de tipo também não oferece Criança estelar: quem decide é a idade, não a autorização', async () => {
     const container = await abrirComPessoa('Sérgio Bittencourt');
-    await trocarTipo(container, 'Criança estelar');
-    const opcoes = todos<HTMLOptionElement>(seletorDeResponsavel(container), 'option').map((opcao) => opcao.textContent);
 
-    await escolherResponsavel(container, 'Sérgio Bittencourt');
-
-    expect(opcoes).toContain('Sérgio Bittencourt');
-    expect(seletorDeResponsavel(container).value).toBe('Sérgio Bittencourt');
-    expect(pendenciasMostradas(container)).toEqual([['Sem autorização vigente para este trabalho', 'IN2']]);
+    expect(todos(container, 'button').some((botao) => botao.textContent === 'Criança estelar')).toBe(false);
   });
 
-  it('Sérgio sem autorização marcado como Criança estelar e Helena como responsável — a autorização da Helena basta', async () => {
+  it('Sérgio sem autorização — nenhum tipo de adulto abre a pendência de responsável nem a de autorização', async () => {
     const container = await abrirComPessoa('Sérgio Bittencourt');
-    await trocarTipo(container, 'Criança estelar');
 
-    await escolherResponsavel(container, 'Helena Duarte');
+    for (const tipo of ['Convidado', 'Equipe', 'Participante']) {
+      await trocarTipo(container, tipo);
 
-    expect(pendenciasMostradas(container)).toEqual(SEM_PENDENCIA);
+      expect(pendenciasMostradas(container)).toEqual(SEM_PENDENCIA);
+    }
   });
 });
 
@@ -1020,14 +1017,14 @@ describe('InscricaoPage: contribuição', () => {
     expect(pendenciasMostradas(container)).toEqual(SEM_PENDENCIA);
   });
 
-  it('trocar de evento com um nível marcado — o nível e o texto do campo ficam, e o valor do nível muda', async () => {
+  it('trocar de evento com um nível marcado — o nível e o valor do campo recomeçam, e os níveis passam a mostrar os valores da Jornada', async () => {
     const container = await abrirComPessoa('Helena Duarte');
     await clicarNoNivel(container, 'Sustentável');
 
     await trocarEvento(container, JORNADA);
 
-    expect(marcado(botaoDoNivel(container, 'Sustentável'))).toBe(true);
-    expect(campoDoValor(container).value).toBe('160,00');
+    expect(marcado(botaoDoNivel(container, 'Sustentável'))).toBe(false);
+    expect(campoDoValor(container).value).toBe('');
     expect(elemento(botaoDoNivel(container, 'Sustentável'), '[data-numeric]').textContent).toBe('R$ 360,00');
     expect(textoDe(container)).not.toContain('No nível sustentável.');
   });
@@ -1126,7 +1123,7 @@ describe('InscricaoPage: hospedagem e leito', () => {
     expect(textoDe(container)).toContain('R$ 270,00 de acomodação, à parte da contribuição.');
   });
 
-  it('diárias escolhidas para uma pessoa e outra pessoa escolhida em seguida — a segunda abre o beliche com as diárias da primeira', async () => {
+  it('diárias escolhidas para uma pessoa e outra pessoa escolhida em seguida — a segunda abre o beliche em 1 diária', async () => {
     const container = await abrirComPessoa('Helena Duarte');
     await escolherHospedagem(container, 'Beliche no dormitório');
     await escolherDiarias(container, '3');
@@ -1135,19 +1132,19 @@ describe('InscricaoPage: hospedagem e leito', () => {
 
     await escolherHospedagem(container, 'Beliche no dormitório');
 
-    expect(seletorDeDiarias(container).value).toBe('3');
-    expect(textoDe(container)).toContain('R$ 150,00 de acomodação, à parte da contribuição.');
+    expect(seletorDeDiarias(container).value).toBe('1');
+    expect(textoDe(container)).toContain('R$ 50,00 de acomodação, à parte da contribuição.');
   });
 
-  it('diárias escolhidas e evento trocado — a Jornada mantém as diárias e o custo da acomodação', async () => {
+  it('diárias escolhidas e evento trocado — a Jornada volta a 1 diária e ao custo de uma diária de acomodação', async () => {
     const container = await abrirComPessoa('Helena Duarte');
     await escolherHospedagem(container, 'Beliche no dormitório');
     await escolherDiarias(container, '3');
 
     await trocarEvento(container, JORNADA);
 
-    expect(seletorDeDiarias(container).value).toBe('3');
-    expect(textoDe(container)).toContain('R$ 150,00 de acomodação, à parte da contribuição.');
+    expect(seletorDeDiarias(container).value).toBe('1');
+    expect(textoDe(container)).toContain('R$ 50,00 de acomodação, à parte da contribuição.');
   });
 
   it('Beliche — abre a pendência IN9 com o rótulo em minúsculas e os leitos livres do evento', async () => {
@@ -1444,24 +1441,26 @@ describe('InscricaoPage: valor devido na tela', () => {
     expect(folhaComTexto(container, 'span', 'R$ -50,00')).toBeDefined();
   });
 
-  it('hospedagem paga com o campo de valor em branco — o total fica A combinar e a acomodação não entra no resumo', async () => {
+  it('hospedagem paga com o campo de valor em branco — o total mostra R$ 90,00 + a combinar e a acomodação entra no resumo', async () => {
     const container = await abrirComPessoa('Helena Duarte');
 
     await escolherHospedagem(container, 'Quarto');
 
-    expect(folhaComTexto(container, 'span', 'A combinar')).toBeDefined();
+    expect(folhaComTexto(container, 'span', 'R$ 90,00 + a combinar')).toBeDefined();
+    expect(folhaComTexto(container, 'span', 'Contribuição a combinar · R$ 90,00 de acomodação')).toBeDefined();
     expect(textoDe(container)).toContain('R$ 90,00 de acomodação, à parte da contribuição.');
-    expect(todos(container, 'span').some((resumo) => resumo.textContent?.includes('de contribuição'))).toBe(false);
+    expect(textoDe(container)).not.toContain('A combinar');
   });
 
-  it('refeição marcada com o campo de valor em branco — o total fica A combinar e a alimentação não entra no resumo', async () => {
+  it('refeição marcada com o campo de valor em branco — o total mostra R$ 35,00 + a combinar e a alimentação entra no resumo', async () => {
     const container = await abrirComPessoa('Helena Duarte');
     await trocarEvento(container, JORNADA);
 
     await clicar(opcaoEmLinha(container, 'Almoço'));
 
-    expect(folhaComTexto(container, 'span', 'A combinar')).toBeDefined();
-    expect(textoDe(container)).not.toContain('de alimentação');
+    expect(folhaComTexto(container, 'span', 'R$ 35,00 + a combinar')).toBeDefined();
+    expect(folhaComTexto(container, 'span', 'Contribuição a combinar · R$ 35,00 de alimentação')).toBeDefined();
+    expect(textoDe(container)).not.toContain('A combinar');
   });
 
   it('equipe — o fechamento mostra Isento e não há valor devido, mesmo com valor digitado antes', async () => {
@@ -1476,15 +1475,17 @@ describe('InscricaoPage: valor devido na tela', () => {
     expect(textoDe(container)).not.toContain('A combinar');
   });
 
-  it('equipe com quarto pago — o fechamento continua Isento e o custo da acomodação só aparece no bloco de hospedagem', async () => {
+  it('equipe com quarto pago — o fechamento mostra R$ 90,00 devidos, com a contribuição isenta e a acomodação detalhada', async () => {
     const container = await abrirComPessoa('Helena Duarte');
     await trocarTipo(container, 'Equipe');
 
     await escolherHospedagem(container, 'Quarto');
 
-    expect(folhaComTexto(container, 'span', 'não há valor devido')).toBeDefined();
+    expect(folhaComTexto(container, 'span', 'R$ 90,00')).toBeDefined();
+    expect(folhaComTexto(container, 'span', 'devidos')).toBeDefined();
+    expect(folhaComTexto(container, 'span', 'Isento de contribuição · R$ 90,00 de acomodação')).toBeDefined();
     expect(textoDe(container)).toContain('R$ 90,00 de acomodação, à parte da contribuição.');
-    expect(textoDe(container)).not.toContain('devidos');
+    expect(textoDe(container)).not.toContain('não há valor devido');
   });
 });
 
@@ -1575,7 +1576,7 @@ describe('InscricaoPage: confirmar e salvar como pendente', () => {
     );
   });
 
-  it('confirmar equipe — o recado diz isenta de contribuição e não cita valor, mesmo com acomodação paga', async () => {
+  it('confirmar equipe — o recado diz isenta de contribuição e traz o valor devido da acomodação paga', async () => {
     const container = await abrirComPessoa('Helena Duarte');
     await trocarTipo(container, 'Equipe');
     await escolherHospedagem(container, 'Quarto');
@@ -1584,7 +1585,7 @@ describe('InscricaoPage: confirmar e salvar como pendente', () => {
     await clicar(botaoDeConfirmar(container));
 
     expect(recadoMostrado(container)).toBe(
-      'Helena Duarte está confirmada no Trabalho de Lua Cheia de 12/09/2026. Isenta de contribuição. O pagamento se marca na recepção, no dia.',
+      'Helena Duarte está confirmada no Trabalho de Lua Cheia de 12/09/2026. Isenta de contribuição. Devido: R$ 90,00. O pagamento se marca na recepção, no dia.',
     );
   });
 
@@ -1643,13 +1644,13 @@ describe('InscricaoPage: confirmar e salvar como pendente', () => {
     expect(recadoMostrado(container)).toContain('com 0 pendências — e nada se perde');
   });
 
-  it('confirmar e trocar o evento em seguida — o recado da confirmação continua na tela', async () => {
+  it('confirmar e trocar o evento em seguida — o recado da confirmação some', async () => {
     const container = await abrirComPessoa('Helena Duarte');
     await clicar(botaoDeConfirmar(container));
 
     await trocarEvento(container, JORNADA);
 
-    expect(recadoMostrado(container)).toContain('Helena Duarte está confirmada no Trabalho de Lua Cheia de 12/09/2026.');
+    expect(existeRecado(container)).toBe(false);
   });
 
   it('link copiado e inscrição salva como pendente — o link continua Copiado', async () => {
@@ -1661,7 +1662,7 @@ describe('InscricaoPage: confirmar e salvar como pendente', () => {
     expect(linkEstaCopiado(container)).toBe(true);
   });
 
-  it('Jornada, beliche e três diárias, inscrição salva como pendente — a Jornada fica marcada e a próxima pessoa abre o beliche em três diárias', async () => {
+  it('Jornada, beliche e três diárias, inscrição salva como pendente — a Jornada fica marcada e a próxima pessoa abre o beliche em 1 diária', async () => {
     const container = await abrirComPessoa('Helena Duarte');
     await trocarEvento(container, JORNADA);
     await escolherHospedagem(container, 'Beliche no dormitório');
@@ -1672,11 +1673,11 @@ describe('InscricaoPage: confirmar e salvar como pendente', () => {
     await escolherHospedagem(container, 'Beliche no dormitório');
 
     expect(marcado(botaoComTexto(container, JORNADA))).toBe(true);
-    expect(seletorDeDiarias(container).value).toBe('3');
-    expect(textoDe(container)).toContain('R$ 150,00 de acomodação, à parte da contribuição.');
+    expect(seletorDeDiarias(container).value).toBe('1');
+    expect(textoDe(container)).toContain('R$ 50,00 de acomodação, à parte da contribuição.');
   });
 
-  it('Jornada, beliche e três diárias, inscrição confirmada — a Jornada fica marcada e a próxima pessoa abre o beliche em três diárias', async () => {
+  it('Jornada, beliche e três diárias, inscrição confirmada — a Jornada fica marcada e a próxima pessoa abre o beliche em 1 diária', async () => {
     const container = await abrirComPessoa('Sérgio Bittencourt');
     await trocarEvento(container, JORNADA);
     await escolherHospedagem(container, 'Beliche no dormitório');
@@ -1688,8 +1689,8 @@ describe('InscricaoPage: confirmar e salvar como pendente', () => {
     await escolherHospedagem(container, 'Beliche no dormitório');
 
     expect(marcado(botaoComTexto(container, JORNADA))).toBe(true);
-    expect(seletorDeDiarias(container).value).toBe('3');
-    expect(textoDe(container)).toContain('R$ 150,00 de acomodação, à parte da contribuição.');
+    expect(seletorDeDiarias(container).value).toBe('1');
+    expect(textoDe(container)).toContain('R$ 50,00 de acomodação, à parte da contribuição.');
   });
 });
 
@@ -1787,9 +1788,12 @@ describe('InscricaoPage: densidade', () => {
     expect(linhas).toEqual(Array(6).fill(linhaDaPessoa));
   });
 
-  it.each([{ campo: false }, { campo: true }])(
-    'campo=$campo — Trocar, Copiar, as ações de pendência e Não tem nenhuma ficam no alvo de escritório, sem acompanhar a densidade',
-    async ({ campo }) => {
+  it.each([
+    { campo: false, minimo: 'var(--target-office)' },
+    { campo: true, minimo: 'var(--target-field)' },
+  ])(
+    'campo=$campo — Trocar, Copiar, as ações de pendência e Não tem nenhuma usam o alvo $minimo',
+    async ({ campo, minimo }) => {
       definirDensidade(campo);
       const container = await abrirComPessoa('Marina Tavares');
       await escolherHospedagem(container, 'Beliche no dormitório');
@@ -1803,20 +1807,23 @@ describe('InscricaoPage: densidade', () => {
         'Não tem nenhuma',
       ].map((rotulo) => botaoComTexto(container, rotulo).style.minHeight);
 
-      expect(alvos).toEqual(Array(6).fill('var(--target-office)'));
+      expect(alvos).toEqual(Array(6).fill(minimo));
     },
   );
 
-  it.each([{ campo: false }, { campo: true }])(
-    'campo=$campo — os seletores de responsável e de diárias ficam no alvo de escritório, sem acompanhar a densidade',
-    async ({ campo }) => {
+  it.each([
+    { campo: false, minimo: 'var(--target-office)' },
+    { campo: true, minimo: 'var(--target-field)' },
+  ])(
+    'campo=$campo — os seletores de responsável e de diárias usam o alvo $minimo',
+    async ({ campo, minimo }) => {
       definirDensidade(campo);
       const container = await abrirComPessoa('Antônio Duarte');
       await escolherHospedagem(container, 'Beliche no dormitório');
 
       const alvos = [seletorDeResponsavel(container), seletorDeDiarias(container)].map((seletor) => seletor.style.minHeight);
 
-      expect(alvos).toEqual(['var(--target-office)', 'var(--target-office)']);
+      expect(alvos).toEqual([minimo, minimo]);
     },
   );
 });

@@ -1,9 +1,10 @@
-import type { OpcaoDeHospedagem, TipoParticipacao } from '@cdd/contracts';
+import type { EventoId, OpcaoDeHospedagem, TipoParticipacao } from '@cdd/contracts';
 import { pluralizar } from '@/pages/utils/formato';
 import { diretorio, type PessoaDoDiretorio } from '../mocks/inscricao';
 import type { Pendencia } from '../tipos';
 
 export interface DadosDasPendencias {
+  eventoId: EventoId;
   pessoa: PessoaDoDiretorio | null;
   tipo: TipoParticipacao;
   responsavel: string;
@@ -20,7 +21,11 @@ export interface DadosDasPendencias {
   aoAlocarLeito: () => void;
 }
 
+const autorizadaNoEvento = (pessoa: PessoaDoDiretorio | undefined, eventoId: EventoId): boolean =>
+  pessoa?.eventosComAutorizacaoVigente.includes(eventoId) ?? false;
+
 export function pendenciasDaInscricao({
+  eventoId,
   pessoa,
   tipo,
   responsavel,
@@ -40,6 +45,7 @@ export function pendenciasDaInscricao({
   const lista: Pendencia[] = [];
 
   if (tipo === 'CRIANCA_ESTELAR') {
+    const registroDoResponsavel = diretorio.find((d) => d.nome === responsavel);
     if (!responsavel) {
       lista.push({
         chave: 'responsavel',
@@ -47,7 +53,7 @@ export function pendenciasDaInscricao({
         detalhe: 'Criança estelar não se inscreve sozinha: alguém responde por ela neste trabalho.',
         invariante: 'IN2',
       });
-    } else if (!pessoa.autorizacaoVigente && !diretorio.find((d) => d.nome === responsavel)?.autorizacaoVigente) {
+    } else if (!autorizadaNoEvento(pessoa, eventoId) && !autorizadaNoEvento(registroDoResponsavel, eventoId)) {
       lista.push({
         chave: 'autorizacao',
         titulo: 'Sem autorização vigente para este trabalho',

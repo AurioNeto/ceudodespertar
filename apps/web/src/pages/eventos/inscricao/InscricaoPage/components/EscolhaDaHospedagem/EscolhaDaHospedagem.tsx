@@ -46,6 +46,7 @@ export function EscolhaDaHospedagem({
           <Select
             label="Quantas diárias"
             value={String(dias)}
+            density={densidade}
             onChange={(v) => onDias(Number(v))}
             options={[1, 2, 3, 4].map((n) => ({ value: String(n), label: pluralizar(n, 'diária') }))}
           />

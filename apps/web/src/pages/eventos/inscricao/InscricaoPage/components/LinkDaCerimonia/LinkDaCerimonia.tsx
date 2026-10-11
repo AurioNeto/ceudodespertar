@@ -1,7 +1,8 @@
+import type { LinkDeInscricao } from '@cdd/contracts';
 import { Button, Cartao, Icon, Rotulo, type Density } from '@/ds';
-import { linkDaCerimonia } from '../../../mocks/linkDaCerimonia';
 
 export interface LinkDaCerimoniaProps {
+  link: LinkDeInscricao;
   densidade: Density;
   copiado: boolean;
   onCopiar: () => void;
@@ -13,7 +14,7 @@ export interface LinkDaCerimoniaProps {
  * cadastra e responde a própria anamnese. O que esta tela faz é o resto —
  * inscrever quem chegou por outro caminho e conferir o que já veio.
  */
-export function LinkDaCerimonia({ densidade, copiado, onCopiar }: LinkDaCerimoniaProps) {
+export function LinkDaCerimonia({ link, densidade, copiado, onCopiar }: LinkDaCerimoniaProps) {
   const campo = densidade === 'field';
   return (
     <Cartao campo={campo} style={{ gap: 10 }}>
@@ -22,15 +23,20 @@ export function LinkDaCerimonia({ densidade, copiado, onCopiar }: LinkDaCerimoni
         <Rotulo>Link de inscrição desta cerimônia</Rotulo>
         <span style={{ flex: 1 }} />
         <span data-numeric style={{ font: 'var(--text-small)', color: 'var(--text-meta)' }}>
-          {linkDaCerimonia.aberturas} aberturas · {linkDaCerimonia.inscricoesPeloLink} inscrições
+          {link.aberturas} aberturas · {link.inscricoesPeloLink} inscrições
         </span>
       </div>
 
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center' }}>
         <code style={{ font: 'var(--text-code)', color: 'var(--text-link)', wordBreak: 'break-all' }}>
-          {linkDaCerimonia.url}
+          {link.url}
         </code>
-        <Button variant={copiado ? 'quiet' : 'ghost'} iconName={copiado ? 'check' : 'copy'} onClick={onCopiar}>
+        <Button
+          variant={copiado ? 'quiet' : 'ghost'}
+          density={campo ? 'field' : 'office'}
+          iconName={copiado ? 'check' : 'copy'}
+          onClick={onCopiar}
+        >
           {copiado ? 'Copiado' : 'Copiar'}
         </Button>
       </div>

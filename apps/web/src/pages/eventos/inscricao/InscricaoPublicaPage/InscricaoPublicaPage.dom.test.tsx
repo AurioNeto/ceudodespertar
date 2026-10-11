@@ -56,10 +56,10 @@ afterEach(async () => {
   vi.unstubAllGlobals();
 });
 
-const CPF_DE_CLARICE = '529.187.340-11';
-const CPF_DE_EDUARDO = '812.445.290-07';
-const CPF_DE_HELENA = '330.918.775-42';
-const CPF_SEM_CADASTRO = '000.000.000-00';
+const CPF_DE_CLARICE = '529.187.340-04';
+const CPF_DE_EDUARDO = '812.445.290-36';
+const CPF_DE_HELENA = '330.918.775-66';
+const CPF_SEM_CADASTRO = '111.444.777-35';
 
 const MEDICACAO = 'Você faz uso de medicação contínua?';
 const PSIQUIATRICO = 'Você tem ou já teve diagnóstico psiquiátrico?';
@@ -269,19 +269,19 @@ describe('InscricaoPublicaPage: identificação pelo CPF', () => {
     const exemplos = todos<HTMLButtonElement>(container, 'button').filter((botao) => botao.querySelector('code'));
 
     expect(exemplos.map((exemplo) => exemplo.textContent)).toEqual([
-      '529.187.340-11já cadastrada, responde só o que mudou',
-      '330.918.775-42já cadastrada, anamnese em dia',
-      '812.445.290-07já cadastrado, resposta vencida',
-      '000.000.000-00ninguém — cai no cadastro novo',
+      '529.187.340-04já cadastrada, responde só o que mudou',
+      '330.918.775-66já cadastrada, anamnese em dia',
+      '812.445.290-36já cadastrado, resposta vencida',
+      '111.444.777-35ninguém — cai no cadastro novo',
     ]);
   });
 
   it('clicar num CPF de exemplo — preenche o campo sem seguir para o próximo passo', async () => {
     const container = await abrir();
 
-    await clicar(botaoComTexto(container, '330.918.775-42já cadastrada, anamnese em dia'));
+    await clicar(botaoComTexto(container, '330.918.775-66já cadastrada, anamnese em dia'));
 
-    expect(campoRotulado<HTMLInputElement>(container, 'CPF').value).toBe('330.918.775-42');
+    expect(campoRotulado<HTMLInputElement>(container, 'CPF').value).toBe('330.918.775-66');
     expect(tituloDoPasso(container)).toBe('Vamos começar pelo seu CPF');
   });
 
@@ -354,12 +354,16 @@ describe('InscricaoPublicaPage: identificação pelo CPF', () => {
     expect(tituloDoPasso(container)).toBe('Vamos começar pelo seu CPF');
   });
 
-  it('CPF com onze dígitos e dígitos verificadores inválidos — é aceito e cai no cadastro novo', async () => {
+  it('CPF com onze dígitos que não fecham — dígitos verificadores errados e números repetidos são recusados e ficam no passo', async () => {
     const container = await abrir();
 
-    await identificar(container, '111.111.111-11');
+    for (const cpf of ['529.187.340-11', '111.111.111-11']) {
+      await identificar(container, cpf);
 
-    expect(tituloDoPasso(container)).toBe('Seu cadastro');
+      expect(textoDe(container)).toContain('O CPF não é válido. Confira os números.');
+      expect(campoRotulado<HTMLInputElement>(container, 'CPF').getAttribute('aria-invalid')).toBe('true');
+      expect(tituloDoPasso(container)).toBe('Vamos começar pelo seu CPF');
+    }
   });
 
   it.each([
@@ -378,7 +382,7 @@ describe('InscricaoPublicaPage: identificação pelo CPF', () => {
   it('CPF digitado só com números — acha o mesmo cadastro que o CPF com máscara', async () => {
     const container = await abrir();
 
-    await identificar(container, '33091877542');
+    await identificar(container, '33091877566');
 
     expect(tituloDoPasso(container)).toBe('Olá, Helena');
   });
@@ -391,7 +395,7 @@ describe('InscricaoPublicaPage: cadastro de quem a casa não conhece', () => {
     await identificar(container, CPF_SEM_CADASTRO);
 
     expect(textoDe(container)).toContain(
-      'O CPF 000.000.000-00 ainda não está na casa. São cinco campos, uma vez só — na próxima cerimônia a casa já vai te reconhecer.',
+      'O CPF 111.444.777-35 ainda não está na casa. São cinco campos, uma vez só — na próxima cerimônia a casa já vai te reconhecer.',
     );
     expect(todos<HTMLLabelElement>(container, 'label').map((etiqueta) => etiqueta.textContent)).toEqual([
       'Nome completo',
@@ -440,7 +444,7 @@ describe('InscricaoPublicaPage: cadastro de quem a casa não conhece', () => {
     await identificar(container, CPF_SEM_CADASTRO);
 
     await digitar(campoRotulado<HTMLInputElement>(container, 'Nome completo'), 'Maria Silva');
-    await digitar(campoRotulado<HTMLInputElement>(container, 'Data de nascimento'), 'qualquer coisa');
+    await digitar(campoRotulado<HTMLInputElement>(container, 'Data de nascimento'), '01/02/1990');
     await digitar(campoRotulado<HTMLInputElement>(container, 'Telefone com WhatsApp'), 'x');
 
     expect(botaoContinuar(container).disabled).toBe(false);
@@ -1040,14 +1044,15 @@ describe('InscricaoPublicaPage: participação, valor e total', () => {
     expect(folhaComTexto(container, 'span', 'A combinar')).toBeDefined();
   });
 
-  it('hospedagem paga com o campo de valor em branco — o total fica A combinar e a acomodação só aparece na linha da hospedagem', async () => {
+  it('hospedagem paga com o campo de valor em branco — o total mostra R$ 90,00 + a combinar e a acomodação entra no resumo', async () => {
     const container = await chegarEmParticipacaoComoHelena();
 
     await escolherHospedagem(container, 'Quarto');
 
-    expect(folhaComTexto(container, 'span', 'A combinar')).toBeDefined();
+    expect(folhaComTexto(container, 'span', 'R$ 90,00 + a combinar')).toBeDefined();
+    expect(folhaComTexto(container, 'span', 'Contribuição a combinar · R$ 90,00 de acomodação')).toBeDefined();
     expect(textoDe(container)).toContain('1 diária · R$ 90,00 de acomodação, à parte da contribuição.');
-    expect(textoDe(container)).not.toContain('de contribuição');
+    expect(textoDe(container)).not.toContain('A combinar');
   });
 });
 
@@ -1159,14 +1164,14 @@ describe('InscricaoPublicaPage: inscrição enviada', () => {
     expect(folhaComTexto(container, 'span', 'R$ 210,00 combinados.')).toBeDefined();
   });
 
-  it('enviar com hospedagem paga e sem valor digitado — o resumo diz a combinar e não cita a acomodação', async () => {
+  it('enviar com hospedagem paga e sem valor digitado — o resumo diz R$ 90,00 + a combinar com a recepção', async () => {
     const container = await chegarEmParticipacaoComoHelena();
     await escolherHospedagem(container, 'Quarto');
 
     await clicar(botaoDeEnviar(container));
 
-    expect(folhaComTexto(container, 'span', 'Valor a combinar com a recepção.')).toBeDefined();
-    expect(textoDe(container)).not.toContain('R$ 90,00');
+    expect(folhaComTexto(container, 'span', 'R$ 90,00 + a combinar com a recepção.')).toBeDefined();
+    expect(textoDe(container)).not.toContain('Valor a combinar');
   });
 
   it('quem já participou — não recebe o aviso da conversa de primeira vez', async () => {
@@ -1225,14 +1230,14 @@ describe('InscricaoPublicaPage: inscrição enviada', () => {
     expect(textoDe(container)).toContain('Nada disso impede a sua participação.');
   });
 
-  it('Clarice com medicação contínua herdada como Sim — o ponto de atenção da resposta herdada não chega à tela final', async () => {
+  it('Clarice com medicação contínua herdada como Sim — o ponto de atenção da resposta herdada chega à tela final', async () => {
     const container = await chegarEmParticipacaoComoClarice();
     await clicar(botaoComTexto(container, 'Não tenho nenhuma'));
 
     await clicar(botaoDeEnviar(container));
 
-    expect(textoDe(container)).not.toContain('O que você declarou e a casa vai ler com atenção');
-    expect(textoDe(container)).not.toContain('Uso de medicação contínua declarado');
+    expect(textoDe(container)).toContain('O que você declarou e a casa vai ler com atenção');
+    expect(textoDe(container)).toContain('Uso de medicação contínua declarado.');
   });
 
   it('Clarice — o resumo final usa o primeiro nome do cadastro e não oferece a conversa de primeira vez', async () => {
@@ -1325,13 +1330,16 @@ describe('InscricaoPublicaPage: densidade', () => {
     expect(alvos).toEqual([minimo, minimo, minimo]);
   });
 
-  it.each([{ campo: false }, { campo: true }])(
-    'campo=$campo — Não tenho nenhuma fica no alvo de escritório, sem acompanhar a densidade',
-    async ({ campo }) => {
+  it.each([
+    { campo: false, minimo: 'var(--target-office)' },
+    { campo: true, minimo: 'var(--target-field)' },
+  ])(
+    'campo=$campo — Não tenho nenhuma usa o alvo $minimo',
+    async ({ campo, minimo }) => {
       definirDensidade(campo);
       const container = await chegarEmParticipacaoComoClarice();
 
-      expect(botaoComTexto(container, 'Não tenho nenhuma').style.minHeight).toBe('var(--target-office)');
+      expect(botaoComTexto(container, 'Não tenho nenhuma').style.minHeight).toBe(minimo);
     },
   );
 });

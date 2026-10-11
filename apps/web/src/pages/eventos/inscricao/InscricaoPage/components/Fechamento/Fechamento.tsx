@@ -1,5 +1,6 @@
 import { Button, Cartao, type Density } from '@/ds';
 import { formatarBRL, pluralizar } from '@/pages/utils/formato';
+import { totalComContribuicaoACombinar } from '../../../utils/totalComContribuicaoACombinar';
 
 export interface FechamentoProps {
   densidade: Density;
@@ -29,20 +30,38 @@ export function Fechamento({
   onPendente,
 }: FechamentoProps) {
   const campo = densidade === 'field';
+  const isentoSemCusto = isento && total === 0;
+  const custosConhecidos =
+    (custoHospedagem > 0 ? ` · ${formatarBRL(custoHospedagem)} de acomodação` : '') +
+    (custoRefeicoes > 0 ? ` · ${formatarBRL(custoRefeicoes)} de alimentação` : '');
   return (
     <Cartao campo={campo} style={{ gap: 13 }}>
-      {isento ? (
+      {isentoSemCusto ? (
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 10 }}>
           <span style={{ font: 'var(--text-amount-lg)', color: 'var(--color-royal-deep)' }}>Isento</span>
           <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>não há valor devido</span>
         </div>
       ) : semValor ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-          <span style={{ font: 'var(--text-amount-lg)', color: 'var(--text-secondary)' }}>A combinar</span>
-          <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)', maxWidth: '72ch' }}>
-            A inscrição pode existir antes da conversa sobre valor — e “a combinar” é mais honesto do que R$ 0,00, que
-            diria que a pessoa não deve nada.
-          </span>
+          {total > 0 ? (
+            <>
+              <span data-numeric style={{ font: 'var(--text-amount-lg)', color: 'var(--color-royal-deep)' }}>
+                {totalComContribuicaoACombinar(total)}
+              </span>
+              <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>
+                Contribuição a combinar
+                {custosConhecidos}
+              </span>
+            </>
+          ) : (
+            <>
+              <span style={{ font: 'var(--text-amount-lg)', color: 'var(--text-secondary)' }}>A combinar</span>
+              <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)', maxWidth: '72ch' }}>
+                A inscrição pode existir antes da conversa sobre valor — e “a combinar” é mais honesto do que R$ 0,00,
+                que diria que a pessoa não deve nada.
+              </span>
+            </>
+          )}
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
@@ -53,9 +72,8 @@ export function Fechamento({
             <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>devidos</span>
           </div>
           <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>
-            {formatarBRL(contribuicao)} de contribuição
-            {custoHospedagem > 0 ? ` · ${formatarBRL(custoHospedagem)} de acomodação` : ''}
-            {custoRefeicoes > 0 ? ` · ${formatarBRL(custoRefeicoes)} de alimentação` : ''}
+            {isento ? 'Isento de contribuição' : `${formatarBRL(contribuicao)} de contribuição`}
+            {custosConhecidos}
           </span>
         </div>
       )}

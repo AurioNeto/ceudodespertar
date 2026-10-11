@@ -3,6 +3,7 @@ import { Button, Cartao, Icon, Rotulo, TextField, type Density } from '@/ds';
 import { lerValorDigitado } from '@/lib/numero';
 import { formatarBRL, formatarDinheiro, pluralizar } from '@/pages/utils/formato';
 import { eventoDoLink } from '../../../mocks/linkDaCerimonia';
+import { totalComContribuicaoACombinar } from '../../../utils/totalComContribuicaoACombinar';
 import { Passos } from '../Passos';
 
 export interface ParticipacaoProps {
@@ -181,7 +182,7 @@ export function Participacao(props: ParticipacaoProps) {
         />
         {props.restricoes.trim() ? null : (
           <span>
-            <Button variant="ghost" onClick={() => props.onRestricoes('Nenhuma')}>
+            <Button variant="ghost" density={campo ? 'field' : 'office'} onClick={() => props.onRestricoes('Nenhuma')}>
               Não tenho nenhuma
             </Button>
           </span>
@@ -189,15 +190,15 @@ export function Participacao(props: ParticipacaoProps) {
       </Cartao>
 
       <Cartao campo={campo} style={{ gap: 12 }}>
-        {props.semValor ? (
+        {props.semValor && props.total === 0 ? (
           <span style={{ font: 'var(--text-amount-lg)', color: 'var(--text-secondary)' }}>A combinar</span>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             <span data-numeric style={{ font: 'var(--text-amount-lg)', color: 'var(--color-royal-deep)' }}>
-              {formatarBRL(props.total)}
+              {props.semValor ? totalComContribuicaoACombinar(props.total) : formatarBRL(props.total)}
             </span>
             <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>
-              {formatarBRL(props.contribuicao)} de contribuição
+              {props.semValor ? 'Contribuição a combinar' : `${formatarBRL(props.contribuicao)} de contribuição`}
               {props.custoHospedagem > 0 ? ` · ${formatarBRL(props.custoHospedagem)} de acomodação` : ''}
               {props.custoRefeicoes > 0 ? ` · ${formatarBRL(props.custoRefeicoes)} de alimentação` : ''}
             </span>

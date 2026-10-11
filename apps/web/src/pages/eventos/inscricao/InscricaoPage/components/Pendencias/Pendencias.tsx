@@ -43,7 +43,7 @@ export function Pendencias({ lista, densidade }: PendenciasProps) {
           </span>
           {p.acao ? (
             <span>
-              <Button variant="ghost" iconName="check" onClick={p.acao.ao}>
+              <Button variant="ghost" density={campo ? 'field' : 'office'} iconName="check" onClick={p.acao.ao}>
                 {p.acao.rotulo}
               </Button>
             </span>

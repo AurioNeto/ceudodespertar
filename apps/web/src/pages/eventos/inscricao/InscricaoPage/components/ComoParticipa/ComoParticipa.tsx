@@ -1,11 +1,12 @@
 import type { ModalidadeCrianca, TipoParticipacao } from '@cdd/contracts';
 import { Select, SeletorDeTipo, type Density } from '@/ds';
-import { diretorio } from '../../mocks/inscricao';
+import { diretorio, type PessoaDoDiretorio } from '../../mocks/inscricao';
 import { Bloco } from '../Bloco';
 import { LinhaDeInterruptor } from '../LinhaDeInterruptor';
-import { TIPO_EXPLICACAO, TIPO_ROTULO } from './constantes';
+import { TIPO_EXPLICACAO, TIPO_ROTULO, TIPOS_DE_PARTICIPACAO } from './constantes';
 
 export interface ComoParticipaProps {
+  pessoa: PessoaDoDiretorio;
   tipo: TipoParticipacao;
   responsavel: string;
   modalidade: ModalidadeCrianca;
@@ -21,6 +22,7 @@ export interface ComoParticipaProps {
 }
 
 export function ComoParticipa({
+  pessoa,
   tipo,
   responsavel,
   modalidade,
@@ -35,10 +37,12 @@ export function ComoParticipa({
   densidade,
 }: ComoParticipaProps) {
   const campo = densidade === 'field';
+  const tiposOferecidos = TIPOS_DE_PARTICIPACAO.filter((t) => t !== 'CRIANCA_ESTELAR' || pessoa.menorDeIdade);
+  const responsaveis = diretorio.filter((d) => d.responsavelDe.includes(pessoa.nome));
   return (
     <Bloco titulo="Como participa" densidade={densidade}>
       <SeletorDeTipo
-        opcoes={(['PARTICIPANTE', 'CONVIDADO', 'EQUIPE', 'CRIANCA_ESTELAR'] as const).map((t) => ({
+        opcoes={tiposOferecidos.map((t) => ({
           valor: t,
           label: TIPO_ROTULO[t],
         }))}
@@ -55,12 +59,11 @@ export function ComoParticipa({
           <Select
             label="Responsável neste trabalho"
             value={responsavel}
+            density={densidade}
             onChange={onResponsavel}
             options={[
               { value: '', label: 'Escolha quem responde por ela' },
-              ...diretorio
-                .filter((d) => !d.menorDeIdade)
-                .map((d) => ({ value: d.nome, label: d.nome })),
+              ...responsaveis.map((d) => ({ value: d.nome, label: d.nome })),
             ]}
           />
           <SeletorDeTipo

@@ -1,4 +1,5 @@
 import { Button, TextField, type Density } from '@/ds';
+import { AVISO_DE_NASCIMENTO_A_CORRIGIR } from '../../constantes';
 import type { Novo } from '../../tipos';
 import { Passos } from '../Passos';
 
@@ -7,12 +8,23 @@ export interface PassoCadastroProps {
   cpf: string;
   novo: Novo;
   faltando: readonly string[];
+  erroNascimento?: string;
   onNovo: (novo: Novo) => void;
   onSeguir: () => void;
 }
 
-export function PassoCadastro({ densidade, cpf, novo, faltando, onNovo, onSeguir }: PassoCadastroProps) {
+export function PassoCadastro({
+  densidade,
+  cpf,
+  novo,
+  faltando,
+  erroNascimento,
+  onNovo,
+  onSeguir,
+}: PassoCadastroProps) {
   const campo = densidade === 'field';
+  const motivoDoBloqueio =
+    faltando.length > 0 ? `Falta ${faltando.join(', ')}.` : erroNascimento ? AVISO_DE_NASCIMENTO_A_CORRIGIR : undefined;
   return (
     <Passos titulo="Seu cadastro" recado={`O CPF ${cpf} ainda não está na casa. São cinco campos, uma vez só — na próxima cerimônia a casa já vai te reconhecer.`}>
       <TextField
@@ -25,6 +37,7 @@ export function PassoCadastro({ densidade, cpf, novo, faltando, onNovo, onSeguir
         label="Data de nascimento"
         placeholder="dd/mm/aaaa"
         value={novo.nascimento}
+        error={erroNascimento}
         density={campo ? 'field' : 'office'}
         onChange={(e) => onNovo({ ...novo, nascimento: e.target.value })}
       />
@@ -53,8 +66,8 @@ export function PassoCadastro({ densidade, cpf, novo, faltando, onNovo, onSeguir
         density={campo ? 'field' : 'office'}
         iconName="arrow-right"
         iconAfter
-        disabled={faltando.length > 0}
-        blockedReason={faltando.length > 0 ? `Falta ${faltando.join(', ')}.` : undefined}
+        disabled={motivoDoBloqueio !== undefined}
+        blockedReason={motivoDoBloqueio}
         onClick={onSeguir}
       >
         Continuar

@@ -32,7 +32,7 @@ export function DadosParaACasa({ emergencia, restricoes, onEmergencia, onRestric
           onChange={(e) => onRestricoes(e.target.value)}
         />
         {restricoes.trim() ? null : (
-          <Button variant="ghost" onClick={() => onRestricoes('Nenhuma')}>
+          <Button variant="ghost" density={campo ? 'field' : 'office'} onClick={() => onRestricoes('Nenhuma')}>
             Não tem nenhuma
           </Button>
         )}

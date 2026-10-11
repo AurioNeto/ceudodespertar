@@ -110,6 +110,7 @@ export const PERGUNTAS_V3: readonly Pergunta[] = [
 
 const porId = new Map(PERGUNTAS_V3.map((x) => [x.id as string, x]));
 const pergunta = (n: string): Pergunta => porId.get(n)!;
+export const perguntaDaV3 = (perguntaId: PerguntaId): Pergunta | undefined => porId.get(perguntaId as string);
 
 /* ── Quem o CPF encontra ─────────────────────────────────────────────────── */
 
@@ -154,7 +155,7 @@ export const formularioInteiro = (
 export const cadastros: readonly CadastroEncontrado[] = [
   {
     pessoaId: id<PessoaId>('p-clarice'),
-    cpf: '529.187.340-11',
+    cpf: '529.187.340-04',
     nome: 'Clarice Fontes',
     primeiroNome: 'Clarice',
     vinculo: 'Frequentadora desde 2023',
@@ -187,7 +188,7 @@ export const cadastros: readonly CadastroEncontrado[] = [
   },
   {
     pessoaId: id<PessoaId>('p-4'),
-    cpf: '812.445.290-07',
+    cpf: '812.445.290-36',
     nome: 'Eduardo Pires',
     primeiroNome: 'Eduardo',
     vinculo: 'Frequentador desde 2022',
@@ -205,7 +206,7 @@ export const cadastros: readonly CadastroEncontrado[] = [
   },
   {
     pessoaId: id<PessoaId>('p-7'),
-    cpf: '330.918.775-42',
+    cpf: '330.918.775-66',
     nome: 'Helena Duarte',
     primeiroNome: 'Helena',
     vinculo: 'Frequentadora desde 2019',
@@ -232,10 +233,10 @@ export const MODO_RECADO: Record<ModoDePreenchimento, string> = {
 
 /** CPF de exemplo que a tela oferece, porque protótipo ninguém decora. */
 export const CPFS_DE_EXEMPLO: readonly { cpf: string; descricao: string }[] = [
-  { cpf: '529.187.340-11', descricao: 'já cadastrada, responde só o que mudou' },
-  { cpf: '330.918.775-42', descricao: 'já cadastrada, anamnese em dia' },
-  { cpf: '812.445.290-07', descricao: 'já cadastrado, resposta vencida' },
-  { cpf: '000.000.000-00', descricao: 'ninguém — cai no cadastro novo' },
+  { cpf: '529.187.340-04', descricao: 'já cadastrada, responde só o que mudou' },
+  { cpf: '330.918.775-66', descricao: 'já cadastrada, anamnese em dia' },
+  { cpf: '812.445.290-36', descricao: 'já cadastrado, resposta vencida' },
+  { cpf: '111.444.777-35', descricao: 'ninguém — cai no cadastro novo' },
 ];
 
 export const TEXTO_DA_DECLARACAO =

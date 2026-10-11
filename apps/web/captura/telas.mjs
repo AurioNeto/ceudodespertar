@@ -1,9 +1,9 @@
 import { TOKEN_DA_INSCRICAO } from './ambiente.mjs';
 import { FIXTURES_DE_LISTA_DE_USUARIOS_FORA_DO_AR } from './fixturesDaApi.mjs';
 
-const CPF_SEM_CADASTRO = '000.000.000-00';
-const CPF_COM_ANAMNESE_A_ATUALIZAR = '529.187.340-11';
-const CPF_COM_ANAMNESE_EM_DIA = '330.918.775-42';
+const CPF_SEM_CADASTRO = '111.444.777-35';
+const CPF_COM_ANAMNESE_A_ATUALIZAR = '529.187.340-04';
+const CPF_COM_ANAMNESE_EM_DIA = '330.918.775-66';
 
 const identificarPeloCpf = (cpf) => async (pagina) => {
   const campo = pagina.getByLabel('CPF');

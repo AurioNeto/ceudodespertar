@@ -13,3 +13,5 @@ export const TIPO_EXPLICACAO: Record<TipoParticipacao, string> = {
   EQUIPE: 'Guardião, cuidadora, músico, cozinha. Não contribui — é isento, e isento não é zero.',
   CRIANCA_ESTELAR: 'Criança. Exige responsável, modalidade e autorização vigente para este trabalho.',
 };
+
+export const TIPOS_DE_PARTICIPACAO = ['PARTICIPANTE', 'CONVIDADO', 'EQUIPE', 'CRIANCA_ESTELAR'] as const;

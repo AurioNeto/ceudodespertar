@@ -7,16 +7,19 @@ import type {
   TipoParticipacao,
 } from '@cdd/contracts';
 import { lerValorDigitado } from '@/lib/numero';
-import { formatarBRL, pluralizar } from '@/pages/utils/formato';
+import { pluralizar } from '@/pages/utils/formato';
 import { eventos } from '../../mocks/eventos';
+import { linkDoEvento } from '../../mocks/linkDaCerimonia';
 import { CONSAGRA_POR_PADRAO } from '../constantes';
 import type { PessoaDoDiretorio } from '../mocks/inscricao';
 import type { Pendencia } from '../tipos';
+import { fraseDoValorNoRecado } from '../utils/fraseDoValorNoRecado';
 import { pendenciasDaInscricao } from '../utils/pendenciasDaInscricao';
 
 export function useInscricao() {
   const [eventoId, setEventoId] = useState(eventos[0]!.id as string);
   const evento = eventos.find((e) => (e.id as string) === eventoId)!;
+  const link = linkDoEvento(evento.id);
 
   const [busca, setBusca] = useState('');
   const [pessoa, setPessoa] = useState<PessoaDoDiretorio | null>(null);
@@ -39,18 +42,27 @@ export function useInscricao() {
   const [recado, setRecado] = useState<string | null>(null);
   const [linkCopiado, setLinkCopiado] = useState(false);
 
+  const recomecarContribuicaoEDiarias = () => {
+    setNivel(null);
+    setValor('');
+    setDias(1);
+  };
+
+  const recomecarComoParticipa = (p: PessoaDoDiretorio) => {
+    const tipoInicial: TipoParticipacao = p.menorDeIdade ? 'CRIANCA_ESTELAR' : 'PARTICIPANTE';
+    setTipo(tipoInicial);
+    setConsagra(CONSAGRA_POR_PADRAO[tipoInicial]);
+    setModalidade('PERMANECE_SOB_SUPERVISAO');
+    setAcolhimentoFeito(p.acolhimento === 'REALIZADO');
+  };
+
   const escolher = (p: PessoaDoDiretorio) => {
     setPessoa(p);
     setBusca('');
-    const novoTipo: TipoParticipacao = p.menorDeIdade ? 'CRIANCA_ESTELAR' : 'PARTICIPANTE';
-    setTipo(novoTipo);
-    setConsagra(CONSAGRA_POR_PADRAO[novoTipo]);
+    recomecarComoParticipa(p);
     setPrimeiraVez(!p.jaParticipou);
-    setAcolhimentoFeito(p.acolhimento === 'REALIZADO');
     setResponsavel('');
-    setModalidade('PERMANECE_SOB_SUPERVISAO');
-    setNivel(null);
-    setValor('');
+    recomecarContribuicaoEDiarias();
     setHospedagem('SEM_HOSPEDAGEM');
     setLeitoAlocado(false);
     setRefeicoes([]);
@@ -87,6 +99,7 @@ export function useInscricao() {
   const pendencias: readonly Pendencia[] = useMemo(
     () =>
       pendenciasDaInscricao({
+        eventoId: evento.id,
         pessoa,
         tipo,
         responsavel,
@@ -103,6 +116,7 @@ export function useInscricao() {
         aoAlocarLeito: () => setLeitoAlocado(true),
       }),
     [
+      evento.id,
       pessoa,
       tipo,
       responsavel,
@@ -121,7 +135,7 @@ export function useInscricao() {
     if (!pessoa) return;
     setRecado(
       confirmada
-        ? `${pessoa.nome} está confirmada no ${evento.nome} de ${evento.data}. ${isento ? 'Isenta de contribuição.' : semValor ? 'Valor a combinar.' : `Devido: ${formatarBRL(total)}.`} O pagamento se marca na recepção, no dia.`
+        ? `${pessoa.nome} está confirmada no ${evento.nome} de ${evento.data}. ${fraseDoValorNoRecado({ isento, semValor, total })} O pagamento se marca na recepção, no dia.`
         : `Inscrição de ${pessoa.nome} salva como pendente. Ela aparece na lista do trabalho com ${pluralizar(pendencias.length, 'pendência')} — e nada se perde por salvar assim.`,
     );
     setPessoa(null);
@@ -130,9 +144,14 @@ export function useInscricao() {
   const fecharRecado = () => setRecado(null);
 
   const trocarEvento = (v: string) => {
+    if (v === eventoId) return;
     setEventoId(v);
+    if (pessoa) recomecarComoParticipa(pessoa);
+    recomecarContribuicaoEDiarias();
     setRefeicoes([]);
     setLeitoAlocado(false);
+    setRecado(null);
+    setLinkCopiado(false);
   };
 
   const copiarLink = () => setLinkCopiado(true);
@@ -167,6 +186,7 @@ export function useInscricao() {
 
   return {
     evento,
+    link,
     eventoId,
     busca,
     pessoa,
