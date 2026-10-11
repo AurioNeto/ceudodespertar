@@ -1,45 +1,52 @@
 import { useState } from 'react';
 import type { ItemNaFila, LancamentoId } from '@cdd/contracts';
-import { pluralizar } from '@/pages/utils/formato';
 import { filaDeVerificacaoInicial } from '@/mocks/verificacao';
 import type { FiltroOrigem } from '../constantes';
+import { avisoDaAltaConfiancaAprovada, avisoDosSelecionadosAprovados } from '../utils/avisosDaAprovacao';
+import { emPeriodoFechado } from '../utils/periodoFechado';
 
 export function useFilaDeVerificacao() {
   const [itens, setItens] = useState<readonly ItemNaFila[]>(filaDeVerificacaoInicial);
   const [filtro, setFiltro] = useState<FiltroOrigem>('TODAS');
-  const [selecionados, setSelecionados] = useState<readonly LancamentoId[]>([]);
+  const [marcados, setMarcados] = useState<readonly LancamentoId[]>([]);
   const [emRevisao, setEmRevisao] = useState<ItemNaFila | null>(null);
   const [mensagem, setMensagem] = useState<string | null>(null);
 
   const visiveis = filtro === 'TODAS' ? itens : itens.filter((i) => i.origem === filtro);
-  const todosSelecionados = visiveis.length > 0 && visiveis.every((i) => selecionados.includes(i.id));
-  const deAltaConfianca = itens.filter((i) => i.confianca === 'ALTA');
+  const selecionadosNaTela = visiveis.filter((i) => marcados.includes(i.id));
+  const selecionados = selecionadosNaTela.map((i) => i.id);
+  const todosSelecionados = visiveis.length > 0 && selecionadosNaTela.length === visiveis.length;
+  const deAltaConfiancaNaTela = visiveis.filter((i) => i.confianca === 'ALTA');
+  const deAltaConfianca = deAltaConfiancaNaTela.filter((i) => !emPeriodoFechado(i));
 
-  const remover = (ids: readonly LancamentoId[]) => {
-    setItens((lista) => lista.filter((i) => !ids.includes(i.id)));
-    setSelecionados((s) => s.filter((x) => !ids.includes(x)));
-  };
+  const remover = (ids: readonly LancamentoId[]) => setItens((lista) => lista.filter((i) => !ids.includes(i.id)));
 
   const aprovarSelecionados = () => {
-    const n = selecionados.length;
-    remover(selecionados);
-    setMensagem(`${pluralizar(n, 'lançamento aprovado', 'lançamentos aprovados')} e consolidado${n > 1 ? 's' : ''}.`);
+    const aprovaveis = selecionadosNaTela.filter((i) => !emPeriodoFechado(i));
+    remover(aprovaveis.map((i) => i.id));
+    setMarcados((s) => s.filter((x) => !selecionados.includes(x)));
+    setMensagem(avisoDosSelecionadosAprovados(aprovaveis.length, selecionadosNaTela.length - aprovaveis.length));
   };
 
   const aprovarAltaConfianca = () => {
-    const ids = deAltaConfianca.map((i) => i.id);
-    remover(ids);
+    remover(deAltaConfianca.map((i) => i.id));
     setMensagem(
-      `${pluralizar(ids.length, 'lançamento', 'lançamentos')} de alta confiança aprovado${ids.length === 1 ? '' : 's'}.`,
+      avisoDaAltaConfiancaAprovada(deAltaConfianca.length, deAltaConfiancaNaTela.length - deAltaConfianca.length),
     );
   };
 
   const alternarSelecao = (id: LancamentoId) =>
-    setSelecionados((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]));
+    setMarcados((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]));
 
-  const alternarTodosVisiveis = () => setSelecionados(todosSelecionados ? [] : visiveis.map((i) => i.id));
+  const alternarTodosVisiveis = () => {
+    const idsVisiveis = visiveis.map((i) => i.id);
+    setMarcados((s) => {
+      const escondidos = s.filter((x) => !idsVisiveis.includes(x));
+      return todosSelecionados ? escondidos : [...escondidos, ...idsVisiveis];
+    });
+  };
 
-  const limparSelecao = () => setSelecionados([]);
+  const limparSelecao = () => setMarcados([]);
 
   const fecharAviso = () => setMensagem(null);
 

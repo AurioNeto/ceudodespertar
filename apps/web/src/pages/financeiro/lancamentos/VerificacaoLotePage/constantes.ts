@@ -1,4 +1,4 @@
-import type { OrigemCaptura } from '@cdd/contracts';
+import { competencia, type Competencia, type OrigemCaptura } from '@cdd/contracts';
 
 export const ORIGENS = {
   COMPROVANTE: { label: 'Foto de comprovante', icone: 'camera' },
@@ -20,3 +20,5 @@ export const FILTROS: readonly { valor: FiltroOrigem; label: string }[] = [
   { valor: 'EXTRATO', label: 'Extrato' },
   { valor: 'REGISTRO_RAPIDO', label: 'Registro rápido' },
 ];
+
+export const COMPETENCIAS_FECHADAS: readonly Competencia[] = [competencia('2026-07')];
