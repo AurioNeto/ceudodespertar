@@ -1,0 +1,1 @@
+export { TelaSemAcesso } from './TelaSemAcesso';

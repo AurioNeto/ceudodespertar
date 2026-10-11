@@ -1,20 +1,5 @@
 import type { CSSProperties } from 'react';
-
-function Bar({ w, h = 11, top = 0 }: { w: string; h?: number; top?: number }) {
-  return (
-    <div
-      style={{
-        width: w,
-        height: h,
-        marginTop: top,
-        borderRadius: 'var(--radius-sm)',
-        background: 'linear-gradient(90deg,var(--bg-sunken) 25%,#EAE3D3 37%,var(--bg-sunken) 63%)',
-        backgroundSize: '400% 100%',
-        animation: 'cdd-sh 1.3s ease infinite',
-      }}
-    />
-  );
-}
+import { BarraDeEsqueleto } from './components/BarraDeEsqueleto';
 
 const LARGURAS = ['58%', '44%', '66%', '38%'] as const;
 const LARGURAS_META = ['32%', '26%', '30%', '22%'] as const;
@@ -33,8 +18,8 @@ export function SkeletonList({ rows = 4, style }: { rows?: number; style?: CSSPr
             padding: '15px 16px',
           }}
         >
-          <Bar w={LARGURAS[i % 4] ?? '50%'} />
-          <Bar w={LARGURAS_META[i % 4] ?? '30%'} h={9} top={10} />
+          <BarraDeEsqueleto w={LARGURAS[i % 4] ?? '50%'} />
+          <BarraDeEsqueleto w={LARGURAS_META[i % 4] ?? '30%'} h={9} top={10} />
         </div>
       ))}
     </div>
