@@ -1476,15 +1476,17 @@ describe('InscricaoPage: valor devido na tela', () => {
     expect(textoDe(container)).not.toContain('A combinar');
   });
 
-  it('equipe com quarto pago — o fechamento continua Isento e o custo da acomodação só aparece no bloco de hospedagem', async () => {
+  it('equipe com quarto pago — o fechamento mostra R$ 90,00 devidos, com a contribuição isenta e a acomodação detalhada', async () => {
     const container = await abrirComPessoa('Helena Duarte');
     await trocarTipo(container, 'Equipe');
 
     await escolherHospedagem(container, 'Quarto');
 
-    expect(folhaComTexto(container, 'span', 'não há valor devido')).toBeDefined();
+    expect(folhaComTexto(container, 'span', 'R$ 90,00')).toBeDefined();
+    expect(folhaComTexto(container, 'span', 'devidos')).toBeDefined();
+    expect(folhaComTexto(container, 'span', 'Isento de contribuição · R$ 90,00 de acomodação')).toBeDefined();
     expect(textoDe(container)).toContain('R$ 90,00 de acomodação, à parte da contribuição.');
-    expect(textoDe(container)).not.toContain('devidos');
+    expect(textoDe(container)).not.toContain('não há valor devido');
   });
 });
 
@@ -1575,7 +1577,7 @@ describe('InscricaoPage: confirmar e salvar como pendente', () => {
     );
   });
 
-  it('confirmar equipe — o recado diz isenta de contribuição e não cita valor, mesmo com acomodação paga', async () => {
+  it('confirmar equipe — o recado diz isenta de contribuição e traz o valor devido da acomodação paga', async () => {
     const container = await abrirComPessoa('Helena Duarte');
     await trocarTipo(container, 'Equipe');
     await escolherHospedagem(container, 'Quarto');
@@ -1584,7 +1586,7 @@ describe('InscricaoPage: confirmar e salvar como pendente', () => {
     await clicar(botaoDeConfirmar(container));
 
     expect(recadoMostrado(container)).toBe(
-      'Helena Duarte está confirmada no Trabalho de Lua Cheia de 12/09/2026. Isenta de contribuição. O pagamento se marca na recepção, no dia.',
+      'Helena Duarte está confirmada no Trabalho de Lua Cheia de 12/09/2026. Isenta de contribuição. Devido: R$ 90,00. O pagamento se marca na recepção, no dia.',
     );
   });
 

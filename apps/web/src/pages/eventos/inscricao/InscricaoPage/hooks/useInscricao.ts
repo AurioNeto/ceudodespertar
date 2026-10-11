@@ -7,11 +7,12 @@ import type {
   TipoParticipacao,
 } from '@cdd/contracts';
 import { lerValorDigitado } from '@/lib/numero';
-import { formatarBRL, pluralizar } from '@/pages/utils/formato';
+import { pluralizar } from '@/pages/utils/formato';
 import { eventos } from '../../mocks/eventos';
 import { CONSAGRA_POR_PADRAO } from '../constantes';
 import type { PessoaDoDiretorio } from '../mocks/inscricao';
 import type { Pendencia } from '../tipos';
+import { fraseDoValorNoRecado } from '../utils/fraseDoValorNoRecado';
 import { pendenciasDaInscricao } from '../utils/pendenciasDaInscricao';
 
 export function useInscricao() {
@@ -121,7 +122,7 @@ export function useInscricao() {
     if (!pessoa) return;
     setRecado(
       confirmada
-        ? `${pessoa.nome} está confirmada no ${evento.nome} de ${evento.data}. ${isento ? 'Isenta de contribuição.' : semValor ? 'Valor a combinar.' : `Devido: ${formatarBRL(total)}.`} O pagamento se marca na recepção, no dia.`
+        ? `${pessoa.nome} está confirmada no ${evento.nome} de ${evento.data}. ${fraseDoValorNoRecado({ isento, semValor, total })} O pagamento se marca na recepção, no dia.`
         : `Inscrição de ${pessoa.nome} salva como pendente. Ela aparece na lista do trabalho com ${pluralizar(pendencias.length, 'pendência')} — e nada se perde por salvar assim.`,
     );
     setPessoa(null);

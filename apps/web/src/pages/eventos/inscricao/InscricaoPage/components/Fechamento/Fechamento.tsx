@@ -29,9 +29,10 @@ export function Fechamento({
   onPendente,
 }: FechamentoProps) {
   const campo = densidade === 'field';
+  const isentoSemCusto = isento && total === 0;
   return (
     <Cartao campo={campo} style={{ gap: 13 }}>
-      {isento ? (
+      {isentoSemCusto ? (
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 10 }}>
           <span style={{ font: 'var(--text-amount-lg)', color: 'var(--color-royal-deep)' }}>Isento</span>
           <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>não há valor devido</span>
@@ -53,7 +54,7 @@ export function Fechamento({
             <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>devidos</span>
           </div>
           <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>
-            {formatarBRL(contribuicao)} de contribuição
+            {isento ? 'Isento de contribuição' : `${formatarBRL(contribuicao)} de contribuição`}
             {custoHospedagem > 0 ? ` · ${formatarBRL(custoHospedagem)} de acomodação` : ''}
             {custoRefeicoes > 0 ? ` · ${formatarBRL(custoRefeicoes)} de alimentação` : ''}
           </span>
