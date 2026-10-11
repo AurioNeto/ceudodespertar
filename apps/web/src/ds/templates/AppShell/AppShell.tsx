@@ -11,9 +11,6 @@ import { isSection, type NavEntry, type NavLink } from './navegacao';
 import type { AppShellBrand } from './tipos';
 import { agruparForaDaBarra } from './utils/agruparForaDaBarra';
 
-export type { NavEntry, NavLink, NavSection } from './navegacao';
-export type { AppShellBrand } from './tipos';
-
 const ITENS_NA_BARRA_DE_CAMPO = 3;
 
 export interface AppShellProps {
