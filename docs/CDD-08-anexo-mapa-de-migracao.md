@@ -44,6 +44,7 @@ Os destinos são agrupados por área: `app/`, `dados/`, `lib/`, `ds/`, `testes/`
 | `app/rotasAntigasDaEntrada.tsx` | `app/rotas/rotasAntigasDaEntrada.tsx` | mover | app/ em subpastas |
 | `app/router.tsx` | `app/router.tsx` | manter (só linhas de import mudam a cada etapa que move uma página, e em app/ em subpastas; ao fim importa só o `index.ts` de cada página) | app/ em subpastas |
 | `app/router.dom.test.tsx` | `app/router.dom.test.tsx` | manter | app/ em subpastas |
+| `app/router.tsx`: imports estáticos das 29 páginas | `app/router.tsx`, com `lazy: { Component }` por rota e `HydrateFallback` vazio na raiz e nas rotas públicas; `ExigeSessao`, `Layout` e as rotas antigas da entrada ficam estáticos | manter (troca de carregamento) | Rotas lazy |
 | `app/sessao.tsx`: `CHAVE_DO_EU`, `Sessao`, `SessaoProviderProps`, `Contexto`, `SessaoProvider`, `useSessao` (`useSessao` fica com o contexto privado; `derivarEstado` e `useExisteUsuarioOidc` ficam no arquivo até a divisão) | `app/sessao/SessaoProvider/SessaoProvider.tsx` (+ `index.ts`; o `index.ts` da unidade e o `app/sessao/index.ts` usam `export * from './SessaoProvider'`, porque `SessaoProviderProps` sai como tipo para o `main.tsx`) | repartir por export | app/ em subpastas |
 | `app/sessao.tsx`: `ExigeSessao` | `app/sessao/ExigeSessao/ExigeSessao.tsx` (+ `index.ts`) | repartir por export | app/ em subpastas |
 | `app/sessao.tsx`: `derivarEstado` (sai na divisão) | `app/sessao/utils/derivarEstado.ts` (sem teste) | dividir | Dividir app/shell, sessão e ds |
