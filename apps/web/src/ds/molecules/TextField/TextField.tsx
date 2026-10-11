@@ -1,7 +1,8 @@
 import { useId } from 'react';
 import type { CSSProperties, InputHTMLAttributes, ReactNode, TextareaHTMLAttributes } from 'react';
 import type { Density } from '../../fundacao/densidade';
-import { Icon, type IconName } from '../../atoms/Icon';
+import { BotaoDeIcone } from '../../atoms/BotaoDeIcone';
+import type { IconName } from '../../atoms/Icon';
 
 type NativeProps = Omit<
   InputHTMLAttributes<HTMLInputElement> & TextareaHTMLAttributes<HTMLTextAreaElement>,
@@ -44,6 +45,7 @@ export function TextField({
   const generated = useId();
   const fid = id ?? generated;
   const field = density === 'field';
+  const medidaDaAcao = field ? 42 : 36;
   const idDaMensagem = `${fid}-mensagem`;
   const mensagem = error ?? hint;
   const descritoPor = [rest['aria-describedby'], mensagem ? idDaMensagem : undefined].filter(Boolean).join(' ') || undefined;
@@ -102,25 +104,15 @@ export function TextField({
         ) : null}
 
         {action ? (
-          <button
-            type="button"
+          <BotaoDeIcone
+            icone={action.icon}
+            tamanhoDoIcone={field ? 20 : 18}
+            medida={medidaDaAcao}
             onClick={action.onClick}
             aria-label={action.label}
             title={action.label}
-            style={{
-              position: 'absolute',
-              right: 5,
-              display: 'grid',
-              placeItems: 'center',
-              width: field ? 42 : 36,
-              height: field ? 42 : 36,
-              borderRadius: 'var(--radius-sm)',
-              color: 'var(--text-meta)',
-              cursor: 'pointer',
-            }}
-          >
-            <Icon name={action.icon} size={field ? 20 : 18} />
-          </button>
+            style={{ position: 'absolute', right: 5, width: medidaDaAcao, height: medidaDaAcao }}
+          />
         ) : null}
       </div>
 

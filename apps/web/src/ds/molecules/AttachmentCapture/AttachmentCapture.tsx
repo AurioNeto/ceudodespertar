@@ -1,4 +1,5 @@
 import type { CSSProperties } from 'react';
+import { BotaoDeIcone } from '../../atoms/BotaoDeIcone';
 import { Icon } from '../../atoms/Icon';
 import type { Density } from '../../fundacao/densidade';
 
@@ -54,21 +55,7 @@ export function AttachmentCapture({
         >
           {filename}
         </span>
-        <button
-          type="button"
-          onClick={onRemove}
-          title={removeLabel}
-          style={{
-            minWidth: 'var(--tap-min)',
-            minHeight: 'var(--tap-min)',
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'var(--text-meta)',
-          }}
-        >
-          <Icon name="x" size={17} />
-        </button>
+        <BotaoDeIcone icone="x" tamanhoDoIcone={17} onClick={onRemove} title={removeLabel} />
       </div>
     );
   }
