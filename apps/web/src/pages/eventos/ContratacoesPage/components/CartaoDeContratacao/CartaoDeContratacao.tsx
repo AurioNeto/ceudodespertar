@@ -1,11 +1,11 @@
 import { AmountDisplay, Button, Cartao, Icon, Leitura, Rotulo, StatusBadge, type Density } from '@/ds';
+import { PainelDeContaEData } from '@/pages/eventos/components/PainelDeContaEData';
 import { formatarBRL, pluralizar } from '@/pages/utils/formato';
-import { FORMA_EXPLICACAO, FORMA_ROTULO, STATUS_ROTULO, TOM } from '../../constantes';
+import { FORMA_EXPLICACAO, FORMA_ROTULO, ID_DO_CAMPO_DA_DATA_DO_RECEBIMENTO, STATUS_ROTULO, TOM } from '../../constantes';
 import type { ContratacaoNaTela } from '../../mocks/contratacoes';
 import { resultadoDaContratacao } from '../../utils/resultadoDaContratacao';
 import { Devolucao } from './components/Devolucao';
 import { Lado } from './components/Lado';
-import { PainelDeRecebimento } from './components/PainelDeRecebimento';
 
 export interface CartaoDeContratacaoProps {
   contratacao: ContratacaoNaTela;
@@ -179,17 +179,26 @@ export function CartaoDeContratacao({
       <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>{c.observacoes}</span>
 
       {recebendo ? (
-        <PainelDeRecebimento
-          contratacao={c}
+        <PainelDeContaEData
+          titulo="Onde entrou e quando"
           densidade={densidade}
           conta={conta}
           data={data}
+          idDaData={ID_DO_CAMPO_DA_DATA_DO_RECEBIMENTO}
+          rotuloDaData="Data do recebimento"
+          dicaDaData="A data de caixa."
           erroDaData={erroDaData}
+          rotuloDeConfirmar="Confirmar o recebimento"
           onConta={onConta}
           onData={onData}
           onCancelar={onCancelarPainel}
-          onReceber={onReceber}
-        />
+          onConfirmar={onReceber}
+        >
+          <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)', maxWidth: '76ch' }}>
+            Vai gerar receita de {formatarBRL(c.valorAcordado)} com categoria <b>Cachê de contratação</b>, unidade{' '}
+            <b>Munay</b>, vinculada a este evento. A categoria e a unidade não se escolhem aqui: vêm da contratação.
+          </span>
+        </PainelDeContaEData>
       ) : (
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center' }}>
           {c.status === 'PROPOSTA' ? (

@@ -1,1 +1,0 @@
-export { PainelDePagamento } from './PainelDePagamento';
