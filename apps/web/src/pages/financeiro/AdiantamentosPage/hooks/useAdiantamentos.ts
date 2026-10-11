@@ -85,6 +85,7 @@ export function useAdiantamentos() {
       ),
     );
     setRessarcindo(null);
+    setDataRessarcimento(hoje);
     setRecado(
       `Ressarcimento de ${formatarDinheiro(a.valor)} a ${a.pessoaNome} registrado como transferência de ${conta.nome}. Nenhuma despesa nova — ela já foi lançada em ${formatarData(a.dataDespesa)}.`,
     );

@@ -645,7 +645,7 @@ describe('AdiantamentosPage: ressarcir', () => {
     expect(campoPeloRotulo(container, 'Data').value).toBe('2026-09-15');
   });
 
-  it('ressarcimento confirmado — a conta e a data escolhidas continuam no formulário de outra linha', async () => {
+  it('ressarcimento confirmado — a conta escolhida continua no formulário de outra linha e a data volta a hoje', async () => {
     const { container } = await montar(<AdiantamentosPage />);
     await clicar(botaoComTexto(linhaDe(container, ...LINHA_DE_PATY_A_RESSARCIR), 'Ressarcir'));
     await escolherOpcao(campoPeloRotulo<HTMLSelectElement>(container, 'Conta de saída'), 'especie');
@@ -655,7 +655,7 @@ describe('AdiantamentosPage: ressarcir', () => {
     await clicar(botaoComTexto(linhaDe(container, ...LINHA_DE_LUCIA_A_RESSARCIR), 'Ressarcir'));
 
     expect(campoPeloRotulo<HTMLSelectElement>(container, 'Conta de saída').value).toBe('especie');
-    expect(campoPeloRotulo(container, 'Data').value).toBe('2026-09-10');
+    expect(campoPeloRotulo(container, 'Data').value).toBe('2026-09-02');
   });
 
   it('data do ressarcimento apagada — o campo diz Informe a data e o adiantamento segue a ressarcir', async () => {

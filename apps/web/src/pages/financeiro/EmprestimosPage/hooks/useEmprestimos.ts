@@ -124,6 +124,7 @@ export function useEmprestimos() {
     const sobra = saldo - valorEmCentavos;
     setDevolvendo(false);
     setValorDevolucao('');
+    setDataDevolucao(hoje);
     setRecado(
       sobra === 0
         ? 'Devolução registrada e empréstimo quitado. A transferência entrou; nenhum lançamento de receita foi criado.'

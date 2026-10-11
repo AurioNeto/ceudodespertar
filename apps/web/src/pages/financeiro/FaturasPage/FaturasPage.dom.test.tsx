@@ -522,7 +522,7 @@ describe('FaturasPage: registrar o pagamento', () => {
     expect(linhaDePagamento(container)).toBe('Paga em 10/09/2026 por transferência de Espécie.');
   });
 
-  it('pagamento confirmado com outra conta e outra data — o formulário de outra fatura abre com a conta e a data escolhidas', async () => {
+  it('pagamento confirmado com outra conta e outra data — o formulário de outra fatura abre com a conta escolhida e a data de hoje', async () => {
     const { container } = await montarComAgostoAberta();
     await clicar(botaoComTexto(container, 'Registrar pagamento'));
     await escolherOpcao(campoPeloRotulo<HTMLSelectElement>(container, 'Conta de saída'), 'itau');
@@ -534,7 +534,7 @@ describe('FaturasPage: registrar o pagamento', () => {
     await clicar(botaoComTexto(container, 'Registrar pagamento'));
 
     expect(campoPeloRotulo<HTMLSelectElement>(container, 'Conta de saída').value).toBe('itau');
-    expect(campoPeloRotulo(container, 'Data do pagamento').value).toBe('2026-09-10');
+    expect(campoPeloRotulo(container, 'Data do pagamento').value).toBe('2026-09-02');
   });
 
   it('data do pagamento apagada — o campo diz Informe a data e o pagamento não é registrado', async () => {

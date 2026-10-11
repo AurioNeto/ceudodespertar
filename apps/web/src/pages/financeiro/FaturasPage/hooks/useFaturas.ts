@@ -52,6 +52,7 @@ export function useFaturas() {
       ),
     );
     setPagando(false);
+    setDataPagamento(hoje);
     setRecado('Pagamento registrado como transferência. Nenhuma despesa nova foi criada — as compras já estavam lançadas.');
   };
 

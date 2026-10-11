@@ -516,7 +516,7 @@ describe('EmprestimosPage: registrar devolução', () => {
     expect(campoPeloRotulo(container, 'Valor').value).toBe('');
   });
 
-  it('devolução registrada com outra data e outra conta — o formulário do empréstimo seguinte abre com a data e a conta escolhidas', async () => {
+  it('devolução registrada com outra data e outra conta — o formulário do empréstimo seguinte abre com a conta escolhida e a data de hoje', async () => {
     const { container } = await montar(<EmprestimosPage />);
     await abrirFormularioDeDevolucao(container);
     await digitar(campoPeloRotulo(container, 'Valor'), '200');
@@ -527,7 +527,7 @@ describe('EmprestimosPage: registrar devolução', () => {
     await abrirEmprestimo(container, 'Marta Neto');
     await abrirFormularioDeDevolucao(container);
 
-    expect(campoPeloRotulo(container, 'Data').value).toBe('2026-09-15');
+    expect(campoPeloRotulo(container, 'Data').value).toBe('2026-09-02');
     expect(campoPeloRotulo<HTMLSelectElement>(container, 'Conta de saída').value).toBe('especie');
   });
 
