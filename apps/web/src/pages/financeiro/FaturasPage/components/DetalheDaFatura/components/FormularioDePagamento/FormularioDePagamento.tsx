@@ -1,6 +1,6 @@
 import { Button, Select, TextField, type Density } from '@/ds';
 import { MENSAGEM_DE_DATA_VAZIA } from '@/pages/financeiro/constantes';
-import { formatarDinheiro } from '@/pages/utils/formato';
+import { formatarBRL } from '@/pages/utils/formato';
 import { contasPagadoras } from '../../../../mocks/faturas';
 
 export interface FormularioDePagamentoProps {
@@ -59,7 +59,7 @@ export function FormularioDePagamento({
         />
         <TextField
           label="Valor"
-          value={formatarDinheiro(total)}
+          value={formatarBRL(total)}
           readOnly
           hint="igual ao total da fatura, sem edição"
         />

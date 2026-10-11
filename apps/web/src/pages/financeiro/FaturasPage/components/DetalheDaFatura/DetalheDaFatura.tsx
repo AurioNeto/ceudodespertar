@@ -1,6 +1,6 @@
 import type { Conta, Fatura } from '@cdd/contracts';
 import { DomainError, Icon, StatusBadge, Cartao, Numero, Rotulo, type Density } from '@/ds';
-import { competenciaPorExtenso, formatarData, formatarDinheiro } from '@/pages/utils/formato';
+import { competenciaPorExtenso, formatarBRL, formatarData } from '@/pages/utils/formato';
 import { ROTULO, TOM } from '../../constantes';
 import { contasPagadoras } from '../../mocks/faturas';
 import { totalDaFatura } from '../../utils/fatura';
@@ -61,7 +61,7 @@ export function DetalheDaFatura({
             gap: 14,
           }}
         >
-          <Numero rotulo="Total da fatura" valor={formatarDinheiro(total)} destaque />
+          <Numero rotulo="Total da fatura" valor={formatarBRL(total)} destaque />
           <Numero rotulo="Compras" valor={String(fatura.compras.length)} />
           <Numero rotulo="Fecha em" valor={formatarData(fatura.dataFechamento)} />
           <Numero rotulo="Vence em" valor={formatarData(fatura.dataVencimento)} />
