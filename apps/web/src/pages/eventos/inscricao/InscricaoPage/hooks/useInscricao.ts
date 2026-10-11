@@ -48,16 +48,20 @@ export function useInscricao() {
     setDias(1);
   };
 
+  const recomecarComoParticipa = (p: PessoaDoDiretorio) => {
+    const tipoInicial: TipoParticipacao = p.menorDeIdade ? 'CRIANCA_ESTELAR' : 'PARTICIPANTE';
+    setTipo(tipoInicial);
+    setConsagra(CONSAGRA_POR_PADRAO[tipoInicial]);
+    setModalidade('PERMANECE_SOB_SUPERVISAO');
+    setAcolhimentoFeito(p.acolhimento === 'REALIZADO');
+  };
+
   const escolher = (p: PessoaDoDiretorio) => {
     setPessoa(p);
     setBusca('');
-    const novoTipo: TipoParticipacao = p.menorDeIdade ? 'CRIANCA_ESTELAR' : 'PARTICIPANTE';
-    setTipo(novoTipo);
-    setConsagra(CONSAGRA_POR_PADRAO[novoTipo]);
+    recomecarComoParticipa(p);
     setPrimeiraVez(!p.jaParticipou);
-    setAcolhimentoFeito(p.acolhimento === 'REALIZADO');
     setResponsavel('');
-    setModalidade('PERMANECE_SOB_SUPERVISAO');
     recomecarContribuicaoEDiarias();
     setHospedagem('SEM_HOSPEDAGEM');
     setLeitoAlocado(false);
@@ -142,9 +146,12 @@ export function useInscricao() {
   const trocarEvento = (v: string) => {
     if (v === eventoId) return;
     setEventoId(v);
+    if (pessoa) recomecarComoParticipa(pessoa);
     recomecarContribuicaoEDiarias();
     setRefeicoes([]);
     setLeitoAlocado(false);
+    setRecado(null);
+    setLinkCopiado(false);
   };
 
   const copiarLink = () => setLinkCopiado(true);

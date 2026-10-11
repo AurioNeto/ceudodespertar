@@ -180,13 +180,13 @@ describe('InscricaoPage: abertura e escolha do evento', () => {
     expect(botaoComTexto(container, 'Copiado').type).toBe('button');
   });
 
-  it('link da cerimônia copiado e evento trocado — o link continua Copiado', async () => {
+  it('link da cerimônia copiado e evento trocado — o link do evento novo volta a Copiar', async () => {
     const container = await abrir();
     await clicar(botaoComTexto(container, 'Copiar'));
 
     await trocarEvento(container, JORNADA);
 
-    expect(linkEstaCopiado(container)).toBe(true);
+    expect(linkEstaCopiado(container)).toBe(false);
   });
 
   it('evento trocado para a Jornada — o cartão do link passa ao endereço e aos números da Jornada', async () => {
@@ -584,15 +584,15 @@ describe('InscricaoPage: tipo de participação e consagração', () => {
     ]);
   });
 
-  it('Marina com a conversa registrada e depois como Convidado, evento trocado — o tipo e a conversa ficam', async () => {
+  it('Marina com a conversa registrada e depois como Convidado, evento trocado — o tipo e a conversa recomeçam', async () => {
     const container = await abrirComPessoa('Marina Tavares');
     await clicar(botaoComTexto(container, 'Registrar a conversa'));
     await trocarTipo(container, 'Convidado');
 
     await trocarEvento(container, JORNADA);
 
-    expect(marcado(botaoComTexto(container, 'Convidado'))).toBe(true);
-    expect(textoDe(container)).toContain('Conversa de acolhimento registrada.');
+    expect(marcado(botaoComTexto(container, 'Participante'))).toBe(true);
+    expect(textoDe(container)).toContain('Vai precisar da conversa de acolhimento antes de confirmar.');
   });
 
   it('link da cerimônia copiado, ida e volta pela equipe — o link continua Copiado', async () => {
@@ -789,14 +789,14 @@ describe('InscricaoPage: criança estelar', () => {
     expect(folhaComTexto(container, 'span', 'Não se aplica')).toBeDefined();
   });
 
-  it('modalidade Participa do ritual e evento trocado — a modalidade e a consagração ficam', async () => {
+  it('modalidade Participa do ritual e evento trocado — a modalidade e a consagração recomeçam', async () => {
     const container = await abrirComPessoa('Antônio Duarte');
     await clicar(botaoComTexto(container, 'Participa do ritual'));
 
     await trocarEvento(container, JORNADA);
 
-    expect(marcado(botaoComTexto(container, 'Participa do ritual'))).toBe(true);
-    expect(interruptor(container, 'Consagra neste trabalho').getAttribute('aria-checked')).toBe('true');
+    expect(marcado(botaoComTexto(container, 'Permanece sob supervisão'))).toBe(true);
+    expect(interruptor(container, 'Consagra neste trabalho').getAttribute('aria-checked')).toBe('false');
   });
 
   it('voltar a Criança estelar com o responsável e a modalidade Participa do ritual — a consagração volta ligada e o responsável continua escolhido', async () => {
@@ -1644,13 +1644,13 @@ describe('InscricaoPage: confirmar e salvar como pendente', () => {
     expect(recadoMostrado(container)).toContain('com 0 pendências — e nada se perde');
   });
 
-  it('confirmar e trocar o evento em seguida — o recado da confirmação continua na tela', async () => {
+  it('confirmar e trocar o evento em seguida — o recado da confirmação some', async () => {
     const container = await abrirComPessoa('Helena Duarte');
     await clicar(botaoDeConfirmar(container));
 
     await trocarEvento(container, JORNADA);
 
-    expect(recadoMostrado(container)).toContain('Helena Duarte está confirmada no Trabalho de Lua Cheia de 12/09/2026.');
+    expect(existeRecado(container)).toBe(false);
   });
 
   it('link copiado e inscrição salva como pendente — o link continua Copiado', async () => {
