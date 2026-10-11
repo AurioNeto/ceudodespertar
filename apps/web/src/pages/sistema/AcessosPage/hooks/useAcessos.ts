@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useSessao } from '@/app/sessao';
-import type { Aba } from '../constantes';
+import type { Aba } from '../tipos';
 import { abasVisiveis } from '../utils/abasVisiveis';
 
 export function useAcessos() {

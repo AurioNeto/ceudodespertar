@@ -1,6 +1,6 @@
 import type { OperacaoAuditada } from '@cdd/contracts';
 import { Cartao, Rotulo } from '@/ds';
-import { EXIGE_REGISTRO_EXTRA, FEICAO } from '../../../../constantes';
+import { EXIGE_REGISTRO_EXTRA, FEICAO } from '../../constantes';
 
 export function RodapeDaTrilha() {
   const itens = Object.entries(EXIGE_REGISTRO_EXTRA) as [OperacaoAuditada, string][];

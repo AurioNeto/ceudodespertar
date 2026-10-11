@@ -1,7 +1,7 @@
 import { EmptyState, Select, Rotulo, type Density } from '@/ds';
 import { pluralizar } from '@/pages/utils/formato';
-import { FEICAO, TODOS } from '../../constantes';
-import { rotularDia } from '../../utils/instante';
+import { FEICAO, TODOS } from './constantes';
+import { rotularDia } from './utils/rotularDia';
 import { LinhaDaTrilha } from './components/LinhaDaTrilha';
 import { NotaDeImutabilidade } from './components/NotaDeImutabilidade';
 import { RodapeDaTrilha } from './components/RodapeDaTrilha';

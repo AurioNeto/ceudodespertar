@@ -1,8 +1,8 @@
 import { Icon, StatusBadge, Cartao, type Density } from '@/ds';
 import { pluralizar } from '@/pages/utils/formato';
-import type { Agrupamento } from '../../../../tipos';
+import type { Agrupamento } from '../../tipos';
 import type { GrupoDeAcesso } from '../../utils/agruparAcessos';
-import { rajada } from '../../utils/rajada';
+import { rajada } from './utils/rajada';
 import { LinhaDeAcesso } from './components/LinhaDeAcesso';
 
 export interface GrupoDeAcessosProps {

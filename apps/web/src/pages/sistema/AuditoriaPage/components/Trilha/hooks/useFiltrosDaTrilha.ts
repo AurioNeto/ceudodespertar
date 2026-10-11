@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import type { RegistroDeAuditoria } from '@cdd/contracts';
-import { FEICAO, TODOS } from '../../../constantes';
+import { FEICAO, TODOS } from '../constantes';
 import { trilha } from '../../../mocks/auditoria';
 import { dia } from '../../../utils/instante';
 import { autoresDaTrilha } from '../utils/autoresDaTrilha';

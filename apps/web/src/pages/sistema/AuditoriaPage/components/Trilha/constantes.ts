@@ -55,9 +55,3 @@ export const EXIGE_REGISTRO_EXTRA: Partial<Record<OperacaoAuditada, string>> = {
   PENDENCIA_ABERTA: 'texto, autor e destinatário',
   ANAMNESE_LIDA: 'quem leu, de quem e quando',
 };
-
-export const CONTEXTO_ROTULO: Record<'INSCRICAO' | 'REVISAO' | 'ATENDIMENTO', string> = {
-  INSCRICAO: 'Inscrição',
-  REVISAO: 'Revisão de fila',
-  ATENDIMENTO: 'Atendimento',
-};

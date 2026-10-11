@@ -2,8 +2,8 @@ import type { CSSProperties } from 'react';
 import type { RegistroDeAcesso } from '@cdd/contracts';
 import { Icon } from '@/ds';
 import { formatarData } from '@/pages/utils/formato';
-import { CONTEXTO_ROTULO } from '../../../../../../constantes';
-import type { Agrupamento } from '../../../../../../tipos';
+import { CONTEXTO_ROTULO } from './constantes';
+import type { Agrupamento } from '../../../../tipos';
 import { dia, hora } from '../../../../../../utils/instante';
 
 export interface LinhaDeAcessoProps {
