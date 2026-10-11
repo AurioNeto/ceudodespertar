@@ -13,7 +13,7 @@ import {
   type Montado,
 } from '@/testes/montagem';
 import { errosAoClicar, glifoDe } from '../../apoioDeTeste';
-import { AppShell, type NavEntry } from './AppShell';
+import { AppShell, type NavEntry } from './index';
 
 afterEach(desmontarTudo);
 

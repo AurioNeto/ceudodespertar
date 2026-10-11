@@ -5,16 +5,11 @@ const BRL = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFr
 /** Valor em reais → "1.234,56". */
 export const formatarValor = (reais: number): string => BRL.format(reais);
 
-const DIAS = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'] as const;
-
 /** `YYYY-MM-DD` → data local sem escorregar de fuso. */
 export function paraData(iso: string): Date {
   const [ano, mes, dia] = iso.split('-').map(Number);
   return new Date(ano ?? 1970, (mes ?? 1) - 1, dia ?? 1);
 }
-
-/** `YYYY-MM-DD` → "sexta". */
-export const diaDaSemana = (iso: string): string => DIAS[paraData(iso).getDay()] ?? '';
 
 /** Iniciais para avatar sem foto. */
 export function iniciais(nome: string): string {

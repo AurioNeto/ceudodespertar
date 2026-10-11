@@ -1,10 +1,5 @@
 import { CAMINHO_DA_ENTRADA, CAMINHO_DE_RETORNO } from '@/dados';
 
-export interface Rota {
-  id: string;
-  caminho: string;
-}
-
 export const ROTAS = {
   painel: '/',
   registrar: '/registrar',

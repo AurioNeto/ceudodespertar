@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { diaDaSemana, formatarDataHora, paraData } from '@/lib/formato';
+import { formatarDataHora, paraData } from '@/lib/formato';
 import {
   competenciaPorExtenso,
   formatarBRL,
@@ -245,10 +245,6 @@ describe('datas lidas com o fuso local atrás de UTC', () => {
 
   it('formatarData mostra o mesmo dia que veio no texto', () => {
     expect(formatarData('2026-09-05')).toBe('05/09/2026');
-  });
-
-  it('diaDaSemana mostra o dia da semana da data que veio no texto', () => {
-    expect(diaDaSemana('2026-10-09')).toBe('sexta');
   });
 
   it('formatarDataHora continua lendo a data sem hora como meia-noite UTC', () => {
