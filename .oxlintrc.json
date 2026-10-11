@@ -8,6 +8,19 @@
   "rules": {
     "unicorn/no-array-sort": "error"
   },
+  "overrides": [
+    {
+      "files": [
+        "apps/web/src/**/*.test.ts",
+        "apps/web/src/**/*.test.tsx",
+        "apps/web/src/testes/**",
+        "apps/web/captura/**"
+      ],
+      "rules": {
+        "no-await-in-loop": "off"
+      }
+    }
+  ],
   "ignorePatterns": [
     "apps/api/test/estrutural/fixtures/**",
     "apps/web/test/estrutural/fixtures/**",
