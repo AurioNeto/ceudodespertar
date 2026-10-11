@@ -10,17 +10,8 @@ import { focarTitulo } from '../../utils/focarTitulo';
 import { FiltrosDeUsuarios } from './components/FiltrosDeUsuarios';
 import { LinhaDeUsuario } from './components/LinhaDeUsuario';
 import { PainelDoUsuario } from './components/PainelDoUsuario';
-
-export const ATRASO_DA_BUSCA_EM_MS = 300;
-
-function semRepetidos(usuarios: readonly UsuarioListado[]): readonly UsuarioListado[] {
-  const vistos = new Set<UsuarioId>();
-  return usuarios.filter((usuario) => {
-    if (vistos.has(usuario.id)) return false;
-    vistos.add(usuario.id);
-    return true;
-  });
-}
+import { ATRASO_DA_BUSCA_EM_MS } from './constantes';
+import { semRepetidos } from './utils/semRepetidos';
 
 interface OpcoesDoFocoDaLinhaGerenciada {
   readonly painelAberto: boolean;

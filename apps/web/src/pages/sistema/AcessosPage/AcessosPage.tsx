@@ -1,27 +1,15 @@
-import { useState } from 'react';
 import { Button, ScreenHeader, varianteDoPainel, useDensidade, SeletorDeTipo } from '@/ds';
-import { useSessao } from '@/app/sessao';
 import { AbaDeGrupos } from './components/AbaDeGrupos';
 import { AbaDeUsuarios } from './components/AbaDeUsuarios';
 import { focarTitulo } from './utils/focarTitulo';
 import { PainelDeConvite } from './components/PainelDeConvite';
-
-type Aba = 'usuarios' | 'grupos';
-
-const ROTULO_DA_ABA: Record<Aba, string> = { usuarios: 'Usuários', grupos: 'Grupos' };
+import { ROTULO_DA_ABA } from './constantes';
+import { useAcessos } from './hooks/useAcessos';
 
 export function AcessosPage() {
   const densidade = useDensidade();
   const campo = densidade === 'field';
-  const { pode } = useSessao();
-  const podeGerenciarUsuarios = pode('sistema.usuario.gerenciar');
-  const podeVerGrupos = podeGerenciarUsuarios || pode('sistema.grupo.gerenciar');
-
-  const abasVisiveis: readonly Aba[] = [...(podeGerenciarUsuarios ? (['usuarios'] as const) : []), ...(podeVerGrupos ? (['grupos'] as const) : [])];
-  const [abaEscolhida, setAbaEscolhida] = useState<Aba>('usuarios');
-  const aba = abasVisiveis.includes(abaEscolhida) ? abaEscolhida : abasVisiveis[0];
-
-  const [conviteAberto, setConviteAberto] = useState(false);
+  const { podeGerenciarUsuarios, abas, aba, setAbaEscolhida, conviteAberto, setConviteAberto } = useAcessos();
 
   if (!aba) return null;
 
@@ -48,9 +36,9 @@ export function AcessosPage() {
           maxWidth: campo ? undefined : 1080,
         }}
       >
-        {abasVisiveis.length > 1 ? (
+        {abas.length > 1 ? (
           <SeletorDeTipo
-            opcoes={abasVisiveis.map((valor) => ({ valor, label: ROTULO_DA_ABA[valor] }))}
+            opcoes={abas.map((valor) => ({ valor, label: ROTULO_DA_ABA[valor] }))}
             valor={aba}
             onEscolher={setAbaEscolhida}
             densidade={densidade}
