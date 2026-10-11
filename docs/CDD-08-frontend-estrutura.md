@@ -792,8 +792,8 @@ Títulos na ordem de leitura. Dependências por título.
 | Dividir Agenda (concluída) | Caracterizar eventos; Harness; Dividir Prestação e Parâmetros | — |
 | Dividir Inscrição (concluída) | Caracterizar inscrição; Harness; Dividir Agenda | — |
 | Dividir Leitos, Contratações e Devoluções (concluída) | Caracterizar eventos; Harness; Dividir Inscrição | — |
-| Dividir Ayahuasca e Feitio | Caracterizar pessoas e estoque; Harness; Dividir Leitos, Contratações e Devoluções | — |
-| Dividir Pessoas e Anamnese | Caracterizar pessoas e estoque; Harness; Dividir Ayahuasca e Feitio | — |
+| Dividir Ayahuasca e Feitio (concluída) | Caracterizar pessoas e estoque; Harness; Dividir Leitos, Contratações e Devoluções | — |
+| Dividir Pessoas e Anamnese (concluída) | Caracterizar pessoas e estoque; Harness; Dividir Ayahuasca e Feitio | — |
 | Dividir sistema, Meu perfil e entrada | Harness; Dividir Pessoas e Anamnese; Fronteiras em erro | herdado: e2e do B0 e ajustes do login |
 | Dividir Painel | Harness; Dividir sistema, Meu perfil e entrada | herdado |
 | Dividir app/shell, sessão e ds | Fronteiras em erro; Caracterizar o restante do ds; Harness; Dividir Painel | herdado |
