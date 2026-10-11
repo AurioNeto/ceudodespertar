@@ -1,7 +1,7 @@
 import type { RegimeDaUnidade } from '@cdd/contracts';
 import { afterEach, describe, expect, it } from 'vitest';
 import { desmontarTudo, elemento, montar } from '@/testes/montagem';
-import { RegimeVocabulary, useTermo, type Vocabulario } from './RegimeVocabulary';
+import { RegimeVocabulary, useTermo, type Vocabulario } from './index';
 
 afterEach(desmontarTudo);
 
