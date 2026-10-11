@@ -1,8 +1,10 @@
-import { AmountDisplay, Button, Cartao, Leitura, Rotulo, StatusBadge, type Density } from '@/ds';
+import { AmountDisplay, Button, Cartao, Icon, Leitura, Rotulo, StatusBadge, TextField, type Density } from '@/ds';
+import { PainelDeContaEData } from '@/pages/eventos/components/PainelDeContaEData';
 import { formatarBRL, formatarCompetencia, pluralizar } from '@/pages/utils/formato';
+import { ID_DO_CAMPO_DA_DATA_DA_SAIDA } from '../../constantes';
 import type { DevolucaoNaFila } from '../../mocks/devolucoes';
+import { competenciaDaSaida } from '../../utils/competenciaDaSaida';
 import { diasEsperando } from '../../utils/diasEsperando';
-import { PainelDePagamento } from './components/PainelDePagamento';
 
 export interface CartaoDeDevolucaoProps {
   devolucao: DevolucaoNaFila;
@@ -37,6 +39,8 @@ export function CartaoDeDevolucao({
 }: CartaoDeDevolucaoProps) {
   const campo = densidade === 'field';
   const dias = diasEsperando(d.solicitadaEm);
+  const destino = competenciaDaSaida(d);
+  const faltaMotivo = d.competenciaFechada && !motivo.trim();
 
   return (
     <Cartao campo={campo} style={{ gap: 13 }}>
@@ -76,19 +80,45 @@ export function CartaoDeDevolucao({
       </div>
 
       {pagando ? (
-        <PainelDePagamento
-          devolucao={d}
+        <PainelDeContaEData
+          titulo="De onde sai e quando"
           densidade={densidade}
           conta={conta}
           data={data}
+          idDaData={ID_DO_CAMPO_DA_DATA_DA_SAIDA}
+          rotuloDaData="Data da saída"
+          dicaDaData="A data de caixa, não a da solicitação."
           erroDaData={erroDaData}
-          motivo={motivo}
+          rotuloDeConfirmar="Confirmar a devolução"
+          bloqueioDeConfirmar={
+            faltaMotivo ? `Registre o motivo para lançar em ${formatarCompetencia(destino)}.` : undefined
+          }
           onConta={onConta}
           onData={onData}
-          onMotivo={onMotivo}
           onCancelar={onCancelar}
-          onPagar={onPagar}
-        />
+          onConfirmar={onPagar}
+        >
+          {d.competenciaFechada ? (
+            <TextField
+              label="Motivo"
+              value={motivo}
+              density={campo ? 'field' : 'office'}
+              onChange={(e) => onMotivo(e.target.value)}
+              hint={`Por que a saída entra em ${formatarCompetencia(destino)} e não em ${formatarCompetencia(d.competenciaOriginal as string)}.`}
+            />
+          ) : null}
+
+          <div style={{ display: 'flex', gap: 9, alignItems: 'flex-start' }}>
+            <Icon name="arrow-up-right" size={15} color="var(--color-royal)" style={{ marginTop: 2 }} />
+            <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>
+              Vai gerar um <b>lançamento de saída</b> vinculado ao evento {d.evento}, na competência{' '}
+              <b data-numeric>{formatarCompetencia(destino)}</b>
+              {d.competenciaFechada
+                ? ` — a competência original (${formatarCompetencia(d.competenciaOriginal as string)}) está fechada e não recebe lançamento sem reabertura; a saída só entra no mês corrente com a decisão registrada no motivo.`
+                : '.'}
+            </span>
+          </div>
+        </PainelDeContaEData>
       ) : (
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center' }}>
           <Button iconName="arrow-up-right" density={campo ? 'field' : 'office'} onClick={onAbrir}>

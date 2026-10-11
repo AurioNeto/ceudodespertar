@@ -1,9 +1,9 @@
 import type { Hospedagem, OpcaoDeHospedagem } from '@cdd/contracts';
 import { Select, type Density } from '@/ds';
 import { formatarBRL, pluralizar } from '@/pages/utils/formato';
+import { OpcaoMarcavel } from '../../../components/OpcaoMarcavel';
 import type { EventoParaInscricao } from '../../../mocks/eventos';
 import { Bloco } from '../Bloco';
-import { OpcaoEmLinha } from '../OpcaoEmLinha';
 
 export interface EscolhaDaHospedagemProps {
   evento: EventoParaInscricao;
@@ -30,7 +30,7 @@ export function EscolhaDaHospedagem({
     <Bloco titulo="Hospedagem" densidade={densidade}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
         {evento.hospedagens.map((h) => (
-          <OpcaoEmLinha
+          <OpcaoMarcavel
             key={h.tipo}
             rotulo={h.rotulo}
             nota={h.nota}

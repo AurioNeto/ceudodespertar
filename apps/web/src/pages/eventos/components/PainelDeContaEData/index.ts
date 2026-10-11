@@ -1,0 +1,1 @@
+export { PainelDeContaEData } from './PainelDeContaEData';

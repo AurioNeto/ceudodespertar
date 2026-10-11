@@ -1,32 +1,42 @@
+import type { ReactNode } from 'react';
 import { Button, Rotulo, Select, TextField, type Density } from '@/ds';
 import { contas } from '@/pages/mocks/contas';
-import { formatarBRL } from '@/pages/utils/formato';
-import { ID_DO_CAMPO_DA_DATA_DO_RECEBIMENTO } from '../../../../constantes';
-import type { ContratacaoNaTela } from '../../../../mocks/contratacoes';
 
-export interface PainelDeRecebimentoProps {
-  contratacao: ContratacaoNaTela;
+export interface PainelDeContaEDataProps {
+  titulo: string;
   densidade: Density;
   conta: string;
   data: string;
+  idDaData: string;
+  rotuloDaData: string;
+  dicaDaData: string;
   erroDaData: string | undefined;
+  rotuloDeConfirmar: string;
+  bloqueioDeConfirmar?: string;
   onConta: (v: string) => void;
   onData: (v: string) => void;
   onCancelar: () => void;
-  onReceber: () => void;
+  onConfirmar: () => void;
+  children: ReactNode;
 }
 
-export function PainelDeRecebimento({
-  contratacao: c,
+export function PainelDeContaEData({
+  titulo,
   densidade,
   conta,
   data,
+  idDaData,
+  rotuloDaData,
+  dicaDaData,
   erroDaData,
+  rotuloDeConfirmar,
+  bloqueioDeConfirmar,
   onConta,
   onData,
   onCancelar,
-  onReceber,
-}: PainelDeRecebimentoProps) {
+  onConfirmar,
+  children,
+}: PainelDeContaEDataProps) {
   const campo = densidade === 'field';
 
   return (
@@ -41,34 +51,37 @@ export function PainelDeRecebimento({
         gap: 13,
       }}
     >
-      <Rotulo>Onde entrou e quando</Rotulo>
+      <Rotulo>{titulo}</Rotulo>
 
       <div style={{ display: 'grid', gridTemplateColumns: campo ? '1fr' : '1fr 1fr', gap: 12 }}>
         <Select
           label="Conta"
           value={conta}
           onChange={onConta}
-          options={contas.filter((x) => x.ativa).map((x) => ({ value: x.id as string, label: x.nome }))}
+          options={contas.filter((c) => c.ativa).map((c) => ({ value: c.id as string, label: c.nome }))}
         />
         <TextField
-          id={ID_DO_CAMPO_DA_DATA_DO_RECEBIMENTO}
-          label="Data do recebimento"
+          id={idDaData}
+          label={rotuloDaData}
           value={data}
           density={campo ? 'field' : 'office'}
           onChange={(e) => onData(e.target.value)}
-          hint="A data de caixa."
+          hint={dicaDaData}
           error={erroDaData}
         />
       </div>
 
-      <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)', maxWidth: '76ch' }}>
-        Vai gerar receita de {formatarBRL(c.valorAcordado)} com categoria <b>Cachê de contratação</b>, unidade{' '}
-        <b>Munay</b>, vinculada a este evento. A categoria e a unidade não se escolhem aqui: vêm da contratação.
-      </span>
+      {children}
 
       <div style={{ display: 'flex', gap: 9, flexWrap: 'wrap' }}>
-        <Button iconName="check" density={campo ? 'field' : 'office'} onClick={onReceber}>
-          Confirmar o recebimento
+        <Button
+          iconName="check"
+          density={campo ? 'field' : 'office'}
+          disabled={bloqueioDeConfirmar !== undefined}
+          blockedReason={bloqueioDeConfirmar}
+          onClick={onConfirmar}
+        >
+          {rotuloDeConfirmar}
         </Button>
         <Button variant="quiet" density={campo ? 'field' : 'office'} onClick={onCancelar}>
           Cancelar

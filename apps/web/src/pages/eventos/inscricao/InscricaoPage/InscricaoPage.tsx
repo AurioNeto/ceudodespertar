@@ -1,8 +1,8 @@
 import { CorpoDaTela, ScreenHeader, useDensidade, Recado } from '@/ds';
+import { Contribuicao } from '../components/Contribuicao';
 import { Alimentacao } from './components/Alimentacao';
 import { BuscaDePessoa } from './components/BuscaDePessoa';
 import { ComoParticipa } from './components/ComoParticipa';
-import { Contribuicao } from './components/Contribuicao';
 import { DadosParaACasa } from './components/DadosParaACasa';
 import { EscolhaDaHospedagem } from './components/EscolhaDaHospedagem';
 import { EscolhaDoEvento } from './components/EscolhaDoEvento';
@@ -76,6 +76,7 @@ export function InscricaoPage() {
 
             <Contribuicao
               evento={tela.evento}
+              quemInscreve="casa"
               isento={tela.isento}
               nivel={tela.nivel}
               valor={tela.valor}

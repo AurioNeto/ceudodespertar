@@ -1,1 +1,0 @@
-export { PainelDeRecebimento } from './PainelDeRecebimento';

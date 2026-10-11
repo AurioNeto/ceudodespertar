@@ -1,7 +1,8 @@
 import type { Hospedagem, NivelDeContribuicao, Refeicao } from '@cdd/contracts';
-import { AmountDisplay, Button, Cartao, Icon, Rotulo, TextField, type Density } from '@/ds';
-import { lerValorDigitado } from '@/lib/numero';
-import { formatarBRL, formatarDinheiro, pluralizar } from '@/pages/utils/formato';
+import { Button, Cartao, Rotulo, TextField, type Density } from '@/ds';
+import { formatarBRL, pluralizar } from '@/pages/utils/formato';
+import { Contribuicao } from '../../../components/Contribuicao';
+import { OpcaoMarcavel } from '../../../components/OpcaoMarcavel';
 import { eventoDoLink } from '../../../mocks/linkDaCerimonia';
 import { totalComContribuicaoACombinar } from '../../../utils/totalComContribuicaoACombinar';
 import { Passos } from '../Passos';
@@ -33,126 +34,37 @@ export interface ParticipacaoProps {
 
 export function Participacao(props: ParticipacaoProps) {
   const campo = props.densidade === 'field';
-  const social = eventoDoLink.contribuicoes[0]!.valor;
-  const prospero = eventoDoLink.contribuicoes[2]!.valor;
-  const digitado = Math.round(lerValorDigitado(props.valor) * 100) || 0;
 
   return (
     <Passos
       titulo="Sua participação"
       recado="Contribuição, onde você dorme e o que a casa precisa saber para cuidar de você."
     >
-      <Cartao campo={campo} style={{ gap: 12 }}>
-        <Rotulo>Contribuição</Rotulo>
-        <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)', maxWidth: '60ch' }}>
-          Três valores sugeridos pelos padrinhos, referentes à participação na cerimônia. <b>São sugestão, não
-          preço.</b> Escolha o que couber na sua condição — e, se puder e quiser contribuir mais, também pode.
-        </span>
-
-        <div style={{ display: 'grid', gridTemplateColumns: campo ? '1fr' : 'repeat(3, minmax(0,1fr))', gap: 10 }}>
-          {eventoDoLink.contribuicoes.map((c) => {
-            const marcado = props.nivel === c.nivel;
-            return (
-              <button
-                key={c.nivel}
-                type="button"
-                aria-pressed={marcado}
-                onClick={() => props.onNivel(c.nivel, formatarDinheiro(c.valor))}
-                style={{
-                  textAlign: 'left',
-                  padding: '13px 15px',
-                  borderRadius: 'var(--radius)',
-                  border: `1px solid ${marcado ? 'var(--color-royal)' : 'var(--color-line-strong)'}`,
-                  background: marcado ? 'var(--color-royal-soft)' : 'var(--bg-card)',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 5,
-                  minHeight: campo ? 'var(--target-field)' : undefined,
-                }}
-              >
-                <span style={{ font: 'var(--text-body-strong)', color: marcado ? 'var(--color-royal-ink)' : 'var(--text-primary)' }}>
-                  {c.rotulo}
-                </span>
-                <AmountDisplay value={c.valor / 100} size="sm" style={{ color: 'var(--color-royal-deep)' }} />
-                <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>{c.explicacao}</span>
-              </button>
-            );
-          })}
-        </div>
-
-        <TextField
-          label="Quanto você vai contribuir"
-          value={props.valor}
-          placeholder="0,00"
-          inputMode="decimal"
-          density={campo ? 'field' : 'office'}
-          onChange={(e) => props.onValor(e.target.value)}
-          hint="Pode digitar outro valor. Ninguém vai te cobrar explicação."
-        />
-
-        {digitado > 0 && digitado < social ? (
-          <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>
-            Abaixo do valor social, e tudo bem. Se quiser conversar sobre isso, a recepção está no WhatsApp.
-          </span>
-        ) : null}
-        {digitado > prospero ? (
-          <span style={{ font: 'var(--text-small)', color: 'var(--color-confirmed)' }}>
-            Obrigado — isso é contribuição voluntária acima do sugerido.
-          </span>
-        ) : null}
-      </Cartao>
+      <Contribuicao
+        evento={eventoDoLink}
+        quemInscreve="pessoa"
+        isento={false}
+        nivel={props.nivel}
+        valor={props.valor}
+        onNivel={props.onNivel}
+        onValor={props.onValor}
+        densidade={props.densidade}
+      />
 
       <Cartao campo={campo} style={{ gap: 11 }}>
         <Rotulo>Onde você vai dormir</Rotulo>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
-          {eventoDoLink.hospedagens.map((h) => {
-            const marcada = props.hospedagem === h.tipo;
-            return (
-              <button
-                key={h.tipo}
-                type="button"
-                aria-pressed={marcada}
-                aria-label={h.rotulo}
-                onClick={() => props.onHospedagem(h.tipo)}
-                style={{
-                  textAlign: 'left',
-                  padding: '11px 14px',
-                  borderRadius: 'var(--radius)',
-                  border: `1px solid ${marcada ? 'var(--color-royal)' : 'var(--color-line-strong)'}`,
-                  background: marcada ? 'var(--color-royal-soft)' : 'var(--bg-card)',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  gap: 11,
-                  alignItems: 'center',
-                  minHeight: campo ? 'var(--target-field)' : undefined,
-                }}
-              >
-                <span
-                  aria-hidden
-                  style={{
-                    width: 18,
-                    height: 18,
-                    flexShrink: 0,
-                    borderRadius: '50%',
-                    border: `2px solid ${marcada ? 'var(--color-royal)' : 'var(--color-line-strong)'}`,
-                    background: marcada ? 'var(--color-royal)' : 'transparent',
-                    display: 'grid',
-                    placeItems: 'center',
-                  }}
-                >
-                  {marcada ? <Icon name="check" size={11} color="var(--bg-card)" /> : null}
-                </span>
-                <span style={{ display: 'flex', flexDirection: 'column', gap: 3, flex: 1, minWidth: 0 }}>
-                  <span style={{ font: 'var(--text-body)', color: 'var(--text-primary)' }}>{h.rotulo}</span>
-                  <span style={{ font: 'var(--text-small)', color: 'var(--text-meta)' }}>{h.nota}</span>
-                </span>
-                <span data-numeric style={{ font: 'var(--text-small)', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>
-                  {h.valorDiaria > 0 ? `${formatarBRL(h.valorDiaria)} / dia` : 'sem custo'}
-                </span>
-              </button>
-            );
-          })}
+          {eventoDoLink.hospedagens.map((h) => (
+            <OpcaoMarcavel
+              key={h.tipo}
+              rotulo={h.rotulo}
+              nota={h.nota}
+              valor={h.valorDiaria > 0 ? `${formatarBRL(h.valorDiaria)} / dia` : 'sem custo'}
+              marcada={props.hospedagem === h.tipo}
+              densidade={props.densidade}
+              onEscolher={() => props.onHospedagem(h.tipo)}
+            />
+          ))}
         </div>
         {props.custoHospedagem > 0 ? (
           <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>

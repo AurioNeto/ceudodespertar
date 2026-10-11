@@ -1,6 +1,7 @@
 import type { Pergunta, PerguntaPendente } from '@cdd/contracts';
 import { Icon, StatusBadge, Cartao } from '@/ds';
 import { TextField } from '@/ds';
+import { OpcaoMarcavel } from '../../../../../components/OpcaoMarcavel';
 import { disparaAlerta } from '../../../../utils/regraDeAlerta';
 
 /**
@@ -8,65 +9,6 @@ import { disparaAlerta } from '../../../../utils/regraDeAlerta';
  * resposta (`P-05`) vai precisar das mesmas perguntas com o mesmo desenho, e
  * porque a regra de alerta é a mesma aqui e lá.
  */
-
-export function Opcao({
-  rotulo,
-  pergunta,
-  marcada,
-  multipla = false,
-  campo,
-  onEscolher,
-}: {
-  rotulo: string;
-  /** Entra no nome acessível: um botão “Sim” solto não diz sim a quê. */
-  pergunta: string;
-  marcada: boolean;
-  /** Marca quadrada: redondo promete escolha única, e essa promessa importa. */
-  multipla?: boolean;
-  campo: boolean;
-  onEscolher: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      aria-pressed={marcada}
-      aria-label={`${rotulo} — ${pergunta}`}
-      onClick={onEscolher}
-      style={{
-        flex: 1,
-        minHeight: campo ? 'var(--target-field)' : 44,
-        padding: '11px 15px',
-        textAlign: 'left',
-        borderRadius: 'var(--radius)',
-        border: `1px solid ${marcada ? 'var(--color-royal)' : 'var(--color-line-strong)'}`,
-        background: marcada ? 'var(--color-royal-soft)' : 'var(--bg-card)',
-        color: marcada ? 'var(--color-royal-ink)' : 'var(--text-primary)',
-        font: marcada ? 'var(--text-body-strong)' : 'var(--text-body)',
-        cursor: 'pointer',
-        display: 'flex',
-        alignItems: 'center',
-        gap: 9,
-      }}
-    >
-      <span
-        aria-hidden
-        style={{
-          width: 18,
-          height: 18,
-          flexShrink: 0,
-          borderRadius: multipla ? 5 : '50%',
-          border: `2px solid ${marcada ? 'var(--color-royal)' : 'var(--color-line-strong)'}`,
-          background: marcada ? 'var(--color-royal)' : 'transparent',
-          display: 'grid',
-          placeItems: 'center',
-        }}
-      >
-        {marcada ? <Icon name="check" size={11} color="var(--bg-card)" /> : null}
-      </span>
-      {rotulo}
-    </button>
-  );
-}
 
 export function Resposta({
   pergunta: p,
@@ -83,12 +25,12 @@ export function Resposta({
     return (
       <div style={{ display: 'flex', gap: 10 }}>
         {['Sim', 'Não'].map((o) => (
-          <Opcao
+          <OpcaoMarcavel
             key={o}
             rotulo={o}
             pergunta={p.texto}
             marcada={valor === o}
-            campo={campo}
+            densidade={campo ? 'field' : 'office'}
             onEscolher={() => onResponder(o)}
           />
         ))}
@@ -100,12 +42,12 @@ export function Resposta({
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
         {p.opcoes.map((o) => (
-          <Opcao
+          <OpcaoMarcavel
             key={o}
             rotulo={o}
             pergunta={p.texto}
             marcada={valor === o}
-            campo={campo}
+            densidade={campo ? 'field' : 'office'}
             onEscolher={() => onResponder(o)}
           />
         ))}
@@ -125,13 +67,13 @@ export function Resposta({
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
         {p.opcoes.map((o) => (
-          <Opcao
+          <OpcaoMarcavel
             key={o}
             rotulo={o}
             pergunta={p.texto}
             marcada={marcadas.includes(o)}
             multipla
-            campo={campo}
+            densidade={campo ? 'field' : 'office'}
             onEscolher={() => alternar(o)}
           />
         ))}

@@ -1,1 +1,0 @@
-export { OpcaoEmLinha } from './OpcaoEmLinha';

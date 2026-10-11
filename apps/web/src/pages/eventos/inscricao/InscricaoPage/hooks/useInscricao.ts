@@ -6,10 +6,10 @@ import type {
   Refeicao,
   TipoParticipacao,
 } from '@cdd/contracts';
-import { lerValorDigitado } from '@/lib/numero';
 import { pluralizar } from '@/pages/utils/formato';
 import { eventos } from '../../mocks/eventos';
 import { linkDoEvento } from '../../mocks/linkDaCerimonia';
+import { valorDaInscricao } from '../../utils/valorDaInscricao';
 import { CONSAGRA_POR_PADRAO } from '../constantes';
 import type { PessoaDoDiretorio } from '../mocks/inscricao';
 import type { Pendencia } from '../tipos';
@@ -86,15 +86,14 @@ export function useInscricao() {
   const anamneseExigida = consagra && tipo !== 'EQUIPE';
   const opcaoHosp = evento.hospedagens.find((h) => h.tipo === hospedagem)!;
 
-  const contribuicao = isento ? 0 : Math.round(lerValorDigitado(valor) * 100) || 0;
-  const custoHospedagem = opcaoHosp.valorDiaria * dias;
-  const custoRefeicoes = refeicoes.reduce(
-    (s, r) => s + (evento.refeicoes.find((x) => x.refeicao === r)?.valor ?? 0),
-    0,
-  );
-  const total = contribuicao + custoHospedagem + custoRefeicoes;
-  /** Nem isento nem zero: ninguém conversou sobre valor ainda. */
-  const semValor = !isento && valor.trim() === '';
+  const { contribuicao, custoHospedagem, custoRefeicoes, total, semValor } = valorDaInscricao({
+    valor,
+    isento,
+    valorDiaria: opcaoHosp.valorDiaria,
+    dias,
+    refeicoes,
+    refeicoesDoEvento: evento.refeicoes,
+  });
 
   const pendencias: readonly Pendencia[] = useMemo(
     () =>
