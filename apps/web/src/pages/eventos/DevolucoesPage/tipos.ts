@@ -5,5 +5,5 @@ export interface Paga {
   valor: number;
   pagaEm: string;
   conta: string;
-  estorno: string;
+  lancamentoDeSaida: string;
 }

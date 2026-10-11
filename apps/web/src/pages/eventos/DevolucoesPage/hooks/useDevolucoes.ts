@@ -3,7 +3,7 @@ import { formatarBRL, formatarCompetencia } from '@/pages/utils/formato';
 import { contas } from '@/pages/mocks/contas';
 import { fila as filaInicial, pagas as pagasIniciais, type DevolucaoNaFila } from '../mocks/devolucoes';
 import type { Paga } from '../tipos';
-import { competenciaDoEstorno } from '../utils/competenciaDoEstorno';
+import { competenciaDaSaida } from '../utils/competenciaDaSaida';
 import { diasEsperando } from '../utils/diasEsperando';
 
 const HOJE = '11/09/2026';
@@ -24,7 +24,7 @@ export function useDevolucoes() {
 
   const pagar = (d: DevolucaoNaFila) => {
     const nomeDaConta = contas.find((c) => (c.id as string) === conta)?.nome ?? '';
-    const destino = competenciaDoEstorno(d);
+    const destino = competenciaDaSaida(d);
     setFila((lista) => lista.filter((x) => x.id !== d.id));
     setPagas((lista) => [
       {
@@ -34,13 +34,13 @@ export function useDevolucoes() {
         valor: d.valor,
         pagaEm: data,
         conta: nomeDaConta,
-        estorno: `est-${String(d.lancamentoOriginal).replace('lanc-', '')}`,
+        lancamentoDeSaida: `sai-${String(d.lancamentoOriginal).replace('lanc-', '')}`,
       },
       ...lista,
     ]);
     setPagando(null);
     setRecado(
-      `${formatarBRL(d.valor)} devolvidos a ${d.nome} por ${nomeDaConta}. O estorno entrou na competência ${formatarCompetencia(destino)} e anulou ${d.lancamentoOriginal} — nenhuma despesa nova foi criada.`,
+      `${formatarBRL(d.valor)} devolvidos a ${d.nome} por ${nomeDaConta}. A saída entrou na competência ${formatarCompetencia(destino)}, vinculada ao evento ${d.evento}; ${d.lancamentoOriginal} não foi alterado.`,
     );
   };
 

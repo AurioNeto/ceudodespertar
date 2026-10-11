@@ -65,7 +65,7 @@ export function DevolucoesPage() {
               nota={tela.maisAntiga ? tela.maisAntiga.nome : 'fila vazia'}
               cor={tela.maisAntiga && diasEsperando(tela.maisAntiga.solicitadaEm) > 30 ? 'var(--color-attention)' : undefined}
             />
-            <Numero rotulo="Devolvidas este ano" valor={String(tela.pagas.length)} nota="já pagas e estornadas" />
+            <Numero rotulo="Devolvidas este ano" valor={String(tela.pagas.length)} nota="já pagas" />
           </div>
         </Cartao>
 

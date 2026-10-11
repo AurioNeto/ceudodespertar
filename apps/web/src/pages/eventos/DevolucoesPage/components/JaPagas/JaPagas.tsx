@@ -32,7 +32,7 @@ export function JaPagas({ lista, densidade }: JaPagasProps) {
             <span style={{ font: 'var(--text-small)', color: 'var(--text-meta)', flex: 1, minWidth: 160 }}>
               {x.evento} · {x.pagaEm} · {x.conta}
             </span>
-            <code style={{ font: 'var(--text-code)' }}>{x.estorno}</code>
+            <code style={{ font: 'var(--text-code)' }}>{x.lancamentoDeSaida}</code>
             <span data-numeric style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>
               {formatarBRL(x.valor)}
             </span>
