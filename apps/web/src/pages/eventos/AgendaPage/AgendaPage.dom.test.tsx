@@ -38,7 +38,7 @@ const mesNaTela = (container: HTMLElement) => textoDaFolhaQueCasaCom(container, 
 const contagemDoMes = (container: HTMLElement) =>
   textoDaFolhaQueCasaCom(container, /^(nenhuma cerimônia|\d+ cerimônias? no mês)$/);
 const avisoDaAgenda = (container: HTMLElement) =>
-  container.querySelector('button[aria-label="fechar aviso"]')?.parentElement?.textContent ?? null;
+  container.querySelector('button[aria-label="fechar aviso"]')?.previousElementSibling?.textContent ?? null;
 const itensDaLista = (container: HTMLElement) =>
   todos<HTMLButtonElement>(container, 'button').filter((botao) => /^\d{2}\/\d{2}/.test(botao.textContent ?? ''));
 const textosDaLista = (container: HTMLElement) => itensDaLista(container).map((item) => item.textContent);

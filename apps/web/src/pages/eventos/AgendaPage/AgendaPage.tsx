@@ -1,4 +1,4 @@
-import { CorpoDaTela, Button, Icon, ScreenHeader, useDensidade, SeletorDeTipo } from '@/ds';
+import { Aviso, CorpoDaTela, Button, ScreenHeader, useDensidade, SeletorDeTipo } from '@/ds';
 import { useSessao } from '@/app/sessao';
 import { CalendarioMensal } from './components/CalendarioMensal';
 import { DetalheDoTrabalho } from './components/DetalheDoTrabalho';
@@ -41,23 +41,9 @@ export function AgendaPage() {
 
       <CorpoDaTela densidade={densidade} larguraMaxima={1080} espaco="compacto">
         {tela.mensagem ? (
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              gap: 12,
-              background: 'var(--color-royal-soft)',
-              border: '1px solid var(--color-royal-border)',
-              borderRadius: 'var(--radius)',
-              padding: '10px 14px',
-            }}
-          >
-            <span style={{ font: 'var(--text-body)', color: 'var(--color-royal-deep)' }}>{tela.mensagem}</span>
-            <button type="button" aria-label="fechar aviso" onClick={tela.fecharMensagem} style={{ color: 'var(--color-royal-deep)' }}>
-              <Icon name="x" size={16} />
-            </button>
-          </div>
+          <Aviso tom="informacao" comIcone={false} aoFechar={tela.fecharMensagem} rotuloDeFechar="fechar aviso">
+            {tela.mensagem}
+          </Aviso>
         ) : null}
 
         {tela.emDetalhe ? (
