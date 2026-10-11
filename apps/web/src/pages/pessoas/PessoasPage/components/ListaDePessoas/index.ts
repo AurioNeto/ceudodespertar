@@ -1,0 +1,1 @@
+export { ListaDePessoas } from './ListaDePessoas';
