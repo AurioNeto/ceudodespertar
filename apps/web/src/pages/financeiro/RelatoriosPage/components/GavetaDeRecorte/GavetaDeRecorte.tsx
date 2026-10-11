@@ -1,6 +1,6 @@
+import { reais } from '@cdd/contracts';
 import { Button, Icon, type Density } from '@/ds';
-import { formatarValor } from '@/lib/formato';
-import { pluralizar } from '@/pages/utils/formato';
+import { formatarBRL, pluralizar } from '@/pages/utils/formato';
 import { rotuloLabel } from '../../constantes';
 import type { LinhaDoRelatorio } from '../../mocks/relatorios';
 import type { Drill } from '../../tipos';
@@ -60,7 +60,7 @@ export function GavetaDeRecorte({
             <div style={rotuloLabel}>{drill.rotulo}</div>
             <div style={{ font: 'var(--text-title-sm)', color: 'var(--text-title)' }}>{drill.valor}</div>
             <div style={{ font: 'var(--text-small)', color: 'var(--text-secondary)', marginTop: 4 }}>
-              {pluralizar(linhasDoDrill.length, 'lançamento')} · {formatarValor(totalDoDrill)} · {rotuloPeriodo}
+              {pluralizar(linhasDoDrill.length, 'lançamento')} · {formatarBRL(reais(totalDoDrill))} · {rotuloPeriodo}
             </div>
           </div>
           <button type="button" onClick={onFechar} aria-label="Fechar recorte" style={{ color: 'var(--text-meta)' }}>
@@ -103,7 +103,7 @@ export function GavetaDeRecorte({
                 }}
               >
                 {l.tipo === 'entrada' ? '+ ' : l.tipo === 'saida' ? '− ' : ''}
-                {formatarValor(l.valor)}
+                {formatarBRL(reais(l.valor))}
               </span>
             </div>
           ))}

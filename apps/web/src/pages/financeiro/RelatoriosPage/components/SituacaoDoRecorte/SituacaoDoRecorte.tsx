@@ -1,5 +1,5 @@
-import { formatarValor } from '@/lib/formato';
-import { pluralizar } from '@/pages/utils/formato';
+import { reais } from '@cdd/contracts';
+import { formatarBRL, pluralizar } from '@/pages/utils/formato';
 import type { LinhaDoRelatorio } from '../../mocks/relatorios';
 import type { ValoresAConferir } from '../../tipos';
 
@@ -10,9 +10,9 @@ export interface SituacaoDoRecorteProps {
 
 const valoresPorTipo = ({ entradas, saidas, transferencias }: ValoresAConferir) =>
   [
-    `entradas ${formatarValor(entradas)}`,
-    `saídas ${formatarValor(saidas)}`,
-    ...(transferencias > 0 ? [`transferências ${formatarValor(transferencias)}`] : []),
+    `entradas ${formatarBRL(reais(entradas))}`,
+    `saídas ${formatarBRL(reais(saidas))}`,
+    ...(transferencias > 0 ? [`transferências ${formatarBRL(reais(transferencias))}`] : []),
   ].join(' · ');
 
 export function SituacaoDoRecorte({ aConferir, valoresAConferir }: SituacaoDoRecorteProps) {

@@ -85,14 +85,14 @@ describe('PainelDeQuebra: vista em barras', () => {
 
     const barras = todos<HTMLButtonElement>(container, 'button').filter((b) => b.title !== '' && b.title.includes(' · '));
 
-    expect(barras.map((b) => b.textContent)).toEqual(['Cozinha600,00', 'Dormitório300,00', 'Secretaria100,00']);
+    expect(barras.map((b) => b.textContent)).toEqual(['CozinhaR$ 600,00', 'DormitórioR$ 300,00', 'SecretariaR$ 100,00']);
   });
 
   it('a dica de cada barra traz nome, valor e a participação no total arredondada', async () => {
     const { container } = await montarPainel();
 
-    expect(botaoDaBarra(container, 'Cozinha').title).toBe('Cozinha · 600,00 · 60%');
-    expect(botaoDaBarra(container, 'Secretaria').title).toBe('Secretaria · 100,00 · 10%');
+    expect(botaoDaBarra(container, 'Cozinha').title).toBe('Cozinha · R$ 600,00 · 60%');
+    expect(botaoDaBarra(container, 'Secretaria').title).toBe('Secretaria · R$ 100,00 · 10%');
   });
 
   it('a participação na dica é arredondada para o inteiro mais próximo: dois terços viram 67%', async () => {
@@ -101,8 +101,8 @@ describe('PainelDeQuebra: vista em barras', () => {
       { nome: 'Secretaria', valor: 10 },
     ]);
 
-    expect(botaoDaBarra(container, 'Cozinha').title).toBe('Cozinha · 20,00 · 67%');
-    expect(botaoDaBarra(container, 'Secretaria').title).toBe('Secretaria · 10,00 · 33%');
+    expect(botaoDaBarra(container, 'Cozinha').title).toBe('Cozinha · R$ 20,00 · 67%');
+    expect(botaoDaBarra(container, 'Secretaria').title).toBe('Secretaria · R$ 10,00 · 33%');
   });
 
   it('a largura de cada barra é o valor sobre o maior valor, não sobre o total', async () => {
@@ -154,14 +154,14 @@ describe('PainelDeQuebra: vista em barras', () => {
       { nome: 'Vazio', valor: 0 },
     ]);
 
-    expect(botaoDaBarra(container, 'Vazio').title).toBe('Vazio · 0,00 · 0%');
+    expect(botaoDaBarra(container, 'Vazio').title).toBe('Vazio · R$ 0,00 · 0%');
   });
 
   it('só itens de valor zero — a participação é 0% e a largura não vira NaN', async () => {
     const { container } = await montarPainel([{ nome: 'Vazio', valor: 0 }]);
 
     const faixa = todos<HTMLSpanElement>(botaoDaBarra(container, 'Vazio'), 'span').find((s) => s.style.height === '100%');
-    expect(botaoDaBarra(container, 'Vazio').title).toBe('Vazio · 0,00 · 0%');
+    expect(botaoDaBarra(container, 'Vazio').title).toBe('Vazio · R$ 0,00 · 0%');
     expect(faixa?.style.width).toBe('0%');
   });
 });
@@ -216,7 +216,7 @@ describe('PainelDeQuebra: vista em rosca', () => {
     const { container } = await montarPainel();
     await clicar(botaoComTexto(container, 'Rosca'));
 
-    expect(linhaDoResumo(container)).toEqual(['saídas', '1.000,00']);
+    expect(linhaDoResumo(container)).toEqual(['saídas', 'R$ 1.000,00']);
   });
 
   it('mouse sobre a legenda — a linha de baixo passa a mostrar o item e o valor dele', async () => {
@@ -225,7 +225,7 @@ describe('PainelDeQuebra: vista em rosca', () => {
 
     await passarMouseSobre(botaoDaLegenda(container, 'Dormitório'));
 
-    expect(linhaDoResumo(container)).toEqual(['Dormitório', '300,00']);
+    expect(linhaDoResumo(container)).toEqual(['Dormitório', 'R$ 300,00']);
   });
 
   it('mouse sobre a fatia — destaca a fatia com traço mais grosso e apaga as outras', async () => {
@@ -257,7 +257,7 @@ describe('PainelDeQuebra: vista em rosca', () => {
 
     await tirarMouseDaFatia(fatias(container)[0] as SVGCircleElement);
 
-    expect(linhaDoResumo(container)).toEqual(['saídas', '1.000,00']);
+    expect(linhaDoResumo(container)).toEqual(['saídas', 'R$ 1.000,00']);
   });
 
   it('mouse sai da legenda — a linha de baixo volta ao total e as legendas à opacidade cheia', async () => {
@@ -267,7 +267,7 @@ describe('PainelDeQuebra: vista em rosca', () => {
 
     await tirarMouseDe(botaoDaLegenda(container, 'Dormitório'));
 
-    expect(linhaDoResumo(container)).toEqual(['saídas', '1.000,00']);
+    expect(linhaDoResumo(container)).toEqual(['saídas', 'R$ 1.000,00']);
     expect(['Cozinha', 'Dormitório', 'Secretaria'].map((n) => botaoDaLegenda(container, n).style.opacity)).toEqual(['1', '1', '1']);
   });
 
@@ -294,7 +294,7 @@ describe('PainelDeQuebra: vista em rosca', () => {
     await clicar(botaoComTexto(container, 'Rosca'));
 
     expect(fatias(container)).toHaveLength(0);
-    expect(linhaDoResumo(container)).toEqual(['saídas', '0,00']);
+    expect(linhaDoResumo(container)).toEqual(['saídas', 'R$ 0,00']);
   });
 
   it('só itens de valor zero — as fatias têm tamanho zero em vez de NaN', async () => {

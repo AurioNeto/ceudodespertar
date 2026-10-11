@@ -124,7 +124,7 @@ describe('RelatoriosPage: indicadores do mês de agosto de 2026 contra o períod
     const { container } = await montar(<RelatoriosPage />);
 
     expect(cartaoDoKpi(container, 'Entradas')).toEqual({
-      valor: '4.747,90',
+      valor: 'R$ 4.747,90',
       corDoValor: COR_CONFIRMADA,
       delta: '+56% vs período anterior',
       corDoDelta: COR_CONFIRMADA,
@@ -135,7 +135,7 @@ describe('RelatoriosPage: indicadores do mês de agosto de 2026 contra o períod
     const { container } = await montar(<RelatoriosPage />);
 
     expect(cartaoDoKpi(container, 'Saídas')).toEqual({
-      valor: '4.159,06',
+      valor: 'R$ 4.159,06',
       corDoValor: COR_DE_ATENCAO,
       delta: '-10% vs período anterior',
       corDoDelta: COR_CONFIRMADA,
@@ -146,7 +146,7 @@ describe('RelatoriosPage: indicadores do mês de agosto de 2026 contra o períod
     const { container } = await montar(<RelatoriosPage />);
 
     expect(cartaoDoKpi(container, 'Resultado')).toEqual({
-      valor: '588,84',
+      valor: 'R$ 588,84',
       corDoValor: COR_DE_MARCA,
       delta: '+137% vs período anterior',
       corDoDelta: COR_CONFIRMADA,
@@ -157,7 +157,7 @@ describe('RelatoriosPage: indicadores do mês de agosto de 2026 contra o períod
     const { container } = await montar(<RelatoriosPage />);
 
     expect(cartaoDoKpi(container, 'Transferências')).toEqual({
-      valor: '605,68',
+      valor: 'R$ 605,68',
       corDoValor: COR_PRIMARIA,
       delta: '1 movimento entre contas',
       corDoDelta: COR_META,
@@ -192,10 +192,10 @@ describe('RelatoriosPage: indicadores do mês de agosto de 2026 contra o períod
     await clicar(botaoComTexto(container, 'Trimestre'));
 
     expect(['Entradas', 'Saídas', 'Resultado', 'Transferências'].map((k) => cartaoDoKpi(container, k).valor)).toEqual([
-      '12.236,08',
-      '11.443,13',
-      '792,95',
-      '2.980,79',
+      'R$ 12.236,08',
+      'R$ 11.443,13',
+      'R$ 792,95',
+      'R$ 2.980,79',
     ]);
     expect(cartaoDoKpi(container, 'Transferências').delta).toBe('3 movimentos entre contas');
   });
@@ -205,9 +205,9 @@ describe('RelatoriosPage: indicadores do mês de agosto de 2026 contra o períod
 
     await escolherOpcao(seletorDe(container, 'Tipo'), 'saida');
 
-    expect(cartaoDoKpi(container, 'Entradas')).toMatchObject({ valor: '0,00', delta: 'sem base de comparação', corDoDelta: COR_META });
-    expect(cartaoDoKpi(container, 'Resultado')).toMatchObject({ valor: '-4.159,06', corDoValor: COR_DE_ATENCAO, delta: '+10% vs período anterior' });
-    expect(cartaoDoKpi(container, 'Transferências')).toMatchObject({ valor: '0,00', delta: '0 movimentos entre contas' });
+    expect(cartaoDoKpi(container, 'Entradas')).toMatchObject({ valor: 'R$ 0,00', delta: 'sem base de comparação', corDoDelta: COR_META });
+    expect(cartaoDoKpi(container, 'Resultado')).toMatchObject({ valor: 'R$ -4.159,06', corDoValor: COR_DE_ATENCAO, delta: '+10% vs período anterior' });
+    expect(cartaoDoKpi(container, 'Transferências')).toMatchObject({ valor: 'R$ 0,00', delta: '0 movimentos entre contas' });
   });
 
   it('só transferências — o resultado zerado fica na cor da marca e sem base de comparação', async () => {
@@ -216,12 +216,12 @@ describe('RelatoriosPage: indicadores do mês de agosto de 2026 contra o períod
     await escolherOpcao(seletorDe(container, 'Tipo'), 'transferencia');
 
     expect(cartaoDoKpi(container, 'Resultado')).toEqual({
-      valor: '0,00',
+      valor: 'R$ 0,00',
       corDoValor: COR_DE_MARCA,
       delta: 'sem base de comparação',
       corDoDelta: COR_META,
     });
-    expect(cartaoDoKpi(container, 'Transferências').valor).toBe('605,68');
+    expect(cartaoDoKpi(container, 'Transferências').valor).toBe('R$ 605,68');
   });
 
   it('campo — os mesmos números aparecem nos quatro indicadores', async () => {
@@ -230,10 +230,10 @@ describe('RelatoriosPage: indicadores do mês de agosto de 2026 contra o períod
     const { container } = await montar(<RelatoriosPage />);
 
     expect(['Entradas', 'Saídas', 'Resultado', 'Transferências'].map((k) => cartaoDoKpi(container, k).valor)).toEqual([
-      '4.747,90',
-      '4.159,06',
-      '588,84',
-      '605,68',
+      'R$ 4.747,90',
+      'R$ 4.159,06',
+      'R$ 588,84',
+      'R$ 605,68',
     ]);
   });
 });
@@ -243,7 +243,7 @@ describe('RelatoriosPage: aviso de lançamentos a conferir', () => {
     const { container } = await montar(<RelatoriosPage />);
 
     expect(container.textContent).toContain(
-      'Inclui 1 lançamento a conferir (entradas 0,00 · saídas 1.543,68) — os números podem mudar depois da conferência.',
+      'Inclui 1 lançamento a conferir (entradas R$ 0,00 · saídas R$ 1.543,68) — os números podem mudar depois da conferência.',
     );
   });
 
@@ -263,7 +263,7 @@ describe('RelatoriosPage: aviso de lançamentos a conferir', () => {
     await digitar(campoDeMes(container, 'De'), '01/2025');
 
     expect(container.textContent).toContain(
-      'Inclui 11 lançamentos a conferir (entradas 2.897,48 · saídas 5.567,55 · transferências 2.735,90) — os números podem mudar depois da conferência.',
+      'Inclui 11 lançamentos a conferir (entradas R$ 2.897,48 · saídas R$ 5.567,55 · transferências R$ 2.735,90) — os números podem mudar depois da conferência.',
     );
   });
 });
@@ -331,7 +331,7 @@ describe('RelatoriosPage: filtros no escritório', () => {
     await clicar(botaoComTexto(container, 'CDD'));
 
     expect([marcado(container, 'CDD'), marcado(container, 'Munay')]).toEqual(['false', 'true']);
-    expect(cartaoDoKpi(container, 'Entradas').valor).toBe('0,00');
+    expect(cartaoDoKpi(container, 'Entradas').valor).toBe('R$ 0,00');
   });
 
   it('unidades — desligar a que sobrou não faz nada', async () => {
@@ -423,7 +423,7 @@ describe('RelatoriosPage: filtros no escritório', () => {
 
     await escolherOpcao(seletorDe(container, 'Conta'), 'Espécie');
 
-    expect([cartaoDoKpi(container, 'Entradas').valor, cartaoDoKpi(container, 'Saídas').valor]).toEqual(['2.161,06', '0,00']);
+    expect([cartaoDoKpi(container, 'Entradas').valor, cartaoDoKpi(container, 'Saídas').valor]).toEqual(['R$ 2.161,06', 'R$ 0,00']);
   });
 
   it('escolher Categoria Manutenção — restringe os indicadores às saídas da categoria', async () => {
@@ -431,7 +431,7 @@ describe('RelatoriosPage: filtros no escritório', () => {
 
     await escolherOpcao(seletorDe(container, 'Categoria'), 'Manutenção');
 
-    expect([cartaoDoKpi(container, 'Entradas').valor, cartaoDoKpi(container, 'Saídas').valor]).toEqual(['0,00', '2.497,54']);
+    expect([cartaoDoKpi(container, 'Entradas').valor, cartaoDoKpi(container, 'Saídas').valor]).toEqual(['R$ 0,00', 'R$ 2.497,54']);
   });
 
   it('escolher Cerimônia São Miguel · julho — restringe os indicadores aos lançamentos da cerimônia', async () => {
@@ -439,7 +439,7 @@ describe('RelatoriosPage: filtros no escritório', () => {
 
     await escolherOpcao(seletorDe(container, 'Cerimônia'), 'São Miguel · julho');
 
-    expect([cartaoDoKpi(container, 'Entradas').valor, cartaoDoKpi(container, 'Saídas').valor]).toEqual(['0,00', '1.543,68']);
+    expect([cartaoDoKpi(container, 'Entradas').valor, cartaoDoKpi(container, 'Saídas').valor]).toEqual(['R$ 0,00', 'R$ 1.543,68']);
   });
 
   it('Limpar filtros — devolve os seis seletores ao valor de todos e os indicadores ao recorte inteiro', async () => {
@@ -457,7 +457,7 @@ describe('RelatoriosPage: filtros no escritório', () => {
       'todas',
       'todas',
     ]);
-    expect(cartaoDoKpi(container, 'Entradas').valor).toBe('4.747,90');
+    expect(cartaoDoKpi(container, 'Entradas').valor).toBe('R$ 4.747,90');
   });
 
   it('Limpar filtros — não mexe no período, na comparação nem nas unidades', async () => {
@@ -563,15 +563,15 @@ describe('RelatoriosPage: movimento por conta', () => {
   it('escritório — mostra o cabeçalho da tabela e, por conta, entradas, saídas, resultado e exportar', async () => {
     const { container } = await montar(<RelatoriosPage />);
 
-    expect(linhaDaConta(container, 'Cora PJ').textContent).toBe('Cora PJ2.586,842.615,38-28,54exportar');
-    expect(linhaDaConta(container, 'Espécie').textContent).toBe('Espécie2.161,060,002.161,06exportar');
+    expect(linhaDaConta(container, 'Cora PJ').textContent).toBe('Cora PJR$ 2.586,84R$ 2.615,38R$ -28,54exportar');
+    expect(linhaDaConta(container, 'Espécie').textContent).toBe('EspécieR$ 2.161,06R$ 0,00R$ 2.161,06exportar');
     expect(cartaoComTitulo(container, 'Movimento por conta').textContent).toContain('ContaEntradasSaídasResultado');
   });
 
   it('escritório — conta sem movimento aparece zerada e com resultado na cor primária', async () => {
     const { container } = await montar(<RelatoriosPage />);
 
-    expect(linhaDaConta(container, 'Itaú Munay').textContent).toBe('Itaú Munay0,000,000,00exportar');
+    expect(linhaDaConta(container, 'Itaú Munay').textContent).toBe('Itaú MunayR$ 0,00R$ 0,00R$ 0,00exportar');
     const resultado = todos<HTMLSpanElement>(linhaDaConta(container, 'Itaú Munay'), 'span')[2];
     expect(resultado?.style.color).toBe(COR_PRIMARIA);
   });
@@ -580,7 +580,7 @@ describe('RelatoriosPage: movimento por conta', () => {
     const { container } = await montar(<RelatoriosPage />);
 
     const resultado = todos<HTMLSpanElement>(linhaDaConta(container, 'Nubank Paty'), 'span')[2];
-    expect([resultado?.textContent, resultado?.style.color]).toEqual(['-1.543,68', COR_DE_ATENCAO]);
+    expect([resultado?.textContent, resultado?.style.color]).toEqual(['R$ -1.543,68', COR_DE_ATENCAO]);
   });
 
   it('escritório — exportar da conta avisa o extrato exportado do período', async () => {
@@ -596,7 +596,7 @@ describe('RelatoriosPage: movimento por conta', () => {
 
     const { container } = await montar(<RelatoriosPage />);
 
-    expect(linhaDaConta(container, 'Cora PJ').textContent).toBe('Cora PJ-28,54');
+    expect(linhaDaConta(container, 'Cora PJ').textContent).toBe('Cora PJR$ -28,54');
     expect(cartaoComTitulo(container, 'Movimento por conta').textContent).not.toContain('ContaEntradas');
     expect(botoesComTexto(container, 'exportar')).toHaveLength(0);
   });
@@ -616,9 +616,9 @@ describe('RelatoriosPage: fundo próprio e custo por cerimônia', () => {
     const { container } = await montar(<RelatoriosPage />);
 
     const cartao = cartaoComTitulo(container, 'Fundo próprio contra as metas');
-    expect(cartao.textContent).toContain('Obra do dormitório18.400,00 de 24.000,00');
+    expect(cartao.textContent).toContain('Obra do dormitórioR$ 18.400,00 de R$ 24.000,00');
     expect(cartao.textContent).toContain('previsão de conclusão em novembro');
-    expect(cartao.textContent).toContain('Emergência e saúde6.000,00 de 6.000,00');
+    expect(cartao.textContent).toContain('Emergência e saúdeR$ 6.000,00 de R$ 6.000,00');
     expect(cartao.textContent).toContain('meta atingida, mantida intocada');
   });
 
@@ -645,7 +645,7 @@ describe('RelatoriosPage: fundo próprio e custo por cerimônia', () => {
 
     const botoes = todos<HTMLButtonElement>(cartaoComTitulo(container, 'Custo por cerimônia'), 'button');
 
-    expect(botoes.map((b) => b.textContent)).toEqual(['São Miguel · julho1.543,68', 'Mãe Divina · setembro538,55']);
+    expect(botoes.map((b) => b.textContent)).toEqual(['São Miguel · julhoR$ 1.543,68', 'Mãe Divina · setembroR$ 538,55']);
   });
 
   it('custo por cerimônia — a barra da maior ocupa 100% e a outra é proporcional a ela', async () => {
@@ -677,7 +677,7 @@ describe('RelatoriosPage: gaveta com os lançamentos de um recorte', () => {
 
     await clicar(barraDoPainel(container, 'Saídas por grupo', 'Chácara (Infraestrutura)'));
 
-    expect(cabecalhoDaGaveta(container)).toEqual(['Saídas do grupo', 'Chácara (Infraestrutura)', '1 lançamento · 1.543,68 · ago/26']);
+    expect(cabecalhoDaGaveta(container)).toEqual(['Saídas do grupo', 'Chácara (Infraestrutura)', '1 lançamento · R$ 1.543,68 · ago/26']);
   });
 
   it('a linha da gaveta mostra dia e mês, motivo, grupo, conta, a marca de a conferir e a saída com sinal de menos', async () => {
@@ -686,7 +686,7 @@ describe('RelatoriosPage: gaveta com os lançamentos de um recorte', () => {
     await clicar(barraDoPainel(container, 'Saídas por grupo', 'Chácara (Infraestrutura)'));
 
     expect(linhasDaGaveta(container)).toEqual([
-      `25/08reforma do telhadoChácara (Infraestrutura) · Nubank Paty · a conferir${MENOS}1.543,68`,
+      `25/08reforma do telhadoChácara (Infraestrutura) · Nubank Paty · a conferir${MENOS}R$ 1.543,68`,
     ]);
   });
 
@@ -695,19 +695,19 @@ describe('RelatoriosPage: gaveta com os lançamentos de um recorte', () => {
 
     await clicar(barraDoPainel(container, 'Saídas por categoria', 'Manutenção'));
 
-    expect(cabecalhoDaGaveta(container)).toEqual(['Saídas da categoria', 'Manutenção', '2 lançamentos · 2.497,54 · ago/26']);
+    expect(cabecalhoDaGaveta(container)).toEqual(['Saídas da categoria', 'Manutenção', '2 lançamentos · R$ 2.497,54 · ago/26']);
     expect(linhasDaGaveta(container)).toEqual([
-      `25/08reforma do telhadoChácara (Infraestrutura) · Nubank Paty · a conferir${MENOS}1.543,68`,
-      `23/08reforma do telhadoCDD · Cora PJ${MENOS}953,86`,
+      `25/08reforma do telhadoChácara (Infraestrutura) · Nubank Paty · a conferir${MENOS}R$ 1.543,68`,
+      `23/08reforma do telhadoCDD · Cora PJ${MENOS}R$ 953,86`,
     ]);
   });
 
   it('cerimônia — abre a gaveta de gastos da cerimônia', async () => {
     const { container } = await montar(<RelatoriosPage />);
 
-    await clicar(botaoComTexto(container, 'São Miguel · julho1.543,68'));
+    await clicar(botaoComTexto(container, 'São Miguel · julhoR$ 1.543,68'));
 
-    expect(cabecalhoDaGaveta(container)).toEqual(['Gastos da cerimônia', 'São Miguel · julho', '1 lançamento · 1.543,68 · ago/26']);
+    expect(cabecalhoDaGaveta(container)).toEqual(['Gastos da cerimônia', 'São Miguel · julho', '1 lançamento · R$ 1.543,68 · ago/26']);
   });
 
   it('barra de Saídas por grupo com entrada no mês — a gaveta do grupo lista só as saídas', async () => {
@@ -715,17 +715,17 @@ describe('RelatoriosPage: gaveta com os lançamentos de um recorte', () => {
 
     await clicar(barraDoPainel(container, 'Saídas por grupo', 'Cozinha'));
 
-    expect(cabecalhoDaGaveta(container)).toEqual(['Saídas do grupo', 'Cozinha', '1 lançamento · 538,55 · ago/26']);
-    expect(linhasDaGaveta(container)).toEqual([`10/08lenha para o feitioCozinha · Cora PJ${MENOS}538,55`]);
+    expect(cabecalhoDaGaveta(container)).toEqual(['Saídas do grupo', 'Cozinha', '1 lançamento · R$ 538,55 · ago/26']);
+    expect(linhasDaGaveta(container)).toEqual([`10/08lenha para o feitioCozinha · Cora PJ${MENOS}R$ 538,55`]);
   });
 
   it('cerimônia com entrada no mês — a gaveta de gastos lista só as saídas da cerimônia', async () => {
     const { container } = await montar(<RelatoriosPage />);
 
-    await clicar(botaoComTexto(container, 'Mãe Divina · setembro538,55'));
+    await clicar(botaoComTexto(container, 'Mãe Divina · setembroR$ 538,55'));
 
-    expect(cabecalhoDaGaveta(container)).toEqual(['Gastos da cerimônia', 'Mãe Divina · setembro', '1 lançamento · 538,55 · ago/26']);
-    expect(linhasDaGaveta(container)).toEqual([`10/08lenha para o feitioCozinha · Cora PJ${MENOS}538,55`]);
+    expect(cabecalhoDaGaveta(container)).toEqual(['Gastos da cerimônia', 'Mãe Divina · setembro', '1 lançamento · R$ 538,55 · ago/26']);
+    expect(linhasDaGaveta(container)).toEqual([`10/08lenha para o feitioCozinha · Cora PJ${MENOS}R$ 538,55`]);
   });
 
   it('conta — a gaveta lista entradas e saídas da conta, com sinal de mais e de menos', async () => {
@@ -735,10 +735,10 @@ describe('RelatoriosPage: gaveta com os lançamentos de um recorte', () => {
 
     expect(cabecalhoDaGaveta(container)[0]).toBe('Movimento da conta');
     expect(linhasDaGaveta(container)).toEqual([
-      `10/08lenha para o feitioCozinha · Cora PJ${MENOS}538,55`,
-      `24/08lenha para o feitioDormitório · Cora PJ${MENOS}1.122,97`,
-      `23/08reforma do telhadoCDD · Cora PJ${MENOS}953,86`,
-      '04/08venda de velasCozinha · Cora PJ+ 2.586,84',
+      `10/08lenha para o feitioCozinha · Cora PJ${MENOS}R$ 538,55`,
+      `24/08lenha para o feitioDormitório · Cora PJ${MENOS}R$ 1.122,97`,
+      `23/08reforma do telhadoCDD · Cora PJ${MENOS}R$ 953,86`,
+      '04/08venda de velasCozinha · Cora PJ+ R$ 2.586,84',
     ]);
   });
 
@@ -748,10 +748,10 @@ describe('RelatoriosPage: gaveta com os lançamentos de um recorte', () => {
     await clicar(botaoDeConta(container, 'Cora PJ'));
 
     expect(valoresDaGaveta(container)).toEqual([
-      { texto: `${MENOS}538,55`, cor: COR_PRIMARIA },
-      { texto: `${MENOS}1.122,97`, cor: COR_PRIMARIA },
-      { texto: `${MENOS}953,86`, cor: COR_PRIMARIA },
-      { texto: '+ 2.586,84', cor: COR_CONFIRMADA },
+      { texto: `${MENOS}R$ 538,55`, cor: COR_PRIMARIA },
+      { texto: `${MENOS}R$ 1.122,97`, cor: COR_PRIMARIA },
+      { texto: `${MENOS}R$ 953,86`, cor: COR_PRIMARIA },
+      { texto: '+ R$ 2.586,84', cor: COR_CONFIRMADA },
     ]);
   });
 
@@ -760,7 +760,7 @@ describe('RelatoriosPage: gaveta com os lançamentos de um recorte', () => {
 
     await clicar(botaoDeConta(container, 'Itaú Munay'));
 
-    expect(valoresDaGaveta(container)).toEqual([{ texto: '605,68', cor: COR_PRIMARIA }]);
+    expect(valoresDaGaveta(container)).toEqual([{ texto: 'R$ 605,68', cor: COR_PRIMARIA }]);
   });
 
   it('conta — o total da gaveta é o resultado da conta, entradas menos saídas, igual ao número clicado', async () => {
@@ -768,8 +768,8 @@ describe('RelatoriosPage: gaveta com os lançamentos de um recorte', () => {
 
     await clicar(botaoDeConta(container, 'Cora PJ'));
 
-    expect(cabecalhoDaGaveta(container)[2]).toBe('4 lançamentos · -28,54 · ago/26');
-    expect(linhaDaConta(container, 'Cora PJ').textContent).toContain('-28,54');
+    expect(cabecalhoDaGaveta(container)[2]).toBe('4 lançamentos · R$ -28,54 · ago/26');
+    expect(linhaDaConta(container, 'Cora PJ').textContent).toContain('R$ -28,54');
   });
 
   it('conta com transferência — a linha repete a conta e o valor sai sem sinal', async () => {
@@ -777,7 +777,7 @@ describe('RelatoriosPage: gaveta com os lançamentos de um recorte', () => {
 
     await clicar(botaoDeConta(container, 'Itaú Munay'));
 
-    expect(linhasDaGaveta(container)).toEqual(['10/08repasse entre contasItaú Munay · Itaú Munay605,68']);
+    expect(linhasDaGaveta(container)).toEqual(['10/08repasse entre contasItaú Munay · Itaú MunayR$ 605,68']);
   });
 
   it('a gaveta mostra no máximo 40 linhas, mas a contagem do cabeçalho é a do recorte inteiro', async () => {

@@ -1,5 +1,6 @@
 import type { Density } from '@/ds';
-import { formatarValor } from '@/lib/formato';
+import { reais } from '@cdd/contracts';
+import { formatarBRL } from '@/pages/utils/formato';
 import { rotuloLabel } from '../../constantes';
 import type { Comparacao } from '../../tipos';
 import { corDoDelta, textoDoDelta } from '../../utils/delta';
@@ -44,7 +45,7 @@ export function CartoesDeKpi({ kpis, comparar, densidade }: CartoesDeKpiProps) {
               color: k.cor,
             }}
           >
-            {formatarValor(k.valor)}
+            {formatarBRL(reais(k.valor))}
           </span>
           <span
             style={{

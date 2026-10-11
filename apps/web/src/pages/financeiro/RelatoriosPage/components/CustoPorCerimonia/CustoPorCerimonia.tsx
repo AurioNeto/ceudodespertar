@@ -1,4 +1,5 @@
-import { formatarValor } from '@/lib/formato';
+import { reais } from '@cdd/contracts';
+import { formatarBRL } from '@/pages/utils/formato';
 import type { useRelatorio } from '../../hooks/useRelatorio';
 import type { Drill } from '../../tipos';
 import { Cartao } from '../Cartao';
@@ -30,7 +31,7 @@ export function CustoPorCerimonia({ porCerimonia, onAbrirDrill }: CustoPorCerimo
                   fontVariantNumeric: 'tabular-nums',
                 }}
               >
-                {formatarValor(c.valor)}
+                {formatarBRL(reais(c.valor))}
               </span>
             </span>
             <span

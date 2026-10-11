@@ -1,5 +1,6 @@
+import { reais } from '@cdd/contracts';
 import type { Density } from '@/ds';
-import { formatarValor } from '@/lib/formato';
+import { formatarBRL } from '@/pages/utils/formato';
 import { RAIO } from '../../constantes';
 import type { FatiaDaQuebra } from '../../tipos';
 import type { fatiasDaQuebra } from '../../utils/fatias';
@@ -137,7 +138,7 @@ export function VistaEmRosca({ fatias, emFoco, total, densidade, onAbrir, onHove
             color: 'var(--text-primary)',
           }}
         >
-          {formatarValor(emFoco ? emFoco.valor : total)}
+          {formatarBRL(reais(emFoco ? emFoco.valor : total))}
         </span>
       </div>
     </>

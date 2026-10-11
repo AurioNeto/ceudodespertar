@@ -1,4 +1,5 @@
-import { formatarValor } from '@/lib/formato';
+import { reais } from '@cdd/contracts';
+import { formatarBRL } from '@/pages/utils/formato';
 
 export interface NumeroProps {
   valor: number;
@@ -16,7 +17,7 @@ export function Numero({ valor, cor }: NumeroProps) {
         color: cor,
       }}
     >
-      {formatarValor(valor)}
+      {formatarBRL(reais(valor))}
     </span>
   );
 }
