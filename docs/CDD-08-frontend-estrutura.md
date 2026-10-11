@@ -67,7 +67,7 @@ O dono aprovou as recomendações da proposta em todos os pontos. Quatro decisõ
 |---|---|---|
 | Regra do ancestral comum (seção 6) | O `ds/` é global por definição: catálogo do Documento 5 §4 e primitivos genéricos que 3 ou mais telas pedem ficam no `ds/` mesmo quando todos os consumidores estão em `pages/`. Exemplos: `Select` (15 áreas, todas em `pages/`), os 7 itens do catálogo usados só pelo `RegistrarLancamentoPage`, e `Th` e `Td` (3 telas do financeiro). | O `ds/` é a única biblioteca de UI global. Descer e subir de volta é churn. Hoje há 29 das cerca de 60 telas do Documento 4, e a régua do Documento 5 conta as telas planejadas. Uma segunda biblioteca global recriaria o problema atual: o `ds/` repete à mão o estilo de rótulo em caixa alta (14 ocorrências de `textTransform: "uppercase"` em `ds/`), porque não pode depender de `components/`. |
 | Código sem consumidor é removido (seção 6.4) | `ConfirmAction`, `DataTable`, `PendencyCard` e `RegimeVocabulary`/`useTermo` ficam no `ds/` sem consumidor, com teste. | `ConfirmAction` e `DataTable` já são re-implementados por telas existentes (`FechamentoPage`; as 3 tabelas com `Th` e `Td`). `PendencyCard` e `RegimeVocabulary` (Documento 1 §4.3) carregam invariantes que as etapas B1 e B2 vão usar. |
-| `ds/` é a única camada global de UI (seção 6) | `app/` tem UI própria do shell: `FaixaDeDemonstracao` em `app/demonstracao/FaixaDeDemonstracao/`, `Layout` em `app/shell/Layout/` e, depois da divisão, `TelaSemAcesso` em `app/shell/components/TelaSemAcesso/`. | A faixa sinaliza o modo de demonstração do app e não é design. O `Layout` filtra o menu por permissão e conta a fila, que é regra de app. Decisão do dono. |
+| `ds/` é a única camada global de UI (seção 6) | `app/` tem UI própria do shell: `FaixaDeDemonstracao` em `app/demonstracao/FaixaDeDemonstracao/`, `Layout` em `app/shell/Layout/` e `TelaSemAcesso` em `app/shell/components/TelaSemAcesso/`. | A faixa sinaliza o modo de demonstração do app e não é design. O `Layout` filtra o menu por permissão e conta a fila, que é regra de app. Decisão do dono. |
 | Mock é só dado de demonstração (seção 8.3) | `mocks/ids.ts`, que aplica a marca de tipo às fixtures, fica em `src/mocks/`. | Só a demonstração precisa forjar ids; o código de produção recebe ids da API. Em `lib/` ele viraria utilitário global de produção. Decisão do dono. |
 | Um sistema de estilo só (seção 10.5) | `@import "tailwindcss"` e o `@theme` de `styles/global.css` continuam até a etapa "Remover o Tailwind". | O preflight do Tailwind reseta `ul`, `ol`, `table`, `input`, `img` e outros elementos usados em 22 arquivos, e `base.css` não cobre isso. Remover muda o visual e exige captura. |
 | Gate do e2e do B0 (seção 13.5) | Antes do gate, só linhas de import de `app/`, `dados/`, sistema e transversal mudam. Nenhum arquivo dessas pastas é movido, dividido ou tem corpo alterado. | Promover primitivos, mover a fundação e mover telas de demonstração muda o caminho que esses arquivos importam. Esperar o gate pararia todo o plano. |
@@ -266,24 +266,24 @@ pages/sistema/AcessosPage/
   index.ts, AcessosPage.tsx, AcessosPage.dom.test.tsx, AcoesDeAcessos.dom.test.tsx
   consultas.ts (+ teste)               ex-consultasDeAcessos
   comandos.ts (+ teste)                ex-comandosDeAcessos
-  constantes.ts                        AVISO_DE_VERSAO_DESATUALIZADA (+ Aba, ROTULO_DA_ABA na divisão)
+  constantes.ts                        AVISO_DE_VERSAO_DESATUALIZADA, Aba, ROTULO_DA_ABA
   apoioDeTeste.tsx
-  hooks/  useAcaoNoUsuario.ts, useFocoNoPrimeiroCampoInvalido.ts,
+  hooks/  useAcessos.ts, useAcaoNoUsuario.ts, useFocoNoPrimeiroCampoInvalido.ts,
           useChaveDeIdempotencia.ts (+ teste de hook)    ex-lib/chaveDeIdempotencia
-  utils/  focarTitulo.ts, mensagemDeErro.ts (+ teste), abasVisiveis.ts (+ teste; divisão)
+  utils/  focarTitulo.ts, mensagemDeErro.ts (+ teste), abasVisiveis.ts
   components/
     PainelDeConvite/ {…, constantes.ts}  SeletorDeGrupos/  ErroDoPainel/
-    AbaDeUsuarios/   {index.ts (+ ATRASO_DA_BUSCA_EM_MS), AbaDeUsuarios.tsx, constantes.ts, situacaoDeUsuario.ts}
+    AbaDeUsuarios/   {index.ts (+ ATRASO_DA_BUSCA_EM_MS), AbaDeUsuarios.tsx, AbaDeUsuarios.dom.test.tsx, constantes.ts, situacaoDeUsuario.ts}
       hooks/useValorComAtraso.ts                 ex-lib
       utils/temFiltroAplicado.ts (+ teste)       ex-consultasDeAcessos (só AbaDeUsuarios usa)
-      utils/semRepetidos.ts (+ teste)            divisão
+      utils/semRepetidos.ts
       components/
         FiltrosDeUsuarios/
         LinhaDeUsuario/  utils/formatarDataHora.ts (+ teste)   ex-lib/formato
         PainelDoUsuario/ {…, PainelDoUsuario.dom.test.tsx, constantes.ts}
           components/CampoDeMotivo/ {…, constantes.ts}  components/AvisoDeAtencao/
-    AbaDeGrupos/
-      components/CartaoDeGrupo/                  divisão
+    AbaDeGrupos/     {…, AbaDeGrupos.dom.test.tsx}
+      components/CartaoDeGrupo/
 ```
 
 `PermissoesPorModulo` é usado pela `AbaDeGrupos` (sistema) e pelo `MeuPerfilPage` (transversal). Fica em `pages/components/PermissoesPorModulo/`, com `utils/permissoesAgrupadas.ts`.
@@ -534,10 +534,10 @@ apps/web/
     │   ├── rotas/       index.ts, rotas.ts, destino.ts (+ destino.dom.test.ts),
     │   │                rotasAntigasDaEntrada.tsx (+ .dom.test.tsx)
     │   ├── sessao/      index.ts, SessaoProvider/ {…}, ExigeSessao/ {…},
-    │   │                estadoDaSessao.ts (+ t), hooks/useExisteUsuarioOidc.ts, utils/derivarEstado.ts (+ t)
+    │   │                estadoDaSessao.ts (+ t), fontesDaSessao.ts, hooks/useExisteUsuarioOidc.ts, utils/derivarEstado.ts
     │   ├── demonstracao/ index.ts, demonstracao.ts (+ t), sessaoDeDemonstracao.ts, FaixaDeDemonstracao/ {…}
     │   └── shell/       index.ts, Layout/ {…}, menu.ts, rotaAtiva.ts (+ t), telas.ts (+ t), acesso.ts (+ t),
-    │                    hooks/useContagemDoLote.ts, utils/nomeDaTela.ts (+ t), components/TelaSemAcesso/ {…}
+    │                    hooks/useContagemDoLote.ts, utils/nomeDaTela.ts, components/TelaSemAcesso/ {…}
     ├── dados/                    index.ts (barrel puro), instancias.ts, caminhosOidc.ts, clienteHttp.ts (+ t),
     │                             clienteDeConsultas.ts (+ t), consultaEComando.ts (+ t), credencial.ts,
     │                             credencialOidc.ts (+ t), erros.ts (+ t), oidc.ts, oidc.dom.test.ts, apoioDeTeste.ts
@@ -561,8 +561,8 @@ apps/web/
     │   │                         InfraError/, PermissionDenied/, SkeletonList/ (+ components/BarraDeEsqueleto) {…} cada
     │   ├── organisms/            BottomSheet/, Receipt/, PendencyCard/, PainelDeAcao/,
     │   │                         DataTable/ (absorve Th e Td) (F), Modal/ só se não couber como variante do PainelDeAcao (F)  {…} cada
-    │   └── templates/            AppShell/ {…, navegacao.ts} (+ components/{NavItem, RailDeNavegacao, ChipDoUsuario,
-    │                             BarraDeContexto, NavInferior}), Portao/ {…}, CorpoDaTela/ {…} (F)
+    │   └── templates/            AppShell/ {…, navegacao.ts, tipos.ts} (+ components/{NavItem, RailDeNavegacao, ChipDoUsuario,
+    │                             BarraDeContexto, NavInferior, MenuDeCampo, …}), Portao/ {…}, CorpoDaTela/ {…} (F)
     └── pages/
         ├── components/           CartazSlot/ {…}, PermissoesPorModulo/ {…} (+ utils/permissoesAgrupadas.ts (+ t)),
         │                         SeloDaAnamnese/ (F; tipos.ts), PontosDeAtencao/ (F)
@@ -571,7 +571,7 @@ apps/web/
         │                         formatarCompetencia, competenciaPorExtenso, pluralizar (+ privados)
         ├── mocks/                relogio.ts (hoje, competenciaAtual), contas.ts (contas, fundoProprio)
         ├── transversal/
-        │   ├── PainelPage/ {…}           mocks/{cerimonias, resumoFinanceiro}.ts; components/{CartaoDeSaldo, MovimentoDoMes, AvisoDeLote,
+        │   ├── PainelPage/ {…}           constantes.ts, mocks/{cerimonias, resumoFinanceiro}.ts; components/{CartaoDeSaldo, MovimentoDoMes, AvisoDeLote,
         │   │                             GraficoEstoque (mocks/estoque.ts), CarrosselDeCerimonias (… GraficoResultado), EixoDeCerimonias (F)}
         │   ├── MeuPerfilPage/ {…}        components/PerfilDoEu
         │   └── entrada/                  fluxo: tipos.ts (MensagemDeEntrada, TomDeAviso), components/MensagemDeEntradaNaTela (+ components/Aviso),
@@ -807,9 +807,9 @@ Títulos na ordem de leitura. Dependências por título.
 | Dividir Leitos, Contratações e Devoluções (concluída) | Caracterizar eventos; Harness; Dividir Inscrição | — |
 | Dividir Ayahuasca e Feitio (concluída) | Caracterizar pessoas e estoque; Harness; Dividir Leitos, Contratações e Devoluções | — |
 | Dividir Pessoas e Anamnese (concluída) | Caracterizar pessoas e estoque; Harness; Dividir Ayahuasca e Feitio | — |
-| Dividir sistema, Meu perfil e entrada | Harness; Dividir Pessoas e Anamnese; Fronteiras em erro | — |
-| Dividir Painel | Harness; Dividir sistema, Meu perfil e entrada | — |
-| Dividir app/shell, sessão e ds | Fronteiras em erro; Caracterizar o restante do ds; Harness; Dividir Painel | — |
+| Dividir sistema, Meu perfil e entrada (concluída, #132) | Harness; Dividir Pessoas e Anamnese; Fronteiras em erro | — |
+| Dividir Painel (concluída, #133) | Harness; Dividir sistema, Meu perfil e entrada | — |
+| Dividir app/shell, sessão e ds (concluída, #134; a linha do `RegimeVocabulary` passou à Limpeza, anexo seção 4.2) | Fronteiras em erro; Caracterizar o restante do ds; Harness; Dividir Painel | — |
 | Leitura única de valor | Caracterizar primitivos do ds; Caracterizar fluxo lancamentos; Caracterizar financeiro I; Caracterizar eventos; Caracterizar inscrição; Caracterizar pessoas e estoque | — |
 | Correções de comportamento | Caracterização da tela correspondente (seções 14 e 15) | — |
 | Rotulo e CorpoDaTela | Todas as etapas de divisão; Harness | — |
@@ -1017,6 +1017,17 @@ Uma tabela por grupo, na ordem das caracterizações. Os testes citados vêm dos
 | Feitio: o lote é sempre "Lote 09/2026", e a data de encerramento é texto livre. Concluir não cria lote na Ayahuasca, e o "Lote 03/2026" do Feitio contradiz o da Ayahuasca | `pages/estoque/FeitioPage.tsx:51` e `:422`; `mocks/feitio.ts:115`; `mocks/ayahuasca.ts:42`; teste `pages/estoque/FeitioPage.dom.test.tsx` (entra com o #87) | PR próprio, depois da caracterização de pessoas e estoque (#87); decisão da seção 15: o código do lote é único por instituição |
 | Inativar uma pessoa com acesso não suspende o acesso. A nota do indicador diz "1 tem cadastro inativo" | `pages/pessoas/PessoasPage.tsx:132`; teste `pages/pessoas/PessoasPage.dom.test.tsx` (entra com o #87) | Na ligação de Pessoas ao backend (B4); decisão da seção 15: suspende o acesso, com aviso na confirmação |
 
+**Painel e shell (achadas nas divisões, #133 e #134)**
+
+O Painel não tem teste de página; a única rede dele é a captura de telas (seção 13.6), que vê só o primeiro slide do carrossel.
+
+| Divergência | Evidência | Quando corrigir |
+|---|---|---|
+| O resultado do mês leva `+ ` fixo antes do valor: um resultado negativo sairia com `+` na frente do número negativo | `pages/transversal/PainelPage/components/MovimentoDoMes/MovimentoDoMes.tsx:62` e `:65` | Correções de comportamento, em PR próprio |
+| A comparação com o mês anterior só fica verde quando sobe e `comparacaoBoaQuandoSobe` está ligado. Saídas abaixo do mês anterior, que também é bom, ficam na cor neutra | `pages/transversal/PainelPage/components/MovimentoDoMes/components/ColunaDeMovimento/ColunaDeMovimento.tsx:24` | Correções de comportamento, em PR próprio |
+| O cartão de saldo diz "posição de hoje, 09:12", texto fixo | `pages/transversal/PainelPage/components/CartaoDeSaldo/CartaoDeSaldo.tsx:40` | Na ligação do Painel ao backend |
+| O selo da Verificação de lote no menu mostra o tamanho inicial da fila de demonstração e não acompanha as confirmações | `app/shell/hooks/useContagemDoLote.ts` | Na ligação da Verificação de lote ao backend |
+
 ### 14.4 Padrões que atravessam telas
 
 Cada padrão aparece uma vez, com os lugares conferidos na `main`. Os detalhes de cada tela estão na 14.3 e nas linhas acima.
@@ -1037,7 +1048,7 @@ Cada padrão aparece uma vez, com os lugares conferidos na `main`. Os detalhes d
 | Estado que passa para o formulário seguinte | Inscrição: `pages/eventos/InscricaoPage.tsx:76`, `:85` e `:207-215`. Devoluções e Contratações: `pages/eventos/DevolucoesPage.tsx:46` e `pages/eventos/ContratacoesPage.tsx:47`. Empréstimos e Adiantamentos: `pages/emprestimos/EmprestimosPage.tsx:36-37` e `:243`; `pages/adiantamentos/AdiantamentosPage.tsx:45` e `:47-48`. Faturas: `pages/faturas/FaturasPage.tsx:36-37`. Anamnese: `pages/pessoas/AnamnesePage.tsx:54` e `:80` | PR próprio por tela, depois da caracterização de cada grupo (#83, #85, #86, #87). A divisão da `InscricaoPage` (anexo, seção 9.2) já saiu, com `useState` em `InscricaoPage/hooks/useInscricao.ts`, e os handlers que zeram estado estão nesse hook |
 | Sobreposição sem papel de diálogo, Esc nem foco | `pages/registros/LancamentosPage.tsx:413` (gaveta); `pages/verificacao/PainelDeRevisao.tsx:62`; `pages/ayahuasca/AyahuascaPage.tsx:585` e `:703`; `ds/BottomSheet.tsx` (seção 14). Contraste: `ds/PainelDeAcao.tsx:143` (`role="dialog"`) | PR próprio por tela, depois das caracterizações de lançamentos e pessoas e estoque (#82, #87). O anexo troca gavetas e o modal de movimento pelo `PainelDeAcao` (anexo, linhas 206 e 226) |
 | Texto ou botão que promete o que a tela não faz | `pages/lancamento/RegistrarLancamentoPage.tsx:136-152` (Desfazer, em campo); `pages/contas/ContasEFundoPage.tsx:168-170` ("Transferir entre contas"); `pages/conciliacao/ConciliacaoPage.tsx:350-352` ("Registrar lançamento"); `pages/parametros/ParametrosPage.tsx:429` ("Editar"); `pages/pessoas/AnamnesePage.tsx:82` ("descartar") | PR próprio por tela, depois das caracterizações (#82, #83, #84, #87). Para o Desfazer e o rascunho do registro vale a decisão da seção 15: o texto sai até haver comando no backend |
-| Cor literal fora de `var(--…)`, contra a seção 10.5 | `pages/eventos/AgendaPage/components/DetalheDoTrabalho/components/CabecalhoDoTrabalho/CabecalhoDoTrabalho.tsx:26` (`#fff`); `pages/eventos/AgendaPage/components/CalendarioMensal/CalendarioMensal.tsx:96` (`#fff`); `pages/eventos/AgendaPage/components/FormularioDeTrabalho/FormularioDeTrabalho.tsx:23` (`rgba(20,20,24,0.42)`) | PR próprio por tela, depois da caracterização de eventos (#85), trocando pelo token |
+| Cor literal fora de `var(--…)`, contra a seção 10.5 | `pages/eventos/AgendaPage/components/DetalheDoTrabalho/components/CabecalhoDoTrabalho/CabecalhoDoTrabalho.tsx:26` (`#fff`); `pages/eventos/AgendaPage/components/CalendarioMensal/CalendarioMensal.tsx:96` (`#fff`); `pages/eventos/AgendaPage/components/FormularioDeTrabalho/FormularioDeTrabalho.tsx:23` (`rgba(20,20,24,0.42)`). No `ds`: `ds/templates/AppShell/components/NavItem/NavItem.tsx:36` (`rgba(26,61,168,.06)`), `ds/templates/AppShell/components/SeloDoUsuario/SeloDoUsuario.tsx:11` (`#fff`), `ds/molecules/SkeletonList/components/BarraDeEsqueleto/BarraDeEsqueleto.tsx:9` (`#EAE3D3`) e `ds/atoms/Button/constantes.ts:12` e `:20` (`#FFFFFF` e `rgba(255,255,255,…)` na variante `onChrome`) | PR próprio por tela, depois da caracterização de eventos (#85), trocando pelo token. Os do `ds` têm caracterização (#59 e #61) e podem andar antes |
 | Rótulo de caixa alta copiado, com as mesmas propriedades em outra ordem de chaves | `pages/financeiro/RelatoriosPage/constantes.ts:3` (`rotuloLabel`) contra `ds/fundacao/estilos.ts:3` (`rotuloCaixaAlta`) | Etapa "Rotulo e CorpoDaTela" (seção 13.7) |
 | Grade repetida entre a tabela e a linha do livro: a mesma `gridTemplateColumns` nos dois | `pages/financeiro/lancamentos/LancamentosPage/components/TabelaDoLivro/TabelaDoLivro.tsx:24` e `pages/financeiro/lancamentos/LancamentosPage/components/TabelaDoLivro/components/LinhaDoLivro/LinhaDoLivro.tsx:21`; apontado na revisão do #107 | PR próprio, sem efeito visual: uma constante só |
 
