@@ -90,13 +90,6 @@ export const emprestimos: readonly Emprestimo[] = [
   },
 ];
 
-export const devolvido = (e: Emprestimo): number => e.devolucoes.reduce((soma, d) => soma + d.valor, 0);
-
-/** E2: a soma das devoluções nunca excede o principal, então o saldo nunca é negativo. */
-export const saldoDevedor = (e: Emprestimo): number => e.valorPrincipal - devolvido(e);
-
-export const quitado = (e: Emprestimo): boolean => saldoDevedor(e) === 0;
-
 export const contasDeEmprestimo: readonly { readonly id: ContaId; readonly nome: string }[] = [
   { id: id<ContaId>('cora'), nome: 'Cora PJ' },
   { id: id<ContaId>('especie'), nome: 'Espécie' },

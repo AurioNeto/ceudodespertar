@@ -1,0 +1,1 @@
+export { TabelaDeDevolucoes } from './TabelaDeDevolucoes';
