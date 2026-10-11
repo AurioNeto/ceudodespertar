@@ -1418,7 +1418,7 @@ describe('InscricaoPage: valor devido na tela', () => {
     { digitado: '160,5', total: 'R$ 160,50' },
     { digitado: '0', total: 'R$ 0,00' },
     { digitado: '1.5', total: 'R$ 0,00' },
-  ])('valor "$digitado" — o ponto é tirado como milhar e a vírgula é o decimal: $total', async ({ digitado, total }) => {
+  ])('valor "$digitado" — vírgula é decimal, ponto só em grupo de milhar: $total', async ({ digitado, total }) => {
     const container = await abrirComPessoa('Helena Duarte');
 
     await digitar(campoDoValor(container), digitado);
