@@ -29,6 +29,7 @@ export function useVersoesDoFormulario() {
 
   const publicar = () => {
     setVersoes((lista) => publicarVersao(lista, versao.id));
+    setNovaPergunta(null);
     setMensagem(
       `${versao.rotulo} publicada. A versão anterior foi arquivada, e as respostas dadas nela continuam presas a ela.`,
     );
