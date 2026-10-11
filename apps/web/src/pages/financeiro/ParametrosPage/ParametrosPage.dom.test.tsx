@@ -26,12 +26,7 @@ vi.mock('@/pages/financeiro/ParametrosPage/mocks/parametros', async (importarOri
 const COR_PENDENTE = 'var(--color-pending)';
 const COR_DA_MARCA = 'var(--color-royal)';
 
-const LINHAS_DE_RELATORIO = [
-  'Receita de contribuição',
-  'Receita de hospedagem',
-  'Receita de apoio',
-  'Receita da Lojinha',
-  'Receita da Munay',
+const LINHAS_DE_DESPESA = [
   'Custo de cerimônia',
   'Custo de feitio',
   'Custo da Lojinha',
@@ -96,8 +91,9 @@ const cartaoDaUnidade = (container: HTMLElement, nome: string) => {
 const faixaDoTeto = (cartao: HTMLElement) =>
   todos<HTMLDivElement>(cartao, 'div').find((d) => d.style.height === '100%' && d.style.width.endsWith('%'));
 
-async function salvarLinhaSugerida(container: HTMLElement, nome: string) {
+async function salvarEscolhendoUmaLinha(container: HTMLElement, nome: string) {
   await clicar(botaoComTexto(linhaDaCategoria(container, nome), 'Escolher linha'));
+  await escolherOpcao(seletorDe(linhaDaCategoria(container, nome), 'Linha de relatório'), 'Manutenção');
   await clicar(botaoComTexto(linhaDaCategoria(container, nome), 'Salvar'));
 }
 
@@ -299,26 +295,28 @@ describe('ParametrosPage: tabela com rolagem horizontal', () => {
 });
 
 describe('ParametrosPage: escolher a linha de uma categoria sem linha', () => {
-  it('Escolher linha — abre o seletor com as quinze linhas, a primeira escolhida, e Salvar e Cancelar', async () => {
+  it('Escolher linha — abre o seletor sem linha escolhida e só com as de despesa, com Salvar indisponível e Cancelar', async () => {
     const { container } = await montar(<ParametrosPage />);
 
     await clicar(botaoComTexto(linhaDaCategoria(container, 'Investimento na Lojinha'), 'Escolher linha'));
 
     const linha = linhaDaCategoria(container, 'Investimento na Lojinha');
     const seletor = seletorDe(linha, 'Linha de relatório');
-    expect(Array.from(seletor.options).map((o) => o.value)).toEqual(LINHAS_DE_RELATORIO);
-    expect(seletor.value).toBe('Receita de contribuição');
+    expect(Array.from(seletor.options).map((o) => o.value)).toEqual(['', ...LINHAS_DE_DESPESA]);
+    expect(seletor.value).toBe('');
     expect(todos(linha, 'button').map((b) => b.textContent)).toEqual(['Salvar', 'Cancelar']);
+    expect(botaoComTexto(linha, 'Salvar').disabled).toBe(true);
   });
 
-  it('uma categoria de despesa já abre com uma linha de receita escolhida e as de receita à escolha', async () => {
+  it('uma categoria de despesa abre sem linha escolhida e sem as linhas de receita à escolha', async () => {
     const { container } = await montar(<ParametrosPage />);
 
     await clicar(botaoComTexto(linhaDaCategoria(container, 'Movimentação'), 'Escolher linha'));
 
     const seletor = seletorDe(linhaDaCategoria(container, 'Movimentação'), 'Linha de relatório');
     expect(celulasDaCategoria(container, 'Movimentação')[1]).toBe('Despesa');
-    expect(seletor.value).toBe('Receita de contribuição');
+    expect(seletor.value).toBe('');
+    expect(Array.from(seletor.options).some((o) => o.value.startsWith('Receita'))).toBe(false);
   });
 
   it('Cancelar — fecha o seletor e a categoria continua sem linha', async () => {
@@ -355,6 +353,7 @@ describe('ParametrosPage: escolher a linha de uma categoria sem linha', () => {
   it('Salvar uma — o aviso passa para o singular e desconta os lançamentos da categoria resolvida', async () => {
     const { container } = await montar(<ParametrosPage />);
     await clicar(botaoComTexto(linhaDaCategoria(container, 'Investimento na Lojinha'), 'Escolher linha'));
+    await escolherOpcao(seletorDe(linhaDaCategoria(container, 'Investimento na Lojinha'), 'Linha de relatório'), 'Manutenção');
 
     await clicar(botaoComTexto(linhaDaCategoria(container, 'Investimento na Lojinha'), 'Salvar'));
 
@@ -364,8 +363,8 @@ describe('ParametrosPage: escolher a linha de uma categoria sem linha', () => {
 
   it('Salvar as duas — o aviso vira a confirmação de que nada fica fora do DRE', async () => {
     const { container } = await montar(<ParametrosPage />);
-    await salvarLinhaSugerida(container, 'Investimento na Lojinha');
-    await salvarLinhaSugerida(container, 'Movimentação');
+    await salvarEscolhendoUmaLinha(container, 'Investimento na Lojinha');
+    await salvarEscolhendoUmaLinha(container, 'Movimentação');
 
     expect(container.textContent).toContain('Toda categoria ativa tem linha de relatório. Nada fica fora do DRE.');
     expect(container.textContent).not.toContain('sem linha de relatório');
@@ -429,14 +428,14 @@ describe('ParametrosPage: trocar a linha de uma categoria que já tem linha', ()
     expect(seletorDe(linhaDaCategoria(container, 'Administrativo'), 'Linha de relatório').value).toBe('Administrativo');
   });
 
-  it('a linha escolhida ao trocar uma categoria não vaza para uma sem linha: Escolher linha começa pela primeira da lista', async () => {
+  it('a linha escolhida ao trocar uma categoria não vaza para uma sem linha: Escolher linha começa sem linha escolhida', async () => {
     const { container } = await montar(<ParametrosPage />);
     await clicar(elemento<HTMLButtonElement>(linhaDaCategoria(container, 'Combustível'), 'button'));
     await escolherOpcao(seletorDe(linhaDaCategoria(container, 'Combustível'), 'Linha de relatório'), 'Manutenção');
 
     await clicar(botaoComTexto(linhaDaCategoria(container, 'Investimento na Lojinha'), 'Escolher linha'));
 
-    expect(seletorDe(linhaDaCategoria(container, 'Investimento na Lojinha'), 'Linha de relatório').value).toBe('Receita de contribuição');
+    expect(seletorDe(linhaDaCategoria(container, 'Investimento na Lojinha'), 'Linha de relatório').value).toBe('');
   });
 });
 
@@ -466,8 +465,7 @@ describe('ParametrosPage: categoria inativa sem linha de relatório', () => {
 describe('ParametrosPage: o que muda ao trocar de aba', () => {
   it('trocar de aba — fecha a edição em andamento e o recado', async () => {
     const { container } = await montar(<ParametrosPage />);
-    await clicar(botaoComTexto(linhaDaCategoria(container, 'Investimento na Lojinha'), 'Escolher linha'));
-    await clicar(botaoComTexto(linhaDaCategoria(container, 'Investimento na Lojinha'), 'Salvar'));
+    await salvarEscolhendoUmaLinha(container, 'Investimento na Lojinha');
     await clicar(elemento<HTMLButtonElement>(linhaDaCategoria(container, 'Combustível'), 'button'));
     expect(recado(container)).not.toBeNull();
 
@@ -480,20 +478,18 @@ describe('ParametrosPage: o que muda ao trocar de aba', () => {
 
   it('as linhas já salvas continuam salvas depois de ir e voltar entre as abas', async () => {
     const { container } = await montar(<ParametrosPage />);
-    await clicar(botaoComTexto(linhaDaCategoria(container, 'Investimento na Lojinha'), 'Escolher linha'));
-    await clicar(botaoComTexto(linhaDaCategoria(container, 'Investimento na Lojinha'), 'Salvar'));
+    await salvarEscolhendoUmaLinha(container, 'Investimento na Lojinha');
 
     await abrirUnidades(container);
     await clicar(botaoComTexto(container, 'Categorias'));
 
-    expect(celulasDaCategoria(container, 'Investimento na Lojinha')[4]).toBe('Receita de contribuiçãotrocar');
+    expect(celulasDaCategoria(container, 'Investimento na Lojinha')[4]).toBe('Manutençãotrocar');
     expect(container.textContent).toContain('1 categoria ativa sem linha de relatório');
   });
 
   it('fechar recado — remove o recado da tela', async () => {
     const { container } = await montar(<ParametrosPage />);
-    await clicar(botaoComTexto(linhaDaCategoria(container, 'Investimento na Lojinha'), 'Escolher linha'));
-    await clicar(botaoComTexto(linhaDaCategoria(container, 'Investimento na Lojinha'), 'Salvar'));
+    await salvarEscolhendoUmaLinha(container, 'Investimento na Lojinha');
 
     await clicar(elemento<HTMLButtonElement>(container, 'button[aria-label="fechar recado"]'));
 

@@ -1,8 +1,8 @@
 import type { CategoriaId } from '@cdd/contracts';
 import { Button, StatusBadge, Select, Rotulo, Td, Th, type Density } from '@/ds';
 import { pluralizar } from '@/pages/utils/formato';
-import { REGIME_ROTULO } from '../../constantes';
-import { LINHAS_DE_RELATORIO, type CategoriaDoPlano } from '../../mocks/parametros';
+import { REGIME_ROTULO, SEM_LINHA_ESCOLHIDA } from '../../constantes';
+import { LINHAS_POR_NATUREZA, type CategoriaDoPlano } from '../../mocks/parametros';
 
 export function TabelaDeCategorias({
   categorias,
@@ -109,11 +109,19 @@ export function TabelaDeCategorias({
                         <Select
                           label="Linha de relatório"
                           value={linhaEscolhida}
-                          options={LINHAS_DE_RELATORIO.map((l) => ({ value: l, label: l }))}
+                          options={[
+                            { value: SEM_LINHA_ESCOLHIDA, label: 'Escolha a linha' },
+                            ...LINHAS_POR_NATUREZA[c.natureza].map((l) => ({ value: l, label: l })),
+                          ]}
                           onChange={onLinha}
                         />
                         <span style={{ display: 'flex', gap: 7 }}>
-                          <Button iconName="check" onClick={() => onCorrigir(c)}>
+                          <Button
+                            iconName="check"
+                            disabled={linhaEscolhida === SEM_LINHA_ESCOLHIDA}
+                            blockedReason="Escolha a linha de relatório."
+                            onClick={() => onCorrigir(c)}
+                          >
                             Salvar
                           </Button>
                           <Button variant="quiet" onClick={onCancelar}>
