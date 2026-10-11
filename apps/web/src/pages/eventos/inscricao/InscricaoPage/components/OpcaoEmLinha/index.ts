@@ -1,0 +1,1 @@
+export { OpcaoEmLinha } from './OpcaoEmLinha';

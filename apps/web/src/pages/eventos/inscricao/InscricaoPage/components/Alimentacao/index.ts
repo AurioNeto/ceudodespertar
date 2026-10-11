@@ -1,0 +1,1 @@
+export { Alimentacao } from './Alimentacao';

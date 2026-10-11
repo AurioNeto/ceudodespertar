@@ -1,0 +1,1 @@
+export { ComoParticipa } from './ComoParticipa';
