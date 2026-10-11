@@ -35,6 +35,11 @@ export function useEmprestimos() {
   const novoValido =
     Number.isFinite(valorNovoEmCentavos) && valorNovoEmCentavos > 0 && novo.motivo.trim().length > 0;
 
+  const fecharDevolucao = () => {
+    setDevolvendo(false);
+    setValorDevolucao('');
+  };
+
   const criarEmprestimo = () => {
     if (!novoValido || !dataDoNovoValida) return;
     const conta = contasDeEmprestimo.find((c) => c.id === novo.conta)!;
@@ -50,6 +55,7 @@ export function useEmprestimos() {
     setAbertoId(criado.id);
     setFiltro('todos');
     setCriando(false);
+    fecharDevolucao();
     setNovo((n) => ({ ...n, valor: '', motivo: '' }));
     setRecado(
       novo.direcao === 'CONCEDIDO'
@@ -122,8 +128,7 @@ export function useEmprestimos() {
       ),
     );
     const sobra = saldo - valorEmCentavos;
-    setDevolvendo(false);
-    setValorDevolucao('');
+    fecharDevolucao();
     setDataDevolucao(hoje);
     setRecado(
       sobra === 0
@@ -133,11 +138,6 @@ export function useEmprestimos() {
   };
 
   const iniciarDevolucao = () => setDevolvendo(true);
-
-  const cancelarDevolucao = () => {
-    setDevolvendo(false);
-    setValorDevolucao('');
-  };
 
   const fecharRecado = () => setRecado(null);
 
@@ -172,7 +172,7 @@ export function useEmprestimos() {
     escolherDataDevolucao: setDataDevolucao,
     escolherContaDevolucao: setContaDevolucao,
     registrarDevolucao,
-    cancelarDevolucao,
+    cancelarDevolucao: fecharDevolucao,
     fecharRecado,
   };
 }

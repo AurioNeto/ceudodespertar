@@ -870,7 +870,7 @@ describe('EmprestimosPage: novo empréstimo', () => {
     expect(todos(container, 'label').map((rotulo) => rotulo.textContent)).toContain('Motivo');
   });
 
-  it('registrar um empréstimo com a devolução aberta — a devolução continua aberta, com o valor digitado, e passa a ser do empréstimo novo', async () => {
+  it('registrar um empréstimo com a devolução aberta — a devolução fecha e o valor digitado nela se perde', async () => {
     const { container } = await montar(<EmprestimosPage />);
     await abrirNovoEmprestimo(container);
     await abrirFormularioDeDevolucao(container);
@@ -880,11 +880,12 @@ describe('EmprestimosPage: novo empréstimo', () => {
 
     await clicar(botaoComTexto(container, 'Registrar empréstimo'));
 
-    expect(formularioDeDevolucaoAberto(container)).toBe(true);
-    expect(campoPeloRotulo(container, 'Valor').value).toBe('100');
-    expect(mensagemDoCampo(campoPeloRotulo(container, 'Valor'))).toBe('saldo de 300,00');
+    expect(formularioDeDevolucaoAberto(container)).toBe(false);
     expect(linhaAtiva(container)).toEqual(['Érico Santana']);
     expect(textosDasLinhas(container)[0]).toEqual(['Érico Santana', '300,00', 'a receber']);
+    await abrirFormularioDeDevolucao(container);
+    expect(campoPeloRotulo(container, 'Valor').value).toBe('');
+    expect(mensagemDoCampo(campoPeloRotulo(container, 'Valor'))).toBe('saldo de 300,00');
   });
 });
 
