@@ -1,5 +1,5 @@
 import type { Emprestimo } from '@cdd/contracts';
-import { Button, DomainError, Icon, type Density } from '@/ds';
+import { Aviso, Button, DomainError, type Density } from '@/ds';
 import { formatarBRL } from '@/pages/utils/formato';
 import { quitado } from '../../utils/saldo';
 import { Detalhe } from './components/Detalhe';
@@ -56,10 +56,7 @@ export function PainelDoEmprestimo({
       <TabelaDeDevolucoes emprestimo={emprestimo} densidade={densidade} />
 
       {quitado(emprestimo) ? (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 9, font: 'var(--text-small)', color: 'var(--color-confirmed)' }}>
-          <Icon name="circle-check" size={16} />
-          Quitado. A soma das devoluções fechou com o principal.
-        </div>
+        <Aviso tom="confirmado">Quitado. A soma das devoluções fechou com o principal.</Aviso>
       ) : devolvendo ? (
         <FormularioDeDevolucao
           densidade={densidade}

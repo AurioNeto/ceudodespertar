@@ -1,6 +1,6 @@
 import type { Conta, DataLocal } from '@cdd/contracts';
-import { Rotulo, type Density } from '@/ds';
-import { formatarBRL, pluralizar } from '@/pages/utils/formato';
+import { AmountDisplay, Rotulo, type Density } from '@/ds';
+import { pluralizar } from '@/pages/utils/formato';
 import { ehCaixa, textoDaUltimaConciliacao } from '../../utils/conta';
 import { BlocoDoResumo } from './components/BlocoDoResumo';
 
@@ -38,17 +38,7 @@ export function ResumoDoSaldo({
     >
       <div style={{ display: 'flex', flexDirection: 'column', gap: 4, flex: '1 1 260px' }}>
         <Rotulo>Saldo consolidado da unidade</Rotulo>
-        <span
-          style={{
-            font: 'var(--text-amount-hero)',
-            letterSpacing: 'var(--tracking-amount)',
-            fontVariantNumeric: 'tabular-nums',
-            color: 'var(--color-royal-deep)',
-            whiteSpace: 'nowrap',
-          }}
-        >
-          {formatarBRL(emBanco + emCaixa)}
-        </span>
+        <AmountDisplay value={(emBanco + emCaixa) / 100} size="hero" style={{ color: 'var(--color-royal-deep)' }} />
         <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>
           {textoDaUltimaConciliacao(ultimaConciliacao)} · {pluralizar(contasAtivas.length, 'conta ativa', 'contas ativas')}
         </span>

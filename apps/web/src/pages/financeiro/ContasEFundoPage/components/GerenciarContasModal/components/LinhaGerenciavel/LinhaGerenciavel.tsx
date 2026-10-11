@@ -1,10 +1,10 @@
-import { Icon, StatusBadge } from '@/ds';
+import { AmountDisplay, BotaoDeIcone, StatusBadge } from '@/ds';
 
 export interface LinhaGerenciavelProps {
   marcador: React.ReactNode;
   nome: string;
   nota: string;
-  valor?: string;
+  valor?: number;
   ativa: boolean;
   rotuloAtiva: string;
   rotuloInativa: string;
@@ -44,31 +44,22 @@ export function LinhaGerenciavel({
         <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>{nota}</span>
         {bloqueio ? <span style={{ font: 'var(--text-small)', color: 'var(--color-attention)' }}>{bloqueio}</span> : null}
       </span>
-      {valor ? (
-        <span style={{ font: 'var(--text-body-strong)', color: 'var(--text-primary)', fontVariantNumeric: 'tabular-nums' }}>
-          {valor}
-        </span>
-      ) : null}
+      {valor === undefined ? null : <AmountDisplay value={valor / 100} size="sm" />}
       <StatusBadge tone={ativa ? 'confirmed' : 'neutral'}>{ativa ? rotuloAtiva : rotuloInativa}</StatusBadge>
-      <button
-        type="button"
+      <BotaoDeIcone
+        icone="pencil"
+        tamanhoDoIcone={15}
+        medida={32}
         aria-label={`editar ${nome}`}
         onClick={onEditar}
         style={{
-          width: 32,
-          height: 32,
           flex: '0 0 auto',
           border: '1px solid var(--color-line)',
           background: 'var(--bg-card)',
           borderRadius: 'var(--radius-pill)',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
+          color: 'var(--text-secondary)',
         }}
-      >
-        <Icon name="pencil" size={15} color="var(--text-secondary)" />
-      </button>
+      />
       <button
         type="button"
         onClick={onAlternar}

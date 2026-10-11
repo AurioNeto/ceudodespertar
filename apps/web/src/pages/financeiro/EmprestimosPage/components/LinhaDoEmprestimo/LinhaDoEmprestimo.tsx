@@ -1,6 +1,5 @@
 import type { Emprestimo } from '@cdd/contracts';
-import { BarraDeProporcao, Icon, StatusBadge } from '@/ds';
-import { formatarBRL } from '@/pages/utils/formato';
+import { AmountDisplay, BarraDeProporcao, Icon, StatusBadge } from '@/ds';
 import { DIRECAO } from '../../constantes';
 import { devolvido, saldoDevedor } from '../../utils/saldo';
 
@@ -44,12 +43,11 @@ export function LinhaDoEmprestimo({ emprestimo, ativo, onAbrir }: LinhaDoEmprest
       </span>
 
       <span style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
-        <span
-          data-numeric
-          style={{ font: 'var(--text-amount)', color: estaQuitado ? 'var(--text-meta)' : 'var(--text-primary)' }}
-        >
-          {formatarBRL(estaQuitado ? emprestimo.valorPrincipal : saldo)}
-        </span>
+        <AmountDisplay
+          value={(estaQuitado ? emprestimo.valorPrincipal : saldo) / 100}
+          size="sm"
+          style={{ color: estaQuitado ? 'var(--text-meta)' : 'var(--text-primary)' }}
+        />
         <span style={{ font: 'var(--text-small)', color: 'var(--text-meta)' }}>
           {estaQuitado ? 'devolvido por inteiro' : DIRECAO[emprestimo.direcao].saldoRotulo.toLowerCase()}
         </span>

@@ -1,5 +1,5 @@
 import type { Conta, Fatura } from '@cdd/contracts';
-import { DomainError, Icon, StatusBadge, Cartao, Numero, Rotulo, type Density } from '@/ds';
+import { Aviso, DomainError, StatusBadge, Cartao, Numero, Rotulo, type Density } from '@/ds';
 import { competenciaPorExtenso, formatarBRL, formatarData } from '@/pages/utils/formato';
 import { ROTULO, TOM } from '../../constantes';
 import { contasPagadoras } from '../../mocks/faturas';
@@ -68,19 +68,13 @@ export function DetalheDaFatura({
         </div>
 
         {fatura.status === 'PAGA' ? (
-          <div style={{ font: 'var(--text-small)', color: 'var(--color-confirmed)', display: 'flex', gap: 8, alignItems: 'center' }}>
-            <Icon name="circle-check" size={16} />
+          <Aviso tom="confirmado">
             Paga em {formatarData(fatura.pagaEm!)}
             {contaPaga ? ` por transferência de ${contaPaga.nome}` : ''}.
-          </div>
+          </Aviso>
         ) : null}
 
-        {cartao.alerta ? (
-          <div style={{ display: 'flex', gap: 9, alignItems: 'flex-start' }}>
-            <Icon name="triangle-alert" size={16} color="var(--color-pending)" style={{ marginTop: 2 }} />
-            <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>{cartao.alerta}</span>
-          </div>
-        ) : null}
+        {cartao.alerta ? <Aviso tom="pendente">{cartao.alerta}</Aviso> : null}
       </Cartao>
 
       <DomainError

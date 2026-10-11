@@ -1,3 +1,4 @@
+import { act } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Conta, ContaId, Fundo, FundoId } from '@cdd/contracts';
 import { dataLocal, reais } from '@cdd/contracts';
@@ -97,7 +98,7 @@ async function montarModal(sobrescritas: Partial<GerenciarContasModalProps> = {}
     ...sobrescritas,
   };
   const montado = await montar(<GerenciarContasModal {...props} />);
-  return { ...montado, props };
+  return { ...montado, container: document.body, props };
 }
 
 const linhaGerenciavel = (container: HTMLElement, nome: string) => {
@@ -127,7 +128,7 @@ describe('GerenciarContasModal: estrutura e fechamento', () => {
     const { container } = await montarModal();
 
     expect(textosDasFolhas(container)).toContain('Gerenciar contas e fundos');
-    expect(elemento(container, 'button[aria-label="fechar"]').textContent).toBe('');
+    expect(elemento(container, 'button[aria-label="Fechar"]').textContent).toBe('');
   });
 
   it('abas — abre em Contas, com Contas marcada e Fundos desmarcada', async () => {
@@ -140,7 +141,7 @@ describe('GerenciarContasModal: estrutura e fechamento', () => {
   it('fechar pelo botão — chama onFechar uma vez', async () => {
     const { container, props } = await montarModal();
 
-    await clicar(elemento(container, 'button[aria-label="fechar"]'));
+    await clicar(elemento(container, 'button[aria-label="Fechar"]'));
 
     expect(props.onFechar).toHaveBeenCalledTimes(1);
   });
@@ -148,7 +149,11 @@ describe('GerenciarContasModal: estrutura e fechamento', () => {
   it('clicar no fundo escurecido — chama onFechar uma vez', async () => {
     const { container, props } = await montarModal();
 
-    await clicar(elemento(container, ':scope > div'));
+    const fundo = elemento(container, '[data-testid="painel-de-acao-fundo"]');
+    await act(async () => {
+      fundo.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true }));
+    });
+    await clicar(fundo);
 
     expect(props.onFechar).toHaveBeenCalledTimes(1);
   });
@@ -263,7 +268,8 @@ describe('GerenciarContasModal: aba de fundos', () => {
     expect(textosDasFolhas(linhaGerenciavel(container, 'Obra do dormitório'))).toEqual([
       'Obra do dormitório',
       'meta 24.000,00',
-      'R$ 18.400,00',
+      'R$',
+      '18.400,00',
       'Ativo',
       'Excluir',
     ]);
@@ -276,7 +282,8 @@ describe('GerenciarContasModal: aba de fundos', () => {
     expect(textosDasFolhas(linhaGerenciavel(container, 'Feitio de dezembro'))).toEqual([
       'Feitio de dezembro',
       'insumos e garrafas',
-      'R$ 9.200,50',
+      'R$',
+      '9.200,50',
       'Inativo',
       'Reativar',
     ]);
