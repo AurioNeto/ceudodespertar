@@ -1,0 +1,1 @@
+export { Declaracao } from './Declaracao';

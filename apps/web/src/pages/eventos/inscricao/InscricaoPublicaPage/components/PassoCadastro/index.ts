@@ -1,0 +1,1 @@
+export { PassoCadastro } from './PassoCadastro';

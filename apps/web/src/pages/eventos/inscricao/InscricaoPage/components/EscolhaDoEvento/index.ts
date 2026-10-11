@@ -1,0 +1,1 @@
+export { EscolhaDoEvento } from './EscolhaDoEvento';

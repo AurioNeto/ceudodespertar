@@ -1,0 +1,1 @@
+export { EstadoDaAnamnese } from './EstadoDaAnamnese';

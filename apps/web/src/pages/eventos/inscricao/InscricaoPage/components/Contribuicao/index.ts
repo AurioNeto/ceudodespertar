@@ -1,0 +1,1 @@
+export { Contribuicao } from './Contribuicao';

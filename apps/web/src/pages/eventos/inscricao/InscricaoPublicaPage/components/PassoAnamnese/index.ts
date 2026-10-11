@@ -1,0 +1,1 @@
+export { PassoAnamnese } from './PassoAnamnese';

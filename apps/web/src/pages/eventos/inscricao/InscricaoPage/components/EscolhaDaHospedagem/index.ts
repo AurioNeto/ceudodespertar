@@ -1,0 +1,1 @@
+export { EscolhaDaHospedagem } from './EscolhaDaHospedagem';

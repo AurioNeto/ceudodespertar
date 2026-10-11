@@ -1,0 +1,1 @@
+export { PortaDeRefazer } from './PortaDeRefazer';
