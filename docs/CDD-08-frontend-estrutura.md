@@ -812,12 +812,12 @@ Títulos na ordem de leitura. Dependências por título.
 | Dividir app/shell, sessão e ds (concluída, #134; a linha do `RegimeVocabulary` passou à Limpeza, anexo seção 4.2) | Fronteiras em erro; Caracterizar o restante do ds; Harness; Dividir Painel | — |
 | Leitura única de valor (concluída, #138) | Caracterizar primitivos do ds; Caracterizar fluxo lancamentos; Caracterizar financeiro I; Caracterizar eventos; Caracterizar inscrição; Caracterizar pessoas e estoque | — |
 | Correções de comportamento (concluída, #140 a #145) | Caracterização da tela correspondente (seções 14 e 15) | — |
-| Rotulo e CorpoDaTela | Todas as etapas de divisão; Harness | — |
-| Primitivos novos e adoção do catálogo | Rotulo e CorpoDaTela | — |
-| Composições de domínio | Primitivos novos e adoção do catálogo | — |
-| Limpeza | Composições de domínio | — |
+| Rotulo e CorpoDaTela (concluída, #154 a #158; Contratações, Devoluções, Leitos, Painel, inscrição pública, entrada e `TelaSemAcesso` ficaram sem o `CorpoDaTela`) | Todas as etapas de divisão; Harness | — |
+| Primitivos novos e adoção do catálogo (concluída, #159 a #164; as linhas do anexo que não couberam estão nas descrições dos PRs) | Rotulo e CorpoDaTela | — |
+| Composições de domínio (concluída, #165 a #167) | Primitivos novos e adoção do catálogo | — |
+| Limpeza (concluída, #168 a #171) | Composições de domínio | — |
 | Rotas lazy (concluída, #136) | Fronteiras em erro | — |
-| Remover o Tailwind | Harness de captura de telas | — |
+| Remover o Tailwind (fora da refatoração: backlog, TSK-417 do project-flow) | Harness de captura de telas | — |
 | Catraca de avisos (concluída, seção 12.2; removida na Fronteiras em erro) | Fronteiras no depcruise; Caracterizar lib/formato e components; Caracterizar primitivos do ds | — |
 
 **Rotas lazy (#136):** cada rota carrega a página por `lazy: { Component }`, com `import()` do `index.ts` da página. A raiz `/` e as três rotas públicas têm um `HydrateFallback` que não renderiza nada: sem ele, o react-router avisa no console na primeira carga de uma rota lazy. O chunk principal caiu de 1.033 kB para 491 kB (de 283 para 151 kB em gzip). O `conferir-estrutura` lê a página pelo `element` ou pelo `lazy.Component` (regras 3 e 5, seção 12.4).
