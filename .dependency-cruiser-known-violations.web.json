@@ -1919,7 +1919,7 @@
   },
   {
     "type": "dependency",
-    "from": "apps/web/src/pages/financeiro/FechamentoPage/FechamentoPage.tsx",
+    "from": "apps/web/src/pages/financeiro/FechamentoPage/components/ItemDoChecklist/ItemDoChecklist.tsx",
     "to": "apps/web/src/app/navegacao.ts",
     "unresolvedTo": "@/app/navegacao",
     "dependencyTypes": [
