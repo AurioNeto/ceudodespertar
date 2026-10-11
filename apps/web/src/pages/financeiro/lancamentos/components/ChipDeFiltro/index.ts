@@ -1,0 +1,1 @@
+export { ChipDeFiltro } from './ChipDeFiltro';
