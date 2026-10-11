@@ -105,9 +105,13 @@ const filtrarPor = (container: HTMLElement, rotulo: string, valor: string) =>
 const buscar = (container: HTMLElement, texto: string) =>
   digitar(elemento<HTMLInputElement>(container, `input[aria-label="${BUSCA}"]`), texto);
 
-const gaveta = (container: HTMLElement) => {
-  const titulo = todos<HTMLElement>(container, 'span').find((s) => s.textContent === 'Detalhe do lançamento');
-  return titulo ? (titulo.parentElement?.parentElement as HTMLElement) : null;
+const gaveta = (container: HTMLElement) => container.ownerDocument.querySelector<HTMLElement>('[role="dialog"]');
+const seloDaGaveta = (painel: HTMLElement) => painel.children[1]?.children[0]?.children[0]?.children[0] as HTMLElement;
+const fecharGaveta = (container: HTMLElement) =>
+  clicar(elemento(container.ownerDocument.body, 'button[aria-label="Fechar"]'));
+const tocar = async (alvo: HTMLElement) => {
+  alvo.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true }));
+  await clicar(alvo);
 };
 
 const lerGaveta = (painel: HTMLElement) => {
@@ -115,7 +119,7 @@ const lerGaveta = (painel: HTMLElement) => {
   const rotuloDoHistorico = folhaComTexto<HTMLElement>(painel, 'span', 'Histórico');
   const entradas = Array.from(rotuloDoHistorico.parentElement?.children ?? []).slice(1);
   return {
-    situacao: (painel.children[0] as HTMLElement).children[1]?.textContent,
+    situacao: seloDaGaveta(painel).textContent,
     recibo,
     historico: entradas.map((entrada) => [entrada.children[0]?.textContent, entrada.children[1]?.textContent]),
   };
@@ -764,7 +768,7 @@ describe('LancamentosPage: gaveta de detalhe', () => {
     const { container } = await montar(<LancamentosPage />);
     await abrirLinhaDoEscritorio(container, motivo);
 
-    const selo = (gaveta(container) as HTMLElement).children[0]?.children[1] as HTMLElement;
+    const selo = seloDaGaveta(gaveta(container) as HTMLElement);
 
     expect([selo.textContent, selo.style.color, selo.style.background]).toEqual([
       situacao,
@@ -850,7 +854,7 @@ describe('LancamentosPage: gaveta de detalhe', () => {
     await abrirLinhaDoEscritorio(container, 'mercado cerimônia mãe divina');
     const habilitadoComAnexo = !botaoComTexto(gaveta(container) as HTMLElement, 'Ver comprovante').disabled;
 
-    await clicar(elemento(container, 'button[aria-label="Fechar detalhe"]'));
+    await fecharGaveta(container);
     await abrirLinhaDoEscritorio(container, 'contribuições da cerimônia de agosto');
 
     expect(habilitadoComAnexo).toBe(true);
@@ -889,11 +893,11 @@ describe('LancamentosPage: gaveta de detalhe', () => {
     expect(lerGaveta(gaveta(container) as HTMLElement)).toEqual(antes);
   });
 
-  it('fechar — o botão Fechar detalhe fecha a gaveta', async () => {
+  it('fechar — o botão Fechar fecha a gaveta', async () => {
     const { container } = await montar(<LancamentosPage />);
     await abrirLinhaDoEscritorio(container, 'mercado cerimônia mãe divina');
 
-    await clicar(elemento(container, 'button[aria-label="Fechar detalhe"]'));
+    await fecharGaveta(container);
 
     expect(gaveta(container)).toBeNull();
   });
@@ -903,26 +907,26 @@ describe('LancamentosPage: gaveta de detalhe', () => {
     await abrirLinhaDoEscritorio(container, 'mercado cerimônia mãe divina');
     const painel = gaveta(container) as HTMLElement;
 
-    await clicar(painel);
+    await tocar(painel);
     const abertaAposTocarDentro = gaveta(container) !== null;
-    await clicar(painel.parentElement as HTMLElement);
+    await tocar(painel.parentElement as HTMLElement);
 
     expect(abertaAposTocarDentro).toBe(true);
     expect(gaveta(container)).toBeNull();
   });
 
-  it('a gaveta não se declara como diálogo e o Esc, teclado dentro dela, não a fecha', async () => {
+  it('a gaveta se declara como diálogo modal e o Esc, teclado dentro dela, a fecha', async () => {
     const { container } = await montar(<LancamentosPage />);
     await abrirLinhaDoEscritorio(container, 'mercado cerimônia mãe divina');
+    const modal = gaveta(container)?.getAttribute('aria-modal');
 
-    await teclarEsc(elemento(container, 'button[aria-label="Fechar detalhe"]'));
+    await teclarEsc(elemento(document.body, 'button[aria-label="Fechar"]'));
 
-    expect(document.querySelector('[role="dialog"]')).toBeNull();
-    expect(document.querySelector('[aria-modal]')).toBeNull();
-    expect(gaveta(container)).not.toBeNull();
+    expect(modal).toBe('true');
+    expect(gaveta(container)).toBeNull();
   });
 
-  it('escritório — a gaveta é um painel lateral de 480px no máximo; em campo ocupa a largura toda, colada embaixo', async () => {
+  it('escritório — a gaveta é um painel lateral de 440px no máximo; em campo ocupa a largura toda, colada embaixo', async () => {
     const escritorio = await montar(<LancamentosPage />);
     await abrirLinhaDoEscritorio(escritorio.container, 'mercado cerimônia mãe divina');
     const painelDoEscritorio = gaveta(escritorio.container) as HTMLElement;
@@ -935,7 +939,7 @@ describe('LancamentosPage: gaveta de detalhe', () => {
     await abrirLinhaDeCampo(campo.container, 'mercado cerimônia mãe divina');
 
     const painelDeCampo = gaveta(campo.container) as HTMLElement;
-    expect(larguraNoEscritorio).toBe('min(480px, 100%)');
+    expect(larguraNoEscritorio).toBe('min(440px, 100vw)');
     expect(alinhamentoNoEscritorio).toBe('stretch');
     expect(painelDeCampo.style.width).toBe('100%');
     expect((painelDeCampo.parentElement as HTMLElement).style.alignItems).toBe('flex-end');

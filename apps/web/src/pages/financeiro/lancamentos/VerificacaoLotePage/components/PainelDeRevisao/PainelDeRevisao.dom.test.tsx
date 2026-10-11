@@ -63,7 +63,7 @@ function montarPainel(item: ItemNaFila, campo = false) {
   const onDevolver = vi.fn();
   const montagem = montar(
     <PainelDeRevisao item={item} campo={campo} onFechar={onFechar} onAprovar={onAprovar} onDevolver={onDevolver} />,
-  );
+  ).then((montado) => ({ ...montado, container: document.body }));
   return { montagem, onFechar, onAprovar, onDevolver };
 }
 
@@ -78,9 +78,12 @@ const caixaDoMotivo = (container: HTMLElement) =>
 const botaoDevolverDaCaixa = (container: HTMLElement) => botaoComTexto(container, 'Devolver');
 const abrirDevolucao = (container: HTMLElement) => clicar(botaoComTexto(container, 'Devolver'));
 const aprovar = (container: HTMLElement) => clicar(botaoComTexto(container, 'Aprovar e consolidar'));
-const painel = (container: HTMLElement) =>
-  elemento(container, 'button[aria-label="fechar"]').parentElement?.parentElement as HTMLElement;
+const painel = (container: HTMLElement) => elemento(container, '[role="dialog"]');
 const cortina = (container: HTMLElement) => painel(container).parentElement as HTMLElement;
+const tocar = async (alvo: HTMLElement) => {
+  alvo.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true }));
+  await clicar(alvo);
+};
 
 describe('PainelDeRevisao: o que mostra do item', () => {
   it.each([
@@ -391,7 +394,7 @@ describe('PainelDeRevisao: fechar e layout', () => {
     const { montagem, onFechar } = montarPainel(SAIDA);
     const { container } = await montagem;
 
-    await clicar(elemento(container, 'button[aria-label="fechar"]'));
+    await clicar(elemento(container, 'button[aria-label="Fechar"]'));
 
     expect(onFechar).toHaveBeenCalledTimes(1);
   });
@@ -400,37 +403,36 @@ describe('PainelDeRevisao: fechar e layout', () => {
     const { montagem, onFechar } = montarPainel(SAIDA);
     const { container } = await montagem;
 
-    await clicar(painel(container));
+    await tocar(painel(container));
     const aposTocarDentro = onFechar.mock.calls.length;
-    await clicar(cortina(container));
+    await tocar(cortina(container));
 
     expect(aposTocarDentro).toBe(0);
     expect(onFechar).toHaveBeenCalledTimes(1);
   });
 
-  it('o painel não se declara como diálogo e o Esc, teclado dentro dele, não o fecha', async () => {
+  it('o painel se declara como diálogo modal e o Esc, teclado dentro dele, o fecha', async () => {
     const { montagem, onFechar } = montarPainel(SAIDA);
     const { container } = await montagem;
 
-    await teclarEsc(elemento(container, 'button[aria-label="fechar"]'));
+    await teclarEsc(elemento(container, 'button[aria-label="Fechar"]'));
 
-    expect(document.querySelector('[role="dialog"]')).toBeNull();
-    expect(document.querySelector('[aria-modal]')).toBeNull();
-    expect(onFechar).not.toHaveBeenCalled();
+    expect(painel(container).getAttribute('aria-modal')).toBe('true');
+    expect(onFechar).toHaveBeenCalledTimes(1);
   });
 
-  it('escritório — o painel tem 440px e ocupa a altura toda, colado à direita', async () => {
+  it('escritório — o painel tem 440px no máximo e ocupa a altura toda, colado à direita', async () => {
     const { container } = await montarPainel(SAIDA, false).montagem;
 
-    expect(painel(container).style.width).toBe('440px');
+    expect(painel(container).style.width).toBe('min(440px, 100vw)');
     expect(cortina(container).style.alignItems).toBe('stretch');
   });
 
-  it('campo — o painel ocupa a largura toda, colado embaixo, com até 88% da altura', async () => {
+  it('campo — o painel ocupa a largura toda, colado embaixo, com até 90dvh de altura', async () => {
     const { container } = await montarPainel(SAIDA, true).montagem;
 
     expect(painel(container).style.width).toBe('100%');
-    expect(painel(container).style.maxHeight).toBe('88%');
+    expect(painel(container).style.maxHeight).toBe('90dvh');
     expect(cortina(container).style.alignItems).toBe('flex-end');
   });
 
