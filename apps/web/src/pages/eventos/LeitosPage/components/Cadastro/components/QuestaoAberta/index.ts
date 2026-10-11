@@ -1,0 +1,1 @@
+export { QuestaoAberta } from './QuestaoAberta';
