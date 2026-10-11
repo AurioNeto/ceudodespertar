@@ -1,0 +1,1 @@
+export { SeletorDeGrupos } from './SeletorDeGrupos';

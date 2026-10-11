@@ -1,0 +1,1 @@
+export { ErroDoPainel } from './ErroDoPainel';

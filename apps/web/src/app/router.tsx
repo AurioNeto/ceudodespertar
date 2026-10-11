@@ -29,8 +29,8 @@ import { PessoasPage } from '@/pages/pessoas/PessoasPage';
 import { AnamnesePage } from '@/pages/pessoas/AnamnesePage';
 import { AyahuascaPage } from '@/pages/estoque/AyahuascaPage';
 import { FeitioPage } from '@/pages/estoque/FeitioPage';
-import { AuditoriaPage } from '../pages/auditoria/AuditoriaPage';
-import { AcessosPage } from '../pages/acessos/AcessosPage';
+import { AuditoriaPage } from '@/pages/sistema/AuditoriaPage';
+import { AcessosPage } from '@/pages/sistema/AcessosPage';
 import { MeuPerfilPage } from '../pages/perfil/MeuPerfilPage';
 
 export const router = createBrowserRouter([
