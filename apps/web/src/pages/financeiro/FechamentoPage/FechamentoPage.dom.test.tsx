@@ -171,7 +171,17 @@ const cartaoDeAcao = (container: HTMLElement) => {
 const botaoDeFechar = (container: HTMLElement) =>
   todos<HTMLButtonElement>(container, 'button').find((b) => b.textContent?.startsWith('Fechar ')) as HTMLButtonElement;
 
-const caixaDoMotivo = (container: HTMLElement) => elemento<HTMLTextAreaElement>(container, 'textarea[aria-label="Motivo da reabertura"]');
+const caixaDoMotivo = (container: HTMLElement) => {
+  const etiqueta = todos<HTMLLabelElement>(container, 'label').find((l) => l.textContent === 'Motivo da reabertura');
+  const caixa = etiqueta ? document.getElementById(etiqueta.htmlFor) : null;
+  if (!(caixa instanceof HTMLTextAreaElement)) throw new Error('caixa do motivo não encontrada');
+  return caixa;
+};
+
+const perguntaAberta = (container: HTMLElement) => {
+  const pergunta = todos(container, 'div').find((d) => d.childElementCount === 0 && d.textContent === 'Por que este período precisa ser reaberto?');
+  return pergunta !== undefined && pergunta.closest('[hidden]') === null;
+};
 
 async function digitarMotivo(container: HTMLElement, texto: string) {
   const definirValor = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value')?.set;
@@ -663,8 +673,8 @@ describe('FechamentoPage: reabrir o período', () => {
 
     await clicar(botaoComTexto(container, 'Reabrir período'));
 
-    expect(container.textContent).toContain('Por que este período precisa ser reaberto?');
-    expect(caixaDoMotivo(container).placeholder).toBe('o motivo fica no histórico do período, de forma permanente');
+    expect(perguntaAberta(container)).toBe(true);
+    expect(container.textContent).toContain('o motivo fica no histórico do período, de forma permanente');
     expect(caixaDoMotivo(container).rows).toBe(3);
     expect(caixaDoMotivo(container).hasAttribute('maxlength')).toBe(false);
   });
@@ -740,7 +750,7 @@ describe('FechamentoPage: reabrir o período', () => {
 
     await clicar(botaoComTexto(container, 'Cancelar'));
 
-    expect(container.textContent).not.toContain('Por que este período precisa ser reaberto?');
+    expect(perguntaAberta(container)).toBe(false);
     expect(estadoDoPeriodo(container).situacao).toBe('Fechado');
 
     await clicar(botaoComTexto(container, 'Reabrir período'));

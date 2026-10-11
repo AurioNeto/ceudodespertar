@@ -11,7 +11,6 @@ import { competenciaAnteriorA } from '../utils/competenciaAnterior';
 export function useFechamento() {
   const [fechado, setFechado] = useState(false);
   const [reabrindo, setReabrindo] = useState(false);
-  const [motivo, setMotivo] = useState('');
   const [mensagem, setMensagem] = useState<string | null>(null);
 
   const naFila = filaDeVerificacaoInicial.length;
@@ -33,12 +32,11 @@ export function useFechamento() {
     );
   };
 
-  const confirmarReabertura = () => {
+  const confirmarReabertura = (motivo: string) => {
     if (!motivo.trim()) return;
     setFechado(false);
     setReabrindo(false);
     setMensagem(`Agosto reaberto por Aurio Neto. O motivo ficou no histórico do período: ${motivo.trim()}`);
-    setMotivo('');
   };
 
   const abrirReabertura = () => setReabrindo(true);
@@ -52,8 +50,6 @@ export function useFechamento() {
   return {
     fechado,
     reabrindo,
-    motivo,
-    setMotivo,
     mensagem,
     contasAtivas,
     checklist,

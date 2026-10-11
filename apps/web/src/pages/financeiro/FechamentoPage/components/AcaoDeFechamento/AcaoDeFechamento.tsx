@@ -1,4 +1,4 @@
-import { Button, type Density } from '@/ds';
+import { Button, PeriodLock, type Density } from '@/ds';
 import { competenciaPorExtenso, pluralizar } from '@/pages/utils/formato';
 import { competenciaAtual } from '@/pages/mocks/relogio';
 import type { ItemDoChecklist } from '../ItemDoChecklist';
@@ -7,13 +7,11 @@ export interface AcaoDeFechamentoProps {
   fechado: boolean;
   bloqueios: readonly ItemDoChecklist[];
   reabrindo: boolean;
-  motivo: string;
   densidade: Density;
   onFechar: () => void;
   onAvisar: (mensagem: string) => void;
   onAbrirReabertura: () => void;
-  onMotivo: (v: string) => void;
-  onConfirmarReabertura: () => void;
+  onConfirmarReabertura: (motivo: string) => void;
   onCancelarReabertura: () => void;
 }
 
@@ -21,12 +19,10 @@ export function AcaoDeFechamento({
   fechado,
   bloqueios,
   reabrindo,
-  motivo,
   densidade,
   onFechar,
   onAvisar,
   onAbrirReabertura,
-  onMotivo,
   onConfirmarReabertura,
   onCancelarReabertura,
 }: AcaoDeFechamentoProps) {
@@ -86,47 +82,18 @@ export function AcaoDeFechamento({
         </Button>
       )}
 
-      {reabrindo ? (
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 10,
-            background: 'var(--color-pending-soft)',
-            border: '1px solid var(--color-pending-border)',
-            borderRadius: 'var(--radius)',
-            padding: '12px 14px',
-          }}
-        >
-          <span style={{ font: 'var(--text-body-strong)', color: 'var(--text-primary)' }}>
-            Por que este período precisa ser reaberto?
-          </span>
-          <textarea
-            value={motivo}
-            onChange={(e) => onMotivo(e.target.value)}
-            rows={3}
-            aria-label="Motivo da reabertura"
-            placeholder="o motivo fica no histórico do período, de forma permanente"
-            style={{
-              border: '1px solid var(--color-line-strong)',
-              background: 'var(--bg-card)',
-              borderRadius: 'var(--radius-sm)',
-              padding: '8px 12px',
-              font: 'var(--text-body)',
-              color: 'var(--text-primary)',
-              outline: 'none',
-              resize: 'vertical',
-            }}
+      {fechado ? (
+        <div hidden={!reabrindo}>
+          <PeriodLock
+            canReopen
+            title="Por que este período precisa ser reaberto?"
+            reason="o motivo fica no histórico do período, de forma permanente"
+            reopenLabel="Reabrir"
+            reopenReasonLabel="Motivo da reabertura"
+            reopenReasonRequiredNote="Sem motivo, a reabertura não é registrável."
+            onReopen={onConfirmarReabertura}
           />
-          <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-            <Button
-              iconName="lock-open"
-              disabled={!motivo.trim()}
-              blockedReason={!motivo.trim() ? 'Sem motivo, a reabertura não é registrável.' : undefined}
-              onClick={onConfirmarReabertura}
-            >
-              Reabrir
-            </Button>
+          <div style={{ marginTop: 10 }}>
             <Button variant="quiet" onClick={onCancelarReabertura}>
               Cancelar
             </Button>

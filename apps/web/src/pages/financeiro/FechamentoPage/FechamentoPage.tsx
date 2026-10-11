@@ -60,12 +60,10 @@ export function FechamentoPage() {
           fechado={tela.fechado}
           bloqueios={tela.bloqueios}
           reabrindo={tela.reabrindo}
-          motivo={tela.motivo}
           densidade={densidade}
           onFechar={tela.fechar}
           onAvisar={tela.avisar}
           onAbrirReabertura={tela.abrirReabertura}
-          onMotivo={tela.setMotivo}
           onConfirmarReabertura={tela.confirmarReabertura}
           onCancelarReabertura={tela.cancelarReabertura}
         />
