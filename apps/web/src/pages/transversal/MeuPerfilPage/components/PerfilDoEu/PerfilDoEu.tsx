@@ -1,6 +1,5 @@
 import type { Eu } from '@cdd/contracts';
-import { Button, Cartao, Leitura, type Density } from '@/ds';
-import { iniciais } from '@/lib/formato';
+import { Avatar, Button, Cartao, Leitura, type Density } from '@/ds';
 import { PermissoesPorModulo } from '@/pages/components/PermissoesPorModulo';
 
 interface PerfilDoEuProps {
@@ -16,21 +15,7 @@ export function PerfilDoEu({ eu, densidade, aoSair }: PerfilDoEuProps) {
     <>
       <Cartao campo={campo}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
-          <span
-            aria-hidden="true"
-            style={{
-              width: 74,
-              height: 74,
-              borderRadius: 'var(--radius)',
-              background: 'var(--color-royal-soft)',
-              color: 'var(--color-royal-deep)',
-              display: 'grid',
-              placeItems: 'center',
-              font: '700 24px var(--font-data)',
-            }}
-          >
-            {iniciais(eu.usuario.nome)}
-          </span>
+          <Avatar nome={eu.usuario.nome} />
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ font: 'var(--text-title-sm)', color: 'var(--text-title)' }}>{eu.usuario.nome}</div>
             <div style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>{eu.usuario.email}</div>
