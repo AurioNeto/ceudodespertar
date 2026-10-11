@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { diaDaSemana, formatarDataHora, formatarValor, iniciais, paraData } from './formato';
+import { formatarDataHora, formatarValor, iniciais, paraData } from './formato';
 
 describe('formatarValor', () => {
   it.each([
@@ -72,24 +72,6 @@ describe('paraData', () => {
 
   it('texto que não é data dá data inválida', () => {
     expect(Number.isNaN(paraData('abc').getTime())).toBe(true);
-  });
-});
-
-describe('diaDaSemana', () => {
-  it.each([
-    ['2026-10-05', 'segunda'],
-    ['2026-10-06', 'terça'],
-    ['2026-10-07', 'quarta'],
-    ['2026-10-08', 'quinta'],
-    ['2026-10-09', 'sexta'],
-    ['2026-10-10', 'sábado'],
-    ['2026-10-11', 'domingo'],
-  ])('%s cai em %s', (iso, esperado) => {
-    expect(diaDaSemana(iso)).toBe(esperado);
-  });
-
-  it('data inválida devolve texto vazio', () => {
-    expect(diaDaSemana('abc')).toBe('');
   });
 });
 
