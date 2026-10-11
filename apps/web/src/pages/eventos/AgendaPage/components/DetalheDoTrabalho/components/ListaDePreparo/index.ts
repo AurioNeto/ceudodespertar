@@ -1,0 +1,1 @@
+export { ListaDePreparo } from './ListaDePreparo';

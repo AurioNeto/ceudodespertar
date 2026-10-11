@@ -1,0 +1,1 @@
+export { LegendaDeTipos } from './LegendaDeTipos';

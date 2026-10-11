@@ -789,7 +789,7 @@ Títulos na ordem de leitura. Dependências por título.
 | Dividir Relatórios (concluída) | Caracterizar financeiro II; Harness; Dividir Adiantamentos | — |
 | Dividir Fechamento e Conciliação (concluída) | Caracterizar financeiro II; Harness; Dividir Relatórios | — |
 | Dividir Prestação e Parâmetros (concluída) | Caracterizar financeiro II; Harness; Dividir Fechamento e Conciliação | — |
-| Dividir Agenda | Caracterizar eventos; Harness; Dividir Prestação e Parâmetros | — |
+| Dividir Agenda (concluída) | Caracterizar eventos; Harness; Dividir Prestação e Parâmetros | — |
 | Dividir Inscrição | Caracterizar inscrição; Harness; Dividir Agenda | — |
 | Dividir Leitos, Contratações e Devoluções | Caracterizar eventos; Harness; Dividir Inscrição | — |
 | Dividir Ayahuasca e Feitio | Caracterizar pessoas e estoque; Harness; Dividir Leitos, Contratações e Devoluções | — |

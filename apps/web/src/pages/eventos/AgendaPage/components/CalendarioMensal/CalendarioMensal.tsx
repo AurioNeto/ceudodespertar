@@ -1,7 +1,8 @@
-import { CORES_POR_TIPO, type Trabalho } from '../../mocks/agenda';
+import { CORES_POR_TIPO } from '../../constantes';
+import type { Trabalho } from '../../tipos';
 import { hoje } from '@/pages/mocks/relogio';
-
-const DIAS_DA_SEMANA = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
+import { DIAS_DA_SEMANA } from './constantes';
+import { celulasDoMes } from './utils/celulasDoMes';
 
 export interface CalendarioMensalProps {
   ano: number;
@@ -11,13 +12,7 @@ export interface CalendarioMensalProps {
 }
 
 export function CalendarioMensal({ ano, mes, trabalhos, onAbrir }: CalendarioMensalProps) {
-  const primeiroDia = new Date(ano, mes - 1, 1).getDay();
-  const diasNoMes = new Date(ano, mes, 0).getDate();
-  const celulas: (number | null)[] = [
-    ...Array.from({ length: primeiroDia }, () => null),
-    ...Array.from({ length: diasNoMes }, (_, i) => i + 1),
-  ];
-  while (celulas.length % 7 !== 0) celulas.push(null);
+  const celulas = celulasDoMes(ano, mes);
 
   const [anoHoje, mesHoje, diaHoje] = hoje.split('-').map(Number);
 
@@ -117,22 +112,6 @@ export function CalendarioMensal({ ano, mes, trabalhos, onAbrir }: CalendarioMen
           );
         })}
       </div>
-    </div>
-  );
-}
-
-export function LegendaDeTipos() {
-  return (
-    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 14 }}>
-      {(Object.keys(CORES_POR_TIPO) as (keyof typeof CORES_POR_TIPO)[]).map((tipo) => (
-        <span
-          key={tipo}
-          style={{ display: 'flex', alignItems: 'center', gap: 7, font: 'var(--text-small)', color: 'var(--text-secondary)' }}
-        >
-          <span style={{ width: 10, height: 10, borderRadius: 2, background: CORES_POR_TIPO[tipo] }} />
-          {tipo}
-        </span>
-      ))}
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import type { TarefaDePreparo, TipoDeTrabalho, Trabalho } from '../mocks/agenda';
+import type { TarefaDePreparo, TipoDeTrabalho, Trabalho } from '../tipos';
 
 export interface RascunhoDeTrabalho {
   editId: number | null;

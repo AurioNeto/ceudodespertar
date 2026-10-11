@@ -1,1 +1,1 @@
-export { CalendarioMensal, LegendaDeTipos } from './CalendarioMensal';
+export { CalendarioMensal } from './CalendarioMensal';
