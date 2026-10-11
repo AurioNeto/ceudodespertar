@@ -1,6 +1,8 @@
+export { CAMINHO_DA_ENTRADA, CAMINHO_DE_RETORNO } from './caminhosOidc';
 export { criarClienteDeConsultas, JANELA_DE_FRESCOR_EM_MS } from './clienteDeConsultas';
 export { criarClienteHttp } from './clienteHttp';
 export type { ClienteHttp, OpcoesDeRequisicao } from './clienteHttp';
+export { criarComando, criarConsulta } from './consultaEComando';
 export { fonteDeCredencialNula } from './credencial';
 export type { FonteDeCredencial } from './credencial';
 export type { CredencialOidc } from './credencialOidc';

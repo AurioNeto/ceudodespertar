@@ -13,9 +13,9 @@ import type {
   UsuarioListado,
 } from '@cdd/contracts';
 import { assentar, criarEntradaFalsa, criarEu, montarComSessao, type TelaMontada } from '@/testes/sessaoDeTeste';
-import type { ClienteHttp, OpcoesDeRequisicao } from '@/dados/clienteHttp';
+import type { ClienteHttp, OpcoesDeRequisicao } from '@/dados';
 import { ClienteHttpProvider } from '@/app/providers';
-import { ErroDaApi } from '@/dados/erros';
+import { ErroDaApi } from '@/dados';
 import { ATRASO_DA_BUSCA_EM_MS } from './components/AbaDeUsuarios';
 import { AcessosPage } from './AcessosPage';
 

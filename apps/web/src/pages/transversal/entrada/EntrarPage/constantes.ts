@@ -1,4 +1,4 @@
-import type { CodigoDeRecusa } from '@/app/sessao/estadoDaSessao';
+import type { CodigoDeRecusa } from '@/app/sessao';
 import type { MensagemDeEntrada } from '../tipos';
 
 export const MENSAGENS_DE_RECUSA: Readonly<Record<CodigoDeRecusa, MensagemDeEntrada>> = {

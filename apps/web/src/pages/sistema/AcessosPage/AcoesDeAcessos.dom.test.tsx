@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { act } from 'react';
 import type { Eu, GrupoId, PedidoDeConvite, UsuarioConvidado, UsuarioId } from '@cdd/contracts';
 import { assentar, criarEu, type TelaMontada } from '@/testes/sessaoDeTeste';
-import { ErroDaApi, ErroDeRede } from '@/dados/erros';
+import { ErroDaApi, ErroDeRede } from '@/dados';
 import {
   PERMISSAO_DE_USUARIOS,
   abrirPeloGatilho,

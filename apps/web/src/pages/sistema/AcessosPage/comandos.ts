@@ -7,8 +7,8 @@ import type {
   UsuarioConvidado,
   UsuarioId,
 } from '@cdd/contracts';
-import { criarComando } from '@/dados/consultaEComando';
-import type { ClienteHttp } from '@/dados/clienteHttp';
+import { criarComando } from '@/dados';
+import type { ClienteHttp } from '@/dados';
 import { useClienteHttp } from '@/app/providers';
 
 export interface MudancaDeSituacao {

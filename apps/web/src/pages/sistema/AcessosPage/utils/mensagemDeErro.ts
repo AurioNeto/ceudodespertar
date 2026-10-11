@@ -1,5 +1,5 @@
 import type { CodigoDeErro } from '@cdd/contracts';
-import { ErroDaApi, ErroDeRede } from '@/dados/erros';
+import { ErroDaApi, ErroDeRede } from '@/dados';
 import { AVISO_DE_VERSAO_DESATUALIZADA } from '../constantes';
 
 export const MENSAGEM_DE_PERMISSAO_PERDIDA_DE_ACESSOS = 'Você não tem mais permissão para esta ação.';

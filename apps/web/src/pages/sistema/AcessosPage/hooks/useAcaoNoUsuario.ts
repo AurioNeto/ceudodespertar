@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import type { UsuarioId, UsuarioListado } from '@cdd/contracts';
-import { ErroDaApi } from '@/dados/erros';
+import { ErroDaApi } from '@/dados';
 import { CHAVE_DO_EU, useSessao } from '@/app/sessao';
 import {
   RAIZ_DAS_CONSULTAS_DE_GRUPOS,

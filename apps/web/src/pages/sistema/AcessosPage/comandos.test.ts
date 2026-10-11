@@ -1,7 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { GrupoId, PedidoDeConvite, UsuarioId } from '@cdd/contracts';
-import { fonteDeCredencialNula } from '@/dados/credencial';
-import { criarClienteHttp, type ClienteHttp, type OpcoesDeRequisicao } from '@/dados/clienteHttp';
+import { criarClienteHttp, fonteDeCredencialNula, type ClienteHttp, type OpcoesDeRequisicao } from '@/dados';
 import { criarComandosDeAcessos } from './comandos';
 
 const USUARIO = 'u-7' as UsuarioId;
