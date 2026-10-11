@@ -1,4 +1,4 @@
-import { Button, Icon, ScreenHeader, useDensidade, SeletorDeTipo } from '@/ds';
+import { Button, CorpoDaTela, Icon, ScreenHeader, useDensidade, SeletorDeTipo } from '@/ds';
 import { pluralizar } from '@/pages/utils/formato';
 import { AbaDeLotes } from './components/AbaDeLotes';
 import { AbaDeMovimentos } from './components/AbaDeMovimentos';
@@ -37,15 +37,7 @@ export function AyahuascaPage() {
         }
       />
 
-      <div
-        style={{
-          padding: campo ? '14px 16px 24px' : '18px 24px 30px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: campo ? 12 : 16,
-          maxWidth: campo ? undefined : 1080,
-        }}
-      >
+      <CorpoDaTela densidade={densidade} larguraMaxima={1080} espaco="compacto">
         {tela.mensagem ? (
           <div
             style={{
@@ -132,7 +124,7 @@ export function AyahuascaPage() {
         {tela.aba === 'reservas' ? (
           <AbaDeReservas reservas={tela.reservas} reservado={tela.reservado} onAlternar={tela.alternarReserva} />
         ) : null}
-      </div>
+      </CorpoDaTela>
 
       {tela.detalhe ? (
         <FichaDoLote

@@ -1,5 +1,6 @@
+import { Rotulo } from '@/ds';
 import { formatarBRL } from '@/pages/utils/formato';
-import { numeroGrande, rotuloLabel } from '../../../../../../constantes';
+import { numeroGrande } from '../../../../../../constantes';
 
 export function ValorDaUltima({
   rotulo,
@@ -24,7 +25,7 @@ export function ValorDaUltima({
         borderLeft: divisor ? 'var(--border-hairline)' : undefined,
       }}
     >
-      <span style={rotuloLabel}>{rotulo}</span>
+      <Rotulo>{rotulo}</Rotulo>
       <span style={{ ...numeroGrande, color: cor }}>
         {sinal ? '+ ' : ''}
         {formatarBRL(valor)}

@@ -1,9 +1,9 @@
-import { Button, Icon, ScreenHeader, useDensidade, Select } from '@/ds';
+import { Button, CorpoDaTela, Icon, Rotulo, ScreenHeader, useDensidade, Select } from '@/ds';
 import { pluralizar } from '@/pages/utils/formato';
 import { FichaDaPessoa } from './components/FichaDaPessoa';
 import { Kpi } from './components/Kpi';
 import { ListaDePessoas } from './components/ListaDePessoas';
-import { OPCOES_DO_FILTRO, rotuloLabel } from './constantes';
+import { OPCOES_DO_FILTRO } from './constantes';
 import { usePessoasDeDemonstracao } from './hooks/usePessoasDeDemonstracao';
 
 export function PessoasPage() {
@@ -26,15 +26,7 @@ export function PessoasPage() {
         }
       />
 
-      <div
-        style={{
-          padding: campo ? '14px 16px 24px' : '18px 24px 30px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: campo ? 12 : 16,
-          maxWidth: campo ? undefined : 1080,
-        }}
-      >
+      <CorpoDaTela densidade={densidade} larguraMaxima={1080} espaco="compacto">
         {tela.mensagem ? (
           <div
             style={{
@@ -80,7 +72,7 @@ export function PessoasPage() {
 
             <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'flex-end' }}>
               <label style={{ display: 'flex', flexDirection: 'column', flex: '1 1 240px' }}>
-                <span style={{ ...rotuloLabel, marginBottom: 7 }}>Buscar</span>
+                <Rotulo style={{ marginBottom: 7 }}>Buscar</Rotulo>
                 <input
                   value={tela.busca}
                   onChange={(e) => tela.setBusca(e.target.value)}
@@ -122,7 +114,7 @@ export function PessoasPage() {
             onRevogar={tela.revogar}
           />
         ) : null}
-      </div>
+      </CorpoDaTela>
     </>
   );
 }

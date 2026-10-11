@@ -1,5 +1,5 @@
-import { Button, Icon, StatusBadge, type Density } from '@/ds';
-import { rotuloDoMovimento, rotuloLabel, SITUACAO, valorTabular } from '../../constantes';
+import { Button, Icon, Rotulo, StatusBadge, type Density } from '@/ds';
+import { rotuloDoMovimento, SITUACAO, valorTabular } from '../../constantes';
 import type { LoteDeDaime, MovimentoDeDaime } from '../../mocks/ayahuasca';
 import { corDoMovimento } from '../../utils/corDoMovimento';
 import { litros } from '../../utils/litros';
@@ -84,7 +84,7 @@ export function FichaDoLote({ lote, movimentos, densidade, onFechar, onQuarenten
             gap: 10,
           }}
         >
-          <span style={rotuloLabel}>Movimentos deste lote</span>
+          <Rotulo>Movimentos deste lote</Rotulo>
           {movimentos.map((m) => (
             <div key={m.id} style={{ display: 'flex', gap: 10, alignItems: 'baseline' }}>
               <span

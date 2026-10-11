@@ -1,4 +1,4 @@
-import { rotuloLabel } from '../../constantes';
+import { Rotulo } from '@/ds';
 
 export interface KpiProps {
   rotulo: string;
@@ -20,7 +20,7 @@ export function Kpi({ rotulo, valor, nota, cor = 'var(--color-royal-deep)' }: Kp
         gap: 3,
       }}
     >
-      <span style={rotuloLabel}>{rotulo}</span>
+      <Rotulo>{rotulo}</Rotulo>
       <span
         style={{
           font: 'var(--text-amount-lg)',

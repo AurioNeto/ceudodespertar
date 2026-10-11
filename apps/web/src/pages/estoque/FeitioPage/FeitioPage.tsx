@@ -1,4 +1,4 @@
-import { Button, ScreenHeader, useDensidade, Cartao, Numero, Recado } from '@/ds';
+import { Button, CorpoDaTela, ScreenHeader, useDensidade, Cartao, Numero, Recado } from '@/ds';
 import { formatarBRL, formatarLitros } from '@/pages/utils/formato';
 import { aquisicaoExterna } from './mocks/feitio';
 import { Anteriores } from './components/Anteriores';
@@ -37,16 +37,7 @@ export function FeitioPage() {
         density={densidade}
       />
 
-      <div
-        style={{
-          padding: campo ? '14px 16px 26px' : '18px 24px 30px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: campo ? 14 : 18,
-          maxWidth: campo ? undefined : 1020,
-          minWidth: 0,
-        }}
-      >
+      <CorpoDaTela densidade={densidade} larguraMaxima={1020}>
         {tela.recado ? <Recado texto={tela.recado} onFechar={tela.fecharRecado} /> : null}
 
         <PorQueApurar />
@@ -119,7 +110,7 @@ export function FeitioPage() {
         <Comparacao feitio={tela.feitio} concluido={tela.concluido} total={tela.total} densidade={densidade} />
 
         <Anteriores densidade={densidade} />
-      </div>
+      </CorpoDaTela>
     </>
   );
 }

@@ -21,10 +21,3 @@ export const OPCOES_DO_FILTRO: readonly SheetOption[] = [
   { value: 'pendentes', label: 'Anamnese pendente' },
   { value: 'ativos', label: 'Somente ativas' },
 ];
-
-export const rotuloLabel = {
-  font: 'var(--text-label)',
-  textTransform: 'uppercase',
-  letterSpacing: 'var(--tracking-label)',
-  color: 'var(--text-field-label)',
-} as const;

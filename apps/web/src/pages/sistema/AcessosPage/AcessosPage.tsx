@@ -1,4 +1,4 @@
-import { Button, ScreenHeader, varianteDoPainel, useDensidade, SeletorDeTipo } from '@/ds';
+import { Button, CorpoDaTela, ScreenHeader, varianteDoPainel, useDensidade, SeletorDeTipo } from '@/ds';
 import { AbaDeGrupos } from './components/AbaDeGrupos';
 import { AbaDeUsuarios } from './components/AbaDeUsuarios';
 import { focarTitulo } from './utils/focarTitulo';
@@ -27,15 +27,7 @@ export function AcessosPage() {
           ) : undefined
         }
       />
-      <div
-        style={{
-          padding: campo ? '14px 16px 24px' : '18px 24px 30px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: campo ? 12 : 16,
-          maxWidth: campo ? undefined : 1080,
-        }}
-      >
+      <CorpoDaTela densidade={densidade} larguraMaxima={1080} espaco="compacto">
         {abas.length > 1 ? (
           <SeletorDeTipo
             opcoes={abas.map((valor) => ({ valor, label: ROTULO_DA_ABA[valor] }))}
@@ -45,7 +37,7 @@ export function AcessosPage() {
           />
         ) : null}
         {aba === 'usuarios' ? <AbaDeUsuarios /> : <AbaDeGrupos />}
-      </div>
+      </CorpoDaTela>
       {podeGerenciarUsuarios ? (
         <PainelDeConvite
           aberto={conviteAberto}

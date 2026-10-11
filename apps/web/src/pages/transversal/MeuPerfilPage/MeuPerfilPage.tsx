@@ -1,4 +1,4 @@
-import { ScreenHeader, useDensidade } from '@/ds';
+import { CorpoDaTela, ScreenHeader, useDensidade } from '@/ds';
 import { useSessao } from '@/app/sessao';
 import { PerfilDoEu } from './components/PerfilDoEu';
 
@@ -15,17 +15,9 @@ export function MeuPerfilPage() {
         subtitle={campo ? undefined : 'Seus dados de acesso ao sistema'}
         density={densidade}
       />
-      <div
-        style={{
-          padding: campo ? '14px 16px 24px' : '18px 24px 30px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: campo ? 12 : 16,
-          maxWidth: campo ? undefined : 860,
-        }}
-      >
+      <CorpoDaTela densidade={densidade} larguraMaxima={860} espaco="compacto">
         {estado.tipo === 'ativa' ? <PerfilDoEu eu={estado.eu} densidade={densidade} aoSair={encerrar} /> : null}
-      </div>
+      </CorpoDaTela>
     </>
   );
 }
