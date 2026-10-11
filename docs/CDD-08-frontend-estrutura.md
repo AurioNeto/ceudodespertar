@@ -785,7 +785,7 @@ Títulos na ordem de leitura. Dependências por título.
 | Dividir Verificação de lote (concluída) | Caracterizar fluxo lancamentos; Harness; Dividir Lançamentos e Meus registros | — |
 | Dividir Contas e fundo (concluída) | Caracterizar financeiro I; Harness; Dividir Verificação de lote | — |
 | Dividir Faturas e Empréstimos (concluída) | Caracterizar financeiro I; Harness; Dividir Contas e fundo | — |
-| Dividir Adiantamentos | Caracterizar financeiro I; Harness; Dividir Faturas e Empréstimos | — |
+| Dividir Adiantamentos (concluída) | Caracterizar financeiro I; Harness; Dividir Faturas e Empréstimos | — |
 | Dividir Relatórios | Caracterizar financeiro II; Harness; Dividir Adiantamentos | — |
 | Dividir Fechamento e Conciliação | Caracterizar financeiro II; Harness; Dividir Relatórios | — |
 | Dividir Prestação e Parâmetros | Caracterizar financeiro II; Harness; Dividir Fechamento e Conciliação | — |

@@ -1,0 +1,1 @@
+export { SeletorDePerspectiva } from './SeletorDePerspectiva';
