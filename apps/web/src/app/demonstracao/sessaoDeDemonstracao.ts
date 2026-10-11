@@ -2,8 +2,6 @@ import { PERMISSOES, type Eu, type GrupoId, type InstituicaoId, type UsuarioId }
 import { id } from '@/mocks/ids';
 import type { ServicoDeEntrada } from '@/dados';
 
-export const MARCA_DA_SESSAO_DE_DEMONSTRACAO = 'sessao-de-demonstracao-somente-desenvolvimento';
-
 export const euDeDemonstracao: Eu = {
   usuario: {
     id: id<UsuarioId>('u-demonstracao'),
