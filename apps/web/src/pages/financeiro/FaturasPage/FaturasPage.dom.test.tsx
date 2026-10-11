@@ -38,6 +38,12 @@ const linhaDaCompra = (container: HTMLElement, motivo: string) => {
   return achada;
 };
 
+async function montarComAgostoAberta() {
+  const montado = await montar(<FaturasPage />);
+  await abrirFatura(montado.container, 'agosto de 2026');
+  return montado;
+}
+
 async function abrirFaturaDeSetembro(container: HTMLElement) {
   const botaoDaFatura = todos<HTMLButtonElement>(container, 'button').find((botao) =>
     botao.textContent?.includes('setembro de 2026'),
@@ -229,17 +235,17 @@ describe('FaturasPage em escritório: cabeçalho, cartões e lista de faturas', 
     expect([selo.style.color, selo.style.background]).toEqual([cor, fundo]);
   });
 
-  it('fatura aberta de início — é a primeira fechada do conjunto, e não a primeira da lista', async () => {
+  it('fatura aberta de início — é a primeira que não está paga do primeiro cartão, a mesma regra de quando se troca de cartão', async () => {
     const { container } = await montar(<FaturasPage />);
 
-    expect(faturaAtiva(container)).toEqual(['agosto de 2026']);
-    expect(tituloDoDetalhe(container)).toBe('Cartão Cora PJ · agosto de 2026');
+    expect(faturaAtiva(container)).toEqual(['setembro de 2026']);
+    expect(tituloDoDetalhe(container)).toBe('Cartão Cora PJ · setembro de 2026');
   });
 });
 
 describe('FaturasPage em escritório: detalhe da fatura', () => {
   it('números — mostram o total, a contagem de compras e as datas de fechamento e vencimento', async () => {
-    const { container } = await montar(<FaturasPage />);
+    const { container } = await montarComAgostoAberta();
 
     expect(blocoDoRotulo(container, 'Total da fatura')).toEqual(['Total da fatura', '2.847,60']);
     expect(blocoDoRotulo(container, 'Compras')).toEqual(['Compras', '6']);
@@ -248,7 +254,7 @@ describe('FaturasPage em escritório: detalhe da fatura', () => {
   });
 
   it('selo da fatura — o detalhe repete o selo da lista', async () => {
-    const { container } = await montar(<FaturasPage />);
+    const { container } = await montarComAgostoAberta();
 
     expect(folhasComTexto(container, 'Fechada, a pagar')).toHaveLength(2);
   });
@@ -260,7 +266,7 @@ describe('FaturasPage em escritório: detalhe da fatura', () => {
   });
 
   it('tabela de compras — tem as cinco colunas e uma linha por compra, mais a do total', async () => {
-    const { container } = await montar(<FaturasPage />);
+    const { container } = await montarComAgostoAberta();
 
     expect(todos(container, 'th').map((cabecalho) => cabecalho.textContent)).toEqual([
       'Data',
@@ -273,7 +279,7 @@ describe('FaturasPage em escritório: detalhe da fatura', () => {
   });
 
   it('linha de uma compra — mostra dia e mês, motivo, categoria, grupo, quem registrou e valor', async () => {
-    const { container } = await montar(<FaturasPage />);
+    const { container } = await montarComAgostoAberta();
 
     expect(textosDasFolhas(linhaDaCompra(container, 'material elétrico do dormitório'))).toEqual([
       '11/08',
@@ -286,7 +292,7 @@ describe('FaturasPage em escritório: detalhe da fatura', () => {
   });
 
   it('linha do total — repete o total da fatura no fim da tabela', async () => {
-    const { container } = await montar(<FaturasPage />);
+    const { container } = await montarComAgostoAberta();
 
     const ultima = linhasDaTabela(container).at(-1) as HTMLElement;
 
@@ -294,7 +300,7 @@ describe('FaturasPage em escritório: detalhe da fatura', () => {
   });
 
   it('fatura fechada — oferece Registrar pagamento e explica que grava uma transferência', async () => {
-    const { container } = await montar(<FaturasPage />);
+    const { container } = await montarComAgostoAberta();
 
     expect(textosDosBotoes(container)).toContain('Registrar pagamento');
     expect(textosDosBotoes(container)).not.toContain('Fechar fatura');
@@ -350,7 +356,7 @@ describe('FaturasPage: escolher cartão e fatura', () => {
     expect(tituloDoDetalhe(container)).toBe('Cartão Itaú Paty · setembro de 2026');
   });
 
-  it('voltar ao primeiro cartão — abre setembro, a primeira que não está paga, e não agosto, como no início', async () => {
+  it('voltar ao primeiro cartão — abre setembro, a primeira que não está paga, como no início', async () => {
     const { container } = await montar(<FaturasPage />);
     await escolherCartao(container, 'Cartão Itaú Paty');
 
@@ -384,7 +390,7 @@ describe('FaturasPage: escolher cartão e fatura', () => {
   });
 
   it('escolher o outro cartão com o recado do pagamento na tela — tira o recado', async () => {
-    const { container } = await montar(<FaturasPage />);
+    const { container } = await montarComAgostoAberta();
     await clicar(botaoComTexto(container, 'Registrar pagamento'));
     await clicar(botaoComTexto(container, 'Confirmar pagamento'));
     expect(recadoMostrado(container)).not.toBeNull();
@@ -395,7 +401,7 @@ describe('FaturasPage: escolher cartão e fatura', () => {
   });
 
   it('escolher o outro cartão com o formulário de pagamento aberto — fecha o formulário', async () => {
-    const { container } = await montar(<FaturasPage />);
+    const { container } = await montarComAgostoAberta();
     await clicar(botaoComTexto(container, 'Registrar pagamento'));
 
     await escolherCartao(container, 'Cartão Itaú Paty');
@@ -451,7 +457,7 @@ describe('FaturasPage: fechar a fatura', () => {
 
 describe('FaturasPage: registrar o pagamento', () => {
   it('Registrar pagamento — abre o formulário no lugar do botão, com a conta, a data de hoje e o valor da fatura', async () => {
-    const { container } = await montar(<FaturasPage />);
+    const { container } = await montarComAgostoAberta();
 
     await clicar(botaoComTexto(container, 'Registrar pagamento'));
 
@@ -464,7 +470,7 @@ describe('FaturasPage: registrar o pagamento', () => {
   });
 
   it('formulário de pagamento — oferece as contas de saída e o valor não se edita', async () => {
-    const { container } = await montar(<FaturasPage />);
+    const { container } = await montarComAgostoAberta();
     await clicar(botaoComTexto(container, 'Registrar pagamento'));
 
     const opcoes = todos<HTMLOptionElement>(campoPeloRotulo<HTMLSelectElement>(container, 'Conta de saída'), 'option');
@@ -480,7 +486,7 @@ describe('FaturasPage: registrar o pagamento', () => {
   });
 
   it('Cancelar — fecha o formulário, a fatura segue fechada e não há recado', async () => {
-    const { container } = await montar(<FaturasPage />);
+    const { container } = await montarComAgostoAberta();
     await clicar(botaoComTexto(container, 'Registrar pagamento'));
 
     await clicar(botaoComTexto(container, 'Cancelar'));
@@ -491,7 +497,7 @@ describe('FaturasPage: registrar o pagamento', () => {
   });
 
   it('Confirmar pagamento — a fatura vira Paga em hoje, a dívida do cartão cai e o recado diz que não é despesa', async () => {
-    const { container } = await montar(<FaturasPage />);
+    const { container } = await montarComAgostoAberta();
     await clicar(botaoComTexto(container, 'Registrar pagamento'));
 
     await clicar(botaoComTexto(container, 'Confirmar pagamento'));
@@ -506,7 +512,7 @@ describe('FaturasPage: registrar o pagamento', () => {
   });
 
   it('Confirmar pagamento com outra conta e outra data — a fatura paga diz a data e a conta escolhidas', async () => {
-    const { container } = await montar(<FaturasPage />);
+    const { container } = await montarComAgostoAberta();
     await clicar(botaoComTexto(container, 'Registrar pagamento'));
     await escolherOpcao(campoPeloRotulo<HTMLSelectElement>(container, 'Conta de saída'), 'especie');
     await digitar(campoPeloRotulo(container, 'Data do pagamento'), '2026-09-10');
@@ -517,7 +523,7 @@ describe('FaturasPage: registrar o pagamento', () => {
   });
 
   it('pagamento confirmado com outra conta e outra data — o formulário de outra fatura abre com a conta e a data escolhidas', async () => {
-    const { container } = await montar(<FaturasPage />);
+    const { container } = await montarComAgostoAberta();
     await clicar(botaoComTexto(container, 'Registrar pagamento'));
     await escolherOpcao(campoPeloRotulo<HTMLSelectElement>(container, 'Conta de saída'), 'itau');
     await digitar(campoPeloRotulo(container, 'Data do pagamento'), '2026-09-10');
@@ -532,7 +538,7 @@ describe('FaturasPage: registrar o pagamento', () => {
   });
 
   it('data do pagamento apagada — o campo diz Informe a data e o pagamento não é registrado', async () => {
-    const { container } = await montar(<FaturasPage />);
+    const { container } = await montarComAgostoAberta();
     await clicar(botaoComTexto(container, 'Registrar pagamento'));
     await digitar(campoPeloRotulo(container, 'Data do pagamento'), '');
 
@@ -545,7 +551,7 @@ describe('FaturasPage: registrar o pagamento', () => {
   });
 
   it('conta e data escolhidas — ficam guardadas quando se cancela e se abre o formulário de novo', async () => {
-    const { container } = await montar(<FaturasPage />);
+    const { container } = await montarComAgostoAberta();
     await clicar(botaoComTexto(container, 'Registrar pagamento'));
     await escolherOpcao(campoPeloRotulo<HTMLSelectElement>(container, 'Conta de saída'), 'itau');
     await digitar(campoPeloRotulo(container, 'Data do pagamento'), '2026-09-15');
@@ -570,7 +576,7 @@ describe('FaturasPage: registrar o pagamento', () => {
   });
 
   it('cartão sem nada a pagar — mostra 0,00 em tom neutro', async () => {
-    const { container } = await montar(<FaturasPage />);
+    const { container } = await montarComAgostoAberta();
     await clicar(botaoComTexto(container, 'Registrar pagamento'));
     await clicar(botaoComTexto(container, 'Confirmar pagamento'));
     await abrirFatura(container, 'setembro de 2026');
@@ -601,7 +607,7 @@ describe('FaturasPage em campo', () => {
   });
 
   it('linha de uma compra — mostra dia e mês, motivo, categoria e valor, sem grupo nem quem registrou', async () => {
-    const { container } = await montar(<FaturasPage />);
+    const { container } = await montarComAgostoAberta();
 
     expect(textosDasFolhas(linhaDaCompra(container, 'material elétrico do dormitório'))).toEqual([
       '11/08',
@@ -612,13 +618,13 @@ describe('FaturasPage em campo', () => {
   });
 
   it('linha do total — repete o total da fatura no fim da tabela', async () => {
-    const { container } = await montar(<FaturasPage />);
+    const { container } = await montarComAgostoAberta();
 
     expect(textosDasFolhas(linhasDaTabela(container).at(-1) as HTMLElement)).toEqual(['Total', '2.847,60']);
   });
 
   it('números e lista — trazem os mesmos valores do escritório', async () => {
-    const { container } = await montar(<FaturasPage />);
+    const { container } = await montarComAgostoAberta();
 
     expect(blocoDoRotulo(container, 'Total da fatura')).toEqual(['Total da fatura', '2.847,60']);
     expect(linhasDaLista(container)[1]).toEqual(['agosto de 2026', 'Fechada, a pagar', '2.847,60', '6 compras']);
@@ -626,7 +632,7 @@ describe('FaturasPage em campo', () => {
   });
 
   it('formulário de pagamento — abre com os mesmos campos e confirma como no escritório', async () => {
-    const { container } = await montar(<FaturasPage />);
+    const { container } = await montarComAgostoAberta();
 
     await clicar(botaoComTexto(container, 'Registrar pagamento'));
     await clicar(botaoComTexto(container, 'Confirmar pagamento'));
@@ -668,7 +674,7 @@ describe('FaturasPage: estados vazios e variações que a demonstração não al
 
   it('fatura sem compras — mostra o estado vazio no lugar da tabela, com total e contagem zerados', async () => {
     cenario.faturas = comAlteracao(await faturasDaDemonstracao(), 'f-cora-08', { compras: [] });
-    const { container } = await montar(<FaturasPage />);
+    const { container } = await montarComAgostoAberta();
 
     expect(folhasComTexto(container, 'Nenhuma compra ainda')).toHaveLength(1);
     expect(folhasComTexto(container, 'As compras aparecem aqui conforme forem registradas neste cartão.')).toHaveLength(1);
@@ -708,7 +714,7 @@ describe('FaturasPage: estados vazios e variações que a demonstração não al
       posicao === 0 ? Object.assign({}, compra, { grupo: null }) : compra,
     );
     cenario.faturas = comAlteracao(demonstracao, 'f-cora-08', { compras: semGrupoNaPrimeira });
-    const { container } = await montar(<FaturasPage />);
+    const { container } = await montarComAgostoAberta();
 
     expect(textosDasFolhas(linhaDaCompra(container, 'mercado da cerimônia de agosto'))).toEqual([
       '02/08',
