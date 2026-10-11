@@ -103,7 +103,7 @@ describe('ContasEFundoPage em escritório: cabeçalho e resumo da unidade', () =
     expect(blocoDoRotulo(container, 'Saldo consolidado da unidade')).toEqual([
       'Saldo consolidado da unidade',
       '84.317,90',
-      'posição de hoje, 09:12 · 4 contas ativas',
+      'última conciliação em 01/09 · 4 contas ativas',
     ]);
   });
 
@@ -170,7 +170,7 @@ describe('ContasEFundoPage: cartão de cada conta', () => {
       folhas: [
         'Cora PJ',
         'conta principal da casa · CNPJ do CDD',
-        'Conciliada ontem',
+        'Conciliada em 01/09',
         '41.902,10',
         'movimento em 02/09',
         'responsável: Aurio Neto',
@@ -203,7 +203,7 @@ describe('ContasEFundoPage: cartão de cada conta', () => {
       folhas: [
         'Itaú Munay',
         'unidade comercial · lojinha',
-        'Conciliada ontem',
+        'Conciliada em 31/08',
         '37.994,85',
         'movimento em 22/08',
         'responsável: Paty Munay',
@@ -251,7 +251,7 @@ describe('ContasEFundoPage: cartão de cada conta', () => {
   });
 
   it.each([
-    { nome: 'Cora PJ', selo: 'Conciliada ontem', cor: 'var(--color-confirmed)' },
+    { nome: 'Cora PJ', selo: 'Conciliada em 01/09', cor: 'var(--color-confirmed)' },
     { nome: 'Espécie', selo: 'Contagem pendente', cor: 'var(--color-pending)' },
     { nome: 'Nubank Paty', selo: 'A conferir', cor: 'var(--color-pending)' },
   ])('selo da conta $nome — diz $selo no tom $cor', async ({ nome, selo, cor }) => {
@@ -262,12 +262,12 @@ describe('ContasEFundoPage: cartão de cada conta', () => {
     expect(folha.style.color).toBe(cor);
   });
 
-  it('Itaú Munay — o selo diz Conciliada ontem mesmo com o último movimento em 22/08', async () => {
+  it('Itaú Munay — o selo diz a data da última conciliação, 31/08, e não a do último movimento, 22/08', async () => {
     const { container } = await montar(<ContasEFundoPage />);
 
     const folhas = textosDasFolhas(cartaoDaConta(container, 'Itaú Munay'));
 
-    expect(folhas).toContain('Conciliada ontem');
+    expect(folhas).toContain('Conciliada em 31/08');
     expect(folhas).toContain('movimento em 22/08');
   });
 });
@@ -430,7 +430,7 @@ describe('ContasEFundoPage: gerenciar contas e fundos', () => {
     expect(blocoDoRotulo(container, 'Saldo consolidado da unidade')).toEqual([
       'Saldo consolidado da unidade',
       '81.137,50',
-      'posição de hoje, 09:12 · 3 contas ativas',
+      'última conciliação em 01/09 · 3 contas ativas',
     ]);
     expect(blocoDoRotulo(container, 'Em espécie')).toEqual(['Em espécie', '0,00', 'caixa da chácara']);
     expect(folhasComTexto(container, '1 conta esperando conferência')).toHaveLength(1);
@@ -448,7 +448,7 @@ describe('ContasEFundoPage: gerenciar contas e fundos', () => {
     expect(blocoDoRotulo(container, 'Saldo consolidado da unidade')).toEqual([
       'Saldo consolidado da unidade',
       '83.077,35',
-      'posição de hoje, 09:12 · 3 contas ativas',
+      'última conciliação em 01/09 · 3 contas ativas',
     ]);
   });
 
@@ -519,7 +519,7 @@ describe('ContasEFundoPage: gerenciar contas e fundos', () => {
     expect(blocoDoRotulo(container, 'Saldo consolidado da unidade')).toEqual([
       'Saldo consolidado da unidade',
       '84.317,90',
-      'posição de hoje, 09:12 · 5 contas ativas',
+      'última conciliação em 01/09 · 5 contas ativas',
     ]);
     expect(blocoDoRotulo(container, 'Em banco')).toEqual(['Em banco', '81.137,50', '4 contas']);
     expect(folhasComTexto(container, '3 contas esperando conferência')).toHaveLength(1);
@@ -564,7 +564,7 @@ describe('ContasEFundoPage: gerenciar contas e fundos', () => {
     expect(textosDasFolhas(cartaoDaConta(container, 'Itaú Lojinha'))).toEqual([
       'Itaú Lojinha',
       'unidade comercial · lojinha',
-      'Conciliada ontem',
+      'Conciliada em 31/08',
       '37.994,85',
       'movimento em 22/08',
       'responsável: Marília Prado',
@@ -583,7 +583,7 @@ describe('ContasEFundoPage: gerenciar contas e fundos', () => {
     expect(botaoComTexto(container, 'Salvar conta')).toBeTruthy();
     expect(campoRotulado(container, 'Descrição').value).toBe('sem nome ainda');
     expect(container.querySelector('[role="alert"]')).toBeNull();
-    expect(blocoDoRotulo(container, 'Saldo consolidado da unidade')[2]).toBe('posição de hoje, 09:12 · 4 contas ativas');
+    expect(blocoDoRotulo(container, 'Saldo consolidado da unidade')[2]).toBe('última conciliação em 01/09 · 4 contas ativas');
   });
 
   it('editar um fundo — trocar o valor reajusta o que já tem destino e o Livre, e a reserva continua no mesmo lugar', async () => {

@@ -39,17 +39,17 @@ describe('iconeDaConta', () => {
 });
 
 describe('textoDaConciliacao', () => {
-  it('conciliada diz Conciliada ontem, mesmo sem movimento', () => {
-    expect(textoDaConciliacao(conta({ ultimoMovimento: null }))).toBe('Conciliada ontem');
+  it('conciliada diz Conciliada em e o dia e o mês da última conciliação, mesmo sem movimento', () => {
+    expect(textoDaConciliacao(conta({ ultimoMovimento: null }), dataLocal('2026-09-01'))).toBe('Conciliada em 01/09');
   });
 
   it('sem movimento e sem conciliar é Nova conta', () => {
-    expect(textoDaConciliacao(conta({ conciliacao: 'PENDENTE', ultimoMovimento: null }))).toBe('Nova conta');
+    expect(textoDaConciliacao(conta({ conciliacao: 'PENDENTE', ultimoMovimento: null }), null)).toBe('Nova conta');
   });
 
   it('pendente com movimento — caixa pede contagem, banco pede conferência', () => {
-    expect(textoDaConciliacao(conta({ conciliacao: 'PENDENTE', tipo: 'DINHEIRO' }))).toBe('Contagem pendente');
-    expect(textoDaConciliacao(conta({ conciliacao: 'PENDENTE' }))).toBe('A conferir');
+    expect(textoDaConciliacao(conta({ conciliacao: 'PENDENTE', tipo: 'DINHEIRO' }), null)).toBe('Contagem pendente');
+    expect(textoDaConciliacao(conta({ conciliacao: 'PENDENTE' }), null)).toBe('A conferir');
   });
 });
 

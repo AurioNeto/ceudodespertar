@@ -1,8 +1,8 @@
-import type { Conta } from '@cdd/contracts';
+import type { Conta, DataLocal } from '@cdd/contracts';
 import type { Density } from '@/ds';
 import { formatarDinheiro, pluralizar } from '@/pages/utils/formato';
 import { rotuloLabel } from '../../constantes';
-import { ehCaixa } from '../../utils/conta';
+import { ehCaixa, textoDaUltimaConciliacao } from '../../utils/conta';
 import { BlocoDoResumo } from './components/BlocoDoResumo';
 
 export interface ResumoDoSaldoProps {
@@ -10,10 +10,18 @@ export interface ResumoDoSaldoProps {
   emBanco: number;
   emCaixa: number;
   fundoProprio: number;
+  ultimaConciliacao: DataLocal | null;
   densidade: Density;
 }
 
-export function ResumoDoSaldo({ contasAtivas, emBanco, emCaixa, fundoProprio, densidade }: ResumoDoSaldoProps) {
+export function ResumoDoSaldo({
+  contasAtivas,
+  emBanco,
+  emCaixa,
+  fundoProprio,
+  ultimaConciliacao,
+  densidade,
+}: ResumoDoSaldoProps) {
   const campo = densidade === 'field';
 
   return (
@@ -42,7 +50,7 @@ export function ResumoDoSaldo({ contasAtivas, emBanco, emCaixa, fundoProprio, de
           {formatarDinheiro(emBanco + emCaixa)}
         </span>
         <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>
-          posição de hoje, 09:12 · {pluralizar(contasAtivas.length, 'conta ativa', 'contas ativas')}
+          {textoDaUltimaConciliacao(ultimaConciliacao)} · {pluralizar(contasAtivas.length, 'conta ativa', 'contas ativas')}
         </span>
       </div>
       <BlocoDoResumo

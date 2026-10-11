@@ -38,6 +38,7 @@ export function ContasEFundoPage() {
           emBanco={tela.emBanco}
           emCaixa={tela.emCaixa}
           fundoProprio={tela.fundoProprio}
+          ultimaConciliacao={tela.ultimaConciliacao}
           densidade={densidade}
         />
 
@@ -81,7 +82,7 @@ export function ContasEFundoPage() {
               }}
             >
               {tela.contasAtivas.map((c) => (
-                <CartaoDeConta key={c.id} conta={c} />
+                <CartaoDeConta key={c.id} conta={c} ultimaConciliacao={tela.ultimaConciliacaoDe(c)} />
               ))}
             </div>
           </div>
