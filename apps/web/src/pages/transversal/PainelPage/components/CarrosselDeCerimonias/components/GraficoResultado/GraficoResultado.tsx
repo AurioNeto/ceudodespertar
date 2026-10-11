@@ -1,14 +1,7 @@
 import { cerimoniasPassadas } from '../../../../mocks/cerimonias';
 import { formatarValor } from '@/lib/formato';
 import { formatarDiaMes } from '@/pages/utils/formato';
-
-const TOPO = 18;
-const ALTURA = 132;
-const MAX = 15500;
-const MIN = -3000;
-
-const y = (v: number) => +(TOPO + ((MAX - v) / (MAX - MIN)) * ALTURA).toFixed(1);
-const x = (i: number) => +(56 + i * 106).toFixed(1);
+import { x, y } from './utils/escala';
 
 /** Resultado por cerimônia: linha com área suave e o déficit cruzando o zero. */
 export function GraficoResultado() {
