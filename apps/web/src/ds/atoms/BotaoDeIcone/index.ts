@@ -1,0 +1,1 @@
+export { BotaoDeIcone } from './BotaoDeIcone';

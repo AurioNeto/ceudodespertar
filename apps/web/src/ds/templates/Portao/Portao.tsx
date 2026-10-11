@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { FlowerOfLife } from '../../atoms/FlowerOfLife';
+import { Marca } from '../../atoms/Marca';
 import { useDensidade } from '../../fundacao/useDensidade';
 
 export interface PortaoProps {
@@ -21,7 +22,7 @@ export function Portao({ titulo, descricao, children }: PortaoProps) {
         background: 'var(--bg-app)',
       }}
     >
-      <Marca campo={campo} />
+      <LadoDaMarca campo={campo} />
 
       <div
         style={{
@@ -54,33 +55,13 @@ export function Portao({ titulo, descricao, children }: PortaoProps) {
   );
 }
 
-function Marca({ campo }: { campo: boolean }) {
-  const wordmark = (
-    <div>
-      <div
-        style={{
-          font: campo ? '800 17px/1.05 var(--font-display)' : '800 34px/1.02 var(--font-display)',
-          letterSpacing: '.01em',
-          textTransform: 'uppercase',
-          color: 'var(--color-ink-brand)',
-        }}
-      >
-        Céu do
-        {campo ? ' ' : <br />}
-        Despertar
-      </div>
-      <div
-        style={{
-          marginTop: campo ? 4 : 12,
-          font: 'var(--text-label)',
-          letterSpacing: 'var(--tracking-label)',
-          textTransform: 'uppercase',
-          color: 'var(--text-field-label)',
-        }}
-      >
-        Sistema de gestão
-      </div>
-    </div>
+function LadoDaMarca({ campo }: { campo: boolean }) {
+  const marca = (
+    <Marca
+      linhas={campo ? ['Céu do Despertar'] : ['Céu do', 'Despertar']}
+      legenda="Sistema de gestão"
+      tamanho={campo ? 'pequeno' : 'grande'}
+    />
   );
 
   if (campo) {
@@ -92,7 +73,7 @@ function Marca({ campo }: { campo: boolean }) {
           padding: '20px 18px',
         }}
       >
-        {wordmark}
+        {marca}
       </header>
     );
   }
@@ -117,7 +98,7 @@ function Marca({ campo }: { campo: boolean }) {
         <FlowerOfLife />
       </div>
 
-      <div style={{ position: 'relative' }}>{wordmark}</div>
+      <div style={{ position: 'relative' }}>{marca}</div>
 
       <div style={{ position: 'relative', maxWidth: '30ch' }}>
         <div style={{ height: 1, background: 'var(--color-line-gold)', marginBottom: 18 }} />

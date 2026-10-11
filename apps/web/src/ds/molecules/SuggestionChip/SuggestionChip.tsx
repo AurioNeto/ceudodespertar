@@ -1,4 +1,5 @@
 import type { CSSProperties, ReactNode } from 'react';
+import { BotaoDeIcone } from '../../atoms/BotaoDeIcone';
 import { Icon } from '../../atoms/Icon';
 import type { Density } from '../../fundacao/densidade';
 
@@ -13,14 +14,6 @@ export interface SuggestionChipProps {
 /** Violeta do ápice: o sistema propõe, o humano confirma (Doc 1 §5.3). */
 export function SuggestionChip({ children, onAccept, onDismiss, density = 'field', style }: SuggestionChipProps) {
   const alvo = density === 'field' ? 'var(--target-field)' : 'var(--target-office)';
-  const botao: CSSProperties = {
-    minWidth: 'var(--tap-min)',
-    minHeight: 'var(--tap-min)',
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 'var(--radius-pill)',
-  };
 
   return (
     <span
@@ -41,24 +34,21 @@ export function SuggestionChip({ children, onAccept, onDismiss, density = 'field
       <Icon name="sparkles" size={15} />
       <span>{children}</span>
       {onAccept ? (
-        <button
-          type="button"
+        <BotaoDeIcone
+          icone="check"
           onClick={onAccept}
           title="Aceitar sugestão"
-          style={{ ...botao, color: 'var(--color-suggest)' }}
-        >
-          <Icon name="check" size={18} />
-        </button>
+          style={{ borderRadius: 'var(--radius-pill)', color: 'var(--color-suggest)' }}
+        />
       ) : null}
       {onDismiss ? (
-        <button
-          type="button"
+        <BotaoDeIcone
+          icone="x"
+          tamanhoDoIcone={16}
           onClick={onDismiss}
           title="Descartar sugestão"
-          style={{ ...botao, color: 'var(--text-meta)' }}
-        >
-          <Icon name="x" size={16} />
-        </button>
+          style={{ borderRadius: 'var(--radius-pill)' }}
+        />
       ) : null}
     </span>
   );
