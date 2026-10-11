@@ -14,10 +14,11 @@ import {
   criarAvisoDeEncerramentoFalso,
   criarEntradaFalsa,
   criarEu,
-  erroDoEu,
+  ler,
   montarComSessao,
-} from './apoioDeTeste';
-import type { TelaMontada } from './apoioDeTeste';
+} from '@/testes/sessaoDeTeste';
+import type { TelaMontada } from '@/testes/sessaoDeTeste';
+import { erroDaApi as erroDoEu } from '@/testes/fabricas';
 import { CHAVE_DO_EU, ExigeSessao, useSessao } from './sessao';
 
 let tela: TelaMontada | null = null;
@@ -39,44 +40,42 @@ function Sonda() {
   );
 }
 
-const ler = (id: string) => tela?.container.querySelector(`[data-testid="${id}"]`)?.textContent;
-
 describe('SessaoProvider', () => {
   it('responde pode() a partir das permissões do /eu', async () => {
     tela = await montarComSessao({ entrada: criarEntradaFalsa(true), buscarEu: () => Promise.resolve(criarEu()) }, <Sonda />);
 
-    expect(ler('estado')).toBe('ativa');
-    expect(ler('pode-registrar')).toBe('true');
-    expect(ler('pode-confirmar')).toBe('false');
+    expect(ler(tela, 'estado')).toBe('ativa');
+    expect(ler(tela, 'pode-registrar')).toBe('true');
+    expect(ler(tela, 'pode-confirmar')).toBe('false');
   });
 
   it('muda o que pode() responde quando o /eu traz outras permissões', async () => {
     const eu: Eu = criarEu({ permissoes: [PERMISSAO_QUE_O_EU_NAO_TEM] });
     tela = await montarComSessao({ entrada: criarEntradaFalsa(true), buscarEu: () => Promise.resolve(eu) }, <Sonda />);
 
-    expect(ler('pode-registrar')).toBe('false');
-    expect(ler('pode-confirmar')).toBe('true');
+    expect(ler(tela, 'pode-registrar')).toBe('false');
+    expect(ler(tela, 'pode-confirmar')).toBe('true');
   });
 
   it('expõe o nome do grupo vindo do /eu', async () => {
     tela = await montarComSessao({ entrada: criarEntradaFalsa(true), buscarEu: () => Promise.resolve(criarEu()) }, <Sonda />);
-    expect(ler('grupo')).toBe('Tesouraria');
+    expect(ler(tela, 'grupo')).toBe('Tesouraria');
   });
 
   it('sem usuário OIDC não chama o /eu e nada é permitido', async () => {
     const buscarEu = vi.fn(() => Promise.resolve(criarEu()));
     tela = await montarComSessao({ entrada: criarEntradaFalsa(false), buscarEu }, <Sonda />);
 
-    expect(ler('estado')).toBe('sem-sessao');
-    expect(ler('pode-registrar')).toBe('false');
+    expect(ler(tela, 'estado')).toBe('sem-sessao');
+    expect(ler(tela, 'pode-registrar')).toBe('false');
     expect(buscarEu).not.toHaveBeenCalled();
   });
 
   it('fica verificando enquanto o /eu não responde e nada é permitido', async () => {
     tela = await montarComSessao({ entrada: criarEntradaFalsa(true), buscarEu: () => new Promise<Eu>(() => undefined) }, <Sonda />);
 
-    expect(ler('estado')).toBe('verificando');
-    expect(ler('pode-registrar')).toBe('false');
+    expect(ler(tela, 'estado')).toBe('verificando');
+    expect(ler(tela, 'pode-registrar')).toBe('false');
   });
 
   it.each([
@@ -90,8 +89,8 @@ describe('SessaoProvider', () => {
       <Sonda />,
     );
 
-    expect(ler('estado')).toBe('recusada');
-    expect(ler('pode-registrar')).toBe('false');
+    expect(ler(tela, 'estado')).toBe('recusada');
+    expect(ler(tela, 'pode-registrar')).toBe('false');
   });
 
   it('o 503 do provedor não derruba a sessão do navegador e permite tentar de novo', async () => {
@@ -106,13 +105,13 @@ describe('SessaoProvider', () => {
     }
     tela = await montarComSessao({ entrada, buscarEu }, <><Sonda /><Retentar /></>);
 
-    expect(ler('estado')).toBe('indisponivel');
+    expect(ler(tela, 'estado')).toBe('indisponivel');
     expect(entrada.sair).not.toHaveBeenCalled();
 
     await tela.clicar('repetir');
 
-    expect(ler('estado')).toBe('ativa');
-    expect(ler('pode-registrar')).toBe('true');
+    expect(ler(tela, 'estado')).toBe('ativa');
+    expect(ler(tela, 'pode-registrar')).toBe('true');
   });
 
   it('quando a credencial avisa que a sessão acabou, volta a sem-sessao e esquece o /eu', async () => {
@@ -121,15 +120,15 @@ describe('SessaoProvider', () => {
       { entrada: criarEntradaFalsa(true), buscarEu: () => Promise.resolve(criarEu()), aviso },
       <Sonda />,
     );
-    expect(ler('estado')).toBe('ativa');
+    expect(ler(tela, 'estado')).toBe('ativa');
 
     await act(async () => {
       aviso.disparar();
     });
     await assentar();
 
-    expect(ler('estado')).toBe('sem-sessao');
-    expect(ler('pode-registrar')).toBe('false');
+    expect(ler(tela, 'estado')).toBe('sem-sessao');
+    expect(ler(tela, 'pode-registrar')).toBe('false');
     expect(tela.clienteDeConsultas.getQueryData(CHAVE_DO_EU)).toBeUndefined();
   });
 
@@ -144,7 +143,7 @@ describe('SessaoProvider', () => {
     await tela.clicar('sair');
 
     expect(entrada.sair).toHaveBeenCalledTimes(1);
-    expect(ler('estado')).toBe('sem-sessao');
+    expect(ler(tela, 'estado')).toBe('sem-sessao');
   });
 
   it('se o logout remoto falha, limpa a sessão local mesmo assim', async () => {
@@ -155,12 +154,12 @@ describe('SessaoProvider', () => {
       return <button onClick={encerrar}>sair</button>;
     }
     tela = await montarComSessao({ entrada, buscarEu: () => Promise.resolve(criarEu()) }, <><Sonda /><Sair /></>);
-    expect(ler('estado')).toBe('ativa');
+    expect(ler(tela, 'estado')).toBe('ativa');
 
     await tela.clicar('sair');
 
     expect(entrada.sair).toHaveBeenCalledTimes(1);
-    expect(ler('estado')).toBe('sem-sessao');
+    expect(ler(tela, 'estado')).toBe('sem-sessao');
     expect(tela.clienteDeConsultas.getQueryData(CHAVE_DO_EU)).toBeUndefined();
   });
 
@@ -183,12 +182,12 @@ describe('SessaoProvider', () => {
       );
     }
     tela = await montarComSessao({ entrada, buscarEu: () => Promise.resolve(criarEu()) }, <><Sonda /><Concluir /></>);
-    expect(ler('estado')).toBe('sem-sessao');
+    expect(ler(tela, 'estado')).toBe('sem-sessao');
 
     await tela.clicar('concluir');
 
     expect(destinoRecebido).toBe('/faturas?mes=8');
-    expect(ler('estado')).toBe('ativa');
+    expect(ler(tela, 'estado')).toBe('ativa');
   });
 
   it('não devolve destino de fora do site depois do login', async () => {
@@ -244,8 +243,8 @@ describe('ExigeSessao', () => {
   it('sem sessão manda para a entrada guardando o caminho e a consulta originais', async () => {
     tela = await montarComSessao({ entrada: criarEntradaFalsa(false), buscarEu: () => Promise.resolve(criarEu()) }, <Rotas />);
 
-    expect(ler('de')).toBe('/lancamentos?pagina=2');
-    expect(ler('protegida')).toBeUndefined();
+    expect(ler(tela, 'de')).toBe('/lancamentos?pagina=2');
+    expect(ler(tela, 'protegida')).toBeUndefined();
   });
 
   it('com recusa do /eu também manda para a entrada guardando o destino', async () => {
@@ -254,21 +253,21 @@ describe('ExigeSessao', () => {
       <Rotas />,
     );
 
-    expect(ler('de')).toBe('/lancamentos?pagina=2');
+    expect(ler(tela, 'de')).toBe('/lancamentos?pagina=2');
   });
 
   it('com sessão ativa mostra a tela protegida', async () => {
     tela = await montarComSessao({ entrada: criarEntradaFalsa(true), buscarEu: () => Promise.resolve(criarEu()) }, <Rotas />);
 
-    expect(ler('protegida')).toBe('conteúdo protegido');
-    expect(ler('de')).toBeUndefined();
+    expect(ler(tela, 'protegida')).toBe('conteúdo protegido');
+    expect(ler(tela, 'de')).toBeUndefined();
   });
 
   it('enquanto verifica o acesso não redireciona nem mostra a tela protegida', async () => {
     tela = await montarComSessao({ entrada: criarEntradaFalsa(true), buscarEu: () => new Promise<Eu>(() => undefined) }, <Rotas />);
 
-    expect(ler('de')).toBeUndefined();
-    expect(ler('protegida')).toBeUndefined();
+    expect(ler(tela, 'de')).toBeUndefined();
+    expect(ler(tela, 'protegida')).toBeUndefined();
     expect(tela.texto()).toContain('Verificando seu acesso');
   });
 });
@@ -347,7 +346,7 @@ describe('EntrarPage', () => {
   it('com sessão ativa segue para o destino guardado', async () => {
     tela = await montarComSessao({ entrada: criarEntradaFalsa(true), buscarEu: () => Promise.resolve(criarEu()) }, <Entrada />);
 
-    expect(ler('destino')).toBe('faturas');
+    expect(ler(tela, 'destino')).toBe('faturas');
   });
 
   it('a recusa deixa sair para entrar com outra conta', async () => {
@@ -384,7 +383,7 @@ describe('RetornoPage', () => {
   it('leva ao destino substituindo a entrada do retorno, para o code não ficar no histórico', async () => {
     const roteador = await concluirNoRetorno('/lancamentos');
 
-    expect(ler('destino')).toBe('lancamentos');
+    expect(ler(tela, 'destino')).toBe('lancamentos');
     expect(roteador.state.historyAction).toBe('REPLACE');
     expect(roteador.state.location.search).toBe('');
   });
@@ -405,7 +404,7 @@ describe('rotas antigas da entrada', () => {
       <RouterProvider router={roteador} />,
     );
 
-    expect(ler('entrar')).toBe('entrar');
+    expect(ler(tela, 'entrar')).toBe('entrar');
     expect(roteador.state.location.pathname).toBe('/entrar');
     expect(roteador.state.historyAction).toBe('REPLACE');
   });

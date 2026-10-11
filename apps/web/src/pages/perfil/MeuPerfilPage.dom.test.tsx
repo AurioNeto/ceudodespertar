@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { GrupoId, Permissao } from '@cdd/contracts';
-import { criarEntradaFalsa, criarEu, montarComSessao } from '../../app/apoioDeTeste';
-import type { TelaMontada } from '../../app/apoioDeTeste';
+import { criarEntradaFalsa, criarEu, montarComSessao } from '@/testes/sessaoDeTeste';
+import type { TelaMontada } from '@/testes/sessaoDeTeste';
 import { MeuPerfilPage } from './MeuPerfilPage';
 
 const montadas: TelaMontada[] = [];

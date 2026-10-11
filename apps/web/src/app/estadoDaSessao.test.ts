@@ -1,9 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import type { CodigoDeErro, Eu, GrupoId, InstituicaoId, UsuarioId } from '@cdd/contracts';
-import { ErroDaApi, ErroDeRede } from '../dados/erros';
+import type { Eu, GrupoId, InstituicaoId, UsuarioId } from '@cdd/contracts';
+import { ErroDeRede } from '../dados/erros';
+import { erroDaApi as erro } from '@/testes/fabricas';
 import { estadoDoErroDoEu, usuarioDaSessao } from './estadoDaSessao';
-
-const erro = (status: number, codigo: CodigoDeErro) => new ErroDaApi({ status, codigo });
 
 describe('estadoDoErroDoEu', () => {
   it.each([

@@ -5,7 +5,7 @@ import { Layout } from './Layout';
 import { ROTAS, type RotaId } from './navegacao';
 import { PERMISSOES, type Permissao } from '@cdd/contracts';
 import { TELAS, type RegistroDeTelas } from './telas';
-import { criarEntradaFalsa, criarEu, montarComSessao, type TelaMontada } from './apoioDeTeste';
+import { criarEntradaFalsa, criarEu, montarComSessao, type TelaMontada } from '@/testes/sessaoDeTeste';
 
 const ROTAS_DO_SHELL = Object.entries(ROTAS) as [RotaId, string][];
 

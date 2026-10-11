@@ -3,27 +3,14 @@ import type { ReactElement } from 'react';
 import { createRoot } from 'react-dom/client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { vi } from 'vitest';
-import type { CodigoDeErro, Eu, GrupoId, InstituicaoId, Permissao, UsuarioId } from '@cdd/contracts';
-import { JANELA_DE_FRESCOR_EM_MS } from '../dados/clienteDeConsultas';
-import { ErroDaApi } from '../dados/erros';
-import type { ServicoDeEntrada } from '../dados/oidc';
-import { SessaoProvider } from './sessao';
+import type { Eu, GrupoId, InstituicaoId, Permissao, UsuarioId } from '@cdd/contracts';
+import { JANELA_DE_FRESCOR_EM_MS } from '@/dados/clienteDeConsultas';
+import type { ServicoDeEntrada } from '@/dados/oidc';
+import { SessaoProvider } from '@/app/sessao';
 
 declare global {
   var IS_REACT_ACT_ENVIRONMENT: boolean | undefined;
 }
-
-globalThis.IS_REACT_ACT_ENVIRONMENT = true;
-
-Object.defineProperty(window, 'matchMedia', {
-  writable: true,
-  value: (consulta: string) => ({
-    media: consulta,
-    matches: false,
-    addEventListener: () => undefined,
-    removeEventListener: () => undefined,
-  }),
-});
 
 export const PERMISSAO_QUE_O_EU_TEM: Permissao = 'financeiro.lancamento.registrar';
 export const PERMISSAO_QUE_O_EU_NAO_TEM: Permissao = 'financeiro.lancamento.confirmar';
@@ -37,8 +24,6 @@ export function criarEu(sobrescritas: Partial<Eu> = {}): Eu {
     ...sobrescritas,
   };
 }
-
-export const erroDoEu = (status: number, codigo: CodigoDeErro) => new ErroDaApi({ status, codigo });
 
 export interface EntradaFalsa extends ServicoDeEntrada {
   readonly recuperarSessao: ReturnType<typeof vi.fn<() => Promise<boolean>>>;
@@ -144,3 +129,5 @@ export async function montarComSessao(cenario: CenarioDeSessao, arvore: ReactEle
     },
   };
 }
+
+export const ler = (tela: TelaMontada | null, id: string) => tela?.container.querySelector(`[data-testid="${id}"]`)?.textContent;

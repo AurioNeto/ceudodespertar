@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import type { GrupoId, UsuarioId } from '@cdd/contracts';
-import { assentar, type TelaMontada } from '../../app/apoioDeTeste';
+import { assentar, type TelaMontada } from '@/testes/sessaoDeTeste';
 import { ATRASO_DA_BUSCA_EM_MS } from './AbaDeUsuarios';
 import {
   ESPERA_ALEM_DO_ATRASO_DA_BUSCA_EM_MS,
