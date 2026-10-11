@@ -1,24 +1,12 @@
-import { useMemo, useState } from 'react';
-import type { Dormitorio } from '@cdd/contracts';
 import { ScreenHeader, useDensidade, SeletorDeTipo, Cartao, Numero, Recado } from '@/ds';
 import { pluralizar } from '@/pages/utils/formato';
-import {
-  alocacaoInicial,
-  conflitoDeAgenda,
-  dormitorios as dormitoriosIniciais,
-  eventoDoMapa,
-  foraDoMapa,
-  hospedes,
-  type NoiteId,
-} from './mocks/leitos';
-import type { Aba, Alocacao } from './tipos';
-import { identificacaoDe } from './utils/leitos';
-import { rotuloDaNoite } from './utils/noites';
+import { eventoDoMapa } from './mocks/leitos';
 import { AvisoDeConflito } from './components/AvisoDeConflito';
 import { Cadastro } from './components/Cadastro';
 import { ForaDoMapa } from './components/ForaDoMapa';
 import { Grade } from './components/Grade';
 import { SemLeito } from './components/SemLeito';
+import { useAlocacaoDeLeitos } from './hooks/useAlocacaoDeLeitos';
 
 /**
  * `E-10` · Mapa de leitos e `E-15` · Cadastro — Doc 4 §7 e Doc 2 §2.6.
@@ -42,62 +30,7 @@ export function LeitosPage() {
   const densidade = useDensidade();
   const campo = densidade === 'field';
 
-  const [aba, setAba] = useState<Aba>('mapa');
-  const [dormitorios, setDormitorios] = useState<readonly Dormitorio[]>(dormitoriosIniciais);
-  const [alocacao, setAlocacao] = useState<Alocacao>(
-    () => JSON.parse(JSON.stringify(alocacaoInicial)) as Alocacao,
-  );
-  const [escolhendo, setEscolhendo] = useState<{ leitoId: string; noite: NoiteId } | null>(null);
-  const [recado, setRecado] = useState<string | null>(null);
-
-  const ocupantesDe = (leitoId: string, noite: string): readonly string[] => alocacao[leitoId]?.[noite] ?? [];
-
-  /** Quantas noites cada pessoa ainda precisa. */
-  const pendencias = useMemo(
-    () =>
-      hospedes.map((h) => {
-        const alocadas = h.noites.filter((n) =>
-          Object.values(alocacao).some((noites) => (noites[n] ?? []).includes(h.inscricaoId as string)),
-        );
-        return { hospede: h, faltam: h.noites.filter((n) => !alocadas.includes(n)) };
-      }),
-    [alocacao],
-  );
-
-  const semLeito = pendencias.filter((p) => p.faltam.length > 0);
-
-  const leitosAtivos = dormitorios.flatMap((d) => d.leitos.filter((l) => l.ativo));
-  const capacidadeTotal = leitosAtivos.reduce((s, l) => s + l.capacidade, 0);
-  const vagas = capacidadeTotal * eventoDoMapa.noites.length;
-  const ocupadas = Object.values(alocacao).reduce(
-    (s, n) => s + Object.values(n).reduce((x, pessoas) => x + pessoas.length, 0),
-    0,
-  );
-
-  const alocar = (leitoId: string, noite: NoiteId, inscricaoId: string, nome: string) => {
-    setAlocacao((a) => ({
-      ...a,
-      [leitoId]: { ...(a[leitoId] ?? {}), [noite]: [...(a[leitoId]?.[noite] ?? []), inscricaoId] },
-    }));
-    setEscolhendo(null);
-    const emConflito = noite === conflitoDeAgenda.noite;
-    setRecado(
-      emConflito
-        ? `${nome} alocada em ${identificacaoDe(dormitorios, leitoId)} na ${rotuloDaNoite(noite)}. Atenção: o ${conflitoDeAgenda.evento} usa o mesmo local nessa noite, e o sistema não impede a sobreposição — confirme com quem organiza.`
-        : `${nome} alocada em ${identificacaoDe(dormitorios, leitoId)} na ${rotuloDaNoite(noite)}.`,
-    );
-  };
-
-  const liberar = (leitoId: string, noite: string, inscricaoId: string) => {
-    setAlocacao((a) => {
-      const noites = { ...(a[leitoId] ?? {}) };
-      const restantes = (noites[noite] ?? []).filter((x) => x !== inscricaoId);
-      if (restantes.length === 0) delete noites[noite];
-      else noites[noite] = restantes;
-      return { ...a, [leitoId]: noites };
-    });
-    setRecado(null);
-  };
+  const tela = useAlocacaoDeLeitos();
 
   return (
     <>
@@ -123,18 +56,14 @@ export function LeitosPage() {
             { valor: 'mapa', label: 'Mapa do evento' },
             { valor: 'cadastro', label: 'Dormitórios e leitos' },
           ]}
-          valor={aba}
-          onEscolher={(v) => {
-            setAba(v);
-            setEscolhendo(null);
-            setRecado(null);
-          }}
+          valor={tela.aba}
+          onEscolher={tela.escolherAba}
           densidade={densidade}
         />
 
-        {recado ? <Recado texto={recado} onFechar={() => setRecado(null)} /> : null}
+        {tela.recado ? <Recado texto={tela.recado} onFechar={tela.fecharRecado} /> : null}
 
-        {aba === 'mapa' ? (
+        {tela.aba === 'mapa' ? (
           <>
             <AvisoDeConflito />
 
@@ -148,48 +77,43 @@ export function LeitosPage() {
               >
                 <Numero
                   rotulo="Vagas-noite ocupadas"
-                  valor={`${ocupadas} de ${vagas}`}
-                  nota={`${capacidadeTotal} vagas em ${pluralizar(leitosAtivos.length, 'leito')} × ${eventoDoMapa.noites.length} noites`}
+                  valor={`${tela.ocupadas} de ${tela.vagas}`}
+                  nota={`${tela.capacidadeTotal} vagas em ${pluralizar(tela.leitosAtivos.length, 'leito')} × ${eventoDoMapa.noites.length} noites`}
                   destaque
                 />
                 <Numero
                   rotulo="Ainda sem leito"
-                  valor={String(semLeito.length)}
+                  valor={String(tela.semLeito.length)}
                   nota="pessoas que pediram beliche ou quarto"
-                  cor={semLeito.length > 0 ? 'var(--color-pending)' : undefined}
+                  cor={tela.semLeito.length > 0 ? 'var(--color-pending)' : undefined}
                 />
-                <Numero rotulo="Dormem na igreja" valor={String(foraDoMapa.filter((x) => x.hospedagem === 'COLCHONETE').length)} nota="colchonete próprio, fora do mapa" />
+                <Numero rotulo="Dormem na igreja" valor={String(tela.dormemNaIgreja)} nota="colchonete próprio, fora do mapa" />
               </div>
             </Cartao>
 
             <Grade
-              dormitorios={dormitorios}
+              dormitorios={tela.dormitorios}
               densidade={densidade}
-              ocupantesDe={ocupantesDe}
-              escolhendo={escolhendo}
-              onEscolher={(leitoId, noite) => {
-                setEscolhendo({ leitoId, noite });
-                setRecado(null);
-              }}
-              onFechar={() => setEscolhendo(null)}
-              onLiberar={liberar}
-              onAlocar={alocar}
-              pendencias={pendencias}
+              ocupantesDe={tela.ocupantesDe}
+              escolhendo={tela.escolhendo}
+              onEscolher={tela.escolherLeito}
+              onFechar={tela.fecharEscolha}
+              onLiberar={tela.liberar}
+              onAlocar={tela.alocar}
+              pendencias={tela.pendencias}
             />
 
-            <SemLeito lista={semLeito} densidade={densidade} />
+            <SemLeito lista={tela.semLeito} densidade={densidade} />
 
             <ForaDoMapa densidade={densidade} />
           </>
         ) : (
           <Cadastro
-            dormitorios={dormitorios}
-            onMudar={setDormitorios}
+            dormitorios={tela.dormitorios}
+            onMudar={tela.mudarDormitorios}
             densidade={densidade}
-            onRecado={setRecado}
-            noitesOcupadas={(leitoId) =>
-              Object.values(alocacao[leitoId] ?? {}).filter((pessoas) => pessoas.length > 0).length
-            }
+            onRecado={tela.mostrarRecado}
+            noitesOcupadas={tela.noitesOcupadas}
           />
         )}
       </div>
