@@ -1,20 +1,35 @@
 import type { Conta, LancamentoNaLista } from '@cdd/contracts';
-import { pluralizar } from '@/pages/utils/formato';
+import { competenciaPorExtenso, pluralizar } from '@/pages/utils/formato';
 import type { ItemDoChecklist } from '../components/ItemDoChecklist';
+
+export interface CompetenciaAnterior {
+  competencia: string;
+  fechada: boolean;
+}
 
 export function checklistDoFechamento(
   naFila: number,
   contasAtivas: readonly Conta[],
   doMes: readonly LancamentoNaLista[],
+  anterior: CompetenciaAnterior,
 ) {
   const semConciliacao = contasAtivas.filter((c) => c.conciliacao === 'PENDENTE');
   const caixa = contasAtivas.find((c) => c.tipo === 'DINHEIRO');
   const caixaContado = caixa?.alerta === null;
+  const aConferir = doMes.filter((l) => l.status === 'A_CONFERIR');
   const semComprovante = doMes.filter((l) => l.comprovante === null);
   const transferenciasDoMes = doMes.filter((l) => l.tipo === 'TRANSFERENCIA');
   const transferenciasSemOutroLado = transferenciasDoMes.filter((l) => !l.contaDestino || l.contaDestino === l.conta);
 
   const checklist: readonly ItemDoChecklist[] = [
+    {
+      id: 'competencia-anterior',
+      titulo: 'Competência anterior fechada',
+      bloqueia: true,
+      ok: anterior.fechada,
+      detalhe: `${competenciaPorExtenso(anterior.competencia)} ${anterior.fechada ? 'fechada' : 'ainda aberta'}`,
+      acao: null,
+    },
     {
       id: 'fila',
       titulo: 'Fila de verificação zerada',
@@ -22,6 +37,17 @@ export function checklistDoFechamento(
       ok: naFila === 0,
       detalhe: naFila === 0 ? 'nada pendente na fila' : `${pluralizar(naFila, 'lançamento')} ainda esperando conferência`,
       acao: { rotulo: 'Ir para a fila', rota: 'lote' },
+    },
+    {
+      id: 'a-conferir',
+      titulo: 'Lançamentos conferidos na competência',
+      bloqueia: true,
+      ok: aConferir.length === 0,
+      detalhe:
+        aConferir.length === 0
+          ? 'nenhum lançamento a conferir na competência'
+          : `${pluralizar(aConferir.length, 'lançamento')} a conferir na competência`,
+      acao: aConferir.length === 0 ? null : { rotulo: 'Ver lançamentos', rota: 'lancamentos' },
     },
     {
       id: 'conciliacao',

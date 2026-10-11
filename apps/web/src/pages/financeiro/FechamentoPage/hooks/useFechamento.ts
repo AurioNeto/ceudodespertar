@@ -6,6 +6,7 @@ import { filaDeVerificacaoInicial } from '@/mocks/verificacao';
 import { competenciaAtual } from '@/pages/mocks/relogio';
 import { HISTORICO } from '../mocks/historico';
 import { checklistDoFechamento, totaisDoFechamento } from '../utils/checklist';
+import { competenciaAnteriorA } from '../utils/competenciaAnterior';
 
 export function useFechamento() {
   const [fechado, setFechado] = useState(false);
@@ -16,7 +17,12 @@ export function useFechamento() {
   const naFila = filaDeVerificacaoInicial.length;
   const contasAtivas = contas.filter((c) => c.ativa);
   const doMes = lancamentos.filter((l) => l.competencia === competenciaAtual);
-  const { checklist, bloqueios, avisos } = checklistDoFechamento(naFila, contasAtivas, doMes);
+  const competenciaAnterior = competenciaAnteriorA(competenciaAtual);
+  const anterior = {
+    competencia: competenciaAnterior,
+    fechada: HISTORICO.some((h) => h.competencia === competenciaAnterior),
+  };
+  const { checklist, bloqueios, avisos } = checklistDoFechamento(naFila, contasAtivas, doMes, anterior);
   const { entradas, saidas, resultado, totalSaldos } = totaisDoFechamento(doMes, contasAtivas);
 
   const fechar = () => {
