@@ -153,7 +153,7 @@ const botoesDeSugestao = (container: HTMLElement, acao: 'Aceitar sugestão' | 'D
 const textosDeSugestao = (container: HTMLElement) =>
   todos(container, 'button[title="Aceitar sugestão"]').map((aceitar) => aceitar.previousElementSibling?.textContent);
 const TEXTOS_DAS_QUATRO_SUGESTOES = [
-  'Valor 187,40',
+  'Valor R$ 187,40',
   'Descrição: mercado cerimônia mãe divina',
   'Fornecedor: Assaí Atacadista',
   'Categoria: alimentação de cerimônia',
@@ -198,7 +198,7 @@ describe('RegistrarLancamentoPage: textos que o ds recebe por prop', () => {
 
     await digitar(campoDoValor(container), '65+70');
 
-    expect(container.textContent).toContain('Soma reconhecida: 135,00 — o valor composto vira pendência na conferência.');
+    expect(container.textContent).toContain('Soma reconhecida: R$ 135,00 — o valor composto vira pendência na conferência.');
   });
 
   it('valor simples — não mostra a soma reconhecida e mantém a dica da página', async () => {
@@ -564,7 +564,7 @@ describe('RegistrarLancamentoPage: valor, soma e leitura do que o usuário escre
     const { container } = await montar(<RegistrarLancamentoPage />);
 
     await digitar(campoDoValor(container), '1.200+50');
-    const mostradoNoCampo = container.textContent?.includes('Soma reconhecida: 1.250,00');
+    const mostradoNoCampo = container.textContent?.includes('Soma reconhecida: R$ 1.250,00');
     await registrar(container);
 
     expect(mostradoNoCampo).toBe(true);

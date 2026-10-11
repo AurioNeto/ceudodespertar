@@ -556,7 +556,7 @@ describe('useFormularioDeLancamento: sugestões do cupom', () => {
     await agir((f) => f.alterar('anexo', 'IMG.jpg'));
 
     expect(formulario().sugestoesPendentes).toEqual([
-      { chave: 'valor', texto: 'Valor 187,40' },
+      { chave: 'valor', texto: 'Valor R$ 187,40' },
       { chave: 'descricao', texto: 'Descrição: mercado cerimônia mãe divina' },
       { chave: 'contraparte', texto: 'Fornecedor: Assaí Atacadista' },
       { chave: 'categoria', texto: 'Categoria: alimentação de cerimônia' },
