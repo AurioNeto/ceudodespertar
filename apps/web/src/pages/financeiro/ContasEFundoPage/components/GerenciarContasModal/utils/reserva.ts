@@ -1,11 +1,11 @@
 import type { Dinheiro, Fundo, FundoId } from '@cdd/contracts';
 import { reais } from '@cdd/contracts';
 import { lerValorDigitado } from '@/lib/numero';
-import { formatarDinheiro } from '@/pages/utils/formato';
+import { formatarBRL } from '@/pages/utils/formato';
 import { MENSAGEM_DE_RESERVA_ZERADA } from '../constantes';
 
 const passaDoLivre = (disponivel: number): string =>
-  `Passa do que está livre no fundo próprio: ${formatarDinheiro(disponivel)}.`;
+  `Passa do que está livre no fundo próprio: ${formatarBRL(disponivel)}.`;
 
 export type ReservaLida = { valida: true; valor: Dinheiro } | { valida: false; erro: string };
 

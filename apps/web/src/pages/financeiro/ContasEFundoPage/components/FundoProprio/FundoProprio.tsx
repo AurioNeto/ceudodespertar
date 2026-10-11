@@ -1,5 +1,5 @@
 import type { Density } from '@/ds';
-import { formatarDinheiro } from '@/pages/utils/formato';
+import { formatarBRL } from '@/pages/utils/formato';
 import { rotuloLabel, valorGrande, valorMedio } from '../../constantes';
 import type { Reserva } from '../../tipos';
 import { ColunaDoFundo } from './components/ColunaDoFundo';
@@ -38,7 +38,7 @@ export function FundoProprio({ fundoProprio, comprometido, livre, reservas, dens
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 20, alignItems: 'flex-end' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
             <span style={rotuloLabel}>Total do fundo</span>
-            <span style={{ ...valorGrande, color: 'var(--color-royal-deep)' }}>{formatarDinheiro(fundoProprio)}</span>
+            <span style={{ ...valorGrande, color: 'var(--color-royal-deep)' }}>{formatarBRL(fundoProprio)}</span>
           </div>
           <ColunaDoFundo rotulo="Já com destino" valor={comprometido} cor="var(--text-primary)" />
           <ColunaDoFundo rotulo="Livre" valor={livre} cor="var(--color-confirmed)" />
@@ -79,7 +79,7 @@ export function FundoProprio({ fundoProprio, comprometido, livre, reservas, dens
                 <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>{r.nota}</span>
               </span>
               <span style={{ ...valorMedio, color: 'var(--text-primary)', textAlign: 'right' }}>
-                {formatarDinheiro(r.valor)}
+                {formatarBRL(r.valor)}
               </span>
               <span style={{ width: 56, textAlign: 'right', font: 'var(--text-small)', color: 'var(--text-meta)' }}>
                 {Math.round((r.valor / fundoProprio) * 100)}%

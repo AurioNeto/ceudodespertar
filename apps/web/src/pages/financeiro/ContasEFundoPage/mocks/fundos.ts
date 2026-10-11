@@ -7,7 +7,7 @@ export const fundos: readonly Fundo[] = [
     id: id<FundoId>('obra'),
     codigoSistema: 'FUNDO_OBRA',
     nome: 'Obra do dormitório',
-    nota: 'meta 24.000,00 · previsão de conclusão em novembro',
+    nota: 'meta R$ 24.000,00 · previsão de conclusão em novembro',
     contaVinculadaId: id<ContaId>('cora'),
     valorReservado: reais(18400),
     meta: reais(24000),

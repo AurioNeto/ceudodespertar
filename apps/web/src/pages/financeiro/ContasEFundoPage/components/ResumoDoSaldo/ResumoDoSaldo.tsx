@@ -1,6 +1,6 @@
 import type { Conta, DataLocal } from '@cdd/contracts';
 import type { Density } from '@/ds';
-import { formatarDinheiro, pluralizar } from '@/pages/utils/formato';
+import { formatarBRL, pluralizar } from '@/pages/utils/formato';
 import { rotuloLabel } from '../../constantes';
 import { ehCaixa, textoDaUltimaConciliacao } from '../../utils/conta';
 import { BlocoDoResumo } from './components/BlocoDoResumo';
@@ -47,7 +47,7 @@ export function ResumoDoSaldo({
             color: 'var(--color-royal-deep)',
           }}
         >
-          {formatarDinheiro(emBanco + emCaixa)}
+          {formatarBRL(emBanco + emCaixa)}
         </span>
         <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>
           {textoDaUltimaConciliacao(ultimaConciliacao)} · {pluralizar(contasAtivas.length, 'conta ativa', 'contas ativas')}

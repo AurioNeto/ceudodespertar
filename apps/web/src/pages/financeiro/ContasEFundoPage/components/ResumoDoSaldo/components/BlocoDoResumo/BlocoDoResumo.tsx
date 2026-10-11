@@ -1,4 +1,4 @@
-import { formatarDinheiro } from '@/pages/utils/formato';
+import { formatarBRL } from '@/pages/utils/formato';
 import { rotuloLabel, valorGrande } from '../../../../constantes';
 
 export interface BlocoDoResumoProps {
@@ -19,7 +19,7 @@ export function BlocoDoResumo({ rotulo, valor, nota }: BlocoDoResumoProps) {
       }}
     >
       <span style={rotuloLabel}>{rotulo}</span>
-      <span style={{ ...valorGrande, color: 'var(--text-primary)' }}>{formatarDinheiro(valor)}</span>
+      <span style={{ ...valorGrande, color: 'var(--text-primary)' }}>{formatarBRL(valor)}</span>
       <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>{nota}</span>
     </div>
   );
