@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Button, Icon, Select, type Density } from '@/ds';
-import type { Comparacao, Filtros, useRelatorio } from '../../hooks/useRelatorio';
+import type { useRelatorio } from '../../hooks/useRelatorio';
 import { CATEGORIAS_DE_ENTRADA, CATEGORIAS_DE_SAIDA, CERIMONIAS, CONTAS, GRUPOS } from '../../mocks/relatorios';
+import type { Comparacao, Filtros } from '../../tipos';
 import { CampoDeMes } from './components/CampoDeMes';
 import { Chip } from './components/Chip';
 import { PERIODOS } from './constantes';

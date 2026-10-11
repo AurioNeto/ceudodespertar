@@ -1,4 +1,4 @@
-import type { Periodo } from '../../hooks/useRelatorio';
+import type { Periodo } from '../../tipos';
 
 export const PERIODOS: readonly { valor: Periodo; label: string }[] = [
   { valor: 'mes', label: 'Mês' },

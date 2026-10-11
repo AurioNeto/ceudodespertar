@@ -1,7 +1,8 @@
 import type { Density } from '@/ds';
 import { formatarValor } from '@/lib/formato';
 import { rotuloLabel } from '../../constantes';
-import { corDoDelta, textoDoDelta, type Comparacao } from '../../hooks/useRelatorio';
+import type { Comparacao } from '../../tipos';
+import { corDoDelta, textoDoDelta } from '../../utils/delta';
 import type { kpisDoRelatorio } from '../../utils/recorte';
 
 export interface CartoesDeKpiProps {

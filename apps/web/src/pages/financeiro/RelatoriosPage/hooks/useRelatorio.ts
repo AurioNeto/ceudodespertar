@@ -1,78 +1,11 @@
 import { useMemo, useState } from 'react';
-import {
-  CONTAS,
-  MESES_CURTOS,
-  baseDoRelatorio,
-  type LinhaDoRelatorio,
-  type TipoNoRelatorio,
-} from '../mocks/relatorios';
+import { FILTROS_LIMPOS } from '../constantes';
+import { CONTAS, baseDoRelatorio } from '../mocks/relatorios';
+import type { Comparacao, Filtros, Periodo, Ponto } from '../tipos';
+import { agrupar, somar } from '../utils/agregacao';
+import { deslocar, doIndice, indice, intervaloDe, rotuloDoPonto } from '../utils/periodo';
 
-export type Periodo = 'mes' | 'trimestre' | 'ano' | 'personalizado';
-export type Comparacao = 'anterior' | 'ano_passado' | 'nenhum';
 export type Unidade = 'CDD' | 'Munay';
-
-export interface Filtros {
-  grupo: string;
-  categoria: string;
-  conta: string;
-  tipo: string;
-  cerimonia: string;
-  situacao: string;
-}
-
-export const FILTROS_LIMPOS: Filtros = {
-  grupo: 'todos',
-  categoria: 'todas',
-  conta: 'todas',
-  tipo: 'todos',
-  cerimonia: 'todas',
-  situacao: 'todas',
-};
-
-interface Ponto {
-  ano: number;
-  mes: number;
-}
-
-const indice = (p: Ponto) => p.ano * 12 + p.mes;
-const doIndice = (i: number): Ponto => ({ ano: Math.floor((i - 1) / 12), mes: ((i - 1) % 12) + 1 });
-
-const analisar = (texto: string): Ponto => {
-  const [m, a] = texto.split('/').map((n) => parseInt(n, 10));
-  return {
-    mes: Number.isNaN(m) ? 1 : Math.min(12, Math.max(1, m ?? 1)),
-    ano: Number.isNaN(a) ? 2026 : (a ?? 2026),
-  };
-};
-
-/** O "hoje" da base é agosto de 2026 — o último mês com lançamentos. */
-const intervaloDe = (periodo: Periodo, de: string, ate: string) => {
-  if (periodo === 'mes') return { inicio: { mes: 8, ano: 2026 }, fim: { mes: 8, ano: 2026 } };
-  if (periodo === 'trimestre') return { inicio: { mes: 6, ano: 2026 }, fim: { mes: 8, ano: 2026 } };
-  if (periodo === 'ano') return { inicio: { mes: 1, ano: 2026 }, fim: { mes: 8, ano: 2026 } };
-  return { inicio: analisar(de), fim: analisar(ate) };
-};
-
-const deslocar = (intv: { inicio: Ponto; fim: Ponto }, passos: number) => ({
-  inicio: doIndice(indice(intv.inicio) + passos),
-  fim: doIndice(indice(intv.fim) + passos),
-});
-
-const somar = (linhas: readonly LinhaDoRelatorio[], tipo: TipoNoRelatorio) =>
-  linhas.filter((l) => l.tipo === tipo).reduce((a, l) => a + l.valor, 0);
-
-const agrupar = (linhas: readonly LinhaDoRelatorio[], campo: 'grupo' | 'categoria' | 'cerimonia', tipo?: TipoNoRelatorio) => {
-  const mapa = new Map<string, number>();
-  for (const l of linhas) {
-    if (tipo && l.tipo !== tipo) continue;
-    const chave = l[campo];
-    if (!chave) continue;
-    mapa.set(chave, (mapa.get(chave) ?? 0) + l.valor);
-  }
-  return [...mapa.entries()].map(([nome, valor]) => ({ nome, valor })).sort((a, b) => b.valor - a.valor);
-};
-
-const rotuloDoPonto = (p: Ponto) => `${MESES_CURTOS[p.mes - 1]}/${String(p.ano).slice(2)}`;
 
 export function useRelatorio() {
   const [periodo, setPeriodo] = useState<Periodo>('mes');
@@ -198,17 +131,4 @@ export function useRelatorio() {
     limparFiltros: () => setFiltros(FILTROS_LIMPOS),
     ...derivado,
   };
-}
-
-/** Texto do delta contra a base de comparação. */
-export function textoDoDelta(atual: number, base: number | null, comparar: Comparacao): string {
-  if (comparar === 'nenhum') return '';
-  if (base == null || base === 0) return 'sem base de comparação';
-  const p = ((atual - base) / Math.abs(base)) * 100;
-  return `${p >= 0 ? '+' : ''}${p.toFixed(0)}% vs ${comparar === 'anterior' ? 'período anterior' : 'ano passado'}`;
-}
-
-export function corDoDelta(atual: number, base: number | null, bomSeSobe: boolean, comparar: Comparacao): string {
-  if (comparar === 'nenhum' || base == null || base === 0) return 'var(--text-meta)';
-  return atual >= base === bomSeSobe ? 'var(--color-confirmed)' : 'var(--color-attention)';
 }

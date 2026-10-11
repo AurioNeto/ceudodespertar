@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { corDoDelta, textoDoDelta } from './useRelatorio';
+import { corDoDelta, textoDoDelta } from './delta';
 
 type Comparacao = Parameters<typeof textoDoDelta>[2];
 
