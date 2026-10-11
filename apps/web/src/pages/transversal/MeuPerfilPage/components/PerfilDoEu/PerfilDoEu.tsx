@@ -1,8 +1,7 @@
 import type { Eu } from '@cdd/contracts';
-import { Button, Leitura, type Density } from '@/ds';
+import { Button, Cartao, Leitura, type Density } from '@/ds';
 import { iniciais } from '@/lib/formato';
 import { PermissoesPorModulo } from '@/pages/components/PermissoesPorModulo';
-import { Cartao } from './components/Cartao';
 
 interface PerfilDoEuProps {
   readonly eu: Eu;
@@ -15,7 +14,7 @@ export function PerfilDoEu({ eu, densidade, aoSair }: PerfilDoEuProps) {
 
   return (
     <>
-      <Cartao>
+      <Cartao campo={campo}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
           <span
             aria-hidden="true"
@@ -55,7 +54,7 @@ export function PerfilDoEu({ eu, densidade, aoSair }: PerfilDoEuProps) {
         </div>
       </Cartao>
 
-      <Cartao>
+      <Cartao campo={campo}>
         <span style={{ font: 'var(--text-body-strong)', color: 'var(--text-primary)' }}>Minhas permissões</span>
         <PermissoesPorModulo
           codigos={eu.permissoes}
@@ -65,7 +64,7 @@ export function PerfilDoEu({ eu, densidade, aoSair }: PerfilDoEuProps) {
         />
       </Cartao>
 
-      <Cartao>
+      <Cartao campo={campo}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
           <span style={{ flex: 1, minWidth: 200, display: 'flex', flexDirection: 'column', gap: 2 }}>
             <span style={{ font: 'var(--text-body-strong)', color: 'var(--text-primary)' }}>Sair da conta</span>

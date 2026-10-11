@@ -1,7 +1,6 @@
-import { Aviso, Button, CorpoDaTela, Rotulo, ScreenHeader, useDensidade, Interruptor, Select } from '@/ds';
+import { Aviso, Button, Cartao, CorpoDaTela, Rotulo, ScreenHeader, useDensidade, Interruptor, Select } from '@/ds';
 import { pluralizar } from '@/pages/utils/formato';
 import { CabecalhoDaVersao } from './components/CabecalhoDaVersao';
-import { Cartao } from './components/Cartao';
 import { HistoricoDaVersao } from './components/HistoricoDaVersao';
 import { ListaDeVersoes } from './components/ListaDeVersoes';
 import { PerguntasDaVersao } from './components/PerguntasDaVersao';

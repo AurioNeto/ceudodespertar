@@ -1,7 +1,6 @@
-import { Button, StatusBadge } from '@/ds';
+import { Button, Cartao, StatusBadge } from '@/ds';
 import { TOM_DA_SITUACAO } from '../../constantes';
 import type { VersaoDoFormulario } from '../../mocks/anamnese';
-import { Cartao } from '../Cartao';
 import { DescarteDoRascunho } from './components/DescarteDoRascunho';
 
 export interface CabecalhoDaVersaoProps {
