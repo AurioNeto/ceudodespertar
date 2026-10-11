@@ -78,13 +78,18 @@ export function RegistrarLancamentoPage() {
           )}
         </div>
 
-        <AmountInput
-          label={f.labelValor}
-          {...TEXTOS_DA_SOMA}
-          value={f.campos.valor}
-          onChange={(v) => f.alterar('valor', v)}
-          hint="Escreva como você fala. Soma vale: 65+70."
-        />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <AmountInput
+            label={f.labelValor}
+            {...TEXTOS_DA_SOMA}
+            value={f.campos.valor}
+            onChange={(v) => f.alterar('valor', v)}
+            hint="Escreva como você fala. Soma vale: 65+70."
+          />
+          {f.erroDoValor ? (
+            <span style={{ font: 'var(--text-small)', color: 'var(--color-attention)' }}>{f.erroDoValor}</span>
+          ) : null}
+        </div>
 
         <TextField
           label={f.labelDescricao}

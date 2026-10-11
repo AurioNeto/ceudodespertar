@@ -3,14 +3,14 @@ import { INICIAL } from '../mocks/formularioInicial';
 import { regrasDoLancamento } from './regrasDoLancamento';
 
 describe('regrasDoLancamento', () => {
-  it('saída com os campos iniciais — nada bloqueia, sem categoria e com reembolso', () => {
+  it('saída com os campos iniciais — o valor vazio bloqueia, sem categoria e com reembolso', () => {
     const regras = regrasDoLancamento('SAIDA', INICIAL, false);
 
     expect(regras).toMatchObject({
       ehSaida: true,
       semCategoria: true,
-      bloqueado: false,
-      motivoBloqueio: undefined,
+      bloqueado: true,
+      motivoBloqueio: 'Informe um valor maior que zero.',
       total: 0,
       conta: 'Cora PJ',
       contaDestino: 'Nubank Paty',

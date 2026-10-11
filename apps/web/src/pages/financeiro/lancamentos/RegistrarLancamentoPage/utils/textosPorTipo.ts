@@ -9,11 +9,17 @@ export function textosPorTipo(regras: RegrasDoLancamento, campos: EstadoDoFormul
     mesmaConta,
     competenciaFechada,
     bloqueado,
+    valorInvalido,
     composto,
     semCategoria,
     conta,
     contaDestino,
   } = regras;
+
+  const soOValorBloqueia = valorInvalido && !competenciaFechada && !mesmaConta && !(consolida && composto);
+  const notaDoBloqueio = soOValorBloqueia
+    ? undefined
+    : 'Enquanto isso não se resolve, dá para salvar como rascunho — nada se perde.';
 
   return {
     notaTipo: ehTransferencia
@@ -44,7 +50,7 @@ export function textosPorTipo(regras: RegrasDoLancamento, campos: EstadoDoFormul
       : metaDaOpcao(opcoesDeConta, campos.contaDestino),
     notaCompetencia: competenciaFechada ? 'Veio da data do gasto — julho está fechado.' : 'Mês corrente.',
     notaBarra: bloqueado
-      ? 'Enquanto isso não se resolve, dá para salvar como rascunho — nada se perde.'
+      ? notaDoBloqueio
       : ehTransferencia
         ? `Grava os dois lados de uma vez: saída em ${conta} e entrada em ${contaDestino}.`
         : !consolida && composto

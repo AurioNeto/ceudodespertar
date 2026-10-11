@@ -319,7 +319,7 @@ describe('useFormularioDeLancamento: bloqueio e nota da barra', () => {
       consolida: false,
       competencia: '08/2026',
       tipo: 'TRANSFERENCIA' as const,
-      valor: '',
+      valor: '3',
       categorias: [],
       nota: 'Grava os dois lados de uma vez: saída em Cora PJ e entrada em Nubank Paty.',
     },
@@ -404,6 +404,7 @@ describe('useFormularioDeLancamento: bloqueio e nota da barra', () => {
     await agir((f) => f.trocarTipo('TRANSFERENCIA'));
 
     await agir((f) => {
+      f.alterar('valor', '3');
       f.alterar('conta', 'especie');
       f.alterar('contaDestino', 'itau');
     });
