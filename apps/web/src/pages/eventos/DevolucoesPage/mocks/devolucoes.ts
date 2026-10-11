@@ -1,5 +1,5 @@
 import type { Competencia, DevolucaoId, Dinheiro, EventoId, InscricaoId, PessoaId } from '@cdd/contracts';
-import { competencia, dataLocal, reais } from '@cdd/contracts';
+import { competencia, reais } from '@cdd/contracts';
 import { id } from '@/mocks/ids';
 
 /**
@@ -126,5 +126,3 @@ export const pagas: readonly {
     lancamentoDeSaida: 'sai-8402',
   },
 ];
-
-export const hojeNaTesouraria = dataLocal('2026-09-11');
