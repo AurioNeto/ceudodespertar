@@ -8,19 +8,6 @@ import { PassoCadastro } from './components/PassoCadastro';
 import { Pronto } from './components/Pronto';
 import { useInscricaoPublica } from './hooks/useInscricaoPublica';
 
-/**
- * Inscrição pelo link da cerimônia — a única tela do sistema que um
- * participante vê, e a única fora do AppShell além do login.
- *
- * Ela existe porque duas premissas dos documentos estavam erradas: não há
- * anamnese presencial (quem responde é a própria pessoa) e autoinscrição não
- * é proibida (o que a casa quer humanizado é o atendimento da recepção, que
- * acontece no WhatsApp — e é de lá que este link sai).
- *
- * O reconhecimento é por CPF, e é o que torna o resto barato: quem já veio
- * antes responde só o que mudou e declara que o resto segue valendo.
- */
-
 export function InscricaoPublicaPage() {
   const densidade = useDensidade();
   const tela = useInscricaoPublica();

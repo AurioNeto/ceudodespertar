@@ -1,5 +1,4 @@
 import type {
-  FormularioId,
   ModoDePreenchimento,
   Pergunta,
   PerguntaId,
@@ -29,7 +28,6 @@ import { id } from '@/mocks/ids';
 const q = (n: string) => id<PerguntaId>(n);
 
 export const VERSAO_VIGENTE = 3;
-export const FORMULARIO_VIGENTE = id<FormularioId>('form-anamnese-v3');
 
 const p = (
   perguntaId: string,

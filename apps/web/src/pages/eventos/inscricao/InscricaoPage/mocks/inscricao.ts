@@ -2,15 +2,6 @@ import type { EventoId, PessoaId, StatusAcolhimento, StatusAnamnese } from '@cdd
 import { id } from '@/mocks/ids';
 import { eventos } from '../../mocks/eventos';
 
-/**
- * `E-06` — o que a tela de inscrição precisa saber antes de existir.
- *
- * Dois eventos de propósito: um trabalho comum de uma noite e uma jornada de
- * três dias. A diferença entre eles é a única razão de o bloco de alimentação
- * aparecer ou não — a casa só cobra refeição em ocasião especial, e o que não
- * se cobra não vira campo desabilitado, vira ausência.
- */
-
 /* ── Diretório, do jeito que a busca da tela devolve ─────────────────────── */
 
 export interface PessoaDoDiretorio {

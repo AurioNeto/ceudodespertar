@@ -1,7 +1,7 @@
 import { Cartao, Rotulo, type Density } from '@/ds';
 import { formatarBRL } from '@/pages/utils/formato';
 import { munay } from '../../mocks/contratacoes';
-import { tetoDoMei } from '../../utils/tetoDoMei';
+import { tetoDoMei } from './utils/tetoDoMei';
 
 export interface TetoProps {
   faturamentoNoAno: number;
