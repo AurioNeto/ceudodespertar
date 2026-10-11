@@ -1,7 +1,6 @@
-import type { Density } from '@/ds';
+import { Rotulo, type Density } from '@/ds';
 import { formatarCompetencia, pluralizar } from '@/pages/utils/formato';
 import { competenciaAtual } from '@/pages/mocks/relogio';
-import { rotuloLabel } from '../../constantes';
 import type { ItemDoChecklist } from '../ItemDoChecklist';
 import { ColunaDeResumo } from './components/ColunaDeResumo';
 
@@ -36,7 +35,7 @@ export function FaixaDoPeriodo({ fechado, bloqueios, entradas, saidas, resultado
       }}
     >
       <div style={{ display: 'flex', flexDirection: 'column', gap: 4, flex: '1 1 260px' }}>
-        <span style={rotuloLabel}>Competência {formatarCompetencia(competenciaAtual)} · CDD</span>
+        <Rotulo>Competência {formatarCompetencia(competenciaAtual)} · CDD</Rotulo>
         <span style={{ font: 'var(--text-title-sm)', color: corDoStatus }}>
           {fechado
             ? 'Fechado'

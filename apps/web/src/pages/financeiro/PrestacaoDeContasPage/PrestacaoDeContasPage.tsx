@@ -1,4 +1,4 @@
-import { Button, ScreenHeader, useDensidade, Select, SeletorDeTipo, Recado, Rotulo } from '@/ds';
+import { Button, CorpoDaTela, ScreenHeader, useDensidade, Select, SeletorDeTipo, Recado, Rotulo } from '@/ds';
 import { Documento } from './components/Documento';
 import { ExplicacaoDoNivel } from './components/ExplicacaoDoNivel';
 import { HistoricoDePrestacoes } from './components/HistoricoDePrestacoes';
@@ -18,16 +18,7 @@ export function PrestacaoDeContasPage() {
         density={densidade}
       />
 
-      <div
-        style={{
-          padding: campo ? '14px 16px 24px' : '18px 24px 30px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: campo ? 14 : 18,
-          maxWidth: campo ? undefined : 1100,
-          minWidth: 0,
-        }}
-      >
+      <CorpoDaTela densidade={densidade} larguraMaxima={1100}>
         <div
           style={{
             background: 'var(--bg-card)',
@@ -94,7 +85,7 @@ export function PrestacaoDeContasPage() {
         />
 
         <HistoricoDePrestacoes historico={tela.historico} />
-      </div>
+      </CorpoDaTela>
     </>
   );
 }

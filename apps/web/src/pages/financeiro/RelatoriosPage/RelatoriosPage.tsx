@@ -1,4 +1,4 @@
-import { Button, Icon, ScreenHeader, useDensidade } from '@/ds';
+import { Button, CorpoDaTela, Icon, ScreenHeader, useDensidade } from '@/ds';
 import { pluralizar } from '@/pages/utils/formato';
 import { AvisoDeIntervalo } from './components/AvisoDeIntervalo';
 import { CartoesDeKpi } from './components/CartoesDeKpi';
@@ -43,15 +43,7 @@ export function RelatoriosPage() {
         }
       />
 
-      <div
-        style={{
-          padding: campo ? '14px 16px 22px' : '18px 24px 30px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 14,
-          maxWidth: campo ? undefined : 1120,
-        }}
-      >
+      <CorpoDaTela densidade={densidade} larguraMaxima={1120}>
         {tela.mensagem ? (
           <div
             style={{
@@ -132,7 +124,7 @@ export function RelatoriosPage() {
 
           <CustoPorCerimonia porCerimonia={r.porCerimonia} onAbrirDrill={tela.abrirDrill} />
         </div>
-      </div>
+      </CorpoDaTela>
 
       {tela.drill ? (
         <GavetaDeRecorte

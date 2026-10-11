@@ -1,11 +1,10 @@
-import { Icon, ScreenHeader, useDensidade } from '@/ds';
+import { CorpoDaTela, Icon, Rotulo, ScreenHeader, useDensidade } from '@/ds';
 import { pluralizar } from '@/pages/utils/formato';
 import { AcaoDeFechamento } from './components/AcaoDeFechamento';
 import { FaixaDoPeriodo } from './components/FaixaDoPeriodo';
 import { HistoricoDeFechamentos } from './components/HistoricoDeFechamentos';
 import { ItemDoChecklist } from './components/ItemDoChecklist';
 import { SaldosDoFechamento } from './components/SaldosDoFechamento';
-import { rotuloLabel } from './constantes';
 import { useFechamento } from './hooks/useFechamento';
 
 export function FechamentoPage() {
@@ -22,15 +21,7 @@ export function FechamentoPage() {
         density={densidade}
       />
 
-      <div
-        style={{
-          padding: campo ? '14px 16px 24px' : '18px 24px 30px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: campo ? 12 : 18,
-          maxWidth: campo ? undefined : 1000,
-        }}
-      >
+      <CorpoDaTela densidade={densidade} larguraMaxima={1000}>
         {tela.mensagem ? (
           <div
             style={{
@@ -62,7 +53,7 @@ export function FechamentoPage() {
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, flexWrap: 'wrap' }}>
-            <span style={rotuloLabel}>O que o fechamento exige</span>
+            <Rotulo>O que o fechamento exige</Rotulo>
             <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>
               {tela.bloqueios.length === 0
                 ? tela.avisos.length
@@ -94,7 +85,7 @@ export function FechamentoPage() {
         />
 
         <HistoricoDeFechamentos historico={tela.historico} />
-      </div>
+      </CorpoDaTela>
     </>
   );
 }

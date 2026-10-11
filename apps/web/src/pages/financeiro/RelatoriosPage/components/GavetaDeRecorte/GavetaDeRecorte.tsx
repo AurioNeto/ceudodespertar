@@ -1,7 +1,6 @@
 import { reais } from '@cdd/contracts';
-import { Button, Icon, type Density } from '@/ds';
+import { Button, Icon, rotuloCaixaAlta, type Density } from '@/ds';
 import { formatarBRL, pluralizar } from '@/pages/utils/formato';
-import { rotuloLabel } from '../../constantes';
 import type { LinhaDoRelatorio } from '../../mocks/relatorios';
 import type { Drill } from '../../tipos';
 
@@ -57,7 +56,7 @@ export function GavetaDeRecorte({
       >
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={rotuloLabel}>{drill.rotulo}</div>
+            <div style={rotuloCaixaAlta}>{drill.rotulo}</div>
             <div style={{ font: 'var(--text-title-sm)', color: 'var(--text-title)' }}>{drill.valor}</div>
             <div style={{ font: 'var(--text-small)', color: 'var(--text-secondary)', marginTop: 4 }}>
               {pluralizar(linhasDoDrill.length, 'lançamento')} · {formatarBRL(reais(totalDoDrill))} · {rotuloPeriodo}

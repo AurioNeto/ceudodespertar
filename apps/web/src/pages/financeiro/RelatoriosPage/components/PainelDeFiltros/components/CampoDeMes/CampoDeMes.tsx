@@ -1,4 +1,4 @@
-import { rotuloLabel } from '../../../../constantes';
+import { Rotulo } from '@/ds';
 
 export interface CampoDeMesProps {
   rotulo: string;
@@ -9,7 +9,7 @@ export interface CampoDeMesProps {
 export function CampoDeMes({ rotulo, valor, onMudar }: CampoDeMesProps) {
   return (
     <label style={{ display: 'flex', flexDirection: 'column' }}>
-      <span style={{ ...rotuloLabel, marginBottom: 7 }}>{rotulo}</span>
+      <Rotulo style={{ marginBottom: 7 }}>{rotulo}</Rotulo>
       <input
         value={valor}
         onChange={(e) => onMudar(e.target.value)}
