@@ -1,6 +1,6 @@
 import type { Fatura } from '@cdd/contracts';
 import { EmptyState, StatusBadge, Td, Th, type Density } from '@/ds';
-import { formatarData, formatarDinheiro } from '@/pages/utils/formato';
+import { formatarBRL, formatarData } from '@/pages/utils/formato';
 
 export interface TabelaDeComprasProps {
   fatura: Fatura;
@@ -60,7 +60,7 @@ export function TabelaDeCompras({ fatura, densidade, total }: TabelaDeComprasPro
               {campo ? null : <Td>{c.registradoPorNome}</Td>}
               <Td alinharDireita>
                 <span data-numeric style={{ font: 'var(--text-amount)', color: 'var(--text-primary)' }}>
-                  {formatarDinheiro(c.valor)}
+                  {formatarBRL(c.valor)}
                 </span>
               </Td>
             </tr>
@@ -74,7 +74,7 @@ export function TabelaDeCompras({ fatura, densidade, total }: TabelaDeComprasPro
             {campo ? null : <Td />}
             <Td alinharDireita>
               <span data-numeric style={{ font: 'var(--text-amount)', color: 'var(--text-primary)' }}>
-                {formatarDinheiro(total)}
+                {formatarBRL(total)}
               </span>
             </Td>
           </tr>

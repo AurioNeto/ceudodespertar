@@ -263,7 +263,7 @@ describe('GerenciarContasModal: aba de fundos', () => {
     expect(textosDasFolhas(linhaGerenciavel(container, 'Obra do dormitório'))).toEqual([
       'Obra do dormitório',
       'meta 24.000,00',
-      '18.400,00',
+      'R$ 18.400,00',
       'Ativo',
       'Excluir',
     ]);
@@ -276,7 +276,7 @@ describe('GerenciarContasModal: aba de fundos', () => {
     expect(textosDasFolhas(linhaGerenciavel(container, 'Feitio de dezembro'))).toEqual([
       'Feitio de dezembro',
       'insumos e garrafas',
-      '9.200,50',
+      'R$ 9.200,50',
       'Inativo',
       'Reativar',
     ]);
@@ -564,7 +564,7 @@ describe('GerenciarContasModal: formulário de fundo', () => {
   });
 
   it.each([
-    { digitado: '1.234.567,89', mensagem: 'Passa do que está livre no fundo próprio: 20.835,40.' },
+    { digitado: '1.234.567,89', mensagem: 'Passa do que está livre no fundo próprio: R$ 20.835,40.' },
     { digitado: '', mensagem: 'Informe um valor maior que zero.' },
     { digitado: 'abc', mensagem: 'Informe um valor maior que zero.' },
     { digitado: 'R$ 10', mensagem: 'Informe um valor maior que zero.' },

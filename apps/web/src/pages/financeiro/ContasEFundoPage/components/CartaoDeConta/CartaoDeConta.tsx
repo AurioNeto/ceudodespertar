@@ -1,6 +1,6 @@
 import type { Conta, DataLocal } from '@cdd/contracts';
 import { Icon, StatusBadge } from '@/ds';
-import { formatarDiaMes, formatarDinheiro } from '@/pages/utils/formato';
+import { formatarBRL, formatarDiaMes } from '@/pages/utils/formato';
 import { valorGrande } from '../../constantes';
 import { iconeDaConta, textoDaConciliacao, tomDaConciliacao } from '../../utils/conta';
 
@@ -40,7 +40,7 @@ export function CartaoDeConta({ conta, ultimaConciliacao }: CartaoDeContaProps) 
         <StatusBadge tone={tomDaConciliacao(conta)}>{textoDaConciliacao(conta, ultimaConciliacao)}</StatusBadge>
       </div>
 
-      <div style={{ ...valorGrande, color: 'var(--text-primary)' }}>{formatarDinheiro(conta.saldo)}</div>
+      <div style={{ ...valorGrande, color: 'var(--text-primary)' }}>{formatarBRL(conta.saldo)}</div>
 
       <div
         style={{
