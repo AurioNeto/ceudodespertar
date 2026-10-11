@@ -45,6 +45,7 @@ export function ResumoDoSaldo({
             letterSpacing: 'var(--tracking-amount)',
             fontVariantNumeric: 'tabular-nums',
             color: 'var(--color-royal-deep)',
+            whiteSpace: 'nowrap',
           }}
         >
           {formatarBRL(emBanco + emCaixa)}
