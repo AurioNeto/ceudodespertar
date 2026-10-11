@@ -1,4 +1,4 @@
-import type { Competencia, Conta, ContaId, Fatura, FaturaId, LancamentoId, PessoaId } from '@cdd/contracts';
+import type { Conta, ContaId, Fatura, FaturaId, LancamentoId, PessoaId } from '@cdd/contracts';
 import { competencia, dataLocal, reais } from '@cdd/contracts';
 import { id } from '@/mocks/ids';
 
@@ -313,5 +313,3 @@ export const contasPagadoras: readonly { readonly id: ContaId; readonly nome: st
   { id: id<ContaId>('especie'), nome: 'Espécie' },
   { id: id<ContaId>('itau'), nome: 'Itaú Munay' },
 ];
-
-export const competenciaDeHoje: Competencia = competencia('2026-09');
