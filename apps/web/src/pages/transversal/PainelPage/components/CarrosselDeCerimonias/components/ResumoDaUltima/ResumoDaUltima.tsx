@@ -1,5 +1,5 @@
 import { ultimaCerimonia } from '../../../../mocks/cerimonias';
-import { formatarDiaMes, formatarDinheiro, formatarLitros, pluralizar } from '@/pages/utils/formato';
+import { formatarBRL, formatarDiaMes, formatarLitros, pluralizar } from '@/pages/utils/formato';
 import { CartazSlot } from '@/pages/components/CartazSlot';
 import { rotuloLabel } from '../../../../constantes';
 import { ItemDeMeta } from '../ItemDeMeta';
@@ -36,7 +36,7 @@ export function ResumoDaUltima() {
         </div>
 
         <div style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>
-          Média de {formatarDinheiro(u.mediaPorParticipante)} por participante — {formatarLitros(u.litrosServidos)} L de
+          Média de {formatarBRL(u.mediaPorParticipante)} por participante — {formatarLitros(u.litrosServidos)} L de
           ayahuasca servidos, dentro do consumo habitual.
         </div>
       </div>

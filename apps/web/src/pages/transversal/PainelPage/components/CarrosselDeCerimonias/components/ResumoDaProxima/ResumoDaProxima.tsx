@@ -1,6 +1,6 @@
 import { Icon } from '@/ds';
 import { proximaCerimonia } from '../../../../mocks/cerimonias';
-import { formatarDiaMes, formatarDinheiro, pluralizar } from '@/pages/utils/formato';
+import { formatarBRL, formatarDiaMes, pluralizar } from '@/pages/utils/formato';
 import { CartazSlot } from '@/pages/components/CartazSlot';
 import { rotuloLabel } from '../../../../constantes';
 import { ItemDeMeta } from '../ItemDeMeta';
@@ -47,7 +47,7 @@ export function ResumoDaProxima() {
             rotulo="Sem pagamento"
             numero={c.semPagamento}
             corDoNumero="var(--color-pending)"
-            detalhe={`${formatarDinheiro(c.aReceber)} a receber até ${formatarDiaMes(c.aReceberAte)}`}
+            detalhe={`${formatarBRL(c.aReceber)} a receber até ${formatarDiaMes(c.aReceberAte)}`}
           />
           <BlocoDoResumo
             icone="log-in"

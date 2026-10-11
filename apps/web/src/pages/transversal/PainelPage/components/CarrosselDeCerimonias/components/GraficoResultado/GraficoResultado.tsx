@@ -12,7 +12,7 @@ export function GraficoResultado() {
       y: y(valor),
       data: formatarDiaMes(c.data),
       nome: c.nome,
-      rotulo: `${valor < 0 ? '− ' : '+ '}${formatarValor(Math.abs(valor) / 1000).replace(',00', '')} mil`,
+      rotulo: `${valor < 0 ? '− ' : '+ '}R$ ${formatarValor(Math.abs(valor) / 1000).replace(',00', '')} mil`,
       cor: valor < 0 ? 'var(--color-attention)' : 'var(--color-royal)',
     };
   });
