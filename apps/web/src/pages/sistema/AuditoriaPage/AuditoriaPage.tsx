@@ -1,4 +1,4 @@
-import { ScreenHeader, useDensidade, SeletorDeTipo } from '@/ds';
+import { CorpoDaTela, ScreenHeader, useDensidade, SeletorDeTipo } from '@/ds';
 import { Acesso } from './components/Acesso';
 import { Trilha } from './components/Trilha';
 import { useAuditoria } from './hooks/useAuditoria';
@@ -28,16 +28,7 @@ export function AuditoriaPage() {
         density={densidade}
       />
 
-      <div
-        style={{
-          padding: campo ? '14px 16px 24px' : '18px 24px 30px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: campo ? 14 : 18,
-          maxWidth: campo ? undefined : 1100,
-          minWidth: 0,
-        }}
-      >
+      <CorpoDaTela densidade={densidade} larguraMaxima={1100}>
         <SeletorDeTipo
           opcoes={[
             { valor: 'trilha', label: 'Trilha de operações' },
@@ -49,7 +40,7 @@ export function AuditoriaPage() {
         />
 
         {visao === 'trilha' ? <Trilha densidade={densidade} /> : <Acesso densidade={densidade} />}
-      </div>
+      </CorpoDaTela>
     </>
   );
 }

@@ -1,4 +1,4 @@
-import { Button, Icon, ScreenHeader, useDensidade, Select } from '@/ds';
+import { Button, CorpoDaTela, Icon, ScreenHeader, useDensidade, Select } from '@/ds';
 import { pluralizar } from '@/pages/utils/formato';
 import { FichaDaPessoa } from './components/FichaDaPessoa';
 import { Kpi } from './components/Kpi';
@@ -26,15 +26,7 @@ export function PessoasPage() {
         }
       />
 
-      <div
-        style={{
-          padding: campo ? '14px 16px 24px' : '18px 24px 30px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: campo ? 12 : 16,
-          maxWidth: campo ? undefined : 1080,
-        }}
-      >
+      <CorpoDaTela densidade={densidade} larguraMaxima={1080} espaco="compacto">
         {tela.mensagem ? (
           <div
             style={{
@@ -122,7 +114,7 @@ export function PessoasPage() {
             onRevogar={tela.revogar}
           />
         ) : null}
-      </div>
+      </CorpoDaTela>
     </>
   );
 }
