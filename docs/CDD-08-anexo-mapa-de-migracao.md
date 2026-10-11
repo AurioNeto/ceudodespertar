@@ -104,8 +104,8 @@ Os destinos são agrupados por área: `app/`, `dados/`, `lib/`, `ds/`, `testes/`
 | `lib/formato.ts`: `nomeDoMes` | ver seção 9 (`AgendaPage/utils/nomeDoMes.ts`) | repartir por export | lib/formato por export |
 | `PainelDeRevisao.tsx#paraNumero`, `GerenciarContasModal.tsx#paraNumero` | `lib/numero.ts` (`lerValorDigitado`) | fundir | Leitura única de valor |
 | `AyahuascaPage.tsx#paraNumero` (mudança de comportamento: passa a tirar o milhar; divergência 2) | `lib/numero.ts` (`lerValorDigitado`) | fundir | Leitura única de valor |
-| `useFormularioDeLancamento.ts#somar` (mudança de comportamento: tira o milhar igual nos dois lugares) | `lib/numero.ts` (`lerSoma`) | fundir | Leitura única de valor |
-| novo (testes de milhar, vírgula, soma e vazio) | `lib/numero.test.ts` | criar | Leitura única de valor |
+| `useFormularioDeLancamento.ts#somar` (mudança de comportamento: tira o milhar igual nos dois lugares; desde a divisão, em `RegistrarLancamentoPage/utils/regrasDoLancamento.ts`) | `lib/numero.ts` (`lerSoma`) | fundir | Leitura única de valor |
+| novo (testes de milhar, vírgula, soma e vazio) | `lib/numero.test.ts`: não criado, pela decisão de 10/10 (nenhuma etapa escreve teste novo; seção 13.7 do Documento 8). As telas cobrem a regra pelas asserções viradas no #138 | criar | Leitura única de valor |
 
 ### 3.1 Arquivos com parse de valor (Leitura única de valor)
 
@@ -123,6 +123,7 @@ Os destinos são agrupados por área: `app/`, `dados/`, `lib/`, `ds/`, `testes/`
 | `pages/estoque/FeitioPage.tsx:48` e `:398` | `Number` sem tirar o milhar: vira 0 | corrige a divergência 2 (mesma causa) | `lerValorDigitado` |
 | `pages/agenda/AgendaPage.tsx:66` (litros) e `:53` (contribuições) | `:66` não tira o milhar: vira 1,5; `:53` separa a lista por vírgula | `:66` corrige a divergência 2 (mesma causa); `:53` fora da divergência | `:66` `lerValorDigitado`; `:53` fora desta etapa (Documento 8, seção 15: só inteiros) |
 
+- Feito no #138, nos caminhos de depois das etapas de mover e dividir. Cada tela trata o valor recusado e o vazio como tratava antes (`|| 0` ou `Number.isNaN(lido) ? 0 : lido`, onde havia o `paraNumero`), e o sinal de menos continua aceito. Os três `paraNumero` locais saíram.
 - Os cinco que já tiram o milhar mantêm o valor das entradas válidas e passam a recusar notação científica e texto depois do número (`1e3`, `12abc`), pela decisão da seção 15 do Documento 8 (`fundir`).
 - `AgendaPage.tsx:53` separa a lista de contribuições por vírgula, que também é o separador decimal. `lerValorDigitado` não serve a esse campo. Decisão do dono: só valores inteiros, com o valor com centavos recusado (Documento 8, seções 14 e 15), em PR próprio depois da caracterização de eventos.
 
