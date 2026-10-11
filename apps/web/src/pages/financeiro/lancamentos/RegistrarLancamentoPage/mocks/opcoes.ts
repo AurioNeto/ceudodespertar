@@ -74,9 +74,3 @@ export const opcoesDeUnidade: readonly SheetOption[] = [
   { value: 'CDD', label: 'CDD', meta: 'Céu do Despertar' },
   { value: 'Munay', label: 'Munay', meta: 'unidade comercial' },
 ];
-
-export const rotuloDaOpcao = (opcoes: readonly SheetOption[], value: string): string =>
-  opcoes.find((o) => o.value === value)?.label ?? value;
-
-export const metaDaOpcao = (opcoes: readonly SheetOption[], value: string): string =>
-  opcoes.find((o) => o.value === value)?.meta ?? '';

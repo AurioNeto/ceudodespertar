@@ -780,7 +780,7 @@ Títulos na ordem de leitura. Dependências por título.
 | Mover transversal | Mover sistema | e2e do B0 e ajustes do login |
 | Fronteiras em erro | Mover transversal | — |
 | Caracterizar sistema e transversal | Mover transversal | — |
-| Dividir RegistrarLancamento | Caracterizar fluxo lancamentos; Harness de captura de telas; lib/formato por export | — |
+| Dividir RegistrarLancamento (concluída) | Caracterizar fluxo lancamentos; Harness de captura de telas; lib/formato por export | — |
 | Dividir Lançamentos e Meus registros | Caracterizar fluxo lancamentos; Harness; Dividir RegistrarLancamento | — |
 | Dividir Verificação de lote | Caracterizar fluxo lancamentos; Harness; Dividir Lançamentos e Meus registros | — |
 | Dividir Contas e fundo | Caracterizar financeiro I; Harness; Dividir Verificação de lote | — |
