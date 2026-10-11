@@ -97,8 +97,9 @@ export function checklistDoFechamento(
 }
 
 export function totaisDoFechamento(doMes: readonly LancamentoNaLista[], contasAtivas: readonly Conta[]) {
-  const entradas = doMes.filter((l) => l.tipo === 'ENTRADA').reduce((a, l) => a + l.valor, 0);
-  const saidas = doMes.filter((l) => l.tipo === 'SAIDA' && l.status !== 'ESTORNADO').reduce((a, l) => a + l.valor, 0);
+  const naoEstornados = doMes.filter((l) => l.status !== 'ESTORNADO');
+  const entradas = naoEstornados.filter((l) => l.tipo === 'ENTRADA').reduce((a, l) => a + l.valor, 0);
+  const saidas = naoEstornados.filter((l) => l.tipo === 'SAIDA').reduce((a, l) => a + l.valor, 0);
   const resultado = entradas - saidas;
   const totalSaldos = contasAtivas.reduce((a, c) => a + c.saldo, 0);
   return { entradas, saidas, resultado, totalSaldos };

@@ -475,7 +475,7 @@ describe('FechamentoPage: totais do mês, com e sem estorno', () => {
     expect(resumoDoMes(container)).toEqual(['4.425,00', '3.038,35', '1.386,65']);
   });
 
-  it('entrada estornada — continua contando nas entradas, ao contrário da saída estornada', async () => {
+  it('entrada estornada — fica fora das entradas, como a saída estornada fica fora das saídas', async () => {
     cenario.lancamentos = (lancamentos) => {
       const base = lancamentos[0] as LancamentoNaLista;
       return [
@@ -487,7 +487,7 @@ describe('FechamentoPage: totais do mês, com e sem estorno', () => {
     };
     const { container } = await montarFechamento();
 
-    expect(resumoDoMes(container)).toEqual(['150,00', '30,00', '120,00']);
+    expect(resumoDoMes(container)).toEqual(['100,00', '30,00', '70,00']);
   });
 
   it('transferência e lançamento de outra competência — ficam fora de entradas e saídas', async () => {
