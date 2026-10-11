@@ -1,4 +1,4 @@
-import type { Density } from '@/ds';
+import { BotaoDeIcone, type Density } from '@/ds';
 
 export interface PaginacaoProps {
   pagina: number;
@@ -21,13 +21,14 @@ const botao = {
 } as const;
 
 const botaoCampo = {
-  ...botao,
-  font: 'var(--text-body-strong)',
-  width: 44,
-  height: 44,
-  padding: 0,
+  border: '1px solid var(--color-line)',
+  background: 'var(--bg-card)',
+  color: 'var(--text-secondary)',
   borderRadius: 'var(--radius-pill)',
 } as const;
+
+const estadoDoBotao = (desligado: boolean) =>
+  ({ opacity: desligado ? 0.5 : 1, cursor: desligado ? 'not-allowed' : 'pointer' }) as const;
 
 export function Paginacao({
   pagina,
@@ -40,7 +41,6 @@ export function Paginacao({
   const campo = densidade === 'field';
   const noInicio = pagina === 0;
   const noFim = pagina >= totalPaginas - 1;
-  const estilo = campo ? botaoCampo : botao;
 
   return (
     <div
@@ -52,25 +52,47 @@ export function Paginacao({
         paddingTop: 4,
       }}
     >
-      <button
-        type="button"
-        onClick={onAnterior}
-        disabled={noInicio}
-        aria-label="Página anterior"
-        style={{ ...estilo, opacity: noInicio ? 0.5 : 1, cursor: noInicio ? 'not-allowed' : 'pointer' }}
-      >
-        {campo ? '‹' : '‹ Anterior'}
-      </button>
+      {campo ? (
+        <BotaoDeIcone
+          icone="arrow-left"
+          aria-label="Página anterior"
+          onClick={onAnterior}
+          disabled={noInicio}
+          medida={44}
+          style={{ ...botaoCampo, ...estadoDoBotao(noInicio) }}
+        />
+      ) : (
+        <button
+          type="button"
+          onClick={onAnterior}
+          disabled={noInicio}
+          aria-label="Página anterior"
+          style={{ ...botao, ...estadoDoBotao(noInicio) }}
+        >
+          ‹ Anterior
+        </button>
+      )}
       <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>{texto}</span>
-      <button
-        type="button"
-        onClick={onProxima}
-        disabled={noFim}
-        aria-label="Próxima página"
-        style={{ ...estilo, opacity: noFim ? 0.5 : 1, cursor: noFim ? 'not-allowed' : 'pointer' }}
-      >
-        {campo ? '›' : 'Próxima ›'}
-      </button>
+      {campo ? (
+        <BotaoDeIcone
+          icone="arrow-right"
+          aria-label="Próxima página"
+          onClick={onProxima}
+          disabled={noFim}
+          medida={44}
+          style={{ ...botaoCampo, ...estadoDoBotao(noFim) }}
+        />
+      ) : (
+        <button
+          type="button"
+          onClick={onProxima}
+          disabled={noFim}
+          aria-label="Próxima página"
+          style={{ ...botao, ...estadoDoBotao(noFim) }}
+        >
+          Próxima ›
+        </button>
+      )}
     </div>
   );
 }

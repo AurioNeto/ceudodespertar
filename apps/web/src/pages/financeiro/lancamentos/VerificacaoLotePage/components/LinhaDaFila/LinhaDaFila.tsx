@@ -1,7 +1,7 @@
 import type { ItemNaFila } from '@cdd/contracts';
-import { Button, Icon, StatusBadge, type IconName } from '@/ds';
+import { AmountDisplay, Button, Icon, StatusBadge, type IconName } from '@/ds';
 import type { Density } from '@/ds';
-import { formatarBRL, formatarData } from '@/pages/utils/formato';
+import { formatarData } from '@/pages/utils/formato';
 import { CONFIANCA, ORIGENS } from '../../constantes';
 
 export interface LinhaDaFilaProps {
@@ -91,7 +91,7 @@ export function LinhaDaFila({ item, densidade, selecionado, onSelecionar, onAbri
         }}
       >
         {item.tipo === 'ENTRADA' ? '+ ' : item.tipo === 'SAIDA' ? '− ' : ''}
-        {formatarBRL(item.valor)}
+        <AmountDisplay value={item.valor / 100} size="sm" style={{ color: 'inherit' }} />
       </span>
       <Button variant="ghost" onClick={onAbrir}>
         Revisar

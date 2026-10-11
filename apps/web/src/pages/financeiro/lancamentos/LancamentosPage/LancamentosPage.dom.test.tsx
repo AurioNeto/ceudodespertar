@@ -105,9 +105,13 @@ const filtrarPor = (container: HTMLElement, rotulo: string, valor: string) =>
 const buscar = (container: HTMLElement, texto: string) =>
   digitar(elemento<HTMLInputElement>(container, `input[aria-label="${BUSCA}"]`), texto);
 
-const gaveta = (container: HTMLElement) => {
-  const titulo = todos<HTMLElement>(container, 'span').find((s) => s.textContent === 'Detalhe do lançamento');
-  return titulo ? (titulo.parentElement?.parentElement as HTMLElement) : null;
+const gaveta = (container: HTMLElement) => container.ownerDocument.querySelector<HTMLElement>('[role="dialog"]');
+const seloDaGaveta = (painel: HTMLElement) => painel.children[1]?.children[0]?.children[0]?.children[0] as HTMLElement;
+const fecharGaveta = (container: HTMLElement) =>
+  clicar(elemento(container.ownerDocument.body, 'button[aria-label="Fechar"]'));
+const tocar = async (alvo: HTMLElement) => {
+  alvo.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true }));
+  await clicar(alvo);
 };
 
 const lerGaveta = (painel: HTMLElement) => {
@@ -115,7 +119,7 @@ const lerGaveta = (painel: HTMLElement) => {
   const rotuloDoHistorico = folhaComTexto<HTMLElement>(painel, 'span', 'Histórico');
   const entradas = Array.from(rotuloDoHistorico.parentElement?.children ?? []).slice(1);
   return {
-    situacao: (painel.children[0] as HTMLElement).children[1]?.textContent,
+    situacao: seloDaGaveta(painel).textContent,
     recibo,
     historico: entradas.map((entrada) => [entrada.children[0]?.textContent, entrada.children[1]?.textContent]),
   };
@@ -134,23 +138,23 @@ const abrirLinhaDeCampo = (container: HTMLElement, motivo: string) => {
 };
 
 const PAGINA_1_DE_AGOSTO = [
-  ['28/08', 'mercado cerimônia mãe divina', 'Assaí Atacadista · Cora PJ', 'Aurio Neto', 'Cozinha', 'Saída', `${SAIDA}R$ 187,40`],
-  ['27/08', 'material de obra do dormitório', 'Depósito São Jorge · Cora PJ', 'Lucia Prado', 'Dormitório', 'Saída', `${SAIDA}R$ 1.245,00`],
-  ['24/08', 'contribuições da cerimônia de agosto', 'Corpo de fardados · Cora PJ', 'Aurio Neto', 'CDD', 'Entrada', `${ENTRADA}R$ 940,00`],
-  ['23/08', 'repasse do caixa da lojinha', 'Nubank Paty → Cora PJ', 'Paty Munay', '—', 'Transferência', 'R$ 1.500,00'],
-  ['22/08', 'venda de camisetas na lojinha', 'Balcão da lojinha · Nubank Paty', 'Paty Munay', 'Lojinha', 'Entrada', `${ENTRADA}R$ 285,00`],
-  ['20/08', 'ração e vermífugo dos cavalos', 'Agropecuária Vale · Cora PJ', 'Chico Aguiar', 'Chácara (Infraestrutura)', 'Saída', `${SAIDA}R$ 128,90`],
-  ['19/08', 'gasolina para buscar mantimentos', 'Posto Ipiranga · Espécie', 'Chico Aguiar', 'Chácara (Infraestrutura)', 'Saída', `${SAIDA}R$ 65,00`],
-  ['18/08', 'garrafas e rótulos para o feitio', 'Vidraria Nova · Cora PJ', 'Lucia Prado', 'CDD', 'Saída', `${SAIDA}R$ 412,60`],
+  ['28/08', 'mercado cerimônia mãe divina', 'Assaí Atacadista · Cora PJ', 'Aurio Neto', 'Cozinha', 'Saída', `${SAIDA}R$187,40`],
+  ['27/08', 'material de obra do dormitório', 'Depósito São Jorge · Cora PJ', 'Lucia Prado', 'Dormitório', 'Saída', `${SAIDA}R$1.245,00`],
+  ['24/08', 'contribuições da cerimônia de agosto', 'Corpo de fardados · Cora PJ', 'Aurio Neto', 'CDD', 'Entrada', `${ENTRADA}R$940,00`],
+  ['23/08', 'repasse do caixa da lojinha', 'Nubank Paty → Cora PJ', 'Paty Munay', '—', 'Transferência', 'R$1.500,00'],
+  ['22/08', 'venda de camisetas na lojinha', 'Balcão da lojinha · Nubank Paty', 'Paty Munay', 'Lojinha', 'Entrada', `${ENTRADA}R$285,00`],
+  ['20/08', 'ração e vermífugo dos cavalos', 'Agropecuária Vale · Cora PJ', 'Chico Aguiar', 'Chácara (Infraestrutura)', 'Saída', `${SAIDA}R$128,90`],
+  ['19/08', 'gasolina para buscar mantimentos', 'Posto Ipiranga · Espécie', 'Chico Aguiar', 'Chácara (Infraestrutura)', 'Saída', `${SAIDA}R$65,00`],
+  ['18/08', 'garrafas e rótulos para o feitio', 'Vidraria Nova · Cora PJ', 'Lucia Prado', 'CDD', 'Saída', `${SAIDA}R$412,60`],
 ];
 
 const PAGINA_2_DE_AGOSTO = [
-  ['15/08', 'doação de padrinho para o dormitório', 'Sr. Antônio Vieira · Cora PJ', 'Aurio Neto', 'Dormitório', 'Entrada', `${ENTRADA}R$ 3.000,00`],
-  ['12/08', 'conta de luz da chácara', 'Enel · Cora PJ', 'Paty Munay', 'Chácara (Infraestrutura)', 'Saída', `${SAIDA}R$ 738,15`],
-  ['09/08', 'reforço do caixa em espécie', 'Cora PJ → Espécie', 'Aurio Neto', '—', 'Transferência', 'R$ 600,00'],
-  ['26/08', 'velas e incenso para o salão', 'Casa das Velas · Espécie', 'Aurio Neto', 'CDD', 'Saída', `${SAIDA}R$ 96,30`],
-  ['21/08', 'frete das garrafas do feitio', 'Transportes Céu Azul · Cora PJ', 'Aurio Neto', 'CDD', 'Saída', `${SAIDA}R$ 230,00`],
-  ['23/08', 'hospedagem extra de dois participantes', 'Participantes de 22/08 · Espécie', 'Aurio Neto', 'Dormitório', 'Entrada', `${ENTRADA}R$ 200,00`],
+  ['15/08', 'doação de padrinho para o dormitório', 'Sr. Antônio Vieira · Cora PJ', 'Aurio Neto', 'Dormitório', 'Entrada', `${ENTRADA}R$3.000,00`],
+  ['12/08', 'conta de luz da chácara', 'Enel · Cora PJ', 'Paty Munay', 'Chácara (Infraestrutura)', 'Saída', `${SAIDA}R$738,15`],
+  ['09/08', 'reforço do caixa em espécie', 'Cora PJ → Espécie', 'Aurio Neto', '—', 'Transferência', 'R$600,00'],
+  ['26/08', 'velas e incenso para o salão', 'Casa das Velas · Espécie', 'Aurio Neto', 'CDD', 'Saída', `${SAIDA}R$96,30`],
+  ['21/08', 'frete das garrafas do feitio', 'Transportes Céu Azul · Cora PJ', 'Aurio Neto', 'CDD', 'Saída', `${SAIDA}R$230,00`],
+  ['23/08', 'hospedagem extra de dois participantes', 'Participantes de 22/08 · Espécie', 'Aurio Neto', 'Dormitório', 'Entrada', `${ENTRADA}R$200,00`],
 ];
 
 describe('LancamentosPage: cabeçalho e lista nas duas densidades', () => {
@@ -260,7 +264,7 @@ describe('LancamentosPage: totais do recorte, com o estorno', () => {
   it('agosto, sem filtro — soma as entradas e as saídas vivas, o saldo e quantas faltam conferir', async () => {
     const { container } = await montar(<LancamentosPage />);
 
-    expect(totais(container)).toEqual(['R$ 4.425,00', 'R$ 3.038,35', 'R$ 1.386,65', '3 de 14']);
+    expect(totais(container)).toEqual(['R$4.425,00', 'R$3.038,35', 'R$1.386,65', '3 de 14']);
   });
 
   it('o lançamento estornado de saída — aparece na lista mas fica fora das saídas (Doc 8 §14, estorno nos totais)', async () => {
@@ -268,7 +272,7 @@ describe('LancamentosPage: totais do recorte, com o estorno', () => {
     await filtrarPor(container, 'Situação', 'ESTORNADO');
 
     expect(motivosNoEscritorio(container)).toEqual(['gasolina para buscar mantimentos']);
-    expect(totais(container)).toEqual(['R$ 0,00', 'R$ 0,00', 'R$ 0,00', '0 de 1']);
+    expect(totais(container)).toEqual(['R$0,00', 'R$0,00', 'R$0,00', '0 de 1']);
   });
 
   it('entrada estornada — também fica fora das entradas, ao contrário de Meus registros (Doc 8 §14, estorno nos totais)', async () => {
@@ -276,19 +280,19 @@ describe('LancamentosPage: totais do recorte, com o estorno', () => {
       lista.map((registro) => (registro.id === lista[2]?.id ? { ...registro, status: 'ESTORNADO' as const } : registro));
     const { container } = await montar(<LancamentosPage />);
 
-    expect(totais(container)).toEqual(['R$ 3.485,00', 'R$ 3.038,35', 'R$ 446,65', '3 de 14']);
+    expect(totais(container)).toEqual(['R$3.485,00', 'R$3.038,35', 'R$446,65', '3 de 14']);
     expect(motivosNoEscritorio(container)).toContain('contribuições da cerimônia de agosto');
   });
 
   it.each([
-    { nome: 'todo o histórico', filtro: ['Período', 'todos'], esperado: ['R$ 5.545,00', 'R$ 4.268,35', 'R$ 1.276,65', '3 de 17'] },
-    { nome: 'julho', filtro: ['Período', '2026-07'], esperado: ['R$ 1.120,00', 'R$ 1.230,00', 'R$ -110,00', '0 de 3'] },
-    { nome: 'só entradas', filtro: ['Tipo', 'ENTRADA'], esperado: ['R$ 4.425,00', 'R$ 0,00', 'R$ 4.425,00', '0 de 4'] },
-    { nome: 'só saídas', filtro: ['Tipo', 'SAIDA'], esperado: ['R$ 0,00', 'R$ 3.038,35', 'R$ -3.038,35', '2 de 8'] },
-    { nome: 'só transferências', filtro: ['Tipo', 'TRANSFERENCIA'], esperado: ['R$ 0,00', 'R$ 0,00', 'R$ 0,00', '1 de 2'] },
-    { nome: 'grupo Dormitório', filtro: ['Grupo', 'Dormitório'], esperado: ['R$ 3.200,00', 'R$ 1.245,00', 'R$ 1.955,00', '1 de 3'] },
-    { nome: 'situação a conferir', filtro: ['Situação', 'A_CONFERIR'], esperado: ['R$ 0,00', 'R$ 1.475,00', 'R$ -1.475,00', '3 de 3'] },
-    { nome: 'situação consolidado', filtro: ['Situação', 'CONFIRMADO'], esperado: ['R$ 4.425,00', 'R$ 1.563,35', 'R$ 2.861,65', '0 de 10'] },
+    { nome: 'todo o histórico', filtro: ['Período', 'todos'], esperado: ['R$5.545,00', 'R$4.268,35', 'R$1.276,65', '3 de 17'] },
+    { nome: 'julho', filtro: ['Período', '2026-07'], esperado: ['R$1.120,00', 'R$1.230,00', 'R$-110,00', '0 de 3'] },
+    { nome: 'só entradas', filtro: ['Tipo', 'ENTRADA'], esperado: ['R$4.425,00', 'R$0,00', 'R$4.425,00', '0 de 4'] },
+    { nome: 'só saídas', filtro: ['Tipo', 'SAIDA'], esperado: ['R$0,00', 'R$3.038,35', 'R$-3.038,35', '2 de 8'] },
+    { nome: 'só transferências', filtro: ['Tipo', 'TRANSFERENCIA'], esperado: ['R$0,00', 'R$0,00', 'R$0,00', '1 de 2'] },
+    { nome: 'grupo Dormitório', filtro: ['Grupo', 'Dormitório'], esperado: ['R$3.200,00', 'R$1.245,00', 'R$1.955,00', '1 de 3'] },
+    { nome: 'situação a conferir', filtro: ['Situação', 'A_CONFERIR'], esperado: ['R$0,00', 'R$1.475,00', 'R$-1.475,00', '3 de 3'] },
+    { nome: 'situação consolidado', filtro: ['Situação', 'CONFIRMADO'], esperado: ['R$4.425,00', 'R$1.563,35', 'R$2.861,65', '0 de 10'] },
   ])('filtro $nome — os totais são $esperado', async ({ filtro, esperado }) => {
     const { container } = await montar(<LancamentosPage />);
 
@@ -301,9 +305,9 @@ describe('LancamentosPage: totais do recorte, com o estorno', () => {
     usarDensidade('field');
     const { container } = await montar(<LancamentosPage />);
 
-    expect(totalDe(container, 'Entradas')).toBe('R$ 4.425,00');
-    expect(totalDe(container, 'Saídas')).toBe('R$ 3.038,35');
-    expect(totalDe(container, 'Saldo')).toBe('R$ 1.386,65');
+    expect(totalDe(container, 'Entradas')).toBe('R$4.425,00');
+    expect(totalDe(container, 'Saídas')).toBe('R$3.038,35');
+    expect(totalDe(container, 'Saldo')).toBe('R$1.386,65');
     expect(container.textContent).not.toContain('A conferir');
     expect(container.textContent).not.toContain('Saldo do período');
   });
@@ -473,9 +477,9 @@ describe('LancamentosPage: filtro de tipo em campo', () => {
   });
 
   it.each([
-    { botao: 'Saída', motivos: ['mercado cerimônia mãe divina', 'material de obra do dormitório', 'ração e vermífugo dos cavalos', 'gasolina para buscar mantimentos', 'garrafas e rótulos para o feitio', 'conta de luz da chácara', 'velas e incenso para o salão', 'frete das garrafas do feitio'], totais: ['R$ 0,00', 'R$ 3.038,35', 'R$ -3.038,35'] },
-    { botao: 'Entrada', motivos: ['contribuições da cerimônia de agosto', 'venda de camisetas na lojinha', 'doação de padrinho para o dormitório', 'hospedagem extra de dois participantes'], totais: ['R$ 4.425,00', 'R$ 0,00', 'R$ 4.425,00'] },
-    { botao: 'Transf.', motivos: ['repasse do caixa da lojinha', 'reforço do caixa em espécie'], totais: ['R$ 0,00', 'R$ 0,00', 'R$ 0,00'] },
+    { botao: 'Saída', motivos: ['mercado cerimônia mãe divina', 'material de obra do dormitório', 'ração e vermífugo dos cavalos', 'gasolina para buscar mantimentos', 'garrafas e rótulos para o feitio', 'conta de luz da chácara', 'velas e incenso para o salão', 'frete das garrafas do feitio'], totais: ['R$0,00', 'R$3.038,35', 'R$-3.038,35'] },
+    { botao: 'Entrada', motivos: ['contribuições da cerimônia de agosto', 'venda de camisetas na lojinha', 'doação de padrinho para o dormitório', 'hospedagem extra de dois participantes'], totais: ['R$4.425,00', 'R$0,00', 'R$4.425,00'] },
+    { botao: 'Transf.', motivos: ['repasse do caixa da lojinha', 'reforço do caixa em espécie'], totais: ['R$0,00', 'R$0,00', 'R$0,00'] },
   ])('campo — o botão $botao filtra a lista e os totais, e fica marcado', async ({ botao, motivos, totais: esperados }) => {
     usarDensidade('field');
     const { container } = await montar(<LancamentosPage />);
@@ -603,8 +607,8 @@ describe('LancamentosPage: paginação', () => {
     usarDensidade('field');
     const { container } = await montar(<LancamentosPage />);
 
-    expect(anterior(container).textContent).toBe('‹');
-    expect(proxima(container).textContent).toBe('›');
+    expect([anterior(container).textContent, anterior(container).querySelector('svg') !== null]).toEqual(['', true]);
+    expect([proxima(container).textContent, proxima(container).querySelector('svg') !== null]).toEqual(['', true]);
     expect(textoDaPaginacao(container)).toBe('Página 1 de 2 · 14 lançamentos');
   });
 
@@ -645,7 +649,7 @@ describe('LancamentosPage: recorte vazio', () => {
     expect(container.textContent).toContain('Nenhum lançamento neste recorte');
     expect(container.textContent).toContain('Troque o período ou limpe os filtros para ver o livro inteiro.');
     expect(todos(container, 'button').filter((botao) => botao.textContent === 'Limpar filtros')).toHaveLength(2);
-    expect(totais(container)).toEqual(['R$ 0,00', 'R$ 0,00', 'R$ 0,00', '0 de 0']);
+    expect(totais(container)).toEqual(['R$0,00', 'R$0,00', 'R$0,00', '0 de 0']);
     expect(container.textContent).not.toContain('Página');
     expect(linhasDoEscritorio(container)).toHaveLength(0);
   });
@@ -764,7 +768,7 @@ describe('LancamentosPage: gaveta de detalhe', () => {
     const { container } = await montar(<LancamentosPage />);
     await abrirLinhaDoEscritorio(container, motivo);
 
-    const selo = (gaveta(container) as HTMLElement).children[0]?.children[1] as HTMLElement;
+    const selo = seloDaGaveta(gaveta(container) as HTMLElement);
 
     expect([selo.textContent, selo.style.color, selo.style.background]).toEqual([
       situacao,
@@ -850,7 +854,7 @@ describe('LancamentosPage: gaveta de detalhe', () => {
     await abrirLinhaDoEscritorio(container, 'mercado cerimônia mãe divina');
     const habilitadoComAnexo = !botaoComTexto(gaveta(container) as HTMLElement, 'Ver comprovante').disabled;
 
-    await clicar(elemento(container, 'button[aria-label="Fechar detalhe"]'));
+    await fecharGaveta(container);
     await abrirLinhaDoEscritorio(container, 'contribuições da cerimônia de agosto');
 
     expect(habilitadoComAnexo).toBe(true);
@@ -889,11 +893,11 @@ describe('LancamentosPage: gaveta de detalhe', () => {
     expect(lerGaveta(gaveta(container) as HTMLElement)).toEqual(antes);
   });
 
-  it('fechar — o botão Fechar detalhe fecha a gaveta', async () => {
+  it('fechar — o botão Fechar fecha a gaveta', async () => {
     const { container } = await montar(<LancamentosPage />);
     await abrirLinhaDoEscritorio(container, 'mercado cerimônia mãe divina');
 
-    await clicar(elemento(container, 'button[aria-label="Fechar detalhe"]'));
+    await fecharGaveta(container);
 
     expect(gaveta(container)).toBeNull();
   });
@@ -903,26 +907,26 @@ describe('LancamentosPage: gaveta de detalhe', () => {
     await abrirLinhaDoEscritorio(container, 'mercado cerimônia mãe divina');
     const painel = gaveta(container) as HTMLElement;
 
-    await clicar(painel);
+    await tocar(painel);
     const abertaAposTocarDentro = gaveta(container) !== null;
-    await clicar(painel.parentElement as HTMLElement);
+    await tocar(painel.parentElement as HTMLElement);
 
     expect(abertaAposTocarDentro).toBe(true);
     expect(gaveta(container)).toBeNull();
   });
 
-  it('a gaveta não se declara como diálogo e o Esc, teclado dentro dela, não a fecha', async () => {
+  it('a gaveta se declara como diálogo modal e o Esc, teclado dentro dela, a fecha', async () => {
     const { container } = await montar(<LancamentosPage />);
     await abrirLinhaDoEscritorio(container, 'mercado cerimônia mãe divina');
+    const modal = gaveta(container)?.getAttribute('aria-modal');
 
-    await teclarEsc(elemento(container, 'button[aria-label="Fechar detalhe"]'));
+    await teclarEsc(elemento(document.body, 'button[aria-label="Fechar"]'));
 
-    expect(document.querySelector('[role="dialog"]')).toBeNull();
-    expect(document.querySelector('[aria-modal]')).toBeNull();
-    expect(gaveta(container)).not.toBeNull();
+    expect(modal).toBe('true');
+    expect(gaveta(container)).toBeNull();
   });
 
-  it('escritório — a gaveta é um painel lateral de 480px no máximo; em campo ocupa a largura toda, colada embaixo', async () => {
+  it('escritório — a gaveta é um painel lateral de 440px no máximo; em campo ocupa a largura toda, colada embaixo', async () => {
     const escritorio = await montar(<LancamentosPage />);
     await abrirLinhaDoEscritorio(escritorio.container, 'mercado cerimônia mãe divina');
     const painelDoEscritorio = gaveta(escritorio.container) as HTMLElement;
@@ -935,7 +939,7 @@ describe('LancamentosPage: gaveta de detalhe', () => {
     await abrirLinhaDeCampo(campo.container, 'mercado cerimônia mãe divina');
 
     const painelDeCampo = gaveta(campo.container) as HTMLElement;
-    expect(larguraNoEscritorio).toBe('min(480px, 100%)');
+    expect(larguraNoEscritorio).toBe('min(440px, 100vw)');
     expect(alinhamentoNoEscritorio).toBe('stretch');
     expect(painelDeCampo.style.width).toBe('100%');
     expect((painelDeCampo.parentElement as HTMLElement).style.alignItems).toBe('flex-end');

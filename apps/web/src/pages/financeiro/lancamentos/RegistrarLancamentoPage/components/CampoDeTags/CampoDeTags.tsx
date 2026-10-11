@@ -1,5 +1,5 @@
 import type { SheetOption } from '@/ds';
-import { RotuloDeCampo } from '@/ds';
+import { BotaoDeIcone, RotuloDeCampo } from '@/ds';
 
 export interface CampoDeTagsProps {
   label: string;
@@ -53,20 +53,14 @@ export function CampoDeTags({
             }}
           >
             {c}
-            <button
-              type="button"
+            <BotaoDeIcone
+              icone="x"
               aria-label={`remover categoria ${c}`}
               onClick={() => onRemover(c)}
-              style={{
-                color: 'var(--color-royal-deep)',
-                cursor: 'pointer',
-                font: 'var(--text-body-strong)',
-                lineHeight: 1,
-                padding: '2px 5px',
-              }}
-            >
-              ×
-            </button>
+              tamanhoDoIcone={14}
+              medida={22}
+              style={{ color: 'var(--color-royal-deep)', borderRadius: 'var(--radius-pill)' }}
+            />
           </span>
         ))}
         {escolhidas.length === 0 ? (

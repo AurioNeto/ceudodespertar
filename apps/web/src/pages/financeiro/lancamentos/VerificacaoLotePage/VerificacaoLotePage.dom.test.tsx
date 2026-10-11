@@ -66,18 +66,18 @@ const MOTIVOS_FORA_DA_FILA_DESIGUAL = new Set([
 ]);
 
 const FILA_INICIAL = [
-  ['mercado cerimônia mãe divina', '28/08/2026 · Foto de comprovante · Lucia Prado · Alimentação de cerimônia', 'Alta confiança', `${SINAL_DE_SAIDA}R$ 187,40`],
-  ['Enel — conta de luz', '12/08/2026 · Extrato bancário · importado · Administrativo', 'Alta confiança', `${SINAL_DE_SAIDA}R$ 738,15`],
-  ['gasolina para buscar mantimentos', '19/08/2026 · Registro rápido · Chico Aguiar · Transporte', 'Média confiança', `${SINAL_DE_SAIDA}R$ 65,00`],
-  ['ração e vermífugo dos cavalos', '20/08/2026 · Foto de comprovante · Chico Aguiar · Animais', 'Média confiança', `${SINAL_DE_SAIDA}R$ 128,90`],
-  ['PIX recebido — Antônio Vieira', '15/08/2026 · Extrato bancário · importado · Doações', 'Baixa confiança', `${SINAL_DE_ENTRADA}R$ 3.000,00`],
-  ['venda de camisetas na lojinha', '22/08/2026 · Registro rápido · Paty Munay · Vendas', 'Alta confiança', `${SINAL_DE_ENTRADA}R$ 285,00`],
-  ['garrafas e rótulos para o feitio', '18/08/2026 · Foto de comprovante · Lucia Prado · Insumos de feitio', 'Baixa confiança', `${SINAL_DE_SAIDA}R$ 412,60`],
-  ['TED — Hidro Serviços', '21/07/2026 · Extrato bancário · importado · Manutenção', 'Média confiança', `${SINAL_DE_SAIDA}R$ 890,00`],
-  ['diarista pós-cerimônia', '31/07/2026 · Registro rápido · Lucia Prado · Administrativo', 'Alta confiança', `${SINAL_DE_SAIDA}R$ 340,00`],
-  ['recarga de extintor e suporte', '24/08/2026 · Foto de comprovante · Paty Munay · Administrativo', 'Alta confiança', `${SINAL_DE_SAIDA}R$ 135,00`],
-  ['Transferência recebida do Nubank Paty', '23/08/2026 · Extrato bancário · importado · Nubank Paty → Cora PJ', 'Alta confiança', 'R$ 1.500,00'],
-  ['contribuições da cerimônia de agosto', '24/08/2026 · Registro rápido · Frei Tobias · Contribuições', 'Média confiança', `${SINAL_DE_ENTRADA}R$ 940,00`],
+  ['mercado cerimônia mãe divina', '28/08/2026 · Foto de comprovante · Lucia Prado · Alimentação de cerimônia', 'Alta confiança', `${SINAL_DE_SAIDA}R$187,40`],
+  ['Enel — conta de luz', '12/08/2026 · Extrato bancário · importado · Administrativo', 'Alta confiança', `${SINAL_DE_SAIDA}R$738,15`],
+  ['gasolina para buscar mantimentos', '19/08/2026 · Registro rápido · Chico Aguiar · Transporte', 'Média confiança', `${SINAL_DE_SAIDA}R$65,00`],
+  ['ração e vermífugo dos cavalos', '20/08/2026 · Foto de comprovante · Chico Aguiar · Animais', 'Média confiança', `${SINAL_DE_SAIDA}R$128,90`],
+  ['PIX recebido — Antônio Vieira', '15/08/2026 · Extrato bancário · importado · Doações', 'Baixa confiança', `${SINAL_DE_ENTRADA}R$3.000,00`],
+  ['venda de camisetas na lojinha', '22/08/2026 · Registro rápido · Paty Munay · Vendas', 'Alta confiança', `${SINAL_DE_ENTRADA}R$285,00`],
+  ['garrafas e rótulos para o feitio', '18/08/2026 · Foto de comprovante · Lucia Prado · Insumos de feitio', 'Baixa confiança', `${SINAL_DE_SAIDA}R$412,60`],
+  ['TED — Hidro Serviços', '21/07/2026 · Extrato bancário · importado · Manutenção', 'Média confiança', `${SINAL_DE_SAIDA}R$890,00`],
+  ['diarista pós-cerimônia', '31/07/2026 · Registro rápido · Lucia Prado · Administrativo', 'Alta confiança', `${SINAL_DE_SAIDA}R$340,00`],
+  ['recarga de extintor e suporte', '24/08/2026 · Foto de comprovante · Paty Munay · Administrativo', 'Alta confiança', `${SINAL_DE_SAIDA}R$135,00`],
+  ['Transferência recebida do Nubank Paty', '23/08/2026 · Extrato bancário · importado · Nubank Paty → Cora PJ', 'Alta confiança', 'R$1.500,00'],
+  ['contribuições da cerimônia de agosto', '24/08/2026 · Registro rápido · Frei Tobias · Contribuições', 'Média confiança', `${SINAL_DE_ENTRADA}R$940,00`],
 ];
 
 beforeEach(() => {
@@ -147,9 +147,9 @@ const botaoDeAltaConfianca = (container: HTMLElement) =>
 const aprovarSelecionados = (container: HTMLElement) => clicar(botaoComTexto(container, 'Aprovar selecionados'));
 const aprovarAltaConfianca = (container: HTMLElement) => clicar(botaoDeAltaConfianca(container) as HTMLButtonElement);
 const revisar = (container: HTMLElement, motivo: string) => clicar(botaoComTexto(linhaDoMotivo(container, motivo), 'Revisar'));
-const painelAberto = (container: HTMLElement) =>
-  todos(container, 'span').some((trecho) => trecho.textContent === 'Revisar lançamento');
-const aprovarNoPainel = (container: HTMLElement) => clicar(botaoComTexto(container, 'Aprovar e consolidar'));
+const painelAberto = (container: HTMLElement) => container.ownerDocument.querySelector('[role="dialog"]') !== null;
+const aprovarNoPainel = (container: HTMLElement) =>
+  clicar(botaoComTexto(container.ownerDocument.body, 'Aprovar e consolidar'));
 
 describe('VerificacaoLotePage: cabeçalho e linhas da fila', () => {
   it('escritório — o cabeçalho traz o código F-05 (Doc 4: F-03 é a Fila de conferência), o título e o subtítulo', async () => {
@@ -202,7 +202,7 @@ describe('VerificacaoLotePage: cabeçalho e linhas da fila', () => {
     const linha = lerLinha(linhaDoMotivo(container, 'Transferência recebida do Nubank Paty'));
 
     expect(linha[1]).toContain('Nubank Paty → Cora PJ');
-    expect(linha[3]).toBe('R$ 1.500,00');
+    expect(linha[3]).toBe('R$1.500,00');
   });
 
   it('item sem categoria — a meta da linha diz sem categoria', async () => {
@@ -762,9 +762,9 @@ describe('VerificacaoLotePage: revisão pelo painel', () => {
     await revisar(container, 'Enel — conta de luz');
 
     expect(painelAberto(container)).toBe(true);
-    expect(campoComRotulo(container, 'Quanto foi').value).toBe('738,15');
-    expect(campoComRotulo(container, 'O que foi').value).toBe('Enel — conta de luz');
-    expect(container.textContent).toContain('Extrato bancário · importado do banco · 12/08/2026');
+    expect(campoComRotulo(document.body, 'Quanto foi').value).toBe('738,15');
+    expect(campoComRotulo(document.body, 'O que foi').value).toBe('Enel — conta de luz');
+    expect(document.body.textContent).toContain('Extrato bancário · importado do banco · 12/08/2026');
   });
 
   it('tocar no motivo da linha — abre o mesmo painel', async () => {
@@ -774,7 +774,7 @@ describe('VerificacaoLotePage: revisão pelo painel', () => {
     await clicar(botaoDoMotivo);
 
     expect(painelAberto(container)).toBe(true);
-    expect(campoComRotulo(container, 'O que foi').value).toBe('diarista pós-cerimônia');
+    expect(campoComRotulo(document.body, 'O que foi').value).toBe('diarista pós-cerimônia');
   });
 
   it('aprovar no painel — o item sai da fila, o painel fecha e o aviso diz aprovado e consolidado', async () => {
@@ -792,7 +792,7 @@ describe('VerificacaoLotePage: revisão pelo painel', () => {
   it('aprovar com o valor corrigido — a fila só perde a linha: o valor corrigido não aparece em lugar nenhum', async () => {
     const { container } = await montar(<VerificacaoLotePage />);
     await revisar(container, 'Enel — conta de luz');
-    await digitar(campoComRotulo(container, 'Quanto foi'), '999,99');
+    await digitar(campoComRotulo(document.body, 'Quanto foi'), '999,99');
 
     await aprovarNoPainel(container);
 
@@ -813,10 +813,10 @@ describe('VerificacaoLotePage: revisão pelo painel', () => {
   it('devolver item com remetente — o aviso diz a quem voltou e o motivo, e o item sai da fila', async () => {
     const { container } = await montar(<VerificacaoLotePage />);
     await revisar(container, 'mercado cerimônia mãe divina');
-    await clicar(botaoComTexto(container, 'Devolver'));
-    await digitarNaCaixa(elemento<HTMLTextAreaElement>(container, 'textarea'), '  falta a nota fiscal  ');
+    await clicar(botaoComTexto(document.body, 'Devolver'));
+    await digitarNaCaixa(elemento<HTMLTextAreaElement>(document.body, 'textarea'), '  falta a nota fiscal  ');
 
-    await clicar(botaoComTexto(container, 'Devolver'));
+    await clicar(botaoComTexto(document.body, 'Devolver'));
 
     expect(mensagem(container)).toBe('Devolvido a Lucia Prado: falta a nota fiscal');
     expect(painelAberto(container)).toBe(false);
@@ -826,10 +826,10 @@ describe('VerificacaoLotePage: revisão pelo painel', () => {
   it('devolver item importado, sem remetente — o aviso diz a quem enviou', async () => {
     const { container } = await montar(<VerificacaoLotePage />);
     await revisar(container, 'Enel — conta de luz');
-    await clicar(botaoComTexto(container, 'Devolver'));
-    await digitarNaCaixa(elemento<HTMLTextAreaElement>(container, 'textarea'), 'conferir o vencimento');
+    await clicar(botaoComTexto(document.body, 'Devolver'));
+    await digitarNaCaixa(elemento<HTMLTextAreaElement>(document.body, 'textarea'), 'conferir o vencimento');
 
-    await clicar(botaoComTexto(container, 'Devolver'));
+    await clicar(botaoComTexto(document.body, 'Devolver'));
 
     expect(mensagem(container)).toBe('Devolvido a quem enviou: conferir o vencimento');
   });
@@ -838,7 +838,7 @@ describe('VerificacaoLotePage: revisão pelo painel', () => {
     const { container } = await montar(<VerificacaoLotePage />);
     await revisar(container, 'Enel — conta de luz');
 
-    await clicar(elemento(container, 'button[aria-label="fechar"]'));
+    await clicar(elemento(document.body, 'button[aria-label="Fechar"]'));
 
     expect(painelAberto(container)).toBe(false);
     expect(tabelaDaFila(container)).toEqual(FILA_INICIAL);
@@ -848,12 +848,12 @@ describe('VerificacaoLotePage: revisão pelo painel', () => {
   it('abrir o painel de outro item depois de fechar — vem com os campos do novo item, sem resto do anterior', async () => {
     const { container } = await montar(<VerificacaoLotePage />);
     await revisar(container, 'Enel — conta de luz');
-    await digitar(campoComRotulo(container, 'O que foi'), 'texto que não vale');
-    await clicar(elemento(container, 'button[aria-label="fechar"]'));
+    await digitar(campoComRotulo(document.body, 'O que foi'), 'texto que não vale');
+    await clicar(elemento(document.body, 'button[aria-label="Fechar"]'));
 
     await revisar(container, 'diarista pós-cerimônia');
 
-    expect(campoComRotulo(container, 'O que foi').value).toBe('diarista pós-cerimônia');
+    expect(campoComRotulo(document.body, 'O que foi').value).toBe('diarista pós-cerimônia');
   });
 
   it('campo — o painel ocupa a largura toda, colado embaixo', async () => {
@@ -862,7 +862,7 @@ describe('VerificacaoLotePage: revisão pelo painel', () => {
 
     await revisar(container, 'Enel — conta de luz');
 
-    const painel = elemento(container, 'button[aria-label="fechar"]').parentElement?.parentElement as HTMLElement;
+    const painel = elemento(document.body, '[role="dialog"]');
     expect(painel.style.width).toBe('100%');
     expect((painel.parentElement as HTMLElement).style.alignItems).toBe('flex-end');
   });
