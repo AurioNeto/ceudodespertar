@@ -1,0 +1,1 @@
+export { PainelDeFiltros } from './PainelDeFiltros';

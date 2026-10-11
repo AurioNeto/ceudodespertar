@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { formatarValor } from '@/lib/formato';
+import { ItemDaLegenda } from './components/ItemDaLegenda';
+import { pontosDaLinha } from './utils/pontosDaLinha';
 
 export interface PontoDaSerie {
   rotulo: string;
@@ -22,9 +24,7 @@ export interface GraficoSerieProps {
 export function GraficoSerie({ serie, acumulados, escala, rotuloPeriodo, campo = false }: GraficoSerieProps) {
   const [hover, setHover] = useState<number | null>(null);
 
-  const pontosDaLinha = acumulados
-    .map((v, i) => `${(((i + 0.5) / serie.length) * 100).toFixed(2)},${(50 - (v / escala) * 50).toFixed(2)}`)
-    .join(' ');
+  const linhaDoAcumulado = pontosDaLinha(acumulados, serie.length, escala);
 
   const alturaPlot = campo ? 132 : 182;
 
@@ -185,7 +185,7 @@ export function GraficoSerie({ serie, acumulados, escala, rotuloPeriodo, campo =
           }}
         >
           <polyline
-            points={pontosDaLinha}
+            points={linhaDoAcumulado}
             fill="none"
             stroke="var(--color-royal-deep)"
             strokeWidth={2}
@@ -195,14 +195,5 @@ export function GraficoSerie({ serie, acumulados, escala, rotuloPeriodo, campo =
         </svg>
       </div>
     </div>
-  );
-}
-
-function ItemDaLegenda({ cor, linha = false, children }: { cor: string; linha?: boolean; children: string }) {
-  return (
-    <span style={{ display: 'flex', alignItems: 'center', gap: 6, font: 'var(--text-small)', color: 'var(--text-secondary)' }}>
-      <span style={{ width: linha ? 14 : 10, height: linha ? 2 : 10, borderRadius: linha ? 0 : 2, background: cor }} />
-      {children}
-    </span>
   );
 }

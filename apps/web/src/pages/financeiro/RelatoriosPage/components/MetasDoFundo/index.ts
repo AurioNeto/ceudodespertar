@@ -1,0 +1,1 @@
+export { MetasDoFundo } from './MetasDoFundo';
