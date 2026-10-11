@@ -751,10 +751,10 @@ describe('AdiantamentosPage: novo adiantamento', () => {
   it.each([
     { digitado: '2000', habilitado: true },
     { digitado: '2000,50', habilitado: true },
-    { digitado: '2000.50', habilitado: true },
+    { digitado: '2000.50', habilitado: false },
     { digitado: '1.500', habilitado: true },
-    { digitado: '1e3', habilitado: true },
-    { digitado: '1.500,00', habilitado: false },
+    { digitado: '1e3', habilitado: false },
+    { digitado: '1.500,00', habilitado: true },
     { digitado: '0', habilitado: false },
     { digitado: '-5', habilitado: false },
     { digitado: 'abc', habilitado: false },

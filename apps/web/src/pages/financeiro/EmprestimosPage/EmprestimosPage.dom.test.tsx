@@ -464,7 +464,8 @@ describe('EmprestimosPage: registrar devolução', () => {
     { digitado: '0', motivo: 'Informe um valor maior que zero.' },
     { digitado: '-5', motivo: 'Informe um valor maior que zero.' },
     { digitado: 'abc', motivo: 'Informe um valor maior que zero.' },
-    { digitado: '1.500,00', motivo: 'Informe um valor maior que zero.' },
+    { digitado: '100.5', motivo: 'Informe um valor maior que zero.' },
+    { digitado: '1e3', motivo: 'Informe um valor maior que zero.' },
   ])('valor digitado "$digitado" — o botão fica bloqueado e diz: $motivo', async ({ digitado, motivo }) => {
     const { container } = await montar(<EmprestimosPage />);
     await abrirFormularioDeDevolucao(container);
@@ -479,9 +480,8 @@ describe('EmprestimosPage: registrar devolução', () => {
   it.each([
     { digitado: '100', restam: '5.337,60' },
     { digitado: '100,5', restam: '5.337,10' },
-    { digitado: '100.5', restam: '5.337,10' },
-    { digitado: '1.500', restam: '5.436,10' },
-    { digitado: '1e3', restam: '4.437,60' },
+    { digitado: '1.500', restam: '3.937,60' },
+    { digitado: '1.500,00', restam: '3.937,60' },
   ])('valor digitado "$digitado" — a devolução é aceita e restam $restam', async ({ digitado, restam }) => {
     const { container } = await montar(<EmprestimosPage />);
 
@@ -688,10 +688,10 @@ describe('EmprestimosPage: novo empréstimo', () => {
   it.each([
     { digitado: '2000', habilitado: true },
     { digitado: '2000,50', habilitado: true },
-    { digitado: '2000.50', habilitado: true },
+    { digitado: '2000.50', habilitado: false },
     { digitado: '1.500', habilitado: true },
-    { digitado: '1e3', habilitado: true },
-    { digitado: '1.500,00', habilitado: false },
+    { digitado: '1e3', habilitado: false },
+    { digitado: '1.500,00', habilitado: true },
     { digitado: '0', habilitado: false },
     { digitado: '-5', habilitado: false },
     { digitado: 'abc', habilitado: false },

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { lerValorDigitado } from '@/lib/numero';
 import { formatarBRL, formatarLitros } from '@/pages/utils/formato';
 import { emAndamento, type FeitioNaTela } from '../mocks/feitio';
 import { custoConfirmado, custoDaMateriaPrima, custoPorLitro, custoTotal } from '../utils/custoDoFeitio';
@@ -18,7 +19,7 @@ export function useFeitio() {
   const confirmado = custoConfirmado(feitio);
   const pendentes = feitio.custos.filter((c) => !c.confirmado);
 
-  const litrosNum = Number(litros.replace(',', '.')) || 0;
+  const litrosNum = lerValorDigitado(litros) || 0;
 
   const materiaPrima = custoDaMateriaPrima(feitio);
   const porLitro = concluido ? custoPorLitro(total, feitio.litrosProduzidos) : null;

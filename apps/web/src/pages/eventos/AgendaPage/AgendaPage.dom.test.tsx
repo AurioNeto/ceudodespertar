@@ -718,7 +718,7 @@ describe('AgendaPage: nova cerimônia', () => {
 
   it.each([
     { digitado: '9,5', litros: '9.5' },
-    { digitado: '1.500,00', litros: '1.5' },
+    { digitado: '1.500,00', litros: '1500' },
     { digitado: '12', litros: '12' },
   ])('litros digitados como "$digitado" — o detalhe mostra $litros L, com ponto como separador decimal', async ({ digitado, litros }) => {
     const { container } = await montar(<AgendaPage />);

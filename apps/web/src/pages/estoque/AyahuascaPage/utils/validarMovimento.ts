@@ -1,12 +1,12 @@
+import { lerValorDigitado } from '@/lib/numero';
 import type { LoteDeDaime } from '../mocks/ayahuasca';
 import type { RascunhoDeMovimento } from '../tipos';
 import { litros } from './litros';
-import { paraNumero } from './paraNumero';
 
 /** O saldo do lote é o guarda-corpo: nenhuma saída passa do que existe. */
 export const erroDoFormulario = (f: RascunhoDeMovimento | null, lotes: readonly LoteDeDaime[]): string | null => {
   if (!f) return null;
-  const quantidade = paraNumero(f.litros);
+  const quantidade = lerValorDigitado(f.litros) || 0;
   if (f.modo === 'feitio') {
     if (!f.codigo.trim()) return 'Dê um código ao lote (ex.: Lote 01/2027).';
     if (quantidade <= 0) return 'Informe quantos litros entraram.';
