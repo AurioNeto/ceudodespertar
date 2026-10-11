@@ -1,9 +1,11 @@
-import { useState } from 'react';
 import type { ItemNaFila } from '@cdd/contracts';
-import { reais } from '@cdd/contracts';
 import { Button, Icon, StatusBadge, type IconName } from '@/ds';
-import { formatarData, formatarDinheiro } from '@/pages/utils/formato';
+import { formatarData } from '@/pages/utils/formato';
 import { CONFIANCA, ORIGENS } from '../../constantes';
+import { rotuloLabel } from './constantes';
+import { CampoDeTexto } from './components/CampoDeTexto';
+import { FormularioDeDevolucao } from './components/FormularioDeDevolucao';
+import { useRascunhoDeRevisao } from './hooks/useRascunhoDeRevisao';
 
 export interface PainelDeRevisaoProps {
   item: ItemNaFila;
@@ -13,47 +15,18 @@ export interface PainelDeRevisaoProps {
   onDevolver: (motivo: string) => void;
 }
 
-const rotuloLabel = {
-  font: 'var(--text-label)',
-  letterSpacing: 'var(--tracking-label)',
-  textTransform: 'uppercase',
-  color: 'var(--text-field-label)',
-} as const;
-
-const entrada = {
-  minHeight: 44,
-  border: '1px solid var(--color-line-strong)',
-  background: 'var(--bg-card)',
-  borderRadius: 'var(--radius-sm)',
-  padding: '8px 12px',
-  font: 'var(--text-body)',
-  color: 'var(--text-primary)',
-  outline: 'none',
-  width: '100%',
-} as const;
-
-const paraNumero = (v: string): number => {
-  const n = parseFloat(v.replace(/\./g, '').replace(',', '.'));
-  return Number.isNaN(n) ? 0 : n;
-};
-
 /**
  * Corrigir antes de aprovar. Devolver não apaga: volta a quem enviou com o
  * motivo, que é o que o remetente vê.
  */
 export function PainelDeRevisao({ item, campo, onFechar, onAprovar, onDevolver }: PainelDeRevisaoProps) {
-  const [rascunho, setRascunho] = useState<ItemNaFila>(item);
-  const [valorTexto, setValorTexto] = useState(formatarDinheiro(item.valor));
-  const [devolvendo, setDevolvendo] = useState(false);
-  const [motivo, setMotivo] = useState('');
+  const { rascunho, valorTexto, alterar, alterarValor, devolvendo, abrirDevolucao, cancelarDevolucao, motivo, escreverMotivo } =
+    useRascunhoDeRevisao(item);
 
   const origem = ORIGENS[item.origem];
   const confianca = CONFIANCA[item.confianca];
   const ehTransferencia = item.tipo === 'TRANSFERENCIA';
   const ehEntrada = item.tipo === 'ENTRADA';
-
-  const alterar = <K extends keyof ItemNaFila>(campoItem: K, valor: ItemNaFila[K]) =>
-    setRascunho((r) => ({ ...r, [campoItem]: valor }));
 
   return (
     <div
@@ -161,10 +134,7 @@ export function PainelDeRevisao({ item, campo, onFechar, onAprovar, onDevolver }
           <CampoDeTexto
             rotulo={ehTransferencia ? 'Quanto transferiu' : ehEntrada ? 'Quanto entrou' : 'Quanto foi'}
             valor={valorTexto}
-            onMudar={(v) => {
-              setValorTexto(v);
-              alterar('valor', reais(paraNumero(v)));
-            }}
+            onMudar={alterarValor}
           />
           <CampoDeTexto
             rotulo={ehTransferencia ? 'Motivo' : ehEntrada ? 'De onde veio' : 'O que foi'}
@@ -199,42 +169,13 @@ export function PainelDeRevisao({ item, campo, onFechar, onAprovar, onDevolver }
           )}
 
           {devolvendo ? (
-            <div
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 10,
-                background: 'var(--color-attention-soft)',
-                border: '1px solid var(--color-attention-border)',
-                borderRadius: 'var(--radius)',
-                padding: '12px 14px',
-              }}
-            >
-              <span style={{ font: 'var(--text-body-strong)', color: 'var(--text-primary)' }}>
-                Devolver a {item.remetente ?? 'quem enviou'}
-              </span>
-              <textarea
-                value={motivo}
-                onChange={(e) => setMotivo(e.target.value)}
-                rows={3}
-                placeholder="o motivo chega junto para quem enviou corrigir"
-                aria-label="Motivo da devolução"
-                style={{ ...entrada, resize: 'vertical' }}
-              />
-              <div style={{ display: 'flex', gap: 10 }}>
-                <Button
-                  iconName="send"
-                  disabled={!motivo.trim()}
-                  blockedReason={!motivo.trim() ? 'Escreva o motivo — é o que a pessoa vai ler.' : undefined}
-                  onClick={() => onDevolver(motivo.trim())}
-                >
-                  Devolver
-                </Button>
-                <Button variant="quiet" onClick={() => setDevolvendo(false)}>
-                  Cancelar
-                </Button>
-              </div>
-            </div>
+            <FormularioDeDevolucao
+              remetente={item.remetente}
+              motivo={motivo}
+              onEscreverMotivo={escreverMotivo}
+              onDevolver={onDevolver}
+              onCancelar={cancelarDevolucao}
+            />
           ) : null}
         </div>
 
@@ -251,29 +192,12 @@ export function PainelDeRevisao({ item, campo, onFechar, onAprovar, onDevolver }
             Aprovar e consolidar
           </Button>
           {devolvendo ? null : (
-            <Button variant="quiet" iconName="undo-2" onClick={() => setDevolvendo(true)}>
+            <Button variant="quiet" iconName="undo-2" onClick={abrirDevolucao}>
               Devolver
             </Button>
           )}
         </div>
       </div>
     </div>
-  );
-}
-
-function CampoDeTexto({
-  rotulo,
-  valor,
-  onMudar,
-}: {
-  rotulo: string;
-  valor: string;
-  onMudar: (v: string) => void;
-}) {
-  return (
-    <label style={{ display: 'flex', flexDirection: 'column' }}>
-      <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)', marginBottom: 5 }}>{rotulo}</span>
-      <input value={valor} onChange={(e) => onMudar(e.target.value)} style={entrada} />
-    </label>
   );
 }

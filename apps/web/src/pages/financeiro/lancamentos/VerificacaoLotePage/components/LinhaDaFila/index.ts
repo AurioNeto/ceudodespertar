@@ -1,0 +1,1 @@
+export { LinhaDaFila } from './LinhaDaFila';

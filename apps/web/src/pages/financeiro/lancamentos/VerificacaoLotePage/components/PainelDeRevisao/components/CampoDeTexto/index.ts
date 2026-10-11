@@ -1,0 +1,1 @@
+export { CampoDeTexto } from './CampoDeTexto';

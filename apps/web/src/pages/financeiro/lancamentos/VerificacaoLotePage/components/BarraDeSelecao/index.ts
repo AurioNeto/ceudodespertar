@@ -1,0 +1,1 @@
+export { BarraDeSelecao } from './BarraDeSelecao';
