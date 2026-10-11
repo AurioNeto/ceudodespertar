@@ -1,7 +1,8 @@
 import type { Hospedagem, NivelDeContribuicao, Refeicao } from '@cdd/contracts';
-import { AmountDisplay, Button, Cartao, Icon, Rotulo, TextField, type Density } from '@/ds';
+import { AmountDisplay, Button, Cartao, Rotulo, TextField, type Density } from '@/ds';
 import { lerValorDigitado } from '@/lib/numero';
 import { formatarBRL, formatarDinheiro, pluralizar } from '@/pages/utils/formato';
+import { OpcaoMarcavel } from '../../../components/OpcaoMarcavel';
 import { eventoDoLink } from '../../../mocks/linkDaCerimonia';
 import { totalComContribuicaoACombinar } from '../../../utils/totalComContribuicaoACombinar';
 import { Passos } from '../Passos';
@@ -106,53 +107,17 @@ export function Participacao(props: ParticipacaoProps) {
       <Cartao campo={campo} style={{ gap: 11 }}>
         <Rotulo>Onde você vai dormir</Rotulo>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
-          {eventoDoLink.hospedagens.map((h) => {
-            const marcada = props.hospedagem === h.tipo;
-            return (
-              <button
-                key={h.tipo}
-                type="button"
-                aria-pressed={marcada}
-                aria-label={h.rotulo}
-                onClick={() => props.onHospedagem(h.tipo)}
-                style={{
-                  textAlign: 'left',
-                  padding: '11px 14px',
-                  borderRadius: 'var(--radius)',
-                  border: `1px solid ${marcada ? 'var(--color-royal)' : 'var(--color-line-strong)'}`,
-                  background: marcada ? 'var(--color-royal-soft)' : 'var(--bg-card)',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  gap: 11,
-                  alignItems: 'center',
-                  minHeight: campo ? 'var(--target-field)' : undefined,
-                }}
-              >
-                <span
-                  aria-hidden
-                  style={{
-                    width: 18,
-                    height: 18,
-                    flexShrink: 0,
-                    borderRadius: '50%',
-                    border: `2px solid ${marcada ? 'var(--color-royal)' : 'var(--color-line-strong)'}`,
-                    background: marcada ? 'var(--color-royal)' : 'transparent',
-                    display: 'grid',
-                    placeItems: 'center',
-                  }}
-                >
-                  {marcada ? <Icon name="check" size={11} color="var(--bg-card)" /> : null}
-                </span>
-                <span style={{ display: 'flex', flexDirection: 'column', gap: 3, flex: 1, minWidth: 0 }}>
-                  <span style={{ font: 'var(--text-body)', color: 'var(--text-primary)' }}>{h.rotulo}</span>
-                  <span style={{ font: 'var(--text-small)', color: 'var(--text-meta)' }}>{h.nota}</span>
-                </span>
-                <span data-numeric style={{ font: 'var(--text-small)', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>
-                  {h.valorDiaria > 0 ? `${formatarBRL(h.valorDiaria)} / dia` : 'sem custo'}
-                </span>
-              </button>
-            );
-          })}
+          {eventoDoLink.hospedagens.map((h) => (
+            <OpcaoMarcavel
+              key={h.tipo}
+              rotulo={h.rotulo}
+              nota={h.nota}
+              valor={h.valorDiaria > 0 ? `${formatarBRL(h.valorDiaria)} / dia` : 'sem custo'}
+              marcada={props.hospedagem === h.tipo}
+              densidade={props.densidade}
+              onEscolher={() => props.onHospedagem(h.tipo)}
+            />
+          ))}
         </div>
         {props.custoHospedagem > 0 ? (
           <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>

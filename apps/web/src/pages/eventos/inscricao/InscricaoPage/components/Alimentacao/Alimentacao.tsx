@@ -1,9 +1,9 @@
 import type { Refeicao } from '@cdd/contracts';
 import type { Density } from '@/ds';
 import { formatarBRL } from '@/pages/utils/formato';
+import { OpcaoMarcavel } from '../../../components/OpcaoMarcavel';
 import type { EventoParaInscricao } from '../../../mocks/eventos';
 import { Bloco } from '../Bloco';
-import { OpcaoEmLinha } from '../OpcaoEmLinha';
 
 export interface AlimentacaoProps {
   evento: EventoParaInscricao;
@@ -18,7 +18,7 @@ export function Alimentacao({ evento, refeicoes, onAlternar, densidade }: Alimen
       <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>{evento.nota}</span>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
         {evento.refeicoes.map((r) => (
-          <OpcaoEmLinha
+          <OpcaoMarcavel
             key={r.refeicao}
             rotulo={r.rotulo}
             valor={formatarBRL(r.valor)}
