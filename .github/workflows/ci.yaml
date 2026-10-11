@@ -50,6 +50,10 @@ jobs:
       - name: fronteiras do web
         run: pnpm fronteiras:web
 
+      # pastas de unidade, componentes soltos, fluxos, módulo de cada tela e registro das rotas (Documento 8, seção 12.4)
+      - name: estrutura do web
+        run: pnpm estrutura:web
+
       - name: testes unitarios de contracts
         run: pnpm --filter @cdd/contracts test
 
