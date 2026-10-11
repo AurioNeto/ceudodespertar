@@ -22,13 +22,16 @@ export function useAdiantamentos() {
   const [recado, setRecado] = useState<string | null>(null);
   const [barrado, setBarrado] = useState<Adiantamento | null>(null);
   const [recusando, setRecusando] = useState<AdiantamentoId | null>(null);
-  const [motivoRecusa, setMotivoRecusa] = useState('');
+  const [motivosDeRecusa, setMotivosDeRecusa] = useState<Readonly<Record<string, string>>>({});
   const [ressarcindo, setRessarcindo] = useState<AdiantamentoId | null>(null);
   const [contaRessarcimento, setContaRessarcimento] = useState<string>(contasInstitucionais[0]!.id);
   const [dataRessarcimento, setDataRessarcimento] = useState(hoje);
   const [criando, setCriando] = useState(false);
 
   const dataRessarcimentoValida = dataRessarcimento !== '';
+
+  const motivoDaLinha = (id: AdiantamentoId) => motivosDeRecusa[id] ?? '';
+  const motivoRecusa = recusando === null ? '' : motivoDaLinha(recusando);
 
   const { aguardando, aRessarcir, fechados } = particionarPorStatus(adiantamentos);
 
@@ -65,12 +68,13 @@ export function useAdiantamentos() {
   };
 
   const recusar = (a: Adiantamento) => {
-    if (!motivoRecusa.trim()) return;
+    const motivo = motivoDaLinha(a.id).trim();
+    if (!motivo) return;
     setAdiantamentos((lista) =>
-      lista.map((x) => (x.id === a.id ? { ...x, status: 'RECUSADO', recusaMotivo: motivoRecusa.trim() } : x)),
+      lista.map((x) => (x.id === a.id ? { ...x, status: 'RECUSADO', recusaMotivo: motivo } : x)),
     );
     setRecusando(null);
-    setMotivoRecusa('');
+    setMotivosDeRecusa((motivos) => ({ ...motivos, [a.id]: '' }));
     setRecado(`Adiantamento de ${a.pessoaNome} recusado, com o motivo registrado.`);
   };
 
@@ -115,6 +119,10 @@ export function useAdiantamentos() {
   const fecharRecado = () => setRecado(null);
   const iniciarRecusa = (id: AdiantamentoId) => setRecusando(id);
   const cancelarRecusa = () => setRecusando(null);
+  const escolherMotivoRecusa = (motivo: string) => {
+    if (recusando === null) return;
+    setMotivosDeRecusa((motivos) => ({ ...motivos, [recusando]: motivo }));
+  };
   const iniciarRessarcimento = (id: AdiantamentoId) => setRessarcindo(id);
   const cancelarRessarcimento = () => setRessarcindo(null);
 
@@ -144,7 +152,7 @@ export function useAdiantamentos() {
     fecharRecado,
     iniciarRecusa,
     cancelarRecusa,
-    escolherMotivoRecusa: setMotivoRecusa,
+    escolherMotivoRecusa,
     iniciarRessarcimento,
     cancelarRessarcimento,
     escolherContaRessarcimento: setContaRessarcimento,

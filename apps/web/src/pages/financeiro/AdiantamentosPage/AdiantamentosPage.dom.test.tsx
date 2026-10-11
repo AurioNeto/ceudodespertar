@@ -516,7 +516,7 @@ describe('AdiantamentosPage: recusar', () => {
     expect(textosDasLinhas(container, 'Fechados')).toHaveLength(1);
   });
 
-  it('motivo digitado e Voltar — o texto fica guardado e aparece no campo de outra linha', async () => {
+  it('motivo digitado e Voltar — o texto de uma linha não aparece no campo de outra', async () => {
     const { container } = await montar(<AdiantamentosPage />);
     await verComo(container, 'Marta Neto');
     await clicar(botaoComTexto(linhaDe(container, ...LINHA_DE_PATY_A_AUTORIZAR), 'Recusar'));
@@ -525,8 +525,8 @@ describe('AdiantamentosPage: recusar', () => {
 
     await clicar(botaoComTexto(linhaDe(container, ...LINHA_DE_CARLOS_A_AUTORIZAR), 'Recusar'));
 
-    expect(campoPeloRotulo(container, 'Motivo da recusa').value).toBe('sem nota fiscal');
-    expect(botaoComTexto(linhaDe(container, ...LINHA_DE_CARLOS_A_AUTORIZAR), 'Recusar').disabled).toBe(false);
+    expect(campoPeloRotulo(container, 'Motivo da recusa').value).toBe('');
+    expect(botaoComTexto(linhaDe(container, ...LINHA_DE_CARLOS_A_AUTORIZAR), 'Recusar').disabled).toBe(true);
   });
 
   it('trocar de perspectiva com o campo do motivo aberto — fecha o campo', async () => {
