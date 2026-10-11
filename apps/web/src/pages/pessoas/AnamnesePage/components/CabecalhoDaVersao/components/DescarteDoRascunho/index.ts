@@ -1,0 +1,1 @@
+export { DescarteDoRascunho } from './DescarteDoRascunho';

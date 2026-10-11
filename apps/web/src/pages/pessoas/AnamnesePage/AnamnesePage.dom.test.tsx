@@ -841,13 +841,13 @@ describe('AnamnesePage: Novo rascunho', () => {
     expect(tituloDaVersaoAberta(container)).toBe('Anamnese do corpo · v3');
   });
 
-  it('com um rascunho já aberto — a tela não oferece nenhuma ação de descartar o rascunho', async () => {
+  it('com um rascunho já aberto — a tela oferece a ação de descartar o rascunho', async () => {
     const container = await montarAnamnese();
     await abrirVersao(container, 'v4');
 
     const textosDosBotoes = todos<HTMLButtonElement>(container, 'button').map((botao) => botao.textContent);
 
-    expect(textosDosBotoes.filter((texto) => /descart|exclu|apag/i.test(texto ?? ''))).toEqual([]);
+    expect(textosDosBotoes.filter((texto) => /descart|exclu|apag/i.test(texto ?? ''))).toEqual(['Descartar rascunho']);
   });
 
   it('sem rascunho aberto — cria a versão seguinte no topo da lista, como rascunho, e abre essa versão', async () => {
