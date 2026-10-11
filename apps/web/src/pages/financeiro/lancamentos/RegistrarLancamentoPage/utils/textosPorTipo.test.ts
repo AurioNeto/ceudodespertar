@@ -11,7 +11,7 @@ describe('textosPorTipo', () => {
   it.each([
     ['SAIDA', 'Quanto foi', 'Conta de saída', 'Fornecedor', 'mais usada por você'],
     ['ENTRADA', 'Quanto entrou', 'Conta de entrada', 'De quem veio', 'mais usada por você'],
-    ['TRANSFERENCIA', 'Quanto transferir', 'Conta de origem', 'Fornecedor', 'De onde o dinheiro sai.'],
+    ['TRANSFERENCIA', 'Quanto transferiu', 'Conta de origem', 'Fornecedor', 'De onde o dinheiro sai.'],
   ] as const)('%s — rótulos do valor, da conta e da contraparte, e nota da conta', (tipo, ...esperados) => {
     const [labelValor, labelConta, labelContraparte, notaConta] = esperados;
 

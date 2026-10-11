@@ -365,7 +365,7 @@ describe('RegistrarLancamentoPage: composição do formulário por tipo no escri
     {
       tipo: 'Transferência',
       rotulos: ROTULOS_DA_TRANSFERENCIA,
-      valor: 'Quanto transferir',
+      valor: 'Quanto transferiu',
       nota: 'Dinheiro que sai de uma conta da casa e entra em outra. Não é despesa nem receita: o total não muda, só o lugar onde o dinheiro está.',
     },
   ])('tipo $tipo — os rótulos, o rótulo do valor e a nota do tipo são os do tipo', async ({ tipo, rotulos, valor, nota }) => {

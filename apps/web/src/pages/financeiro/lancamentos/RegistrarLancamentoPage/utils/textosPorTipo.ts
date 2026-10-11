@@ -1,3 +1,4 @@
+import { ROTULO_DO_VALOR } from '@/pages/financeiro/lancamentos/constantes';
 import { opcoesDeConta } from '../mocks/opcoes';
 import { metaDaOpcao } from './opcao';
 import type { EstadoDoFormulario, RegrasDoLancamento } from './regrasDoLancamento';
@@ -21,7 +22,11 @@ export function textosPorTipo(regras: RegrasDoLancamento, campos: EstadoDoFormul
       : ehEntrada
         ? 'Dinheiro que entrou: doação, venda da lojinha, contribuição de cerimônia.'
         : 'Dinheiro que saiu para fora da casa.',
-    labelValor: ehTransferencia ? 'Quanto transferir' : ehEntrada ? 'Quanto entrou' : 'Quanto foi',
+    labelValor: ehTransferencia
+      ? ROTULO_DO_VALOR.TRANSFERENCIA
+      : ehEntrada
+        ? ROTULO_DO_VALOR.ENTRADA
+        : ROTULO_DO_VALOR.SAIDA,
     labelDescricao: ehTransferencia ? 'Motivo da transferência' : ehEntrada ? 'De onde veio' : 'O que foi',
     placeholderDescricao: ehTransferencia
       ? 'repasse do caixa da lojinha para o Cora'
