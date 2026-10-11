@@ -31,6 +31,9 @@ export function Fechamento({
 }: FechamentoProps) {
   const campo = densidade === 'field';
   const isentoSemCusto = isento && total === 0;
+  const custosConhecidos =
+    (custoHospedagem > 0 ? ` · ${formatarBRL(custoHospedagem)} de acomodação` : '') +
+    (custoRefeicoes > 0 ? ` · ${formatarBRL(custoRefeicoes)} de alimentação` : '');
   return (
     <Cartao campo={campo} style={{ gap: 13 }}>
       {isentoSemCusto ? (
@@ -47,17 +50,18 @@ export function Fechamento({
               </span>
               <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>
                 Contribuição a combinar
-                {custoHospedagem > 0 ? ` · ${formatarBRL(custoHospedagem)} de acomodação` : ''}
-                {custoRefeicoes > 0 ? ` · ${formatarBRL(custoRefeicoes)} de alimentação` : ''}
+                {custosConhecidos}
               </span>
             </>
           ) : (
-            <span style={{ font: 'var(--text-amount-lg)', color: 'var(--text-secondary)' }}>A combinar</span>
+            <>
+              <span style={{ font: 'var(--text-amount-lg)', color: 'var(--text-secondary)' }}>A combinar</span>
+              <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)', maxWidth: '72ch' }}>
+                A inscrição pode existir antes da conversa sobre valor — e “a combinar” é mais honesto do que R$ 0,00,
+                que diria que a pessoa não deve nada.
+              </span>
+            </>
           )}
-          <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)', maxWidth: '72ch' }}>
-            A inscrição pode existir antes da conversa sobre valor — e “a combinar” é mais honesto do que R$ 0,00, que
-            diria que a pessoa não deve nada.
-          </span>
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
@@ -69,8 +73,7 @@ export function Fechamento({
           </div>
           <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>
             {isento ? 'Isento de contribuição' : `${formatarBRL(contribuicao)} de contribuição`}
-            {custoHospedagem > 0 ? ` · ${formatarBRL(custoHospedagem)} de acomodação` : ''}
-            {custoRefeicoes > 0 ? ` · ${formatarBRL(custoRefeicoes)} de alimentação` : ''}
+            {custosConhecidos}
           </span>
         </div>
       )}
