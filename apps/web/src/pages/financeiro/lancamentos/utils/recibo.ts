@@ -13,13 +13,18 @@ export const naturezaDoTipo = (tipo: LancamentoNaLista['tipo']): NaturezaVisual 
 export const estadoDaLinha = (status: LancamentoNaLista['status']): RecordStatus =>
   status === 'A_CONFERIR' ? 'pending' : status === 'ESTORNADO' ? 'reversed' : 'confirmed';
 
+interface OpcoesDasLinhasDoRecibo {
+  mostrarQuemLancou?: boolean;
+  mostrarContaECategoria?: boolean;
+}
+
 /**
  * As linhas do cartão de recibo. A transferência troca grupo e categoria por
  * "saiu de / entrou em" — ela não é despesa nem receita.
  */
 export function linhasDoRecibo(
   r: LancamentoNaLista,
-  { mostrarQuemLancou = false }: { mostrarQuemLancou?: boolean } = {},
+  { mostrarQuemLancou = false, mostrarContaECategoria = true }: OpcoesDasLinhasDoRecibo = {},
 ): readonly ReceiptLine[] {
   const data = formatarData(r.data);
 
@@ -28,8 +33,12 @@ export function linhasDoRecibo(
       { label: 'Tipo', value: 'Transferência entre contas' },
       { label: 'Motivo', value: r.motivo },
       { label: 'Data', value: data },
-      { label: 'Saiu de', value: r.conta },
-      { label: 'Entrou em', value: r.contaDestino ?? '—' },
+      ...(mostrarContaECategoria
+        ? [
+            { label: 'Saiu de', value: r.conta },
+            { label: 'Entrou em', value: r.contaDestino ?? '—' },
+          ]
+        : []),
       ...(mostrarQuemLancou
         ? [
             { label: 'Quem lançou', value: r.registradoPor },
@@ -45,8 +54,12 @@ export function linhasDoRecibo(
     { label: ehEntrada ? 'De onde veio' : 'O que foi', value: r.motivo },
     { label: 'Data', value: data },
     { label: 'Grupo', value: r.grupo ?? '—' },
-    { label: 'Categoria', value: r.categorias.join(', ') || 'não classificado' },
-    { label: ehEntrada ? 'Conta de entrada' : 'Conta de saída', value: `${r.conta} · ${r.formaPagamento}` },
+    ...(mostrarContaECategoria
+      ? [
+          { label: 'Categoria', value: r.categorias.join(', ') || 'não classificado' },
+          { label: ehEntrada ? 'Conta de entrada' : 'Conta de saída', value: `${r.conta} · ${r.formaPagamento}` },
+        ]
+      : []),
     ...(mostrarQuemLancou
       ? [{ label: 'Quem lançou', value: r.registradoPor }]
       : [{ label: 'Cerimônia', value: r.cerimonia ?? 'Nenhuma — gasto da casa' }]),

@@ -154,10 +154,11 @@ describe('MeusRegistrosPage: cabeçalho e lista simplificada', () => {
     expect(barraDeEstado(linha).style.background).toBe(borda);
   });
 
-  it('escritório — o resumo diz quantos lançamentos, as saídas e as entradas, sem as transferências', async () => {
+  it('escritório — não há resumo: nem contagem de lançamentos, nem saídas, nem entradas (Doc 4, F-02: nunca agrega)', async () => {
     const { container } = await montar(<MeusRegistrosPage />);
 
-    expect(resumo(container)).toBe('8 lançamentos · saídas 513,70 · entradas 5.260,00');
+    expect(resumo(container)).toBeNull();
+    expect(container.textContent).not.toContain('saídas');
   });
 
   it('campo — não há resumo de totais', async () => {
@@ -169,22 +170,22 @@ describe('MeusRegistrosPage: cabeçalho e lista simplificada', () => {
   });
 });
 
-describe('MeusRegistrosPage: totais com estorno', () => {
-  it('saída estornada — fica fora das saídas, mas segue na lista e na contagem (Doc 8 §14, estorno nos totais)', async () => {
+describe('MeusRegistrosPage: estorno sem totais', () => {
+  it('saída estornada — segue na lista, e a tela não tem totais em que ela entre ou saia (Doc 4, F-02)', async () => {
     registros.transformar = (lista) =>
       lista.map((registro) => (registro.id === lista[0]?.id ? { ...registro, status: 'ESTORNADO' as const } : registro));
     const { container } = await montar(<MeusRegistrosPage />);
 
-    expect(resumo(container)).toBe('8 lançamentos · saídas 326,30 · entradas 5.260,00');
+    expect(resumo(container)).toBeNull();
     expect(motivosDaLista(container)).toContain('mercado cerimônia mãe divina');
   });
 
-  it('entrada estornada — continua somada nas entradas, ao contrário do que Lançamentos faz (Doc 8 §14, estorno nos totais)', async () => {
+  it('entrada estornada — também não há total: o estorno não divide Meus registros de Lançamentos (Doc 4, F-02)', async () => {
     registros.transformar = (lista) =>
       lista.map((registro) => (registro.id === lista[1]?.id ? { ...registro, status: 'ESTORNADO' as const } : registro));
     const { container } = await montar(<MeusRegistrosPage />);
 
-    expect(resumo(container)).toBe('8 lançamentos · saídas 513,70 · entradas 5.260,00');
+    expect(resumo(container)).toBeNull();
   });
 
   it('a linha estornada — leva a barra de estado de estornado', async () => {
@@ -197,11 +198,11 @@ describe('MeusRegistrosPage: totais com estorno', () => {
     expect(barraDeEstado(linha).style.background).toBe('var(--color-neutral)');
   });
 
-  it('um só registro — o resumo usa o singular', async () => {
+  it('um só registro — também sem resumo', async () => {
     registros.transformar = (lista) => lista.slice(0, 1);
     const { container } = await montar(<MeusRegistrosPage />);
 
-    expect(resumo(container)).toBe('1 lançamento · saídas 187,40 · entradas 0,00');
+    expect(resumo(container)).toBeNull();
   });
 });
 
@@ -291,7 +292,7 @@ describe('MeusRegistrosPage: visão completa em carrossel', () => {
     ]);
   });
 
-  it('o recibo da saída traz conta, categoria e cerimônia — e o rodapé de consolidado (Doc 4, F-02: não exibe conta nem categoria)', async () => {
+  it('o recibo da saída traz cerimônia, sem conta nem categoria (Doc 4, F-02) — e o rodapé de consolidado', async () => {
     const { container } = await montar(<MeusRegistrosPage />);
 
     await abrirVisaoCompleta(container);
@@ -304,8 +305,6 @@ describe('MeusRegistrosPage: visão completa em carrossel', () => {
         ['O que foi', 'mercado cerimônia mãe divina'],
         ['Data', '28/08/2026'],
         ['Grupo', 'Cozinha'],
-        ['Categoria', 'Alimentação de cerimônia'],
-        ['Conta de saída', 'Cora PJ · Pix'],
         ['Cerimônia', '05/09 · Mãe Divina'],
         ['Comprovante', 'IMG_2481.jpg'],
       ],
@@ -313,7 +312,7 @@ describe('MeusRegistrosPage: visão completa em carrossel', () => {
     });
   });
 
-  it('o recibo da transferência pendente — troca grupo e categoria por saiu de e entrou em, e o rodapé diz a conferir', async () => {
+  it('o recibo da transferência pendente — sem as contas de origem e destino (Doc 4, F-02), e o rodapé diz a conferir', async () => {
     const { container } = await montar(<MeusRegistrosPage />);
 
     await abrirVisaoCompleta(container);
@@ -325,15 +324,13 @@ describe('MeusRegistrosPage: visão completa em carrossel', () => {
         ['Tipo', 'Transferência entre contas'],
         ['Motivo', 'reforço do caixa em espécie'],
         ['Data', '09/08/2026'],
-        ['Saiu de', 'Cora PJ'],
-        ['Entrou em', 'Espécie'],
         ['Comprovante', 'sem anexo'],
       ],
       rodape: 'A conferir: lançado por Aurio Neto, ainda sem consolidação da tesouraria.',
     });
   });
 
-  it('o recibo da entrada — traz de onde veio, conta de entrada e cerimônia, e comprovante sem anexo', async () => {
+  it('o recibo da entrada — traz de onde veio e cerimônia, sem conta nem categoria, e comprovante sem anexo', async () => {
     const { container } = await montar(<MeusRegistrosPage />);
 
     await abrirVisaoCompleta(container);
@@ -343,8 +340,6 @@ describe('MeusRegistrosPage: visão completa em carrossel', () => {
       ['De onde veio', 'contribuições da cerimônia de agosto'],
       ['Data', '24/08/2026'],
       ['Grupo', 'CDD'],
-      ['Categoria', 'Contribuições'],
-      ['Conta de entrada', 'Cora PJ · Pix'],
       ['Cerimônia', '22/08 · Mãe Divina'],
       ['Comprovante', 'sem anexo'],
     ]);
@@ -490,7 +485,7 @@ describe('MeusRegistrosPage: sem nenhum registro', () => {
     expect(textoDaPaginacao(container)).toBe('Página 1 de 1');
     expect(anterior(container).disabled).toBe(true);
     expect(proxima(container).disabled).toBe(true);
-    expect(resumo(container)).toBe('0 lançamentos · saídas 0,00 · entradas 0,00');
+    expect(resumo(container)).toBeNull();
   });
 
   it('visão completa — o contador mostra 1 de 0 e, ao tocar em próximo, o índice vira NaN', async () => {

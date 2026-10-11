@@ -40,7 +40,7 @@ export function CarrosselDeRecibos({ registros, indice, densidade, onIrPara }: C
                 title={`Registrado em ${formatarData(r.data)} às ${r.hora}`}
                 amount={r.valor / 100}
                 tone={tomDoRecibo(r.tipo)}
-                lines={linhasDoRecibo(r)}
+                lines={linhasDoRecibo(r, { mostrarContaECategoria: false })}
                 footnote={campo ? undefined : rodapeDoRecibo(r)}
                 style={{ flex: `0 0 ${largura}px` }}
               />
