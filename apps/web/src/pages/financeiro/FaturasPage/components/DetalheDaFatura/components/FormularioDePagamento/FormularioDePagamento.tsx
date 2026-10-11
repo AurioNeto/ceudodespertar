@@ -1,4 +1,5 @@
 import { Button, Select, TextField, type Density } from '@/ds';
+import { CartaoDeFormulario } from '@/pages/financeiro/components/CartaoDeFormulario';
 import { MENSAGEM_DE_DATA_VAZIA } from '@/pages/financeiro/constantes';
 import { formatarBRL } from '@/pages/utils/formato';
 import { contasPagadoras } from '../../../../mocks/faturas';
@@ -29,20 +30,7 @@ export function FormularioDePagamento({
   const campo = densidade === 'field';
 
   return (
-    <div
-      style={{
-        background: 'var(--bg-card)',
-        border: '1px solid var(--color-royal-border)',
-        borderLeft: 'var(--edge-state) solid var(--color-royal)',
-        borderRadius: 'var(--radius)',
-        padding: campo ? '15px 16px' : '18px 20px',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 15,
-      }}
-    >
-      <span style={{ font: 'var(--text-title-sm)', color: 'var(--text-title)' }}>Registrar o pagamento</span>
-
+    <CartaoDeFormulario titulo="Registrar o pagamento" densidade={densidade}>
       <div style={{ display: 'grid', gridTemplateColumns: campo ? 'minmax(0,1fr)' : 'repeat(3, minmax(0,1fr))', gap: 14 }}>
         <Select
           label="Conta de saída"
@@ -76,6 +64,6 @@ export function FormularioDePagamento({
           Isto grava uma transferência, não um lançamento de despesa.
         </span>
       </div>
-    </div>
+    </CartaoDeFormulario>
   );
 }
