@@ -1,4 +1,5 @@
 import type { FormaDePagamento, StatusContratacao } from '@cdd/contracts';
+import type { BadgeTone } from '@/ds';
 
 export const STATUS_ROTULO: Record<StatusContratacao, string> = {
   PROPOSTA: 'Proposta',
@@ -17,4 +18,11 @@ export const FORMA_EXPLICACAO: Record<FormaDePagamento, string> = {
   ANTECIPADO: 'Combinado para antes do trabalho.',
   NO_ATO: 'Recebido no dia, na hora.',
   FATURADO: 'A receber depois do trabalho, na data combinada.',
+};
+
+export const TOM: Record<StatusContratacao, BadgeTone> = {
+  PROPOSTA: 'suggest',
+  CONFIRMADA: 'royal',
+  REALIZADA: 'confirmed',
+  CANCELADA: 'neutral',
 };
