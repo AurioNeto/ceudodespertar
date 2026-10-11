@@ -1,7 +1,7 @@
 import type { Conta, ContaId, Fundo, FundoId } from '@cdd/contracts';
 import { Icon } from '@/ds';
 import { formatarDinheiro } from '@/pages/utils/formato';
-import { ehCaixa } from '../../utils/conta';
+import { iconeDaConta } from '../../utils/conta';
 import { corDaReserva } from '../../utils/reservas';
 import { rotuloLabel } from './constantes';
 import { BotaoNovo } from './components/BotaoNovo';
@@ -150,7 +150,7 @@ export function GerenciarContasModal({
               {contas.map((c) => (
                 <LinhaGerenciavel
                   key={c.id}
-                  marcador={<Icon name={ehCaixa(c) ? 'wallet' : 'landmark'} size={17} color="var(--color-royal)" />}
+                  marcador={<Icon name={iconeDaConta(c)} size={17} color="var(--color-royal)" />}
                   nome={c.nome}
                   nota={c.descricao}
                   ativa={c.ativa}

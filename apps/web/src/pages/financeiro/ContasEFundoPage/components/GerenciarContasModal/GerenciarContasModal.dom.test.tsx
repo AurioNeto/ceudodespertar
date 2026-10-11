@@ -205,8 +205,8 @@ describe('GerenciarContasModal: aba de contas', () => {
   it.each([
     { nome: 'Banco da Casa', glifo: 'landmark' },
     { nome: 'Caixa da Chácara', glifo: 'wallet' },
-    { nome: 'Conta da Carla', glifo: 'landmark' },
-  ])('ícone da conta $nome — é $glifo: o painel só distingue caixa de banco, a conta pessoal de terceiro fica como banco', async ({ nome, glifo }) => {
+    { nome: 'Conta da Carla', glifo: 'credit-card' },
+  ])('ícone da conta $nome — é $glifo: caixa é carteira, conta pessoal de terceiro é cartão, o resto é banco', async ({ nome, glifo }) => {
     const { container } = await montarModal();
 
     expect(glifoDe(elemento(linhaGerenciavel(container, nome), 'svg'))).toBe(glifo);
