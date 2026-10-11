@@ -56,10 +56,10 @@ afterEach(async () => {
   vi.unstubAllGlobals();
 });
 
-const CPF_DE_CLARICE = '529.187.340-11';
-const CPF_DE_EDUARDO = '812.445.290-07';
-const CPF_DE_HELENA = '330.918.775-42';
-const CPF_SEM_CADASTRO = '000.000.000-00';
+const CPF_DE_CLARICE = '529.187.340-04';
+const CPF_DE_EDUARDO = '812.445.290-36';
+const CPF_DE_HELENA = '330.918.775-66';
+const CPF_SEM_CADASTRO = '111.444.777-35';
 
 const MEDICACAO = 'Você faz uso de medicação contínua?';
 const PSIQUIATRICO = 'Você tem ou já teve diagnóstico psiquiátrico?';
@@ -269,19 +269,19 @@ describe('InscricaoPublicaPage: identificação pelo CPF', () => {
     const exemplos = todos<HTMLButtonElement>(container, 'button').filter((botao) => botao.querySelector('code'));
 
     expect(exemplos.map((exemplo) => exemplo.textContent)).toEqual([
-      '529.187.340-11já cadastrada, responde só o que mudou',
-      '330.918.775-42já cadastrada, anamnese em dia',
-      '812.445.290-07já cadastrado, resposta vencida',
-      '000.000.000-00ninguém — cai no cadastro novo',
+      '529.187.340-04já cadastrada, responde só o que mudou',
+      '330.918.775-66já cadastrada, anamnese em dia',
+      '812.445.290-36já cadastrado, resposta vencida',
+      '111.444.777-35ninguém — cai no cadastro novo',
     ]);
   });
 
   it('clicar num CPF de exemplo — preenche o campo sem seguir para o próximo passo', async () => {
     const container = await abrir();
 
-    await clicar(botaoComTexto(container, '330.918.775-42já cadastrada, anamnese em dia'));
+    await clicar(botaoComTexto(container, '330.918.775-66já cadastrada, anamnese em dia'));
 
-    expect(campoRotulado<HTMLInputElement>(container, 'CPF').value).toBe('330.918.775-42');
+    expect(campoRotulado<HTMLInputElement>(container, 'CPF').value).toBe('330.918.775-66');
     expect(tituloDoPasso(container)).toBe('Vamos começar pelo seu CPF');
   });
 
@@ -354,12 +354,16 @@ describe('InscricaoPublicaPage: identificação pelo CPF', () => {
     expect(tituloDoPasso(container)).toBe('Vamos começar pelo seu CPF');
   });
 
-  it('CPF com onze dígitos e dígitos verificadores inválidos — é aceito e cai no cadastro novo', async () => {
+  it('CPF com onze dígitos que não fecham — dígitos verificadores errados e números repetidos são recusados e ficam no passo', async () => {
     const container = await abrir();
 
-    await identificar(container, '111.111.111-11');
+    for (const cpf of ['529.187.340-11', '111.111.111-11']) {
+      await identificar(container, cpf);
 
-    expect(tituloDoPasso(container)).toBe('Seu cadastro');
+      expect(textoDe(container)).toContain('O CPF não é válido. Confira os números.');
+      expect(campoRotulado<HTMLInputElement>(container, 'CPF').getAttribute('aria-invalid')).toBe('true');
+      expect(tituloDoPasso(container)).toBe('Vamos começar pelo seu CPF');
+    }
   });
 
   it.each([
@@ -378,7 +382,7 @@ describe('InscricaoPublicaPage: identificação pelo CPF', () => {
   it('CPF digitado só com números — acha o mesmo cadastro que o CPF com máscara', async () => {
     const container = await abrir();
 
-    await identificar(container, '33091877542');
+    await identificar(container, '33091877566');
 
     expect(tituloDoPasso(container)).toBe('Olá, Helena');
   });
@@ -391,7 +395,7 @@ describe('InscricaoPublicaPage: cadastro de quem a casa não conhece', () => {
     await identificar(container, CPF_SEM_CADASTRO);
 
     expect(textoDe(container)).toContain(
-      'O CPF 000.000.000-00 ainda não está na casa. São cinco campos, uma vez só — na próxima cerimônia a casa já vai te reconhecer.',
+      'O CPF 111.444.777-35 ainda não está na casa. São cinco campos, uma vez só — na próxima cerimônia a casa já vai te reconhecer.',
     );
     expect(todos<HTMLLabelElement>(container, 'label').map((etiqueta) => etiqueta.textContent)).toEqual([
       'Nome completo',
@@ -440,7 +444,7 @@ describe('InscricaoPublicaPage: cadastro de quem a casa não conhece', () => {
     await identificar(container, CPF_SEM_CADASTRO);
 
     await digitar(campoRotulado<HTMLInputElement>(container, 'Nome completo'), 'Maria Silva');
-    await digitar(campoRotulado<HTMLInputElement>(container, 'Data de nascimento'), 'qualquer coisa');
+    await digitar(campoRotulado<HTMLInputElement>(container, 'Data de nascimento'), '01/02/1990');
     await digitar(campoRotulado<HTMLInputElement>(container, 'Telefone com WhatsApp'), 'x');
 
     expect(botaoContinuar(container).disabled).toBe(false);

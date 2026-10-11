@@ -2,10 +2,11 @@ import { useMemo, useState } from 'react';
 import type { Hospedagem, NivelDeContribuicao, Refeicao } from '@cdd/contracts';
 import { lerValorDigitado } from '@/lib/numero';
 import { eventoDoLink } from '../../mocks/linkDaCerimonia';
-import { NOVO_VAZIO } from '../constantes';
+import { MENSAGEM_DE_CPF_INVALIDO, NOVO_VAZIO } from '../constantes';
 import { cadastros, formularioInteiro, type CadastroEncontrado } from '../mocks/inscricaoPublica';
 import type { Novo, Passo } from '../tipos';
-import { mascararCpf, soDigitos } from '../utils/cpf';
+import { cpfValido, mascararCpf, soDigitos } from '../utils/cpf';
+import { erroDoNascimento } from '../utils/nascimento';
 import { alertaDaHerdada, disparaAlerta, respondida } from '../utils/regraDeAlerta';
 
 export function useInscricaoPublica() {
@@ -45,6 +46,10 @@ export function useInscricaoPublica() {
       setErroCpf('O CPF tem 11 números.');
       return;
     }
+    if (!cpfValido(cpf)) {
+      setErroCpf(MENSAGEM_DE_CPF_INVALIDO);
+      return;
+    }
     setErroCpf(undefined);
     const achado = cadastros.find((c) => soDigitos(c.cpf) === d) ?? null;
     setCadastro(achado);
@@ -63,6 +68,8 @@ export function useInscricaoPublica() {
     !novo.nascimento.trim() && 'data de nascimento',
     !novo.telefone.trim() && 'telefone',
   ].filter((x): x is string => Boolean(x));
+
+  const erroNascimento = erroDoNascimento(novo.nascimento);
 
   const faltandoNaAnamnese = pendentes.filter(
     (x) => x.pergunta.obrigatoria && !respondida(valores[x.pergunta.id as string]),
@@ -147,6 +154,7 @@ export function useInscricaoPublica() {
     modo,
     jaParticipou,
     faltandoNoCadastro,
+    erroNascimento,
     faltandoNaAnamnese,
     pontos,
     contribuicao,

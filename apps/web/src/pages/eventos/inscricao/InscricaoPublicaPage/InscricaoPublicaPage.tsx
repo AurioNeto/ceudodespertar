@@ -43,6 +43,7 @@ export function InscricaoPublicaPage() {
           cpf={tela.cpf}
           novo={tela.novo}
           faltando={tela.faltandoNoCadastro}
+          erroNascimento={tela.erroNascimento}
           onNovo={tela.preencherNovo}
           onSeguir={tela.seguirParaAnamnese}
         />
