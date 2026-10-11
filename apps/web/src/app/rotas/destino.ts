@@ -1,4 +1,4 @@
-import { CAMINHO_DA_ENTRADA } from '@/dados/oidc';
+import { CAMINHO_DA_ENTRADA } from '@/dados/caminhosOidc';
 import { ROTAS } from './rotas';
 
 const PREFIXOS_QUE_NAO_SAO_DESTINO = [CAMINHO_DA_ENTRADA];

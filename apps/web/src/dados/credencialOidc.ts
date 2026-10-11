@@ -1,7 +1,7 @@
 import { ErrorResponse } from 'oidc-client-ts';
 import type { User } from 'oidc-client-ts';
 import type { FonteDeCredencial, ResultadoDaRenovacao } from './credencial';
-import { ESPERA_DA_RENOVACAO_SILENCIOSA_EM_SEGUNDOS } from './oidc';
+import { ESPERA_DA_RENOVACAO_SILENCIOSA_EM_SEGUNDOS } from './caminhosOidc';
 
 export type UsuarioOidc = Pick<User, 'access_token' | 'refresh_token' | 'expires_in'>;
 

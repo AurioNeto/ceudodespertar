@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { ErrorResponse, ErrorTimeout } from 'oidc-client-ts';
 import { criarCredencialOidc, MARGEM_DE_RENOVACAO_EM_SEGUNDOS } from './credencialOidc';
 import type { ArgumentosDaRenovacaoSilenciosa, GerenciadorDeUsuario, UsuarioOidc } from './credencialOidc';
-import { ESPERA_DA_RENOVACAO_SILENCIOSA_EM_SEGUNDOS } from './oidc';
+import { ESPERA_DA_RENOVACAO_SILENCIOSA_EM_SEGUNDOS } from './caminhosOidc';
 import { criarClienteHttp } from './clienteHttp';
 import { ErroDeRede } from './erros';
 import { criarFetchFalso, respostaDeErro, respostaJson } from './apoioDeTeste';

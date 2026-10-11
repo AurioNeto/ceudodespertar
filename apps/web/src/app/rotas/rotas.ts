@@ -1,4 +1,4 @@
-import { CAMINHO_DA_ENTRADA, CAMINHO_DE_RETORNO } from '@/dados/oidc';
+import { CAMINHO_DA_ENTRADA, CAMINHO_DE_RETORNO } from '@/dados/caminhosOidc';
 
 export interface Rota {
   id: string;

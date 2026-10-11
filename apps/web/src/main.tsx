@@ -7,7 +7,8 @@ import { router } from './app/router';
 import { SessaoProvider } from './app/sessao';
 import type { SessaoProviderProps } from './app/sessao';
 import { carregarDemonstracao } from './app/demonstracao';
-import { clienteHttp, credencial, criarClienteDeConsultas, servicoDeEntrada } from './dados';
+import { criarClienteDeConsultas } from './dados';
+import { clienteHttp, credencial, servicoDeEntrada } from './dados/instancias';
 import { ClienteHttpProvider } from './app/providers';
 import './styles/global.css';
 
