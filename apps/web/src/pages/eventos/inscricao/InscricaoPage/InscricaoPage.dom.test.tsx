@@ -1788,9 +1788,12 @@ describe('InscricaoPage: densidade', () => {
     expect(linhas).toEqual(Array(6).fill(linhaDaPessoa));
   });
 
-  it.each([{ campo: false }, { campo: true }])(
-    'campo=$campo — Trocar, Copiar, as ações de pendência e Não tem nenhuma ficam no alvo de escritório, sem acompanhar a densidade',
-    async ({ campo }) => {
+  it.each([
+    { campo: false, minimo: 'var(--target-office)' },
+    { campo: true, minimo: 'var(--target-field)' },
+  ])(
+    'campo=$campo — Trocar, Copiar, as ações de pendência e Não tem nenhuma usam o alvo $minimo',
+    async ({ campo, minimo }) => {
       definirDensidade(campo);
       const container = await abrirComPessoa('Marina Tavares');
       await escolherHospedagem(container, 'Beliche no dormitório');
@@ -1804,20 +1807,23 @@ describe('InscricaoPage: densidade', () => {
         'Não tem nenhuma',
       ].map((rotulo) => botaoComTexto(container, rotulo).style.minHeight);
 
-      expect(alvos).toEqual(Array(6).fill('var(--target-office)'));
+      expect(alvos).toEqual(Array(6).fill(minimo));
     },
   );
 
-  it.each([{ campo: false }, { campo: true }])(
-    'campo=$campo — os seletores de responsável e de diárias ficam no alvo de escritório, sem acompanhar a densidade',
-    async ({ campo }) => {
+  it.each([
+    { campo: false, minimo: 'var(--target-office)' },
+    { campo: true, minimo: 'var(--target-field)' },
+  ])(
+    'campo=$campo — os seletores de responsável e de diárias usam o alvo $minimo',
+    async ({ campo, minimo }) => {
       definirDensidade(campo);
       const container = await abrirComPessoa('Antônio Duarte');
       await escolherHospedagem(container, 'Beliche no dormitório');
 
       const alvos = [seletorDeResponsavel(container), seletorDeDiarias(container)].map((seletor) => seletor.style.minHeight);
 
-      expect(alvos).toEqual(['var(--target-office)', 'var(--target-office)']);
+      expect(alvos).toEqual([minimo, minimo]);
     },
   );
 });

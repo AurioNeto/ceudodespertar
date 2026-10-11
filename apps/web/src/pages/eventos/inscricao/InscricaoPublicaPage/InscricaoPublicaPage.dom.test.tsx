@@ -1330,13 +1330,16 @@ describe('InscricaoPublicaPage: densidade', () => {
     expect(alvos).toEqual([minimo, minimo, minimo]);
   });
 
-  it.each([{ campo: false }, { campo: true }])(
-    'campo=$campo — Não tenho nenhuma fica no alvo de escritório, sem acompanhar a densidade',
-    async ({ campo }) => {
+  it.each([
+    { campo: false, minimo: 'var(--target-office)' },
+    { campo: true, minimo: 'var(--target-field)' },
+  ])(
+    'campo=$campo — Não tenho nenhuma usa o alvo $minimo',
+    async ({ campo, minimo }) => {
       definirDensidade(campo);
       const container = await chegarEmParticipacaoComoClarice();
 
-      expect(botaoComTexto(container, 'Não tenho nenhuma').style.minHeight).toBe('var(--target-office)');
+      expect(botaoComTexto(container, 'Não tenho nenhuma').style.minHeight).toBe(minimo);
     },
   );
 });

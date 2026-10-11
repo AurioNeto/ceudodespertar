@@ -30,7 +30,12 @@ export function LinkDaCerimonia({ densidade, copiado, onCopiar }: LinkDaCerimoni
         <code style={{ font: 'var(--text-code)', color: 'var(--text-link)', wordBreak: 'break-all' }}>
           {linkDaCerimonia.url}
         </code>
-        <Button variant={copiado ? 'quiet' : 'ghost'} iconName={copiado ? 'check' : 'copy'} onClick={onCopiar}>
+        <Button
+          variant={copiado ? 'quiet' : 'ghost'}
+          density={campo ? 'field' : 'office'}
+          iconName={copiado ? 'check' : 'copy'}
+          onClick={onCopiar}
+        >
           {copiado ? 'Copiado' : 'Copiar'}
         </Button>
       </div>

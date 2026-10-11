@@ -59,6 +59,7 @@ export function ComoParticipa({
           <Select
             label="Responsável neste trabalho"
             value={responsavel}
+            density={densidade}
             onChange={onResponsavel}
             options={[
               { value: '', label: 'Escolha quem responde por ela' },

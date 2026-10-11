@@ -16,7 +16,7 @@ export function PessoaEscolhida({ pessoa, densidade, onTrocar }: PessoaEscolhida
         <span style={{ font: 'var(--text-title-sm)', color: 'var(--text-title)' }}>{pessoa.nome}</span>
         {pessoa.menorDeIdade ? <StatusBadge tone="suggest">Menor de idade</StatusBadge> : null}
         <span style={{ flex: 1 }} />
-        <Button variant="quiet" iconName="arrow-left" onClick={onTrocar}>
+        <Button variant="quiet" density={campo ? 'field' : 'office'} iconName="arrow-left" onClick={onTrocar}>
           Trocar
         </Button>
       </div>

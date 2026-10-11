@@ -182,7 +182,7 @@ export function Participacao(props: ParticipacaoProps) {
         />
         {props.restricoes.trim() ? null : (
           <span>
-            <Button variant="ghost" onClick={() => props.onRestricoes('Nenhuma')}>
+            <Button variant="ghost" density={campo ? 'field' : 'office'} onClick={() => props.onRestricoes('Nenhuma')}>
               Não tenho nenhuma
             </Button>
           </span>
