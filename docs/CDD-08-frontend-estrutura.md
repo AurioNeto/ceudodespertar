@@ -680,15 +680,15 @@ São 33 regras: 26 nomeadas acima e as 7 de `unidade-so-pelo-index`. Na linha de
 - `apps/web/scripts/conferir-estrutura.mjs` (com a pasta `conferir-estrutura/` de módulos) confere a estrutura pelo sistema de arquivos e pelo texto dos arquivos. Regras (o `--ajuda` imprime as mesmas):
   1. toda pasta PascalCase é unidade e tem `<Nome>.tsx` e `index.ts` (erro); sem `<Nome>.dom.test.tsx` é aviso, porque a regra de unidade com teste está suspensa na migração (seções 8.1 e 13.7);
   2. todo `*.tsx` PascalCase de produção, fora de `*.test.tsx` e de `src/testes/`, fica em `<Nome>/<Nome>.tsx` (erro). `main.tsx` e `router.tsx` não são PascalCase e ficam de fora, e os `.tsx` camelCase (`rotasAntigasDaEntrada.tsx`, `apoioDeTeste.tsx`) também;
-  3. o módulo de cada tela de `TELAS` (`app/shell/telas.ts`) é o prefixo da primeira permissão, ou `transversal` sem permissão, e é a pasta `pages/<modulo>/` da página que `app/router.tsx` importa para o `element` da rota (erro). Primeira permissão que não é texto literal, ou `element` que não é componente importado de `pages/`, é aviso de não determinável;
+  3. o módulo de cada tela de `TELAS` (`app/shell/telas.ts`) é o prefixo da primeira permissão, ou `transversal` sem permissão, e é a pasta `pages/<modulo>/` da página que `app/router.tsx` dá à rota, pelo `element` (import estático) ou pelo `lazy.Component` (`import()`) (erro). Primeira permissão que não é texto literal, ou página que não se lê como componente importado de `pages/`, é aviso de não determinável;
   4. todo fluxo (pasta minúscula em `pages/<modulo>/<fluxo>/`, fora de `components`, `hooks`, `utils` e `mocks`) tem `components/`, `hooks/`, `utils/`, `mocks/` ou `constantes.ts`, que são as pastas de tipo da seção 6.1 (erro);
-  5. toda `RotaId` tem caminho literal em `ROTAS`, item em `TELAS` e um objeto `{ path: ROTAS.<id>, element }` em `app/router.tsx` (erro).
+  5. toda `RotaId` tem caminho literal em `ROTAS`, item em `TELAS` e, em `app/router.tsx`, um objeto `{ path: ROTAS.<id>, element }` ou `{ path: ROTAS.<id>, lazy: { Component } }` (erro). Rota com `Component` direto, ou com `lazy` em forma de função, acusa `sem página no router`.
 
-  Estado medido na main, em `fdc7bc8`: 0 ERRO e 202 AVISO de unidade sem teste, em 282 unidades. Sai com código 1 só com ERRO; AVISO não muda o código. Não confere: se a pasta de tipo de um fluxo é usada por duas ou mais telas dele (a regra do ancestral comum não tem verificador); as rotas públicas, que estão fora de `RotaId`; e o que o typecheck já garante (chave de `TELAS` que não é `RotaId`, `ROTAS.<id>` inexistente).
+  Estado medido na main depois do #136: 0 ERRO e 241 AVISO de unidade sem teste, em 323 unidades, 26 telas e 26 rotas. Sai com código 1 só com ERRO; AVISO não muda o código. Não confere: se a pasta de tipo de um fluxo é usada por duas ou mais telas dele (a regra do ancestral comum não tem verificador); as rotas públicas, que estão fora de `RotaId`; e o que o typecheck já garante (chave de `TELAS` que não é `RotaId`, `ROTAS.<id>` inexistente).
 - `pnpm lint` cobre `apps/web/src`, `apps/web/captura`, `apps/web/vite.config.ts`, `apps/web/vitest.config.ts`, `apps/web/test` e `apps/web/scripts` desde o #129. As violações herdadas foram zeradas antes, no #127, em PR próprio. Três pontos sobre o lint do web:
   - `no-await-in-loop` fica desligado em `apps/web/src/**/*.test.ts(x)`, `apps/web/src/testes/**` e `apps/web/captura/**`, onde os passos de UI e de navegador rodam em sequência de propósito. Fora desses caminhos a regra continua em erro;
   - a única diretiva de lint do web é `oxlint-disable-next-line oxc/no-map-spread` em `pages/eventos/DevolucoesPage/hooks/useDevolucoes.ts`, no estado inicial derivado do mock, que não pode ser mutado;
-  - a ferramenta `lint` do `.codefox.yaml` dispara pelos mesmos caminhos, exceto `apps/web/scripts/`.
+  - a ferramenta `lint` do `.codefox.yaml` dispara pelos mesmos caminhos (`apps/web/scripts/` desde o #136).
 - Captura de telas (seção 13.6), para o efeito visual.
 
 ### 12.5 Severidade final
@@ -816,11 +816,11 @@ Títulos na ordem de leitura. Dependências por título.
 | Primitivos novos e adoção do catálogo | Rotulo e CorpoDaTela | — |
 | Composições de domínio | Primitivos novos e adoção do catálogo | — |
 | Limpeza | Composições de domínio | — |
-| Rotas lazy | Fronteiras em erro | — |
+| Rotas lazy (concluída, #136) | Fronteiras em erro | — |
 | Remover o Tailwind | Harness de captura de telas | — |
 | Catraca de avisos (concluída, seção 12.2; removida na Fronteiras em erro) | Fronteiras no depcruise; Caracterizar lib/formato e components; Caracterizar primitivos do ds | — |
 
-**Rotas lazy:** o `conferir-estrutura` lê o `element` de cada rota (regras 3 e 5, seção 12.4), e rota sem `element` acusa `sem elemento no router` como erro. Sem atualizar essas duas regras, cada rota com `lazy` ou `Component` acusaria; a etapa as atualiza junto com a troca.
+**Rotas lazy (#136):** cada rota carrega a página por `lazy: { Component }`, com `import()` do `index.ts` da página. A raiz `/` e as três rotas públicas têm um `HydrateFallback` que não renderiza nada: sem ele, o react-router avisa no console na primeira carga de uma rota lazy. O chunk principal caiu de 1.033 kB para 491 kB (de 283 para 151 kB em gzip). O `conferir-estrutura` lê a página pelo `element` ou pelo `lazy.Component` (regras 3 e 5, seção 12.4).
 
 **Decisão do dono (10/10/2026): nenhuma etapa escreve teste novo.** Vale também para a util ou o hook que uma divisão extrai: o teste de caracterização que já existe passa sem edição. Com isso, a etapa Caracterizar sistema e transversal saiu da tabela, as marcas "(+ teste)", "(+ testes)" e "(+ .dom.test.ts)" do anexo deixam de valer, e a regra de unidade com teste (seções 5.1 e 8.1) fica suspensa durante a migração. O gate de cada etapa é: typecheck, testes existentes sem edição, `pnpm fronteiras:web`, `pnpm estrutura:web`, `pnpm lint`, build e captura 96/96.
 
