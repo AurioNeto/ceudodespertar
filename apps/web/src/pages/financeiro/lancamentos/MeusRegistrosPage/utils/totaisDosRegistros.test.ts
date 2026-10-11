@@ -32,7 +32,7 @@ describe('totaisDosRegistros', () => {
     expect(totaisDosRegistros([])).toEqual({ saidas: 0, entradas: 0 });
   });
 
-  it('soma saídas e entradas de qualquer situação e deixa a transferência de fora', () => {
+  it('soma saídas e entradas, confirmadas ou a conferir, e deixa a transferência de fora', () => {
     const registros = [
       lancamento({ tipo: 'ENTRADA', valor: reais(940) }),
       lancamento({ tipo: 'ENTRADA', valor: reais(285), status: 'A_CONFERIR' }),
@@ -47,13 +47,13 @@ describe('totaisDosRegistros', () => {
     });
   });
 
-  it('estornado — sai das saídas e continua nas entradas (Doc 8 §14, estorno nos totais)', () => {
+  it('estornado — sai das saídas e das entradas (Doc 2, L2; Doc 8 §15, estorno nos totais)', () => {
     const registros = [
       lancamento({ tipo: 'ENTRADA', valor: reais(200), status: 'ESTORNADO' }),
       lancamento({ tipo: 'SAIDA', valor: reais(96.3), status: 'ESTORNADO' }),
       lancamento({ tipo: 'SAIDA', valor: reais(10) }),
     ];
 
-    expect(totaisDosRegistros(registros)).toEqual({ saidas: reais(10), entradas: reais(200) });
+    expect(totaisDosRegistros(registros)).toEqual({ saidas: reais(10), entradas: 0 });
   });
 });
