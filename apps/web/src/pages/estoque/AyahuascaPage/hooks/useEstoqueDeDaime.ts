@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { lerValorDigitado } from '@/lib/numero';
 import {
   lotesIniciais,
   movimentosIniciais,
@@ -10,7 +11,6 @@ import {
 } from '../mocks/ayahuasca';
 import type { Aba, ModoDoFormulario, RascunhoDeMovimento } from '../tipos';
 import { litros } from '../utils/litros';
-import { paraNumero } from '../utils/paraNumero';
 import { rascunhoDeMovimento } from '../utils/rascunhoDeMovimento';
 import { saldos } from '../utils/saldos';
 import { erroDoFormulario } from '../utils/validarMovimento';
@@ -34,7 +34,7 @@ export function useEstoqueDeDaime() {
 
   const salvar = () => {
     if (!form || erro) return;
-    const quantidade = paraNumero(form.litros);
+    const quantidade = lerValorDigitado(form.litros) || 0;
 
     if (form.modo === 'feitio') {
       const novo: LoteDeDaime = {

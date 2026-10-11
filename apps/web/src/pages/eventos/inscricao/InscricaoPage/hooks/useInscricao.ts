@@ -6,6 +6,7 @@ import type {
   Refeicao,
   TipoParticipacao,
 } from '@cdd/contracts';
+import { lerValorDigitado } from '@/lib/numero';
 import { formatarBRL, pluralizar } from '@/pages/utils/formato';
 import { eventos } from '../../mocks/eventos';
 import { CONSAGRA_POR_PADRAO } from '../constantes';
@@ -73,7 +74,7 @@ export function useInscricao() {
   const anamneseExigida = consagra && tipo !== 'EQUIPE';
   const opcaoHosp = evento.hospedagens.find((h) => h.tipo === hospedagem)!;
 
-  const contribuicao = isento ? 0 : Math.round(Number(valor.replace(/\./g, '').replace(',', '.')) * 100) || 0;
+  const contribuicao = isento ? 0 : Math.round(lerValorDigitado(valor) * 100) || 0;
   const custoHospedagem = opcaoHosp.valorDiaria * dias;
   const custoRefeicoes = refeicoes.reduce(
     (s, r) => s + (evento.refeicoes.find((x) => x.refeicao === r)?.valor ?? 0),

@@ -1,3 +1,4 @@
+import { lerValorDigitado } from '@/lib/numero';
 import type { RascunhoDeTrabalho } from './rascunhoDeTrabalho';
 
 export const trabalhoDoRascunho = (f: RascunhoDeTrabalho, mes: number, ano: number) => {
@@ -17,7 +18,7 @@ export const trabalhoDoRascunho = (f: RascunhoDeTrabalho, mes: number, ano: numb
     local: f.local,
     dirigente: f.dirigente || 'a definir',
     previstos: parseInt(f.previstos, 10) || 0,
-    litros: parseFloat(f.litros.replace(',', '.')) || 0,
+    litros: lerValorDigitado(f.litros) || 0,
     contribuicoes,
     observacoes: f.observacoes,
     preparo: f.preparo

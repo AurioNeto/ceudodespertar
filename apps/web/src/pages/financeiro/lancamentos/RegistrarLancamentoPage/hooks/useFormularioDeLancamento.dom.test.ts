@@ -87,10 +87,10 @@ describe('useFormularioDeLancamento: leitura do valor digitado', () => {
     { valor: '+10', total: 10 },
     { valor: 'abc', total: 0 },
     { valor: 'R$ 40', total: 0 },
-    { valor: '1.5', total: 15 },
-    { valor: '10,5,3', total: 10.5 },
+    { valor: '1.5', total: 0 },
+    { valor: '10,5,3', total: 0 },
     { valor: '-50', total: -50 },
-    { valor: '1e3', total: 1000 },
+    { valor: '1e3', total: 0 },
   ])('valor "$valor" — o total lido é $total', async ({ valor, total }) => {
     const { formulario, agir } = await montarFormulario();
 

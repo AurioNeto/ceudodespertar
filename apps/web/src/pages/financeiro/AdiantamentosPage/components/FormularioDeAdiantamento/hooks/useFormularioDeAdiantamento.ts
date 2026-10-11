@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { lerValorDigitado } from '@/lib/numero';
 import { hoje } from '@/pages/mocks/relogio';
 import { contasPessoais, quemAdianta } from '../../../mocks/adiantamentos';
 import type { DadosDoNovo } from '../../../utils/montarAdiantamento';
@@ -18,7 +19,7 @@ export function useFormularioDeAdiantamento(onConfirmar: (d: DadosDoNovo) => voi
     setContaId(contasPessoais.find((c) => c.pessoaId === v)?.id ?? '');
   };
 
-  const centavos = Math.round(Number(valor.replace(',', '.')) * 100);
+  const centavos = Math.round(lerValorDigitado(valor) * 100);
   const valido = Number.isFinite(centavos) && centavos > 0 && motivo.trim().length > 0 && contaId !== '';
 
   const confirmar = () => onConfirmar({ pessoaId, contaId, valor: centavos, data, motivo: motivo.trim() });

@@ -946,6 +946,9 @@ describe('AyahuascaPage: modal de entrada de feitio', () => {
     { nome: 'texto que não é número', digitado: 'abc' },
     { nome: 'só espaços', digitado: '   ' },
     { nome: 'prefixo hexadecimal (0x10)', digitado: '0x10' },
+    { nome: 'ponto decimal', digitado: '12.5' },
+    { nome: 'decimal sem a parte inteira', digitado: ',5' },
+    { nome: 'texto depois do número', digitado: '9L' },
   ])('litros $nome — continua pedindo os litros e Salvar fica desabilitado', async ({ digitado }) => {
     const container = await montarAyahuasca();
     await abrirEntradaDeFeitio(container);
@@ -971,10 +974,7 @@ describe('AyahuascaPage: modal de entrada de feitio', () => {
 
   it.each([
     { nome: 'vírgula decimal', digitado: '12,5', esperado: '12,5 L' },
-    { nome: 'ponto decimal', digitado: '12.5', esperado: '12,5 L' },
-    { nome: 'decimal sem a parte inteira', digitado: ',5', esperado: '0,5 L' },
-    { nome: 'texto depois do número', digitado: '9L', esperado: '9,0 L' },
-    { nome: 'milhar com vírgula (1.500,00)', digitado: '1.500,00', esperado: '1,5 L' },
+    { nome: 'milhar com vírgula (1.500,00)', digitado: '1.500,00', esperado: '1.500,0 L' },
   ])('litros com $nome — o lote nasce com $esperado', async ({ digitado, esperado }) => {
     const container = await montarAyahuasca();
 
@@ -1213,13 +1213,13 @@ describe('AyahuascaPage: modal de saída', () => {
     expect(painelDoModal(container).textContent).toContain('Lote 03/2026 tem só 4,0 L disponíveis.');
   });
 
-  it('litros com ponto de milhar — 1.500,00 é lido como 1,5 e a saída é aceita', async () => {
+  it('litros com ponto de milhar — 1.500,00 é lido como 1.500 e passa do saldo', async () => {
     const container = await montarAyahuasca();
     await abrirSaida(container);
 
     await digitar(campo(container, 'Litros'), '1.500,00');
 
-    expect(botaoComTexto(painelDoModal(container), 'Salvar').disabled).toBe(false);
+    expect(painelDoModal(container).textContent).toContain('Lote 12/2025 tem só 23,5 L disponíveis.');
   });
 
   it('Salvar — baixa o lote, fecha o modal e avisa a baixa com os litros e o código', async () => {

@@ -388,7 +388,9 @@ describe('FeitioPage: Concluir o feitio', () => {
     { nome: 'negativo', digitado: '-5' },
     { nome: 'texto que não é número', digitado: 'muito' },
     { nome: 'número com texto depois (9L)', digitado: '9L' },
-    { nome: 'milhar com vírgula (1.500,00)', digitado: '1.500,00' },
+    { nome: 'ponto decimal', digitado: '40.5' },
+    { nome: 'decimal sem a parte inteira', digitado: ',5' },
+    { nome: 'prefixo hexadecimal (0x10)', digitado: '0x10' },
     { nome: 'só espaços', digitado: '   ' },
   ])('litros $nome — contam como zero: o botão fica desabilitado e não há prévia', async ({ digitado }) => {
     const container = await montarFeitio();
@@ -404,10 +406,8 @@ describe('FeitioPage: Concluir o feitio', () => {
 
   it.each([
     { nome: 'vírgula decimal', digitado: '40,5', previa: '40,5 L', porLitro: 'R$ 381,73/L' },
-    { nome: 'ponto decimal', digitado: '40.5', previa: '40,5 L', porLitro: 'R$ 381,73/L' },
-    { nome: 'decimal sem a parte inteira', digitado: ',5', previa: '0,5 L', porLitro: 'R$ 30.920,00/L' },
     { nome: 'inteiro', digitado: '40', previa: '40,0 L', porLitro: 'R$ 386,50/L' },
-    { nome: 'prefixo hexadecimal (0x10)', digitado: '0x10', previa: '16,0 L', porLitro: 'R$ 966,25/L' },
+    { nome: 'milhar com vírgula (1.500,00)', digitado: '1.500,00', previa: '1.500,0 L', porLitro: 'R$ 10,31/L' },
   ])(
     'litros com $nome — libera o botão e mostra a prévia com $previa e $porLitro',
     async ({ digitado, previa, porLitro }) => {
@@ -662,13 +662,13 @@ describe('FeitioPage: feitio concluído', () => {
     expect(larguras[1]).toBe('100%');
   });
 
-  it('Concluir com litros em hexadecimal (0x10) — o recado e a caixa do lote usam 16,0 L, como o painel', async () => {
+  it('Concluir com litros em hexadecimal (0x10) — não conclui: sem recado e sem caixa do lote', async () => {
     const container = await montarFeitio();
 
     await concluirComLitros(container, '0x10');
 
-    expect(textoDoRecado(container)).toContain('16,0 L de força 2 entraram no estoque como Lote 09/2026. Custo apurado de R$ 966,25 por litro.');
-    expect(textosDasFolhas(caixaDoLoteProduzido(container) as HTMLElement)[1]).toBe('16,0 L');
+    expect(semRecado(container)).toBe(true);
+    expect(caixaDoLoteProduzido(container)).toBeNull();
   });
 
   it('Concluir com litros fracionados (42,5) — o recado divide o gasto pelos litros sem arredondar', async () => {

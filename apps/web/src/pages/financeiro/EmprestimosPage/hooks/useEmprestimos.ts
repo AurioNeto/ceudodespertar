@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { DevolucaoEmprestimoId, DirecaoEmprestimo, Emprestimo, EmprestimoId } from '@cdd/contracts';
 import { dataLocal, reais } from '@cdd/contracts';
+import { lerValorDigitado } from '@/lib/numero';
 import { id as marcarId } from '@/mocks/ids';
 import { hoje } from '@/pages/mocks/relogio';
 import { formatarDinheiro } from '@/pages/utils/formato';
@@ -29,7 +30,7 @@ export function useEmprestimos() {
     motivo: '',
   });
 
-  const valorNovoEmCentavos = Math.round(Number(novo.valor.replace(',', '.')) * 100);
+  const valorNovoEmCentavos = Math.round(lerValorDigitado(novo.valor) * 100);
   const novoValido =
     Number.isFinite(valorNovoEmCentavos) && valorNovoEmCentavos > 0 && novo.motivo.trim().length > 0;
 
@@ -80,7 +81,7 @@ export function useEmprestimos() {
   const aberto = visiveis.find((e) => e.id === abertoId) ?? visiveis[0];
 
   const saldo = aberto ? saldoDevedor(aberto) : 0;
-  const valorEmCentavos = Math.round(Number(valorDevolucao.replace(',', '.')) * 100);
+  const valorEmCentavos = Math.round(lerValorDigitado(valorDevolucao) * 100);
   const valorValido = Number.isFinite(valorEmCentavos) && valorEmCentavos > 0;
   const excedeSaldo = valorValido && valorEmCentavos > saldo;
 

@@ -1,4 +1,5 @@
 import { Button, Cartao, Rotulo, TextField, type Density } from '@/ds';
+import { lerValorDigitado } from '@/lib/numero';
 import { formatarBRL, formatarLitros } from '@/pages/utils/formato';
 
 export interface PainelDeConclusaoProps {
@@ -27,7 +28,7 @@ export function PainelDeConclusao({
   onConcluir,
 }: PainelDeConclusaoProps) {
   const campo = densidade === 'field';
-  const litrosNum = Number(litros.replace(',', '.')) || 0;
+  const litrosNum = lerValorDigitado(litros) || 0;
   const porLitro = litrosNum > 0 ? total / litrosNum : null;
 
   return (

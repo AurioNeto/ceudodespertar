@@ -1,5 +1,6 @@
 import type { NivelDeContribuicao } from '@cdd/contracts';
 import { Cartao, Rotulo, StatusBadge, TextField, type Density } from '@/ds';
+import { lerValorDigitado } from '@/lib/numero';
 import { formatarBRL, formatarDinheiro } from '@/pages/utils/formato';
 import type { eventos } from '../../../mocks/eventos';
 
@@ -34,7 +35,7 @@ export function Contribuicao({ evento, isento, nivel, valor, onNivel, onValor, d
   }
 
   const escolhido = evento.contribuicoes.find((c) => c.nivel === nivel);
-  const digitado = Math.round(Number(valor.replace(/\./g, '').replace(',', '.')) * 100) || 0;
+  const digitado = Math.round(lerValorDigitado(valor) * 100) || 0;
   const social = evento.contribuicoes[0]!.valor;
   const prospero = evento.contribuicoes[2]!.valor;
 

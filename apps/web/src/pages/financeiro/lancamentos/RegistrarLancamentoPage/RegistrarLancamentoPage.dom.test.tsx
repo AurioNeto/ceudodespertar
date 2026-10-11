@@ -552,11 +552,11 @@ describe('RegistrarLancamentoPage: troca de tipo', () => {
 });
 
 describe('RegistrarLancamentoPage: valor, soma e leitura do que o usuário escreve', () => {
-  it('soma com ponto de milhar — o campo mostra 51,20 e o registro grava 1.250,00 (Doc 8 §14, linha da soma do AmountInput)', async () => {
+  it('soma com ponto de milhar — o campo mostra 1.250,00 e o registro grava 1.250,00 (Doc 8 §14, linha da soma do AmountInput)', async () => {
     const { container } = await montar(<RegistrarLancamentoPage />);
 
     await digitar(campoDoValor(container), '1.200+50');
-    const mostradoNoCampo = container.textContent?.includes('Soma reconhecida: 51,20');
+    const mostradoNoCampo = container.textContent?.includes('Soma reconhecida: 1.250,00');
     await registrar(container);
 
     expect(mostradoNoCampo).toBe(true);
@@ -581,13 +581,13 @@ describe('RegistrarLancamentoPage: valor, soma e leitura do que o usuário escre
     expect(lerRecibo(container).valor).toBe(total);
   });
 
-  it('valor com ponto como decimal — "1.5" é lido como milhar e vira 15,00', async () => {
+  it('valor com ponto como decimal — "1.5" não é lido e o registro grava 0,00', async () => {
     const { container } = await montar(<RegistrarLancamentoPage />);
     await digitar(campoDoValor(container), '1.5');
 
     await registrar(container);
 
-    expect(lerRecibo(container).valor).toBe(valorDeSaida('15,00'));
+    expect(lerRecibo(container).valor).toBe(valorDeSaida('0,00'));
   });
 
   it('valor com o símbolo da moeda — "R$ 40" não é lido e o registro grava 0,00', async () => {

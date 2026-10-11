@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { CSSProperties } from 'react';
 import { formatarValor } from '@/lib/formato';
+import { lerSoma } from '@/lib/numero';
 
 export interface AmountInputProps {
   label: string;
@@ -22,9 +23,7 @@ export function AmountInput({ label, sumLabel, sumNote, value = '', onChange, hi
   const set = (x: string) => (onChange ? onChange(x) : setInterno(x));
 
   const composto = val.includes('+');
-  const total = composto
-    ? val.split('+').reduce((soma, parcela) => soma + (parseFloat(parcela.replace(',', '.')) || 0), 0)
-    : null;
+  const total = composto ? lerSoma(val) : null;
 
   return (
     <div

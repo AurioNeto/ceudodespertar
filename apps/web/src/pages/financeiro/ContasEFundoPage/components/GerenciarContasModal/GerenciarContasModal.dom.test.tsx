@@ -550,9 +550,9 @@ describe('GerenciarContasModal: formulário de fundo', () => {
     { digitado: '', centavos: 0 },
     { digitado: 'abc', centavos: 0 },
     { digitado: 'R$ 10', centavos: 0 },
-    { digitado: '12abc', centavos: 1200 },
-    { digitado: '1.5', centavos: 1500 },
-    { digitado: '1,5,5', centavos: 150 },
+    { digitado: '12abc', centavos: 0 },
+    { digitado: '1.5', centavos: 0 },
+    { digitado: '1,5,5', centavos: 0 },
     { digitado: '-5', centavos: -500 },
   ])('valor digitado "$digitado" — o fundo é salvo com $centavos centavos', async ({ digitado, centavos }) => {
     const { container, props } = await montarModal();

@@ -1,4 +1,5 @@
 import type { TipoLancamento } from '@cdd/contracts';
+import { lerSoma } from '@/lib/numero';
 import { competenciasFechadas, opcoesDeConta } from '../mocks/opcoes';
 import { rotuloDaOpcao } from './opcao';
 
@@ -19,12 +20,6 @@ export interface EstadoDoFormulario {
   reembolso: boolean;
   pessoa: string;
 }
-
-const somar = (valor: string): number =>
-  valor
-    .split('+')
-    .map((parcela) => parseFloat(parcela.replace(/\./g, '').replace(',', '.')) || 0)
-    .reduce((a, b) => a + b, 0);
 
 export function regrasDoLancamento(tipo: TipoLancamento, campos: EstadoDoFormulario, consolida: boolean) {
   const ehTransferencia = tipo === 'TRANSFERENCIA';
@@ -61,7 +56,7 @@ export function regrasDoLancamento(tipo: TipoLancamento, campos: EstadoDoFormula
     contaDestino,
     bloqueado,
     motivoBloqueio,
-    total: somar(campos.valor),
+    total: lerSoma(campos.valor),
 
     temGrupo: !ehTransferencia,
     temCategoria: !ehTransferencia,
