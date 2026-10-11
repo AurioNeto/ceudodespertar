@@ -1,6 +1,6 @@
 import type { RegistroDeAuditoria } from '@cdd/contracts';
 import { Icon, StatusBadge, type Density } from '@/ds';
-import { EXIGE_REGISTRO_EXTRA, FEICAO } from '../../../../constantes';
+import { EXIGE_REGISTRO_EXTRA, FEICAO } from '../../constantes';
 import { hora } from '../../../../utils/instante';
 
 export interface LinhaDaTrilhaProps {
