@@ -255,8 +255,8 @@ describe('MeusRegistrosPage: paginação da lista', () => {
     usarDensidade('field');
     const { container } = await montar(<MeusRegistrosPage />);
 
-    expect(anterior(container).textContent).toBe('‹');
-    expect(proxima(container).textContent).toBe('›');
+    expect([anterior(container).textContent, anterior(container).querySelector('svg') !== null]).toEqual(['', true]);
+    expect([proxima(container).textContent, proxima(container).querySelector('svg') !== null]).toEqual(['', true]);
   });
 });
 

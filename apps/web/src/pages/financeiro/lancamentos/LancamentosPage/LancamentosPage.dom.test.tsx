@@ -607,8 +607,8 @@ describe('LancamentosPage: paginação', () => {
     usarDensidade('field');
     const { container } = await montar(<LancamentosPage />);
 
-    expect(anterior(container).textContent).toBe('‹');
-    expect(proxima(container).textContent).toBe('›');
+    expect([anterior(container).textContent, anterior(container).querySelector('svg') !== null]).toEqual(['', true]);
+    expect([proxima(container).textContent, proxima(container).querySelector('svg') !== null]).toEqual(['', true]);
     expect(textoDaPaginacao(container)).toBe('Página 1 de 2 · 14 lançamentos');
   });
 

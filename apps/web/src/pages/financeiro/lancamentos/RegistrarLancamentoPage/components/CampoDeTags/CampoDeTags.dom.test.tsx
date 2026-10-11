@@ -35,6 +35,8 @@ describe('CampoDeTags', () => {
   const botoesDeRemover = (origem: ParentNode) =>
     todos<HTMLButtonElement>(origem, 'button[aria-label^="remover categoria"]');
 
+  const etiquetasDe = (origem: ParentNode) => botoesDeRemover(origem).map((b) => b.parentElement?.textContent);
+
   const botoesDeAdicionar = (origem: ParentNode) =>
     todos<HTMLButtonElement>(origem, 'button').filter((b) => b.textContent?.startsWith('+ '));
 
@@ -53,21 +55,20 @@ describe('CampoDeTags', () => {
       'remover categoria Alimentação',
       'remover categoria Limpeza',
     ]);
-    expect(tela.container.textContent).toContain('Alimentação×');
-    expect(tela.container.textContent).toContain('Limpeza×');
+    expect(etiquetasDe(tela.container)).toEqual(['Alimentação', 'Limpeza']);
   });
 
-  it('o botão de remover mostra o sinal ×', async () => {
+  it('o botão de remover mostra só o ícone, sem texto', async () => {
     const tela = await montarTags({ escolhidas: ['Alimentação'] });
 
-    expect(textosDe(botoesDeRemover(tela.container))).toEqual(['×']);
+    expect(textosDe(botoesDeRemover(tela.container))).toEqual(['']);
+    expect(botoesDeRemover(tela.container)[0]?.querySelector('svg')?.getAttribute('aria-hidden')).toBe('true');
   });
 
   it('mostra a escolhida como veio, sem trocar pelo rótulo da opção', async () => {
     const tela = await montarTags({ escolhidas: ['a'] });
 
-    expect(tela.container.textContent).toContain('a×');
-    expect(tela.container.textContent).not.toContain('Alpha×');
+    expect(etiquetasDe(tela.container)).toEqual(['a']);
   });
 
   it('remover chama onRemover com o texto da escolhida', async () => {
