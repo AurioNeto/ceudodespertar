@@ -4,7 +4,7 @@ import {
   ARQUIVO_DAS_ROTAS,
   ARQUIVO_DAS_TELAS,
   ARQUIVO_DO_ROUTER,
-  lerElementosDoRouter,
+  lerPaginasDoRouter,
   lerRotas,
   lerTelas,
 } from './registros.mjs';
@@ -33,24 +33,22 @@ function moduloDaPasta(pasta) {
   return raiz === PASTA_DAS_PAGINAS ? modulo : undefined;
 }
 
-function conferirRegistros(rotaId, caminho, telas, elementos) {
+function conferirRegistros(rotaId, caminho, telas, paginas) {
   return [
     ...(caminho?.startsWith(INICIO_DO_CAMINHO)
       ? []
       : [erro(ARQUIVO_DAS_ROTAS, `RotaId ${rotaId} sem caminho literal em ROTAS`)]),
     ...(telas.has(rotaId) ? [] : [erro(ARQUIVO_DAS_TELAS, `RotaId ${rotaId} sem item em TELAS`)]),
-    ...(elementos.has(rotaId)
-      ? []
-      : [erro(ARQUIVO_DO_ROUTER, `RotaId ${rotaId} sem elemento no router`)]),
+    ...(paginas.has(rotaId) ? [] : [erro(ARQUIVO_DO_ROUTER, `RotaId ${rotaId} sem página no router`)]),
   ];
 }
 
-function conferirModulo(rotaId, acesso, elemento) {
+function conferirModulo(rotaId, acesso, pagina) {
   if (acesso === undefined) {
     return [aviso(ARQUIVO_DAS_TELAS, `tela ${rotaId}: primeira permissão não determinável`)];
   }
 
-  const pasta = pastaDoEspecificador(elemento.especificador);
+  const pasta = pastaDoEspecificador(pagina.especificador);
   const moduloDaPagina = moduloDaPasta(pasta);
 
   if (moduloDaPagina === undefined) {
@@ -64,7 +62,7 @@ function conferirModulo(rotaId, acesso, elemento) {
     : [
         erro(
           ARQUIVO_DAS_TELAS,
-          `tela ${rotaId}: o módulo da primeira permissão é ${moduloEsperado}, mas a página ${elemento.componente} está em ${pasta}`,
+          `tela ${rotaId}: o módulo da primeira permissão é ${moduloEsperado}, mas a página ${pagina.componente} está em ${pasta}`,
         ),
       ];
 }
@@ -72,16 +70,16 @@ function conferirModulo(rotaId, acesso, elemento) {
 export function conferirTelas(arvore) {
   const rotas = lerRotas(arvore);
   const telas = lerTelas(arvore);
-  const elementos = lerElementosDoRouter(arvore);
-  const telasNoRouter = [...telas].filter(([rotaId]) => elementos.has(rotaId));
+  const paginas = lerPaginasDoRouter(arvore);
+  const telasNoRouter = [...telas].filter(([rotaId]) => paginas.has(rotaId));
 
   return {
     rotas: rotas.size,
     telas: telas.size,
     ocorrencias: [
-      ...[...rotas].flatMap(([rotaId, caminho]) => conferirRegistros(rotaId, caminho, telas, elementos)),
+      ...[...rotas].flatMap(([rotaId, caminho]) => conferirRegistros(rotaId, caminho, telas, paginas)),
       ...telasNoRouter.flatMap(([rotaId, acesso]) =>
-        conferirModulo(rotaId, acesso, elementos.get(rotaId)),
+        conferirModulo(rotaId, acesso, paginas.get(rotaId)),
       ),
     ],
   };
