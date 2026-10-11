@@ -1,5 +1,5 @@
 import type { Fundo } from '@cdd/contracts';
-import { rotuloLabel } from '../../constantes';
+import { Rotulo } from '@/ds';
 import { AcoesDoFormulario } from '../AcoesDoFormulario';
 import { CampoDoModal } from '../CampoDoModal';
 
@@ -15,7 +15,7 @@ export interface FormularioDeFundoProps {
 export function FormularioDeFundo({ fundo, valor, erroDoValor, onMudar, onCancelar, onSalvar }: FormularioDeFundoProps) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-      <span style={rotuloLabel}>{fundo.nome ? `Editar ${fundo.nome}` : 'Novo fundo'}</span>
+      <Rotulo>{fundo.nome ? `Editar ${fundo.nome}` : 'Novo fundo'}</Rotulo>
       <CampoDoModal
         rotulo="Nome do fundo"
         valor={fundo.nome}

@@ -1,5 +1,6 @@
 import type { Conta } from '@cdd/contracts';
-import { entrada, rotuloLabel } from '../../constantes';
+import { Rotulo } from '@/ds';
+import { entrada } from '../../constantes';
 import { AcoesDoFormulario } from '../AcoesDoFormulario';
 import { CampoDoModal } from '../CampoDoModal';
 
@@ -13,7 +14,7 @@ export interface FormularioDeContaProps {
 export function FormularioDeConta({ conta, onMudar, onCancelar, onSalvar }: FormularioDeContaProps) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-      <span style={rotuloLabel}>{conta.nome ? `Editar ${conta.nome}` : 'Nova conta'}</span>
+      <Rotulo>{conta.nome ? `Editar ${conta.nome}` : 'Nova conta'}</Rotulo>
       <CampoDoModal
         rotulo="Nome da conta"
         valor={conta.nome}

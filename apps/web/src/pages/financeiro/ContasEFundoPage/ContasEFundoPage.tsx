@@ -1,10 +1,9 @@
-import { Button, ScreenHeader, useDensidade, SeletorDeTipo } from '@/ds';
+import { Button, CorpoDaTela, Rotulo, ScreenHeader, useDensidade, SeletorDeTipo } from '@/ds';
 import { pluralizar } from '@/pages/utils/formato';
 import { GerenciarContasModal } from './components/GerenciarContasModal';
 import { ResumoDoSaldo } from './components/ResumoDoSaldo';
 import { FundoProprio } from './components/FundoProprio';
 import { CartaoDeConta } from './components/CartaoDeConta';
-import { rotuloLabel } from './constantes';
 import { useContasEFundos } from './hooks/useContasEFundos';
 
 export function ContasEFundoPage() {
@@ -24,15 +23,7 @@ export function ContasEFundoPage() {
         density={densidade}
       />
 
-      <div
-        style={{
-          padding: campo ? '14px 16px 22px' : '18px 24px 26px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: campo ? 14 : 20,
-          maxWidth: campo ? undefined : 1000,
-        }}
-      >
+      <CorpoDaTela densidade={densidade} larguraMaxima={1000}>
         <ResumoDoSaldo
           contasAtivas={tela.contasAtivas}
           emBanco={tela.emBanco}
@@ -57,7 +48,7 @@ export function ContasEFundoPage() {
         {mostrarContas ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, flexWrap: 'wrap' }}>
-              {campo ? null : <span style={rotuloLabel}>Contas</span>}
+              {campo ? null : <Rotulo>Contas</Rotulo>}
               <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>
                 {pluralizar(tela.pendentes, 'conta esperando conferência', 'contas esperando conferência')}
               </span>
@@ -97,7 +88,7 @@ export function ContasEFundoPage() {
             densidade={densidade}
           />
         ) : null}
-      </div>
+      </CorpoDaTela>
 
       {tela.gerenciando ? (
         <GerenciarContasModal
