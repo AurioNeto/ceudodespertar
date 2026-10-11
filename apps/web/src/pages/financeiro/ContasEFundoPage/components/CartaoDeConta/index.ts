@@ -1,0 +1,1 @@
+export { CartaoDeConta } from './CartaoDeConta';
