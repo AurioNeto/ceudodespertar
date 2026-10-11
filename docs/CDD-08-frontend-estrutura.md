@@ -44,7 +44,7 @@ O dono aprovou as recomendações da proposta em todos os pontos. Quatro decisõ
 **Ajustes aceitos nas revisões de conformidade e de viabilidade**
 
 - O Tailwind sai em etapa própria (seção 15). Até lá fica como está: o preflight está ativo (`styles/global.css` importa `tailwindcss`) e reseta `ul`, `ol`, `table`, `input`, `img` e outros elementos, então a remoção leva essas regras para o `base.css` e é provada pela captura de telas, fora de qualquer etapa de limpeza.
-- `Portao` só vai para `ds/templates` depois que a prop `volta`, sem uso, sai. O `ds` não pode depender de `react-router`.
+- `Portao` foi para `ds/templates` na mesma etapa em que a prop `volta`, sem uso, saiu (#124). O `ds` não pode depender de `react-router`, e o `Link` que só a prop usava saiu com ela.
 - `FaixaDeDemonstracao` fica em `app/demonstracao/FaixaDeDemonstracao/` como UI de app. Sai de `ds/` na etapa de app/ em subpastas, sem nivelar antes.
 - `mocks/ids.ts` fica em `src/mocks/`, a raiz da demonstração, e não em `lib/`.
 - `iniciais` fica em `lib/formato` até a `MeuPerfilPage` passar a usar o `Avatar`.
@@ -58,6 +58,8 @@ O dono aprovou as recomendações da proposta em todos os pontos. Quatro decisõ
 - Testes de hook são `useX.dom.test.ts` (projeto dom do vitest), ou `.dom.test.tsx` quando precisam de JSX.
 - As regras de camada que proíbem `ds/`, `dados/` e `lib/` de importar `testes/` isentam os próprios `*.test.*`.
 - A subárvore da `AcessosPage` segue o código do PR #55, mesclado em 09/10/2026. O anexo foi conferido no código mesclado.
+- `silencioso.ts`, entrada da renovação silenciosa, é isento de `dados-so-pelo-barrel` e importa `dados/oidc.ts` direto. Pelo barrel, a página levaria `@cdd/contracts` e o zod para o chunk comum: 162,7 kB em vez de 71,7 kB (medido no #128). Decisão do orquestrador pela recomendação da peça de linha de base; é a única isenção da regra.
+- O `lib` do `apps/web` é ES2023, como o da API (`apps/web/tsconfig.json`; a base segue ES2022), desde o #127. Com ele vem `toSorted`, usado em código de produção (`pages/eventos/AgendaPage/hooks/useAgenda.ts`, `pages/eventos/DevolucoesPage/hooks/useDevolucoes.ts`, `pages/components/PermissoesPorModulo/utils/permissoesAgrupadas.ts`), que pede Chrome 110, Safari 16 e Firefox 115. Antes, o piso já era Chrome 93 e Safari 15.4, por `Object.hasOwn`. O `vite.config.ts` não fixa `build.target` e o Vite não põe polyfill de método: se for preciso atender navegador mais velho, a saída é fixar o `build.target` e trazer um polyfill de `toSorted`.
 
 **Exceções declaradas**
 
@@ -286,6 +288,8 @@ pages/sistema/AcessosPage/
 
 `PermissoesPorModulo` é usado pela `AbaDeGrupos` (sistema) e pelo `MeuPerfilPage` (transversal). Fica em `pages/components/PermissoesPorModulo/`, com `utils/permissoesAgrupadas.ts`.
 
+Hoje `formatarDataHora`, `FUSO_DA_CASA` e `DATA_E_HORA` estão em `lib/formato.ts`, e `LinhaDeUsuario` os importa de `@/lib/formato`. Para descer para `LinhaDeUsuario/utils/formatarDataHora.ts`, falta o `it` de `formatarDataHora` sair de `pages/utils/formato.test.ts`, que hoje o importa de `@/lib/formato`: enquanto isso, descer a função deixaria `pages/utils` importando um módulo de `pages/`, o que as regras de compartilhado proíbem. Nenhuma etapa da seção 13.7 tira esse `it` de `pages/utils` (anexo, seção 12.1).
+
 Exemplo da `InscricaoPage` (dividida):
 
 ```
@@ -331,7 +335,7 @@ A posição é medida por export, então um arquivo pode ser repartido. Exemplos
 ### 6.3 Sobe e desce
 
 - `PermissoesPorModulo` é usado pela `AbaDeGrupos` (sistema) e pelo `MeuPerfilPage` (transversal), então sobe para `pages/components/PermissoesPorModulo/`.
-- `formatarDataHora` é usado só pela linha de usuário da tela de acessos, então desce para `LinhaDeUsuario/utils/`.
+- `formatarDataHora` é usado só pela linha de usuário da tela de acessos, então desce para `LinhaDeUsuario/utils/`. Hoje está em `lib/formato.ts`; o que falta para descer está na seção 5.6.
 - `nomeDoMes` é usado só pela `AgendaPage`, então desce para `AgendaPage/utils/`.
 
 Quem sobe ou desce é a posse, não o nome do arquivo de origem. O anexo indica, por export, onde cada um mora.
@@ -366,7 +370,7 @@ Só código de produção posiciona código de produção. Teste entra pelo `ind
 
 ### 7.2 Fluxos
 
-Fluxo só existe com compartilhamento exclusivo entre telas do mesmo módulo. Fluxo sem pasta de tipo compartilhada é desfeito.
+Fluxo só existe com compartilhamento exclusivo entre telas do mesmo módulo. Fluxo sem pasta de tipo compartilhada é desfeito. O verificador (seção 12.4) confere só que o fluxo tem uma dessas pastas; não confere se ela é usada por duas telas do fluxo, porque a regra do ancestral comum não tem verificador.
 
 | Fluxo | Telas |
 |---|---|
@@ -462,9 +466,9 @@ Apoio colocalizado (`apoioDeTeste.tsx`) segue a regra do ancestral comum e fica 
 - `dados/index.ts` é barrel sem efeito colateral.
 - As instâncias (`gerenciadorOidc`, `credencial`, `servicoDeEntrada`, `clienteHttp`, `consulta`, `comando`) ficam em `dados/instancias.ts`, importado só por `main.tsx`.
 - Fora de `dados/`, só se importa pelo barrel.
-- O `silencioso.ts` usa `criarGerenciadorOidc` pelo barrel.
+- O `silencioso.ts` não usa `criarGerenciadorOidc`: monta `new UserManager(configuracaoOidc(lerAmbienteOidc(...)))` e importa `dados/oidc.ts` direto. É a única isenção de `dados-so-pelo-barrel`.
 
-Regras: `dados-sem-ui` (erro), `dados-so-pelo-barrel` (aviso), `instancias-so-no-main` (erro).
+Regras: `dados-sem-ui` (erro), `dados-so-pelo-barrel` (erro, com a isenção do `silencioso.ts`), `instancias-so-no-main` (erro).
 
 ---
 
@@ -489,7 +493,7 @@ import { Button } from "@/ds";
 
 (Exemplo ilustrativo do formato.)
 
-Regras: `camada-cruzada-por-alias` (aviso, passa a erro quando zerar) e `ds-so-pelo-barrel` (erro).
+Regras: `camada-cruzada-por-alias` e `ds-so-pelo-barrel` (erro).
 
 ### 10.3 Tipos
 
@@ -519,7 +523,7 @@ Legenda: `{…}` = `index.ts` + `<Nome>.tsx` + `<Nome>.dom.test.tsx`. `(+ t)` = 
 apps/web/
 ├── test/estrutural/              fronteiras.test.ts, casosDasFronteiras.ts, fixtures/apps/web/src/…, fixtures-negativas/apps/web/src/…
 ├── captura/                      captura de telas (seção 13.6); saida/ fica fora do git
-├── scripts/                      conferir-movimento.mjs, conferir-estrutura.mjs
+├── scripts/                      conferir-movimento.mjs (+ conferir-movimento/), conferir-estrutura.mjs (+ conferir-estrutura/)
 └── src/
     ├── main.tsx                  raiz de composição; único importador de dados/instancias.ts
     ├── silencioso.ts, env.d.ts
@@ -606,51 +610,45 @@ apps/web/
 
 ### 12.1 Regras de fronteira
 
-Todas as regras rodam no depcruise, com configuração `.dependency-cruiser.web.mjs`. A severidade inicial é a da primeira versão da configuração; a severidade final está em 12.5.
+Todas as regras rodam no depcruise, com a configuração `.dependency-cruiser.web.mjs`. Todas são erro desde a etapa Fronteiras em erro (seção 12.5).
 
-| Regra | O que proíbe | Severidade inicial | Linha de base (main) |
-|---|---|:--:|:--:|
-| `web-sem-ciclo` | Ciclo no grafo de `apps/web/src`, inclusive por `import type` | aviso | 1 |
-| `lib-e-folha` | `lib/` importar outra camada ou React | aviso | 4 |
-| `dados-sem-ui` | `dados/` importar UI ou React | erro | 0 |
-| `ds-autonomo` | `ds/` importar `app`, `components`, `dados`, `mocks`, `pages` ou `react-router` | erro | 0 |
-| `ds-so-pelo-barrel` | Fora do `ds/`, importar qualquer caminho do `ds/` que não seja `ds/index.ts` | erro | 0 |
-| `ds-base-nao-sobe` | `fundacao/` ou `providers/` importar átomos, moléculas, organismos ou templates | erro | 0 |
-| `ds-atomo-nao-sobe` | Átomos importarem moléculas, organismos ou templates | erro | 0 |
-| `ds-molecula-nao-sobe` | Moléculas importarem organismos ou templates | erro | 0 |
-| `ds-organismo-nao-sobe` | Organismos importarem templates | erro | 0 |
-| `dados-so-pelo-barrel` | Fora de `dados/`, importar arquivo que não seja `index.ts` ou `instancias.ts` | aviso | 25 |
-| `instancias-so-no-main` | Importar `dados/instancias.ts` fora de `main.tsx` | erro | 0 |
-| `app-nao-conhece-paginas` | `app/` importar `pages/`, exceto `router.tsx` e testes | aviso | 1 |
-| `roteador-so-pelo-index-da-pagina` | `router.tsx` importar `pages/` por outro caminho que não o `index.ts` de uma `*Page/` | aviso | 6 |
-| `paginas-so-pela-api-publica-do-app` | `pages/` importar `app/` fora de `sessao`, `rotas`, `providers` e `demonstracao` (pelo `index.ts`) | aviso | 22 |
-| `pagina-nao-importa-pagina` | Uma `*Page/` importar outra | erro | 0 |
-| `modulo-nao-importa-modulo` | Um módulo importar outro | erro | 0 |
-| `compartilhado-nao-importa-tela` | Nível compartilhado de `pages/` importar uma `*Page/` | erro | 0 |
-| `compartilhado-de-pages-nao-importa-modulo` | `pages/{components,hooks,utils,mocks}` importar módulo | erro | 0 |
-| `unidade-so-pelo-index-0` a `-6` | De fora de uma unidade, importar algo que não seja o `index.ts` do topo dela (irmão, primo ou neto). Uma regra por profundidade da origem, de 0 a 6 unidades | erro | 0 cada |
-| `unidade-ate-6-niveis` | Sétima unidade aninhada | erro | 0 |
-| `producao-global-sem-mock` | `ds/`, `lib/` ou `dados/` importar mock | aviso | 0 |
-| `mock-global-so-dados` | `src/mocks/` importar `app`, `components`, `dados`, `ds`, `pages`, `testes` ou biblioteca externa que não seja `@cdd/contracts` | aviso | 1 |
-| `tela-de-api-sem-mock` | Telas com fonte `api` e o fluxo de entrada inteiro (`transversal/entrada/`, inclusive `constantes.ts` e `components/`) importarem mock | erro | 0 |
-| `apoio-de-teste-so-em-teste` | Código de produção importar `apoioDeTeste`, `src/testes` ou `vitest` | erro | 0 |
-| `camada-cruzada-por-alias` | Atravessar camada, ou módulo dentro de `pages/`, sem alias `@/`. Passa a erro quando chegar a zero | aviso | 87 |
-| `pasta-camel-case` | Pasta de agrupamento em camelCase sob `apps/web/src` (agrupamento é minúsculo; unidade é PascalCase), que escaparia das regras de unidade, pelos imports feitos de dentro dela | erro | 0 |
-| `pasta-camel-case-no-destino` | Importar arquivo de pasta camelCase, inclusive pasta só com arquivos-folha | erro | 0 |
+| Regra | O que proíbe | Severidade |
+|---|---|:--:|
+| `web-sem-ciclo` | Ciclo no grafo de `apps/web/src`, inclusive por `import type` | erro |
+| `lib-e-folha` | `lib/` importar outra camada ou React | erro |
+| `dados-sem-ui` | `dados/` importar UI ou React | erro |
+| `ds-autonomo` | `ds/` importar `app`, `components`, `dados`, `mocks`, `pages` ou `react-router` | erro |
+| `ds-so-pelo-barrel` | Fora do `ds/`, importar qualquer caminho do `ds/` que não seja `ds/index.ts` | erro |
+| `ds-base-nao-sobe` | `fundacao/` ou `providers/` importar átomos, moléculas, organismos ou templates | erro |
+| `ds-atomo-nao-sobe` | Átomos importarem moléculas, organismos ou templates | erro |
+| `ds-molecula-nao-sobe` | Moléculas importarem organismos ou templates | erro |
+| `ds-organismo-nao-sobe` | Organismos importarem templates | erro |
+| `dados-so-pelo-barrel` | Fora de `dados/`, importar arquivo que não seja `index.ts` ou `instancias.ts`; o `silencioso.ts` é isento (seção 9) | erro |
+| `instancias-so-no-main` | Importar `dados/instancias.ts` fora de `main.tsx` | erro |
+| `app-nao-conhece-paginas` | `app/` importar `pages/`, exceto `router.tsx` e testes | erro |
+| `roteador-so-pelo-index-da-pagina` | `router.tsx` importar `pages/` por outro caminho que não o `index.ts` de uma `*Page/` | erro |
+| `paginas-so-pela-api-publica-do-app` | `pages/` importar `app/` fora de `sessao`, `rotas`, `providers` e `demonstracao` (pelo `index.ts`) | erro |
+| `pagina-nao-importa-pagina` | Uma `*Page/` importar outra | erro |
+| `modulo-nao-importa-modulo` | Um módulo importar outro | erro |
+| `compartilhado-nao-importa-tela` | Nível compartilhado de `pages/` importar uma `*Page/` | erro |
+| `compartilhado-de-pages-nao-importa-modulo` | `pages/{components,hooks,utils,mocks}` importar módulo | erro |
+| `unidade-so-pelo-index-0` a `-6` | De fora de uma unidade, importar algo que não seja o `index.ts` do topo dela (irmão, primo ou neto). Uma regra por profundidade da origem, de 0 a 6 unidades | erro |
+| `unidade-ate-6-niveis` | Sétima unidade aninhada | erro |
+| `producao-global-sem-mock` | `ds/`, `lib/` ou `dados/` importar mock | erro |
+| `mock-global-so-dados` | `src/mocks/` importar `app`, `components`, `dados`, `ds`, `pages`, `testes` ou biblioteca externa que não seja `@cdd/contracts` | erro |
+| `tela-de-api-sem-mock` | Telas com fonte `api` e o fluxo de entrada inteiro (`transversal/entrada/`, inclusive `constantes.ts` e `components/`) importarem mock | erro |
+| `apoio-de-teste-so-em-teste` | Código de produção importar `apoioDeTeste`, `src/testes` ou `vitest` | erro |
+| `camada-cruzada-por-alias` | Atravessar camada, ou módulo dentro de `pages/`, sem alias `@/` | erro |
+| `pasta-camel-case` | Pasta de agrupamento em camelCase sob `apps/web/src` (agrupamento é minúsculo; unidade é PascalCase), que escaparia das regras de unidade, pelos imports feitos de dentro dela | erro |
+| `pasta-camel-case-no-destino` | Importar arquivo de pasta camelCase, inclusive pasta só com arquivos-folha | erro |
 
-São 33 regras: 26 nomeadas acima e as 7 de `unidade-so-pelo-index`. As contagens são as da linha de base medida na main `e700dcc` (arquivo `.dependency-cruiser-known-violations.web.json`, seção 12.2): 147 avisos, 0 erros. Os `comment` da configuração apontam para `pnpm fronteiras:web`, que lista os mesmos avisos.
+São 33 regras: 26 nomeadas acima e as 7 de `unidade-so-pelo-index`. Na linha de base medida na main `e700dcc` eram 147 avisos e 0 erros (histórico na seção 12.2). Hoje `pnpm fronteiras:web` sai com código 0 e nenhuma violação em `apps/web/src`.
 
-### 12.2 Linha de base
+### 12.2 Linha de base (histórico)
 
-- A linha de base é o arquivo `.dependency-cruiser-known-violations.web.json`, na raiz, ao lado da configuração: 147 avisos e 0 erros, com as contagens por regra da seção 12.1. São 54 avisos de seis regras, 6 do roteador e 87 da regra de alias. Cada entrada é uma regra com a origem e o destino do import. Os imports do apoio de teste já passaram ao alias `@/`.
-- Catraca ligada: `pnpm fronteiras:web:catraca` sai com código diferente de 0 para qualquer violação fora do arquivo, de qualquer severidade. É a verificação "sem aviso novo" da seção 13.3 e a primeira metade do passo "fronteiras do web" do CI.
-- A catraca roda `.dependency-cruiser.web.catraca.mjs`, que é a configuração do web com toda regra elevada a erro, junto com `--ignore-known`. A elevação é necessária: o código de saída do depcruise conta só violação de severidade erro e `--ignore-known` não muda isso, então um aviso novo passaria com código 0. O teste estrutural confere a elevação, as mesmas opções do depcruise nas duas configurações e o script `fronteiras:web:catraca`.
-- `pnpm fronteiras:web` continua informativo: lista os avisos e só falha por regra em erro.
-- `pnpm fronteiras:web:linha-de-base` regenera o arquivo em modo `shrink-only`: tira as entradas cuja violação sumiu e nunca acrescenta. Quem corrige um aviso roda o comando no mesmo PR e commita o arquivo menor. A catraca sozinha só imprime as entradas obsoletas (`stale known violations`) e não falha por elas; quem falha é a segunda metade do passo do CI, que roda o `shrink-only` e confere com `git diff --exit-code` que o arquivo não mudou. Assim a linha de base é sempre igual às violações atuais, e um aviso corrigido não volta sem falhar a catraca. Por fim, num pull request, o passo compara o total de entradas com o da base do PR (o primeiro pai do commit de merge que o CI testa) e falha se ele subir. O teto não pega uma entrada nova trocada por uma corrigida na mesma etapa: essa troca aparece no diff do arquivo, que o revisor confere.
-- `pnpm fronteiras:web:linha-de-base:regenerar` roda o mesmo comando em modo `full`: reescreve o arquivo com as violações de agora, inclusive as novas. Só entra numa etapa de mover ou de dividir, ou numa alta de versão de dependência (os itens seguintes); fora delas, só o `shrink-only`.
-- Etapa de mover ou de dividir: a entrada é a regra mais a origem e o destino, então um arquivo movido, ou um import conhecido que a divisão leva para um arquivo novo da mesma tela, vira aviso novo, a catraca falha e o `shrink-only` não o absorve. Cada etapa de mover ou de dividir que caia nesse caso regenera o arquivo com `pnpm fronteiras:web:linha-de-base:regenerar` e commita o resultado. Antes de commitar, confira no diff do arquivo que só há renomes (a entrada sai e entra de novo com o caminho novo, a mesma regra e o mesmo import) e remoções, e que o total de entradas não sobe. Entrada com import que não existia antes da etapa é violação nova: corrija o import, não a linha de base. O aviso de alias some trocando o import por `@/`.
-- Alta de versão de dependência: 4 entradas têm destino em `node_modules/.pnpm/react@<versão>/…` ou `react-dom@<versão>_react@<versão>/…`, porque o depcruise resolve o link do pnpm até o caminho versionado. Uma alta de `react` ou `react-dom` muda esse caminho e a catraca falha sem mudança em `src`. Rode `pnpm fronteiras:web:linha-de-base:regenerar` e confira que o diff só troca o trecho versionado do destino, com o mesmo total. As 4 entradas são de `lib-e-folha`: três vêm de `lib/chaveDeIdempotencia` (duas do teste de DOM e uma do hook) e uma de `lib/useValorComAtraso.ts`. Somem quando esses dois saírem de `lib/`, nas etapas de mover (`useDensidade` já saiu, na Mover fundação do ds).
-- A linha de base é a foto de antes da migração. Cada etapa de mover a reduz, e a etapa de fronteiras em erro fecha a conta.
+- Até a etapa Fronteiras em erro, a linha de base era o arquivo `.dependency-cruiser-known-violations.web.json`, na raiz, com os avisos conhecidos por regra e por origem e destino do import. Na main `e700dcc` eram 147 avisos e 0 erros.
+- O passo "fronteiras do web" do CI tinha duas metades: a catraca (`pnpm fronteiras:web:catraca`, que roda `.dependency-cruiser.web.catraca.mjs`, com toda regra elevada a erro e `--ignore-known`) e o `shrink-only` (`pnpm fronteiras:web:linha-de-base`), que tirava as entradas obsoletas e falhava se o arquivo mudasse. Em pull request, um teto comparava o total de entradas com o do primeiro pai do commit de merge (HEAD^1), e exigia `fetch-depth: 2` no checkout. `pnpm fronteiras:web:linha-de-base:regenerar` era a única forma de acrescentar entrada, e só entrava em etapa de mover ou de dividir, ou em alta de versão de dependência.
+- A linha de base chegou a zero no #128. No #129 saíram o arquivo, a configuração da catraca, os três scripts (`fronteiras:web:catraca`, `fronteiras:web:linha-de-base` e `fronteiras:web:linha-de-base:regenerar`), o teto e o `fetch-depth: 2`. `pnpm fronteiras:web` não tem mais aviso: falha por qualquer violação.
 
 ### 12.3 Como cada regra é provada
 
@@ -659,7 +657,7 @@ São 33 regras: 26 nomeadas acima e as 7 de `unidade-so-pelo-index`. As contagen
 - O teste confere: toda regra da configuração tem caso; nenhum import das fixtures fica sem resolver; cada regra acusa exatamente os imports previstos; a negativa tem 0 violações; e `apps/web/src` não tem violação em erro.
 - Toda regex é sem grupo quantificado com quantificador dentro: o depcruise 18.4 recusa regex insegura e aborta a execução inteira.
 - O `tsconfig` da configuração usa caminho absoluto (caminho relativo dá TS5083). Regras que precisam valer também nas fixtures usam o prefixo `(?:^|/)` ou a captura `^(.*apps/web/src…)`.
-- O teste roda no projeto `estrutural` do vitest, dentro de `pnpm --filter @cdd/web test`. O script `fronteiras:web:catraca` da raiz roda as regras sobre `apps/web/src` contra a linha de base, com passo próprio no CI.
+- O teste roda no projeto `estrutural` do vitest, dentro de `pnpm --filter @cdd/web test`. O script `fronteiras:web` da raiz roda as regras sobre `apps/web/src`, com passo próprio no CI, e falha por qualquer violação.
 
 ### 12.4 Outros verificadores
 
@@ -672,16 +670,32 @@ São 33 regras: 26 nomeadas acima e as 7 de `unidade-so-pelo-index`. As contagen
 
   Não prova: a ordem das linhas de import e de `export … from` (trocar dois imports com efeito colateral passa); comentário junto dessas linhas ou fora do corpo de declaração repartida; ajudante de teste repetido e idêntico a um da base, em arquivo de teste movido; `export { type X } from` no lugar de `export type { X } from`, sem caso hoje em `src`; `import()` e `vi.mock` com argumento que não é literal, `require()` solto e `import.meta.glob`; o caminho de import de css e de alias não resolvido, comparado como texto; consumidores fora de `apps/web/src`, que o typecheck cobre; e o comportamento em tempo de execução.
 
+  Casos achados na cadeia de `app/` (#122 a #126): o script acusa cada um, e o anexo declara a diferença na etapa.
+  - `export type { X } from` num `index.ts` novo é comparado pela chave tipo × valor: se `X` é valor na origem, a ligação não casa e aparece como exportação nova. `export *` herda o tipo do alvo e casa; hoje `app/rotas/index.ts` e `app/sessao/SessaoProvider/index.ts` usam `export *`.
+  - Um barrel que já existia não pode ganhar reexportação de nome cujo arquivo de origem continua existindo: a ligação aparece como exportação nova (#123, `JANELA_DE_FRESCOR_EM_MS` em `dados/index.ts`).
+  - Quando quem importa e o importado vão para o mesmo arquivo de destino, o import vira referência local e a ligação aparece como perdida (#126, `TomDeAviso`, de `pages/entrada/mensagens.ts` para `pages/transversal/entrada/tipos.ts`).
+  - A remoção declarada de uma prop aparece em 4 diferenças: o corpo da função, o corpo da interface de props e as ligações de import que só ela usava (#124, `volta` do `Portao`, com `Link` e `Icon`).
+
   Renomes com troca de nome (seção 2), que a similaridade do git pode não casar, entram por `--pares <arquivo.json>`, com `arquivos: [{ de, para }]` e `declaracoes: [{ de: { arquivo, nome }, para: { arquivo, nome } }]`. O par só vale se a origem some e o destino aparece, e o corpo e as ligações dele continuam provados. A saída é `ok, … ligações conferidas` com código 0, ou uma linha `DIFERENÇA` por ocorrência com código 1; `--ajuda` imprime as regras.
-- `apps/web/scripts/conferir-estrutura.mjs` (etapa de fronteiras em erro): toda pasta PascalCase tem `<Nome>.tsx`, `index.ts` e teste (falta de teste é aviso até o fim da migração); todo `*.tsx` PascalCase de produção fora de `<Nome>/<Nome>.tsx` é acusado, exceto `main.tsx` e `router.tsx`; o módulo de cada tela é o prefixo da primeira permissão em `app/shell/telas.ts`; fluxo sem pasta de tipo compartilhada é acusado; toda `RotaId` tem rota, item em `TELAS` e elemento no router.
-- `pnpm lint` passa a cobrir `apps/web/src` (etapa de fronteiras em erro). As violações antigas vão em PR separado.
+- `apps/web/scripts/conferir-estrutura.mjs` (com a pasta `conferir-estrutura/` de módulos) confere a estrutura pelo sistema de arquivos e pelo texto dos arquivos. Regras (o `--ajuda` imprime as mesmas):
+  1. toda pasta PascalCase é unidade e tem `<Nome>.tsx` e `index.ts` (erro); sem `<Nome>.dom.test.tsx` é aviso, porque a regra de unidade com teste está suspensa na migração (seções 8.1 e 13.7);
+  2. todo `*.tsx` PascalCase de produção, fora de `*.test.tsx` e de `src/testes/`, fica em `<Nome>/<Nome>.tsx` (erro). `main.tsx` e `router.tsx` não são PascalCase e ficam de fora, e os `.tsx` camelCase (`rotasAntigasDaEntrada.tsx`, `apoioDeTeste.tsx`) também;
+  3. o módulo de cada tela de `TELAS` (`app/shell/telas.ts`) é o prefixo da primeira permissão, ou `transversal` sem permissão, e é a pasta `pages/<modulo>/` da página que `app/router.tsx` importa para o `element` da rota (erro). Primeira permissão que não é texto literal, ou `element` que não é componente importado de `pages/`, é aviso de não determinável;
+  4. todo fluxo (pasta minúscula em `pages/<modulo>/<fluxo>/`, fora de `components`, `hooks`, `utils` e `mocks`) tem `components/`, `hooks/`, `utils/`, `mocks/` ou `constantes.ts`, que são as pastas de tipo da seção 6.1 (erro);
+  5. toda `RotaId` tem caminho literal em `ROTAS`, item em `TELAS` e um objeto `{ path: ROTAS.<id>, element }` em `app/router.tsx` (erro).
+
+  Estado medido na main, em `fdc7bc8`: 0 ERRO e 202 AVISO de unidade sem teste, em 282 unidades. Sai com código 1 só com ERRO; AVISO não muda o código. Não confere: se a pasta de tipo de um fluxo é usada por duas ou mais telas dele (a regra do ancestral comum não tem verificador); as rotas públicas, que estão fora de `RotaId`; e o que o typecheck já garante (chave de `TELAS` que não é `RotaId`, `ROTAS.<id>` inexistente).
+- `pnpm lint` cobre `apps/web/src`, `apps/web/captura`, `apps/web/vite.config.ts`, `apps/web/vitest.config.ts`, `apps/web/test` e `apps/web/scripts` desde o #129. As violações herdadas foram zeradas antes, no #127, em PR próprio. Três pontos sobre o lint do web:
+  - `no-await-in-loop` fica desligado em `apps/web/src/**/*.test.ts(x)`, `apps/web/src/testes/**` e `apps/web/captura/**`, onde os passos de UI e de navegador rodam em sequência de propósito. Fora desses caminhos a regra continua em erro;
+  - a única diretiva de lint do web é `oxlint-disable-next-line oxc/no-map-spread` em `pages/eventos/DevolucoesPage/hooks/useDevolucoes.ts`, no estado inicial derivado do mock, que não pode ser mutado;
+  - a ferramenta `lint` do `.codefox.yaml` dispara pelos mesmos caminhos, exceto `apps/web/scripts/`.
 - Captura de telas (seção 13.6), para o efeito visual.
 
 ### 12.5 Severidade final
 
-Na etapa de fronteiras em erro, todas as regras viram erro. A etapa só acontece com `camada-cruzada-por-alias` em zero; até lá, a catraca segura o alias junto com as demais regras.
+Na etapa Fronteiras em erro todas as regras viraram erro, com `camada-cruzada-por-alias` já em zero. A linha de base chegou a zero no #128, e a catraca perdeu a função: no #129 saíram a configuração `.dependency-cruiser.web.catraca.mjs`, o arquivo de linha de base, o caso de teste da catraca, os scripts `fronteiras:web:catraca`, `fronteiras:web:linha-de-base` e `fronteiras:web:linha-de-base:regenerar`, o teto por HEAD^1 e o `fetch-depth: 2` do checkout do CI.
 
-Nessa etapa a linha de base chega a zero e a catraca deixa de ter função. Saem a configuração `.dependency-cruiser.web.catraca.mjs`, o arquivo `.dependency-cruiser-known-violations.web.json` e o caso de teste da catraca, junto com os scripts `fronteiras:web:catraca`, `fronteiras:web:linha-de-base` e `fronteiras:web:linha-de-base:regenerar`. O passo "fronteiras do web" do CI e a ferramenta `fronteiras_web` do `.codefox.yaml` passam a rodar `pnpm fronteiras:web`, que já falha por qualquer regra.
+A única isenção que ficou é a do `silencioso.ts` em `dados-so-pelo-barrel` (seção 9): pelo barrel, a página levaria `@cdd/contracts` e o zod para o chunk comum (+91 kB). Os passos do CI são "fronteiras do web" (`pnpm fronteiras:web`) e "estrutura do web" (`pnpm estrutura:web`). O `.codefox.yaml` tem as ferramentas `fronteiras_web` e `estrutura_web`, com esses mesmos comandos.
 
 ---
 
@@ -706,7 +720,7 @@ Nessa etapa a linha de base chega a zero e a catraca deixa de ter função. Saem
 ### 13.3 Verificação padrão de mover
 
 - `pnpm --filter @cdd/web typecheck`, `test` e `build`;
-- `pnpm fronteiras:web:catraca` sem erro e sem aviso novo, com a linha de base regenerada e o diff conferido (seção 12.2);
+- `pnpm fronteiras:web` com código 0 e `pnpm estrutura:web` com código 0, além de `pnpm lint` (seção 12.4). Não há linha de base para regenerar;
 - `node apps/web/scripts/conferir-movimento.mjs`, com tudo commitado: renomeação sem diferença fora das linhas de import, declaração repartida com o mesmo hash de corpo, e cada import, referência de módulo e exportação apontando para a mesma declaração (seção 12.4);
 - o mesmo número de testes da main.
 
@@ -715,7 +729,7 @@ Nessa etapa a linha de base chega a zero e a catraca deixa de ter função. Saem
 - Os testes de caracterização da tela passam antes e depois, sem edição;
 - a captura nas duas densidades é idêntica entre a main e a branch (`captura` e `captura:comparar`, seção 13.6);
 - `typecheck`, `test` e `build`;
-- `pnpm fronteiras:web:catraca` sem erro. Se a divisão levar um import já conhecido para um arquivo novo da mesma tela, regenere a linha de base e confira o diff como na seção 12.2: só muda a origem para o arquivo novo, e o total não sobe.
+- `pnpm fronteiras:web` com código 0, `pnpm estrutura:web` com código 0 e `pnpm lint`. Não há linha de base: um import que a divisão leva para outro arquivo da mesma tela tem de sair sem violação.
 
 Nenhuma regra, texto ou cálculo muda numa divisão.
 
@@ -740,7 +754,7 @@ A cadeia de dependências transmite esses gates: as etapas de divisão de sistem
 - Limites: só o estado inicial de cada tela e os passos catalogados em `captura/telas.mjs` são fotografados; painéis e modais que abrem por clique entram no catálogo quando uma etapa for mexer neles. Telas com wrapper `min-height: 100%` abaixo de uma faixa de aviso deixam a área vazia final fora da foto, e a captura avisa. A comparação é por pixel: uma mudança só de DOM ou de acessibilidade que não muda a imagem (`aria-label`, `role`, ordem de foco, texto oculto) passa como igual. Essa parte fica com os testes de caracterização, que consultam por papel e rótulo (seção 13.4).
 - Estados sem foto, guardados por teste: a soma do `AmountInput`, o nome do botão de remover anexo, o selo da fatura e o `PermissionDenied` não aparecem em nenhuma tela do catálogo. No #72 o texto deles foi conferido pelos testes de página e por uma comparação do DOM antes e depois. O menu de campo do `AppShell` (#67) abre por clique e também está fora do catálogo; a barra de campo aparece nas fotos de campo das telas dentro do `Layout`.
 - `ds/BottomSheet` fica fora do catálogo: só a página de registrar lançamento o abre, e nenhuma tela do catálogo abre o seletor. Fotografá-lo exige uma tela do catálogo que o abra.
-- Pendência: a pasta `apps/web/captura/` fica fora do lint e do typecheck. `apps/web/tsconfig.json` inclui só `src`, `test`, `vite.config.ts` e `vitest.config.ts`, e o script `lint` da raiz não lista `apps/web/captura`. No typecheck, pôr a pasta exige `allowJs` e `checkJs` (ou um tsconfig próprio) e a correção dos erros que aparecerem, já que `tsconfig.base.json` não liga `allowJs`. No lint, a etapa de fronteiras em erro (seção 12.4) já muda o script `lint` da raiz e pode incluir a pasta.
+- Pendência: a pasta `apps/web/captura/` fica fora do typecheck. `apps/web/tsconfig.json` inclui só `src`, `test`, `vite.config.ts` e `vitest.config.ts`. Pôr a pasta no typecheck exige `allowJs` e `checkJs` (ou um tsconfig próprio) e a correção dos erros que aparecerem, já que `tsconfig.base.json` não liga `allowJs`. No lint, a pasta já está no script `lint` da raiz desde o #129 (seção 12.4).
 - A captura roda antes de qualquer divisão de view. Toda divisão de view depende do harness.
 
 ### 13.7 Etapas
@@ -749,12 +763,12 @@ Títulos na ordem de leitura. Dependências por título.
 
 | Etapa | Depende de | Bloqueada por |
 |---|---|---|
-| Convenção escrita | — | — |
-| Fronteiras no depcruise | Convenção escrita | — |
-| Caracterizar lib/formato e components | — | — |
-| Harness de captura de telas | — | — |
-| Caracterizar primitivos do ds (`Button`, `StatusBadge`, `AmountDisplay`, `AmountInput`, `Icon`, `RecordRow`, `Receipt`, estados e `FaixaDeDemonstracao`) | — | — |
-| Caracterizar o restante do ds (`BottomSheet`, `TextField`, `ScreenHeader`, `PainelDeAcao` e os componentes de domínio) | Caracterizar primitivos do ds | — |
+| Convenção escrita (concluída, #56) | — | — |
+| Fronteiras no depcruise (concluída, #57) | Convenção escrita | — |
+| Caracterizar lib/formato e components (concluída, #58) | — | — |
+| Harness de captura de telas (concluída, #60) | — | — |
+| Caracterizar primitivos do ds (`Button`, `StatusBadge`, `AmountDisplay`, `AmountInput`, `Icon`, `RecordRow`, `Receipt`, estados e `FaixaDeDemonstracao`) (concluída, #59) | — | — |
+| Caracterizar o restante do ds (`BottomSheet`, `TextField`, `ScreenHeader`, `PainelDeAcao` e os componentes de domínio) (concluída, #61 e #62) | Caracterizar primitivos do ds | — |
 | Mover ds em níveis (concluída) | Fronteiras no depcruise; Caracterizar o restante do ds | — |
 | Primitivos para o ds (concluída) | Caracterizar lib/formato e components; Mover ds em níveis | — |
 | Mover fundação do ds (concluída) | Primitivos para o ds | — |
@@ -778,7 +792,7 @@ Títulos na ordem de leitura. Dependências por título.
 | Portao no ds (concluída) | dados/ sem efeito e sem ciclo | — |
 | Mover sistema (concluída) | Portao no ds | — |
 | Mover transversal (concluída) | Mover sistema | — |
-| Fronteiras em erro | Mover transversal | — |
+| Fronteiras em erro (concluída) | Mover transversal | — |
 | Dividir RegistrarLancamento (concluída) | Caracterizar fluxo lancamentos; Harness de captura de telas; lib/formato por export | — |
 | Dividir Lançamentos e Meus registros (concluída) | Caracterizar fluxo lancamentos; Harness; Dividir RegistrarLancamento | — |
 | Dividir Verificação de lote (concluída) | Caracterizar fluxo lancamentos; Harness; Dividir Lançamentos e Meus registros | — |
@@ -793,9 +807,9 @@ Títulos na ordem de leitura. Dependências por título.
 | Dividir Leitos, Contratações e Devoluções (concluída) | Caracterizar eventos; Harness; Dividir Inscrição | — |
 | Dividir Ayahuasca e Feitio (concluída) | Caracterizar pessoas e estoque; Harness; Dividir Leitos, Contratações e Devoluções | — |
 | Dividir Pessoas e Anamnese (concluída) | Caracterizar pessoas e estoque; Harness; Dividir Ayahuasca e Feitio | — |
-| Dividir sistema, Meu perfil e entrada | Harness; Dividir Pessoas e Anamnese; Fronteiras em erro | herdado: e2e do B0 e ajustes do login |
-| Dividir Painel | Harness; Dividir sistema, Meu perfil e entrada | herdado |
-| Dividir app/shell, sessão e ds | Fronteiras em erro; Caracterizar o restante do ds; Harness; Dividir Painel | herdado |
+| Dividir sistema, Meu perfil e entrada | Harness; Dividir Pessoas e Anamnese; Fronteiras em erro | — |
+| Dividir Painel | Harness; Dividir sistema, Meu perfil e entrada | — |
+| Dividir app/shell, sessão e ds | Fronteiras em erro; Caracterizar o restante do ds; Harness; Dividir Painel | — |
 | Leitura única de valor | Caracterizar primitivos do ds; Caracterizar fluxo lancamentos; Caracterizar financeiro I; Caracterizar eventos; Caracterizar inscrição; Caracterizar pessoas e estoque | — |
 | Correções de comportamento | Caracterização da tela correspondente (seções 14 e 15) | — |
 | Rotulo e CorpoDaTela | Todas as etapas de divisão; Harness | — |
@@ -804,9 +818,11 @@ Títulos na ordem de leitura. Dependências por título.
 | Limpeza | Composições de domínio | — |
 | Rotas lazy | Fronteiras em erro | — |
 | Remover o Tailwind | Harness de captura de telas | — |
-| Catraca de avisos (concluída, seção 12.2) | Fronteiras no depcruise; Caracterizar lib/formato e components; Caracterizar primitivos do ds | — |
+| Catraca de avisos (concluída, seção 12.2; removida na Fronteiras em erro) | Fronteiras no depcruise; Caracterizar lib/formato e components; Caracterizar primitivos do ds | — |
 
-**Decisão do dono (10/10/2026): nenhuma etapa escreve teste novo.** Vale também para a util ou o hook que uma divisão extrai: o teste de caracterização que já existe passa sem edição. Com isso, a etapa Caracterizar sistema e transversal saiu da tabela, as marcas "(+ teste)", "(+ testes)" e "(+ .dom.test.ts)" do anexo deixam de valer, e a regra de unidade com teste (seções 5.1 e 8.1) fica suspensa durante a migração. O gate de cada etapa é: typecheck, testes existentes sem edição, catraca, build e captura 96/96.
+**Rotas lazy:** o `conferir-estrutura` lê o `element` de cada rota (regras 3 e 5, seção 12.4), e rota sem `element` acusa `sem elemento no router` como erro. Sem atualizar essas duas regras, cada rota com `lazy` ou `Component` acusaria; a etapa as atualiza junto com a troca.
+
+**Decisão do dono (10/10/2026): nenhuma etapa escreve teste novo.** Vale também para a util ou o hook que uma divisão extrai: o teste de caracterização que já existe passa sem edição. Com isso, a etapa Caracterizar sistema e transversal saiu da tabela, as marcas "(+ teste)", "(+ testes)" e "(+ .dom.test.ts)" do anexo deixam de valer, e a regra de unidade com teste (seções 5.1 e 8.1) fica suspensa durante a migração. O gate de cada etapa é: typecheck, testes existentes sem edição, `pnpm fronteiras:web`, `pnpm estrutura:web`, `pnpm lint`, build e captura 96/96.
 
 Etapas de divisão de telas de demonstração (de Dividir RegistrarLancamento a Dividir Pessoas e Anamnese) podem andar com o gate fechado. As seis caracterizações de telas de demonstração rodaram antes das etapas de mover do grupo, por decisão do dono (seção 15): os testes ficam ao lado das telas, nos caminhos de hoje, e cada etapa de mover os leva junto com a tela (anexo). Com isso, a leitura única de valor e as correções da seção 14 podem correr em paralelo com a cadeia de mover: quem entra depois rebaseia, e a etapa de mover continua provando só troca de caminho contra a `main` do momento. A etapa de leitura única de valor depende das caracterizações das 10 telas que fazem leitura de valor (primitivos do ds, fluxo de lançamentos, financeiro I, eventos, inscrição e pessoas e estoque). Na prática, Primitivos para o ds rodou depois de Mover fundação do ds e de Mover financeiro I, sobre a branch desta última; a tabela guarda a ordem de dependência.
 
@@ -1045,7 +1061,7 @@ Respondidas pelo dono em 09/10/2026 e em 10/10/2026. Cada uma vira correção em
 | Que data a demonstração usa como "hoje"? | `2026-09-02`, uma data só, em `pages/mocks/relogio.ts`. Devoluções, Contratações e Feitio passam a usá-la: prazos e "dias esperando" mudam nelas. É a mesma data do relógio da captura de telas | Composição de domínio |
 | O que fazer com o Tailwind? | Remover em etapa própria: as regras do preflight de que as telas dependem vão para `ds/fundacao/tokens/base.css`, o plugin e o `@theme` saem, e a captura nas duas densidades prova que nada mudou | Etapa "Remover o Tailwind", depois do harness de captura |
 | O cartão "Acesso ao sistema" da ficha de Pessoas (`PessoasPage.tsx:398-444`) repete a gestão de acesso da tela Acessos. O que fazer? | Fica como demonstração até Pessoas ligar no backend (B4); então vira link para Acessos, para não haver dois lugares que concedem acesso. A decisão sobre dados de saúde (08/10) não cobre este cartão | Na ligação de Pessoas ao backend |
-| Ligar a catraca de avisos das fronteiras no CI? | Sim: os avisos conhecidos ficam numa linha de base versionada e aviso novo falha o PR. A linha de base só cai; cada etapa de mover a regenera | Feito em PR próprio, depois do merge do #57, do #58 e do #59, com os imports do apoio de teste já pelo alias `@/`; o mecanismo está na seção 12.2 |
+| Ligar a catraca de avisos das fronteiras no CI? | Sim: os avisos conhecidos ficam numa linha de base versionada e aviso novo falha o PR. A linha de base só cai; cada etapa de mover a regenera | Feito em PR próprio, depois do merge do #57, do #58 e do #59, com os imports do apoio de teste já pelo alias `@/`. Retirada na etapa Fronteiras em erro (#129), com a linha de base em zero desde o #128; o histórico está na seção 12.2 |
 | Como a Agenda lê "Contribuições sugeridas"? | Só valores inteiros em reais, separados por vírgula, como o placeholder ("40, 60, 90"). Valor com centavos é recusado com mensagem no campo; hoje `45,50` vira 45 e 50 | PR próprio, depois da caracterização de eventos |
 | As caracterizações das telas de demonstração esperam as etapas de mover de cada grupo (seção 13.7)? (10/10/2026) | Não: rodam já, em paralelo, com os testes ao lado das telas nos caminhos de hoje. Cada etapa de mover leva os testes junto com a tela | Feito no #82 a #87; dependências na seção 13.7 e destinos no anexo |
 | Registro de lançamento com valor vazio ou zero: bloqueia ou grava a conferir (Documento 2, L1, contra Documento 4, F-01)? (10/10/2026) | Bloqueia o envio, com mensagem no campo (L1: valor maior que zero). Valor negativo é defeito: o Documento 4 já o veta e a tela hoje o aceita | PR próprio, depois da caracterização do fluxo de lançamentos (#82) |
