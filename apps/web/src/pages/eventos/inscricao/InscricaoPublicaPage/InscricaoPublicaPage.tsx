@@ -1,12 +1,4 @@
-import { useMemo, useState } from 'react';
-import type { Hospedagem, NivelDeContribuicao, Refeicao } from '@cdd/contracts';
 import { useDensidade } from '@/ds';
-import { disparaAlerta, respondida } from './utils/regraDeAlerta';
-import { cadastros, formularioInteiro, type CadastroEncontrado } from './mocks/inscricaoPublica';
-import { eventoDoLink } from '../mocks/linkDaCerimonia';
-import { mascararCpf, soDigitos } from './utils/cpf';
-import { NOVO_VAZIO } from './constantes';
-import type { Novo, Passo } from './tipos';
 import { Declaracao } from './components/Declaracao';
 import { Identificacao } from './components/Identificacao';
 import { Moldura } from './components/Moldura';
@@ -14,6 +6,7 @@ import { Participacao } from './components/Participacao';
 import { PassoAnamnese } from './components/PassoAnamnese';
 import { PassoCadastro } from './components/PassoCadastro';
 import { Pronto } from './components/Pronto';
+import { useInscricaoPublica } from './hooks/useInscricaoPublica';
 
 /**
  * Inscrição pelo link da cerimônia — a única tela do sistema que um
@@ -30,189 +23,94 @@ import { Pronto } from './components/Pronto';
 
 export function InscricaoPublicaPage() {
   const densidade = useDensidade();
-
-  const [passo, setPasso] = useState<Passo>('IDENTIFICACAO');
-  const [cpf, setCpf] = useState('');
-  const [erroCpf, setErroCpf] = useState<string | undefined>();
-  const [cadastro, setCadastro] = useState<CadastroEncontrado | null>(null);
-  const [novo, setNovo] = useState<Novo>(NOVO_VAZIO);
-
-  const [valores, setValores] = useState<Record<string, string>>({});
-  const [declarado, setDeclarado] = useState(false);
-  /** A pessoa pediu para refazer a anamnese estando no prazo. */
-  const [refazendo, setRefazendo] = useState(false);
-
-  const [nivel, setNivel] = useState<NivelDeContribuicao | null>(null);
-  const [valor, setValor] = useState('');
-  const [hospedagem, setHospedagem] = useState<Hospedagem>('SEM_HOSPEDAGEM');
-  const [dias, setDias] = useState(1);
-  const [refeicoes, setRefeicoes] = useState<readonly Refeicao[]>([]);
-  const [emergencia, setEmergencia] = useState('');
-  const [restricoes, setRestricoes] = useState('');
-
-  /** Quem é a pessoa, venha do cadastro achado ou do que ela acabou de digitar. */
-  const nome = cadastro?.nome ?? novo.nome;
-  const primeiroNome = (cadastro?.primeiroNome ?? novo.nome.trim().split(/\s+/)[0]) || 'você';
-  const pendentes = refazendo
-    ? formularioInteiro('POR_ESCOLHA')
-    : cadastro
-      ? cadastro.pendentes
-      : formularioInteiro('PRIMEIRA_VEZ');
-  const modo = cadastro?.modo ?? 'PRIMEIRA_VEZ';
-  const jaParticipou = cadastro?.jaParticipou ?? false;
-
-  const identificar = () => {
-    const d = soDigitos(cpf);
-    if (d.length !== 11) {
-      setErroCpf('O CPF tem 11 números.');
-      return;
-    }
-    setErroCpf(undefined);
-    const achado = cadastros.find((c) => soDigitos(c.cpf) === d) ?? null;
-    setCadastro(achado);
-    if (achado) {
-      setEmergencia(achado.contatoEmergencia ?? '');
-      setRestricoes(achado.restricoes ?? '');
-      setPasso(achado.modo === 'EM_DIA' ? 'DECLARACAO' : 'ANAMNESE');
-    } else {
-      setNovo(NOVO_VAZIO);
-      setPasso('CADASTRO');
-    }
-  };
-
-  const faltandoNoCadastro = [
-    !novo.nome.trim() && 'nome completo',
-    !novo.nascimento.trim() && 'data de nascimento',
-    !novo.telefone.trim() && 'telefone',
-  ].filter((x): x is string => Boolean(x));
-
-  const faltandoNaAnamnese = pendentes.filter(
-    (x) => x.pergunta.obrigatoria && !respondida(valores[x.pergunta.id as string]),
-  );
-
-  const pontos = useMemo(
-    () =>
-      pendentes
-        .map((x) => disparaAlerta(x.pergunta, valores[x.pergunta.id as string]))
-        .filter((m): m is string => m !== null),
-    [pendentes, valores],
-  );
-
-  const opcaoHosp = eventoDoLink.hospedagens.find((h) => h.tipo === hospedagem)!;
-  const contribuicao = Math.round(Number(valor.replace(/\./g, '').replace(',', '.')) * 100) || 0;
-  const custoHospedagem = opcaoHosp.valorDiaria * dias;
-  const custoRefeicoes = refeicoes.reduce(
-    (s, r) => s + (eventoDoLink.refeicoes.find((x) => x.refeicao === r)?.valor ?? 0),
-    0,
-  );
-  const total = contribuicao + custoHospedagem + custoRefeicoes;
-  const semValor = valor.trim() === '';
-
-  const faltandoNaParticipacao = [
-    !emergencia.trim() && 'contato de emergência',
-    !restricoes.trim() && 'restrições alimentares',
-  ].filter((x): x is string => Boolean(x));
+  const tela = useInscricaoPublica();
 
   return (
-    <Moldura densidade={densidade} passo={passo}>
-      {passo === 'IDENTIFICACAO' ? (
+    <Moldura densidade={densidade} passo={tela.passo}>
+      {tela.passo === 'IDENTIFICACAO' ? (
         <Identificacao
           densidade={densidade}
-          cpf={cpf}
-          erro={erroCpf}
-          onCpf={(v) => {
-            setCpf(mascararCpf(v));
-            setErroCpf(undefined);
-          }}
-          onSeguir={identificar}
+          cpf={tela.cpf}
+          erro={tela.erroCpf}
+          onCpf={tela.digitarCpf}
+          onSeguir={tela.identificar}
         />
       ) : null}
 
-      {passo === 'CADASTRO' ? (
+      {tela.passo === 'CADASTRO' ? (
         <PassoCadastro
           densidade={densidade}
-          cpf={cpf}
-          novo={novo}
-          faltando={faltandoNoCadastro}
-          onNovo={setNovo}
-          onSeguir={() => setPasso('ANAMNESE')}
+          cpf={tela.cpf}
+          novo={tela.novo}
+          faltando={tela.faltandoNoCadastro}
+          onNovo={tela.preencherNovo}
+          onSeguir={tela.seguirParaAnamnese}
         />
       ) : null}
 
-      {passo === 'ANAMNESE' ? (
+      {tela.passo === 'ANAMNESE' ? (
         <PassoAnamnese
           densidade={densidade}
-          refazendo={refazendo}
-          cadastro={cadastro}
-          primeiroNome={primeiroNome}
-          modo={modo}
-          pendentes={pendentes}
-          valores={valores}
-          faltando={faltandoNaAnamnese}
-          onResponder={(id, v) => setValores((r) => ({ ...r, [id]: v }))}
-          onSeguir={() => setPasso('DECLARACAO')}
+          refazendo={tela.refazendo}
+          cadastro={tela.cadastro}
+          primeiroNome={tela.primeiroNome}
+          modo={tela.modo}
+          pendentes={tela.pendentes}
+          valores={tela.valores}
+          faltando={tela.faltandoNaAnamnese}
+          onResponder={tela.responder}
+          onSeguir={tela.seguirParaDeclaracao}
         />
       ) : null}
 
-      {passo === 'DECLARACAO' ? (
+      {tela.passo === 'DECLARACAO' ? (
         <Declaracao
           densidade={densidade}
-          cadastro={cadastro}
-          primeiroNome={primeiroNome}
-          refeita={refazendo}
-          declarado={declarado}
-          onDeclarar={() => setDeclarado((d) => !d)}
-          onRefazer={() => {
-            setRefazendo(true);
-            setValores({});
-            setDeclarado(false);
-            setPasso('ANAMNESE');
-          }}
-          onSeguir={() => setPasso('PARTICIPACAO')}
+          cadastro={tela.cadastro}
+          primeiroNome={tela.primeiroNome}
+          refeita={tela.refazendo}
+          declarado={tela.declarado}
+          onDeclarar={tela.alternarDeclarado}
+          onRefazer={tela.refazer}
+          onSeguir={tela.seguirParaParticipacao}
         />
       ) : null}
 
-      {passo === 'PARTICIPACAO' ? (
+      {tela.passo === 'PARTICIPACAO' ? (
         <Participacao
           densidade={densidade}
-          nivel={nivel}
-          valor={valor}
-          onNivel={(n, v) => {
-            setNivel(n);
-            setValor(v);
-          }}
-          onValor={(v) => {
-            setValor(v);
-            setNivel(null);
-          }}
-          hospedagem={hospedagem}
-          onHospedagem={setHospedagem}
-          dias={dias}
-          onDias={setDias}
-          refeicoes={refeicoes}
-          onRefeicoes={setRefeicoes}
-          emergencia={emergencia}
-          onEmergencia={setEmergencia}
-          restricoes={restricoes}
-          onRestricoes={setRestricoes}
-          total={total}
-          semValor={semValor}
-          custoHospedagem={custoHospedagem}
-          custoRefeicoes={custoRefeicoes}
-          contribuicao={contribuicao}
-          faltando={faltandoNaParticipacao}
-          onEnviar={() => setPasso('PRONTO')}
+          nivel={tela.nivel}
+          valor={tela.valor}
+          onNivel={tela.escolherNivel}
+          onValor={tela.digitarValor}
+          hospedagem={tela.hospedagem}
+          onHospedagem={tela.escolherHospedagem}
+          dias={tela.dias}
+          onDias={tela.escolherDias}
+          refeicoes={tela.refeicoes}
+          onRefeicoes={tela.escolherRefeicoes}
+          emergencia={tela.emergencia}
+          onEmergencia={tela.digitarEmergencia}
+          restricoes={tela.restricoes}
+          onRestricoes={tela.digitarRestricoes}
+          total={tela.total}
+          semValor={tela.semValor}
+          custoHospedagem={tela.custoHospedagem}
+          custoRefeicoes={tela.custoRefeicoes}
+          contribuicao={tela.contribuicao}
+          faltando={tela.faltandoNaParticipacao}
+          onEnviar={tela.enviar}
         />
       ) : null}
 
-      {passo === 'PRONTO' ? (
+      {tela.passo === 'PRONTO' ? (
         <Pronto
           densidade={densidade}
-          nome={nome}
-          primeiraVez={!jaParticipou}
-          pontos={pontos}
-          total={total}
-          semValor={semValor}
+          nome={tela.nome}
+          primeiraVez={!tela.jaParticipou}
+          pontos={tela.pontos}
+          total={tela.total}
+          semValor={tela.semValor}
         />
       ) : null}
     </Moldura>
