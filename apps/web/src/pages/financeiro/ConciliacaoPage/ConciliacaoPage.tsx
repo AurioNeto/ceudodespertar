@@ -1,4 +1,4 @@
-import { EmptyState, ScreenHeader, useDensidade, Numero, Recado } from '@/ds';
+import { CorpoDaTela, EmptyState, ScreenHeader, useDensidade, Numero, Recado } from '@/ds';
 import { Coluna } from './components/Coluna';
 import { LancamentoSozinho } from './components/LancamentoSozinho';
 import { LinhaDoExtrato } from './components/LinhaDoExtrato';
@@ -20,16 +20,7 @@ export function ConciliacaoPage() {
         density={densidade}
       />
 
-      <div
-        style={{
-          padding: campo ? '14px 16px 24px' : '18px 24px 30px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: campo ? 14 : 18,
-          maxWidth: campo ? undefined : 1320,
-          minWidth: 0,
-        }}
-      >
+      <CorpoDaTela densidade={densidade} larguraMaxima={1320}>
         <PainelDeImportacao
           densidade={densidade}
           importado={tela.importado}
@@ -124,7 +115,7 @@ export function ConciliacaoPage() {
             </div>
           </>
         )}
-      </div>
+      </CorpoDaTela>
     </>
   );
 }

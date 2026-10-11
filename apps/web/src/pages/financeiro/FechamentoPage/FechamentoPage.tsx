@@ -1,4 +1,4 @@
-import { Icon, ScreenHeader, useDensidade } from '@/ds';
+import { CorpoDaTela, Icon, ScreenHeader, useDensidade } from '@/ds';
 import { pluralizar } from '@/pages/utils/formato';
 import { AcaoDeFechamento } from './components/AcaoDeFechamento';
 import { FaixaDoPeriodo } from './components/FaixaDoPeriodo';
@@ -22,15 +22,7 @@ export function FechamentoPage() {
         density={densidade}
       />
 
-      <div
-        style={{
-          padding: campo ? '14px 16px 24px' : '18px 24px 30px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: campo ? 12 : 18,
-          maxWidth: campo ? undefined : 1000,
-        }}
-      >
+      <CorpoDaTela densidade={densidade} larguraMaxima={1000}>
         {tela.mensagem ? (
           <div
             style={{
@@ -94,7 +86,7 @@ export function FechamentoPage() {
         />
 
         <HistoricoDeFechamentos historico={tela.historico} />
-      </div>
+      </CorpoDaTela>
     </>
   );
 }

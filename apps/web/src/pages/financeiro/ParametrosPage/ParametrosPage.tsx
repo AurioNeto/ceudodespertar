@@ -1,4 +1,4 @@
-import { Icon, ScreenHeader, useDensidade, SeletorDeTipo, Recado } from '@/ds';
+import { CorpoDaTela, Icon, ScreenHeader, useDensidade, SeletorDeTipo, Recado } from '@/ds';
 import { pluralizar } from '@/pages/utils/formato';
 import { BuracoDoRelatorio } from './components/BuracoDoRelatorio';
 import { ListaDeUnidades } from './components/ListaDeUnidades';
@@ -20,16 +20,7 @@ export function ParametrosPage() {
         density={densidade}
       />
 
-      <div
-        style={{
-          padding: campo ? '14px 16px 24px' : '18px 24px 30px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: campo ? 14 : 18,
-          maxWidth: campo ? undefined : 1180,
-          minWidth: 0,
-        }}
-      >
+      <CorpoDaTela densidade={densidade} larguraMaxima={1180}>
         <SeletorDeTipo
           opcoes={[
             { valor: 'categorias', label: 'Categorias' },
@@ -109,7 +100,7 @@ export function ParametrosPage() {
         ) : null}
 
         {tela.aba === 'casa' ? <ParametrosDaCasa densidade={densidade} /> : null}
-      </div>
+      </CorpoDaTela>
     </>
   );
 }
