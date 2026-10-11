@@ -594,7 +594,7 @@ describe('EmprestimosPage: registrar devolução', () => {
     expect(linhasDeDevolucoes(container)).toHaveLength(1);
   });
 
-  it('valor digitado e empréstimo trocado — o formulário fecha, mas o valor vaza para o empréstimo seguinte', async () => {
+  it('valor digitado e empréstimo trocado — o formulário fecha e a devolução do empréstimo seguinte abre sem valor', async () => {
     const { container } = await montar(<EmprestimosPage />);
     await abrirFormularioDeDevolucao(container);
     await digitar(campoPeloRotulo(container, 'Valor'), '2000');
@@ -603,8 +603,8 @@ describe('EmprestimosPage: registrar devolução', () => {
     expect(formularioDeDevolucaoAberto(container)).toBe(false);
     await abrirFormularioDeDevolucao(container);
 
-    expect(campoPeloRotulo(container, 'Valor').value).toBe('2000');
-    expect(mensagemDoCampo(campoPeloRotulo(container, 'Valor'))).toBe('Passa do saldo de 1.500,00.');
+    expect(campoPeloRotulo(container, 'Valor').value).toBe('');
+    expect(mensagemDoCampo(campoPeloRotulo(container, 'Valor'))).toBe('saldo de 1.500,00');
   });
 
   it('escolher outro empréstimo — fecha o formulário e limpa o recado', async () => {

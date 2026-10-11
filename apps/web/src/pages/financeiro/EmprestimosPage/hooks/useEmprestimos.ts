@@ -95,12 +95,12 @@ export function useEmprestimos() {
 
   const escolherFiltro = (v: Filtro) => {
     setFiltro(v);
-    setDevolvendo(false);
+    fecharDevolucao();
   };
 
   const abrirEmprestimo = (id: EmprestimoId) => {
     setAbertoId(id);
-    setDevolvendo(false);
+    fecharDevolucao();
     setRecado(null);
   };
 
