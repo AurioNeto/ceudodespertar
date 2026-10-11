@@ -250,7 +250,7 @@ describe('ConciliacaoPage: coluna de linhas do banco sem lançamento', () => {
     expect(contagemDaColuna(container, TITULO_DAS_LINHAS)).toBe('5');
   });
 
-  it('Voltar com outro motivo escolhido — o motivo fica para a próxima linha aberta, sem voltar ao primeiro', async () => {
+  it('Voltar com outro motivo escolhido — o motivo é descartado e a próxima linha aberta começa pelo primeiro', async () => {
     const { container } = await montar(<ConciliacaoPage />);
     await clicar(botaoComTexto(cartaoDaLinha(container, 'TARIFA PACOTE'), 'Ignorar'));
     await escolherOpcao(seletorDe(cartaoDaLinha(container, 'TARIFA PACOTE'), 'Motivo'), MOTIVOS[2] as string);
@@ -258,7 +258,7 @@ describe('ConciliacaoPage: coluna de linhas do banco sem lançamento', () => {
 
     await clicar(botaoComTexto(cartaoDaLinha(container, 'NETFLIX.COM'), 'Ignorar'));
 
-    expect(seletorDe(cartaoDaLinha(container, 'NETFLIX.COM'), 'Motivo').value).toBe(MOTIVOS[2]);
+    expect(seletorDe(cartaoDaLinha(container, 'NETFLIX.COM'), 'Motivo').value).toBe(MOTIVOS[0]);
   });
 
   it('abrir o motivo de outra linha — fecha o da primeira: só uma linha em ignorar por vez', async () => {
@@ -284,7 +284,7 @@ describe('ConciliacaoPage: coluna de linhas do banco sem lançamento', () => {
     expect(recado(container)).toContain('Linha ignorada com o motivo registrado: “Estorno do próprio banco”.');
   });
 
-  it('o motivo escolhido fica para a próxima linha ignorada, sem voltar ao primeiro', async () => {
+  it('o motivo recomeça pelo primeiro a cada linha: o escolhido não vale para a próxima linha ignorada', async () => {
     const { container } = await montar(<ConciliacaoPage />);
     await clicar(botaoComTexto(cartaoDaLinha(container, 'TARIFA PACOTE'), 'Ignorar'));
     await escolherOpcao(seletorDe(cartaoDaLinha(container, 'TARIFA PACOTE'), 'Motivo'), MOTIVOS[3] as string);
@@ -292,7 +292,7 @@ describe('ConciliacaoPage: coluna de linhas do banco sem lançamento', () => {
 
     await clicar(botaoComTexto(cartaoDaLinha(container, 'NETFLIX.COM'), 'Ignorar'));
 
-    expect(seletorDe(cartaoDaLinha(container, 'NETFLIX.COM'), 'Motivo').value).toBe(MOTIVOS[3]);
+    expect(seletorDe(cartaoDaLinha(container, 'NETFLIX.COM'), 'Motivo').value).toBe(MOTIVOS[0]);
   });
 
   it('ignorar todas as linhas — troca a lista pelo estado de que nada sobrou do lado do banco', async () => {
