@@ -1,5 +1,5 @@
 import type { RegistroDeAcesso } from '@cdd/contracts';
-import { MS_MINUTO } from '../../../utils/instante';
+import { MS_MINUTO } from '../../../../../utils/instante';
 
 /**
  * Rajada: três ou mais leituras dentro de quinze minutos. Não é irregularidade
