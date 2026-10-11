@@ -1,0 +1,1 @@
+export { JaPagas } from './JaPagas';
