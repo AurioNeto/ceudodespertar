@@ -1,11 +1,12 @@
 import { AmountDisplay, Button, Cartao, Icon, Leitura, Rotulo, StatusBadge, type Density } from '@/ds';
 import { PainelDeContaEData } from '@/pages/eventos/components/PainelDeContaEData';
 import { formatarBRL, pluralizar } from '@/pages/utils/formato';
-import { FORMA_EXPLICACAO, FORMA_ROTULO, ID_DO_CAMPO_DA_DATA_DO_RECEBIMENTO, STATUS_ROTULO, TOM } from '../../constantes';
+import { ID_DO_CAMPO_DA_DATA_DO_RECEBIMENTO } from '../../constantes';
 import type { ContratacaoNaTela } from '../../mocks/contratacoes';
-import { resultadoDaContratacao } from '../../utils/resultadoDaContratacao';
 import { Devolucao } from './components/Devolucao';
 import { Lado } from './components/Lado';
+import { FORMA_EXPLICACAO, FORMA_ROTULO, STATUS_ROTULO, TOM } from './constantes';
+import { resultadoDaContratacao } from './utils/resultadoDaContratacao';
 
 export interface CartaoDeContratacaoProps {
   contratacao: ContratacaoNaTela;

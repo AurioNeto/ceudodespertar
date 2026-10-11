@@ -1,4 +1,4 @@
-import type { ContratacaoNaTela } from '../mocks/contratacoes';
+import type { ContratacaoNaTela } from '../../../mocks/contratacoes';
 
 export function resultadoDaContratacao(c: ContratacaoNaTela) {
   const totalCaches = c.caches.reduce((s, m) => s + m.valor, 0);
