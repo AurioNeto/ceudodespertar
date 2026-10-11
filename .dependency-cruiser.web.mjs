@@ -129,9 +129,11 @@ export default {
       name: 'dados-so-pelo-barrel',
       severity: 'warn',
       comment:
-        'Fora de dados/, só dados/index.ts; o main.tsx também importa dados/instancias.ts. ' +
+        'Fora de dados/, só dados/index.ts; o main.tsx também importa dados/instancias.ts. O silencioso.ts, ' +
+        'entrada da renovação silenciosa, importa dados/oidc.ts direto: pelo barrel, a página levaria o ' +
+        '@cdd/contracts e o zod (+91 kB). ' +
         LINHA_DE_BASE,
-      from: { path: SRC, pathNot: `${SRC}dados/` },
+      from: { path: SRC, pathNot: `${SRC}(?:dados/|silencioso[.]ts$)` },
       to: { path: `${SRC}dados/`, pathNot: `${SRC}dados/(index|instancias)[.]ts$` },
     },
     {

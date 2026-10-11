@@ -7,5 +7,5 @@ export { fonteDeCredencialNula } from './credencial';
 export type { FonteDeCredencial } from './credencial';
 export type { CredencialOidc } from './credencialOidc';
 export { ErroDaApi, ErroDeRede } from './erros';
-export { configuracaoOidc, ErroDeEntrada, lerAmbienteOidc } from './oidc';
+export { ErroDeEntrada } from './oidc';
 export type { ServicoDeEntrada } from './oidc';
