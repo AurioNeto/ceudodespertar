@@ -66,18 +66,18 @@ const MOTIVOS_FORA_DA_FILA_DESIGUAL = new Set([
 ]);
 
 const FILA_INICIAL = [
-  ['mercado cerimônia mãe divina', '28/08/2026 · Foto de comprovante · Lucia Prado · Alimentação de cerimônia', 'Alta confiança', `${SINAL_DE_SAIDA}R$ 187,40`],
-  ['Enel — conta de luz', '12/08/2026 · Extrato bancário · importado · Administrativo', 'Alta confiança', `${SINAL_DE_SAIDA}R$ 738,15`],
-  ['gasolina para buscar mantimentos', '19/08/2026 · Registro rápido · Chico Aguiar · Transporte', 'Média confiança', `${SINAL_DE_SAIDA}R$ 65,00`],
-  ['ração e vermífugo dos cavalos', '20/08/2026 · Foto de comprovante · Chico Aguiar · Animais', 'Média confiança', `${SINAL_DE_SAIDA}R$ 128,90`],
-  ['PIX recebido — Antônio Vieira', '15/08/2026 · Extrato bancário · importado · Doações', 'Baixa confiança', `${SINAL_DE_ENTRADA}R$ 3.000,00`],
-  ['venda de camisetas na lojinha', '22/08/2026 · Registro rápido · Paty Munay · Vendas', 'Alta confiança', `${SINAL_DE_ENTRADA}R$ 285,00`],
-  ['garrafas e rótulos para o feitio', '18/08/2026 · Foto de comprovante · Lucia Prado · Insumos de feitio', 'Baixa confiança', `${SINAL_DE_SAIDA}R$ 412,60`],
-  ['TED — Hidro Serviços', '21/07/2026 · Extrato bancário · importado · Manutenção', 'Média confiança', `${SINAL_DE_SAIDA}R$ 890,00`],
-  ['diarista pós-cerimônia', '31/07/2026 · Registro rápido · Lucia Prado · Administrativo', 'Alta confiança', `${SINAL_DE_SAIDA}R$ 340,00`],
-  ['recarga de extintor e suporte', '24/08/2026 · Foto de comprovante · Paty Munay · Administrativo', 'Alta confiança', `${SINAL_DE_SAIDA}R$ 135,00`],
-  ['Transferência recebida do Nubank Paty', '23/08/2026 · Extrato bancário · importado · Nubank Paty → Cora PJ', 'Alta confiança', 'R$ 1.500,00'],
-  ['contribuições da cerimônia de agosto', '24/08/2026 · Registro rápido · Frei Tobias · Contribuições', 'Média confiança', `${SINAL_DE_ENTRADA}R$ 940,00`],
+  ['mercado cerimônia mãe divina', '28/08/2026 · Foto de comprovante · Lucia Prado · Alimentação de cerimônia', 'Alta confiança', `${SINAL_DE_SAIDA}R$187,40`],
+  ['Enel — conta de luz', '12/08/2026 · Extrato bancário · importado · Administrativo', 'Alta confiança', `${SINAL_DE_SAIDA}R$738,15`],
+  ['gasolina para buscar mantimentos', '19/08/2026 · Registro rápido · Chico Aguiar · Transporte', 'Média confiança', `${SINAL_DE_SAIDA}R$65,00`],
+  ['ração e vermífugo dos cavalos', '20/08/2026 · Foto de comprovante · Chico Aguiar · Animais', 'Média confiança', `${SINAL_DE_SAIDA}R$128,90`],
+  ['PIX recebido — Antônio Vieira', '15/08/2026 · Extrato bancário · importado · Doações', 'Baixa confiança', `${SINAL_DE_ENTRADA}R$3.000,00`],
+  ['venda de camisetas na lojinha', '22/08/2026 · Registro rápido · Paty Munay · Vendas', 'Alta confiança', `${SINAL_DE_ENTRADA}R$285,00`],
+  ['garrafas e rótulos para o feitio', '18/08/2026 · Foto de comprovante · Lucia Prado · Insumos de feitio', 'Baixa confiança', `${SINAL_DE_SAIDA}R$412,60`],
+  ['TED — Hidro Serviços', '21/07/2026 · Extrato bancário · importado · Manutenção', 'Média confiança', `${SINAL_DE_SAIDA}R$890,00`],
+  ['diarista pós-cerimônia', '31/07/2026 · Registro rápido · Lucia Prado · Administrativo', 'Alta confiança', `${SINAL_DE_SAIDA}R$340,00`],
+  ['recarga de extintor e suporte', '24/08/2026 · Foto de comprovante · Paty Munay · Administrativo', 'Alta confiança', `${SINAL_DE_SAIDA}R$135,00`],
+  ['Transferência recebida do Nubank Paty', '23/08/2026 · Extrato bancário · importado · Nubank Paty → Cora PJ', 'Alta confiança', 'R$1.500,00'],
+  ['contribuições da cerimônia de agosto', '24/08/2026 · Registro rápido · Frei Tobias · Contribuições', 'Média confiança', `${SINAL_DE_ENTRADA}R$940,00`],
 ];
 
 beforeEach(() => {
@@ -202,7 +202,7 @@ describe('VerificacaoLotePage: cabeçalho e linhas da fila', () => {
     const linha = lerLinha(linhaDoMotivo(container, 'Transferência recebida do Nubank Paty'));
 
     expect(linha[1]).toContain('Nubank Paty → Cora PJ');
-    expect(linha[3]).toBe('R$ 1.500,00');
+    expect(linha[3]).toBe('R$1.500,00');
   });
 
   it('item sem categoria — a meta da linha diz sem categoria', async () => {

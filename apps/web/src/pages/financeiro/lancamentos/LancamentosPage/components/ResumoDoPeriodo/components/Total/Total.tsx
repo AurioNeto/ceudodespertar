@@ -1,9 +1,8 @@
-import { Rotulo } from '@/ds';
-import { valorTabular } from '../../../../constantes';
+import { AmountDisplay, Rotulo } from '@/ds';
 
 export interface TotalProps {
   rotulo: string;
-  valor: string;
+  valor: number;
   cor: string;
 }
 
@@ -11,7 +10,7 @@ export function Total({ rotulo, valor, cor }: TotalProps) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
       <Rotulo>{rotulo}</Rotulo>
-      <span style={{ ...valorTabular, color: cor }}>{valor}</span>
+      <AmountDisplay value={valor} size="sm" style={{ color: cor, letterSpacing: 'var(--tracking-amount)' }} />
     </div>
   );
 }
