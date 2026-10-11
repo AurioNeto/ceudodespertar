@@ -1,4 +1,4 @@
-import { Cartao, Rotulo, type Density } from '@/ds';
+import { Cartao, ListaDividida, Rotulo, type Density } from '@/ds';
 import { formatarBRL, formatarLitros } from '@/pages/utils/formato';
 import { anteriores } from '../../mocks/feitio';
 import { custoPorLitro, custoTotal } from '../../utils/custoDoFeitio';
@@ -13,22 +13,12 @@ export function Anteriores({ densidade }: AnterioresProps) {
   return (
     <Cartao campo={campo} style={{ gap: 11 }}>
       <Rotulo>Feitios anteriores</Rotulo>
-      <div style={{ display: 'flex', flexDirection: 'column' }}>
-        {anteriores.map((f, i) => {
+      <ListaDividida itens={anteriores} chave={(f) => f.id}>
+        {(f) => {
           const t = custoTotal(f);
           const porLitro = custoPorLitro(t, f.litrosProduzidos) ?? 0;
           return (
-            <div
-              key={f.id}
-              style={{
-                display: 'flex',
-                flexWrap: 'wrap',
-                gap: '4px 12px',
-                alignItems: 'baseline',
-                padding: '10px 0',
-                borderTop: i === 0 ? undefined : '1px solid var(--color-line)',
-              }}
-            >
+            <>
               <span style={{ font: 'var(--text-body)', color: 'var(--text-primary)', flex: 1, minWidth: 150 }}>
                 {f.nome}
               </span>
@@ -44,10 +34,10 @@ export function Anteriores({ densidade }: AnterioresProps) {
               <span data-numeric style={{ font: 'var(--text-amount)', color: 'var(--color-royal-deep)' }}>
                 {formatarBRL(porLitro)}/L
               </span>
-            </div>
+            </>
           );
-        })}
-      </div>
+        }}
+      </ListaDividida>
       <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)', maxWidth: '78ch' }}>
         A série importa mais que qualquer valor isolado: um feitio caro pode ser uma colheita ruim, e dois seguidos já
         são uma conversa sobre onde a casa compra a folha.
