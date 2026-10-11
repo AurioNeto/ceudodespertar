@@ -444,15 +444,20 @@ describe('InscricaoPage: ficha da pessoa escolhida', () => {
 
 describe('InscricaoPage: tipo de participação e consagração', () => {
   it.each([
-    { tipo: 'Participante', explicacao: 'Quem vem participar do trabalho. Contribui e faz anamnese.' },
-    { tipo: 'Convidado', explicacao: 'Convidado da casa ou de alguém da casa. Contribui e faz anamnese.' },
-    { tipo: 'Equipe', explicacao: 'Guardião, cuidadora, músico, cozinha. Não contribui — é isento, e isento não é zero.' },
+    { pessoa: 'Helena Duarte', tipo: 'Participante', explicacao: 'Quem vem participar do trabalho. Contribui e faz anamnese.' },
+    { pessoa: 'Helena Duarte', tipo: 'Convidado', explicacao: 'Convidado da casa ou de alguém da casa. Contribui e faz anamnese.' },
     {
+      pessoa: 'Helena Duarte',
+      tipo: 'Equipe',
+      explicacao: 'Guardião, cuidadora, músico, cozinha. Não contribui — é isento, e isento não é zero.',
+    },
+    {
+      pessoa: 'Antônio Duarte',
       tipo: 'Criança estelar',
       explicacao: 'Criança. Exige responsável, modalidade e autorização vigente para este trabalho.',
     },
-  ])('escolher $tipo — marca o botão e mostra a explicação do tipo', async ({ tipo, explicacao }) => {
-    const container = await abrirComPessoa('Helena Duarte');
+  ])('escolher $tipo — marca o botão e mostra a explicação do tipo', async ({ pessoa, tipo, explicacao }) => {
+    const container = await abrirComPessoa(pessoa);
 
     await trocarTipo(container, tipo);
 
@@ -461,12 +466,12 @@ describe('InscricaoPage: tipo de participação e consagração', () => {
   });
 
   it.each([
-    { tipo: 'Participante', consagra: 'true' },
-    { tipo: 'Convidado', consagra: 'true' },
-    { tipo: 'Equipe', consagra: 'true' },
-    { tipo: 'Criança estelar', consagra: 'false' },
-  ])('escolher $tipo — a consagração vai para $consagra, o padrão do tipo', async ({ tipo, consagra }) => {
-    const container = await abrirComPessoa('Helena Duarte');
+    { pessoa: 'Helena Duarte', tipo: 'Participante', consagra: 'true' },
+    { pessoa: 'Helena Duarte', tipo: 'Convidado', consagra: 'true' },
+    { pessoa: 'Helena Duarte', tipo: 'Equipe', consagra: 'true' },
+    { pessoa: 'Antônio Duarte', tipo: 'Criança estelar', consagra: 'false' },
+  ])('escolher $tipo — a consagração vai para $consagra, o padrão do tipo', async ({ pessoa, tipo, consagra }) => {
+    const container = await abrirComPessoa(pessoa);
     await clicar(interruptor(container, 'Consagra neste trabalho'));
 
     await trocarTipo(container, tipo);
@@ -701,7 +706,7 @@ describe('InscricaoPage: estado da anamnese', () => {
 });
 
 describe('InscricaoPage: criança estelar', () => {
-  it('Antônio — o seletor de responsável lista só os adultos do diretório, depois do convite a escolher', async () => {
+  it('Antônio — o seletor de responsável lista só quem o tem em responsavelDe, depois do convite a escolher', async () => {
     const container = await abrirComPessoa('Antônio Duarte');
 
     const opcoes = todos<HTMLOptionElement>(
@@ -709,14 +714,7 @@ describe('InscricaoPage: criança estelar', () => {
       'option',
     );
 
-    expect(opcoes.map((opcao) => opcao.textContent)).toEqual([
-      'Escolha quem responde por ela',
-      'Helena Duarte',
-      'Marina Tavares',
-      'Eduardo Pires',
-      'Sérgio Bittencourt',
-      'Bruna Camargo',
-    ]);
+    expect(opcoes.map((opcao) => opcao.textContent)).toEqual(['Escolha quem responde por ela', 'Helena Duarte']);
   });
 
   it('Antônio sem responsável — a pendência IN2 diz que criança não se inscreve sozinha', async () => {
@@ -734,24 +732,28 @@ describe('InscricaoPage: criança estelar', () => {
   });
 
   it.each([{ responsavel: 'Marina Tavares' }, { responsavel: 'Sérgio Bittencourt' }])(
-    'responsável $responsavel sem autorização vigente — abre a pendência de autorização por evento',
+    'responsável $responsavel sem a criança em responsavelDe — não é oferecido no seletor de responsável',
     async ({ responsavel }) => {
       const container = await abrirComPessoa('Antônio Duarte');
 
-      await escolherOpcao(campoRotulado<HTMLSelectElement>(container, 'Responsável neste trabalho'), responsavel);
+      const opcoes = todos<HTMLOptionElement>(seletorDeResponsavel(container), 'option');
 
-      expect(pendenciasMostradas(container)).toEqual([['Sem autorização vigente para este trabalho', 'IN2']]);
-      expect(textoDe(container)).toContain(
-        'A autorização é por evento — não existe autorizar para o ano. É colhida na chegada, com o responsável presente.',
-      );
+      expect(opcoes.map((opcao) => opcao.textContent)).not.toContain(responsavel);
     },
   );
 
-  it('autorização do responsável na Jornada — vale igual à da Lua Cheia: a pendência de autorização não olha o evento', async () => {
+  it('autorização do responsável na Jornada — a da Lua Cheia não vale: a autorização é por evento e a pendência de autorização abre', async () => {
     const container = await abrirComPessoa('Antônio Duarte');
     await escolherOpcao(campoRotulado<HTMLSelectElement>(container, 'Responsável neste trabalho'), 'Helena Duarte');
 
     await trocarEvento(container, JORNADA);
+
+    expect(pendenciasMostradas(container)).toEqual([['Sem autorização vigente para este trabalho', 'IN2']]);
+    expect(textoDe(container)).toContain(
+      'A autorização é por evento — não existe autorizar para o ano. É colhida na chegada, com o responsável presente.',
+    );
+
+    await trocarEvento(container, LUA_CHEIA);
 
     expect(pendenciasMostradas(container)).toEqual(SEM_PENDENCIA);
   });
@@ -837,42 +839,37 @@ describe('InscricaoPage: criança estelar', () => {
     expect(pendenciasMostradas(container)).toEqual([['Anamnese pendente', 'IN5']]);
   });
 
-  it('adulta com autorização marcada como Criança estelar, sem responsável — a pendência IN2 pede o responsável, como para o menino', async () => {
+  it('adulta com autorização — o seletor de tipo não oferece Criança estelar, só os três tipos de adulto', async () => {
     const container = await abrirComPessoa('Helena Duarte');
 
-    await trocarTipo(container, 'Criança estelar');
+    const tipos = todos<HTMLButtonElement>(container, 'button')
+      .map((botao) => botao.textContent)
+      .filter((texto) => ['Participante', 'Convidado', 'Equipe', 'Criança estelar'].includes(texto ?? ''));
 
-    expect(pendenciasMostradas(container)).toEqual([['Falta o responsável', 'IN2']]);
+    expect(tipos).toEqual(['Participante', 'Convidado', 'Equipe']);
   });
 
-  it('adulta com autorização marcada como Criança estelar e responsável sem autorização — nenhuma pendência: vale a autorização da própria pessoa', async () => {
+  it('adulta com autorização — sem o tipo Criança estelar não há seletor de responsável nem pendência de autorização', async () => {
     const container = await abrirComPessoa('Helena Duarte');
-    await trocarTipo(container, 'Criança estelar');
 
-    await escolherResponsavel(container, 'Marina Tavares');
-
+    expect(existeCampoRotulado(container, 'Responsável neste trabalho')).toBe(false);
     expect(pendenciasMostradas(container)).toEqual(SEM_PENDENCIA);
   });
 
-  it('Sérgio sem autorização marcado como Criança estelar — ele mesmo aparece entre os responsáveis e, escolhido, pede a autorização que lhe falta', async () => {
+  it('Sérgio sem autorização — o seletor de tipo também não oferece Criança estelar: quem decide é a idade, não a autorização', async () => {
     const container = await abrirComPessoa('Sérgio Bittencourt');
-    await trocarTipo(container, 'Criança estelar');
-    const opcoes = todos<HTMLOptionElement>(seletorDeResponsavel(container), 'option').map((opcao) => opcao.textContent);
 
-    await escolherResponsavel(container, 'Sérgio Bittencourt');
-
-    expect(opcoes).toContain('Sérgio Bittencourt');
-    expect(seletorDeResponsavel(container).value).toBe('Sérgio Bittencourt');
-    expect(pendenciasMostradas(container)).toEqual([['Sem autorização vigente para este trabalho', 'IN2']]);
+    expect(todos(container, 'button').some((botao) => botao.textContent === 'Criança estelar')).toBe(false);
   });
 
-  it('Sérgio sem autorização marcado como Criança estelar e Helena como responsável — a autorização da Helena basta', async () => {
+  it('Sérgio sem autorização — nenhum tipo de adulto abre a pendência de responsável nem a de autorização', async () => {
     const container = await abrirComPessoa('Sérgio Bittencourt');
-    await trocarTipo(container, 'Criança estelar');
 
-    await escolherResponsavel(container, 'Helena Duarte');
+    for (const tipo of ['Convidado', 'Equipe', 'Participante']) {
+      await trocarTipo(container, tipo);
 
-    expect(pendenciasMostradas(container)).toEqual(SEM_PENDENCIA);
+      expect(pendenciasMostradas(container)).toEqual(SEM_PENDENCIA);
+    }
   });
 });
 

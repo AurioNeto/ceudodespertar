@@ -88,6 +88,7 @@ export function useInscricao() {
   const pendencias: readonly Pendencia[] = useMemo(
     () =>
       pendenciasDaInscricao({
+        eventoId: evento.id,
         pessoa,
         tipo,
         responsavel,
@@ -104,6 +105,7 @@ export function useInscricao() {
         aoAlocarLeito: () => setLeitoAlocado(true),
       }),
     [
+      evento.id,
       pessoa,
       tipo,
       responsavel,

@@ -66,6 +66,7 @@ export function InscricaoPage() {
             <PessoaEscolhida pessoa={tela.pessoa} densidade={densidade} onTrocar={tela.trocarPessoa} />
 
             <ComoParticipa
+              pessoa={tela.pessoa}
               tipo={tela.tipo}
               responsavel={tela.responsavel}
               modalidade={tela.modalidade}
