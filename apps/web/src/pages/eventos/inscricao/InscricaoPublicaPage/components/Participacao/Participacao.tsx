@@ -1,7 +1,7 @@
 import type { Hospedagem, NivelDeContribuicao, Refeicao } from '@cdd/contracts';
-import { AmountDisplay, Button, Cartao, Rotulo, TextField, type Density } from '@/ds';
-import { lerValorDigitado } from '@/lib/numero';
-import { formatarBRL, formatarDinheiro, pluralizar } from '@/pages/utils/formato';
+import { Button, Cartao, Rotulo, TextField, type Density } from '@/ds';
+import { formatarBRL, pluralizar } from '@/pages/utils/formato';
+import { Contribuicao } from '../../../components/Contribuicao';
 import { OpcaoMarcavel } from '../../../components/OpcaoMarcavel';
 import { eventoDoLink } from '../../../mocks/linkDaCerimonia';
 import { totalComContribuicaoACombinar } from '../../../utils/totalComContribuicaoACombinar';
@@ -34,75 +34,22 @@ export interface ParticipacaoProps {
 
 export function Participacao(props: ParticipacaoProps) {
   const campo = props.densidade === 'field';
-  const social = eventoDoLink.contribuicoes[0]!.valor;
-  const prospero = eventoDoLink.contribuicoes[2]!.valor;
-  const digitado = Math.round(lerValorDigitado(props.valor) * 100) || 0;
 
   return (
     <Passos
       titulo="Sua participação"
       recado="Contribuição, onde você dorme e o que a casa precisa saber para cuidar de você."
     >
-      <Cartao campo={campo} style={{ gap: 12 }}>
-        <Rotulo>Contribuição</Rotulo>
-        <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)', maxWidth: '60ch' }}>
-          Três valores sugeridos pelos padrinhos, referentes à participação na cerimônia. <b>São sugestão, não
-          preço.</b> Escolha o que couber na sua condição — e, se puder e quiser contribuir mais, também pode.
-        </span>
-
-        <div style={{ display: 'grid', gridTemplateColumns: campo ? '1fr' : 'repeat(3, minmax(0,1fr))', gap: 10 }}>
-          {eventoDoLink.contribuicoes.map((c) => {
-            const marcado = props.nivel === c.nivel;
-            return (
-              <button
-                key={c.nivel}
-                type="button"
-                aria-pressed={marcado}
-                onClick={() => props.onNivel(c.nivel, formatarDinheiro(c.valor))}
-                style={{
-                  textAlign: 'left',
-                  padding: '13px 15px',
-                  borderRadius: 'var(--radius)',
-                  border: `1px solid ${marcado ? 'var(--color-royal)' : 'var(--color-line-strong)'}`,
-                  background: marcado ? 'var(--color-royal-soft)' : 'var(--bg-card)',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 5,
-                  minHeight: campo ? 'var(--target-field)' : undefined,
-                }}
-              >
-                <span style={{ font: 'var(--text-body-strong)', color: marcado ? 'var(--color-royal-ink)' : 'var(--text-primary)' }}>
-                  {c.rotulo}
-                </span>
-                <AmountDisplay value={c.valor / 100} size="sm" style={{ color: 'var(--color-royal-deep)' }} />
-                <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>{c.explicacao}</span>
-              </button>
-            );
-          })}
-        </div>
-
-        <TextField
-          label="Quanto você vai contribuir"
-          value={props.valor}
-          placeholder="0,00"
-          inputMode="decimal"
-          density={campo ? 'field' : 'office'}
-          onChange={(e) => props.onValor(e.target.value)}
-          hint="Pode digitar outro valor. Ninguém vai te cobrar explicação."
-        />
-
-        {digitado > 0 && digitado < social ? (
-          <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>
-            Abaixo do valor social, e tudo bem. Se quiser conversar sobre isso, a recepção está no WhatsApp.
-          </span>
-        ) : null}
-        {digitado > prospero ? (
-          <span style={{ font: 'var(--text-small)', color: 'var(--color-confirmed)' }}>
-            Obrigado — isso é contribuição voluntária acima do sugerido.
-          </span>
-        ) : null}
-      </Cartao>
+      <Contribuicao
+        evento={eventoDoLink}
+        quemInscreve="pessoa"
+        isento={false}
+        nivel={props.nivel}
+        valor={props.valor}
+        onNivel={props.onNivel}
+        onValor={props.onValor}
+        densidade={props.densidade}
+      />
 
       <Cartao campo={campo} style={{ gap: 11 }}>
         <Rotulo>Onde você vai dormir</Rotulo>

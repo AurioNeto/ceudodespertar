@@ -1,11 +1,13 @@
 import type { NivelDeContribuicao } from '@cdd/contracts';
 import { AmountDisplay, Cartao, Rotulo, StatusBadge, TextField, type Density } from '@/ds';
 import { formatarDinheiro } from '@/pages/utils/formato';
-import type { eventos } from '../../../mocks/eventos';
-import { contribuicaoDigitada } from '../../../utils/valorDaInscricao';
+import type { EventoParaInscricao } from '../../mocks/eventos';
+import { contribuicaoDigitada } from '../../utils/valorDaInscricao';
+import { CONTRIBUICAO_POR_QUEM_INSCREVE } from './constantes';
 
 export interface ContribuicaoProps {
-  evento: (typeof eventos)[number];
+  evento: EventoParaInscricao;
+  quemInscreve: keyof typeof CONTRIBUICAO_POR_QUEM_INSCREVE;
   isento: boolean;
   nivel: NivelDeContribuicao | null;
   valor: string;
@@ -14,7 +16,16 @@ export interface ContribuicaoProps {
   densidade: Density;
 }
 
-export function Contribuicao({ evento, isento, nivel, valor, onNivel, onValor, densidade }: ContribuicaoProps) {
+export function Contribuicao({
+  evento,
+  quemInscreve,
+  isento,
+  nivel,
+  valor,
+  onNivel,
+  onValor,
+  densidade,
+}: ContribuicaoProps) {
   const campo = densidade === 'field';
   if (isento) {
     return (
@@ -34,6 +45,7 @@ export function Contribuicao({ evento, isento, nivel, valor, onNivel, onValor, d
     );
   }
 
+  const textos = CONTRIBUICAO_POR_QUEM_INSCREVE[quemInscreve];
   const escolhido = evento.contribuicoes.find((c) => c.nivel === nivel);
   const digitado = contribuicaoDigitada(valor);
   const social = evento.contribuicoes[0]!.valor;
@@ -41,10 +53,11 @@ export function Contribuicao({ evento, isento, nivel, valor, onNivel, onValor, d
 
   return (
     <Cartao campo={campo} style={{ gap: 12 }}>
-      <Rotulo>Contribuição sugerida</Rotulo>
-      <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)', maxWidth: '76ch' }}>
-        Três níveis definidos pelos padrinhos, referentes só à participação na cerimônia. <b>São sugestão, não
-        preço</b>: o valor se conversa para menos conforme a condição de cada um, e quem quiser contribuir mais pode.
+      <Rotulo>{textos.titulo}</Rotulo>
+      <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)', maxWidth: textos.larguraDoRecado }}>
+        {textos.recado.inicio}
+        <b>{textos.recado.destaque}</b>
+        {textos.recado.fim}
       </span>
 
       <div
@@ -86,26 +99,22 @@ export function Contribuicao({ evento, isento, nivel, valor, onNivel, onValor, d
       </div>
 
       <TextField
-        label="Valor combinado"
+        label={textos.rotuloDoValor}
         value={valor}
         density={campo ? 'field' : 'office'}
         placeholder="0,00"
+        inputMode={textos.tecladoDoValor}
         onChange={(e) => onValor(e.target.value)}
-        hint="Sempre editável. Escolher um nível preenche este campo; o que vale é o que está aqui."
+        hint={textos.dicaDoValor}
       />
 
       {digitado > 0 && digitado < social ? (
-        <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>
-          Abaixo do nível social — combinado com a pessoa. Não precisa de justificativa: a casa não cobra explicação
-          de quem contribui com o que pode.
-        </span>
+        <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>{textos.abaixoDoSocial}</span>
       ) : null}
       {digitado > prospero ? (
-        <span style={{ font: 'var(--text-small)', color: 'var(--color-confirmed)' }}>
-          Acima do próspero — contribuição voluntária além do sugerido.
-        </span>
+        <span style={{ font: 'var(--text-small)', color: 'var(--color-confirmed)' }}>{textos.acimaDoProspero}</span>
       ) : null}
-      {escolhido && digitado === escolhido.valor ? (
+      {textos.mostraNivelEscolhido && escolhido && digitado === escolhido.valor ? (
         <span style={{ font: 'var(--text-small)', color: 'var(--text-meta)' }}>
           No nível {escolhido.rotulo.toLowerCase()}.
         </span>
