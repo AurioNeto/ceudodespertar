@@ -1,0 +1,1 @@
+export { AbaDeMovimentos } from './AbaDeMovimentos';

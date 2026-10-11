@@ -1,0 +1,1 @@
+export { FichaDoLote } from './FichaDoLote';

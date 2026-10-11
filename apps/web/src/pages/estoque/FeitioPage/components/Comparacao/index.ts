@@ -1,0 +1,1 @@
+export { Comparacao } from './Comparacao';

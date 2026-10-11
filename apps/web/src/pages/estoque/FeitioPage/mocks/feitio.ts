@@ -146,10 +146,3 @@ export const aquisicaoExterna = {
 };
 
 export const hojeNoFeitio = dataLocal('2026-09-11');
-
-export const custoTotal = (f: FeitioNaTela): Dinheiro =>
-  (f.materiaPrima.reduce((s, m) => s + m.custo, 0) + f.custos.reduce((s, c) => s + c.valor, 0)) as Dinheiro;
-
-export const custoConfirmado = (f: FeitioNaTela): Dinheiro =>
-  (f.materiaPrima.reduce((s, m) => s + m.custo, 0) +
-    f.custos.filter((c) => c.confirmado).reduce((s, c) => s + c.valor, 0)) as Dinheiro;

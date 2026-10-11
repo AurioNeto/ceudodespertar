@@ -1,0 +1,1 @@
+export { ModalDeMovimento } from './ModalDeMovimento';

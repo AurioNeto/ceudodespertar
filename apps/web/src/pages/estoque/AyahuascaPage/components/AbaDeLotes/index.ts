@@ -1,0 +1,1 @@
+export { AbaDeLotes } from './AbaDeLotes';
