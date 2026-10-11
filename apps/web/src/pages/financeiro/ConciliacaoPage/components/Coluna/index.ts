@@ -1,0 +1,1 @@
+export { Coluna } from './Coluna';

@@ -1,0 +1,1 @@
+export { Sugestao } from './Sugestao';
