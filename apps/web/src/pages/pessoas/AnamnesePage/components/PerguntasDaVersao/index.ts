@@ -1,0 +1,1 @@
+export { PerguntasDaVersao } from './PerguntasDaVersao';

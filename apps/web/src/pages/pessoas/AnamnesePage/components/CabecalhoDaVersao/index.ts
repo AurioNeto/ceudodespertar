@@ -1,0 +1,1 @@
+export { CabecalhoDaVersao } from './CabecalhoDaVersao';
