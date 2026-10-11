@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { usePaginacao } from '@/pages/financeiro/lancamentos/hooks/usePaginacao';
-import { meusLancamentos } from '@/pages/financeiro/mocks/lancamentos';
 import { useCarrossel } from '@/pages/hooks/useCarrossel';
 import { POR_PAGINA } from '../constantes';
 import type { Visao } from '../constantes';
+import { meusLancamentos } from '../mocks/meusLancamentos';
 
 export function useMeusRegistros() {
   const [visao, setVisao] = useState<Visao>('lista');

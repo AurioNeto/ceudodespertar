@@ -1,7 +1,6 @@
 import type { LancamentoNaLista, LancamentoId } from '@cdd/contracts';
 import { competencia, dataLocal, reais } from '@cdd/contracts';
 import { id } from '@/mocks/ids';
-import { NOME_DO_REGISTRADOR_DE_EXEMPLO } from '@/mocks/sessao';
 
 const registro = (
   n: number,
@@ -342,6 +341,3 @@ export const lancamentos: readonly LancamentoNaLista[] = [
     comprovante: null,
   }),
 ];
-
-/** "Meus registros": o recorte pessoal do mesmo livro. */
-export const meusLancamentos = lancamentos.filter((l) => l.registradoPor === NOME_DO_REGISTRADOR_DE_EXEMPLO);
