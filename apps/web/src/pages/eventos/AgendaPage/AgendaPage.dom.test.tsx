@@ -704,9 +704,7 @@ describe('AgendaPage: nova cerimônia', () => {
 
   it.each([
     { digitado: '40, 60, 90', numero: 'Contribuição40 · 60 · 90opções sugeridas' },
-    { digitado: '45,50', numero: 'Contribuição45 · 50opções sugeridas' },
     { digitado: '40', numero: 'Contribuição40sem contribuição' },
-    { digitado: 'quarenta', numero: 'Contribuição—sem contribuição' },
     { digitado: '', numero: 'Contribuição—sem contribuição' },
   ])('contribuições digitadas como "$digitado" — o detalhe mostra $numero', async ({ digitado, numero }) => {
     const { container } = await montar(<AgendaPage />);
@@ -715,6 +713,20 @@ describe('AgendaPage: nova cerimônia', () => {
 
     expect(textoDoNumero(container, 'Contribuição')).toBe(numero);
   });
+
+  it.each([{ digitado: '45,50' }, { digitado: 'quarenta' }])(
+    'contribuições digitadas como "$digitado" — o formulário recusa com a mensagem no campo e não cria a cerimônia',
+    async ({ digitado }) => {
+      const { container } = await montar(<AgendaPage />);
+
+      await preencherEEnviarNovaCerimonia(container, { nome: 'Cerimônia de teste', contribuicoes: digitado });
+
+      const campo = campoDoRotulo(formularioAberto(container), 'Contribuições sugeridas');
+      expect(campo.getAttribute('aria-invalid')).toBe('true');
+      expect(formularioAberto(container).textContent).toContain('Use só valores inteiros em reais, separados por vírgula: 40, 60, 90.');
+      expect(contagemDoMes(container)).toBe('4 cerimônias no mês');
+    },
+  );
 
   it.each([
     { digitado: '9,5', litros: '9.5' },
@@ -872,7 +884,7 @@ describe('AgendaPage: editar', () => {
     expect(nomesPorDiaNoCalendario(container)['5']).toBeUndefined();
   });
 
-  it('editar as contribuições para 45,50 — vira duas opções, 45 e 50 (divergência do Documento 8, seção 14)', async () => {
+  it('editar as contribuições para 45,50 — o formulário recusa com a mensagem no campo e a cerimônia segue com 40 · 60 · 90', async () => {
     const { container } = await montar(<AgendaPage />);
     await abrirDetalhe(container, 'Mãe Divina');
     await clicar(botaoComTexto(container, 'Editar'));
@@ -880,7 +892,8 @@ describe('AgendaPage: editar', () => {
 
     await clicar(botaoComTexto(formularioAberto(container), 'Salvar cerimônia'));
 
-    expect(textoDoNumero(container, 'Contribuição')).toBe('Contribuição45 · 50opções sugeridas');
+    expect(formularioAberto(container).textContent).toContain('Use só valores inteiros em reais, separados por vírgula: 40, 60, 90.');
+    expect(textoDoNumero(container, 'Contribuição')).toBe('Contribuição40 · 60 · 90opções sugeridas');
   });
 
   it('editar as tarefas — a marcação de pronto fica na posição, não na tarefa: trocar a ordem passa a marcação para outra', async () => {

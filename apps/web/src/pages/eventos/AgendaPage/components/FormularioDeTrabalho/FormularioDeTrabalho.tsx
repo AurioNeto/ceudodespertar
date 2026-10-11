@@ -3,6 +3,7 @@ import { CORES_POR_TIPO } from '../../constantes';
 import type { TipoDeTrabalho } from '../../tipos';
 import type { RascunhoDeTrabalho } from '../../utils/rascunhoDeTrabalho';
 import { TarefasDoPreparo } from './components/TarefasDoPreparo';
+import { ID_DO_CAMPO_DE_CONTRIBUICOES } from './constantes';
 import { useFormularioDeTrabalho } from './hooks/useFormularioDeTrabalho';
 
 export interface FormularioDeTrabalhoProps {
@@ -12,7 +13,7 @@ export interface FormularioDeTrabalhoProps {
 }
 
 export function FormularioDeTrabalho({ inicial, onCancelar, onSalvar }: FormularioDeTrabalhoProps) {
-  const { f, alterar, mexerNasTarefas, mover } = useFormularioDeTrabalho(inicial);
+  const { f, alterar, mexerNasTarefas, mover, erroDasContribuicoes, salvar } = useFormularioDeTrabalho(inicial, onSalvar);
 
   return (
     <div
@@ -97,11 +98,13 @@ export function FormularioDeTrabalho({ inicial, onCancelar, onSalvar }: Formular
               inputMode="decimal"
             />
             <TextField
+              id={ID_DO_CAMPO_DE_CONTRIBUICOES}
               label="Contribuições sugeridas"
               value={f.contribuicoes}
               onChange={(e) => alterar('contribuicoes', e.target.value)}
               placeholder="40, 60, 90"
               hint="uma ou mais opções, separadas por vírgula"
+              error={erroDasContribuicoes}
             />
           </div>
 
@@ -131,7 +134,7 @@ export function FormularioDeTrabalho({ inicial, onCancelar, onSalvar }: Formular
             iconName="check"
             disabled={!f.nome.trim()}
             blockedReason={!f.nome.trim() ? 'A cerimônia precisa de um nome.' : undefined}
-            onClick={() => onSalvar(f)}
+            onClick={salvar}
           >
             Salvar cerimônia
           </Button>

@@ -1,12 +1,9 @@
 import { lerValorDigitado } from '@/lib/numero';
+import { contribuicoesDoTexto } from './contribuicoesDoTexto';
 import type { RascunhoDeTrabalho } from './rascunhoDeTrabalho';
 
 export const trabalhoDoRascunho = (f: RascunhoDeTrabalho, mes: number, ano: number) => {
   const [dia, mesForm, anoForm] = f.data.split('/').map((n) => parseInt(n, 10));
-  const contribuicoes = f.contribuicoes
-    .split(',')
-    .map((v) => parseFloat(v.replace(',', '.').trim()))
-    .filter((v) => !Number.isNaN(v));
 
   return {
     nome: f.nome,
@@ -19,7 +16,7 @@ export const trabalhoDoRascunho = (f: RascunhoDeTrabalho, mes: number, ano: numb
     dirigente: f.dirigente || 'a definir',
     previstos: parseInt(f.previstos, 10) || 0,
     litros: lerValorDigitado(f.litros) || 0,
-    contribuicoes,
+    contribuicoes: contribuicoesDoTexto(f.contribuicoes) ?? [],
     observacoes: f.observacoes,
     preparo: f.preparo
       .filter((t) => t.titulo.trim())

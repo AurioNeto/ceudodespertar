@@ -1,10 +1,16 @@
 import { useState } from 'react';
 import type { TarefaDePreparo } from '../../../tipos';
+import { contribuicoesDoTexto } from '../../../utils/contribuicoesDoTexto';
 import type { RascunhoDeTrabalho } from '../../../utils/rascunhoDeTrabalho';
+import { ID_DO_CAMPO_DE_CONTRIBUICOES, MENSAGEM_DE_CONTRIBUICOES_INVALIDAS } from '../constantes';
 import { moverTarefa } from '../utils/moverTarefa';
 
-export function useFormularioDeTrabalho(inicial: RascunhoDeTrabalho) {
+export function useFormularioDeTrabalho(inicial: RascunhoDeTrabalho, aoSalvar: (rascunho: RascunhoDeTrabalho) => void) {
   const [f, setF] = useState(inicial);
+  const [tentouSalvar, setTentouSalvar] = useState(false);
+
+  const contribuicoesInvalidas = contribuicoesDoTexto(f.contribuicoes) === null;
+  const erroDasContribuicoes = tentouSalvar && contribuicoesInvalidas ? MENSAGEM_DE_CONTRIBUICOES_INVALIDAS : undefined;
 
   const alterar = <K extends keyof RascunhoDeTrabalho>(campo: K, valor: RascunhoDeTrabalho[K]) =>
     setF((atual) => ({ ...atual, [campo]: valor }));
@@ -14,5 +20,14 @@ export function useFormularioDeTrabalho(inicial: RascunhoDeTrabalho) {
 
   const mover = (i: number, delta: number) => mexerNasTarefas((lista) => moverTarefa(lista, i, delta));
 
-  return { f, alterar, mexerNasTarefas, mover };
+  const salvar = () => {
+    if (contribuicoesInvalidas) {
+      setTentouSalvar(true);
+      document.getElementById(ID_DO_CAMPO_DE_CONTRIBUICOES)?.focus();
+      return;
+    }
+    aoSalvar(f);
+  };
+
+  return { f, alterar, mexerNasTarefas, mover, erroDasContribuicoes, salvar };
 }
