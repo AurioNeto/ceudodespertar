@@ -1,0 +1,1 @@
+export { Passos } from './Passos';

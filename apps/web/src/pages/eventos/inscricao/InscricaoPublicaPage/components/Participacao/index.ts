@@ -1,0 +1,1 @@
+export { Participacao } from './Participacao';

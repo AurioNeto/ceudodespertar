@@ -1,7 +1,7 @@
 import type { Pergunta, PerguntaPendente } from '@cdd/contracts';
 import { Icon, StatusBadge, Cartao } from '@/ds';
 import { TextField } from '@/ds';
-import { disparaAlerta } from '../../utils/regraDeAlerta';
+import { disparaAlerta } from '../../../../utils/regraDeAlerta';
 
 /**
  * As peças de responder anamnese. Vivem fora da tela porque a leitura da
