@@ -9,8 +9,10 @@ export interface PainelDePagamentoProps {
   densidade: Density;
   conta: string;
   data: string;
+  motivo: string;
   onConta: (v: string) => void;
   onData: (v: string) => void;
+  onMotivo: (v: string) => void;
   onCancelar: () => void;
   onPagar: () => void;
 }
@@ -20,13 +22,16 @@ export function PainelDePagamento({
   densidade,
   conta,
   data,
+  motivo,
   onConta,
   onData,
+  onMotivo,
   onCancelar,
   onPagar,
 }: PainelDePagamentoProps) {
   const campo = densidade === 'field';
   const destino = competenciaDaSaida(d);
+  const faltaMotivo = d.competenciaFechada && !motivo.trim();
 
   return (
     <div
@@ -58,19 +63,35 @@ export function PainelDePagamento({
         />
       </div>
 
+      {d.competenciaFechada ? (
+        <TextField
+          label="Motivo"
+          value={motivo}
+          density={campo ? 'field' : 'office'}
+          onChange={(e) => onMotivo(e.target.value)}
+          hint={`Por que a saída entra em ${formatarCompetencia(destino)} e não em ${formatarCompetencia(d.competenciaOriginal as string)}.`}
+        />
+      ) : null}
+
       <div style={{ display: 'flex', gap: 9, alignItems: 'flex-start' }}>
         <Icon name="arrow-up-right" size={15} color="var(--color-royal)" style={{ marginTop: 2 }} />
         <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>
           Vai gerar um <b>lançamento de saída</b> vinculado ao evento {d.evento}, na competência{' '}
           <b data-numeric>{formatarCompetencia(destino)}</b>
           {d.competenciaFechada
-            ? ` — a competência original (${formatarCompetencia(d.competenciaOriginal as string)}) está fechada, e a saída entra no mês corrente em vez de reabrir um período já prestado.`
+            ? ` — a competência original (${formatarCompetencia(d.competenciaOriginal as string)}) está fechada e não recebe lançamento sem reabertura; a saída só entra no mês corrente com a decisão registrada no motivo.`
             : '.'}
         </span>
       </div>
 
       <div style={{ display: 'flex', gap: 9, flexWrap: 'wrap' }}>
-        <Button iconName="check" density={campo ? 'field' : 'office'} onClick={onPagar}>
+        <Button
+          iconName="check"
+          density={campo ? 'field' : 'office'}
+          disabled={faltaMotivo}
+          blockedReason={faltaMotivo ? `Registre o motivo para lançar em ${formatarCompetencia(destino)}.` : undefined}
+          onClick={onPagar}
+        >
           Confirmar a devolução
         </Button>
         <Button variant="quiet" density={campo ? 'field' : 'office'} onClick={onCancelar}>

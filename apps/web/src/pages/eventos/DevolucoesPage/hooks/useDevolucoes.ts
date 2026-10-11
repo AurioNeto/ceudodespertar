@@ -17,6 +17,7 @@ export function useDevolucoes() {
   const [pagando, setPagando] = useState<string | null>(null);
   const [conta, setConta] = useState(contas[0]!.id as string);
   const [data, setData] = useState(HOJE);
+  const [motivo, setMotivo] = useState('');
   const [recado, setRecado] = useState<string | null>(null);
 
   const total = fila.reduce((s, d) => s + d.valor, 0);
@@ -40,13 +41,14 @@ export function useDevolucoes() {
     ]);
     setPagando(null);
     setRecado(
-      `${formatarBRL(d.valor)} devolvidos a ${d.nome} por ${nomeDaConta}. A saída entrou na competência ${formatarCompetencia(destino)}, vinculada ao evento ${d.evento}; ${d.lancamentoOriginal} não foi alterado.`,
+      `${formatarBRL(d.valor)} devolvidos a ${d.nome} por ${nomeDaConta}. A saída entrou na competência ${formatarCompetencia(destino)}, vinculada ao evento ${d.evento}; ${d.lancamentoOriginal} não foi alterado.${d.competenciaFechada ? ` Motivo registrado: “${motivo.trim()}”` : ''}`,
     );
   };
 
   const abrir = (d: DevolucaoNaFila) => {
     setPagando(d.id as string);
     setData(HOJE);
+    setMotivo('');
     setRecado(null);
   };
 
@@ -60,11 +62,13 @@ export function useDevolucoes() {
     pagando,
     conta,
     data,
+    motivo,
     recado,
     total,
     maisAntiga,
     setConta,
     setData,
+    setMotivo,
     pagar,
     abrir,
     cancelarPagamento,

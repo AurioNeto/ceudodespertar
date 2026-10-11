@@ -63,6 +63,9 @@ const nomesNaFila = (container: HTMLElement) =>
     .map((botao) => botao.textContent);
 const abrirPainel = (container: HTMLElement, nome: string, valor: string) =>
   clicar(botaoComTexto(cartaoDaFila(container, nome), `Devolver ${valor}`));
+const MOTIVO_DA_COMPETENCIA = 'Julho já foi prestado e fechado.';
+const registrarMotivo = (container: HTMLElement, nome: string) =>
+  digitar(campoDoRotulo(cartaoDaFila(container, nome), 'Motivo'), MOTIVO_DA_COMPETENCIA);
 const confirmar = (cartao: HTMLElement) => clicar(botaoComTexto(cartao, 'Confirmar a devolução'));
 const jaDevolvidas = (container: HTMLElement) => itensDaListaDoCartao(cartaoDoRotulo(container, 'Já devolvidas'));
 const numero = (container: HTMLElement, rotulo: string) => textoDaFolhaPai(container, rotulo);
@@ -103,6 +106,7 @@ describe('DevolucoesPage: cabeçalho e totais', () => {
     const { container } = await montar(<DevolucoesPage />);
 
     await abrirPainel(container, OTAVIO, 'R$ 540,00');
+    await registrarMotivo(container, OTAVIO);
     await confirmar(cartaoDaFila(container, OTAVIO));
 
     const dias = folhaComTextoExato(container, '17 dias')!;
@@ -219,15 +223,16 @@ describe('DevolucoesPage: painel de pagamento', () => {
     expect(cartaoDaFila(container, CARLOS).textContent).toContain('Vai gerar um lançamento de saída vinculado ao evento Trabalho de Cura, na competência 08/2026.');
   });
 
-  it('competência fechada — a saída vai para 09/2026, o mês corrente da tela, com a explicação do período já prestado', async () => {
+  it('competência fechada — a saída só vai para 09/2026 com o motivo registrado, e a confirmação espera por ele', async () => {
     const { container } = await montar(<DevolucoesPage />);
 
     await abrirPainel(container, OTAVIO, 'R$ 540,00');
 
     expect(cartaoDaFila(container, OTAVIO).textContent).toContain(
-      'Vai gerar um lançamento de saída vinculado ao evento Jornada de julho, na competência 09/2026 — a competência original (07/2026) está fechada, ' +
-        'e a saída entra no mês corrente em vez de reabrir um período já prestado.',
+      'Vai gerar um lançamento de saída vinculado ao evento Jornada de julho, na competência 09/2026 — a competência original (07/2026) está fechada ' +
+        'e não recebe lançamento sem reabertura; a saída só entra no mês corrente com a decisão registrada no motivo.',
     );
+    expect(botaoComTexto(cartaoDaFila(container, OTAVIO), 'Confirmar a devolução').disabled).toBe(true);
   });
 
   it('Cancelar no painel — fecha e devolve o botão Devolver, sem pagar nada', async () => {
@@ -332,14 +337,16 @@ describe('DevolucoesPage: confirmar a devolução', () => {
     expect(recadoDaTela(container)).toContain('devolvidos a Carlos Menezes por Espécie.');
   });
 
-  it('competência fechada — o aviso diz que a saída entrou em 09/2026 e que o lançamento original não foi alterado', async () => {
+  it('competência fechada — o aviso diz que a saída entrou em 09/2026, que o lançamento original não foi alterado e qual foi o motivo', async () => {
     const { container } = await montar(<DevolucoesPage />);
     await abrirPainel(container, OTAVIO, 'R$ 540,00');
 
+    await registrarMotivo(container, OTAVIO);
     await confirmar(cartaoDaFila(container, OTAVIO));
 
     expect(recadoDaTela(container)).toBe(
-      'R$ 540,00 devolvidos a Otávio Lins por Cora PJ. A saída entrou na competência 09/2026, vinculada ao evento Jornada de julho; lanc-8390 não foi alterado.',
+      'R$ 540,00 devolvidos a Otávio Lins por Cora PJ. A saída entrou na competência 09/2026, vinculada ao evento Jornada de julho; lanc-8390 não foi alterado. ' +
+        'Motivo registrado: “Julho já foi prestado e fechado.”',
     );
     expect(jaDevolvidas(container)[0]).toBe('Otávio LinsJornada de julho · 18/07 · 11/09/2026 · Cora PJsai-8390R$ 540,00');
   });
@@ -373,6 +380,7 @@ describe('DevolucoesPage: confirmar a devolução', () => {
     await clicar(botaoDoRecado(container)!);
     const aoFechar = recadoDaTela(container);
     await abrirPainel(container, OTAVIO, 'R$ 540,00');
+    await registrarMotivo(container, OTAVIO);
     await confirmar(cartaoDaFila(container, OTAVIO));
     await abrirPainel(container, INSTITUTO, 'R$ 1.800,00');
 
@@ -385,6 +393,7 @@ describe('DevolucoesPage: confirmar a devolução', () => {
     await abrirPainel(container, CARLOS, 'R$ 210,00');
     await confirmar(cartaoDaFila(container, CARLOS));
     await abrirPainel(container, OTAVIO, 'R$ 540,00');
+    await registrarMotivo(container, OTAVIO);
     await confirmar(cartaoDaFila(container, OTAVIO));
     await abrirPainel(container, INSTITUTO, 'R$ 1.800,00');
 
@@ -404,6 +413,7 @@ describe('DevolucoesPage: confirmar a devolução', () => {
     await abrirPainel(container, CARLOS, 'R$ 210,00');
     await confirmar(cartaoDaFila(container, CARLOS));
     await abrirPainel(container, OTAVIO, 'R$ 540,00');
+    await registrarMotivo(container, OTAVIO);
     await confirmar(cartaoDaFila(container, OTAVIO));
     await abrirPainel(container, INSTITUTO, 'R$ 1.800,00');
 
