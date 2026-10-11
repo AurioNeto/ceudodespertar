@@ -6,6 +6,7 @@ export { AppShell } from './templates/AppShell';
 export type { NavEntry, NavLink, NavSection } from './templates/AppShell';
 export { AttachmentCapture } from './molecules/AttachmentCapture';
 export { Avatar } from './atoms/Avatar';
+export { Aviso } from './molecules/Aviso';
 export { BarraDeProporcao } from './atoms/BarraDeProporcao';
 export { BottomSheet } from './organisms/BottomSheet';
 export type { SheetOption } from './fundacao/opcao';
