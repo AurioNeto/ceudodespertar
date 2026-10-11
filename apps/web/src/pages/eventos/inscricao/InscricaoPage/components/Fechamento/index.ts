@@ -1,0 +1,1 @@
+export { Fechamento } from './Fechamento';

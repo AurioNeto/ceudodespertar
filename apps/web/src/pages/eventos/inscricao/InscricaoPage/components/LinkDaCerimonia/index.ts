@@ -1,0 +1,1 @@
+export { LinkDaCerimonia } from './LinkDaCerimonia';

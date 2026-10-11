@@ -1,0 +1,1 @@
+export { LinhaDeInterruptor } from './LinhaDeInterruptor';

@@ -1,0 +1,1 @@
+export { Pendencias } from './Pendencias';

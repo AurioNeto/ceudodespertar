@@ -1,4 +1,5 @@
 import type { StatusAnamnese, TipoParticipacao } from '@cdd/contracts';
+import type { BadgeTone } from '@/ds';
 
 export const TIPO_ROTULO: Record<TipoParticipacao, string> = {
   PARTICIPANTE: 'Participante',
@@ -26,4 +27,11 @@ export const ANAMNESE_ROTULO: Record<StatusAnamnese, string> = {
   PENDENTE: 'Pendente',
   VENCIDA: 'Vencida',
   NAO_APLICAVEL: 'Não se aplica',
+};
+
+export const TOM_DA_ANAMNESE: Record<string, BadgeTone> = {
+  OK: 'confirmed',
+  PENDENTE: 'attention',
+  VENCIDA: 'attention',
+  NAO_APLICAVEL: 'neutral',
 };

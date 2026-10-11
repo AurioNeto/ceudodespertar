@@ -1,5 +1,4 @@
 import { useMemo, useState } from 'react';
-import type { ReactNode } from 'react';
 import type {
   Hospedagem,
   ModalidadeCrianca,
@@ -11,22 +10,27 @@ import {
   Button,
   Icon,
   ScreenHeader,
-  StatusBadge,
   TextField,
-  type BadgeTone,
   useDensidade,
-  Interruptor,
   Select,
   SeletorDeTipo,
-  Cartao,
   Recado,
-  Rotulo,
 } from '@/ds';
-import { formatarBRL, formatarDinheiro, pluralizar } from '@/pages/utils/formato';
-import { ANAMNESE_ROTULO, CONSAGRA_POR_PADRAO, TIPO_EXPLICACAO, TIPO_ROTULO } from './constantes';
+import { formatarBRL, pluralizar } from '@/pages/utils/formato';
+import { CONSAGRA_POR_PADRAO, TIPO_EXPLICACAO, TIPO_ROTULO } from './constantes';
+import type { Pendencia } from './tipos';
 import { diretorio, type PessoaDoDiretorio } from './mocks/inscricao';
 import { eventos } from '../mocks/eventos';
-import { linkDaCerimonia } from '../mocks/linkDaCerimonia';
+import { Bloco } from './components/Bloco';
+import { BuscaDePessoa } from './components/BuscaDePessoa';
+import { Contribuicao } from './components/Contribuicao';
+import { EscolhaDoEvento } from './components/EscolhaDoEvento';
+import { EstadoDaAnamnese } from './components/EstadoDaAnamnese';
+import { Fechamento } from './components/Fechamento';
+import { LinhaDeInterruptor } from './components/LinhaDeInterruptor';
+import { LinkDaCerimonia } from './components/LinkDaCerimonia';
+import { Pendencias } from './components/Pendencias';
+import { PessoaEscolhida } from './components/PessoaEscolhida';
 
 /**
  * `E-06` · Inscrição — Doc 4 §7 e Doc 2 §2.4.
@@ -43,21 +47,6 @@ import { linkDaCerimonia } from '../mocks/linkDaCerimonia';
  * porque contribuição negociada é a prática da casa e o sistema não pode
  * atrapalhá-la.
  */
-
-const TOM_DA_ANAMNESE: Record<string, BadgeTone> = {
-  OK: 'confirmed',
-  PENDENTE: 'attention',
-  VENCIDA: 'attention',
-  NAO_APLICAVEL: 'neutral',
-};
-
-interface Pendencia {
-  chave: string;
-  titulo: string;
-  detalhe: string;
-  invariante: string;
-  acao?: { rotulo: string; ao: () => void };
-}
 
 export function InscricaoPage() {
   const densidade = useDensidade();
@@ -247,18 +236,18 @@ export function InscricaoPage() {
             setRefeicoes([]);
             setLeitoAlocado(false);
           }}
-          campo={campo}
+          densidade={densidade}
         />
 
-        <LinkDaCerimonia campo={campo} copiado={linkCopiado} onCopiar={() => setLinkCopiado(true)} />
+        <LinkDaCerimonia densidade={densidade} copiado={linkCopiado} onCopiar={() => setLinkCopiado(true)} />
 
         {pessoa === null ? (
-          <BuscaDePessoa busca={busca} onBusca={setBusca} onEscolher={escolher} campo={campo} />
+          <BuscaDePessoa busca={busca} onBusca={setBusca} onEscolher={escolher} densidade={densidade} />
         ) : (
           <>
-            <PessoaEscolhida pessoa={pessoa} campo={campo} onTrocar={() => setPessoa(null)} />
+            <PessoaEscolhida pessoa={pessoa} densidade={densidade} onTrocar={() => setPessoa(null)} />
 
-            <Bloco titulo="Como participa" campo={campo}>
+            <Bloco titulo="Como participa" densidade={densidade}>
               <SeletorDeTipo
                 opcoes={(['PARTICIPANTE', 'CONVIDADO', 'EQUIPE', 'CRIANCA_ESTELAR'] as const).map((t) => ({
                   valor: t,
@@ -327,7 +316,7 @@ export function InscricaoPage() {
               />
             </Bloco>
 
-            <EstadoDaAnamnese pessoa={pessoa} exigida={anamneseExigida} campo={campo} />
+            <EstadoDaAnamnese pessoa={pessoa} exigida={anamneseExigida} densidade={densidade} />
 
             <Contribuicao
               evento={evento}
@@ -342,10 +331,10 @@ export function InscricaoPage() {
                 setValor(v);
                 setNivel(null);
               }}
-              campo={campo}
+              densidade={densidade}
             />
 
-            <Bloco titulo="Hospedagem" campo={campo}>
+            <Bloco titulo="Hospedagem" densidade={densidade}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
                 {evento.hospedagens.map((h) => (
                   <OpcaoEmLinha
@@ -378,7 +367,7 @@ export function InscricaoPage() {
             </Bloco>
 
             {evento.ocasiaoEspecial ? (
-              <Bloco titulo="Alimentação" campo={campo}>
+              <Bloco titulo="Alimentação" densidade={densidade}>
                 <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>{evento.nota}</span>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
                   {evento.refeicoes.map((r) => (
@@ -407,7 +396,7 @@ export function InscricaoPage() {
               </span>
             )}
 
-            <Bloco titulo="O que a casa precisa saber de todo mundo" campo={campo}>
+            <Bloco titulo="O que a casa precisa saber de todo mundo" densidade={densidade}>
               <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>
                 Obrigatórios inclusive para quem não consagra. É a única obrigatoriedade dura da inscrição.
               </span>
@@ -434,10 +423,10 @@ export function InscricaoPage() {
               </div>
             </Bloco>
 
-            {pendencias.length > 0 ? <Pendencias lista={pendencias} campo={campo} /> : null}
+            {pendencias.length > 0 ? <Pendencias lista={pendencias} densidade={densidade} /> : null}
 
             <Fechamento
-              campo={campo}
+              densidade={densidade}
               isento={isento}
               semValor={semValor}
               total={total}
@@ -457,356 +446,6 @@ export function InscricaoPage() {
 }
 
 /* ── Peças ───────────────────────────────────────────────────────────────── */
-
-function Bloco({ titulo, campo, children }: { titulo: string; campo: boolean; children: ReactNode }) {
-  return (
-    <Cartao campo={campo} style={{ gap: 12 }}>
-      <Rotulo>{titulo}</Rotulo>
-      {children}
-    </Cartao>
-  );
-}
-
-function EscolhaDoEvento({
-  eventoId,
-  onTrocar,
-  campo,
-}: {
-  eventoId: string;
-  onTrocar: (v: string) => void;
-  campo: boolean;
-}) {
-  const evento = eventos.find((e) => (e.id as string) === eventoId)!;
-  return (
-    <Cartao campo={campo} style={{ gap: 11 }}>
-      <SeletorDeTipo
-        opcoes={eventos.map((e) => ({ valor: e.id as string, label: e.abreviacao }))}
-        valor={eventoId}
-        onEscolher={onTrocar}
-        densidade={campo ? 'field' : 'office'}
-      />
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px 14px', alignItems: 'baseline' }}>
-        <span style={{ font: 'var(--text-title-sm)', color: 'var(--text-title)' }}>
-          {evento.nome} — {evento.data}
-        </span>
-        <span style={{ font: 'var(--text-small)', color: 'var(--text-meta)' }}>{evento.local}</span>
-        <span style={{ flex: 1 }} />
-        <span data-numeric style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>
-          {evento.inscritos} de {evento.capacidade} · {evento.leitosLivres} leitos livres
-        </span>
-      </div>
-      <span style={{ font: 'var(--text-small)', color: 'var(--text-meta)' }}>
-        Nome e data juntos porque há mais de um trabalho no mesmo mês.
-      </span>
-    </Cartao>
-  );
-}
-
-/**
- * O link da cerimônia. Fica em cima porque, na prática, é por ele que a maior
- * parte das inscrições entra: a recepção manda no WhatsApp e a pessoa se
- * cadastra e responde a própria anamnese. O que esta tela faz é o resto —
- * inscrever quem chegou por outro caminho e conferir o que já veio.
- */
-function LinkDaCerimonia({
-  campo,
-  copiado,
-  onCopiar,
-}: {
-  campo: boolean;
-  copiado: boolean;
-  onCopiar: () => void;
-}) {
-  return (
-    <Cartao campo={campo} style={{ gap: 10 }}>
-      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px 12px' }}>
-        <Icon name="link" size={17} color="var(--color-ink-brand)" />
-        <Rotulo>Link de inscrição desta cerimônia</Rotulo>
-        <span style={{ flex: 1 }} />
-        <span data-numeric style={{ font: 'var(--text-small)', color: 'var(--text-meta)' }}>
-          {linkDaCerimonia.aberturas} aberturas · {linkDaCerimonia.inscricoesPeloLink} inscrições
-        </span>
-      </div>
-
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center' }}>
-        <code style={{ font: 'var(--text-code)', color: 'var(--text-link)', wordBreak: 'break-all' }}>
-          {linkDaCerimonia.url}
-        </code>
-        <Button variant={copiado ? 'quiet' : 'ghost'} iconName={copiado ? 'check' : 'copy'} onClick={onCopiar}>
-          {copiado ? 'Copiado' : 'Copiar'}
-        </Button>
-      </div>
-
-      <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)', maxWidth: '76ch' }}>
-        Gerado quando a cerimônia foi criada. A pessoa abre, declara o CPF, se cadastra se for a primeira vez e{' '}
-        <b>responde a própria anamnese</b> — ninguém da casa preenche saúde por ninguém.
-      </span>
-    </Cartao>
-  );
-}
-
-function BuscaDePessoa({
-  busca,
-  onBusca,
-  onEscolher,
-  campo,
-}: {
-  busca: string;
-  onBusca: (v: string) => void;
-  onEscolher: (p: PessoaDoDiretorio) => void;
-  campo: boolean;
-}) {
-  const termo = busca.trim().toLowerCase();
-  const achados = termo
-    ? diretorio.filter((d) => d.nome.toLowerCase().includes(termo) || d.cidade.toLowerCase().includes(termo))
-    : diretorio;
-
-  return (
-    <Bloco titulo="Quem vai" campo={campo}>
-      <TextField
-        label="Buscar no diretório"
-        placeholder="Nome ou cidade"
-        value={busca}
-        density={campo ? 'field' : 'office'}
-        onChange={(e) => onBusca(e.target.value)}
-      />
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-        {achados.map((d) => (
-          <button
-            key={d.id}
-            type="button"
-            onClick={() => onEscolher(d)}
-            style={{
-              textAlign: 'left',
-              border: 'var(--border-hairline)',
-              borderRadius: 'var(--radius)',
-              background: 'var(--bg-card)',
-              padding: campo ? '13px 14px' : '12px 15px',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 11,
-              minHeight: campo ? 'var(--target-field)' : undefined,
-            }}
-          >
-            <span style={{ display: 'flex', flexDirection: 'column', gap: 3, flex: 1, minWidth: 0 }}>
-              <span style={{ font: 'var(--text-body-strong)', color: 'var(--text-primary)' }}>{d.nome}</span>
-              <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>
-                {d.vinculo} · {d.cidade}
-              </span>
-            </span>
-            <StatusBadge tone={TOM_DA_ANAMNESE[d.anamnese]!}>{ANAMNESE_ROTULO[d.anamnese]}</StatusBadge>
-            <Icon name="chevron-right" size={17} color="var(--text-meta)" />
-          </button>
-        ))}
-        {achados.length === 0 ? (
-          <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>
-            Ninguém com esse nome. Quem chega pela primeira vez entra pelo cadastro rápido, e o cadastro é sempre
-            humano — não há autoinscrição.
-          </span>
-        ) : null}
-      </div>
-    </Bloco>
-  );
-}
-
-function PessoaEscolhida({
-  pessoa,
-  campo,
-  onTrocar,
-}: {
-  pessoa: PessoaDoDiretorio;
-  campo: boolean;
-  onTrocar: () => void;
-}) {
-  return (
-    <Cartao campo={campo} style={{ gap: 8 }}>
-      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '6px 11px' }}>
-        <Icon name="user-round" size={18} color="var(--color-ink-brand)" />
-        <span style={{ font: 'var(--text-title-sm)', color: 'var(--text-title)' }}>{pessoa.nome}</span>
-        {pessoa.menorDeIdade ? <StatusBadge tone="suggest">Menor de idade</StatusBadge> : null}
-        <span style={{ flex: 1 }} />
-        <Button variant="quiet" iconName="arrow-left" onClick={onTrocar}>
-          Trocar
-        </Button>
-      </div>
-      <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>
-        {pessoa.vinculo} · {pessoa.cidade} · nasceu em {pessoa.nascimento}
-      </span>
-    </Cartao>
-  );
-}
-
-function EstadoDaAnamnese({
-  pessoa,
-  exigida,
-  campo,
-}: {
-  pessoa: PessoaDoDiretorio;
-  exigida: boolean;
-  campo: boolean;
-}) {
-  const emDia = pessoa.anamnese === 'OK';
-  return (
-    <Cartao campo={campo} style={{ gap: 9 }}>
-      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '6px 10px' }}>
-        <Rotulo>Anamnese</Rotulo>
-        <StatusBadge tone={exigida ? TOM_DA_ANAMNESE[pessoa.anamnese]! : 'neutral'}>
-          {exigida ? ANAMNESE_ROTULO[pessoa.anamnese] : 'Não se aplica'}
-        </StatusBadge>
-        <span style={{ font: 'var(--text-small)', color: 'var(--text-meta)' }}>{pessoa.anamneseNota}</span>
-      </div>
-      <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>
-        {exigida
-          ? emDia
-            ? 'Em dia.'
-            : 'Enquanto não estiver em dia, a inscrição pode ser salva, mas não confirmada.'
-          : 'Quem não consagra não precisa responder. O estado antigo continua guardado, apenas não se aplica a este trabalho.'}{' '}
-        Esta tela mostra o estado, <b>nunca as respostas</b> — abrir a anamnese é outro ato, em outra tela, e fica
-        registrado lá.
-      </span>
-    </Cartao>
-  );
-}
-
-function Contribuicao({
-  evento,
-  isento,
-  nivel,
-  valor,
-  onNivel,
-  onValor,
-  campo,
-}: {
-  evento: (typeof eventos)[number];
-  isento: boolean;
-  nivel: NivelDeContribuicao | null;
-  valor: string;
-  onNivel: (n: NivelDeContribuicao, valorFormatado: string) => void;
-  onValor: (v: string) => void;
-  campo: boolean;
-}) {
-  if (isento) {
-    return (
-      <Cartao campo={campo} style={{ gap: 9 }}>
-        <Rotulo>Contribuição</Rotulo>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <StatusBadge tone="neutral">Isento</StatusBadge>
-          <span style={{ font: 'var(--text-body)', color: 'var(--text-primary)' }}>
-            Equipe não contribui financeiramente.
-          </span>
-        </div>
-        <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)', maxWidth: '74ch' }}>
-          Isento não é zero. Zero seria alguém que devia e pagou nada; isento é quem o domínio diz que não deve — e a
-          diferença aparece na soma do trabalho, onde a equipe não entra como inadimplência.
-        </span>
-      </Cartao>
-    );
-  }
-
-  const escolhido = evento.contribuicoes.find((c) => c.nivel === nivel);
-  const digitado = Math.round(Number(valor.replace(/\./g, '').replace(',', '.')) * 100) || 0;
-  const social = evento.contribuicoes[0]!.valor;
-  const prospero = evento.contribuicoes[2]!.valor;
-
-  return (
-    <Cartao campo={campo} style={{ gap: 12 }}>
-      <Rotulo>Contribuição sugerida</Rotulo>
-      <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)', maxWidth: '76ch' }}>
-        Três níveis definidos pelos padrinhos, referentes só à participação na cerimônia. <b>São sugestão, não
-        preço</b>: o valor se conversa para menos conforme a condição de cada um, e quem quiser contribuir mais pode.
-      </span>
-
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: campo ? '1fr' : 'repeat(3, minmax(0, 1fr))',
-          gap: 10,
-        }}
-      >
-        {evento.contribuicoes.map((c) => {
-          const marcado = nivel === c.nivel;
-          return (
-            <button
-              key={c.nivel}
-              type="button"
-              aria-pressed={marcado}
-              onClick={() => onNivel(c.nivel, formatarDinheiro(c.valor))}
-              style={{
-                textAlign: 'left',
-                padding: '13px 15px',
-                borderRadius: 'var(--radius)',
-                border: `1px solid ${marcado ? 'var(--color-royal)' : 'var(--color-line-strong)'}`,
-                background: marcado ? 'var(--color-royal-soft)' : 'var(--bg-card)',
-                cursor: 'pointer',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 5,
-                minHeight: campo ? 'var(--target-field)' : undefined,
-              }}
-            >
-              <span style={{ font: 'var(--text-body-strong)', color: marcado ? 'var(--color-royal-ink)' : 'var(--text-primary)' }}>
-                {c.rotulo}
-              </span>
-              <span data-numeric style={{ font: 'var(--text-amount)', color: 'var(--color-royal-deep)' }}>
-                {formatarBRL(c.valor)}
-              </span>
-              <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>{c.explicacao}</span>
-            </button>
-          );
-        })}
-      </div>
-
-      <TextField
-        label="Valor combinado"
-        value={valor}
-        density={campo ? 'field' : 'office'}
-        placeholder="0,00"
-        onChange={(e) => onValor(e.target.value)}
-        hint="Sempre editável. Escolher um nível preenche este campo; o que vale é o que está aqui."
-      />
-
-      {digitado > 0 && digitado < social ? (
-        <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>
-          Abaixo do nível social — combinado com a pessoa. Não precisa de justificativa: a casa não cobra explicação
-          de quem contribui com o que pode.
-        </span>
-      ) : null}
-      {digitado > prospero ? (
-        <span style={{ font: 'var(--text-small)', color: 'var(--color-confirmed)' }}>
-          Acima do próspero — contribuição voluntária além do sugerido.
-        </span>
-      ) : null}
-      {escolhido && digitado === escolhido.valor ? (
-        <span style={{ font: 'var(--text-small)', color: 'var(--text-meta)' }}>
-          No nível {escolhido.rotulo.toLowerCase()}.
-        </span>
-      ) : null}
-    </Cartao>
-  );
-}
-
-function LinhaDeInterruptor({
-  rotulo,
-  nota,
-  ligado,
-  onAlternar,
-}: {
-  rotulo: string;
-  nota: string;
-  ligado: boolean;
-  onAlternar: () => void;
-}) {
-  return (
-    <div style={{ display: 'flex', gap: 13, alignItems: 'flex-start', paddingTop: 4 }}>
-      <Interruptor ligado={ligado} onAlternar={onAlternar} rotuloAcessivel={rotulo} />
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 3, minWidth: 0 }}>
-        <span style={{ font: 'var(--text-body-strong)', color: 'var(--text-primary)' }}>{rotulo}</span>
-        <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>{nota}</span>
-      </div>
-    </div>
-  );
-}
 
 function OpcaoEmLinha({
   rotulo,
@@ -867,134 +506,5 @@ function OpcaoEmLinha({
         {valor}
       </span>
     </button>
-  );
-}
-
-function Pendencias({ lista, campo }: { lista: readonly Pendencia[]; campo: boolean }) {
-  return (
-    <div
-      style={{
-        background: 'var(--color-attention-soft)',
-        border: '1px solid var(--color-attention-border)',
-        borderLeft: 'var(--edge-state) solid var(--color-attention)',
-        borderRadius: '0 var(--radius) var(--radius) 0',
-        padding: campo ? '14px 15px' : '16px 18px',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 13,
-      }}
-    >
-      <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-        <Icon name="triangle-alert" size={19} color="var(--color-attention)" />
-        <span style={{ font: 'var(--text-title-sm)', color: 'var(--text-title)' }}>
-          {pluralizar(lista.length, 'pendência')} para confirmar
-        </span>
-      </div>
-
-      {lista.map((p) => (
-        <div
-          key={p.chave}
-          style={{ display: 'flex', flexDirection: 'column', gap: 6, borderTop: '1px solid var(--color-line)', paddingTop: 11 }}
-        >
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px 9px', alignItems: 'baseline' }}>
-            <span style={{ font: 'var(--text-body-strong)', color: 'var(--text-primary)' }}>{p.titulo}</span>
-            <code style={{ font: 'var(--text-code)' }}>{p.invariante}</code>
-          </div>
-          <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)', maxWidth: '72ch' }}>
-            {p.detalhe}
-          </span>
-          {p.acao ? (
-            <span>
-              <Button variant="ghost" iconName="check" onClick={p.acao.ao}>
-                {p.acao.rotulo}
-              </Button>
-            </span>
-          ) : null}
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function Fechamento({
-  campo,
-  isento,
-  semValor,
-  total,
-  contribuicao,
-  custoHospedagem,
-  custoRefeicoes,
-  pendencias,
-  nome,
-  onConfirmar,
-  onPendente,
-}: {
-  campo: boolean;
-  isento: boolean;
-  semValor: boolean;
-  total: number;
-  contribuicao: number;
-  custoHospedagem: number;
-  custoRefeicoes: number;
-  pendencias: number;
-  nome: string;
-  onConfirmar: () => void;
-  onPendente: () => void;
-}) {
-  return (
-    <Cartao campo={campo} style={{ gap: 13 }}>
-      {isento ? (
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: 10 }}>
-          <span style={{ font: 'var(--text-amount-lg)', color: 'var(--color-royal-deep)' }}>Isento</span>
-          <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>não há valor devido</span>
-        </div>
-      ) : semValor ? (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-          <span style={{ font: 'var(--text-amount-lg)', color: 'var(--text-secondary)' }}>A combinar</span>
-          <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)', maxWidth: '72ch' }}>
-            A inscrição pode existir antes da conversa sobre valor — e “a combinar” é mais honesto do que R$ 0,00, que
-            diria que a pessoa não deve nada.
-          </span>
-        </div>
-      ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap' }}>
-            <span data-numeric style={{ font: 'var(--text-amount-lg)', color: 'var(--color-royal-deep)' }}>
-              {formatarBRL(total)}
-            </span>
-            <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>devidos</span>
-          </div>
-          <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>
-            {formatarBRL(contribuicao)} de contribuição
-            {custoHospedagem > 0 ? ` · ${formatarBRL(custoHospedagem)} de acomodação` : ''}
-            {custoRefeicoes > 0 ? ` · ${formatarBRL(custoRefeicoes)} de alimentação` : ''}
-          </span>
-        </div>
-      )}
-
-      <Button
-        fullWidth
-        density={campo ? 'field' : 'office'}
-        iconName="check-check"
-        disabled={pendencias > 0}
-        blockedReason={
-          pendencias > 0
-            ? `${pluralizar(pendencias, 'pendência')} acima impede${pendencias === 1 ? '' : 'm'} confirmar. Salvar como pendente sempre pode.`
-            : undefined
-        }
-        onClick={onConfirmar}
-      >
-        Confirmar a inscrição de {nome.split(' ')[0]}
-      </Button>
-
-      <Button variant="quiet" fullWidth density={campo ? 'field' : 'office'} onClick={onPendente}>
-        Salvar como pendente
-      </Button>
-
-      <span style={{ font: 'var(--text-small)', color: 'var(--text-meta)', maxWidth: '76ch' }}>
-        O pagamento não se marca aqui. Quem recebe na recepção informa quanto, quando e por qual meio — a conta, a
-        categoria e a competência vêm da configuração do evento, não de quem está com a pessoa na frente.
-      </span>
-    </Cartao>
   );
 }
