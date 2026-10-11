@@ -1,0 +1,1 @@
+export { BotaoDaTarefa } from './BotaoDaTarefa';

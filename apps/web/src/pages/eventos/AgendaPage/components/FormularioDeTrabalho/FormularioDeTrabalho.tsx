@@ -1,8 +1,9 @@
-import { useState } from 'react';
 import { Button, Icon, TextField, Select } from '@/ds';
 import { CORES_POR_TIPO } from '../../constantes';
-import type { TarefaDePreparo, TipoDeTrabalho } from '../../tipos';
+import type { TipoDeTrabalho } from '../../tipos';
 import type { RascunhoDeTrabalho } from '../../utils/rascunhoDeTrabalho';
+import { TarefasDoPreparo } from './components/TarefasDoPreparo';
+import { useFormularioDeTrabalho } from './hooks/useFormularioDeTrabalho';
 
 export interface FormularioDeTrabalhoProps {
   inicial: RascunhoDeTrabalho;
@@ -11,23 +12,7 @@ export interface FormularioDeTrabalhoProps {
 }
 
 export function FormularioDeTrabalho({ inicial, onCancelar, onSalvar }: FormularioDeTrabalhoProps) {
-  const [f, setF] = useState(inicial);
-
-  const alterar = <K extends keyof RascunhoDeTrabalho>(campo: K, valor: RascunhoDeTrabalho[K]) =>
-    setF((atual) => ({ ...atual, [campo]: valor }));
-
-  const mexerNasTarefas = (fn: (lista: TarefaDePreparo[]) => TarefaDePreparo[]) =>
-    setF((atual) => ({ ...atual, preparo: fn(atual.preparo.map((t) => ({ ...t }))) }));
-
-  const mover = (i: number, delta: number) =>
-    mexerNasTarefas((lista) => {
-      const j = i + delta;
-      if (j < 0 || j >= lista.length) return lista;
-      const tmp = lista[i]!;
-      lista[i] = lista[j]!;
-      lista[j] = tmp;
-      return lista;
-    });
+  const { f, alterar, mexerNasTarefas, mover } = useFormularioDeTrabalho(inicial);
 
   return (
     <div
@@ -127,78 +112,7 @@ export function FormularioDeTrabalho({ inicial, onCancelar, onSalvar }: Formular
             onChange={(e) => alterar('observacoes', e.target.value)}
           />
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: 12 }}>
-              <span
-                style={{
-                  font: 'var(--text-label)',
-                  letterSpacing: 'var(--tracking-label)',
-                  textTransform: 'uppercase',
-                  color: 'var(--text-field-label)',
-                }}
-              >
-                Lista de preparo
-              </span>
-              <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>
-                {f.preparo.length === 0
-                  ? 'nenhuma tarefa'
-                  : `${f.preparo.length} ${f.preparo.length === 1 ? 'tarefa' : 'tarefas'}`}
-              </span>
-            </div>
-
-            {f.preparo.map((t, i) => (
-              <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                <input
-                  value={t.titulo}
-                  onChange={(e) =>
-                    mexerNasTarefas((lista) => {
-                      lista[i] = { ...lista[i]!, titulo: e.target.value };
-                      return lista;
-                    })
-                  }
-                  placeholder="o que precisa ser feito"
-                  aria-label={`tarefa ${i + 1}`}
-                  style={{ ...entradaDaTarefa, flex: 2 }}
-                />
-                <input
-                  value={t.responsavel}
-                  onChange={(e) =>
-                    mexerNasTarefas((lista) => {
-                      lista[i] = { ...lista[i]!, responsavel: e.target.value };
-                      return lista;
-                    })
-                  }
-                  placeholder="responsável"
-                  aria-label={`responsável pela tarefa ${i + 1}`}
-                  style={{ ...entradaDaTarefa, flex: 1 }}
-                />
-                <BotaoDaTarefa rotulo="subir" onClick={() => mover(i, -1)}>
-                  ↑
-                </BotaoDaTarefa>
-                <BotaoDaTarefa rotulo="descer" onClick={() => mover(i, 1)}>
-                  ↓
-                </BotaoDaTarefa>
-                <BotaoDaTarefa
-                  rotulo="remover"
-                  onClick={() => mexerNasTarefas((lista) => lista.filter((_, j) => j !== i))}
-                >
-                  ×
-                </BotaoDaTarefa>
-              </div>
-            ))}
-
-            <Button
-              variant="quiet"
-              iconName="plus"
-              onClick={() => mexerNasTarefas((lista) => [...lista, { titulo: '', responsavel: '' }])}
-              style={{ alignSelf: 'flex-start' }}
-            >
-              Adicionar tarefa
-            </Button>
-            <span style={{ font: 'var(--text-small)', color: 'var(--text-meta)' }}>
-              Tarefa em branco é descartada ao salvar; responsável vazio vira "a definir".
-            </span>
-          </div>
+          <TarefasDoPreparo preparo={f.preparo} onMexerNasTarefas={mexerNasTarefas} onMover={mover} />
         </div>
 
         <div
@@ -224,47 +138,5 @@ export function FormularioDeTrabalho({ inicial, onCancelar, onSalvar }: Formular
         </div>
       </div>
     </div>
-  );
-}
-
-const entradaDaTarefa = {
-  minHeight: 40,
-  border: '1px solid var(--color-line-strong)',
-  background: 'var(--bg-card)',
-  borderRadius: 'var(--radius-sm)',
-  padding: '8px 12px',
-  font: 'var(--text-body)',
-  color: 'var(--text-primary)',
-  outline: 'none',
-  minWidth: 0,
-} as const;
-
-function BotaoDaTarefa({
-  rotulo,
-  onClick,
-  children,
-}: {
-  rotulo: string;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      aria-label={rotulo}
-      onClick={onClick}
-      style={{
-        width: 34,
-        height: 34,
-        flex: '0 0 auto',
-        border: '1px solid var(--color-line)',
-        background: 'var(--bg-card)',
-        borderRadius: 'var(--radius-sm)',
-        cursor: 'pointer',
-        color: 'var(--text-secondary)',
-      }}
-    >
-      {children}
-    </button>
   );
 }

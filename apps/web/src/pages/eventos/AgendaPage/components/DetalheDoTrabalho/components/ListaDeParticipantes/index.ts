@@ -1,0 +1,1 @@
+export { ListaDeParticipantes } from './ListaDeParticipantes';

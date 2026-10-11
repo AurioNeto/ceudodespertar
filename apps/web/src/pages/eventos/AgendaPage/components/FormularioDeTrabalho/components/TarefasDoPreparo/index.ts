@@ -1,0 +1,1 @@
+export { TarefasDoPreparo } from './TarefasDoPreparo';

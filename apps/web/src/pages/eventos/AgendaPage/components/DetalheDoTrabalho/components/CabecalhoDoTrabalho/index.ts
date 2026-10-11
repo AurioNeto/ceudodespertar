@@ -1,0 +1,1 @@
+export { CabecalhoDoTrabalho } from './CabecalhoDoTrabalho';
