@@ -125,8 +125,6 @@ export const unidades: readonly { readonly chave: string; readonly rotulo: strin
   { chave: 'LOJINHA', rotulo: 'Lojinha' },
 ];
 
-export const soma = (linhas: readonly LinhaDePrestacao[]): number => linhas.reduce((s, l) => s + l.valor, 0);
-
 export interface PrestacaoGerada {
   readonly id: string;
   readonly periodo: Competencia;
