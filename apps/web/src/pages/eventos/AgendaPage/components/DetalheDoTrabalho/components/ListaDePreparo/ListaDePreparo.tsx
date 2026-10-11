@@ -7,8 +7,8 @@ export interface ListaDePreparoProps {
   trabalho: Trabalho;
   feitos: Readonly<Record<string, boolean>>;
   webhookAtivo: boolean;
-  onAlternarTarefa: (indice: number) => void;
-  onAlternarWebhook: () => void;
+  onAlternarTarefa?: (indice: number) => void;
+  onAlternarWebhook?: () => void;
   onAviso: (texto: string) => void;
 }
 
@@ -42,14 +42,15 @@ export function ListaDePreparo({
                 border: 'var(--border-hairline)',
                 borderRadius: 'var(--radius)',
                 background: feita ? 'var(--color-confirmed-soft)' : 'var(--bg-card)',
-                cursor: 'pointer',
+                cursor: onAlternarTarefa ? 'pointer' : 'default',
               }}
             >
               <input
                 type="checkbox"
                 checked={feita}
-                onChange={() => onAlternarTarefa(i)}
-                style={{ width: 17, height: 17, cursor: 'pointer' }}
+                disabled={!onAlternarTarefa}
+                onChange={() => onAlternarTarefa?.(i)}
+                style={{ width: 17, height: 17, cursor: onAlternarTarefa ? 'pointer' : 'default' }}
               />
               <span style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
                 <span
@@ -110,11 +111,13 @@ export function ListaDePreparo({
               {webhookAtivo ? 'POST /preparo/{id}/tarefas · última atualização hoje, 14:02' : 'desligado'}
             </span>
           </span>
-          <Interruptor
-            ligado={webhookAtivo}
-            onAlternar={onAlternarWebhook}
-            rotuloAcessivel="Atualização do preparo por webhook"
-          />
+          {onAlternarWebhook ? (
+            <Interruptor
+              ligado={webhookAtivo}
+              onAlternar={onAlternarWebhook}
+              rotuloAcessivel="Atualização do preparo por webhook"
+            />
+          ) : null}
         </div>
       </div>
     </Bloco>

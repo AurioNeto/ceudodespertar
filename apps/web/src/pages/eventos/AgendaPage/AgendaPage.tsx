@@ -75,8 +75,8 @@ export function AgendaPage() {
             webhookAtivo={tela.webhookAtivo}
             campo={campo}
             onVoltar={tela.voltar}
-            onAlternarTarefa={tela.alternarTarefa}
-            onAlternarWebhook={tela.alternarWebhook}
+            onAlternarTarefa={editaEvento ? tela.alternarTarefa : undefined}
+            onAlternarWebhook={editaEvento ? tela.alternarWebhook : undefined}
             onEditar={editaEvento ? tela.editar : undefined}
             onDuplicar={criaEvento ? tela.duplicar : undefined}
             onCancelar={cancelaEvento ? tela.cancelar : undefined}

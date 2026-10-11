@@ -729,7 +729,7 @@ describe('AgendaPage: nova cerimônia', () => {
 
       const campo = campoDoRotulo(formularioAberto(container), 'Contribuições sugeridas');
       expect(campo.getAttribute('aria-invalid')).toBe('true');
-      expect(formularioAberto(container).textContent).toContain('Use só valores inteiros em reais, separados por vírgula: 40, 60, 90.');
+      expect(formularioAberto(container).textContent).toContain('Use só valores inteiros em reais, separados por vírgula e espaço: 40, 60, 90.');
       expect(contagemDoMes(container)).toBe('4 cerimônias no mês');
     },
   );
@@ -901,7 +901,7 @@ describe('AgendaPage: editar', () => {
 
     await clicar(botaoComTexto(formularioAberto(container), 'Salvar cerimônia'));
 
-    expect(formularioAberto(container).textContent).toContain('Use só valores inteiros em reais, separados por vírgula: 40, 60, 90.');
+    expect(formularioAberto(container).textContent).toContain('Use só valores inteiros em reais, separados por vírgula e espaço: 40, 60, 90.');
     expect(textoDoNumero(container, 'Contribuição')).toBe('Contribuição40 · 60 · 90opções sugeridas');
   });
 
