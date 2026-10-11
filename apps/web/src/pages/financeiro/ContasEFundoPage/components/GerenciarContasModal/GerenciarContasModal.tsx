@@ -1,6 +1,5 @@
 import type { Conta, ContaId, Fundo, FundoId } from '@cdd/contracts';
 import { Icon, PainelDeAcao } from '@/ds';
-import { formatarBRL } from '@/pages/utils/formato';
 import { iconeDaConta } from '../../utils/conta';
 import { corDaReserva } from '../../utils/reservas';
 import { BotaoNovo } from './components/BotaoNovo';
@@ -122,7 +121,7 @@ export function GerenciarContasModal({
                   }
                   nome={f.nome}
                   nota={f.nota}
-                  valor={formatarBRL(f.valorReservado)}
+                  valor={f.valorReservado}
                   ativa={f.ativo}
                   rotuloAtiva="Ativo"
                   rotuloInativa="Inativo"

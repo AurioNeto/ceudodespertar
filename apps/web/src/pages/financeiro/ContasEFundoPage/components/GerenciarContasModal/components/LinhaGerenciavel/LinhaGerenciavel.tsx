@@ -1,10 +1,10 @@
-import { BotaoDeIcone, StatusBadge } from '@/ds';
+import { AmountDisplay, BotaoDeIcone, StatusBadge } from '@/ds';
 
 export interface LinhaGerenciavelProps {
   marcador: React.ReactNode;
   nome: string;
   nota: string;
-  valor?: string;
+  valor?: number;
   ativa: boolean;
   rotuloAtiva: string;
   rotuloInativa: string;
@@ -44,11 +44,7 @@ export function LinhaGerenciavel({
         <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>{nota}</span>
         {bloqueio ? <span style={{ font: 'var(--text-small)', color: 'var(--color-attention)' }}>{bloqueio}</span> : null}
       </span>
-      {valor ? (
-        <span style={{ font: 'var(--text-body-strong)', color: 'var(--text-primary)', fontVariantNumeric: 'tabular-nums' }}>
-          {valor}
-        </span>
-      ) : null}
+      {valor === undefined ? null : <AmountDisplay value={valor / 100} size="sm" />}
       <StatusBadge tone={ativa ? 'confirmed' : 'neutral'}>{ativa ? rotuloAtiva : rotuloInativa}</StatusBadge>
       <BotaoDeIcone
         icone="pencil"

@@ -1,6 +1,6 @@
 import type { Fatura } from '@cdd/contracts';
-import { StatusBadge } from '@/ds';
-import { competenciaPorExtenso, formatarBRL, pluralizar } from '@/pages/utils/formato';
+import { AmountDisplay, StatusBadge } from '@/ds';
+import { competenciaPorExtenso, pluralizar } from '@/pages/utils/formato';
 import { ROTULO, TOM } from '../../constantes';
 import { totalDaFatura } from '../../utils/fatura';
 
@@ -35,9 +35,7 @@ export function LinhaDaFatura({ fatura, ativa, onAbrir }: LinhaDaFaturaProps) {
         <StatusBadge tone={TOM[fatura.status]}>{ROTULO[fatura.status]}</StatusBadge>
       </span>
       <span style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
-        <span data-numeric style={{ font: 'var(--text-amount)', color: 'var(--text-primary)' }}>
-          {formatarBRL(totalDaFatura(fatura))}
-        </span>
+        <AmountDisplay value={totalDaFatura(fatura) / 100} size="sm" />
         <span style={{ font: 'var(--text-small)', color: 'var(--text-meta)' }}>
           {pluralizar(fatura.compras.length, 'compra')}
         </span>

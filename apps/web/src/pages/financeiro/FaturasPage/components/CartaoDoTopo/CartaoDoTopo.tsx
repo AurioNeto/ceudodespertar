@@ -1,6 +1,5 @@
 import type { Conta } from '@cdd/contracts';
-import { Icon } from '@/ds';
-import { formatarBRL } from '@/pages/utils/formato';
+import { AmountDisplay, Icon } from '@/ds';
 
 export interface CartaoDoTopoProps {
   cartao: Conta;
@@ -35,12 +34,11 @@ export function CartaoDoTopo({ cartao, divida, ativo, onEscolher }: CartaoDoTopo
         <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>{cartao.descricao}</span>
       </span>
       <span style={{ textAlign: 'right' }}>
-        <span
-          data-numeric
-          style={{ display: 'block', font: 'var(--text-amount)', color: divida > 0 ? 'var(--color-attention)' : 'var(--text-meta)' }}
-        >
-          {formatarBRL(divida)}
-        </span>
+        <AmountDisplay
+          value={divida / 100}
+          size="sm"
+          style={{ color: divida > 0 ? 'var(--color-attention)' : 'var(--text-meta)' }}
+        />
         <span style={{ display: 'block', font: 'var(--text-small)', color: 'var(--text-meta)' }}>em aberto</span>
       </span>
     </button>

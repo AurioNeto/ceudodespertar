@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import type { Fatura } from '@cdd/contracts';
-import { DataTable, EmptyState, StatusBadge, type Density } from '@/ds';
-import { formatarBRL, formatarData } from '@/pages/utils/formato';
+import { AmountDisplay, DataTable, EmptyState, StatusBadge, type Density } from '@/ds';
+import { formatarData } from '@/pages/utils/formato';
 import { COLUNAS_DAS_COMPRAS, COLUNAS_SO_DO_ESCRITORIO } from './constantes';
 
 type LinhaDaCompra = Record<(typeof COLUNAS_DAS_COMPRAS)[number]['key'], ReactNode>;
@@ -45,7 +45,7 @@ export function TabelaDeCompras({ fatura, densidade, total }: TabelaDeComprasPro
     ),
     grupo: c.grupo ?? '—',
     quem: c.registradoPorNome,
-    valor: formatarBRL(c.valor),
+    valor: <AmountDisplay value={c.valor / 100} size="sm" />,
   }));
 
   const linhaDoTotal: LinhaDaCompra = {
@@ -53,7 +53,7 @@ export function TabelaDeCompras({ fatura, densidade, total }: TabelaDeComprasPro
     compra: null,
     grupo: null,
     quem: null,
-    valor: formatarBRL(total),
+    valor: <AmountDisplay value={total / 100} size="sm" />,
   };
 
   return <DataTable columns={colunas} rows={[...compras, linhaDoTotal]} />;

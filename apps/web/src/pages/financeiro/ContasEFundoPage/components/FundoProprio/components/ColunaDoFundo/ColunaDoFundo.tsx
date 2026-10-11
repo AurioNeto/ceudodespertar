@@ -1,6 +1,4 @@
-import { Rotulo } from '@/ds';
-import { formatarBRL } from '@/pages/utils/formato';
-import { valorMedio } from '../../../../constantes';
+import { AmountDisplay, Rotulo } from '@/ds';
 
 export interface ColunaDoFundoProps {
   rotulo: string;
@@ -14,7 +12,7 @@ export function ColunaDoFundo({ rotulo, valor, cor }: ColunaDoFundoProps) {
       style={{ display: 'flex', flexDirection: 'column', gap: 3, paddingLeft: 20, borderLeft: 'var(--border-hairline)' }}
     >
       <Rotulo>{rotulo}</Rotulo>
-      <span style={{ ...valorMedio, color: cor }}>{formatarBRL(valor)}</span>
+      <AmountDisplay value={valor / 100} size="sm" style={{ color: cor }} />
     </div>
   );
 }

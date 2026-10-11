@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import type { Adiantamento } from '@cdd/contracts';
-import { StatusBadge, type Density } from '@/ds';
-import { formatarBRL, formatarData } from '@/pages/utils/formato';
+import { AmountDisplay, StatusBadge, type Density } from '@/ds';
+import { formatarData } from '@/pages/utils/formato';
 import { ROTULO, TOM } from './constantes';
 
 export interface LinhaProps {
@@ -56,9 +56,7 @@ export function Linha({ adiantamento, densidade, idade, children }: LinhaProps) 
         ) : null}
       </div>
 
-      <span data-numeric style={{ font: 'var(--text-amount-lg)', color: 'var(--text-primary)' }}>
-        {formatarBRL(a.valor)}
-      </span>
+      <AmountDisplay value={a.valor / 100} size="lg" />
 
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>{children}</div>
     </div>

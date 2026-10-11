@@ -268,7 +268,8 @@ describe('GerenciarContasModal: aba de fundos', () => {
     expect(textosDasFolhas(linhaGerenciavel(container, 'Obra do dormitório'))).toEqual([
       'Obra do dormitório',
       'meta 24.000,00',
-      'R$ 18.400,00',
+      'R$',
+      '18.400,00',
       'Ativo',
       'Excluir',
     ]);
@@ -281,7 +282,8 @@ describe('GerenciarContasModal: aba de fundos', () => {
     expect(textosDasFolhas(linhaGerenciavel(container, 'Feitio de dezembro'))).toEqual([
       'Feitio de dezembro',
       'insumos e garrafas',
-      'R$ 9.200,50',
+      'R$',
+      '9.200,50',
       'Inativo',
       'Reativar',
     ]);

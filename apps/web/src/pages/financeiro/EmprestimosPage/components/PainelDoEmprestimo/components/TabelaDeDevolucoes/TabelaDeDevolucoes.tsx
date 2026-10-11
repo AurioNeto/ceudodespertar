@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import type { Emprestimo } from '@cdd/contracts';
-import { DataTable, EmptyState, Rotulo, type Density } from '@/ds';
-import { formatarBRL, formatarData, pluralizar } from '@/pages/utils/formato';
+import { AmountDisplay, DataTable, EmptyState, Rotulo, type Density } from '@/ds';
+import { formatarData, pluralizar } from '@/pages/utils/formato';
 import { COLUNAS_DAS_DEVOLUCOES, COLUNAS_SO_DO_ESCRITORIO } from './constantes';
 
 type LinhaDaDevolucao = Record<(typeof COLUNAS_DAS_DEVOLUCOES)[number]['key'], ReactNode>;
@@ -20,7 +20,7 @@ export function TabelaDeDevolucoes({ emprestimo, densidade }: TabelaDeDevolucoes
     data: <span data-numeric>{formatarData(dv.data)}</span>,
     conta: dv.contaNome,
     quem: dv.registradoPorNome,
-    valor: <span style={{ color: 'var(--color-confirmed)' }}>{formatarBRL(dv.valor)}</span>,
+    valor: <AmountDisplay value={dv.valor / 100} size="sm" style={{ color: 'var(--color-confirmed)' }} />,
   }));
 
   return (

@@ -182,8 +182,8 @@ describe('FaturasPage em escritório: cabeçalho, cartões e lista de faturas', 
     const { container } = await montar(<FaturasPage />);
 
     expect(botoesDoTopo(container).map(textosDasFolhas)).toEqual([
-      ['Cartão Cora PJ', 'cartão corporativo · CNPJ do CDD', 'R$ 4.132,50', 'em aberto'],
-      ['Cartão Itaú Paty', 'cartão pessoal usado em nome da casa', 'R$ 1.679,97', 'em aberto'],
+      ['Cartão Cora PJ', 'cartão corporativo · CNPJ do CDD', 'R$', '4.132,50', 'em aberto'],
+      ['Cartão Itaú Paty', 'cartão pessoal usado em nome da casa', 'R$', '1.679,97', 'em aberto'],
     ]);
   });
 
@@ -196,7 +196,7 @@ describe('FaturasPage em escritório: cabeçalho, cartões e lista de faturas', 
   it('dívida do cartão — em tom de atenção quando há dívida', async () => {
     const { container } = await montar(<FaturasPage />);
 
-    const valor = folhasComTexto(botoesDoTopo(container)[0] as HTMLElement, 'R$ 4.132,50')[0] as HTMLElement;
+    const valor = elemento(botoesDoTopo(container)[0] as HTMLElement, '[data-numeric]');
 
     expect(valor.style.color).toBe('var(--color-attention)');
   });
@@ -215,9 +215,9 @@ describe('FaturasPage em escritório: cabeçalho, cartões e lista de faturas', 
     const { container } = await montar(<FaturasPage />);
 
     expect(linhasDaLista(container)).toEqual([
-      ['setembro de 2026', 'Aberta', 'R$ 1.284,90', '3 compras'],
-      ['agosto de 2026', 'Fechada, a pagar', 'R$ 2.847,60', '6 compras'],
-      ['julho de 2026', 'Paga', 'R$ 3.512,40', '5 compras'],
+      ['setembro de 2026', 'Aberta', 'R$', '1.284,90', '3 compras'],
+      ['agosto de 2026', 'Fechada, a pagar', 'R$', '2.847,60', '6 compras'],
+      ['julho de 2026', 'Paga', 'R$', '3.512,40', '5 compras'],
     ]);
     expect(folhasComTexto(container, 'Faturas de Cartão Cora PJ')).toHaveLength(1);
   });
@@ -287,7 +287,8 @@ describe('FaturasPage em escritório: detalhe da fatura', () => {
       'Obra do dormitório',
       'Dormitório',
       'Lucia Prado',
-      'R$ 764,80',
+      'R$',
+      '764,80',
     ]);
   });
 
@@ -296,7 +297,7 @@ describe('FaturasPage em escritório: detalhe da fatura', () => {
 
     const ultima = linhasDaTabela(container).at(-1) as HTMLElement;
 
-    expect(textosDasFolhas(ultima)).toEqual(['Total', 'R$ 2.847,60']);
+    expect(textosDasFolhas(ultima)).toEqual(['Total', 'R$', '2.847,60']);
   });
 
   it('fatura fechada — oferece Registrar pagamento e explica que grava uma transferência', async () => {
@@ -350,8 +351,8 @@ describe('FaturasPage: escolher cartão e fatura', () => {
     expect(botoesDoTopo(container).map((botao) => botao.getAttribute('aria-pressed'))).toEqual(['false', 'true']);
     expect(folhasComTexto(container, 'Faturas de Cartão Itaú Paty')).toHaveLength(1);
     expect(linhasDaLista(container)).toEqual([
-      ['setembro de 2026', 'Aberta', 'R$ 612,30', '2 compras'],
-      ['agosto de 2026', 'Fechada, a pagar', 'R$ 1.067,67', '4 compras'],
+      ['setembro de 2026', 'Aberta', 'R$', '612,30', '2 compras'],
+      ['agosto de 2026', 'Fechada, a pagar', 'R$', '1.067,67', '4 compras'],
     ]);
     expect(tituloDoDetalhe(container)).toBe('Cartão Itaú Paty · setembro de 2026');
   });
@@ -417,11 +418,11 @@ describe('FaturasPage: fechar a fatura', () => {
 
     await clicar(botaoComTexto(container, 'Fechar fatura'));
 
-    expect(linhasDaLista(container)[0]).toEqual(['setembro de 2026', 'Fechada, a pagar', 'R$ 1.284,90', '3 compras']);
+    expect(linhasDaLista(container)[0]).toEqual(['setembro de 2026', 'Fechada, a pagar', 'R$', '1.284,90', '3 compras']);
     expect(recadoMostrado(container)).toBe(
       'Fatura fechada. Compras novas neste cartão entram na fatura da competência seguinte.',
     );
-    expect(dividaDoCartao(container, 'Cartão Cora PJ')[2]).toBe('R$ 4.132,50');
+    expect(dividaDoCartao(container, 'Cartão Cora PJ').slice(2, 4)).toEqual(['R$', '4.132,50']);
   });
 
   it('fatura recém-fechada — passa a oferecer Registrar pagamento no lugar de Fechar fatura', async () => {
@@ -441,7 +442,7 @@ describe('FaturasPage: fechar a fatura', () => {
 
     await escolherCartao(container, 'Cartão Itaú Paty');
 
-    expect(linhasDaLista(container)[0]).toEqual(['setembro de 2026', 'Aberta', 'R$ 612,30', '2 compras']);
+    expect(linhasDaLista(container)[0]).toEqual(['setembro de 2026', 'Aberta', 'R$', '612,30', '2 compras']);
   });
 
   it('recado — o botão de fechar o recado o tira da tela', async () => {
@@ -492,7 +493,7 @@ describe('FaturasPage: registrar o pagamento', () => {
     await clicar(botaoComTexto(container, 'Cancelar'));
 
     expect(textosDosBotoes(container)).toContain('Registrar pagamento');
-    expect(linhasDaLista(container)[1]).toEqual(['agosto de 2026', 'Fechada, a pagar', 'R$ 2.847,60', '6 compras']);
+    expect(linhasDaLista(container)[1]).toEqual(['agosto de 2026', 'Fechada, a pagar', 'R$', '2.847,60', '6 compras']);
     expect(recadoMostrado(container)).toBeNull();
   });
 
@@ -503,8 +504,8 @@ describe('FaturasPage: registrar o pagamento', () => {
     await clicar(botaoComTexto(container, 'Confirmar pagamento'));
 
     expect(linhaDePagamento(container)).toBe('Paga em 02/09/2026 por transferência de Cora PJ.');
-    expect(linhasDaLista(container)[1]).toEqual(['agosto de 2026', 'Paga', 'R$ 2.847,60', '6 compras']);
-    expect(dividaDoCartao(container, 'Cartão Cora PJ')[2]).toBe('R$ 1.284,90');
+    expect(linhasDaLista(container)[1]).toEqual(['agosto de 2026', 'Paga', 'R$', '2.847,60', '6 compras']);
+    expect(dividaDoCartao(container, 'Cartão Cora PJ').slice(2, 4)).toEqual(['R$', '1.284,90']);
     expect(recadoMostrado(container)).toBe(
       'Pagamento registrado como transferência. Nenhuma despesa nova foi criada — as compras já estavam lançadas.',
     );
@@ -546,7 +547,7 @@ describe('FaturasPage: registrar o pagamento', () => {
 
     expect(folhasComTexto(container, 'Informe a data')).toHaveLength(1);
     expect(linhaDePagamento(container)).toBeNull();
-    expect(linhasDaLista(container)[1]).toEqual(['agosto de 2026', 'Fechada, a pagar', 'R$ 2.847,60', '6 compras']);
+    expect(linhasDaLista(container)[1]).toEqual(['agosto de 2026', 'Fechada, a pagar', 'R$', '2.847,60', '6 compras']);
     expect(recadoMostrado(container)).toBeNull();
   });
 
@@ -571,8 +572,8 @@ describe('FaturasPage: registrar o pagamento', () => {
     await clicar(botaoComTexto(container, 'Registrar pagamento'));
     await clicar(botaoComTexto(container, 'Confirmar pagamento'));
 
-    expect(dividaDoCartao(container, 'Cartão Itaú Paty')[2]).toBe('R$ 612,30');
-    expect(dividaDoCartao(container, 'Cartão Cora PJ')[2]).toBe('R$ 4.132,50');
+    expect(dividaDoCartao(container, 'Cartão Itaú Paty').slice(2, 4)).toEqual(['R$', '612,30']);
+    expect(dividaDoCartao(container, 'Cartão Cora PJ').slice(2, 4)).toEqual(['R$', '4.132,50']);
   });
 
   it('cartão sem nada a pagar — mostra 0,00 em tom neutro', async () => {
@@ -583,9 +584,9 @@ describe('FaturasPage: registrar o pagamento', () => {
 
     await registrarPagamentoDaFaturaAberta(container);
 
-    const valor = folhasComTexto(botoesDoTopo(container)[0] as HTMLElement, 'R$ 0,00')[0] as HTMLElement;
+    const valor = elemento(botoesDoTopo(container)[0] as HTMLElement, '[data-numeric]');
     expect(valor.style.color).toBe('var(--text-meta)');
-    expect(dividaDoCartao(container, 'Cartão Cora PJ')[2]).toBe('R$ 0,00');
+    expect(dividaDoCartao(container, 'Cartão Cora PJ').slice(2, 4)).toEqual(['R$', '0,00']);
   });
 });
 
@@ -613,22 +614,23 @@ describe('FaturasPage em campo', () => {
       '11/08',
       'material elétrico do dormitório',
       'Obra do dormitório',
-      'R$ 764,80',
+      'R$',
+      '764,80',
     ]);
   });
 
   it('linha do total — repete o total da fatura no fim da tabela', async () => {
     const { container } = await montarComAgostoAberta();
 
-    expect(textosDasFolhas(linhasDaTabela(container).at(-1) as HTMLElement)).toEqual(['Total', 'R$ 2.847,60']);
+    expect(textosDasFolhas(linhasDaTabela(container).at(-1) as HTMLElement)).toEqual(['Total', 'R$', '2.847,60']);
   });
 
   it('números e lista — trazem os mesmos valores do escritório', async () => {
     const { container } = await montarComAgostoAberta();
 
     expect(blocoDoRotulo(container, 'Total da fatura')).toEqual(['Total da fatura', 'R$ 2.847,60']);
-    expect(linhasDaLista(container)[1]).toEqual(['agosto de 2026', 'Fechada, a pagar', 'R$ 2.847,60', '6 compras']);
-    expect(dividaDoCartao(container, 'Cartão Cora PJ')[2]).toBe('R$ 4.132,50');
+    expect(linhasDaLista(container)[1]).toEqual(['agosto de 2026', 'Fechada, a pagar', 'R$', '2.847,60', '6 compras']);
+    expect(dividaDoCartao(container, 'Cartão Cora PJ').slice(2, 4)).toEqual(['R$', '4.132,50']);
   });
 
   it('formulário de pagamento — abre com os mesmos campos e confirma como no escritório', async () => {
@@ -656,7 +658,7 @@ describe('FaturasPage: estados vazios e variações que a demonstração não al
 
     await escolherCartao(container, 'Cartão Itaú Paty');
 
-    const valorDaDivida = folhasComTexto(botaoDoCartao(container, 'Cartão Itaú Paty'), 'R$ 0,00')[0] as HTMLElement;
+    const valorDaDivida = elemento(botaoDoCartao(container, 'Cartão Itaú Paty'), '[data-numeric]');
     expect(folhasComTexto(container, 'Nenhuma fatura neste cartão')).toHaveLength(1);
     expect(
       folhasComTexto(container, 'A primeira fatura nasce com a primeira compra registrada nesta conta.'),
@@ -665,7 +667,8 @@ describe('FaturasPage: estados vazios e variações que a demonstração não al
     expect(dividaDoCartao(container, 'Cartão Itaú Paty')).toEqual([
       'Cartão Itaú Paty',
       'cartão pessoal usado em nome da casa',
-      'R$ 0,00',
+      'R$',
+      '0,00',
       'em aberto',
     ]);
     expect(valorDaDivida.style.color).toBe('var(--text-meta)');
@@ -681,7 +684,7 @@ describe('FaturasPage: estados vazios e variações que a demonstração não al
     expect(todos(container, 'table')).toHaveLength(0);
     expect(blocoDoRotulo(container, 'Total da fatura')).toEqual(['Total da fatura', 'R$ 0,00']);
     expect(blocoDoRotulo(container, 'Compras')).toEqual(['Compras', '0']);
-    expect(linhasDaLista(container)[1]).toEqual(['agosto de 2026', 'Fechada, a pagar', 'R$ 0,00', '0 compras']);
+    expect(linhasDaLista(container)[1]).toEqual(['agosto de 2026', 'Fechada, a pagar', 'R$', '0,00', '0 compras']);
   });
 
   it('fatura aberta com as três compras a conferir — o aviso usa o plural', async () => {
@@ -722,7 +725,8 @@ describe('FaturasPage: estados vazios e variações que a demonstração não al
       'Alimentação de cerimônia',
       '—',
       'Aurio Neto',
-      'R$ 487,40',
+      'R$',
+      '487,40',
     ]);
   });
 

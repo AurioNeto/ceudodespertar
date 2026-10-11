@@ -103,7 +103,8 @@ describe('ContasEFundoPage em escritório: cabeçalho e resumo da unidade', () =
 
     expect(blocoDoRotulo(container, 'Saldo consolidado da unidade')).toEqual([
       'Saldo consolidado da unidade',
-      'R$ 84.317,90',
+      'R$',
+      '84.317,90',
       'última conciliação em 01/09 · 4 contas ativas',
     ]);
   });
@@ -111,13 +112,13 @@ describe('ContasEFundoPage em escritório: cabeçalho e resumo da unidade', () =
   it('em banco — soma toda conta que não é caixa, a pessoal de terceiro inclusive, e diz quantas são', async () => {
     const { container } = await montar(<ContasEFundoPage />);
 
-    expect(blocoDoRotulo(container, 'Em banco')).toEqual(['Em banco', 'R$ 81.137,50', '3 contas']);
+    expect(blocoDoRotulo(container, 'Em banco')).toEqual(['Em banco', 'R$', '81.137,50', '3 contas']);
   });
 
   it('em espécie — mostra o saldo do caixa com a nota fixa da chácara', async () => {
     const { container } = await montar(<ContasEFundoPage />);
 
-    expect(blocoDoRotulo(container, 'Em espécie')).toEqual(['Em espécie', 'R$ 3.180,40', 'caixa da chácara']);
+    expect(blocoDoRotulo(container, 'Em espécie')).toEqual(['Em espécie', 'R$', '3.180,40', 'caixa da chácara']);
   });
 
   it('fundo próprio — mostra o valor do fundo e diz que é parte do saldo', async () => {
@@ -125,7 +126,8 @@ describe('ContasEFundoPage em escritório: cabeçalho e resumo da unidade', () =
 
     expect(blocoDoRotulo(container, 'Fundo próprio', 0)).toEqual([
       'Fundo próprio',
-      'R$ 39.235,40',
+      'R$',
+      '39.235,40',
       'parte do saldo, já com destino',
     ]);
   });
@@ -172,7 +174,8 @@ describe('ContasEFundoPage: cartão de cada conta', () => {
         'Cora PJ',
         'conta principal da casa · CNPJ do CDD',
         'Conciliada em 01/09',
-        'R$ 41.902,10',
+        'R$',
+        '41.902,10',
         'movimento em 02/09',
         'responsável: Aurio Neto',
       ],
@@ -183,7 +186,8 @@ describe('ContasEFundoPage: cartão de cada conta', () => {
         'Espécie',
         'caixa da chácara · cofre da secretaria',
         'Contagem pendente',
-        'R$ 3.180,40',
+        'R$',
+        '3.180,40',
         'movimento em 19/08',
         'responsável: Chico Aguiar',
       ],
@@ -194,7 +198,8 @@ describe('ContasEFundoPage: cartão de cada conta', () => {
         'Nubank Paty',
         'conta pessoal usada em nome da casa',
         'A conferir',
-        'R$ 1.240,55',
+        'R$',
+        '1.240,55',
         'movimento em 23/08',
         'responsável: Paty Munay',
       ],
@@ -205,7 +210,8 @@ describe('ContasEFundoPage: cartão de cada conta', () => {
         'Itaú Munay',
         'unidade comercial · lojinha',
         'Conciliada em 31/08',
-        'R$ 37.994,85',
+        'R$',
+        '37.994,85',
         'movimento em 22/08',
         'responsável: Paty Munay',
       ],
@@ -277,19 +283,19 @@ describe('ContasEFundoPage: fundo próprio', () => {
   it('totais do fundo — mostram o total, o que já tem destino e o que está livre', async () => {
     const { container } = await montar(<ContasEFundoPage />);
 
-    expect(blocoDoRotulo(container, 'Total do fundo')).toEqual(['Total do fundo', 'R$ 39.235,40']);
-    expect(blocoDoRotulo(container, 'Já com destino')).toEqual(['Já com destino', 'R$ 33.600,00']);
-    expect(blocoDoRotulo(container, 'Livre', 0)).toEqual(['Livre', 'R$ 5.635,40']);
+    expect(blocoDoRotulo(container, 'Total do fundo')).toEqual(['Total do fundo', 'R$', '39.235,40']);
+    expect(blocoDoRotulo(container, 'Já com destino')).toEqual(['Já com destino', 'R$', '33.600,00']);
+    expect(blocoDoRotulo(container, 'Livre', 0)).toEqual(['Livre', 'R$', '5.635,40']);
   });
 
   it('reservas — listam cada fundo ativo e o Livre, com nota, valor e porcentagem arredondada', async () => {
     const { container } = await montar(<ContasEFundoPage />);
 
     expect(linhasDaReserva(container)).toEqual([
-      ['Obra do dormitório', 'meta R$ 24.000,00 · previsão de conclusão em novembro', 'R$ 18.400,00', '47%'],
-      ['Feitio de dezembro', 'insumos, garrafas e deslocamento', 'R$ 9.200,00', '23%'],
-      ['Emergência e saúde', 'intocável fora de emergência, decisão da direção', 'R$ 6.000,00', '15%'],
-      ['Livre', 'sem destino combinado', 'R$ 5.635,40', '14%'],
+      ['Obra do dormitório', 'meta R$ 24.000,00 · previsão de conclusão em novembro', 'R$', '18.400,00', '47%'],
+      ['Feitio de dezembro', 'insumos, garrafas e deslocamento', 'R$', '9.200,00', '23%'],
+      ['Emergência e saúde', 'intocável fora de emergência, decisão da direção', 'R$', '6.000,00', '15%'],
+      ['Livre', 'sem destino combinado', 'R$', '5.635,40', '14%'],
     ]);
   });
 
@@ -344,9 +350,9 @@ describe('ContasEFundoPage em campo', () => {
   it('resumo — mostra os mesmos valores do escritório', async () => {
     const { container } = await montar(<ContasEFundoPage />);
 
-    expect(blocoDoRotulo(container, 'Saldo consolidado da unidade')[1]).toBe('R$ 84.317,90');
-    expect(blocoDoRotulo(container, 'Em banco')).toEqual(['Em banco', 'R$ 81.137,50', '3 contas']);
-    expect(blocoDoRotulo(container, 'Em espécie')).toEqual(['Em espécie', 'R$ 3.180,40', 'caixa da chácara']);
+    expect(blocoDoRotulo(container, 'Saldo consolidado da unidade').slice(1, 3)).toEqual(['R$', '84.317,90']);
+    expect(blocoDoRotulo(container, 'Em banco')).toEqual(['Em banco', 'R$', '81.137,50', '3 contas']);
+    expect(blocoDoRotulo(container, 'Em espécie')).toEqual(['Em espécie', 'R$', '3.180,40', 'caixa da chácara']);
   });
 
   it('abas — abre em Contas, com Contas marcada, e o fundo fica escondido', async () => {
@@ -372,7 +378,7 @@ describe('ContasEFundoPage em campo', () => {
     await clicar(botaoComTexto(container, 'Fundo'));
 
     expect(botaoComTexto(container, 'Fundo').getAttribute('aria-pressed')).toBe('true');
-    expect(blocoDoRotulo(container, 'Total do fundo')).toEqual(['Total do fundo', 'R$ 39.235,40']);
+    expect(blocoDoRotulo(container, 'Total do fundo')).toEqual(['Total do fundo', 'R$', '39.235,40']);
     expect(nomesDosCartoes(container)).toHaveLength(0);
     expect(todos(container, 'button').map((botao) => botao.textContent)).not.toContain('Gerenciar contas e fundos');
   });
@@ -430,10 +436,11 @@ describe('ContasEFundoPage: gerenciar contas e fundos', () => {
     expect(nomesDosCartoes(container)).toEqual(['Cora PJ', 'Nubank Paty', 'Itaú Munay']);
     expect(blocoDoRotulo(container, 'Saldo consolidado da unidade')).toEqual([
       'Saldo consolidado da unidade',
-      'R$ 81.137,50',
+      'R$',
+      '81.137,50',
       'última conciliação em 01/09 · 3 contas ativas',
     ]);
-    expect(blocoDoRotulo(container, 'Em espécie')).toEqual(['Em espécie', 'R$ 0,00', 'caixa da chácara']);
+    expect(blocoDoRotulo(container, 'Em espécie')).toEqual(['Em espécie', 'R$', '0,00', 'caixa da chácara']);
     expect(folhasComTexto(container, '1 conta esperando conferência')).toHaveLength(1);
   });
 
@@ -444,11 +451,12 @@ describe('ContasEFundoPage: gerenciar contas e fundos', () => {
     await clicar(botaoComTexto(linhaGerenciavel(painel(), 'Nubank Paty'), 'Excluir'));
 
     await fecharGerenciador();
-    expect(blocoDoRotulo(container, 'Em banco')).toEqual(['Em banco', 'R$ 79.896,95', '2 contas']);
-    expect(blocoDoRotulo(container, 'Em espécie')).toEqual(['Em espécie', 'R$ 3.180,40', 'caixa da chácara']);
+    expect(blocoDoRotulo(container, 'Em banco')).toEqual(['Em banco', 'R$', '79.896,95', '2 contas']);
+    expect(blocoDoRotulo(container, 'Em espécie')).toEqual(['Em espécie', 'R$', '3.180,40', 'caixa da chácara']);
     expect(blocoDoRotulo(container, 'Saldo consolidado da unidade')).toEqual([
       'Saldo consolidado da unidade',
-      'R$ 83.077,35',
+      'R$',
+      '83.077,35',
       'última conciliação em 01/09 · 3 contas ativas',
     ]);
   });
@@ -462,7 +470,7 @@ describe('ContasEFundoPage: gerenciar contas e fundos', () => {
 
     await fecharGerenciador();
     expect(nomesDosCartoes(container)).toEqual(['Cora PJ', 'Espécie', 'Nubank Paty', 'Itaú Munay']);
-    expect(blocoDoRotulo(container, 'Saldo consolidado da unidade')[1]).toBe('R$ 84.317,90');
+    expect(blocoDoRotulo(container, 'Saldo consolidado da unidade').slice(1, 3)).toEqual(['R$', '84.317,90']);
   });
 
   it('excluir um fundo — devolve o valor ao Livre e tira a reserva da lista, sem mexer no total do fundo', async () => {
@@ -473,9 +481,9 @@ describe('ContasEFundoPage: gerenciar contas e fundos', () => {
     await clicar(botaoComTexto(linhaGerenciavel(painel(), 'Obra do dormitório'), 'Excluir'));
 
     await fecharGerenciador();
-    expect(blocoDoRotulo(container, 'Total do fundo')).toEqual(['Total do fundo', 'R$ 39.235,40']);
-    expect(blocoDoRotulo(container, 'Já com destino')).toEqual(['Já com destino', 'R$ 15.200,00']);
-    expect(blocoDoRotulo(container, 'Livre', 0)).toEqual(['Livre', 'R$ 24.035,40']);
+    expect(blocoDoRotulo(container, 'Total do fundo')).toEqual(['Total do fundo', 'R$', '39.235,40']);
+    expect(blocoDoRotulo(container, 'Já com destino')).toEqual(['Já com destino', 'R$', '15.200,00']);
+    expect(blocoDoRotulo(container, 'Livre', 0)).toEqual(['Livre', 'R$', '24.035,40']);
     expect(linhasDaReserva(container).map((linha) => linha[0])).toEqual([
       'Feitio de dezembro',
       'Emergência e saúde',
@@ -492,9 +500,9 @@ describe('ContasEFundoPage: gerenciar contas e fundos', () => {
     await clicar(botaoComTexto(linhaGerenciavel(painel(), 'Obra do dormitório'), 'Reativar'));
 
     await fecharGerenciador();
-    expect(blocoDoRotulo(container, 'Total do fundo')).toEqual(['Total do fundo', 'R$ 39.235,40']);
-    expect(blocoDoRotulo(container, 'Já com destino')).toEqual(['Já com destino', 'R$ 33.600,00']);
-    expect(blocoDoRotulo(container, 'Livre', 0)).toEqual(['Livre', 'R$ 5.635,40']);
+    expect(blocoDoRotulo(container, 'Total do fundo')).toEqual(['Total do fundo', 'R$', '39.235,40']);
+    expect(blocoDoRotulo(container, 'Já com destino')).toEqual(['Já com destino', 'R$', '33.600,00']);
+    expect(blocoDoRotulo(container, 'Livre', 0)).toEqual(['Livre', 'R$', '5.635,40']);
     expect(linhasDaReserva(container).map((linha) => linha[0])).toEqual([
       'Obra do dormitório',
       'Feitio de dezembro',
@@ -513,16 +521,18 @@ describe('ContasEFundoPage: gerenciar contas e fundos', () => {
     expect(textosDasFolhas(cartaoDaConta(container, 'Reserva da obra'))).toEqual([
       'Reserva da obra',
       'Nova conta',
-      'R$ 0,00',
+      'R$',
+      '0,00',
       'sem movimentos ainda',
       'responsável: ',
     ]);
     expect(blocoDoRotulo(container, 'Saldo consolidado da unidade')).toEqual([
       'Saldo consolidado da unidade',
-      'R$ 84.317,90',
+      'R$',
+      '84.317,90',
       'última conciliação em 01/09 · 5 contas ativas',
     ]);
-    expect(blocoDoRotulo(container, 'Em banco')).toEqual(['Em banco', 'R$ 81.137,50', '4 contas']);
+    expect(blocoDoRotulo(container, 'Em banco')).toEqual(['Em banco', 'R$', '81.137,50', '4 contas']);
     expect(folhasComTexto(container, '3 contas esperando conferência')).toHaveLength(1);
   });
 
@@ -534,7 +544,7 @@ describe('ContasEFundoPage: gerenciar contas e fundos', () => {
 
     await fecharGerenciador();
     expect(glifoDe(elemento(cartaoDaConta(container, 'Cofre da lojinha'), 'svg'))).toBe('wallet');
-    expect(blocoDoRotulo(container, 'Em banco')).toEqual(['Em banco', 'R$ 81.137,50', '3 contas']);
+    expect(blocoDoRotulo(container, 'Em banco')).toEqual(['Em banco', 'R$', '81.137,50', '3 contas']);
   });
 
   it('editar uma conta — trocar a categoria para espécie leva o saldo de banco para espécie e o ícone para carteira', async () => {
@@ -546,9 +556,9 @@ describe('ContasEFundoPage: gerenciar contas e fundos', () => {
     await clicar(botaoComTexto(painel(), 'Salvar conta'));
 
     await fecharGerenciador();
-    expect(blocoDoRotulo(container, 'Em banco')).toEqual(['Em banco', 'R$ 39.235,40', '2 contas']);
-    expect(blocoDoRotulo(container, 'Em espécie')).toEqual(['Em espécie', 'R$ 45.082,50', 'caixa da chácara']);
-    expect(blocoDoRotulo(container, 'Saldo consolidado da unidade')[1]).toBe('R$ 84.317,90');
+    expect(blocoDoRotulo(container, 'Em banco')).toEqual(['Em banco', 'R$', '39.235,40', '2 contas']);
+    expect(blocoDoRotulo(container, 'Em espécie')).toEqual(['Em espécie', 'R$', '45.082,50', 'caixa da chácara']);
+    expect(blocoDoRotulo(container, 'Saldo consolidado da unidade').slice(1, 3)).toEqual(['R$', '84.317,90']);
     expect(glifoDe(elemento(cartaoDaConta(container, 'Cora PJ'), 'svg'))).toBe('wallet');
   });
 
@@ -566,7 +576,8 @@ describe('ContasEFundoPage: gerenciar contas e fundos', () => {
       'Itaú Lojinha',
       'unidade comercial · lojinha',
       'Conciliada em 31/08',
-      'R$ 37.994,85',
+      'R$',
+      '37.994,85',
       'movimento em 22/08',
       'responsável: Marília Prado',
     ]);
@@ -584,7 +595,7 @@ describe('ContasEFundoPage: gerenciar contas e fundos', () => {
     expect(botaoComTexto(painel(), 'Salvar conta')).toBeTruthy();
     expect(campoRotulado(painel(), 'Descrição').value).toBe('sem nome ainda');
     expect(painel().querySelector('[role="alert"]')).toBeNull();
-    expect(blocoDoRotulo(container, 'Saldo consolidado da unidade')[2]).toBe('última conciliação em 01/09 · 4 contas ativas');
+    expect(blocoDoRotulo(container, 'Saldo consolidado da unidade')[3]).toBe('última conciliação em 01/09 · 4 contas ativas');
   });
 
   it('editar um fundo — trocar o valor reajusta o que já tem destino e o Livre, e a reserva continua no mesmo lugar', async () => {
@@ -597,8 +608,8 @@ describe('ContasEFundoPage: gerenciar contas e fundos', () => {
     await clicar(botaoComTexto(painel(), 'Salvar fundo'));
 
     await fecharGerenciador();
-    expect(blocoDoRotulo(container, 'Já com destino')).toEqual(['Já com destino', 'R$ 34.400,00']);
-    expect(blocoDoRotulo(container, 'Livre', 0)).toEqual(['Livre', 'R$ 4.835,40']);
+    expect(blocoDoRotulo(container, 'Já com destino')).toEqual(['Já com destino', 'R$', '34.400,00']);
+    expect(blocoDoRotulo(container, 'Livre', 0)).toEqual(['Livre', 'R$', '4.835,40']);
     expect(linhasDaReserva(container).map((linha) => linha[0])).toEqual([
       'Obra do dormitório',
       'Feitio de dezembro',
@@ -608,7 +619,8 @@ describe('ContasEFundoPage: gerenciar contas e fundos', () => {
     expect(linhasDaReserva(container)[1]).toEqual([
       'Feitio de dezembro',
       'insumos, garrafas e deslocamento',
-      'R$ 10.000,00',
+      'R$',
+      '10.000,00',
       '25%',
     ]);
   });
@@ -621,9 +633,9 @@ describe('ContasEFundoPage: gerenciar contas e fundos', () => {
     await criarFundo(painel(), 'Reforma da cozinha', '1.500,00');
 
     await fecharGerenciador();
-    expect(blocoDoRotulo(container, 'Já com destino')).toEqual(['Já com destino', 'R$ 35.100,00']);
-    expect(blocoDoRotulo(container, 'Livre', 0)).toEqual(['Livre', 'R$ 4.135,40']);
-    expect(linhasDaReserva(container).at(-2)).toEqual(['Reforma da cozinha', 'R$ 1.500,00', '4%']);
+    expect(blocoDoRotulo(container, 'Já com destino')).toEqual(['Já com destino', 'R$', '35.100,00']);
+    expect(blocoDoRotulo(container, 'Livre', 0)).toEqual(['Livre', 'R$', '4.135,40']);
+    expect(linhasDaReserva(container).at(-2)).toEqual(['Reforma da cozinha', 'R$', '1.500,00', '4%']);
   });
 
   it('fundo acima do que está livre — o painel avisa e bloqueia, e o Livre não fica negativo', async () => {
@@ -635,9 +647,9 @@ describe('ContasEFundoPage: gerenciar contas e fundos', () => {
 
     expect(folhasComTexto(painel(), 'Passa do que está livre no fundo próprio: R$ 5.635,40.')).toHaveLength(1);
     await fecharGerenciador();
-    expect(blocoDoRotulo(container, 'Já com destino')).toEqual(['Já com destino', 'R$ 33.600,00']);
-    expect(blocoDoRotulo(container, 'Livre', 0)).toEqual(['Livre', 'R$ 5.635,40']);
-    expect(linhasDaReserva(container).at(-1)).toEqual(['Livre', 'sem destino combinado', 'R$ 5.635,40', '14%']);
+    expect(blocoDoRotulo(container, 'Já com destino')).toEqual(['Já com destino', 'R$', '33.600,00']);
+    expect(blocoDoRotulo(container, 'Livre', 0)).toEqual(['Livre', 'R$', '5.635,40']);
+    expect(linhasDaReserva(container).at(-1)).toEqual(['Livre', 'sem destino combinado', 'R$', '5.635,40', '14%']);
     expect(todos(container, 'div[title="Compra do terreno"]')).toHaveLength(0);
   });
 

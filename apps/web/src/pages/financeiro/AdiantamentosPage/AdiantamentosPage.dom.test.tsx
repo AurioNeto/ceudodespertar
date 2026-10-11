@@ -219,14 +219,16 @@ describe('AdiantamentosPage: o que cada perspectiva vê', () => {
         'há 53 dias',
         'camisetas da lojinha, lote de agosto · 11/07/2026 · Nubank Paty',
         'autorizado por Marta Neto em 14/07/2026',
-        'R$ 1.700,86',
+        'R$',
+        '1.700,86',
       ],
       [
         'Lucia Prado',
         'A ressarcir',
         'ferragens do dormitório · 06/08/2026 · Nubank Paty',
         'autorizado por Marta Neto em 08/08/2026',
-        'R$ 268,40',
+        'R$',
+        '268,40',
       ],
     ]);
     expect(linhasDaSecao(container, 'A ressarcir').map((linha) => textosDosBotoes(linha))).toEqual([
@@ -247,7 +249,8 @@ describe('AdiantamentosPage: o que cada perspectiva vê', () => {
         'Ressarcido',
         'diesel do feitio de junho · 19/06/2026 · Caixa Carlão',
         'autorizado por Aurio Neto (padrinho) em 20/06/2026 · ressarcido em 02/07/2026 por Cora PJ',
-        'R$ 612,00',
+        'R$',
+        '612,00',
       ],
     ]);
     expect(linhasDaSecao(container, 'Fechados').map((linha) => textosDosBotoes(linha))).toEqual([[]]);
@@ -263,9 +266,10 @@ describe('AdiantamentosPage: o que cada perspectiva vê', () => {
         'Paty Munay',
         'Aguardando autorização',
         'compras da cozinha e tecidos do altar · 24/08/2026 · Cartão Itaú Paty',
-        'R$ 1.067,67',
+        'R$',
+        '1.067,67',
       ],
-      ['Carlos Andrade', 'Aguardando autorização', 'conserto da bomba do poço · 01/09/2026 · Nubank Carlão', 'R$ 430,00'],
+      ['Carlos Andrade', 'Aguardando autorização', 'conserto da bomba do poço · 01/09/2026 · Nubank Carlão', 'R$', '430,00'],
     ]);
     expect(linhasDaSecao(container, 'Aguardando sua autorização').map((linha) => textosDosBotoes(linha))).toEqual([
       ['Autorizar', 'Recusar'],
@@ -379,7 +383,8 @@ describe('AdiantamentosPage: autorizar', () => {
       'A ressarcir',
       'compras da cozinha e tecidos do altar · 24/08/2026 · Cartão Itaú Paty',
       'autorizado por Marta Neto em 02/09/2026',
-      'R$ 1.067,67',
+      'R$',
+      '1.067,67',
       'a tesouraria ressarce',
     ]);
     expect(recadoMostrado(container)).toBe(
@@ -486,7 +491,8 @@ describe('AdiantamentosPage: recusar', () => {
       'Recusado',
       'compras da cozinha e tecidos do altar · 24/08/2026 · Cartão Itaú Paty',
       'recusado: sem nota fiscal',
-      'R$ 1.067,67',
+      'R$',
+      '1.067,67',
     ]);
     expect(recadoMostrado(container)).toBe('Adiantamento de Paty Munay recusado, com o motivo registrado.');
     expect(blocoDoRotulo(container, 'Fechados')).toEqual(['Fechados', '2', 'ressarcidos ou recusados']);
@@ -581,7 +587,8 @@ describe('AdiantamentosPage: ressarcir', () => {
       'Ressarcido',
       'camisetas da lojinha, lote de agosto · 11/07/2026 · Nubank Paty',
       'autorizado por Marta Neto em 14/07/2026 · ressarcido em 10/09/2026 por Espécie',
-      'R$ 1.700,86',
+      'R$',
+      '1.700,86',
     ]);
     expect(recadoMostrado(container)).toBe(
       'Ressarcimento de R$ 1.700,86 a Paty Munay registrado como transferência de Espécie. Nenhuma despesa nova — ela já foi lançada em 11/07/2026.',
@@ -791,7 +798,8 @@ describe('AdiantamentosPage: novo adiantamento', () => {
       'Paty Munay',
       'Aguardando autorização',
       'lâmpadas do corredor · 01/09/2026 · Cartão Itaú Paty',
-      'R$ 250,50',
+      'R$',
+      '250,50',
     ]);
     expect(textosDasLinhas(container, 'Aguardando sua autorização')).toHaveLength(3);
   });
