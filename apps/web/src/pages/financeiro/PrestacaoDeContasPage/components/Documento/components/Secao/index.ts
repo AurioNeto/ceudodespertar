@@ -1,0 +1,1 @@
+export { Secao } from './Secao';

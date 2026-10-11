@@ -1,0 +1,1 @@
+export { UnidadeCartao } from './UnidadeCartao';

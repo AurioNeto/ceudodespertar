@@ -422,7 +422,7 @@ Os testes do #58, do #59, do #61 e do #62 se repartem por describe entre as unid
 | `ConciliacaoPage.tsx`: estado e ações; `PainelDeImportacao`, `Coluna`, `LinhaDoExtrato`, `Sugestao`, `Lado`, `LancamentoSozinho` | `ConciliacaoPage/hooks/useConciliacao.ts` (+ `.dom.test.ts`); `components/{PainelDeImportacao, Coluna, LinhaDoExtrato, Sugestao (+ components/Lado), LancamentoSozinho}/` | dividir | Dividir Fechamento e Conciliação |
 | `PrestacaoDeContasPage.tsx`: estado e gerar; `ExplicacaoDoNivel`, `Documento`, `DocumentoProps`, `Secao`, `Linha`, `Total`; histórico | `PrestacaoDeContasPage/hooks/usePrestacao.ts`; `components/{ExplicacaoDoNivel, Documento (+ components/{Secao, Linha, Total}), HistoricoDePrestacoes}/` | dividir | Dividir Prestação e Parâmetros |
 | `mocks/prestacao.ts#soma` (regra de domínio sai do mock) | `PrestacaoDeContasPage/utils/totais.ts` (+ teste) | repartir por export | Dividir Prestação e Parâmetros |
-| `ParametrosPage.tsx`: `Aba`, `REGIME_ROTULO`; corrigir; `BuracoDoRelatorio`, `TabelaDeCategorias`, `ListaDeUnidades`, `UnidadeCartao`, `ParametrosDaCasa` | `ParametrosPage/constantes.ts`; `hooks/useCorrecaoDeLinha.ts`; `components/{BuracoDoRelatorio, TabelaDeCategorias, ListaDeUnidades (+ components/UnidadeCartao), ParametrosDaCasa}/` | dividir | Dividir Prestação e Parâmetros |
+| `ParametrosPage.tsx`: `Aba`, `REGIME_ROTULO`; estado e corrigir; `BuracoDoRelatorio`, `TabelaDeCategorias`, `ListaDeUnidades`, `UnidadeCartao`, `ParametrosDaCasa` | `ParametrosPage/constantes.ts`; `hooks/useCorrecaoDeLinha.ts`; `components/{BuracoDoRelatorio, TabelaDeCategorias, ListaDeUnidades (+ components/UnidadeCartao), ParametrosDaCasa}/` | dividir | Dividir Prestação e Parâmetros |
 
 ### 8.3 Composições de domínio
 
