@@ -38,6 +38,7 @@ export { PainelDeAcao, varianteDoPainel } from './organisms/PainelDeAcao';
 export type { VarianteDoPainel } from './organisms/PainelDeAcao';
 export { PeriodLock } from './molecules/PeriodLock';
 export { PermissionDenied } from './molecules/PermissionDenied';
+export { Portao } from './templates/Portao';
 export { Recado } from './molecules/Recado';
 export { Receipt } from './organisms/Receipt';
 export type { ReceiptLine, ReceiptTone } from './organisms/Receipt';

@@ -1,11 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button, SkeletonList, useDensidade } from '../../ds';
+import { Button, Portao, SkeletonList, useDensidade } from '@/ds';
 import { ROTAS_PUBLICAS } from '@/app/rotas';
 import { useSessao } from '../../app/sessao';
 import { MensagemDeEntradaNaTela } from './MensagemDeEntradaNaTela';
 import { MENSAGEM_DE_ERRO_NO_RETORNO } from './mensagens';
-import { Portao } from './Portao';
 
 type SituacaoDoRetorno = 'concluindo' | 'falhou';
 
