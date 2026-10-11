@@ -1,4 +1,4 @@
-import { ScreenHeader, useDensidade, Recado } from '@/ds';
+import { CorpoDaTela, ScreenHeader, useDensidade, Recado } from '@/ds';
 import { Alimentacao } from './components/Alimentacao';
 import { BuscaDePessoa } from './components/BuscaDePessoa';
 import { ComoParticipa } from './components/ComoParticipa';
@@ -43,16 +43,7 @@ export function InscricaoPage() {
         density={densidade}
       />
 
-      <div
-        style={{
-          padding: campo ? '14px 16px 28px' : '18px 24px 30px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: campo ? 14 : 18,
-          maxWidth: campo ? undefined : 960,
-          minWidth: 0,
-        }}
-      >
+      <CorpoDaTela densidade={densidade} larguraMaxima={960}>
         {tela.recado ? <Recado texto={tela.recado} onFechar={tela.fecharRecado} /> : null}
 
         <EscolhaDoEvento eventoId={tela.eventoId} onTrocar={tela.trocarEvento} densidade={densidade} />
@@ -136,7 +127,7 @@ export function InscricaoPage() {
             />
           </>
         )}
-      </div>
+      </CorpoDaTela>
     </>
   );
 }
