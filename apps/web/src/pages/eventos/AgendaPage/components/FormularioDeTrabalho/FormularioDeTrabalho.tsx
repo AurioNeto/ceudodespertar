@@ -1,4 +1,4 @@
-import { Button, Icon, TextField, Select } from '@/ds';
+import { Button, PainelDeAcao, TextField, Select } from '@/ds';
 import { CORES_POR_TIPO } from '../../constantes';
 import type { TipoDeTrabalho } from '../../tipos';
 import type { RascunhoDeTrabalho } from '../../utils/rascunhoDeTrabalho';
@@ -16,121 +16,66 @@ export function FormularioDeTrabalho({ inicial, onCancelar, onSalvar }: Formular
   const { f, alterar, mexerNasTarefas, mover, erroDaData, erroDasContribuicoes, salvar } = useFormularioDeTrabalho(inicial, onSalvar);
 
   return (
-    <div
-      onClick={onCancelar}
-      style={{
-        position: 'fixed',
-        inset: 0,
-        background: 'rgba(20,20,24,0.42)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 40,
-        padding: 24,
-      }}
-    >
-      <div
-        onClick={(e) => e.stopPropagation()}
-        style={{
-          width: 680,
-          maxWidth: '100%',
-          maxHeight: '100%',
-          display: 'flex',
-          flexDirection: 'column',
-          background: 'var(--bg-card)',
-          borderRadius: 'var(--radius-lg)',
-          boxShadow: 'var(--shadow-raised)',
-          overflow: 'hidden',
-        }}
-      >
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: 12,
-            padding: '16px 20px',
-            borderBottom: 'var(--border-hairline)',
-          }}
-        >
-          <span style={{ font: 'var(--text-title-sm)', color: 'var(--text-title)' }}>
-            {f.editId ? 'Editar cerimônia' : 'Nova cerimônia'}
-          </span>
-          <button type="button" aria-label="fechar" onClick={onCancelar} style={{ color: 'var(--text-meta)' }}>
-            <Icon name="x" size={20} />
-          </button>
-        </div>
+    <PainelDeAcao aberto titulo={f.editId ? 'Editar cerimônia' : 'Nova cerimônia'} variante="central" aoFechar={onCancelar}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <TextField label="Nome" value={f.nome} onChange={(e) => alterar('nome', e.target.value)} placeholder="Mãe Divina" />
 
-        <div
-          style={{
-            flex: 1,
-            minHeight: 0,
-            overflow: 'auto',
-            padding: '16px 20px 20px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 14,
-          }}
-        >
-          <TextField label="Nome" value={f.nome} onChange={(e) => alterar('nome', e.target.value)} placeholder="Mãe Divina" />
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 12 }}>
-            <Select
-              label="Tipo"
-              value={f.tipo}
-              options={(Object.keys(CORES_POR_TIPO) as TipoDeTrabalho[]).map((t) => ({ value: t, label: t }))}
-              onChange={(v) => alterar('tipo', v as TipoDeTrabalho)}
-            />
-            <TextField
-              id={ID_DO_CAMPO_DA_DATA}
-              label="Data"
-              value={f.data}
-              onChange={(e) => alterar('data', e.target.value)}
-              placeholder="05/09/2026"
-              error={erroDaData}
-            />
-            <TextField label="Horário" value={f.horario} onChange={(e) => alterar('horario', e.target.value)} />
-            <TextField label="Local" value={f.local} onChange={(e) => alterar('local', e.target.value)} />
-            <TextField label="Dirigente" value={f.dirigente} onChange={(e) => alterar('dirigente', e.target.value)} />
-            <TextField
-              label="Previstos"
-              value={f.previstos}
-              onChange={(e) => alterar('previstos', e.target.value)}
-              inputMode="numeric"
-            />
-            <TextField
-              label="Litros previstos"
-              value={f.litros}
-              onChange={(e) => alterar('litros', e.target.value)}
-              inputMode="decimal"
-            />
-            <TextField
-              id={ID_DO_CAMPO_DE_CONTRIBUICOES}
-              label="Contribuições sugeridas"
-              value={f.contribuicoes}
-              onChange={(e) => alterar('contribuicoes', e.target.value)}
-              placeholder="40, 60, 90"
-              hint="uma ou mais opções, separadas por vírgula"
-              error={erroDasContribuicoes}
-            />
-          </div>
-
-          <TextField
-            label="Observações"
-            multiline
-            value={f.observacoes}
-            onChange={(e) => alterar('observacoes', e.target.value)}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 12 }}>
+          <Select
+            label="Tipo"
+            value={f.tipo}
+            options={(Object.keys(CORES_POR_TIPO) as TipoDeTrabalho[]).map((t) => ({ value: t, label: t }))}
+            onChange={(v) => alterar('tipo', v as TipoDeTrabalho)}
           />
-
-          <TarefasDoPreparo preparo={f.preparo} onMexerNasTarefas={mexerNasTarefas} onMover={mover} />
+          <TextField
+            id={ID_DO_CAMPO_DA_DATA}
+            label="Data"
+            value={f.data}
+            onChange={(e) => alterar('data', e.target.value)}
+            placeholder="05/09/2026"
+            error={erroDaData}
+          />
+          <TextField label="Horário" value={f.horario} onChange={(e) => alterar('horario', e.target.value)} />
+          <TextField label="Local" value={f.local} onChange={(e) => alterar('local', e.target.value)} />
+          <TextField label="Dirigente" value={f.dirigente} onChange={(e) => alterar('dirigente', e.target.value)} />
+          <TextField
+            label="Previstos"
+            value={f.previstos}
+            onChange={(e) => alterar('previstos', e.target.value)}
+            inputMode="numeric"
+          />
+          <TextField
+            label="Litros previstos"
+            value={f.litros}
+            onChange={(e) => alterar('litros', e.target.value)}
+            inputMode="decimal"
+          />
+          <TextField
+            id={ID_DO_CAMPO_DE_CONTRIBUICOES}
+            label="Contribuições sugeridas"
+            value={f.contribuicoes}
+            onChange={(e) => alterar('contribuicoes', e.target.value)}
+            placeholder="40, 60, 90"
+            hint="uma ou mais opções, separadas por vírgula"
+            error={erroDasContribuicoes}
+          />
         </div>
+
+        <TextField
+          label="Observações"
+          multiline
+          value={f.observacoes}
+          onChange={(e) => alterar('observacoes', e.target.value)}
+        />
+
+        <TarefasDoPreparo preparo={f.preparo} onMexerNasTarefas={mexerNasTarefas} onMover={mover} />
 
         <div
           style={{
             display: 'flex',
             gap: 10,
             justifyContent: 'flex-end',
-            padding: '12px 20px 16px',
+            paddingTop: 12,
             borderTop: 'var(--border-hairline)',
           }}
         >
@@ -147,6 +92,6 @@ export function FormularioDeTrabalho({ inicial, onCancelar, onSalvar }: Formular
           </Button>
         </div>
       </div>
-    </div>
+    </PainelDeAcao>
   );
 }
