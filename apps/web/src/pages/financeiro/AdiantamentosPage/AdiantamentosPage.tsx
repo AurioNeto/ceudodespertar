@@ -1,6 +1,5 @@
-import { Button, CorpoDaTela, ScreenHeader, useDensidade, Cartao, Numero, Recado, Rotulo } from '@/ds';
+import { Aviso, Button, CorpoDaTela, ScreenHeader, useDensidade, Cartao, Numero, Recado, Rotulo } from '@/ds';
 import { formatarBRL, pluralizar } from '@/pages/utils/formato';
-import { BlocoAusente } from './components/BlocoAusente';
 import { FilaDeAutorizacao } from './components/FilaDeAutorizacao';
 import { FilaDeRessarcimento } from './components/FilaDeRessarcimento';
 import { FormularioDeAdiantamento } from './components/FormularioDeAdiantamento';
@@ -87,10 +86,9 @@ export function AdiantamentosPage() {
             onCancelarRecusa={tela.cancelarRecusa}
           />
         ) : (
-          <BlocoAusente
-            titulo="A fila de autorização não vem para o seu grupo"
-            texto={`Autorizar adiantamento é da Governança e da Administração. ${tela.quem.grupo} não recebe esta lista — ela não é escondida na tela, ela não é consultada no servidor.`}
-          />
+          <Aviso tom="neutro" titulo="A fila de autorização não vem para o seu grupo">
+            {`Autorizar adiantamento é da Governança e da Administração. ${tela.quem.grupo} não recebe esta lista — ela não é escondida na tela, ela não é consultada no servidor.`}
+          </Aviso>
         )}
 
         {tela.quem.podeLerReembolsos ? (
