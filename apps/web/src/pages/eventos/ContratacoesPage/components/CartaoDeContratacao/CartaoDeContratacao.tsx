@@ -1,4 +1,4 @@
-import { Button, Cartao, Icon, Leitura, Rotulo, StatusBadge, type Density } from '@/ds';
+import { AmountDisplay, Button, Cartao, Icon, Leitura, Rotulo, StatusBadge, type Density } from '@/ds';
 import { formatarBRL, pluralizar } from '@/pages/utils/formato';
 import { FORMA_EXPLICACAO, FORMA_ROTULO, STATUS_ROTULO, TOM } from '../../constantes';
 import type { ContratacaoNaTela } from '../../mocks/contratacoes';
@@ -51,9 +51,7 @@ export function CartaoDeContratacao({
           </span>
         ) : null}
         <span style={{ flex: 1 }} />
-        <span data-numeric style={{ font: 'var(--text-amount-lg)', color: 'var(--color-royal-deep)' }}>
-          {formatarBRL(c.valorAcordado)}
-        </span>
+        <AmountDisplay value={c.valorAcordado / 100} size="lg" style={{ color: 'var(--color-royal-deep)' }} />
       </div>
 
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px 16px' }}>
@@ -117,9 +115,11 @@ export function CartaoDeContratacao({
                       {m.nome}
                     </span>
                     <span style={{ font: 'var(--text-small)', color: 'var(--text-meta)' }}>{m.funcao}</span>
-                    <span data-numeric style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>
-                      {formatarBRL(m.valor)}
-                    </span>
+                    <AmountDisplay
+                      value={m.valor / 100}
+                      size="sm"
+                      style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}
+                    />
                   </div>
                 ))}
               </div>
@@ -136,9 +136,11 @@ export function CartaoDeContratacao({
               <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)', flex: 1 }}>
                 {x.descricao}
               </span>
-              <span data-numeric style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>
-                {formatarBRL(x.valor)}
-              </span>
+              <AmountDisplay
+                value={x.valor / 100}
+                size="sm"
+                style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}
+              />
             </div>
           ))}
           <span style={{ font: 'var(--text-small)', color: 'var(--text-meta)' }}>
@@ -164,15 +166,11 @@ export function CartaoDeContratacao({
             {formatarBRL(c.valorAcordado)} − {formatarBRL(totalCaches)} de cachês − {formatarBRL(totalCustos)} de
             custos
           </span>
-          <span
-            data-numeric
-            style={{
-              font: 'var(--text-amount)',
-              color: resultado >= 0 ? 'var(--color-confirmed)' : 'var(--color-attention)',
-            }}
-          >
-            {formatarBRL(resultado)}
-          </span>
+          <AmountDisplay
+            value={resultado / 100}
+            size="sm"
+            style={{ color: resultado >= 0 ? 'var(--color-confirmed)' : 'var(--color-attention)' }}
+          />
         </div>
       )}
 

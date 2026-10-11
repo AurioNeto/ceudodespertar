@@ -1,4 +1,4 @@
-import { Cartao, ListaDividida, Rotulo, type Density } from '@/ds';
+import { AmountDisplay, Cartao, ListaDividida, Rotulo, type Density } from '@/ds';
 import { formatarBRL, pluralizar } from '@/pages/utils/formato';
 import { faltaramSemPedir } from '../../mocks/devolucoes';
 
@@ -32,9 +32,11 @@ export function FaltaramSemPedir({ densidade }: FaltaramSemPedirProps) {
             <span style={{ font: 'var(--text-small)', color: 'var(--text-meta)', flex: 1, minWidth: 160 }}>
               {x.evento}
             </span>
-            <span data-numeric style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>
-              {formatarBRL(x.valor)}
-            </span>
+            <AmountDisplay
+              value={x.valor / 100}
+              size="sm"
+              style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}
+            />
           </>
         )}
       </ListaDividida>

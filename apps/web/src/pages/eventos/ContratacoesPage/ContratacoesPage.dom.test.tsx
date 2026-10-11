@@ -167,16 +167,16 @@ describe('ContratacoesPage: cartões', () => {
     const { container } = await montar(<ContratacoesPage />);
 
     expect(cartaoDaContratacao(container, LUZ_DO_NORTE).textContent).toBe(
-      'Instituto Luz do NortePropostaCNPJ 22.740.115/0001-08R$ 2.400,00' +
+      'Instituto Luz do NortePropostaCNPJ 22.740.115/0001-08R$2.400,00' +
         'EventoApresentação de abertura · 30/11/2026' +
         'OndeSede do Instituto · Atibaia' +
         'Forma de pagamentoFaturado · A receber depois do trabalho, na data combinada.' +
         'Previsto para15/12/2026' +
-        'Entra · o contratante paga a MunayR$ 2.400,00receitaCachê de contrataçãoAinda não virou lançamento — receita só existe depois do recebimento.' +
-        'Sai · a Munay paga os músicosR$ 900,00despesaCachê a músico0 cachês pagos de 2' +
-        'Sérgio Bittencourtviolão e vozR$ 500,00Helena DuartepercussãoR$ 400,00' +
-        'Outros custos do eventoDeslocamento · vanR$ 280,00Apurados por evento, como em qualquer trabalho da casa.' +
-        'Resultado do eventoR$ 2.400,00 − R$ 900,00 de cachês − R$ 280,00 de custosR$ 1.220,00' +
+        'Entra · o contratante paga a MunayR$2.400,00receitaCachê de contrataçãoAinda não virou lançamento — receita só existe depois do recebimento.' +
+        'Sai · a Munay paga os músicosR$900,00despesaCachê a músico0 cachês pagos de 2' +
+        'Sérgio Bittencourtviolão e vozR$500,00Helena DuartepercussãoR$400,00' +
+        'Outros custos do eventoDeslocamento · vanR$280,00Apurados por evento, como em qualquer trabalho da casa.' +
+        'Resultado do eventoR$ 2.400,00 − R$ 900,00 de cachês − R$ 280,00 de custosR$1.220,00' +
         'Proposta enviada em 02/09. Eles pediram para faturar em 15 dias após o evento.' +
         'Confirmar a propostaConfirmar não move dinheiro. Proposta não é receita.',
     );
@@ -187,7 +187,7 @@ describe('ContratacoesPage: cartões', () => {
 
     const cartao = cartaoDaContratacao(container, ESTRELA_GUIA);
 
-    expect(cartao.textContent).toContain('Resultado do eventoR$ 3.200,00 − R$ 1.400,00 de cachês − R$ 550,00 de custosR$ 1.250,00');
+    expect(cartao.textContent).toContain('Resultado do eventoR$ 3.200,00 − R$ 1.400,00 de cachês − R$ 550,00 de custosR$1.250,00');
     expect(cartao.textContent).toContain('Forma de pagamentoAntecipado · Combinado para antes do trabalho.Previsto para10/10/2026');
     expect(todos<HTMLButtonElement>(cartao, 'button').map((botao) => botao.textContent)).toEqual(['Registrar recebimento']);
   });
@@ -199,7 +199,7 @@ describe('ContratacoesPage: cartões', () => {
 
     expect(cartao.textContent).toContain('Recebido em 16/08/2026 · lanc-8760');
     expect(cartao.textContent).toContain('3 cachês pagos de 3');
-    expect(cartao.textContent).toContain('Resultado do eventoR$ 2.800,00 − R$ 1.400,00 de cachês − R$ 500,00 de custosR$ 900,00');
+    expect(cartao.textContent).toContain('Resultado do eventoR$ 2.800,00 − R$ 1.400,00 de cachês − R$ 500,00 de custosR$900,00');
     expect(cartao.textContent?.endsWith('Pago em espécie no dia, depositado no Cora no dia seguinte.Recebido e lançado')).toBe(true);
     expect(todos(cartao, 'button')).toHaveLength(0);
   });
@@ -214,7 +214,7 @@ describe('ContratacoesPage: cartões', () => {
     const { container } = await montar(<ContratacoesPage />);
 
     expect(cartaoDaContratacao(container, SEMENTE_VIVA).textContent).toBe(
-      'Instituto Semente VivaCanceladaCNPJ 41.118.209/0001-45R$ 1.800,00' +
+      'Instituto Semente VivaCanceladaCNPJ 41.118.209/0001-45R$1.800,00' +
         'EventoCerimônia contratada · 30/08/2026' +
         'OndeSede do Instituto · Sorocaba' +
         'Forma de pagamentoAntecipado · Combinado para antes do trabalho.' +
@@ -264,7 +264,9 @@ describe('ContratacoesPage: resultado do evento', () => {
 
     const { container } = await montar(<ContratacoesPage />);
 
-    const resultado = folhaComTextoExato(cartaoDaContratacao(container, LUZ_DO_NORTE), 'R$ 0,00')!;
+    const resultado = todos<HTMLElement>(cartaoDaContratacao(container, LUZ_DO_NORTE), '[data-numeric]').find(
+      (valor) => valor.textContent === 'R$0,00',
+    )!;
     expect(resultado.style.color).toBe('var(--color-confirmed)');
   });
 
@@ -273,7 +275,9 @@ describe('ContratacoesPage: resultado do evento', () => {
 
     const { container } = await montar(<ContratacoesPage />);
 
-    const resultado = folhaComTextoExato(cartaoDaContratacao(container, LUZ_DO_NORTE), 'R$ -180,00')!;
+    const resultado = todos<HTMLElement>(cartaoDaContratacao(container, LUZ_DO_NORTE), '[data-numeric]').find(
+      (valor) => valor.textContent === 'R$-180,00',
+    )!;
     expect(resultado.style.color).toBe('var(--color-attention)');
   });
 
@@ -283,7 +287,7 @@ describe('ContratacoesPage: resultado do evento', () => {
     const { container } = await montar(<ContratacoesPage />);
 
     const cartao = cartaoDaContratacao(container, LUZ_DO_NORTE);
-    expect(cartao.textContent).toContain('Sai · a Munay paga os músicosR$ 0,00despesaCachê a músicoNenhum cachê combinado ainda.');
+    expect(cartao.textContent).toContain('Sai · a Munay paga os músicosR$0,00despesaCachê a músicoNenhum cachê combinado ainda.');
     expect(cartao.textContent).toContain('R$ 2.400,00 − R$ 0,00 de cachês − R$ 280,00 de custos');
   });
 

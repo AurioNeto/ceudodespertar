@@ -1,4 +1,4 @@
-import { Button, Cartao, type Density } from '@/ds';
+import { AmountDisplay, Button, Cartao, type Density } from '@/ds';
 import { formatarBRL, pluralizar } from '@/pages/utils/formato';
 import { totalComContribuicaoACombinar } from '../../../utils/totalComContribuicaoACombinar';
 
@@ -66,9 +66,7 @@ export function Fechamento({
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap' }}>
-            <span data-numeric style={{ font: 'var(--text-amount-lg)', color: 'var(--color-royal-deep)' }}>
-              {formatarBRL(total)}
-            </span>
+            <AmountDisplay value={total / 100} size="lg" style={{ color: 'var(--color-royal-deep)' }} />
             <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>devidos</span>
           </div>
           <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>

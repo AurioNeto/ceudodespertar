@@ -87,6 +87,12 @@ const pendenciasMostradas = (container: HTMLElement) =>
     .filter((codigo) => /^IN\d+$/.test(codigo.textContent ?? ''))
     .map((codigo) => [codigo.previousElementSibling?.textContent, codigo.textContent]);
 
+const valorEmReais = (container: HTMLElement, formatado: string): HTMLElement => {
+  const achado = todos(container, '[data-numeric]').find((valor) => valor.textContent === formatado.replace('R$ ', 'R$'));
+  if (!achado) throw new Error(`valor não encontrado: ${formatado}`);
+  return achado;
+};
+
 const botaoDeConfirmar = (container: HTMLElement) => {
   const achado = todos<HTMLButtonElement>(container, 'button').find((botao) =>
     botao.textContent?.startsWith('Confirmar a inscrição de'),
@@ -880,9 +886,9 @@ describe('InscricaoPage: contribuição', () => {
     const niveis = ['Social', 'Sustentável', 'Próspero'].map((nivel) => botaoDoNivel(container, nivel));
 
     expect(niveis.map((botao) => botao.textContent)).toEqual([
-      'SocialR$ 80,00Para quem está com a condição apertada. Ninguém precisa explicar por que escolheu este.',
-      'SustentávelR$ 160,00O que cobre o custo do trabalho por pessoa. É a referência da casa.',
-      'PrósperoR$ 240,00Para quem pode sustentar a própria participação e um pouco da de outra pessoa.',
+      'SocialR$80,00Para quem está com a condição apertada. Ninguém precisa explicar por que escolheu este.',
+      'SustentávelR$160,00O que cobre o custo do trabalho por pessoa. É a referência da casa.',
+      'PrósperoR$240,00Para quem pode sustentar a própria participação e um pouco da de outra pessoa.',
     ]);
     expect(niveis.map(marcado)).toEqual([false, false, false]);
   });
@@ -895,7 +901,7 @@ describe('InscricaoPage: contribuição', () => {
     const valores = ['Social', 'Sustentável', 'Próspero'].map(
       (nivel) => elemento(botaoDoNivel(container, nivel), '[data-numeric]').textContent,
     );
-    expect(valores).toEqual(['R$ 180,00', 'R$ 360,00', 'R$ 540,00']);
+    expect(valores).toEqual(['R$180,00', 'R$360,00', 'R$540,00']);
   });
 
   it('o campo de valor — nasce vazio, com o 0,00 de exemplo e a dica de que é sempre editável', async () => {
@@ -1025,7 +1031,7 @@ describe('InscricaoPage: contribuição', () => {
 
     expect(marcado(botaoDoNivel(container, 'Sustentável'))).toBe(false);
     expect(campoDoValor(container).value).toBe('');
-    expect(elemento(botaoDoNivel(container, 'Sustentável'), '[data-numeric]').textContent).toBe('R$ 360,00');
+    expect(elemento(botaoDoNivel(container, 'Sustentável'), '[data-numeric]').textContent).toBe('R$360,00');
     expect(textoDe(container)).not.toContain('No nível sustentável.');
   });
 });
@@ -1351,7 +1357,7 @@ describe('InscricaoPage: valor devido na tela', () => {
 
     await digitar(campoDoValor(container), '120');
 
-    expect(folhaComTexto(container, 'span', 'R$ 120,00')).toBeDefined();
+    expect(valorEmReais(container, 'R$ 120,00')).toBeDefined();
     expect(folhaComTexto(container, 'span', 'devidos')).toBeDefined();
     expect(folhaComTexto(container, 'span', 'R$ 120,00 de contribuição')).toBeDefined();
   });
@@ -1362,7 +1368,7 @@ describe('InscricaoPage: valor devido na tela', () => {
     await escolherHospedagem(container, 'Beliche no dormitório');
     await escolherOpcao(campoRotulado<HTMLSelectElement>(container, 'Quantas diárias'), '3');
 
-    expect(folhaComTexto(container, 'span', 'R$ 310,00')).toBeDefined();
+    expect(valorEmReais(container, 'R$ 310,00')).toBeDefined();
     expect(folhaComTexto(container, 'span', 'R$ 160,00 de contribuição · R$ 150,00 de acomodação')).toBeDefined();
   });
 
@@ -1375,7 +1381,7 @@ describe('InscricaoPage: valor devido na tela', () => {
     await clicar(opcaoEmLinha(container, 'Ceia'));
     await clicar(opcaoEmLinha(container, 'Almoço'));
 
-    expect(folhaComTexto(container, 'span', 'R$ 595,00')).toBeDefined();
+    expect(valorEmReais(container, 'R$ 595,00')).toBeDefined();
     expect(
       folhaComTexto(container, 'span', 'R$ 360,00 de contribuição · R$ 180,00 de acomodação · R$ 55,00 de alimentação'),
     ).toBeDefined();
@@ -1390,7 +1396,7 @@ describe('InscricaoPage: valor devido na tela', () => {
 
     await clicar(opcaoEmLinha(container, 'Jantar'));
 
-    expect(folhaComTexto(container, 'span', 'R$ 118,00')).toBeDefined();
+    expect(valorEmReais(container, 'R$ 118,00')).toBeDefined();
     expect(folhaComTexto(container, 'span', 'R$ 100,00 de contribuição · R$ 18,00 de alimentação')).toBeDefined();
   });
 
@@ -1405,7 +1411,7 @@ describe('InscricaoPage: valor devido na tela', () => {
 
     expect(marcado(opcaoEmLinha(container, 'Jantar'))).toBe(true);
     expect(marcado(opcaoEmLinha(container, 'Café da manhã'))).toBe(false);
-    expect(folhaComTexto(container, 'span', 'R$ 130,00')).toBeDefined();
+    expect(valorEmReais(container, 'R$ 130,00')).toBeDefined();
     expect(folhaComTexto(container, 'span', 'R$ 100,00 de contribuição · R$ 30,00 de alimentação')).toBeDefined();
   });
 
@@ -1420,7 +1426,7 @@ describe('InscricaoPage: valor devido na tela', () => {
 
     await digitar(campoDoValor(container), digitado);
 
-    expect(folhaComTexto(container, 'span', total)).toBeDefined();
+    expect(valorEmReais(container, total)).toBeDefined();
   });
 
   it('valor que não é número — vira R$ 0,00 devidos em vez de A combinar, ao contrário do campo em branco', async () => {
@@ -1428,7 +1434,7 @@ describe('InscricaoPage: valor devido na tela', () => {
 
     await digitar(campoDoValor(container), 'abc');
 
-    expect(folhaComTexto(container, 'span', 'R$ 0,00')).toBeDefined();
+    expect(valorEmReais(container, 'R$ 0,00')).toBeDefined();
     expect(folhaComTexto(container, 'span', 'devidos')).toBeDefined();
     expect(textoDe(container)).not.toContain('A combinar');
   });
@@ -1438,7 +1444,7 @@ describe('InscricaoPage: valor devido na tela', () => {
 
     await digitar(campoDoValor(container), '-50');
 
-    expect(folhaComTexto(container, 'span', 'R$ -50,00')).toBeDefined();
+    expect(valorEmReais(container, 'R$ -50,00')).toBeDefined();
   });
 
   it('hospedagem paga com o campo de valor em branco — o total mostra R$ 90,00 + a combinar e a acomodação entra no resumo', async () => {
@@ -1481,7 +1487,7 @@ describe('InscricaoPage: valor devido na tela', () => {
 
     await escolherHospedagem(container, 'Quarto');
 
-    expect(folhaComTexto(container, 'span', 'R$ 90,00')).toBeDefined();
+    expect(valorEmReais(container, 'R$ 90,00')).toBeDefined();
     expect(folhaComTexto(container, 'span', 'devidos')).toBeDefined();
     expect(folhaComTexto(container, 'span', 'Isento de contribuição · R$ 90,00 de acomodação')).toBeDefined();
     expect(textoDe(container)).toContain('R$ 90,00 de acomodação, à parte da contribuição.');
@@ -1740,7 +1746,7 @@ describe('InscricaoPage: densidade', () => {
       ['Conversa de primeira vez não registrada', 'IN6'],
       PENDENCIA_DE_EMERGENCIA,
     ]);
-    expect(folhaComTexto(container, 'span', 'R$ 100,00')).toBeDefined();
+    expect(valorEmReais(container, 'R$ 100,00')).toBeDefined();
   });
 
   it.each([

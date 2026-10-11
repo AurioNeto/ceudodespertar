@@ -1,5 +1,4 @@
-import { Cartao, Icon, ListaDividida, Rotulo, type Density } from '@/ds';
-import { formatarBRL } from '@/pages/utils/formato';
+import { AmountDisplay, Cartao, Icon, ListaDividida, Rotulo, type Density } from '@/ds';
 import type { Paga } from '../../tipos';
 
 export interface JaPagasProps {
@@ -23,9 +22,11 @@ export function JaPagas({ lista, densidade }: JaPagasProps) {
               {x.evento} · {x.pagaEm} · {x.conta}
             </span>
             <code style={{ font: 'var(--text-code)' }}>{x.lancamentoDeSaida}</code>
-            <span data-numeric style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>
-              {formatarBRL(x.valor)}
-            </span>
+            <AmountDisplay
+              value={x.valor / 100}
+              size="sm"
+              style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}
+            />
           </>
         )}
       </ListaDividida>

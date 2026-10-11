@@ -851,9 +851,9 @@ describe('InscricaoPublicaPage: participação, valor e total', () => {
 
     expect(tituloDoPasso(container)).toBe('Sua participação');
     expect(['Social', 'Sustentável', 'Próspero'].map((nivel) => botaoDoNivel(container, nivel).textContent)).toEqual([
-      'SocialR$ 80,00Para quem está com a condição apertada. Ninguém precisa explicar por que escolheu este.',
-      'SustentávelR$ 160,00O que cobre o custo do trabalho por pessoa. É a referência da casa.',
-      'PrósperoR$ 240,00Para quem pode sustentar a própria participação e um pouco da de outra pessoa.',
+      'SocialR$80,00Para quem está com a condição apertada. Ninguém precisa explicar por que escolheu este.',
+      'SustentávelR$160,00O que cobre o custo do trabalho por pessoa. É a referência da casa.',
+      'PrósperoR$240,00Para quem pode sustentar a própria participação e um pouco da de outra pessoa.',
     ]);
     expect(['Social', 'Sustentável', 'Próspero'].map((nivel) => marcado(botaoDoNivel(container, nivel)))).toEqual([
       false,
