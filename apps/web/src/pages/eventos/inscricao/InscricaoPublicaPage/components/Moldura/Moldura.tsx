@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { FlowerOfLife, type Density } from '@/ds';
+import { FlowerOfLife, Marca, type Density } from '@/ds';
 import { FaixaDeDemonstracao } from '@/app/demonstracao';
 import { eventoDoLink } from '../../../mocks/linkDaCerimonia';
 import type { Passo } from '../../tipos';
@@ -31,16 +31,7 @@ export function Moldura({ densidade, passo, children }: MolduraProps) {
           </div>
         )}
         <div style={{ position: 'relative', maxWidth: 620, margin: '0 auto' }}>
-          <div
-            style={{
-              font: campo ? '800 15px/1.05 var(--font-display)' : '800 22px/1.02 var(--font-display)',
-              letterSpacing: '.01em',
-              textTransform: 'uppercase',
-              color: 'var(--color-ink-brand)',
-            }}
-          >
-            Céu do Despertar
-          </div>
+          <Marca linhas={['Céu do Despertar']} tamanho={campo ? 'pequeno' : 'medio'} />
           <div style={{ marginTop: 7, font: 'var(--text-title-sm)', color: 'var(--text-title)' }}>
             {eventoDoLink.nome} — {eventoDoLink.data}
           </div>
