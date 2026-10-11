@@ -1,5 +1,5 @@
 import { reais } from '@cdd/contracts';
-import { Icon } from '@/ds';
+import { Icon, Rotulo } from '@/ds';
 import { formatarBRL } from '@/pages/utils/formato';
 import { participantesDe } from '../../mocks/agenda';
 import type { Trabalho } from '../../tipos';
@@ -9,7 +9,6 @@ import { CabecalhoDoTrabalho } from './components/CabecalhoDoTrabalho';
 import { ListaDeParticipantes } from './components/ListaDeParticipantes';
 import { ListaDePreparo } from './components/ListaDePreparo';
 import { Numero } from './components/Numero';
-import { rotuloLabel } from './constantes';
 import { resumoDosParticipantes } from './utils/resumoDosParticipantes';
 
 export interface DetalheDoTrabalhoProps {
@@ -85,7 +84,7 @@ export function DetalheDoTrabalho({
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(190px,1fr))', gap: 10 }}>
           {ev.equipe.map(([funcao, quem]) => (
             <div key={funcao} style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <span style={rotuloLabel}>{funcao}</span>
+              <Rotulo>{funcao}</Rotulo>
               <span style={{ font: 'var(--text-body)', color: 'var(--text-primary)' }}>{quem}</span>
             </div>
           ))}
