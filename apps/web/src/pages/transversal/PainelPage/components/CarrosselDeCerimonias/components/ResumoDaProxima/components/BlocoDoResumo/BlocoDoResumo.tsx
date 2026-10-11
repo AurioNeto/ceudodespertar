@@ -1,5 +1,5 @@
-import { Icon, type IconName } from '@/ds';
-import { numeroGrande, rotuloLabel } from '../../../../../../constantes';
+import { Icon, Rotulo, type IconName } from '@/ds';
+import { numeroGrande } from '../../../../../../constantes';
 
 export function BlocoDoResumo({
   icone,
@@ -30,10 +30,10 @@ export function BlocoDoResumo({
         borderRadius: 'var(--radius-sm)',
       }}
     >
-      <span style={{ ...rotuloLabel, display: 'flex', alignItems: 'center', gap: 7 }}>
+      <Rotulo style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
         <Icon name={icone} size={15} color={corDoIcone} />
         {rotulo}
-      </span>
+      </Rotulo>
       <span style={{ ...numeroGrande, color: corDoNumero }}>{numero}</span>
       <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>{detalhe}</span>
     </div>

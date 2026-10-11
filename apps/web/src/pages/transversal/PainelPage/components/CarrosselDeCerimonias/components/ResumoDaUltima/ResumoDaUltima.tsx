@@ -1,7 +1,7 @@
+import { rotuloCaixaAlta } from '@/ds';
 import { ultimaCerimonia } from '../../../../mocks/cerimonias';
 import { formatarBRL, formatarDiaMes, formatarLitros, pluralizar } from '@/pages/utils/formato';
 import { CartazSlot } from '@/pages/components/CartazSlot';
-import { rotuloLabel } from '../../../../constantes';
 import { ItemDeMeta } from '../ItemDeMeta';
 import { ValorDaUltima } from './components/ValorDaUltima';
 
@@ -14,7 +14,7 @@ export function ResumoDaUltima() {
 
       <div style={{ flex: '1 1 420px', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 16 }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-          <div style={rotuloLabel}>Última cerimônia</div>
+          <div style={rotuloCaixaAlta}>Última cerimônia</div>
           <h2
             style={{ font: 'var(--text-title)', letterSpacing: 'var(--tracking-display)', color: 'var(--text-title)' }}
           >

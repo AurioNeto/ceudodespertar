@@ -6,10 +6,3 @@ export const TOM_DA_SITUACAO: Record<SituacaoDaVersao, BadgeTone> = {
   publicada: 'confirmed',
   arquivada: 'neutral',
 };
-
-export const rotuloLabel = {
-  font: 'var(--text-label)',
-  textTransform: 'uppercase',
-  letterSpacing: 'var(--tracking-label)',
-  color: 'var(--text-field-label)',
-} as const;

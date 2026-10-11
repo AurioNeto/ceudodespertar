@@ -1,4 +1,4 @@
-import { rotuloLabel } from '../../../../constantes';
+import { Rotulo } from '@/ds';
 
 export interface DadoProps {
   rotulo: string;
@@ -8,7 +8,7 @@ export interface DadoProps {
 export function Dado({ rotulo, valor }: DadoProps) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-      <span style={rotuloLabel}>{rotulo}</span>
+      <Rotulo>{rotulo}</Rotulo>
       <span style={{ font: 'var(--text-body)', color: 'var(--text-primary)' }}>{valor}</span>
     </div>
   );
