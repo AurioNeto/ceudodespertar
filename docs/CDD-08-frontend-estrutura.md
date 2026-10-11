@@ -776,7 +776,7 @@ Títulos na ordem de leitura. Dependências por título.
 | testes/ global e setupFiles (concluída) | lib/formato por export | — |
 | app/ em subpastas (concluída) | testes/ global e setupFiles | — |
 | dados/ sem efeito e sem ciclo (concluída) | app/ em subpastas | — |
-| Portao no ds | dados/ sem efeito e sem ciclo | e2e do B0 e ajustes do login |
+| Portao no ds (concluída) | dados/ sem efeito e sem ciclo | — |
 | Mover sistema | Portao no ds | e2e do B0 e ajustes do login |
 | Mover transversal | Mover sistema | e2e do B0 e ajustes do login |
 | Fronteiras em erro | Mover transversal | — |
