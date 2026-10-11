@@ -43,3 +43,5 @@ export const MENSAGEM_DE_FALHA_AO_INICIAR: MensagemDeEntrada = {
   titulo: 'Não conseguimos abrir o login',
   corpo: 'O serviço de acesso não respondeu. Tente de novo em instantes.',
 };
+
+export const DESCRICAO_DA_ENTRADA = 'O acesso é pessoal: cada lançamento fica no nome de quem o registrou.';

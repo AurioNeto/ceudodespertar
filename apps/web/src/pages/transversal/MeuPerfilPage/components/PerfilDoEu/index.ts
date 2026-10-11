@@ -1,0 +1,1 @@
+export { PerfilDoEu } from './PerfilDoEu';
