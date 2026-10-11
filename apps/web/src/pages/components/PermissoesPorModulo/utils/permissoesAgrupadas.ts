@@ -27,9 +27,9 @@ export function agruparPermissoes(codigos: readonly Permissao[]): readonly Modul
     porModulo.set(modulo, lista);
   }
   return [...porModulo.entries()]
-    .sort(([a], [b]) => (a === MODULO_SEM_CATALOGO ? 1 : b === MODULO_SEM_CATALOGO ? -1 : a.localeCompare(b)))
+    .toSorted(([a], [b]) => (a === MODULO_SEM_CATALOGO ? 1 : b === MODULO_SEM_CATALOGO ? -1 : a.localeCompare(b)))
     .map(([modulo, permissoes]) => ({
       modulo,
-      permissoes: [...permissoes].sort((a, b) => a.codigo.localeCompare(b.codigo)),
+      permissoes: permissoes.toSorted((a, b) => a.codigo.localeCompare(b.codigo)),
     }));
 }

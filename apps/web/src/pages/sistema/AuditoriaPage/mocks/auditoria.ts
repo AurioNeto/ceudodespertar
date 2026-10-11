@@ -497,4 +497,4 @@ export const CONTEXTO_ROTULO: Record<'INSCRICAO' | 'REVISAO' | 'ATENDIMENTO', st
 
 /** Quem aparece nos filtros — vem dos próprios registros, sem lista à parte. */
 export const autoresDaTrilha = (registros: readonly RegistroDeAuditoria[]): readonly string[] =>
-  [...new Set(registros.map((r) => r.autorNome))].sort((a, b) => a.localeCompare(b, 'pt-BR'));
+  [...new Set(registros.map((r) => r.autorNome))].toSorted((a, b) => a.localeCompare(b, 'pt-BR'));

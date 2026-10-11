@@ -18,7 +18,7 @@ export function useAgenda() {
 
   const emDetalhe = trabalhos.find((t) => t.id === detalheId) ?? null;
   const doMes = trabalhos.filter((t) => t.ano === ano && t.mes === mes);
-  const ordenados = [...trabalhos].sort((a, b) => a.ano - b.ano || a.mes - b.mes || a.dia - b.dia);
+  const ordenados = trabalhos.toSorted((a, b) => a.ano - b.ano || a.mes - b.mes || a.dia - b.dia);
 
   const navegarMes = (delta: number) => {
     const destino = mesDeslocado(ano, mes, delta);

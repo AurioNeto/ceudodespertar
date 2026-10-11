@@ -4,10 +4,12 @@ import type { Alocacao } from '../tipos';
 /** Quantas noites cada pessoa ainda precisa. */
 export const pendenciasDosHospedes = (lista: readonly HospedeDoEvento[], alocacao: Alocacao) =>
   lista.map((h) => {
-    const alocadas = h.noites.filter((n) =>
-      Object.values(alocacao).some((noites) => (noites[n] ?? []).includes(h.inscricaoId as string)),
+    const alocadas = new Set(
+      h.noites.filter((n) =>
+        Object.values(alocacao).some((noites) => (noites[n] ?? []).includes(h.inscricaoId as string)),
+      ),
     );
-    return { hospede: h, faltam: h.noites.filter((n) => !alocadas.includes(n)) };
+    return { hospede: h, faltam: h.noites.filter((n) => !alocadas.has(n)) };
   });
 
 export const vagasNoiteOcupadas = (alocacao: Alocacao) =>
@@ -26,7 +28,7 @@ export const comOcupante = (
   inscricaoId: string,
 ): Alocacao => ({
   ...alocacao,
-  [leitoId]: { ...(alocacao[leitoId] ?? {}), [noite]: [...(alocacao[leitoId]?.[noite] ?? []), inscricaoId] },
+  [leitoId]: { ...alocacao[leitoId], [noite]: [...(alocacao[leitoId]?.[noite] ?? []), inscricaoId] },
 });
 
 export const semOcupante = (
@@ -35,7 +37,7 @@ export const semOcupante = (
   noite: string,
   inscricaoId: string,
 ): Alocacao => {
-  const noites = { ...(alocacao[leitoId] ?? {}) };
+  const noites = { ...alocacao[leitoId] };
   const restantes = (noites[noite] ?? []).filter((x) => x !== inscricaoId);
   if (restantes.length === 0) delete noites[noite];
   else noites[noite] = restantes;

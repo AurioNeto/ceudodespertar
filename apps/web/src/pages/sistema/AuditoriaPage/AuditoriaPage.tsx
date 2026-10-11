@@ -103,7 +103,7 @@ function Trilha({ campo }: { campo: boolean }) {
   const autores = useMemo(() => autoresDaTrilha(trilha), []);
 
   const operacoesPresentes = useMemo(
-    () => [...new Set(trilha.map((r) => r.operacao))].sort((a, b) => FEICAO[a].rotulo.localeCompare(FEICAO[b].rotulo, 'pt-BR')),
+    () => [...new Set(trilha.map((r) => r.operacao))].toSorted((a, b) => FEICAO[a].rotulo.localeCompare(FEICAO[b].rotulo, 'pt-BR')),
     [],
   );
 
@@ -426,7 +426,7 @@ function agruparAcessos(lista: readonly RegistroDeAcesso[], por: Agrupamento): r
       legenda: por === 'leitor' ? (registros[0]?.leitorGrupo ?? '') : `${new Set(registros.map((r) => r.leitorNome)).size} leitor(es)`,
       registros,
     }))
-    .sort((a, b) => b.registros.length - a.registros.length);
+    .toSorted((a, b) => b.registros.length - a.registros.length);
 }
 
 /**
@@ -435,7 +435,7 @@ function agruparAcessos(lista: readonly RegistroDeAcesso[], por: Agrupamento): r
  * quer enxergar sem ter que contar linha a linha.
  */
 function rajada(registros: readonly RegistroDeAcesso[]): { leituras: number; minutos: number } | null {
-  const instantes = registros.map((r) => new Date(r.em).getTime()).sort((a, b) => a - b);
+  const instantes = registros.map((r) => new Date(r.em).getTime()).toSorted((a, b) => a - b);
   let melhor: { leituras: number; minutos: number } | null = null;
   for (let i = 0; i < instantes.length; i += 1) {
     let j = i;

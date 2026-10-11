@@ -11,6 +11,7 @@ const HOJE = '11/09/2026';
 export function useDevolucoes() {
   const [fila, setFila] = useState<readonly DevolucaoNaFila[]>(filaInicial);
   const [pagas, setPagas] = useState<readonly Paga[]>(
+    // oxlint-disable-next-line oxc/no-map-spread
     pagasIniciais.map((p) => ({ ...p, id: p.id as string, valor: p.valor as number })),
   );
   const [pagando, setPagando] = useState<string | null>(null);
@@ -19,7 +20,7 @@ export function useDevolucoes() {
   const [recado, setRecado] = useState<string | null>(null);
 
   const total = fila.reduce((s, d) => s + d.valor, 0);
-  const maisAntiga = [...fila].sort((a, b) => diasEsperando(b.solicitadaEm) - diasEsperando(a.solicitadaEm))[0];
+  const maisAntiga = fila.toSorted((a, b) => diasEsperando(b.solicitadaEm) - diasEsperando(a.solicitadaEm))[0];
 
   const pagar = (d: DevolucaoNaFila) => {
     const nomeDaConta = contas.find((c) => (c.id as string) === conta)?.nome ?? '';
