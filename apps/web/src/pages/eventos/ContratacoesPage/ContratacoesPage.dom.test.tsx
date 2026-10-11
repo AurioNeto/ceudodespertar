@@ -149,15 +149,15 @@ describe('ContratacoesPage: teto do MEI', () => {
     expect(barraDoTeto(container).getAttribute('aria-label')).toBe('61% do teto com o que está a receber');
   });
 
-  it('registrar o recebimento de R$ 3.200,00 — o valor deixa de contar: o faturamento do ano não sobe e a barra cai para 54%', async () => {
+  it('registrar o recebimento de R$ 3.200,00 — o valor soma no faturamento do ano e na barra, que segue em 58% e deixa de ter o trecho a receber', async () => {
     const { container } = await montar(<ContratacoesPage />);
     await registrarRecebimento(container, ESTRELA_GUIA);
 
     await confirmarRecebimento(container, ESTRELA_GUIA);
 
-    expect(numero(container, 'Faturamento no ano')).toBe('Faturamento no anoR$ 43.700,00de R$ 81.000,00 do teto do MEI');
-    expect(cartaoDoRotulo(container, 'Faturamento contra o teto do MEI').textContent).toContain('R$ 43.700,00 de R$ 81.000,00');
-    expect(barraDoTeto(container).getAttribute('aria-label')).toBe('54% do teto com o que está a receber');
+    expect(numero(container, 'Faturamento no ano')).toBe('Faturamento no anoR$ 46.900,00de R$ 81.000,00 do teto do MEI');
+    expect(cartaoDoRotulo(container, 'Faturamento contra o teto do MEI').textContent).toContain('R$ 46.900,00 de R$ 81.000,00');
+    expect(barraDoTeto(container).getAttribute('aria-label')).toBe('58% do teto com o que está a receber');
     expect(largurasDaBarra(container)[1]).toBe(0);
   });
 });

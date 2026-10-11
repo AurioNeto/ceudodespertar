@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { formatarBRL } from '@/pages/utils/formato';
 import { contas } from '@/pages/mocks/contas';
-import { contratacoes as contratacoesIniciais, type ContratacaoNaTela } from '../mocks/contratacoes';
+import { contratacoes as contratacoesIniciais, munay, type ContratacaoNaTela } from '../mocks/contratacoes';
+import { recebidoNaSessao } from '../utils/recebidoNaSessao';
 
 const HOJE = '11/09/2026';
 
@@ -15,6 +16,7 @@ export function useContratacoes() {
   const aReceber = lista.filter((c) => c.status === 'CONFIRMADA' && !c.recebidoEm);
   const totalAReceber = aReceber.reduce((s, c) => s + c.valorAcordado, 0);
   const propostas = lista.filter((c) => c.status === 'PROPOSTA');
+  const faturamentoNoAno = munay.faturamentoNoAno + recebidoNaSessao(lista, contratacoesIniciais);
 
   const receber = (c: ContratacaoNaTela) => {
     const nomeDaConta = contas.find((x) => (x.id as string) === conta)?.nome ?? '';
@@ -55,6 +57,7 @@ export function useContratacoes() {
     aReceber,
     totalAReceber,
     propostas,
+    faturamentoNoAno,
     setConta,
     setData,
     receber,

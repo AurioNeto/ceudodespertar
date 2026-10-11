@@ -4,13 +4,14 @@ import { munay } from '../../mocks/contratacoes';
 import { tetoDoMei } from '../../utils/tetoDoMei';
 
 export interface TetoProps {
+  faturamentoNoAno: number;
   aReceber: number;
   densidade: Density;
 }
 
-export function Teto({ aReceber, densidade }: TetoProps) {
+export function Teto({ faturamentoNoAno, aReceber, densidade }: TetoProps) {
   const campo = densidade === 'field';
-  const { atual, projetado } = tetoDoMei(munay, aReceber);
+  const { atual, projetado } = tetoDoMei({ ...munay, faturamentoNoAno }, aReceber);
 
   return (
     <Cartao campo={campo} style={{ gap: 10 }}>
@@ -21,7 +22,7 @@ export function Teto({ aReceber, densidade }: TetoProps) {
         </span>
         <span style={{ flex: 1 }} />
         <span data-numeric style={{ font: 'var(--text-amount)', color: 'var(--text-primary)' }}>
-          {formatarBRL(munay.faturamentoNoAno + aReceber)} de {formatarBRL(munay.tetoAnual)}
+          {formatarBRL(faturamentoNoAno + aReceber)} de {formatarBRL(munay.tetoAnual)}
         </span>
       </div>
 
