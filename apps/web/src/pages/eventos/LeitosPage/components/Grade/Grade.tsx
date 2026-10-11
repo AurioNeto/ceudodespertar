@@ -12,10 +12,10 @@ export interface GradeProps {
   densidade: Density;
   ocupantesDe: (leitoId: string, noite: string) => readonly string[];
   escolhendo: { leitoId: string; noite: NoiteId } | null;
-  onEscolher: (leitoId: string, noite: NoiteId) => void;
+  onEscolher?: (leitoId: string, noite: NoiteId) => void;
   onFechar: () => void;
-  onLiberar: (leitoId: string, noite: string, inscricaoId: string) => void;
-  onAlocar: (leitoId: string, noite: NoiteId, inscricaoId: string, nome: string) => void;
+  onLiberar?: (leitoId: string, noite: string, inscricaoId: string) => void;
+  onAlocar?: (leitoId: string, noite: NoiteId, inscricaoId: string, nome: string) => void;
   pendencias: readonly Pendencia[];
 }
 
@@ -72,7 +72,7 @@ export function Grade({
               </div>
             </div>
 
-            {escolhendo && d.leitos.some((l) => (l.id as string) === escolhendo.leitoId) ? (
+            {escolhendo && onAlocar && d.leitos.some((l) => (l.id as string) === escolhendo.leitoId) ? (
               <EscolhaDeHospede
                 leito={identificacaoDe(dormitorios, escolhendo.leitoId)}
                 noite={escolhendo.noite}

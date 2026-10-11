@@ -17,6 +17,8 @@ import {
   textoDoNumero,
 } from './apoioDeTeste';
 
+vi.mock('@/app/sessao/SessaoProvider/SessaoProvider', () => ({ useSessao: () => ({ pode: () => true }) }));
+
 beforeEach(() => {
   fixarDensidade('office');
   vi.setSystemTime(AGORA_FIXO);
@@ -45,6 +47,9 @@ const abrirDetalhe = (container: HTMLElement, nome: string) => clicar(chipDoCale
 const mesAnterior = (container: HTMLElement) => botaoPeloRotuloAcessivel(container, 'Mês anterior');
 const proximoMes = (container: HTMLElement) => botaoPeloRotuloAcessivel(container, 'Próximo mês');
 
+const DATA_PADRAO_DA_CERIMONIA = '01/09/2026';
+const MENSAGEM_DE_DATA_INVALIDA = 'Informe uma data que exista, no formato dd/mm/aaaa: 15/09/2026.';
+
 interface DadosDaCerimonia {
   nome: string;
   data?: string;
@@ -58,7 +63,7 @@ async function preencherEEnviarNovaCerimonia(container: HTMLElement, dados: Dado
   await clicar(botaoComTexto(container, 'Nova cerimônia'));
   const formulario = formularioAberto(container);
   await digitar(campoDoRotulo(formulario, 'Nome'), dados.nome);
-  if (dados.data !== undefined) await digitar(campoDoRotulo(formulario, 'Data'), dados.data);
+  await digitar(campoDoRotulo(formulario, 'Data'), dados.data ?? DATA_PADRAO_DA_CERIMONIA);
   if (dados.previstos !== undefined) await digitar(campoDoRotulo(formulario, 'Previstos'), dados.previstos);
   if (dados.litros !== undefined) await digitar(campoDoRotulo(formulario, 'Litros previstos'), dados.litros);
   if (dados.contribuicoes !== undefined) {
@@ -593,25 +598,25 @@ describe('AgendaPage: nova cerimônia', () => {
     expect(contagemDoMes(container)).toBe('4 cerimônias no mês');
   });
 
-  it('salvar sem data — cai no dia 1 do mês que está na tela e avisa que foi criada como planejada', async () => {
+  it('salvar sem data — o formulário recusa com a mensagem no campo e nada é criado', async () => {
     const { container } = await montar(<AgendaPage />);
 
-    await preencherEEnviarNovaCerimonia(container, { nome: 'Cerimônia de teste' });
+    await preencherEEnviarNovaCerimonia(container, { nome: 'Cerimônia de teste', data: '' });
 
-    expect(avisoDaAgenda(container)).toBe('Cerimônia criada como planejada.');
-    expect(contagemDoMes(container)).toBe('5 cerimônias no mês');
-    expect(nomesPorDiaNoCalendario(container)['1']).toEqual(['Cerimônia de teste']);
-    expect(container.querySelector('div[style*="position: fixed"]')).toBeNull();
+    expect(formularioAberto(container).textContent).toContain(MENSAGEM_DE_DATA_INVALIDA);
+    expect(avisoDaAgenda(container)).toBeNull();
+    expect(contagemDoMes(container)).toBe('4 cerimônias no mês');
   });
 
-  it('salvar sem data com o calendário em agosto — cai no dia 1 de agosto', async () => {
+  it('salvar sem data com o calendário em agosto — recusa do mesmo jeito: nada é criado e o mês segue em agosto', async () => {
     const { container } = await montar(<AgendaPage />);
     await clicar(mesAnterior(container));
 
-    await preencherEEnviarNovaCerimonia(container, { nome: 'Cerimônia de agosto' });
+    await preencherEEnviarNovaCerimonia(container, { nome: 'Cerimônia de agosto', data: '' });
 
+    expect(formularioAberto(container).textContent).toContain(MENSAGEM_DE_DATA_INVALIDA);
     expect(mesNaTela(container)).toBe('agosto de 2026');
-    expect(nomesPorDiaNoCalendario(container)['1']).toEqual(['Cerimônia de agosto']);
+    expect(chipsDoCalendario(container).map((chip) => chip.textContent)).not.toContain('Cerimônia de agosto');
   });
 
   it('salvar com data em outro mês — o calendário pula para o mês da nova cerimônia', async () => {
@@ -623,23 +628,24 @@ describe('AgendaPage: nova cerimônia', () => {
     expect(nomesPorDiaNoCalendario(container)).toEqual({ '10': ['Cerimônia de novembro'] });
   });
 
-  it('data de 31/02 — é aceita sem validar: o mês conta uma cerimônia, mas nenhum chip aparece no calendário', async () => {
+  it('data de 31/02 — o formulário recusa com a mensagem no campo e nenhuma cerimônia é criada', async () => {
     const { container } = await montar(<AgendaPage />);
 
     await preencherEEnviarNovaCerimonia(container, { nome: 'Cerimônia impossível', data: '31/02/2026' });
 
-    expect(mesNaTela(container)).toBe('fevereiro de 2026');
-    expect(contagemDoMes(container)).toBe('1 cerimônia no mês');
-    expect(chipsDoCalendario(container)).toHaveLength(0);
+    expect(formularioAberto(container).textContent).toContain(MENSAGEM_DE_DATA_INVALIDA);
+    expect(mesNaTela(container)).toBe('setembro de 2026');
+    expect(contagemDoMes(container)).toBe('4 cerimônias no mês');
   });
 
-  it('data sem barras — vira dia 1 do mês e do ano que estão na tela', async () => {
+  it('data sem barras — o formulário recusa com a mensagem no campo e o mês segue em setembro', async () => {
     const { container } = await montar(<AgendaPage />);
 
     await preencherEEnviarNovaCerimonia(container, { nome: 'Cerimônia sem data certa', data: 'em breve' });
 
+    expect(formularioAberto(container).textContent).toContain(MENSAGEM_DE_DATA_INVALIDA);
     expect(mesNaTela(container)).toBe('setembro de 2026');
-    expect(nomesPorDiaNoCalendario(container)['1']).toEqual(['Cerimônia sem data certa']);
+    expect(nomesPorDiaNoCalendario(container)['1']).toBeUndefined();
   });
 
   it('salvar com data de outro ano — o calendário pula para o mês e o ano da nova cerimônia', async () => {
@@ -704,9 +710,7 @@ describe('AgendaPage: nova cerimônia', () => {
 
   it.each([
     { digitado: '40, 60, 90', numero: 'Contribuição40 · 60 · 90opções sugeridas' },
-    { digitado: '45,50', numero: 'Contribuição45 · 50opções sugeridas' },
     { digitado: '40', numero: 'Contribuição40sem contribuição' },
-    { digitado: 'quarenta', numero: 'Contribuição—sem contribuição' },
     { digitado: '', numero: 'Contribuição—sem contribuição' },
   ])('contribuições digitadas como "$digitado" — o detalhe mostra $numero', async ({ digitado, numero }) => {
     const { container } = await montar(<AgendaPage />);
@@ -715,6 +719,20 @@ describe('AgendaPage: nova cerimônia', () => {
 
     expect(textoDoNumero(container, 'Contribuição')).toBe(numero);
   });
+
+  it.each([{ digitado: '45,50' }, { digitado: 'quarenta' }])(
+    'contribuições digitadas como "$digitado" — o formulário recusa com a mensagem no campo e não cria a cerimônia',
+    async ({ digitado }) => {
+      const { container } = await montar(<AgendaPage />);
+
+      await preencherEEnviarNovaCerimonia(container, { nome: 'Cerimônia de teste', contribuicoes: digitado });
+
+      const campo = campoDoRotulo(formularioAberto(container), 'Contribuições sugeridas');
+      expect(campo.getAttribute('aria-invalid')).toBe('true');
+      expect(formularioAberto(container).textContent).toContain('Use só valores inteiros em reais, separados por vírgula e espaço: 40, 60, 90.');
+      expect(contagemDoMes(container)).toBe('4 cerimônias no mês');
+    },
+  );
 
   it.each([
     { digitado: '9,5', litros: '9.5' },
@@ -755,6 +773,7 @@ describe('AgendaPage: nova cerimônia', () => {
     await clicar(botaoComTexto(container, 'Nova cerimônia'));
     const formulario = formularioAberto(container);
     await digitar(campoDoRotulo(formulario, 'Nome'), 'Cerimônia de teste');
+    await digitar(campoDoRotulo(formulario, 'Data'), DATA_PADRAO_DA_CERIMONIA);
     await digitar(elemento<HTMLInputElement>(formulario, 'input[aria-label="tarefa 1"]'), '  Varrer o pátio  ');
     await digitar(elemento<HTMLInputElement>(formulario, 'input[aria-label="responsável pela tarefa 1"]'), '  Dona Rosa ');
     await digitar(elemento<HTMLInputElement>(formulario, 'input[aria-label="tarefa 2"]'), '   ');
@@ -779,6 +798,7 @@ describe('AgendaPage: nova cerimônia', () => {
     await clicar(botaoComTexto(container, 'Nova cerimônia'));
     const formulario = formularioAberto(container);
     await digitar(campoDoRotulo(formulario, 'Nome'), 'Cerimônia de teste');
+    await digitar(campoDoRotulo(formulario, 'Data'), DATA_PADRAO_DA_CERIMONIA);
     await digitar(elemento<HTMLInputElement>(formulario, 'input[aria-label="tarefa 1"]'), '');
     await digitar(elemento<HTMLInputElement>(formulario, 'input[aria-label="tarefa 2"]'), '');
     await clicar(botaoComTexto(formulario, 'Salvar cerimônia'));
@@ -793,6 +813,7 @@ describe('AgendaPage: nova cerimônia', () => {
     await clicar(botaoComTexto(container, 'Nova cerimônia'));
     const formulario = formularioAberto(container);
     await digitar(campoDoRotulo(formulario, 'Nome'), 'Bailado novo');
+    await digitar(campoDoRotulo(formulario, 'Data'), DATA_PADRAO_DA_CERIMONIA);
     await escolherOpcao(campoDoRotulo<HTMLSelectElement>(formulario, 'Tipo'), 'Bailado');
     await clicar(botaoComTexto(formulario, 'Salvar cerimônia'));
 
@@ -858,7 +879,7 @@ describe('AgendaPage: editar', () => {
     expect(nomesPorDiaNoCalendario(container)['5']).toBeUndefined();
   });
 
-  it('editar a data para outro mês — o calendário continua no mês em que estava, sem a cerimônia', async () => {
+  it('editar a data para outro mês — o calendário vai para o mês novo, com a cerimônia no dia', async () => {
     const { container } = await montar(<AgendaPage />);
     await abrirDetalhe(container, 'Mãe Divina');
     await clicar(botaoComTexto(container, 'Editar'));
@@ -867,12 +888,12 @@ describe('AgendaPage: editar', () => {
 
     await clicar(botaoComTexto(container, 'Voltar para a agenda'));
 
-    expect(mesNaTela(container)).toBe('setembro de 2026');
-    expect(contagemDoMes(container)).toBe('3 cerimônias no mês');
-    expect(nomesPorDiaNoCalendario(container)['5']).toBeUndefined();
+    expect(mesNaTela(container)).toBe('outubro de 2026');
+    expect(contagemDoMes(container)).toBe('2 cerimônias no mês');
+    expect(nomesPorDiaNoCalendario(container)['10']).toEqual(['Mãe Divina']);
   });
 
-  it('editar as contribuições para 45,50 — vira duas opções, 45 e 50 (divergência do Documento 8, seção 14)', async () => {
+  it('editar as contribuições para 45,50 — o formulário recusa com a mensagem no campo e a cerimônia segue com 40 · 60 · 90', async () => {
     const { container } = await montar(<AgendaPage />);
     await abrirDetalhe(container, 'Mãe Divina');
     await clicar(botaoComTexto(container, 'Editar'));
@@ -880,7 +901,8 @@ describe('AgendaPage: editar', () => {
 
     await clicar(botaoComTexto(formularioAberto(container), 'Salvar cerimônia'));
 
-    expect(textoDoNumero(container, 'Contribuição')).toBe('Contribuição45 · 50opções sugeridas');
+    expect(formularioAberto(container).textContent).toContain('Use só valores inteiros em reais, separados por vírgula e espaço: 40, 60, 90.');
+    expect(textoDoNumero(container, 'Contribuição')).toBe('Contribuição40 · 60 · 90opções sugeridas');
   });
 
   it('editar as tarefas — a marcação de pronto fica na posição, não na tarefa: trocar a ordem passa a marcação para outra', async () => {

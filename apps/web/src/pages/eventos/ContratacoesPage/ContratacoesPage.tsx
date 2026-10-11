@@ -66,13 +66,13 @@ export function ContratacoesPage() {
             <Numero rotulo="Em proposta" valor={String(tela.propostas.length)} nota="ainda não é dinheiro" />
             <Numero
               rotulo="Faturamento no ano"
-              valor={formatarBRL(munay.faturamentoNoAno)}
+              valor={formatarBRL(tela.faturamentoNoAno)}
               nota={`de ${formatarBRL(munay.tetoAnual)} do teto do MEI`}
             />
           </div>
         </Cartao>
 
-        <Teto aReceber={tela.totalAReceber} densidade={densidade} />
+        <Teto faturamentoNoAno={tela.faturamentoNoAno} aReceber={tela.totalAReceber} densidade={densidade} />
 
         {tela.lista.map((c) => (
           <CartaoDeContratacao
@@ -82,6 +82,7 @@ export function ContratacoesPage() {
             recebendo={tela.recebendo === (c.eventoId as string)}
             conta={tela.conta}
             data={tela.data}
+            erroDaData={tela.erroDaData}
             onConta={tela.setConta}
             onData={tela.setData}
             onAbrir={() => tela.abrir(c)}

@@ -1,4 +1,5 @@
 import { Button, Icon, ScreenHeader, useDensidade, SeletorDeTipo } from '@/ds';
+import { useSessao } from '@/app/sessao';
 import { CalendarioMensal } from './components/CalendarioMensal';
 import { DetalheDoTrabalho } from './components/DetalheDoTrabalho';
 import { FormularioDeTrabalho } from './components/FormularioDeTrabalho';
@@ -10,6 +11,10 @@ import { useAgenda } from './hooks/useAgenda';
 export function AgendaPage() {
   const densidade = useDensidade();
   const campo = densidade === 'field';
+  const { pode } = useSessao();
+  const criaEvento = pode('eventos.evento.criar');
+  const editaEvento = pode('eventos.evento.editar');
+  const cancelaEvento = pode('eventos.evento.cancelar');
   const tela = useAgenda();
 
   return (
@@ -26,7 +31,7 @@ export function AgendaPage() {
         }
         density={densidade}
         actions={
-          tela.emDetalhe ? undefined : (
+          tela.emDetalhe || !criaEvento ? undefined : (
             <Button iconName="circle-plus" onClick={tela.novaCerimonia}>
               Nova cerimônia
             </Button>
@@ -70,11 +75,11 @@ export function AgendaPage() {
             webhookAtivo={tela.webhookAtivo}
             campo={campo}
             onVoltar={tela.voltar}
-            onAlternarTarefa={tela.alternarTarefa}
-            onAlternarWebhook={tela.alternarWebhook}
-            onEditar={tela.editar}
-            onDuplicar={tela.duplicar}
-            onCancelar={tela.cancelar}
+            onAlternarTarefa={editaEvento ? tela.alternarTarefa : undefined}
+            onAlternarWebhook={editaEvento ? tela.alternarWebhook : undefined}
+            onEditar={editaEvento ? tela.editar : undefined}
+            onDuplicar={criaEvento ? tela.duplicar : undefined}
+            onCancelar={cancelaEvento ? tela.cancelar : undefined}
             onAviso={tela.setMensagem}
           />
         ) : (

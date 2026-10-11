@@ -149,15 +149,15 @@ describe('ContratacoesPage: teto do MEI', () => {
     expect(barraDoTeto(container).getAttribute('aria-label')).toBe('61% do teto com o que está a receber');
   });
 
-  it('registrar o recebimento de R$ 3.200,00 — o valor deixa de contar: o faturamento do ano não sobe e a barra cai para 54%', async () => {
+  it('registrar o recebimento de R$ 3.200,00 — o valor soma no faturamento do ano e na barra, que segue em 58% e deixa de ter o trecho a receber', async () => {
     const { container } = await montar(<ContratacoesPage />);
     await registrarRecebimento(container, ESTRELA_GUIA);
 
     await confirmarRecebimento(container, ESTRELA_GUIA);
 
-    expect(numero(container, 'Faturamento no ano')).toBe('Faturamento no anoR$ 43.700,00de R$ 81.000,00 do teto do MEI');
-    expect(cartaoDoRotulo(container, 'Faturamento contra o teto do MEI').textContent).toContain('R$ 43.700,00 de R$ 81.000,00');
-    expect(barraDoTeto(container).getAttribute('aria-label')).toBe('54% do teto com o que está a receber');
+    expect(numero(container, 'Faturamento no ano')).toBe('Faturamento no anoR$ 46.900,00de R$ 81.000,00 do teto do MEI');
+    expect(cartaoDoRotulo(container, 'Faturamento contra o teto do MEI').textContent).toContain('R$ 46.900,00 de R$ 81.000,00');
+    expect(barraDoTeto(container).getAttribute('aria-label')).toBe('58% do teto com o que está a receber');
     expect(largurasDaBarra(container)[1]).toBe(0);
   });
 });
@@ -403,7 +403,7 @@ describe('ContratacoesPage: registrar recebimento', () => {
     expect(recadoDaTela(container)).toContain('entraram por Itaú Munay.');
   });
 
-  it('data do recebimento apagada — avisa que o recebimento foi registrado, mas o cartão segue como não recebido', async () => {
+  it('data do recebimento apagada — recusa com a mensagem no campo e o cartão segue como não recebido', async () => {
     const { container } = await montar(<ContratacoesPage />);
     await registrarRecebimento(container, ESTRELA_GUIA);
     await digitar(campoDoRotulo(cartaoDaContratacao(container, ESTRELA_GUIA), 'Data do recebimento'), '');
@@ -411,9 +411,10 @@ describe('ContratacoesPage: registrar recebimento', () => {
     await confirmarRecebimento(container, ESTRELA_GUIA);
 
     const cartao = cartaoDaContratacao(container, ESTRELA_GUIA);
-    expect(recadoDaTela(container)).toContain('R$ 3.200,00 de Centro Estrela Guia entraram por Cora PJ.');
+    expect(cartao.textContent).toContain('Informe uma data que exista, no formato dd/mm/aaaa: 15/09/2026.');
     expect(cartao.textContent).toContain('Ainda não virou lançamento — receita só existe depois do recebimento.');
-    expect(todos<HTMLButtonElement>(cartao, 'button').map((botao) => botao.textContent)).toEqual(['Registrar recebimento']);
+    expect(todos<HTMLButtonElement>(cartao, 'button').map((botao) => botao.textContent)).toEqual(['Confirmar o recebimento', 'Cancelar']);
+    expect(recadoDaTela(container)).toBeNull();
     expect(numero(container, 'A receber')).toBe('A receberR$ 3.200,001 contratação confirmada');
   });
 

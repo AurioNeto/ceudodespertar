@@ -63,6 +63,9 @@ const nomesNaFila = (container: HTMLElement) =>
     .map((botao) => botao.textContent);
 const abrirPainel = (container: HTMLElement, nome: string, valor: string) =>
   clicar(botaoComTexto(cartaoDaFila(container, nome), `Devolver ${valor}`));
+const MOTIVO_DA_COMPETENCIA = 'Julho já foi prestado e fechado.';
+const registrarMotivo = (container: HTMLElement, nome: string) =>
+  digitar(campoDoRotulo(cartaoDaFila(container, nome), 'Motivo'), MOTIVO_DA_COMPETENCIA);
 const confirmar = (cartao: HTMLElement) => clicar(botaoComTexto(cartao, 'Confirmar a devolução'));
 const jaDevolvidas = (container: HTMLElement) => itensDaListaDoCartao(cartaoDoRotulo(container, 'Já devolvidas'));
 const numero = (container: HTMLElement, rotulo: string) => textoDaFolhaPai(container, rotulo);
@@ -88,7 +91,7 @@ describe('DevolucoesPage: cabeçalho e totais', () => {
 
     expect(numero(container, 'A devolver')).toBe('A devolverR$ 2.550,003 pedidos');
     expect(numero(container, 'Esperando há mais tempo')).toBe('Esperando há mais tempo54 diasOtávio Lins');
-    expect(numero(container, 'Devolvidas este ano')).toBe('Devolvidas este ano1já pagas e estornadas');
+    expect(numero(container, 'Devolvidas este ano')).toBe('Devolvidas este ano1já pagas');
   });
 
   it('espera de mais de 30 dias — o número de Esperando há mais tempo vem na cor de atenção', async () => {
@@ -103,6 +106,7 @@ describe('DevolucoesPage: cabeçalho e totais', () => {
     const { container } = await montar(<DevolucoesPage />);
 
     await abrirPainel(container, OTAVIO, 'R$ 540,00');
+    await registrarMotivo(container, OTAVIO);
     await confirmar(cartaoDaFila(container, OTAVIO));
 
     const dias = folhaComTextoExato(container, '17 dias')!;
@@ -211,23 +215,24 @@ describe('DevolucoesPage: painel de pagamento', () => {
     expect(nomesNaFila(container)).toEqual(['Devolver R$ 540,00', 'Devolver R$ 1.800,00']);
   });
 
-  it('competência aberta — o estorno vai para a competência original', async () => {
+  it('competência aberta — a saída vai para a competência original', async () => {
     const { container } = await montar(<DevolucoesPage />);
 
     await abrirPainel(container, CARLOS, 'R$ 210,00');
 
-    expect(cartaoDaFila(container, CARLOS).textContent).toContain('Vai gerar o estorno de lanc-8712 na competência 08/2026.');
+    expect(cartaoDaFila(container, CARLOS).textContent).toContain('Vai gerar um lançamento de saída vinculado ao evento Trabalho de Cura, na competência 08/2026.');
   });
 
-  it('competência fechada — o estorno vai para 09/2026, o mês corrente da tela, com a explicação do período já prestado', async () => {
+  it('competência fechada — a saída só vai para 09/2026 com o motivo registrado, e a confirmação espera por ele', async () => {
     const { container } = await montar(<DevolucoesPage />);
 
     await abrirPainel(container, OTAVIO, 'R$ 540,00');
 
     expect(cartaoDaFila(container, OTAVIO).textContent).toContain(
-      'Vai gerar o estorno de lanc-8390 na competência 09/2026 — a competência original (07/2026) está fechada, ' +
-        'e o estorno entra no mês corrente em vez de reabrir um período já prestado.',
+      'Vai gerar um lançamento de saída vinculado ao evento Jornada de julho, na competência 09/2026 — a competência original (07/2026) está fechada ' +
+        'e não recebe lançamento sem reabertura; a saída só entra no mês corrente com a decisão registrada no motivo.',
     );
+    expect(botaoComTexto(cartaoDaFila(container, OTAVIO), 'Confirmar a devolução').disabled).toBe(true);
   });
 
   it('Cancelar no painel — fecha e devolve o botão Devolver, sem pagar nada', async () => {
@@ -294,29 +299,29 @@ describe('DevolucoesPage: confirmar a devolução', () => {
 
     expect(nomesNaFila(container)).toEqual(['Devolver R$ 540,00', 'Devolver R$ 1.800,00']);
     expect(numero(container, 'A devolver')).toBe('A devolverR$ 2.340,002 pedidos');
-    expect(numero(container, 'Devolvidas este ano')).toBe('Devolvidas este ano2já pagas e estornadas');
+    expect(numero(container, 'Devolvidas este ano')).toBe('Devolvidas este ano2já pagas');
   });
 
-  it('Confirmar — põe a devolução no topo de Já devolvidas, com evento e dia, data, conta, estorno e valor', async () => {
+  it('Confirmar — põe a devolução no topo de Já devolvidas, com evento e dia, data, conta, lançamento de saída e valor', async () => {
     const { container } = await montar(<DevolucoesPage />);
     await abrirPainel(container, CARLOS, 'R$ 210,00');
 
     await confirmar(cartaoDaFila(container, CARLOS));
 
     expect(jaDevolvidas(container)).toEqual([
-      'Carlos MenezesTrabalho de Cura · 22/08 · 11/09/2026 · Cora PJest-8712R$ 210,00',
-      'Helena DuarteConcentração · 12/07 · 24/07/2026 · Cora PJest-8402R$ 160,00',
+      'Carlos MenezesTrabalho de Cura · 22/08 · 11/09/2026 · Cora PJsai-8712R$ 210,00',
+      'Helena DuarteConcentração · 12/07 · 24/07/2026 · Cora PJsai-8402R$ 160,00',
     ]);
   });
 
-  it('Confirmar — avisa o valor, a conta, a competência do estorno e que nenhuma despesa nova foi criada', async () => {
+  it('Confirmar — avisa o valor, a conta, a competência da saída e que o lançamento original não foi alterado', async () => {
     const { container } = await montar(<DevolucoesPage />);
     await abrirPainel(container, CARLOS, 'R$ 210,00');
 
     await confirmar(cartaoDaFila(container, CARLOS));
 
     expect(recadoDaTela(container)).toBe(
-      'R$ 210,00 devolvidos a Carlos Menezes por Cora PJ. O estorno entrou na competência 08/2026 e anulou lanc-8712 — nenhuma despesa nova foi criada.',
+      'R$ 210,00 devolvidos a Carlos Menezes por Cora PJ. A saída entrou na competência 08/2026, vinculada ao evento Trabalho de Cura; lanc-8712 não foi alterado.',
     );
   });
 
@@ -328,40 +333,44 @@ describe('DevolucoesPage: confirmar a devolução', () => {
 
     await confirmar(cartaoDaFila(container, CARLOS));
 
-    expect(jaDevolvidas(container)[0]).toBe('Carlos MenezesTrabalho de Cura · 22/08 · 15/09/2026 · Espécieest-8712R$ 210,00');
+    expect(jaDevolvidas(container)[0]).toBe('Carlos MenezesTrabalho de Cura · 22/08 · 15/09/2026 · Espéciesai-8712R$ 210,00');
     expect(recadoDaTela(container)).toContain('devolvidos a Carlos Menezes por Espécie.');
   });
 
-  it('competência fechada — o aviso diz que o estorno entrou em 09/2026 e anulou o lançamento original', async () => {
+  it('competência fechada — o aviso diz que a saída entrou em 09/2026, que o lançamento original não foi alterado e qual foi o motivo', async () => {
     const { container } = await montar(<DevolucoesPage />);
     await abrirPainel(container, OTAVIO, 'R$ 540,00');
 
+    await registrarMotivo(container, OTAVIO);
     await confirmar(cartaoDaFila(container, OTAVIO));
 
     expect(recadoDaTela(container)).toBe(
-      'R$ 540,00 devolvidos a Otávio Lins por Cora PJ. O estorno entrou na competência 09/2026 e anulou lanc-8390 — nenhuma despesa nova foi criada.',
+      'R$ 540,00 devolvidos a Otávio Lins por Cora PJ. A saída entrou na competência 09/2026, vinculada ao evento Jornada de julho; lanc-8390 não foi alterado. ' +
+        'Motivo registrado: “Julho já foi prestado e fechado.”',
     );
-    expect(jaDevolvidas(container)[0]).toBe('Otávio LinsJornada de julho · 18/07 · 11/09/2026 · Cora PJest-8390R$ 540,00');
+    expect(jaDevolvidas(container)[0]).toBe('Otávio LinsJornada de julho · 18/07 · 11/09/2026 · Cora PJsai-8390R$ 540,00');
   });
 
-  it('data da saída apagada — é aceita sem validação e a linha em Já devolvidas fica com o campo vazio', async () => {
+  it('data da saída apagada — recusa com a mensagem no campo e a devolução segue na fila', async () => {
     const { container } = await montar(<DevolucoesPage />);
     await abrirPainel(container, CARLOS, 'R$ 210,00');
     await digitar(campoDoRotulo(cartaoDaFila(container, CARLOS), 'Data da saída'), '');
 
     await confirmar(cartaoDaFila(container, CARLOS));
 
-    expect(jaDevolvidas(container)[0]).toBe('Carlos MenezesTrabalho de Cura · 22/08 ·  · Cora PJest-8712R$ 210,00');
+    expect(cartaoDaFila(container, CARLOS).textContent).toContain('Informe uma data que exista, no formato dd/mm/aaaa: 15/09/2026.');
+    expect(jaDevolvidas(container)).toHaveLength(1);
+    expect(recadoDaTela(container)).toBeNull();
   });
 
-  it('devolução a contratante — o estorno leva o número do lançamento original sem o prefixo lanc-', async () => {
+  it('devolução a contratante — a saída leva o número do lançamento original sem o prefixo lanc-', async () => {
     const { container } = await montar(<DevolucoesPage />);
     await abrirPainel(container, INSTITUTO, 'R$ 1.800,00');
 
     await confirmar(cartaoDaFila(container, INSTITUTO));
 
     expect(jaDevolvidas(container)[0]).toBe(
-      'Instituto Semente VivaCerimônia contratada · 30/08 · 11/09/2026 · Cora PJest-8801R$ 1.800,00',
+      'Instituto Semente VivaCerimônia contratada · 30/08 · 11/09/2026 · Cora PJsai-8801R$ 1.800,00',
     );
   });
 
@@ -373,6 +382,7 @@ describe('DevolucoesPage: confirmar a devolução', () => {
     await clicar(botaoDoRecado(container)!);
     const aoFechar = recadoDaTela(container);
     await abrirPainel(container, OTAVIO, 'R$ 540,00');
+    await registrarMotivo(container, OTAVIO);
     await confirmar(cartaoDaFila(container, OTAVIO));
     await abrirPainel(container, INSTITUTO, 'R$ 1.800,00');
 
@@ -385,6 +395,7 @@ describe('DevolucoesPage: confirmar a devolução', () => {
     await abrirPainel(container, CARLOS, 'R$ 210,00');
     await confirmar(cartaoDaFila(container, CARLOS));
     await abrirPainel(container, OTAVIO, 'R$ 540,00');
+    await registrarMotivo(container, OTAVIO);
     await confirmar(cartaoDaFila(container, OTAVIO));
     await abrirPainel(container, INSTITUTO, 'R$ 1.800,00');
 
@@ -396,7 +407,7 @@ describe('DevolucoesPage: confirmar a devolução', () => {
     );
     expect(numero(container, 'A devolver')).toBe('A devolverR$ 0,000 pedidos');
     expect(numero(container, 'Esperando há mais tempo')).toBe('Esperando há mais tempo—fila vazia');
-    expect(numero(container, 'Devolvidas este ano')).toBe('Devolvidas este ano4já pagas e estornadas');
+    expect(numero(container, 'Devolvidas este ano')).toBe('Devolvidas este ano4já pagas');
   });
 
   it('as três devolvidas — a última paga fica no topo de Já devolvidas, com Helena por último', async () => {
@@ -404,6 +415,7 @@ describe('DevolucoesPage: confirmar a devolução', () => {
     await abrirPainel(container, CARLOS, 'R$ 210,00');
     await confirmar(cartaoDaFila(container, CARLOS));
     await abrirPainel(container, OTAVIO, 'R$ 540,00');
+    await registrarMotivo(container, OTAVIO);
     await confirmar(cartaoDaFila(container, OTAVIO));
     await abrirPainel(container, INSTITUTO, 'R$ 1.800,00');
 
@@ -428,13 +440,13 @@ describe('DevolucoesPage: o que a tela explica', () => {
     );
   });
 
-  it('devolver não é gastar — explica que entra como estorno do lançamento original, e não como despesa nova', async () => {
+  it('devolver é uma saída do evento — explica que entra como lançamento de saída vinculado ao evento, e não como estorno', async () => {
     const { container } = await montar(<DevolucoesPage />);
 
-    const texto = cartaoDoRotulo(container, 'Devolver não é gastar').textContent;
+    const texto = cartaoDoRotulo(container, 'Devolver é uma saída do evento').textContent;
 
-    expect(texto).toContain('Por isso a devolução entra como estorno do lançamento original, e não como despesa nova');
-    expect(texto).toContain('É a mesma família de F2 (pagar fatura é transferência, não despesa), E1 (empréstimo é patrimonial) e A5 (ressarcir adiantamento não gera despesa nova).');
+    expect(texto).toContain('Por isso a devolução entra como lançamento de saída vinculado ao mesmo evento, e não como estorno do lançamento original');
+    expect(texto).toContain('é a Tesouraria, ao efetivar a devolução, que gera a saída (DV4). O lançamento original não é alterado: confirmado, só se corrige com estorno (L2).');
   });
 
   it('faltaram e não pediram — conta 3 pessoas e R$ 600,00 que continuam com a casa, e lista cada uma', async () => {
@@ -462,7 +474,7 @@ describe('DevolucoesPage: o que a tela explica', () => {
   it('já devolvidas — começa com uma devolução da Helena Duarte', async () => {
     const { container } = await montar(<DevolucoesPage />);
 
-    expect(jaDevolvidas(container)).toEqual(['Helena DuarteConcentração · 12/07 · 24/07/2026 · Cora PJest-8402R$ 160,00']);
+    expect(jaDevolvidas(container)).toEqual(['Helena DuarteConcentração · 12/07 · 24/07/2026 · Cora PJsai-8402R$ 160,00']);
   });
 });
 

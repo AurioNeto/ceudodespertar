@@ -1,6 +1,7 @@
 import { Button, Rotulo, Select, TextField, type Density } from '@/ds';
 import { contas } from '@/pages/mocks/contas';
 import { formatarBRL } from '@/pages/utils/formato';
+import { ID_DO_CAMPO_DA_DATA_DO_RECEBIMENTO } from '../../../../constantes';
 import type { ContratacaoNaTela } from '../../../../mocks/contratacoes';
 
 export interface PainelDeRecebimentoProps {
@@ -8,6 +9,7 @@ export interface PainelDeRecebimentoProps {
   densidade: Density;
   conta: string;
   data: string;
+  erroDaData: string | undefined;
   onConta: (v: string) => void;
   onData: (v: string) => void;
   onCancelar: () => void;
@@ -19,6 +21,7 @@ export function PainelDeRecebimento({
   densidade,
   conta,
   data,
+  erroDaData,
   onConta,
   onData,
   onCancelar,
@@ -48,11 +51,13 @@ export function PainelDeRecebimento({
           options={contas.filter((x) => x.ativa).map((x) => ({ value: x.id as string, label: x.nome }))}
         />
         <TextField
+          id={ID_DO_CAMPO_DA_DATA_DO_RECEBIMENTO}
           label="Data do recebimento"
           value={data}
           density={campo ? 'field' : 'office'}
           onChange={(e) => onData(e.target.value)}
           hint="A data de caixa."
+          error={erroDaData}
         />
       </div>
 

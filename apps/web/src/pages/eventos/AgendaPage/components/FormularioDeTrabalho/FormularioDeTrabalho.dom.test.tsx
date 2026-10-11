@@ -359,6 +359,7 @@ describe('FormularioDeTrabalho: lista de preparo', () => {
   it('Salvar depois de mexer nas tarefas — entrega a lista como está no formulário, inclusive as em branco', async () => {
     const { container, props } = await montarFormulario();
     await digitar(campoDoRotulo(container, 'Nome'), 'Mãe Divina');
+    await digitar(campoDoRotulo(container, 'Data'), '10/11/2026');
     await clicar(botaoComTexto(container, 'Adicionar tarefa'));
     await clicar(botoesDaTarefa(container, 'descer')[0]!);
 

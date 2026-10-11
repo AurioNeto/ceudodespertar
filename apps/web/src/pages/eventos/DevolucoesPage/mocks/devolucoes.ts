@@ -28,7 +28,6 @@ export interface DevolucaoNaFila {
   /** O lançamento de receita que entrou quando ela pagou. */
   readonly lancamentoOriginal: string;
   readonly competenciaOriginal: Competencia;
-  /** Se o período da receita original já fechou, o estorno vai para o atual. */
   readonly competenciaFechada: boolean;
   /** Devolução a contratante, não a participante (CN4). */
   readonly aContratante: boolean;
@@ -115,7 +114,7 @@ export const pagas: readonly {
   valor: Dinheiro;
   pagaEm: string;
   conta: string;
-  estorno: string;
+  lancamentoDeSaida: string;
 }[] = [
   {
     id: dev('d-00'),
@@ -124,7 +123,7 @@ export const pagas: readonly {
     valor: reais(160),
     pagaEm: '24/07/2026',
     conta: 'Cora PJ',
-    estorno: 'est-8402',
+    lancamentoDeSaida: 'sai-8402',
   },
 ];
 

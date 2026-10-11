@@ -65,7 +65,7 @@ export function DevolucoesPage() {
               nota={tela.maisAntiga ? tela.maisAntiga.nome : 'fila vazia'}
               cor={tela.maisAntiga && diasEsperando(tela.maisAntiga.solicitadaEm) > 30 ? 'var(--color-attention)' : undefined}
             />
-            <Numero rotulo="Devolvidas este ano" valor={String(tela.pagas.length)} nota="já pagas e estornadas" />
+            <Numero rotulo="Devolvidas este ano" valor={String(tela.pagas.length)} nota="já pagas" />
           </div>
         </Cartao>
 
@@ -88,8 +88,11 @@ export function DevolucoesPage() {
               pagando={tela.pagando === (d.id as string)}
               conta={tela.conta}
               data={tela.data}
+              erroDaData={tela.erroDaData}
+              motivo={tela.motivo}
               onConta={tela.setConta}
               onData={tela.setData}
+              onMotivo={tela.setMotivo}
               onAbrir={() => tela.abrir(d)}
               onCancelar={tela.cancelarPagamento}
               onPagar={() => tela.pagar(d)}
