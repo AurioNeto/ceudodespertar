@@ -1,4 +1,4 @@
-import type { CodigoDeRecusa } from '../../app/estadoDaSessao';
+import type { CodigoDeRecusa } from '@/app/sessao/estadoDaSessao';
 import type { TomDeAviso } from './Aviso';
 
 export interface MensagemDeEntrada {

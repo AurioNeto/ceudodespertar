@@ -1,10 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
-import { TEXTO_DA_FAIXA_DE_DEMONSTRACAO } from '../ds';
+import { TEXTO_DA_FAIXA_DE_DEMONSTRACAO } from '@/app/demonstracao';
 import { Layout } from './Layout';
-import { ROTAS, type RotaId } from './navegacao';
+import { ROTAS, type RotaId } from '@/app/rotas';
 import { PERMISSOES, type Permissao } from '@cdd/contracts';
-import { TELAS, type RegistroDeTelas } from './telas';
+import { TELAS, type RegistroDeTelas } from '../telas';
 import { criarEntradaFalsa, criarEu, montarComSessao, type TelaMontada } from '@/testes/sessaoDeTeste';
 
 const ROTAS_DO_SHELL = Object.entries(ROTAS) as [RotaId, string][];

@@ -1,0 +1,1 @@
+export { ExigeSessao } from './ExigeSessao';

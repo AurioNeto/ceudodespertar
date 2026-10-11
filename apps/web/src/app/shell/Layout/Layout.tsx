@@ -1,11 +1,13 @@
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { AppShell, FaixaDeDemonstracao, PermissionDenied, ScreenHeader, useDensidade } from '../ds';
-import { filtrarNavPorAcesso, podeVerTela } from './acesso';
-import { construirNav, ROTAS, rotaAtiva, type RotaId } from './navegacao';
-import { sessaoDeDemonstracaoLigada } from './demonstracao';
-import { TELAS, type RegistroDeTelas } from './telas';
-import { useSessao } from './sessao';
-import { filaDeVerificacaoInicial } from '../mocks/verificacao';
+import { AppShell, PermissionDenied, ScreenHeader, useDensidade } from '@/ds';
+import { filtrarNavPorAcesso, podeVerTela } from '../acesso';
+import { construirNav } from '../menu';
+import { ROTAS, type RotaId } from '@/app/rotas';
+import { rotaAtiva } from '../rotaAtiva';
+import { FaixaDeDemonstracao, sessaoDeDemonstracaoLigada } from '@/app/demonstracao';
+import { TELAS, type RegistroDeTelas } from '../telas';
+import { useSessao } from '@/app/sessao';
+import { filaDeVerificacaoInicial } from '@/mocks/verificacao';
 
 const TEXTOS_DO_SHELL = {
   institution: 'Céu do Despertar',

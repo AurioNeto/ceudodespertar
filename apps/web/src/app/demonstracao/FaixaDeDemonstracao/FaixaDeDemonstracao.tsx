@@ -1,4 +1,4 @@
-import { Icon } from './atoms/Icon';
+import { Icon } from '@/ds';
 
 export const TEXTO_DA_FAIXA_DE_DEMONSTRACAO =
   'Dados de demonstração. Esta tela ainda não está ligada ao sistema: o que aparece aqui é exemplo e nada é gravado.';

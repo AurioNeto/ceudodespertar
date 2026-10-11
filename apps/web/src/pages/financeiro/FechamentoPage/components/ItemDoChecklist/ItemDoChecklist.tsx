@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { Button, Icon, StatusBadge, type BadgeTone, type Density, type IconName } from '@/ds';
-import { ROTAS, type RotaId } from '@/app/navegacao';
+import { ROTAS, type RotaId } from '@/app/rotas';
 
 export interface ItemDoChecklist {
   id: string;

@@ -1,6 +1,6 @@
 import { PERMISSOES, type Eu, type GrupoId, type InstituicaoId, type UsuarioId } from '@cdd/contracts';
-import { id } from '../mocks/ids';
-import type { ServicoDeEntrada } from '../dados/oidc';
+import { id } from '@/mocks/ids';
+import type { ServicoDeEntrada } from '@/dados/oidc';
 
 export const MARCA_DA_SESSAO_DE_DEMONSTRACAO = 'sessao-de-demonstracao-somente-desenvolvimento';
 

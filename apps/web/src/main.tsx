@@ -8,7 +8,7 @@ import { SessaoProvider } from './app/sessao';
 import type { SessaoProviderProps } from './app/sessao';
 import { carregarDemonstracao } from './app/demonstracao';
 import { clienteHttp, credencial, criarClienteDeConsultas, servicoDeEntrada } from './dados';
-import { ClienteHttpProvider } from './app/clienteHttp';
+import { ClienteHttpProvider } from './app/providers';
 import './styles/global.css';
 
 const clienteDeConsultas = criarClienteDeConsultas();
@@ -26,7 +26,7 @@ async function escolherFontesDaSessao(): Promise<FontesDaSessao> {
     ? await carregarDemonstracao({
         desenvolvimento: import.meta.env.DEV,
         flag: import.meta.env.VITE_SESSAO_DE_DEMONSTRACAO,
-        importar: () => import('./app/sessaoDeDemonstracao'),
+        importar: () => import('./app/demonstracao/sessaoDeDemonstracao'),
       })
     : null;
 

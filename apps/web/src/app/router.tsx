@@ -1,7 +1,7 @@
 import { createBrowserRouter } from 'react-router-dom';
-import { Layout } from './Layout';
-import { ROTAS, ROTAS_PUBLICAS } from './navegacao';
-import { rotasAntigasDaEntrada } from './rotasAntigasDaEntrada';
+import { Layout } from './shell';
+import { ROTAS, ROTAS_PUBLICAS } from './rotas';
+import { rotasAntigasDaEntrada } from './rotas';
 import { ExigeSessao } from './sessao';
 import { EntrarPage } from '../pages/entrada/EntrarPage';
 import { RetornoPage } from '../pages/entrada/RetornoPage';

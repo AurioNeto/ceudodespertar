@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Eu, GrupoId, InstituicaoId, UsuarioId } from '@cdd/contracts';
-import { ErroDeRede } from '../dados/erros';
+import { ErroDeRede } from '@/dados/erros';
 import { erroDaApi as erro } from '@/testes/fabricas';
 import { estadoDoErroDoEu, usuarioDaSessao } from './estadoDaSessao';
 

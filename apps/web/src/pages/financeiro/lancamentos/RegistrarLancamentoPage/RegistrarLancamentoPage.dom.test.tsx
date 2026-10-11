@@ -14,7 +14,7 @@ import {
 import { RegistrarLancamentoPage } from './RegistrarLancamentoPage';
 
 const sessao = vi.hoisted(() => ({ permissoes: new Set<string>() }));
-vi.mock('@/app/sessao', () => ({ useSessao: () => ({ pode: (permissao: string) => sessao.permissoes.has(permissao) }) }));
+vi.mock('@/app/sessao/SessaoProvider/SessaoProvider', () => ({ useSessao: () => ({ pode: (permissao: string) => sessao.permissoes.has(permissao) }) }));
 
 const PERMISSAO_DE_CONSOLIDAR = 'financeiro.lancamento.confirmar';
 const TEXTO_DA_CAPTURA = 'Anexar comprovanteUm toque, direto da câmera. Nunca obrigatório.';

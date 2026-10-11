@@ -1,5 +1,5 @@
 import type { Permissao } from '@cdd/contracts';
-import type { RotaId } from './navegacao';
+import type { RotaId } from '@/app/rotas';
 
 export type FonteDaTela = 'mock' | 'api';
 

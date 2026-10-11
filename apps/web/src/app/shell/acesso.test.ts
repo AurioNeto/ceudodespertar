@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import type { Permissao } from '@cdd/contracts';
-import type { NavEntry } from '../ds';
+import type { NavEntry } from '@/ds';
 import { filtrarNavPorAcesso, podeVerTela } from './acesso';
-import { construirNav } from './navegacao';
+import { construirNav } from './menu';
 import { TELAS } from './telas';
 
 const comAs = (...permissoes: Permissao[]) => (permissao: Permissao) => permissoes.includes(permissao);
