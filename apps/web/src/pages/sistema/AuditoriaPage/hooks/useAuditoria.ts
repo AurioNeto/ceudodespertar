@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import type { Visao } from '../tipos';
+
+export type Visao = 'trilha' | 'acesso';
 
 export function useAuditoria() {
   const [visao, setVisao] = useState<Visao>('trilha');
