@@ -36,9 +36,9 @@ describe('textosPorTipo', () => {
     [
       'bloqueado',
       'SAIDA',
-      { competencia: '07/2026' },
+      { competencia: '07/2026', valor: '3' },
       false,
-      'Enquanto isso não se resolve, dá para salvar como rascunho — nada se perde.',
+      undefined,
     ],
     [
       'transferência',

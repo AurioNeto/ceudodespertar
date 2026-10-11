@@ -531,7 +531,7 @@ describe('RegistrarLancamentoPage: troca de tipo', () => {
     expect(container.textContent).toContain('Escolha uma conta diferente da origem.');
     expect(botaoDeRegistrar(container).disabled).toBe(true);
     expect(botaoDeRegistrar(container).title).toBe('Origem e destino precisam ser contas diferentes.');
-    expect(container.textContent).toContain('Enquanto isso não se resolve, dá para salvar como rascunho — nada se perde.');
+    expect(container.textContent).not.toContain('rascunho');
   });
 
   it('transferência com destino igual à origem — só o select de destino ganha a borda de atenção', async () => {
@@ -745,7 +745,7 @@ describe('RegistrarLancamentoPage: competência fechada', () => {
     expect(botaoDeRegistrar(container).title).toBe('Julho está fechado. Um administrador pode reabrir, e o motivo fica registrado.');
   });
 
-  it('campo — o período fechado aparece com o texto curto e a barra manda guardar como rascunho', async () => {
+  it('campo — o período fechado aparece com o texto curto, sem oferecer rascunho', async () => {
     usarDensidade('field');
     const { container } = await montar(<RegistrarLancamentoPage />);
     await abrirCampoPadrao(container, 'Competência');
@@ -753,20 +753,20 @@ describe('RegistrarLancamentoPage: competência fechada', () => {
     await clicar(opcaoDaFolha(folhaAberta(container, 'Competência') as HTMLElement, '07/2026'));
 
     expect(container.textContent).toContain('Período 07/2026 está fechado');
-    expect(container.textContent).toContain('Guarde como rascunho ou lance em 08/2026 explicando na descrição.');
-    expect(container.textContent).toContain('Enquanto isso não se resolve, dá para salvar como rascunho — nada se perde.');
+    expect(container.textContent).toContain('Lance em 08/2026 explicando na descrição.');
+    expect(container.textContent).not.toContain('rascunho');
     expect(camposPadrao(container)[0]).toEqual(['Competência', '07/2026', 'da data do gasto']);
     expect(botaoDeRegistrar(container).disabled).toBe(true);
   });
 
-  it('período fechado — nenhum botão de guardar rascunho existe, apesar de a barra e o aviso o oferecerem', async () => {
+  it('período fechado — nenhum botão nem texto de rascunho: a tela não oferece o que não faz', async () => {
     const { container } = await montar(<RegistrarLancamentoPage />);
 
     await escolherOpcao(campoRotulado<HTMLSelectElement>(container, 'Competência'), '07/2026');
 
     const rotulosDosBotoes = todos(container, 'button').map((botao) => botao.textContent);
     expect(rotulosDosBotoes.some((texto) => texto?.toLowerCase().includes('rascunho'))).toBe(false);
-    expect(container.textContent).toContain('dá para salvar como rascunho');
+    expect(container.textContent).not.toContain('rascunho');
   });
 
   it('período fechado e tentativa de registrar — o clique no botão bloqueado não registra nada', async () => {
@@ -1583,53 +1583,49 @@ describe('RegistrarLancamentoPage: registrar e recibo', () => {
     expect(lerRecibo(container).valor).toBe(valorDeSaida('20,00'));
   });
 
-  it('escritório sem permissão — o recibo traz Desfazer e Ver lançamento, e o guarda de dois eixos sai da tela', async () => {
+  it('escritório sem permissão — o recibo traz Ver lançamento, sem Desfazer, e o guarda de dois eixos sai da tela', async () => {
     const { container } = await montar(<RegistrarLancamentoPage />);
     await digitar(campoDoValor(container), '10');
 
     await registrar(container);
 
-    expect(botaoComTexto(container, 'Desfazer')).toBeDefined();
+    expect(todos(container, 'button').some((botao) => botao.textContent === 'Desfazer')).toBe(false);
     expect(botaoComTexto(container, 'Ver lançamento')).toBeDefined();
     expect(container.textContent).not.toContain('Você tem acesso a esta tela, mas não a esta operação');
   });
 
-  it('escritório com permissão — o recibo diz gravado consolidado e que o desfazer vale só por 2 minutos', async () => {
+  it('escritório com permissão — o recibo diz gravado consolidado, sem prometer desfazer', async () => {
     comoTesouraria();
     const { container } = await montar(<RegistrarLancamentoPage />);
     await digitar(campoDoValor(container), '10');
 
     await registrar(container);
 
-    expect(lerRecibo(container).rodape).toBe(
-      'Gravado consolidado, com seu nome no histórico. Desfazer só nos próximos 2 minutos; depois disso, estorno.',
-    );
+    expect(lerRecibo(container).rodape).toBe('Gravado consolidado, com seu nome no histórico.');
   });
 
-  it('campo — o recibo promete Desfazer nos próximos 2 minutos, mas não há botão de desfazer nem de ver lançamento', async () => {
+  it('campo — o recibo não promete desfazer, e não há botão de desfazer nem de ver lançamento', async () => {
     usarDensidade('field');
     const { container } = await montar(<RegistrarLancamentoPage />);
     await digitar(campoDoValor(container), '10');
 
     await registrar(container);
 
-    expect(lerRecibo(container).rodape).toBe('Campos limpos, pronto para o próximo. Desfazer nos próximos 2 minutos.');
+    expect(lerRecibo(container).rodape).toBe('Campos limpos, pronto para o próximo.');
     expect(todos(container, 'button').some((botao) => botao.textContent === 'Desfazer')).toBe(false);
     expect(todos(container, 'button').some((botao) => botao.textContent === 'Ver lançamento')).toBe(false);
   });
 
-  it('Desfazer — esvazia o recibo e o formulário, sem desfazer o registro nem esperar prazo algum', async () => {
+  it('Desfazer — o recibo não oferece desfazer, nem na hora nem passado o prazo de 2 minutos', async () => {
     const { container } = await montar(<RegistrarLancamentoPage />);
     await digitar(campoDoValor(container), '10');
     await registrar(container);
-    await digitar(campoDoValor(container), '77');
     vi.setSystemTime(new Date(HORA_FIXA.getTime() + 60 * 60 * 1000));
+    await digitar(campoDoValor(container), '77');
 
-    await clicar(botaoComTexto(container, 'Desfazer'));
-
-    expect(temRecibo(container)).toBe(false);
-    expect(campoDoValor(container).value).toBe('');
-    expect(container.textContent).toContain('Você tem acesso a esta tela, mas não a esta operação');
+    expect(todos(container, 'button').some((botao) => botao.textContent === 'Desfazer')).toBe(false);
+    expect(temRecibo(container)).toBe(true);
+    expect(campoDoValor(container).value).toBe('77');
   });
 
   it('Ver lançamento — o clique não faz nada: o recibo continua na tela', async () => {

@@ -6,10 +6,9 @@ export interface ReciboDoRegistroProps {
   recibo: Recibo;
   consolida: boolean;
   densidade: Density;
-  onDesfazer: () => void;
 }
 
-export function ReciboDoRegistro({ recibo, consolida, densidade, onDesfazer }: ReciboDoRegistroProps) {
+export function ReciboDoRegistro({ recibo, consolida, densidade }: ReciboDoRegistroProps) {
   const campo = densidade === 'field';
 
   return (
@@ -21,17 +20,14 @@ export function ReciboDoRegistro({ recibo, consolida, densidade, onDesfazer }: R
         lines={recibo.linhas}
         footnote={
           campo
-            ? 'Campos limpos, pronto para o próximo. Desfazer nos próximos 2 minutos.'
+            ? 'Campos limpos, pronto para o próximo.'
             : consolida
-              ? 'Gravado consolidado, com seu nome no histórico. Desfazer só nos próximos 2 minutos; depois disso, estorno.'
+              ? 'Gravado consolidado, com seu nome no histórico.'
               : 'Gravado como a conferir, com seu nome no histórico. A tesouraria confere antes de consolidar.'
         }
       />
       {campo ? null : (
         <div style={{ display: 'flex', gap: 10 }}>
-          <Button variant="quiet" iconName="rotate-ccw" onClick={onDesfazer}>
-            Desfazer
-          </Button>
           <Button variant="ghost" iconName="receipt-text">
             Ver lançamento
           </Button>

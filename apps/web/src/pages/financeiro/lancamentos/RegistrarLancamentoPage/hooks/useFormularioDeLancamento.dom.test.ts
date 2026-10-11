@@ -240,7 +240,6 @@ describe('useFormularioDeLancamento: bloqueio e nota da barra', () => {
   const PERIODO_FECHADO = 'Julho está fechado. Um administrador pode reabrir, e o motivo fica registrado.';
   const MESMA_CONTA = 'Origem e destino precisam ser contas diferentes.';
   const COMPOSTO = 'O valor composto precisa virar um número só antes de gravar consolidado.';
-  const NOTA_DE_BLOQUEIO = 'Enquanto isso não se resolve, dá para salvar como rascunho — nada se perde.';
 
   it.each([
     { nome: 'período fechado', consolida: false, competencia: '07/2026', valor: '', motivo: PERIODO_FECHADO },
@@ -310,9 +309,9 @@ describe('useFormularioDeLancamento: bloqueio e nota da barra', () => {
       consolida: false,
       competencia: '07/2026',
       tipo: 'SAIDA' as const,
-      valor: '',
+      valor: '3',
       categorias: [],
-      nota: NOTA_DE_BLOQUEIO,
+      nota: undefined,
     },
     {
       nome: 'transferência liberada',

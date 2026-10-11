@@ -55,7 +55,7 @@ export function RegistrarLancamentoPage() {
         }}
       >
         {f.recibo ? (
-          <ReciboDoRegistro recibo={f.recibo} consolida={consolida} densidade={densidade} onDesfazer={f.limpar} />
+          <ReciboDoRegistro recibo={f.recibo} consolida={consolida} densidade={densidade} />
         ) : null}
 
         {f.competenciaFechada ? (
@@ -63,7 +63,7 @@ export function RegistrarLancamentoPage() {
             title={`Período ${campo ? '07/2026' : '07/2026 · CDD'} está fechado`}
             reason={
               campo
-                ? 'O gasto é de julho e julho foi fechado em 05/08. Guarde como rascunho ou lance em 08/2026 explicando na descrição.'
+                ? 'O gasto é de julho e julho foi fechado em 05/08. Lance em 08/2026 explicando na descrição.'
                 : 'A data do gasto cai em julho, e julho foi fechado em 05/08 por Marcia Zubek. Lançar em período fechado mudaria um relatório que já foi assinado.'
             }
             reopenDeniedNote="Reabrir exige um administrador, e o motivo fica registrado de forma permanente."
