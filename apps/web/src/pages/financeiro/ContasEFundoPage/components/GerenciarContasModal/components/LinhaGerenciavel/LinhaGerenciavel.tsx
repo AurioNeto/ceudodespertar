@@ -1,4 +1,4 @@
-import { Icon, StatusBadge } from '@/ds';
+import { BotaoDeIcone, StatusBadge } from '@/ds';
 
 export interface LinhaGerenciavelProps {
   marcador: React.ReactNode;
@@ -50,25 +50,20 @@ export function LinhaGerenciavel({
         </span>
       ) : null}
       <StatusBadge tone={ativa ? 'confirmed' : 'neutral'}>{ativa ? rotuloAtiva : rotuloInativa}</StatusBadge>
-      <button
-        type="button"
+      <BotaoDeIcone
+        icone="pencil"
+        tamanhoDoIcone={15}
+        medida={32}
         aria-label={`editar ${nome}`}
         onClick={onEditar}
         style={{
-          width: 32,
-          height: 32,
           flex: '0 0 auto',
           border: '1px solid var(--color-line)',
           background: 'var(--bg-card)',
           borderRadius: 'var(--radius-pill)',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
+          color: 'var(--text-secondary)',
         }}
-      >
-        <Icon name="pencil" size={15} color="var(--text-secondary)" />
-      </button>
+      />
       <button
         type="button"
         onClick={onAlternar}
