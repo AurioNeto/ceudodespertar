@@ -11,5 +11,5 @@ export const agrupar = (linhas: readonly LinhaDoRelatorio[], campo: 'grupo' | 'c
     if (!chave) continue;
     mapa.set(chave, (mapa.get(chave) ?? 0) + l.valor);
   }
-  return [...mapa.entries()].map(([nome, valor]) => ({ nome, valor })).sort((a, b) => b.valor - a.valor);
+  return [...mapa.entries()].map(([nome, valor]) => ({ nome, valor })).toSorted((a, b) => b.valor - a.valor);
 };

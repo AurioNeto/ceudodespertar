@@ -61,7 +61,7 @@ afterEach(async () => {
 
 describe('faixa de demonstração no Layout', () => {
   it('o registro cobre exatamente as rotas do shell', () => {
-    expect(Object.keys(TELAS).sort()).toEqual(Object.keys(ROTAS).sort());
+    expect(Object.keys(TELAS).toSorted()).toEqual(Object.keys(ROTAS).toSorted());
   });
 
   it.each(ROTAS_DO_SHELL)('tela %s: faixa conforme a fonte registrada', async (id, caminho) => {
