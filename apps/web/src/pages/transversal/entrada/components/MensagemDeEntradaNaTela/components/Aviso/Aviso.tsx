@@ -1,7 +1,6 @@
 import type { ReactNode } from 'react';
-import { Icon, type IconName } from '../../ds';
-
-export type TomDeAviso = 'atencao' | 'pendente' | 'confirmado' | 'neutro';
+import { Icon, type IconName } from '@/ds';
+import type { TomDeAviso } from '../../../../tipos';
 
 const TONS: Record<TomDeAviso, { fundo: string; borda: string; tinta: string; icone: IconName }> = {
   atencao: {

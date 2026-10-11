@@ -1,11 +1,5 @@
 import type { CodigoDeRecusa } from '@/app/sessao/estadoDaSessao';
-import type { TomDeAviso } from './Aviso';
-
-export interface MensagemDeEntrada {
-  readonly tom: TomDeAviso;
-  readonly titulo: string;
-  readonly corpo: string;
-}
+import type { MensagemDeEntrada } from '../tipos';
 
 export const MENSAGENS_DE_RECUSA: Readonly<Record<CodigoDeRecusa, MensagemDeEntrada>> = {
   USUARIO_CONVITE_PENDENTE: {
@@ -48,10 +42,4 @@ export const MENSAGEM_DE_FALHA_AO_INICIAR: MensagemDeEntrada = {
   tom: 'atencao',
   titulo: 'Não conseguimos abrir o login',
   corpo: 'O serviço de acesso não respondeu. Tente de novo em instantes.',
-};
-
-export const MENSAGEM_DE_ERRO_NO_RETORNO: MensagemDeEntrada = {
-  tom: 'atencao',
-  titulo: 'A entrada não foi concluída',
-  corpo: 'O login foi interrompido ou expirou. Comece de novo; a sua senha não foi afetada.',
 };

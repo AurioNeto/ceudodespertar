@@ -1,6 +1,6 @@
-import { Icon } from '../../ds';
+import { Icon } from '@/ds';
 import { cerimoniasPassadas } from '../../mocks/cerimonias';
-import { conferidoEm, feitioRecente, lotesDeDaime } from '../../mocks/estoque';
+import { conferidoEm, feitioRecente, lotesDeDaime } from './mocks/estoque';
 import { formatarDiaMes, formatarLitros } from '@/pages/utils/formato';
 
 const BASE = 226;

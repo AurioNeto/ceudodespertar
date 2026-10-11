@@ -3,10 +3,10 @@ import { Layout } from './shell';
 import { ROTAS, ROTAS_PUBLICAS } from './rotas';
 import { rotasAntigasDaEntrada } from './rotas';
 import { ExigeSessao } from './sessao';
-import { EntrarPage } from '../pages/entrada/EntrarPage';
-import { RetornoPage } from '../pages/entrada/RetornoPage';
+import { EntrarPage } from '@/pages/transversal/entrada/EntrarPage';
+import { RetornoPage } from '@/pages/transversal/entrada/RetornoPage';
 import { InscricaoPublicaPage } from '@/pages/eventos/inscricao/InscricaoPublicaPage';
-import { PainelPage } from '../pages/painel/PainelPage';
+import { PainelPage } from '@/pages/transversal/PainelPage';
 import { RegistrarLancamentoPage } from '@/pages/financeiro/lancamentos/RegistrarLancamentoPage';
 import { MeusRegistrosPage } from '@/pages/financeiro/lancamentos/MeusRegistrosPage';
 import { LancamentosPage } from '@/pages/financeiro/lancamentos/LancamentosPage';
@@ -31,7 +31,7 @@ import { AyahuascaPage } from '@/pages/estoque/AyahuascaPage';
 import { FeitioPage } from '@/pages/estoque/FeitioPage';
 import { AuditoriaPage } from '@/pages/sistema/AuditoriaPage';
 import { AcessosPage } from '@/pages/sistema/AcessosPage';
-import { MeuPerfilPage } from '../pages/perfil/MeuPerfilPage';
+import { MeuPerfilPage } from '@/pages/transversal/MeuPerfilPage';
 
 export const router = createBrowserRouter([
   { path: ROTAS_PUBLICAS.entrar, element: <EntrarPage /> },
