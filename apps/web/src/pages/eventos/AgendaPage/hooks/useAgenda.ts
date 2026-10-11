@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { lerDataDigitada } from '@/pages/eventos/utils/lerDataDigitada';
 import { trabalhosIniciais } from '../mocks/agenda';
 import type { Trabalho } from '../tipos';
 import { mesDeslocado } from '../utils/mes';
@@ -27,7 +28,9 @@ export function useAgenda() {
   };
 
   const salvar = (f: RascunhoDeTrabalho) => {
-    const base = trabalhoDoRascunho(f, mes, ano);
+    const data = lerDataDigitada(f.data);
+    if (!data) return;
+    const base = trabalhoDoRascunho(f, data);
 
     if (f.editId != null) {
       setTrabalhos((lista) => lista.map((t) => (t.id === f.editId ? { ...t, ...base } : t)));

@@ -351,14 +351,16 @@ describe('DevolucoesPage: confirmar a devolução', () => {
     expect(jaDevolvidas(container)[0]).toBe('Otávio LinsJornada de julho · 18/07 · 11/09/2026 · Cora PJsai-8390R$ 540,00');
   });
 
-  it('data da saída apagada — é aceita sem validação e a linha em Já devolvidas fica com o campo vazio', async () => {
+  it('data da saída apagada — recusa com a mensagem no campo e a devolução segue na fila', async () => {
     const { container } = await montar(<DevolucoesPage />);
     await abrirPainel(container, CARLOS, 'R$ 210,00');
     await digitar(campoDoRotulo(cartaoDaFila(container, CARLOS), 'Data da saída'), '');
 
     await confirmar(cartaoDaFila(container, CARLOS));
 
-    expect(jaDevolvidas(container)[0]).toBe('Carlos MenezesTrabalho de Cura · 22/08 ·  · Cora PJsai-8712R$ 210,00');
+    expect(cartaoDaFila(container, CARLOS).textContent).toContain('Informe uma data que exista, no formato dd/mm/aaaa: 15/09/2026.');
+    expect(jaDevolvidas(container)).toHaveLength(1);
+    expect(recadoDaTela(container)).toBeNull();
   });
 
   it('devolução a contratante — a saída leva o número do lançamento original sem o prefixo lanc-', async () => {

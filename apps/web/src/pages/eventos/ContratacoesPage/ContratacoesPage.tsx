@@ -82,6 +82,7 @@ export function ContratacoesPage() {
             recebendo={tela.recebendo === (c.eventoId as string)}
             conta={tela.conta}
             data={tela.data}
+            erroDaData={tela.erroDaData}
             onConta={tela.setConta}
             onData={tela.setData}
             onAbrir={() => tela.abrir(c)}

@@ -88,6 +88,7 @@ export function DevolucoesPage() {
               pagando={tela.pagando === (d.id as string)}
               conta={tela.conta}
               data={tela.data}
+              erroDaData={tela.erroDaData}
               motivo={tela.motivo}
               onConta={tela.setConta}
               onData={tela.setData}

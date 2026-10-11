@@ -14,6 +14,7 @@ export interface CartaoDeContratacaoProps {
   recebendo: boolean;
   conta: string;
   data: string;
+  erroDaData: string | undefined;
   onConta: (v: string) => void;
   onData: (v: string) => void;
   onAbrir: () => void;
@@ -28,6 +29,7 @@ export function CartaoDeContratacao({
   recebendo,
   conta,
   data,
+  erroDaData,
   onConta,
   onData,
   onAbrir,
@@ -183,6 +185,7 @@ export function CartaoDeContratacao({
           densidade={densidade}
           conta={conta}
           data={data}
+          erroDaData={erroDaData}
           onConta={onConta}
           onData={onData}
           onCancelar={onCancelarPainel}

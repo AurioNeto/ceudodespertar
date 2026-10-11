@@ -11,6 +11,7 @@ export interface CartaoDeDevolucaoProps {
   pagando: boolean;
   conta: string;
   data: string;
+  erroDaData: string | undefined;
   motivo: string;
   onConta: (v: string) => void;
   onData: (v: string) => void;
@@ -26,6 +27,7 @@ export function CartaoDeDevolucao({
   pagando,
   conta,
   data,
+  erroDaData,
   motivo,
   onConta,
   onData,
@@ -88,6 +90,7 @@ export function CartaoDeDevolucao({
           densidade={densidade}
           conta={conta}
           data={data}
+          erroDaData={erroDaData}
           motivo={motivo}
           onConta={onConta}
           onData={onData}

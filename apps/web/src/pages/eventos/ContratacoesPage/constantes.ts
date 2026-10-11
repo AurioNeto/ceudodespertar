@@ -20,6 +20,8 @@ export const FORMA_EXPLICACAO: Record<FormaDePagamento, string> = {
   FATURADO: 'A receber depois do trabalho, na data combinada.',
 };
 
+export const ID_DO_CAMPO_DA_DATA_DO_RECEBIMENTO = 'data-do-recebimento';
+
 export const TOM: Record<StatusContratacao, BadgeTone> = {
   PROPOSTA: 'suggest',
   CONFIRMADA: 'royal',

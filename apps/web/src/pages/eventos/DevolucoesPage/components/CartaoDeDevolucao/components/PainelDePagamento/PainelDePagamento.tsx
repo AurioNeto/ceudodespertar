@@ -2,6 +2,7 @@ import { Button, Icon, Rotulo, Select, TextField, type Density } from '@/ds';
 import { contas } from '@/pages/mocks/contas';
 import { formatarCompetencia } from '@/pages/utils/formato';
 import type { DevolucaoNaFila } from '../../../../mocks/devolucoes';
+import { ID_DO_CAMPO_DA_DATA_DA_SAIDA } from '../../../../constantes';
 import { competenciaDaSaida } from '../../../../utils/competenciaDaSaida';
 
 export interface PainelDePagamentoProps {
@@ -9,6 +10,7 @@ export interface PainelDePagamentoProps {
   densidade: Density;
   conta: string;
   data: string;
+  erroDaData: string | undefined;
   motivo: string;
   onConta: (v: string) => void;
   onData: (v: string) => void;
@@ -22,6 +24,7 @@ export function PainelDePagamento({
   densidade,
   conta,
   data,
+  erroDaData,
   motivo,
   onConta,
   onData,
@@ -55,11 +58,13 @@ export function PainelDePagamento({
           options={contas.filter((c) => c.ativa).map((c) => ({ value: c.id as string, label: c.nome }))}
         />
         <TextField
+          id={ID_DO_CAMPO_DA_DATA_DA_SAIDA}
           label="Data da saída"
           value={data}
           density={campo ? 'field' : 'office'}
           onChange={(e) => onData(e.target.value)}
           hint="A data de caixa, não a da solicitação."
+          error={erroDaData}
         />
       </div>
 
