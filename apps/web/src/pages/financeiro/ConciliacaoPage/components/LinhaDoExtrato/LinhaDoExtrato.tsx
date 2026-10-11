@@ -1,6 +1,6 @@
 import type { LinhaExtrato } from '@cdd/contracts';
 import { Button, Select } from '@/ds';
-import { formatarData, formatarDinheiro } from '@/pages/utils/formato';
+import { formatarBRL, formatarData } from '@/pages/utils/formato';
 import { motivosDeIgnorar } from '../../mocks/conciliacao';
 
 export interface LinhaDoExtratoProps {
@@ -48,7 +48,7 @@ export function LinhaDoExtrato({
           style={{ font: 'var(--text-amount)', color: credito ? 'var(--color-confirmed)' : 'var(--text-primary)' }}
         >
           {credito ? '+ ' : '− '}
-          {formatarDinheiro(linha.valor)}
+          {formatarBRL(linha.valor)}
         </span>
       </div>
 

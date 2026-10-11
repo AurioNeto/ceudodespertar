@@ -1,4 +1,4 @@
-import { formatarDinheiro } from '@/pages/utils/formato';
+import { formatarBRL } from '@/pages/utils/formato';
 import type { LinhaDePrestacao, NivelDeDetalhe } from '../../../../mocks/prestacao';
 
 export function Linha({ linha, nivel }: { linha: LinhaDePrestacao; nivel: NivelDeDetalhe }) {
@@ -12,7 +12,7 @@ export function Linha({ linha, nivel }: { linha: LinhaDePrestacao; nivel: NivelD
         ) : null}
       </span>
       <span data-numeric style={{ font: 'var(--text-amount)', color: 'var(--text-primary)', whiteSpace: 'nowrap' }}>
-        {formatarDinheiro(linha.valor)}
+        {formatarBRL(linha.valor)}
       </span>
     </div>
   );

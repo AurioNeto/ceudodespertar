@@ -1,5 +1,5 @@
 import type { Conta } from '@cdd/contracts';
-import { formatarDinheiro } from '@/pages/utils/formato';
+import { formatarBRL } from '@/pages/utils/formato';
 import { rotuloLabel, valorGrande } from '../../constantes';
 
 export interface SaldosDoFechamentoProps {
@@ -32,7 +32,7 @@ export function SaldosDoFechamento({ contasAtivas, totalSaldos }: SaldosDoFecham
               color: 'var(--text-primary)',
             }}
           >
-            {formatarDinheiro(c.saldo)}
+            {formatarBRL(c.saldo)}
           </span>
         </div>
       ))}
@@ -46,7 +46,7 @@ export function SaldosDoFechamento({ contasAtivas, totalSaldos }: SaldosDoFecham
         }}
       >
         <span style={{ font: 'var(--text-body-strong)', color: 'var(--text-primary)' }}>Total</span>
-        <span style={{ ...valorGrande, color: 'var(--color-royal-deep)' }}>{formatarDinheiro(totalSaldos)}</span>
+        <span style={{ ...valorGrande, color: 'var(--color-royal-deep)' }}>{formatarBRL(totalSaldos)}</span>
       </div>
     </div>
   );

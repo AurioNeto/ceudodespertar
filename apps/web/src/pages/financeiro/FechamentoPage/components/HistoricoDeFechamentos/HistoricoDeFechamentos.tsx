@@ -1,5 +1,5 @@
 import { StatusBadge } from '@/ds';
-import { formatarDinheiro } from '@/pages/utils/formato';
+import { formatarBRL } from '@/pages/utils/formato';
 import { rotuloLabel } from '../../constantes';
 
 export interface HistoricoDeFechamentosProps {
@@ -38,7 +38,7 @@ export function HistoricoDeFechamentos({ historico }: HistoricoDeFechamentosProp
             }}
           >
             {h.resultado >= 0 ? '+ ' : '− '}
-            {formatarDinheiro(Math.abs(h.resultado))}
+            {formatarBRL(Math.abs(h.resultado))}
           </span>
         </div>
       ))}

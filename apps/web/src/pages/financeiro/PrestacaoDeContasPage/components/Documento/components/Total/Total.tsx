@@ -1,4 +1,4 @@
-import { formatarDinheiro } from '@/pages/utils/formato';
+import { formatarBRL } from '@/pages/utils/formato';
 
 export function Total({ rotulo, valor }: { rotulo: string; valor: number }) {
   return (
@@ -15,7 +15,7 @@ export function Total({ rotulo, valor }: { rotulo: string; valor: number }) {
     >
       <span style={{ font: 'var(--text-body-strong)', color: 'var(--text-primary)' }}>{rotulo}</span>
       <span data-numeric style={{ font: 'var(--text-amount)', color: 'var(--text-primary)' }}>
-        {formatarDinheiro(valor)}
+        {formatarBRL(valor)}
       </span>
     </div>
   );

@@ -69,7 +69,7 @@ const AGOSTO: DadosDaPrestacao = {
     {
       rotulo: 'Adiantamentos a ressarcir no fim do período',
       valor: reais(1969.26),
-      nominal: 'Paty Munay 1.700,86 · Lucia Prado 268,40',
+      nominal: 'Paty Munay R$ 1.700,86 · Lucia Prado R$ 268,40',
     },
   ],
   saldos: [

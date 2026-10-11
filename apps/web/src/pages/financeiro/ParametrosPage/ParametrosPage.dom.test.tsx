@@ -552,7 +552,7 @@ describe('ParametrosPage: aba Unidades e regimes', () => {
     await abrirUnidades(container);
 
     const cartao = cartaoDaUnidade(container, 'Munay');
-    expect(cartao.textContent).toContain('Faturamento no ano contra o teto do regime43.700,00 de 81.000,00');
+    expect(cartao.textContent).toContain('Faturamento no ano contra o teto do regimeR$ 43.700,00 de R$ 81.000,00');
     expect(cartao.textContent).toContain('O teto é parâmetro da unidade, nunca constante no código — esse valor muda por lei.');
     expect(parseFloat(faixaDoTeto(cartao)?.style.width ?? '')).toBeCloseTo(53.95, 2);
     expect(faixaDoTeto(cartao)?.style.background).toBe(COR_DA_MARCA);
@@ -633,7 +633,7 @@ describe('ParametrosPage: barra do teto de faturamento', () => {
 
     await abrirUnidades(container);
 
-    expect(cartaoDaUnidade(container, 'Munay').textContent).toContain('1.200,00 de 1.000,00');
+    expect(cartaoDaUnidade(container, 'Munay').textContent).toContain('R$ 1.200,00 de R$ 1.000,00');
   });
 });
 
