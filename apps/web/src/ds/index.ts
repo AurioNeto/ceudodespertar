@@ -27,6 +27,8 @@ export { Icon } from './atoms/Icon';
 export type { IconName } from './atoms/Icon';
 export { InfraError } from './molecules/InfraError';
 export { Interruptor } from './atoms/Interruptor';
+export { Leitura } from './molecules/Leitura';
+export { ListaDividida } from './molecules/ListaDividida';
 export { Marca } from './atoms/Marca';
 export { Numero } from './molecules/Numero';
 export { PendencyCard } from './organisms/PendencyCard';

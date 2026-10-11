@@ -1,0 +1,1 @@
+export { ListaDividida } from './ListaDividida';
