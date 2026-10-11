@@ -1,11 +1,10 @@
-import { Button, Cartao, Icon, Rotulo, StatusBadge, type Density } from '@/ds';
+import { Button, Cartao, Icon, Leitura, Rotulo, StatusBadge, type Density } from '@/ds';
 import { formatarBRL, pluralizar } from '@/pages/utils/formato';
 import { FORMA_EXPLICACAO, FORMA_ROTULO, STATUS_ROTULO, TOM } from '../../constantes';
 import type { ContratacaoNaTela } from '../../mocks/contratacoes';
 import { resultadoDaContratacao } from '../../utils/resultadoDaContratacao';
 import { Devolucao } from './components/Devolucao';
 import { Lado } from './components/Lado';
-import { Linha } from './components/Linha';
 import { PainelDeRecebimento } from './components/PainelDeRecebimento';
 
 export interface CartaoDeContratacaoProps {
@@ -58,14 +57,16 @@ export function CartaoDeContratacao({
       </div>
 
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px 16px' }}>
-        <Linha rotulo="Evento">
-          {c.evento} · {c.data}
-        </Linha>
-        <Linha rotulo="Onde">{c.local}</Linha>
-        <Linha rotulo="Forma de pagamento">
-          {FORMA_ROTULO[c.formaPagamento]} · {FORMA_EXPLICACAO[c.formaPagamento]}
-        </Linha>
-        {c.dataPrevistaPagamento ? <Linha rotulo="Previsto para">{c.dataPrevistaPagamento}</Linha> : null}
+        <Leitura rotulo="Evento" valor={`${c.evento} · ${c.data}`} tamanho="pequeno" />
+        <Leitura rotulo="Onde" valor={c.local} tamanho="pequeno" />
+        <Leitura
+          rotulo="Forma de pagamento"
+          valor={`${FORMA_ROTULO[c.formaPagamento]} · ${FORMA_EXPLICACAO[c.formaPagamento]}`}
+          tamanho="pequeno"
+        />
+        {c.dataPrevistaPagamento ? (
+          <Leitura rotulo="Previsto para" valor={c.dataPrevistaPagamento} tamanho="pequeno" />
+        ) : null}
       </div>
 
       {cancelada ? null : (
