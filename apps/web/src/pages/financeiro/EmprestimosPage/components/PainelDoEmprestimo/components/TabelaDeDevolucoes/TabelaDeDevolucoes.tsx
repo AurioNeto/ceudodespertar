@@ -1,6 +1,6 @@
 import type { Emprestimo } from '@cdd/contracts';
 import { EmptyState, Rotulo, Td, Th, type Density } from '@/ds';
-import { formatarData, formatarDinheiro, pluralizar } from '@/pages/utils/formato';
+import { formatarBRL, formatarData, pluralizar } from '@/pages/utils/formato';
 
 export interface TabelaDeDevolucoesProps {
   emprestimo: Emprestimo;
@@ -48,7 +48,7 @@ export function TabelaDeDevolucoes({ emprestimo, densidade }: TabelaDeDevolucoes
                   {campo ? null : <Td>{dv.registradoPorNome}</Td>}
                   <Td alinharDireita>
                     <span data-numeric style={{ font: 'var(--text-amount)', color: 'var(--color-confirmed)' }}>
-                      {formatarDinheiro(dv.valor)}
+                      {formatarBRL(dv.valor)}
                     </span>
                   </Td>
                 </tr>

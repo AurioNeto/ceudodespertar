@@ -1,6 +1,6 @@
 import { Button, Select, TextField } from '@/ds';
 import { MENSAGEM_DE_DATA_VAZIA } from '@/pages/financeiro/constantes';
-import { formatarDinheiro } from '@/pages/utils/formato';
+import { formatarBRL } from '@/pages/utils/formato';
 import { contasInstitucionais } from '../../../../mocks/adiantamentos';
 
 export interface FormularioDeRessarcimentoProps {
@@ -39,7 +39,7 @@ export function FormularioDeRessarcimento({
         error={dataValida ? undefined : MENSAGEM_DE_DATA_VAZIA}
         onChange={(e) => onData(e.target.value)}
       />
-      <TextField label="Valor" value={formatarDinheiro(valor)} readOnly hint="igual ao adiantado" />
+      <TextField label="Valor" value={formatarBRL(valor)} readOnly hint="igual ao adiantado" />
       <div style={{ display: 'flex', gap: 8, alignItems: 'center', paddingTop: 24 }}>
         <Button iconName="check" onClick={onConfirmar} disabled={!dataValida}>
           Confirmar

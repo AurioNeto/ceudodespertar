@@ -1,6 +1,6 @@
 import type { Emprestimo } from '@cdd/contracts';
 import { Button, DomainError, Icon, type Density } from '@/ds';
-import { formatarDinheiro } from '@/pages/utils/formato';
+import { formatarBRL } from '@/pages/utils/formato';
 import { quitado } from '../../utils/saldo';
 import { Detalhe } from './components/Detalhe';
 import { FormularioDeDevolucao } from './components/FormularioDeDevolucao';
@@ -83,7 +83,7 @@ export function PainelDoEmprestimo({
             Registrar devolução
           </Button>
           <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>
-            Saldo de {formatarDinheiro(saldo)} · grava uma transferência.
+            Saldo de {formatarBRL(saldo)} · grava uma transferência.
           </span>
         </div>
       )}

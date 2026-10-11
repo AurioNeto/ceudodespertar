@@ -1,5 +1,5 @@
 import { Button, ScreenHeader, useDensidade, Cartao, Numero, Recado, Rotulo } from '@/ds';
-import { formatarDinheiro, pluralizar } from '@/pages/utils/formato';
+import { formatarBRL, pluralizar } from '@/pages/utils/formato';
 import { BlocoAusente } from './components/BlocoAusente';
 import { FilaDeAutorizacao } from './components/FilaDeAutorizacao';
 import { FilaDeRessarcimento } from './components/FilaDeRessarcimento';
@@ -52,12 +52,12 @@ export function AdiantamentosPage() {
             <Numero
               rotulo="Aguardando autorização"
               valor={String(tela.aguardando.length)}
-              nota={tela.aguardando.length ? formatarDinheiro(tela.aguardando.reduce((s, a) => s + a.valor, 0)) : 'nada parado'}
+              nota={tela.aguardando.length ? formatarBRL(tela.aguardando.reduce((s, a) => s + a.valor, 0)) : 'nada parado'}
               cor="var(--color-pending)"
             />
             <Numero
               rotulo="A ressarcir"
-              valor={formatarDinheiro(tela.totalARessarcir)}
+              valor={formatarBRL(tela.totalARessarcir)}
               nota={
                 tela.aRessarcir.length === 0
                   ? 'nada pendente'
