@@ -1,0 +1,1 @@
+export { LegendaDoEstoque } from './LegendaDoEstoque';

@@ -1,0 +1,1 @@
+export { IndicadoresDoEstoque } from './IndicadoresDoEstoque';
