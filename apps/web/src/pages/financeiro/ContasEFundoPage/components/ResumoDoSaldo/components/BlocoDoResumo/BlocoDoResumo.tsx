@@ -1,5 +1,6 @@
+import { Rotulo } from '@/ds';
 import { formatarBRL } from '@/pages/utils/formato';
-import { rotuloLabel, valorGrande } from '../../../../constantes';
+import { valorGrande } from '../../../../constantes';
 
 export interface BlocoDoResumoProps {
   rotulo: string;
@@ -18,7 +19,7 @@ export function BlocoDoResumo({ rotulo, valor, nota }: BlocoDoResumoProps) {
         borderLeft: '1px solid var(--border-brand)',
       }}
     >
-      <span style={rotuloLabel}>{rotulo}</span>
+      <Rotulo>{rotulo}</Rotulo>
       <span style={{ ...valorGrande, color: 'var(--text-primary)' }}>{formatarBRL(valor)}</span>
       <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>{nota}</span>
     </div>

@@ -1,10 +1,9 @@
-import { Button, CorpoDaTela, ScreenHeader, useDensidade, SeletorDeTipo } from '@/ds';
+import { Button, CorpoDaTela, Rotulo, ScreenHeader, useDensidade, SeletorDeTipo } from '@/ds';
 import { pluralizar } from '@/pages/utils/formato';
 import { GerenciarContasModal } from './components/GerenciarContasModal';
 import { ResumoDoSaldo } from './components/ResumoDoSaldo';
 import { FundoProprio } from './components/FundoProprio';
 import { CartaoDeConta } from './components/CartaoDeConta';
-import { rotuloLabel } from './constantes';
 import { useContasEFundos } from './hooks/useContasEFundos';
 
 export function ContasEFundoPage() {
@@ -49,7 +48,7 @@ export function ContasEFundoPage() {
         {mostrarContas ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, flexWrap: 'wrap' }}>
-              {campo ? null : <span style={rotuloLabel}>Contas</span>}
+              {campo ? null : <Rotulo>Contas</Rotulo>}
               <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>
                 {pluralizar(tela.pendentes, 'conta esperando conferência', 'contas esperando conferência')}
               </span>

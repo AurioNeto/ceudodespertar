@@ -1,6 +1,6 @@
-import type { Density } from '@/ds';
+import { Rotulo, type Density } from '@/ds';
 import { formatarBRL } from '@/pages/utils/formato';
-import { rotuloLabel, valorGrande, valorMedio } from '../../constantes';
+import { valorGrande, valorMedio } from '../../constantes';
 import type { Reserva } from '../../tipos';
 import { ColunaDoFundo } from './components/ColunaDoFundo';
 
@@ -18,7 +18,7 @@ export function FundoProprio({ fundoProprio, comprometido, livre, reservas, dens
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 12 }}>
-        {campo ? null : <span style={rotuloLabel}>Fundo próprio</span>}
+        {campo ? null : <Rotulo>Fundo próprio</Rotulo>}
         <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>
           reservado dentro do saldo, não é uma conta separada
         </span>
@@ -37,7 +37,7 @@ export function FundoProprio({ fundoProprio, comprometido, livre, reservas, dens
       >
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 20, alignItems: 'flex-end' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-            <span style={rotuloLabel}>Total do fundo</span>
+            <Rotulo>Total do fundo</Rotulo>
             <span style={{ ...valorGrande, color: 'var(--color-royal-deep)' }}>{formatarBRL(fundoProprio)}</span>
           </div>
           <ColunaDoFundo rotulo="Já com destino" valor={comprometido} cor="var(--text-primary)" />

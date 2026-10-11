@@ -1,9 +1,8 @@
 import type { Conta, ContaId, Fundo, FundoId } from '@cdd/contracts';
-import { Icon } from '@/ds';
+import { Icon, Rotulo } from '@/ds';
 import { formatarBRL } from '@/pages/utils/formato';
 import { iconeDaConta } from '../../utils/conta';
 import { corDaReserva } from '../../utils/reservas';
-import { rotuloLabel } from './constantes';
 import { BotaoNovo } from './components/BotaoNovo';
 import { LinhaGerenciavel } from './components/LinhaGerenciavel';
 import { FormularioDeConta } from './components/FormularioDeConta';
@@ -88,7 +87,7 @@ export function GerenciarContasModal({
             borderBottom: 'var(--border-hairline)',
           }}
         >
-          <span style={rotuloLabel}>Gerenciar contas e fundos</span>
+          <Rotulo>Gerenciar contas e fundos</Rotulo>
           <button
             type="button"
             aria-label="fechar"

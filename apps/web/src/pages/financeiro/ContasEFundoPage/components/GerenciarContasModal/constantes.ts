@@ -1,10 +1,3 @@
-export const rotuloLabel = {
-  font: 'var(--text-label)',
-  letterSpacing: 'var(--tracking-label)',
-  textTransform: 'uppercase',
-  color: 'var(--text-field-label)',
-} as const;
-
 export const entrada = {
   minHeight: 40,
   border: '1px solid var(--color-line-strong)',
