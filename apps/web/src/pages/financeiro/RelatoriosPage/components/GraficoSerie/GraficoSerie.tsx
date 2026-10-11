@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { formatarValor } from '@/lib/formato';
+import { reais } from '@cdd/contracts';
+import { formatarBRL } from '@/pages/utils/formato';
 import { ItemDaLegenda } from './components/ItemDaLegenda';
 import { pontosDaLinha } from './utils/pontosDaLinha';
 
@@ -105,10 +106,10 @@ export function GraficoSerie({ serie, acumulados, escala, rotuloPeriodo, campo =
                     >
                       {d.rotulo}
                     </span>
-                    <span style={{ font: 'var(--text-small)' }}>entradas {formatarValor(d.entrada)}</span>
-                    <span style={{ font: 'var(--text-small)' }}>saídas {formatarValor(d.saida)}</span>
+                    <span style={{ font: 'var(--text-small)' }}>entradas {formatarBRL(reais(d.entrada))}</span>
+                    <span style={{ font: 'var(--text-small)' }}>saídas {formatarBRL(reais(d.saida))}</span>
                     <span style={{ font: 'var(--text-small)', opacity: 0.8 }}>
-                      acumulado {formatarValor(acumulados[i] ?? 0)}
+                      acumulado {formatarBRL(reais(acumulados[i] ?? 0))}
                     </span>
                   </div>
                 ) : null}

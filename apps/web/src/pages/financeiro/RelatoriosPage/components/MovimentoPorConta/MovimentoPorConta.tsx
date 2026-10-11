@@ -1,5 +1,6 @@
 import type { Density } from '@/ds';
-import { formatarValor } from '@/lib/formato';
+import { reais } from '@cdd/contracts';
+import { formatarBRL } from '@/pages/utils/formato';
 import { rotuloLabel } from '../../constantes';
 import type { useRelatorio } from '../../hooks/useRelatorio';
 import type { Drill } from '../../tipos';
@@ -68,7 +69,7 @@ export function MovimentoPorConta({ porConta, rotuloPeriodo, densidade, onAbrirD
                   color: c.resultado >= 0 ? 'var(--color-confirmed)' : 'var(--color-attention)',
                 }}
               >
-                {formatarValor(c.resultado)}
+                {formatarBRL(reais(c.resultado))}
               </span>
             ) : (
               <>

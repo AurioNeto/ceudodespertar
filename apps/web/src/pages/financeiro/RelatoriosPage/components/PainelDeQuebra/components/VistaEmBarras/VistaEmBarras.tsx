@@ -1,4 +1,5 @@
-import { formatarValor } from '@/lib/formato';
+import { reais } from '@cdd/contracts';
+import { formatarBRL } from '@/pages/utils/formato';
 import type { FatiaDaQuebra } from '../../tipos';
 import type { fatiasDaQuebra } from '../../utils/fatias';
 
@@ -20,7 +21,7 @@ export function VistaEmBarras({ fatias, itens, maior, onAbrir, onHover }: VistaE
           onClick={() => onAbrir(f.nome)}
           onMouseEnter={() => onHover(itens.findIndex((i) => i.nome === f.nome))}
           onMouseLeave={() => onHover(null)}
-          title={`${f.nome} · ${formatarValor(f.valor)} · ${Math.round(f.fracao * 100)}%`}
+          title={`${f.nome} · ${formatarBRL(reais(f.valor))} · ${Math.round(f.fracao * 100)}%`}
           style={{
             display: 'flex',
             flexDirection: 'column',
@@ -36,7 +37,7 @@ export function VistaEmBarras({ fatias, itens, maior, onAbrir, onHover }: VistaE
             <span
               style={{ font: 'var(--text-small)', color: 'var(--text-secondary)', fontVariantNumeric: 'tabular-nums' }}
             >
-              {formatarValor(f.valor)}
+              {formatarBRL(reais(f.valor))}
             </span>
           </span>
           <span

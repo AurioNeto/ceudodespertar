@@ -1,4 +1,5 @@
-import { formatarValor } from '@/lib/formato';
+import { reais } from '@cdd/contracts';
+import { formatarBRL } from '@/pages/utils/formato';
 import { metasDeFundo } from '../../mocks/relatorios';
 import { Cartao } from '../Cartao';
 
@@ -17,7 +18,7 @@ export function MetasDoFundo() {
                   fontVariantNumeric: 'tabular-nums',
                 }}
               >
-                {formatarValor(f.valor)} de {formatarValor(f.meta)}
+                {formatarBRL(reais(f.valor))} de {formatarBRL(reais(f.meta))}
               </span>
             </div>
             <span
