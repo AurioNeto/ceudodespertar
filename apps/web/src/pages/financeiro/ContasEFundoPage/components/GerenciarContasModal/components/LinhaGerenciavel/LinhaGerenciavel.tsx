@@ -10,6 +10,7 @@ export interface LinhaGerenciavelProps {
   rotuloInativa: string;
   onEditar: () => void;
   onAlternar: () => void;
+  bloqueio?: string;
 }
 
 export function LinhaGerenciavel({
@@ -22,6 +23,7 @@ export function LinhaGerenciavel({
   rotuloInativa,
   onEditar,
   onAlternar,
+  bloqueio,
 }: LinhaGerenciavelProps) {
   return (
     <div
@@ -40,6 +42,7 @@ export function LinhaGerenciavel({
       <span style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 1 }}>
         <span style={{ font: 'var(--text-body-strong)', color: 'var(--text-primary)' }}>{nome}</span>
         <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>{nota}</span>
+        {bloqueio ? <span style={{ font: 'var(--text-small)', color: 'var(--color-attention)' }}>{bloqueio}</span> : null}
       </span>
       {valor ? (
         <span style={{ font: 'var(--text-body-strong)', color: 'var(--text-primary)', fontVariantNumeric: 'tabular-nums' }}>
@@ -69,13 +72,15 @@ export function LinhaGerenciavel({
       <button
         type="button"
         onClick={onAlternar}
+        disabled={Boolean(bloqueio)}
+        title={bloqueio}
         style={{
           flex: '0 0 auto',
           padding: '0 14px',
           minHeight: 38,
           font: 'var(--text-small)',
           borderRadius: 'var(--radius-sm)',
-          cursor: 'pointer',
+          cursor: bloqueio ? 'not-allowed' : 'pointer',
           border: `1px solid ${ativa ? 'var(--color-line)' : 'var(--color-confirmed)'}`,
           background: 'var(--bg-card)',
           color: ativa ? 'var(--color-attention)' : 'var(--color-confirmed)',

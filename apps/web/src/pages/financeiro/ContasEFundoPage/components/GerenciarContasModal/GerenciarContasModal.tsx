@@ -9,6 +9,7 @@ import { LinhaGerenciavel } from './components/LinhaGerenciavel';
 import { FormularioDeConta } from './components/FormularioDeConta';
 import { FormularioDeFundo } from './components/FormularioDeFundo';
 import { useGerenciarContas } from './hooks/useGerenciarContas';
+import { bloqueioDeReativar } from './utils/reserva';
 
 export interface GerenciarContasModalProps {
   contas: readonly Conta[];
@@ -194,6 +195,7 @@ export function GerenciarContasModal({
                   rotuloInativa="Inativo"
                   onEditar={() => editarFundo(f)}
                   onAlternar={() => onAlternarFundo(f.id)}
+                  bloqueio={bloqueioDeReativar(f, fundos, fundoProprio)}
                 />
               ))}
               <p style={{ font: 'var(--text-small)', color: 'var(--text-secondary)', marginTop: 4 }}>

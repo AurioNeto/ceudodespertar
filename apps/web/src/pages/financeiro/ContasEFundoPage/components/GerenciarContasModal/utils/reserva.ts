@@ -4,6 +4,9 @@ import { lerValorDigitado } from '@/lib/numero';
 import { formatarDinheiro } from '@/pages/utils/formato';
 import { MENSAGEM_DE_RESERVA_ZERADA } from '../constantes';
 
+const passaDoLivre = (disponivel: number): string =>
+  `Passa do que está livre no fundo próprio: ${formatarDinheiro(disponivel)}.`;
+
 export type ReservaLida = { valida: true; valor: Dinheiro } | { valida: false; erro: string };
 
 export const disponivelParaReserva = (fundos: readonly Fundo[], fundoProprio: number, fundoId: FundoId): number =>
@@ -15,8 +18,12 @@ export function lerReserva(digitado: string, disponivel: number): ReservaLida {
   const lido = lerValorDigitado(digitado);
   const valor = reais(lido);
   if (Number.isNaN(lido) || valor <= 0) return { valida: false, erro: MENSAGEM_DE_RESERVA_ZERADA };
-  if (valor > disponivel) {
-    return { valida: false, erro: `Passa do que está livre no fundo próprio: ${formatarDinheiro(disponivel)}.` };
-  }
+  if (valor > disponivel) return { valida: false, erro: passaDoLivre(disponivel) };
   return { valida: true, valor };
+}
+
+export function bloqueioDeReativar(fundo: Fundo, fundos: readonly Fundo[], fundoProprio: number): string | undefined {
+  if (fundo.ativo) return undefined;
+  const disponivel = disponivelParaReserva(fundos, fundoProprio, fundo.id);
+  return fundo.valorReservado > disponivel ? passaDoLivre(disponivel) : undefined;
 }
