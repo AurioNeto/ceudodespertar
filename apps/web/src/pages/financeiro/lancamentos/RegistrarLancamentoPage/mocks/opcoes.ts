@@ -70,6 +70,13 @@ export const opcoesDePessoa: readonly SheetOption[] = ['Lucia Prado', 'Marcia Zu
   (v) => ({ value: v, label: v }),
 );
 
+export const SEM_REEMBOLSO = 'Ninguém';
+
+export const opcoesDeReembolso: readonly SheetOption[] = [
+  { value: SEM_REEMBOLSO, label: SEM_REEMBOLSO, meta: 'não vira conta a pagar' },
+  ...opcoesDePessoa,
+];
+
 export const opcoesDeUnidade: readonly SheetOption[] = [
   { value: 'CDD', label: 'CDD', meta: 'Céu do Despertar' },
   { value: 'Munay', label: 'Munay', meta: 'unidade comercial' },

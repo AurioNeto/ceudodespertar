@@ -34,15 +34,19 @@ export function regrasDoLancamento(tipo: TipoLancamento, campos: EstadoDoFormula
   const conta = rotuloDaOpcao(opcoesDeConta, campos.conta);
   const contaDestino = rotuloDaOpcao(opcoesDeConta, campos.contaDestino);
 
+  const total = lerSoma(campos.valor);
+  const valorInvalido = total <= 0;
+  const erroDoValor = valorInvalido ? 'Informe um valor maior que zero.' : undefined;
+
   const compostoBloqueia = consolida && composto;
-  const bloqueado = competenciaFechada || compostoBloqueia || mesmaConta;
+  const bloqueado = competenciaFechada || compostoBloqueia || mesmaConta || valorInvalido;
   const motivoBloqueio = competenciaFechada
     ? 'Julho está fechado. Um administrador pode reabrir, e o motivo fica registrado.'
     : mesmaConta
       ? 'Origem e destino precisam ser contas diferentes.'
       : compostoBloqueia
         ? 'O valor composto precisa virar um número só antes de gravar consolidado.'
-        : undefined;
+        : erroDoValor;
 
   return {
     ehTransferencia,
@@ -56,7 +60,9 @@ export function regrasDoLancamento(tipo: TipoLancamento, campos: EstadoDoFormula
     contaDestino,
     bloqueado,
     motivoBloqueio,
-    total: lerSoma(campos.valor),
+    total,
+    valorInvalido,
+    erroDoValor,
 
     temGrupo: !ehTransferencia,
     temCategoria: !ehTransferencia,

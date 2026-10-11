@@ -240,7 +240,6 @@ describe('useFormularioDeLancamento: bloqueio e nota da barra', () => {
   const PERIODO_FECHADO = 'Julho está fechado. Um administrador pode reabrir, e o motivo fica registrado.';
   const MESMA_CONTA = 'Origem e destino precisam ser contas diferentes.';
   const COMPOSTO = 'O valor composto precisa virar um número só antes de gravar consolidado.';
-  const NOTA_DE_BLOQUEIO = 'Enquanto isso não se resolve, dá para salvar como rascunho — nada se perde.';
 
   it.each([
     { nome: 'período fechado', consolida: false, competencia: '07/2026', valor: '', motivo: PERIODO_FECHADO },
@@ -310,16 +309,16 @@ describe('useFormularioDeLancamento: bloqueio e nota da barra', () => {
       consolida: false,
       competencia: '07/2026',
       tipo: 'SAIDA' as const,
-      valor: '',
+      valor: '3',
       categorias: [],
-      nota: NOTA_DE_BLOQUEIO,
+      nota: undefined,
     },
     {
       nome: 'transferência liberada',
       consolida: false,
       competencia: '08/2026',
       tipo: 'TRANSFERENCIA' as const,
-      valor: '',
+      valor: '3',
       categorias: [],
       nota: 'Grava os dois lados de uma vez: saída em Cora PJ e entrada em Nubank Paty.',
     },
@@ -404,6 +403,7 @@ describe('useFormularioDeLancamento: bloqueio e nota da barra', () => {
     await agir((f) => f.trocarTipo('TRANSFERENCIA'));
 
     await agir((f) => {
+      f.alterar('valor', '3');
       f.alterar('conta', 'especie');
       f.alterar('contaDestino', 'itau');
     });
@@ -586,7 +586,7 @@ describe('useFormularioDeLancamento: sugestões do cupom', () => {
     expect(formulario().campos.categorias).toEqual(['Alimentação de cerimônia']);
   });
 
-  it('aceitar a sugestão de categoria com ela já escolhida — desmarca a categoria, em vez de mantê-la', async () => {
+  it('aceitar a sugestão de categoria com ela já escolhida — mantém a categoria, como o Aceitar as 4', async () => {
     const { formulario, agir } = await montarFormulario();
     await agir((f) => {
       f.alterar('anexo', 'IMG.jpg');
@@ -595,7 +595,7 @@ describe('useFormularioDeLancamento: sugestões do cupom', () => {
 
     await agir((f) => f.aceitarSugestao('categoria'));
 
-    expect(formulario().campos.categorias).toEqual([]);
+    expect(formulario().campos.categorias).toEqual(['Alimentação de cerimônia']);
     expect(formulario().sugestoesPendentes.map((s) => s.chave)).not.toContain('categoria');
   });
 

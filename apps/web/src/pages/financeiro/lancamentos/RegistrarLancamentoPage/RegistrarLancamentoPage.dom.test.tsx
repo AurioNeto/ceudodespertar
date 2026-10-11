@@ -20,6 +20,7 @@ const PERMISSAO_DE_CONSOLIDAR = 'financeiro.lancamento.confirmar';
 const TEXTO_DA_CAPTURA = 'Anexar comprovanteUm toque, direto da câmera. Nunca obrigatório.';
 const SELETOR_DE_REMOVER_ANEXO = 'button[title="Remover comprovante"]';
 const REGISTRAR = 'Registrar e abrir outro';
+const MENSAGEM_DO_VALOR = 'Informe um valor maior que zero.';
 const HORA_FIXA = new Date('2026-09-02T15:07:00Z');
 const valorDeSaida = (valor: string) => `R$\u2212\u00a0${valor}`;
 const valorDeEntrada = (valor: string) => `R$+\u00a0${valor}`;
@@ -71,6 +72,10 @@ afterEach(async () => {
 const comoTesouraria = () => sessao.permissoes.add(PERMISSAO_DE_CONSOLIDAR);
 
 const campoDoValor = (container: HTMLElement) => elemento<HTMLInputElement>(container, 'input[inputmode="decimal"]');
+const mensagemNoCampoDoValor = (container: HTMLElement) =>
+  todos(container, 'span').some(
+    (trecho) => trecho.textContent === MENSAGEM_DO_VALOR && trecho.parentElement?.contains(campoDoValor(container)),
+  );
 const botoesDeRemoverAnexo = (container: HTMLElement) =>
   todos<HTMLButtonElement>(container, SELETOR_DE_REMOVER_ANEXO);
 
@@ -253,6 +258,7 @@ describe('RegistrarLancamentoPage: cabeçalho e estado de entrada nas duas densi
 
   it('sem permissão e com categoria — a barra avisa que a tesouraria confere antes de consolidar', async () => {
     const { container } = await montar(<RegistrarLancamentoPage />);
+    await digitar(campoDoValor(container), '10');
 
     await escolherCategoriaExistente(container, 'Manutenção');
 
@@ -262,6 +268,7 @@ describe('RegistrarLancamentoPage: cabeçalho e estado de entrada nas duas densi
   it('com permissão e com categoria — a barra avisa que consolidado só se desfaz por estorno', async () => {
     comoTesouraria();
     const { container } = await montar(<RegistrarLancamentoPage />);
+    await digitar(campoDoValor(container), '10');
 
     await escolherCategoriaExistente(container, 'Manutenção');
 
@@ -274,6 +281,7 @@ describe('RegistrarLancamentoPage: cabeçalho e estado de entrada nas duas densi
   ])('$nome e sem categoria — a barra diz que nada bloqueia, igual para os dois modos', async ({ consolida }) => {
     if (consolida) comoTesouraria();
     const { container } = await montar(<RegistrarLancamentoPage />);
+    await digitar(campoDoValor(container), '10');
 
     expect(container.textContent).toContain('Nada bloqueia o registro. Sem categoria, grava e marca como não classificado.');
   });
@@ -523,7 +531,7 @@ describe('RegistrarLancamentoPage: troca de tipo', () => {
     expect(container.textContent).toContain('Escolha uma conta diferente da origem.');
     expect(botaoDeRegistrar(container).disabled).toBe(true);
     expect(botaoDeRegistrar(container).title).toBe('Origem e destino precisam ser contas diferentes.');
-    expect(container.textContent).toContain('Enquanto isso não se resolve, dá para salvar como rascunho — nada se perde.');
+    expect(container.textContent).not.toContain('rascunho');
   });
 
   it('transferência com destino igual à origem — só o select de destino ganha a borda de atenção', async () => {
@@ -570,8 +578,6 @@ describe('RegistrarLancamentoPage: valor, soma e leitura do que o usuário escre
     { entrada: '40+25,50', total: valorDeSaida('65,50') },
     { entrada: '1.000,50+0,50', total: valorDeSaida('1.001,00') },
     { entrada: '10+abc+5', total: valorDeSaida('15,00') },
-    { entrada: 'abc', total: valorDeSaida('0,00') },
-    { entrada: '', total: valorDeSaida('0,00') },
   ])('valor "$entrada" — o recibo mostra o total $total', async ({ entrada, total }) => {
     const { container } = await montar(<RegistrarLancamentoPage />);
     await digitar(campoDoValor(container), entrada);
@@ -581,41 +587,57 @@ describe('RegistrarLancamentoPage: valor, soma e leitura do que o usuário escre
     expect(lerRecibo(container).valor).toBe(total);
   });
 
-  it('valor com ponto como decimal — "1.5" não é lido e o registro grava 0,00', async () => {
+  it.each([{ entrada: 'abc' }, { entrada: '' }])(
+    'valor "$entrada" — o registro é bloqueado e nenhum recibo é gravado',
+    async ({ entrada }) => {
+      const { container } = await montar(<RegistrarLancamentoPage />);
+      await digitar(campoDoValor(container), entrada);
+
+      await registrar(container);
+
+      expect(botaoDeRegistrar(container).disabled).toBe(true);
+      expect(temRecibo(container)).toBe(false);
+    },
+  );
+
+  it('valor com ponto como decimal — "1.5" não é lido e o registro é bloqueado com a mensagem no campo', async () => {
     const { container } = await montar(<RegistrarLancamentoPage />);
     await digitar(campoDoValor(container), '1.5');
 
     await registrar(container);
 
-    expect(lerRecibo(container).valor).toBe(valorDeSaida('0,00'));
+    expect(temRecibo(container)).toBe(false);
+    expect(mensagemNoCampoDoValor(container)).toBe(true);
   });
 
-  it('valor com o símbolo da moeda — "R$ 40" não é lido e o registro grava 0,00', async () => {
+  it('valor com o símbolo da moeda — "R$ 40" não é lido e o registro é bloqueado com a mensagem no campo', async () => {
     const { container } = await montar(<RegistrarLancamentoPage />);
     await digitar(campoDoValor(container), 'R$ 40');
 
     await registrar(container);
 
-    expect(lerRecibo(container).valor).toBe(valorDeSaida('0,00'));
+    expect(temRecibo(container)).toBe(false);
+    expect(mensagemNoCampoDoValor(container)).toBe(true);
   });
 
-  it('valor negativo — o registro é aceito e o recibo mostra o sinal de saída diante do hífen (Doc 4, F-01: nunca aceita valor negativo)', async () => {
+  it('valor negativo — o registro é bloqueado com a mensagem no campo (Doc 4, F-01: nunca aceita valor negativo)', async () => {
     const { container } = await montar(<RegistrarLancamentoPage />);
     await digitar(campoDoValor(container), '-50');
 
     await registrar(container);
 
-    expect(lerRecibo(container).valor).toBe(valorDeSaida('-50,00'));
+    expect(temRecibo(container)).toBe(false);
+    expect(mensagemNoCampoDoValor(container)).toBe(true);
   });
 
-  it('valor vazio — o registro é aceito e grava um recibo de 0,00 com o motivo em traço', async () => {
+  it('valor vazio — o registro é bloqueado e o campo diz que o valor precisa ser maior que zero', async () => {
     const { container } = await montar(<RegistrarLancamentoPage />);
 
     await registrar(container);
 
-    const recibo = lerRecibo(container);
-    expect(recibo.valor).toBe(valorDeSaida('0,00'));
-    expect(recibo.linhas[0]).toEqual(['O que foi', '—']);
+    expect(temRecibo(container)).toBe(false);
+    expect(botaoDeRegistrar(container).title).toBe(MENSAGEM_DO_VALOR);
+    expect(mensagemNoCampoDoValor(container)).toBe(true);
   });
 
   it('sem permissão, valor composto — o registro segue liberado e a barra diz que vira pendência', async () => {
@@ -692,6 +714,7 @@ describe('RegistrarLancamentoPage: competência fechada', () => {
 
   it('escritório — escrever uma data de julho na data não muda a competência nem libera ou bloqueia nada', async () => {
     const { container } = await montar(<RegistrarLancamentoPage />);
+    await digitar(campoDoValor(container), '10');
 
     await digitar(campoRotulado<HTMLInputElement>(container, 'Data do gasto'), '15/07/2026');
 
@@ -702,6 +725,7 @@ describe('RegistrarLancamentoPage: competência fechada', () => {
 
   it('escritório — voltar para 08/2026 desfaz o bloqueio e a nota volta a dizer mês corrente', async () => {
     const { container } = await montar(<RegistrarLancamentoPage />);
+    await digitar(campoDoValor(container), '10');
     await escolherOpcao(campoRotulado<HTMLSelectElement>(container, 'Competência'), '07/2026');
 
     await escolherOpcao(campoRotulado<HTMLSelectElement>(container, 'Competência'), '08/2026');
@@ -721,7 +745,7 @@ describe('RegistrarLancamentoPage: competência fechada', () => {
     expect(botaoDeRegistrar(container).title).toBe('Julho está fechado. Um administrador pode reabrir, e o motivo fica registrado.');
   });
 
-  it('campo — o período fechado aparece com o texto curto e a barra manda guardar como rascunho', async () => {
+  it('campo — o período fechado aparece com o texto curto, sem oferecer rascunho', async () => {
     usarDensidade('field');
     const { container } = await montar(<RegistrarLancamentoPage />);
     await abrirCampoPadrao(container, 'Competência');
@@ -729,24 +753,25 @@ describe('RegistrarLancamentoPage: competência fechada', () => {
     await clicar(opcaoDaFolha(folhaAberta(container, 'Competência') as HTMLElement, '07/2026'));
 
     expect(container.textContent).toContain('Período 07/2026 está fechado');
-    expect(container.textContent).toContain('Guarde como rascunho ou lance em 08/2026 explicando na descrição.');
-    expect(container.textContent).toContain('Enquanto isso não se resolve, dá para salvar como rascunho — nada se perde.');
-    expect(camposPadrao(container)[0]).toEqual(['Competência', '07/2026', 'da data do gasto']);
+    expect(container.textContent).toContain('Lance em 08/2026 explicando na descrição.');
+    expect(container.textContent).not.toContain('rascunho');
+    expect(camposPadrao(container)[2]).toEqual(['Competência', '07/2026', 'da data do gasto']);
     expect(botaoDeRegistrar(container).disabled).toBe(true);
   });
 
-  it('período fechado — nenhum botão de guardar rascunho existe, apesar de a barra e o aviso o oferecerem', async () => {
+  it('período fechado — nenhum botão nem texto de rascunho: a tela não oferece o que não faz', async () => {
     const { container } = await montar(<RegistrarLancamentoPage />);
 
     await escolherOpcao(campoRotulado<HTMLSelectElement>(container, 'Competência'), '07/2026');
 
     const rotulosDosBotoes = todos(container, 'button').map((botao) => botao.textContent);
     expect(rotulosDosBotoes.some((texto) => texto?.toLowerCase().includes('rascunho'))).toBe(false);
-    expect(container.textContent).toContain('dá para salvar como rascunho');
+    expect(container.textContent).not.toContain('rascunho');
   });
 
   it('período fechado e tentativa de registrar — o clique no botão bloqueado não registra nada', async () => {
     const { container } = await montar(<RegistrarLancamentoPage />);
+    await digitar(campoDoValor(container), '10');
     await escolherOpcao(campoRotulado<HTMLSelectElement>(container, 'Competência'), '07/2026');
 
     await registrar(container);
@@ -799,6 +824,7 @@ describe('RegistrarLancamentoPage: reembolso a uma pessoa', () => {
 
   it('saída com reembolso ligado — o recibo não traz linha de reembolso e a chave volta desligada', async () => {
     const { container } = await montar(<RegistrarLancamentoPage />);
+    await digitar(campoDoValor(container), '10');
     await clicar(elemento(container, '[role="switch"]'));
 
     await registrar(container);
@@ -844,12 +870,15 @@ describe('RegistrarLancamentoPage: reembolso a uma pessoa', () => {
     await passarPara('field');
 
     expect(camposPadrao(container)).toEqual([
+      ['Data do gasto', '28/08/2026', 'hoje'],
+      ['Fornecedor', '— informar —', 'em branco'],
       ['Competência', '08/2026', 'mês corrente'],
       ['Conta de saída', 'Cora PJ', 'mais usada'],
       ['Grupo', 'Chácara (Infraestrutura)', 'último lançamento'],
       ['Categoria', '— escolher —', 'em branco'],
       ['Forma de pagamento', 'Pix', 'padrão da conta'],
       ['Cerimônia vinculada', 'Nenhuma — gasto da casa', 'sem vínculo'],
+      ['Unidade', 'CDD', 'último lançamento'],
       ['Reembolso a', 'Lucia Prado', 'conta a pagar'],
     ]);
     expect(container.querySelector('[role="switch"]')).toBeNull();
@@ -873,18 +902,23 @@ describe('RegistrarLancamentoPage: reembolso a uma pessoa', () => {
     expect(folhaAberta(container, 'Quem adiantou o dinheiro')).toBeNull();
   });
 
-  it('campo — não existe a chave de reembolso, então o campo da pessoa não aparece ao abrir em campo', async () => {
+  it('campo — não existe a chave de reembolso, mas o campo Reembolso a abre desligado, com Ninguém, e se edita por folha', async () => {
     usarDensidade('field');
     const { container } = await montar(<RegistrarLancamentoPage />);
 
     expect(container.querySelector('[role="switch"]')).toBeNull();
-    expect(camposPadrao(container).map(([rotulo]) => rotulo)).not.toContain('Reembolso a');
+    expect(lerCampoPadrao(botaoDoCampoPadrao(container, 'Reembolso a'))).toEqual([
+      'Reembolso a',
+      'Ninguém',
+      'sem reembolso',
+    ]);
   });
 });
 
 describe('RegistrarLancamentoPage: categorias no escritório', () => {
   it('sem categoria — o aviso de não classificado e a nota da barra aparecem', async () => {
     const { container } = await montar(<RegistrarLancamentoPage />);
+    await digitar(campoDoValor(container), '10');
 
     expect(container.textContent).toContain(
       'Sem categoria o gasto entra em Relatórios como “não classificado”. Dá para gravar assim — vira pendência sua, não da conferência.',
@@ -915,6 +949,7 @@ describe('RegistrarLancamentoPage: categorias no escritório', () => {
 
   it('com categoria e sem soma — a nota da barra volta a grava como a conferir', async () => {
     const { container } = await montar(<RegistrarLancamentoPage />);
+    await digitar(campoDoValor(container), '10');
 
     await escolherCategoriaExistente(container, 'Manutenção');
 
@@ -924,6 +959,7 @@ describe('RegistrarLancamentoPage: categorias no escritório', () => {
 
   it('duas categorias — o recibo junta as duas por vírgula, na ordem em que foram escolhidas', async () => {
     const { container } = await montar(<RegistrarLancamentoPage />);
+    await digitar(campoDoValor(container), '10');
     await escolherCategoriaExistente(container, 'Transporte');
     await escolherCategoriaExistente(container, 'Manutenção');
 
@@ -934,6 +970,7 @@ describe('RegistrarLancamentoPage: categorias no escritório', () => {
 
   it('sem categoria — o recibo diz não classificado', async () => {
     const { container } = await montar(<RegistrarLancamentoPage />);
+    await digitar(campoDoValor(container), '10');
 
     await registrar(container);
 
@@ -946,32 +983,41 @@ describe('RegistrarLancamentoPage: campos padrão e folhas de escolha em campo',
     {
       tipo: 'Saída',
       campos: [
+        ['Data do gasto', '28/08/2026', 'hoje'],
+        ['Fornecedor', '— informar —', 'em branco'],
         ['Competência', '08/2026', 'mês corrente'],
         ['Conta de saída', 'Cora PJ', 'mais usada'],
         ['Grupo', 'Chácara (Infraestrutura)', 'último lançamento'],
         ['Categoria', '— escolher —', 'em branco'],
         ['Forma de pagamento', 'Pix', 'padrão da conta'],
         ['Cerimônia vinculada', 'Nenhuma — gasto da casa', 'sem vínculo'],
+        ['Unidade', 'CDD', 'último lançamento'],
+        ['Reembolso a', 'Ninguém', 'sem reembolso'],
       ],
     },
     {
       tipo: 'Entrada',
       campos: [
+        ['Data da entrada', '28/08/2026', 'hoje'],
+        ['De quem veio', '— informar —', 'em branco'],
         ['Competência', '08/2026', 'mês corrente'],
         ['Conta de entrada', 'Cora PJ', 'mais usada'],
         ['Grupo', 'Chácara (Infraestrutura)', 'último lançamento'],
         ['Categoria', '— escolher —', 'em branco'],
         ['Forma de recebimento', 'Pix', 'padrão da conta'],
         ['Cerimônia vinculada', 'Nenhuma — gasto da casa', 'sem vínculo'],
+        ['Unidade', 'CDD', 'último lançamento'],
       ],
     },
     {
       tipo: 'Transferência',
       campos: [
+        ['Data da transferência', '28/08/2026', 'hoje'],
         ['Competência', '08/2026', 'mês corrente'],
         ['Conta de origem', 'Cora PJ', 'mais usada'],
         ['Conta de destino', 'Nubank Paty', 'para onde vai'],
         ['Forma da transferência', 'Pix', 'padrão da conta'],
+        ['Unidade', 'CDD', 'último lançamento'],
       ],
     },
   ])('campo, tipo $tipo — os campos padrão são exatamente $campos', async ({ tipo, campos }) => {
@@ -984,12 +1030,15 @@ describe('RegistrarLancamentoPage: campos padrão e folhas de escolha em campo',
     expect(container.textContent).toContain(ROTULO_DO_BLOCO_PADRAO);
   });
 
-  it('campo — só a descrição tem rótulo de campo: não há data, fornecedor, unidade nem selects (Doc 4, F-01: padrões todos editáveis)', async () => {
+  it('campo — só a descrição tem rótulo de campo, e data, fornecedor, unidade e reembolso entram nos padrões que abrem folha (Doc 4, F-01: padrões todos editáveis)', async () => {
     usarDensidade('field');
     const { container } = await montar(<RegistrarLancamentoPage />);
 
     expect(rotulosDeCampo(container)).toEqual(['O que foi']);
     expect(container.querySelector('select')).toBeNull();
+    expect(camposPadrao(container).map(([rotulo]) => rotulo)).toEqual(
+      expect.arrayContaining(['Data do gasto', 'Fornecedor', 'Unidade', 'Reembolso a']),
+    );
   });
 
   it('campo — nenhuma folha começa aberta', async () => {
@@ -1215,6 +1264,7 @@ describe('RegistrarLancamentoPage: folha de categoria em campo', () => {
   it('fechar a folha depois de escolher — a categoria fica no campo e o recibo a registra', async () => {
     usarDensidade('field');
     const { container } = await montar(<RegistrarLancamentoPage />);
+    await digitar(campoDoValor(container), '10');
     const folha = await abrirFolhaDeCategoria(container);
     await clicar(opcaoDaFolha(folha, 'Animais'));
     await clicar(folha.parentElement as HTMLElement);
@@ -1289,18 +1339,18 @@ describe('RegistrarLancamentoPage: comprovante e sugestões da leitura do cupom'
     expect(todos(container, 'button[aria-label="remover categoria Alimentação de cerimônia"]')).toHaveLength(1);
   });
 
-  it('categoria já escolhida à mão — aceitar a sugestão da mesma categoria a remove, em vez de manter', async () => {
+  it('categoria já escolhida à mão — aceitar a sugestão da mesma categoria a mantém', async () => {
     const { container } = await montar(<RegistrarLancamentoPage />);
     await escolherCategoriaExistente(container, 'Alimentação de cerimônia');
     await anexarComprovante(container);
 
     await clicar(botoesDeSugestao(container, 'Aceitar sugestão')[3] as HTMLButtonElement);
 
-    expect(container.querySelector('button[aria-label="remover categoria Alimentação de cerimônia"]')).toBeNull();
-    expect(container.textContent).toContain('nenhuma escolhida');
+    expect(todos(container, 'button[aria-label="remover categoria Alimentação de cerimônia"]')).toHaveLength(1);
+    expect(container.textContent).not.toContain('nenhuma escolhida');
   });
 
-  it('categoria já escolhida à mão — Aceitar as 4 a mantém, ao contrário do aceite individual', async () => {
+  it('categoria já escolhida à mão — Aceitar as 4 a mantém, como o aceite individual', async () => {
     const { container } = await montar(<RegistrarLancamentoPage />);
     await escolherCategoriaExistente(container, 'Alimentação de cerimônia');
     await anexarComprovante(container);
@@ -1368,26 +1418,28 @@ describe('RegistrarLancamentoPage: comprovante e sugestões da leitura do cupom'
   });
 
   it.each([{ tipo: 'Entrada' }, { tipo: 'Transferência' }])(
-    'tipo $tipo com anexo — as quatro sugestões do cupom de compra aparecem do mesmo jeito',
+    'tipo $tipo com anexo — o cupom de compra não gera sugestão',
     async ({ tipo }) => {
       const { container } = await montar(<RegistrarLancamentoPage />);
       await escolherTipo(container, tipo);
 
       await anexarComprovante(container);
 
-      expect(textosDeSugestao(container)).toEqual(TEXTOS_DAS_QUATRO_SUGESTOES);
+      expect(textosDeSugestao(container)).toEqual([]);
     },
   );
 
-  it('transferência — aceitar a categoria grava em campo escondido: ao voltar para saída ela está marcada', async () => {
+  it('transferência com anexo — não há sugestão para aceitar: ao voltar para saída as quatro esperam e nenhuma categoria está marcada', async () => {
     const { container } = await montar(<RegistrarLancamentoPage />);
     await escolherTipo(container, 'Transferência');
     await anexarComprovante(container);
-    await clicar(botoesDeSugestao(container, 'Aceitar sugestão')[3] as HTMLButtonElement);
+    const naTransferencia = botoesDeSugestao(container, 'Aceitar sugestão');
 
     await escolherTipo(container, 'Saída');
 
-    expect(todos(container, 'button[aria-label="remover categoria Alimentação de cerimônia"]')).toHaveLength(1);
+    expect(naTransferencia).toHaveLength(0);
+    expect(textosDeSugestao(container)).toEqual(TEXTOS_DAS_QUATRO_SUGESTOES);
+    expect(todos(container, 'button[aria-label="remover categoria Alimentação de cerimônia"]')).toHaveLength(0);
   });
 });
 
@@ -1420,6 +1472,7 @@ describe('RegistrarLancamentoPage: registrar e recibo', () => {
 
   it('saída com tudo escolhido — o recibo leva grupo, conta, forma e cerimônia que o usuário trocou', async () => {
     const { container } = await montar(<RegistrarLancamentoPage />);
+    await digitar(campoDoValor(container), '10');
     await escolherOpcao(campoRotulado<HTMLSelectElement>(container, 'Grupo'), 'Cozinha');
     await escolherOpcao(campoRotulado<HTMLSelectElement>(container, 'Conta de saída'), 'especie');
     await escolherOpcao(campoRotulado<HTMLSelectElement>(container, 'Forma de pagamento'), 'Débito');
@@ -1440,6 +1493,7 @@ describe('RegistrarLancamentoPage: registrar e recibo', () => {
 
   it('saída com anexo — o recibo acrescenta o comprovante no fim', async () => {
     const { container } = await montar(<RegistrarLancamentoPage />);
+    await digitar(campoDoValor(container), '10');
     await anexarComprovante(container);
 
     await registrar(container);
@@ -1470,6 +1524,7 @@ describe('RegistrarLancamentoPage: registrar e recibo', () => {
 
   it('entrada com anexo e categoria — o recibo não leva comprovante nem categoria, apesar de a tela aceitar os dois', async () => {
     const { container } = await montar(<RegistrarLancamentoPage />);
+    await digitar(campoDoValor(container), '10');
     await escolherTipo(container, 'Entrada');
     await anexarComprovante(container);
     await escolherCategoriaExistente(container, 'Manutenção');
@@ -1504,6 +1559,7 @@ describe('RegistrarLancamentoPage: registrar e recibo', () => {
 
   it('registrar — o tipo escolhido continua o mesmo para o próximo lançamento', async () => {
     const { container } = await montar(<RegistrarLancamentoPage />);
+    await digitar(campoDoValor(container), '10');
     await escolherTipo(container, 'Entrada');
 
     await registrar(container);
@@ -1513,6 +1569,7 @@ describe('RegistrarLancamentoPage: registrar e recibo', () => {
 
   it('registrar — a forma de pagamento e a unidade escolhidas voltam ao padrão', async () => {
     const { container } = await montar(<RegistrarLancamentoPage />);
+    await digitar(campoDoValor(container), '10');
     await escolherOpcao(campoRotulado<HTMLSelectElement>(container, 'Forma de pagamento'), 'Boleto');
     await escolherOpcao(campoRotulado<HTMLSelectElement>(container, 'Unidade'), 'Munay');
 
@@ -1524,6 +1581,7 @@ describe('RegistrarLancamentoPage: registrar e recibo', () => {
 
   it('registrar com anexo e sugestões — o anexo sai e as sugestões descartadas voltam ao anexar de novo', async () => {
     const { container } = await montar(<RegistrarLancamentoPage />);
+    await digitar(campoDoValor(container), '10');
     await anexarComprovante(container);
     await clicar(botoesDeSugestao(container, 'Descartar sugestão')[0] as HTMLButtonElement);
 
@@ -1546,54 +1604,54 @@ describe('RegistrarLancamentoPage: registrar e recibo', () => {
     expect(lerRecibo(container).valor).toBe(valorDeSaida('20,00'));
   });
 
-  it('escritório sem permissão — o recibo traz Desfazer e Ver lançamento, e o guarda de dois eixos sai da tela', async () => {
+  it('escritório sem permissão — o recibo traz Ver lançamento, sem Desfazer, e o guarda de dois eixos sai da tela', async () => {
     const { container } = await montar(<RegistrarLancamentoPage />);
+    await digitar(campoDoValor(container), '10');
 
     await registrar(container);
 
-    expect(botaoComTexto(container, 'Desfazer')).toBeDefined();
+    expect(todos(container, 'button').some((botao) => botao.textContent === 'Desfazer')).toBe(false);
     expect(botaoComTexto(container, 'Ver lançamento')).toBeDefined();
     expect(container.textContent).not.toContain('Você tem acesso a esta tela, mas não a esta operação');
   });
 
-  it('escritório com permissão — o recibo diz gravado consolidado e que o desfazer vale só por 2 minutos', async () => {
+  it('escritório com permissão — o recibo diz gravado consolidado, sem prometer desfazer', async () => {
     comoTesouraria();
     const { container } = await montar(<RegistrarLancamentoPage />);
+    await digitar(campoDoValor(container), '10');
 
     await registrar(container);
 
-    expect(lerRecibo(container).rodape).toBe(
-      'Gravado consolidado, com seu nome no histórico. Desfazer só nos próximos 2 minutos; depois disso, estorno.',
-    );
+    expect(lerRecibo(container).rodape).toBe('Gravado consolidado, com seu nome no histórico.');
   });
 
-  it('campo — o recibo promete Desfazer nos próximos 2 minutos, mas não há botão de desfazer nem de ver lançamento', async () => {
+  it('campo — o recibo não promete desfazer, e não há botão de desfazer nem de ver lançamento', async () => {
     usarDensidade('field');
     const { container } = await montar(<RegistrarLancamentoPage />);
+    await digitar(campoDoValor(container), '10');
 
     await registrar(container);
 
-    expect(lerRecibo(container).rodape).toBe('Campos limpos, pronto para o próximo. Desfazer nos próximos 2 minutos.');
+    expect(lerRecibo(container).rodape).toBe('Campos limpos, pronto para o próximo.');
     expect(todos(container, 'button').some((botao) => botao.textContent === 'Desfazer')).toBe(false);
     expect(todos(container, 'button').some((botao) => botao.textContent === 'Ver lançamento')).toBe(false);
   });
 
-  it('Desfazer — esvazia o recibo e o formulário, sem desfazer o registro nem esperar prazo algum', async () => {
+  it('Desfazer — o recibo não oferece desfazer, nem na hora nem passado o prazo de 2 minutos', async () => {
     const { container } = await montar(<RegistrarLancamentoPage />);
     await digitar(campoDoValor(container), '10');
     await registrar(container);
-    await digitar(campoDoValor(container), '77');
     vi.setSystemTime(new Date(HORA_FIXA.getTime() + 60 * 60 * 1000));
+    await digitar(campoDoValor(container), '77');
 
-    await clicar(botaoComTexto(container, 'Desfazer'));
-
-    expect(temRecibo(container)).toBe(false);
-    expect(campoDoValor(container).value).toBe('');
-    expect(container.textContent).toContain('Você tem acesso a esta tela, mas não a esta operação');
+    expect(todos(container, 'button').some((botao) => botao.textContent === 'Desfazer')).toBe(false);
+    expect(temRecibo(container)).toBe(true);
+    expect(campoDoValor(container).value).toBe('77');
   });
 
   it('Ver lançamento — o clique não faz nada: o recibo continua na tela', async () => {
     const { container } = await montar(<RegistrarLancamentoPage />);
+    await digitar(campoDoValor(container), '10');
     await registrar(container);
 
     await clicar(botaoComTexto(container, 'Ver lançamento'));
@@ -1631,6 +1689,7 @@ describe('RegistrarLancamentoPage: registrar e recibo', () => {
 
   it('Limpar campos depois de registrar — também esvazia o recibo', async () => {
     const { container } = await montar(<RegistrarLancamentoPage />);
+    await digitar(campoDoValor(container), '10');
     await registrar(container);
 
     await clicar(botaoComTexto(container, 'Limpar campos'));
@@ -1640,6 +1699,7 @@ describe('RegistrarLancamentoPage: registrar e recibo', () => {
 
   it('escritório — escrever o fornecedor mantém o texto no campo, e o recibo da saída não o leva', async () => {
     const { container } = await montar(<RegistrarLancamentoPage />);
+    await digitar(campoDoValor(container), '10');
     await digitar(campoRotulado<HTMLInputElement>(container, 'Fornecedor'), 'Assaí Atacadista');
     const noCampo = campoRotulado<HTMLInputElement>(container, 'Fornecedor').value;
 
@@ -1652,6 +1712,7 @@ describe('RegistrarLancamentoPage: registrar e recibo', () => {
 
   it('transferência com a mesma conta forçada pela troca — o registro grava a transferência com origem e destino diferentes', async () => {
     const { container } = await montar(<RegistrarLancamentoPage />);
+    await digitar(campoDoValor(container), '10');
     await escolherOpcao(campoRotulado<HTMLSelectElement>(container, 'Conta de saída'), 'nubank');
     await escolherTipo(container, 'Transferência');
 

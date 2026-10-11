@@ -1,5 +1,4 @@
 import { ScreenHeader, useDensidade, SeletorDeTipo } from '@/ds';
-import { formatarDinheiro, pluralizar } from '@/pages/utils/formato';
 import { CarrosselDeRecibos } from './components/CarrosselDeRecibos';
 import { ListaSimplificada } from './components/ListaSimplificada';
 import { useMeusRegistros } from './hooks/useMeusRegistros';
@@ -38,12 +37,6 @@ export function MeusRegistrosPage() {
             onEscolher={meus.escolherVisao}
             densidade={densidade}
           />
-          {campo ? null : (
-            <span style={{ marginLeft: 'auto', font: 'var(--text-small)', color: 'var(--text-secondary)' }}>
-              {pluralizar(meus.registros.length, 'lançamento')} · saídas {formatarDinheiro(meus.saidas)} · entradas{' '}
-              {formatarDinheiro(meus.entradas)}
-            </span>
-          )}
         </div>
 
         {meus.visao === 'lista' ? (

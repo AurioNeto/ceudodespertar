@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { meusLancamentos } from '@/pages/financeiro/mocks/lancamentos';
 import { POR_PAGINA } from '../constantes';
 import type { Visao } from '../constantes';
-import { totaisDosRegistros } from '../utils/totaisDosRegistros';
 
 export function useMeusRegistros() {
   const [visao, setVisao] = useState<Visao>('lista');
@@ -12,8 +11,6 @@ export function useMeusRegistros() {
   const registros = meusLancamentos;
   const totalPaginas = Math.max(1, Math.ceil(registros.length / POR_PAGINA));
   const daPagina = registros.slice(pagina * POR_PAGINA, (pagina + 1) * POR_PAGINA);
-
-  const { saidas, entradas } = totaisDosRegistros(registros);
 
   const irPara = (i: number) => setIndice((i + registros.length) % registros.length);
   const abrirNoCartao = (i: number) => {
@@ -28,8 +25,6 @@ export function useMeusRegistros() {
     visao,
     escolherVisao: setVisao,
     registros,
-    saidas,
-    entradas,
     pagina,
     totalPaginas,
     daPagina,

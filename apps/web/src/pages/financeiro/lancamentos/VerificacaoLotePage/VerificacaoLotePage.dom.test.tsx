@@ -47,14 +47,17 @@ const MOTIVOS_DE_ALTA_CONFIANCA = [
   'Transferência recebida do Nubank Paty',
 ];
 
-const MOTIVOS_SEM_ALTA_CONFIANCA = [
-  'gasolina para buscar mantimentos',
-  'ração e vermífugo dos cavalos',
-  'PIX recebido — Antônio Vieira',
-  'garrafas e rótulos para o feitio',
-  'TED — Hidro Serviços',
-  'contribuições da cerimônia de agosto',
-];
+const MOTIVO_DE_ALTA_CONFIANCA_EM_PERIODO_FECHADO = 'diarista pós-cerimônia';
+
+const MOTIVOS_DE_ALTA_CONFIANCA_EM_PERIODO_ABERTO = new Set(
+  MOTIVOS_DE_ALTA_CONFIANCA.filter((motivo) => motivo !== MOTIVO_DE_ALTA_CONFIANCA_EM_PERIODO_FECHADO),
+);
+
+const MOTIVOS_APOS_APROVAR_A_ALTA_CONFIANCA = MOTIVOS_DA_FILA.filter(
+  (motivo) => !MOTIVOS_DE_ALTA_CONFIANCA_EM_PERIODO_ABERTO.has(motivo),
+);
+
+const FILA_SEM_PERIODO_FECHADO = (lista: readonly ItemNaFila[]) => lista.filter((item) => !item.data.startsWith('2026-07'));
 
 const MOTIVOS_FORA_DA_FILA_DESIGUAL = new Set([
   'TED — Hidro Serviços',
@@ -333,7 +336,7 @@ describe('VerificacaoLotePage: filtro por origem', () => {
     const { container } = await montar(<VerificacaoLotePage />);
     await escolherFiltro(container, 'Extrato');
     await clicar(caixaDeTodos(container) as HTMLInputElement);
-    await marcar(container, 'Enel — conta de luz');
+    await marcar(container, 'TED — Hidro Serviços');
     await aprovarSelecionados(container);
 
     expect(contagemDaFila(container)).toBe('1 item na fila');
@@ -386,17 +389,17 @@ describe('VerificacaoLotePage: seleção', () => {
 
   it('desmarcar a do meio de três marcadas — ficam marcadas as outras duas, e Aprovar selecionados deixa a desmarcada na fila', async () => {
     const { container } = await montar(<VerificacaoLotePage />);
-    await marcarVarios(container, ['Enel — conta de luz', 'diarista pós-cerimônia', 'TED — Hidro Serviços']);
+    await marcarVarios(container, ['Enel — conta de luz', 'gasolina para buscar mantimentos', 'ração e vermífugo dos cavalos']);
 
-    await marcar(container, 'diarista pós-cerimônia');
+    await marcar(container, 'gasolina para buscar mantimentos');
     const marcadas = caixasDeLinha(container).filter((caixa) => caixa.checked).map((caixa) => caixa.getAttribute('aria-label'));
     const rotuloDepoisDeDesmarcar = rotuloDaSelecao(container);
     await aprovarSelecionados(container);
 
-    expect(marcadas).toEqual(['selecionar Enel — conta de luz', 'selecionar TED — Hidro Serviços']);
+    expect(marcadas).toEqual(['selecionar Enel — conta de luz', 'selecionar ração e vermífugo dos cavalos']);
     expect(rotuloDepoisDeDesmarcar).toBe('2 selecionados');
     expect(motivosDaFila(container)).toEqual(
-      MOTIVOS_DA_FILA.filter((motivo) => motivo !== 'Enel — conta de luz' && motivo !== 'TED — Hidro Serviços'),
+      MOTIVOS_DA_FILA.filter((motivo) => motivo !== 'Enel — conta de luz' && motivo !== 'ração e vermífugo dos cavalos'),
     );
     expect(mensagem(container)).toBe('2 lançamentos aprovados e consolidados.');
   });
@@ -440,17 +443,20 @@ describe('VerificacaoLotePage: seleção', () => {
     expect((caixaDeTodos(container) as HTMLInputElement).checked).toBe(true);
   });
 
-  it('Selecionar todos visíveis com uma seleção escondida pelo filtro — troca a seleção: a linha escondida sai dela', async () => {
+  it('Selecionar todos visíveis com uma seleção escondida pelo filtro — a barra conta só as visíveis, e a escondida continua selecionada', async () => {
     const { container } = await montar(<VerificacaoLotePage />);
     await marcar(container, 'mercado cerimônia mãe divina');
     await escolherFiltro(container, 'Extrato');
 
     await clicar(caixaDeTodos(container) as HTMLInputElement);
+    const comFiltro = rotuloDaSelecao(container);
+    await escolherFiltro(container, 'Todas');
 
-    expect(rotuloDaSelecao(container)).toBe('4 selecionados');
+    expect(comFiltro).toBe('4 selecionados');
+    expect(rotuloDaSelecao(container)).toBe('5 selecionados');
   });
 
-  it('desmarcar a caixa de todos — limpa a seleção inteira, inclusive o que o filtro esconde', async () => {
+  it('desmarcar a caixa de todos — limpa só o que o filtro mostra, e a seleção escondida continua', async () => {
     const { container } = await montar(<VerificacaoLotePage />);
     await marcar(container, 'mercado cerimônia mãe divina');
     await escolherFiltro(container, 'Extrato');
@@ -458,20 +464,30 @@ describe('VerificacaoLotePage: seleção', () => {
     const comEscondido = rotuloDaSelecao(container);
 
     await clicar(caixaDeTodos(container) as HTMLInputElement);
+    const depoisDeDesmarcar = rotuloDaSelecao(container);
+    await escolherFiltro(container, 'Todas');
 
-    expect(comEscondido).toBe('5 selecionados');
-    expect(rotuloDaSelecao(container)).toBeNull();
+    expect(comEscondido).toBe('4 selecionados');
+    expect(depoisDeDesmarcar).toBeNull();
+    expect(rotuloDaSelecao(container)).toBe('1 selecionado');
   });
 
-  it('selecionar e trocar de filtro — a seleção continua contada, mesmo das linhas que sumiram da tela', async () => {
+  it('selecionar e trocar de filtro — a barra não conta as linhas que sumiram da tela, e a seleção volta com o filtro', async () => {
     const { container } = await montar(<VerificacaoLotePage />);
     await marcar(container, 'mercado cerimônia mãe divina');
 
     await escolherFiltro(container, 'Extrato');
+    const comFiltro = rotuloDaSelecao(container);
+    const barraComFiltro = container.textContent?.includes('Aprovar selecionados');
+    const algumaMarcadaComFiltro = caixasDeLinha(container).some((caixa) => caixa.checked);
+    const caixaDeTodosComFiltro = (caixaDeTodos(container) as HTMLInputElement).checked;
+    await escolherFiltro(container, 'Todas');
 
+    expect(comFiltro).toBeNull();
+    expect(barraComFiltro).toBe(false);
+    expect(algumaMarcadaComFiltro).toBe(false);
+    expect(caixaDeTodosComFiltro).toBe(false);
     expect(rotuloDaSelecao(container)).toBe('1 selecionado');
-    expect(caixasDeLinha(container).some((caixa) => caixa.checked)).toBe(false);
-    expect((caixaDeTodos(container) as HTMLInputElement).checked).toBe(false);
   });
 
   it('Limpar seleção — desmarca tudo e some a barra', async () => {
@@ -497,20 +513,30 @@ describe('VerificacaoLotePage: aprovar os selecionados', () => {
     expect(rotuloDaSelecao(container)).toBeNull();
   });
 
-  it('três selecionados — saem da fila e o aviso vai ao plural', async () => {
+  it('três selecionados, dois de período fechado — só a de período aberto sai, e o aviso conta as que ficaram na fila', async () => {
     const { container } = await montar(<VerificacaoLotePage />);
     await marcarVarios(container, ['Enel — conta de luz', 'diarista pós-cerimônia', 'TED — Hidro Serviços']);
 
     await aprovarSelecionados(container);
+    const aposAprovar = mensagem(container);
+    const selecaoDepoisDeAprovar = rotuloDaSelecao(container);
+    await marcarVarios(container, ['diarista pós-cerimônia', 'TED — Hidro Serviços']);
+    await aprovarSelecionados(container);
 
-    expect(mensagem(container)).toBe('3 lançamentos aprovados e consolidados.');
-    expect(filtrosDeOrigem(container)[0]).toEqual(['Todas (9)', 'true']);
-    expect(contagemDaFila(container)).toBe('9 itens na fila');
+    expect(aposAprovar).toBe(
+      '1 lançamento aprovado e consolidado. 2 lançamentos ficaram na fila: o período está fechado.',
+    );
+    expect(selecaoDepoisDeAprovar).toBeNull();
+    expect(mensagem(container)).toBe(
+      'Nenhum lançamento aprovado. 2 lançamentos ficaram na fila: o período está fechado.',
+    );
+    expect(filtrosDeOrigem(container)[0]).toEqual(['Todas (11)', 'true']);
+    expect(contagemDaFila(container)).toBe('11 itens na fila');
   });
 
   it('as contagens dos filtros — acompanham o que saiu', async () => {
     const { container } = await montar(<VerificacaoLotePage />);
-    await marcarVarios(container, ['Enel — conta de luz', 'TED — Hidro Serviços']);
+    await marcarVarios(container, ['Enel — conta de luz', 'PIX recebido — Antônio Vieira']);
 
     await aprovarSelecionados(container);
 
@@ -522,25 +548,28 @@ describe('VerificacaoLotePage: aprovar os selecionados', () => {
     ]);
   });
 
-  it('seleção escondida pelo filtro — Aprovar selecionados aprova também o que a tela não mostra', async () => {
+  it('seleção escondida pelo filtro — Aprovar selecionados deixa na fila o que a tela não mostra', async () => {
     const { container } = await montar(<VerificacaoLotePage />);
     await marcar(container, 'mercado cerimônia mãe divina');
     await escolherFiltro(container, 'Extrato');
+    await marcar(container, 'Enel — conta de luz');
 
     await aprovarSelecionados(container);
     await escolherFiltro(container, 'Todas');
 
-    expect(motivosDaFila(container)).not.toContain('mercado cerimônia mãe divina');
+    expect(motivosDaFila(container)).toContain('mercado cerimônia mãe divina');
+    expect(motivosDaFila(container)).not.toContain('Enel — conta de luz');
     expect(mensagem(container)).toBe('1 lançamento aprovado e consolidado.');
   });
 
-  it('todos os doze — esvazia a fila, mostra o estado vazio e some a linha de selecionar todos', async () => {
+  it('todos os dez, sem período fechado — esvazia a fila, mostra o estado vazio e some a linha de selecionar todos', async () => {
+    fila.transformar = FILA_SEM_PERIODO_FECHADO;
     const { container } = await montar(<VerificacaoLotePage />);
     await clicar(caixaDeTodos(container) as HTMLInputElement);
 
     await aprovarSelecionados(container);
 
-    expect(mensagem(container)).toBe('12 lançamentos aprovados e consolidados.');
+    expect(mensagem(container)).toBe('10 lançamentos aprovados e consolidados.');
     expect(container.textContent).toContain('Nada nessa fila');
     expect(caixaDeTodos(container)).toBeUndefined();
     expect(botaoDeAltaConfianca(container)).toBeUndefined();
@@ -551,8 +580,8 @@ describe('VerificacaoLotePage: aprovar os selecionados', () => {
     await marcar(container, 'Enel — conta de luz');
     await aprovarSelecionados(container);
     const primeiro = mensagem(container);
-    await marcar(container, 'diarista pós-cerimônia');
-    await marcarVarios(container, ['TED — Hidro Serviços']);
+    await marcar(container, 'gasolina para buscar mantimentos');
+    await marcarVarios(container, ['ração e vermífugo dos cavalos']);
     await aprovarSelecionados(container);
     const segundo = mensagem(container);
 
@@ -575,25 +604,27 @@ describe('VerificacaoLotePage: aprovar os selecionados', () => {
 });
 
 describe('VerificacaoLotePage: aprovar todos de alta confiança', () => {
-  it('o botão mostra quantos são de alta confiança e está ligado', async () => {
+  it('o botão mostra quantos são de alta confiança em período aberto e está ligado', async () => {
     const { container } = await montar(<VerificacaoLotePage />);
 
     const botao = botaoDeAltaConfianca(container) as HTMLButtonElement;
 
-    expect(botao.textContent).toBe('Aprovar todos de alta confiança (6)');
+    expect(botao.textContent).toBe('Aprovar todos de alta confiança (5)');
     expect(botao.disabled).toBe(false);
   });
 
-  it('clicar — tira da fila as seis de alta confiança, sem exigir seleção, e o aviso conta', async () => {
+  it('clicar — tira da fila as cinco de alta confiança de período aberto, sem exigir seleção, e o aviso conta a que ficou', async () => {
     const { container } = await montar(<VerificacaoLotePage />);
 
     await aprovarAltaConfianca(container);
 
-    expect(motivosDaFila(container)).toEqual(MOTIVOS_SEM_ALTA_CONFIANCA);
-    expect(mensagem(container)).toBe('6 lançamentos de alta confiança aprovados.');
+    expect(motivosDaFila(container)).toEqual(MOTIVOS_APOS_APROVAR_A_ALTA_CONFIANCA);
+    expect(mensagem(container)).toBe(
+      '5 lançamentos de alta confiança aprovados. 1 lançamento ficou na fila: o período está fechado.',
+    );
   });
 
-  it('sem nenhuma de alta confiança — o botão mostra (0) e fica desligado', async () => {
+  it('sem nenhuma de alta confiança em período aberto — o botão mostra (0) e fica desligado', async () => {
     const { container } = await montar(<VerificacaoLotePage />);
     await aprovarAltaConfianca(container);
 
@@ -603,24 +634,28 @@ describe('VerificacaoLotePage: aprovar todos de alta confiança', () => {
     expect(botao.disabled).toBe(true);
   });
 
-  it('com o filtro Extrato — aprova as de alta confiança de todas as origens, não só as visíveis', async () => {
+  it('com o filtro Extrato — aprova só as de alta confiança visíveis, e as de outras origens ficam na fila', async () => {
     const { container } = await montar(<VerificacaoLotePage />);
     await escolherFiltro(container, 'Extrato');
+    const botaoComFiltro = (botaoDeAltaConfianca(container) as HTMLButtonElement).textContent;
 
     await aprovarAltaConfianca(container);
     const doExtrato = motivosDaFila(container);
     await escolherFiltro(container, 'Todas');
 
+    expect(botaoComFiltro).toBe('Aprovar todos de alta confiança (2)');
     expect(doExtrato).toEqual(['PIX recebido — Antônio Vieira', 'TED — Hidro Serviços']);
-    expect(motivosDaFila(container)).toEqual(MOTIVOS_SEM_ALTA_CONFIANCA);
+    expect(motivosDaFila(container)).toEqual(
+      MOTIVOS_DA_FILA.filter((motivo) => motivo !== 'Enel — conta de luz' && motivo !== 'Transferência recebida do Nubank Paty'),
+    );
   });
 
-  it('inclui os lançamentos de julho, de período fechado — o diarista de 31/07 é consolidado em lote (Doc 2, L5)', async () => {
+  it('não inclui os lançamentos de julho, de período fechado — o diarista de 31/07 continua na fila (Doc 2, L5)', async () => {
     const { container } = await montar(<VerificacaoLotePage />);
 
     await aprovarAltaConfianca(container);
 
-    expect(motivosDaFila(container)).not.toContain('diarista pós-cerimônia');
+    expect(motivosDaFila(container)).toContain(MOTIVO_DE_ALTA_CONFIANCA_EM_PERIODO_FECHADO);
   });
 
   it('com uma restante — o aviso usa o singular', async () => {
@@ -632,7 +667,9 @@ describe('VerificacaoLotePage: aprovar todos de alta confiança', () => {
     await aprovarAltaConfianca(container);
 
     expect(rotuloDoBotao).toBe('Aprovar todos de alta confiança (1)');
-    expect(mensagem(container)).toBe('1 lançamento de alta confiança aprovado.');
+    expect(mensagem(container)).toBe(
+      '1 lançamento de alta confiança aprovado. 1 lançamento ficou na fila: o período está fechado.',
+    );
   });
 
   it('um único item na fila — a linha de selecionar todos e o botão de alta confiança continuam, com a contagem 1', async () => {
@@ -673,7 +710,7 @@ describe('VerificacaoLotePage: fila vazia', () => {
     ]);
   });
 
-  it('filtro sem itens com o resto da fila cheio — a linha de selecionar todos e o botão de alta confiança continuam na tela', async () => {
+  it('filtro sem itens com o resto da fila cheio — a linha de selecionar todos e o botão de alta confiança, desligado, continuam na tela', async () => {
     const { container } = await montar(<VerificacaoLotePage />);
     await escolherFiltro(container, 'Comprovantes');
     await clicar(caixaDeTodos(container) as HTMLInputElement);
@@ -681,11 +718,11 @@ describe('VerificacaoLotePage: fila vazia', () => {
 
     expect(container.textContent).toContain('Selecionar todos visíveis');
     expect(caixaDeTodos(container)?.checked).toBe(false);
-    expect(botaoDeAltaConfianca(container)?.textContent).toBe('Aprovar todos de alta confiança (4)');
-    expect(botaoDeAltaConfianca(container)?.disabled).toBe(false);
+    expect(botaoDeAltaConfianca(container)?.textContent).toBe('Aprovar todos de alta confiança (0)');
+    expect(botaoDeAltaConfianca(container)?.disabled).toBe(true);
   });
 
-  it('filtro sem itens — Aprovar todos de alta confiança consolida as quatro de outras origens que a tela não mostra', async () => {
+  it('filtro sem itens — Aprovar todos de alta confiança não consolida as de outras origens que a tela não mostra', async () => {
     const { container } = await montar(<VerificacaoLotePage />);
     await escolherFiltro(container, 'Comprovantes');
     await clicar(caixaDeTodos(container) as HTMLInputElement);
@@ -693,16 +730,17 @@ describe('VerificacaoLotePage: fila vazia', () => {
 
     await aprovarAltaConfianca(container);
 
-    expect(mensagem(container)).toBe('4 lançamentos de alta confiança aprovados.');
+    expect(mensagem(container)).toBe('4 lançamentos aprovados e consolidados.');
     expect(filtrosDeOrigem(container)).toEqual([
-      ['Todas (4)', 'false'],
+      ['Todas (8)', 'false'],
       ['Comprovantes (0)', 'true'],
-      ['Extrato (2)', 'false'],
-      ['Registro rápido (2)', 'false'],
+      ['Extrato (4)', 'false'],
+      ['Registro rápido (4)', 'false'],
     ]);
   });
 
   it('fila inteira vazia — os quatro filtros mostram (0) e a contagem diz 0 itens na fila', async () => {
+    fila.transformar = FILA_SEM_PERIODO_FECHADO;
     const { container } = await montar(<VerificacaoLotePage />);
     await clicar(caixaDeTodos(container) as HTMLInputElement);
     await aprovarSelecionados(container);

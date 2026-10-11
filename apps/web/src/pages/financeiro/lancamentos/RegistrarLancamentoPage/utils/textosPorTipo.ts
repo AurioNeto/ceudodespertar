@@ -44,7 +44,7 @@ export function textosPorTipo(regras: RegrasDoLancamento, campos: EstadoDoFormul
       : metaDaOpcao(opcoesDeConta, campos.contaDestino),
     notaCompetencia: competenciaFechada ? 'Veio da data do gasto — julho está fechado.' : 'Mês corrente.',
     notaBarra: bloqueado
-      ? 'Enquanto isso não se resolve, dá para salvar como rascunho — nada se perde.'
+      ? undefined
       : ehTransferencia
         ? `Grava os dois lados de uma vez: saída em ${conta} e entrada em ${contaDestino}.`
         : !consolida && composto

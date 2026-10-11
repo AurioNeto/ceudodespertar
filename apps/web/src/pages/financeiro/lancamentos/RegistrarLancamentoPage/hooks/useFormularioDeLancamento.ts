@@ -1,8 +1,9 @@
 import { useMemo, useState } from 'react';
 import type { TipoLancamento } from '@cdd/contracts';
 import { INICIAL } from '../mocks/formularioInicial';
-import { SEM_CERIMONIA } from '../mocks/opcoes';
+import { SEM_CERIMONIA, SEM_REEMBOLSO } from '../mocks/opcoes';
 import { SUGESTOES_DO_CUPOM, type ChaveSugerida } from '../mocks/sugestoesDoCupom';
+import { comCategoria } from '../utils/categorias';
 import { regrasDoLancamento, type EstadoDoFormulario } from '../utils/regrasDoLancamento';
 import { textosPorTipo } from '../utils/textosPorTipo';
 
@@ -15,7 +16,10 @@ export type CampoComPicker =
   | 'cerimonia'
   | 'competencia'
   | 'pessoa'
+  | 'reembolso'
   | 'unidade';
+
+export type CampoDeTexto = 'data' | 'contraparte';
 
 export interface Recibo {
   total: number;
@@ -28,6 +32,7 @@ export function useFormularioDeLancamento(consolida: boolean) {
   const [tipo, setTipo] = useState<TipoLancamento>('SAIDA');
   const [campos, setCampos] = useState<EstadoDoFormulario>(INICIAL);
   const [picker, setPicker] = useState<CampoComPicker | null>(null);
+  const [folhaDeTexto, setFolhaDeTexto] = useState<CampoDeTexto | null>(null);
   const [resolvidas, setResolvidas] = useState<readonly ChaveSugerida[]>([]);
   const [recibo, setRecibo] = useState<Recibo | null>(null);
 
@@ -37,6 +42,7 @@ export function useFormularioDeLancamento(consolida: boolean) {
   const trocarTipo = (novo: TipoLancamento) => {
     setTipo(novo);
     setPicker(null);
+    setFolhaDeTexto(null);
     setCampos((c) => {
       if (novo === 'TRANSFERENCIA') {
         return {
@@ -52,6 +58,12 @@ export function useFormularioDeLancamento(consolida: boolean) {
     });
   };
 
+  const escolherReembolso = (escolha: string) => {
+    const ligado = escolha !== SEM_REEMBOLSO;
+    setCampos((c) => ({ ...c, reembolso: ligado, ...(ligado ? { pessoa: escolha } : {}) }));
+    setPicker(null);
+  };
+
   const alternarCategoria = (categoria: string) =>
     setCampos((c) => ({
       ...c,
@@ -62,7 +74,8 @@ export function useFormularioDeLancamento(consolida: boolean) {
 
   const aceitarSugestao = (chave: ChaveSugerida) => {
     setResolvidas((r) => [...r, chave]);
-    if (chave === 'categoria') alternarCategoria(SUGESTOES_DO_CUPOM.categoria);
+    if (chave === 'categoria')
+      setCampos((c) => ({ ...c, categorias: comCategoria(c.categorias, SUGESTOES_DO_CUPOM.categoria) }));
     else alterar(chave, SUGESTOES_DO_CUPOM[chave]);
   };
 
@@ -75,9 +88,7 @@ export function useFormularioDeLancamento(consolida: boolean) {
       valor: SUGESTOES_DO_CUPOM.valor,
       descricao: SUGESTOES_DO_CUPOM.descricao,
       contraparte: SUGESTOES_DO_CUPOM.contraparte,
-      categorias: c.categorias.includes(SUGESTOES_DO_CUPOM.categoria)
-        ? c.categorias
-        : [...c.categorias, SUGESTOES_DO_CUPOM.categoria],
+      categorias: comCategoria(c.categorias, SUGESTOES_DO_CUPOM.categoria),
     }));
   };
 
@@ -85,6 +96,7 @@ export function useFormularioDeLancamento(consolida: boolean) {
     setCampos(INICIAL);
     setResolvidas([]);
     setPicker(null);
+    setFolhaDeTexto(null);
     setRecibo(null);
   };
 
@@ -94,7 +106,7 @@ export function useFormularioDeLancamento(consolida: boolean) {
   }, [tipo, campos, consolida]);
 
   const sugestoesPendentes = useMemo(() => {
-    if (!campos.anexo) return [];
+    if (!campos.anexo || tipo !== 'SAIDA') return [];
     const todas: readonly { chave: ChaveSugerida; texto: string }[] = [
       { chave: 'valor', texto: `Valor ${SUGESTOES_DO_CUPOM.valor}` },
       { chave: 'descricao', texto: `Descrição: ${SUGESTOES_DO_CUPOM.descricao}` },
@@ -102,7 +114,7 @@ export function useFormularioDeLancamento(consolida: boolean) {
       { chave: 'categoria', texto: `Categoria: ${SUGESTOES_DO_CUPOM.categoria.toLowerCase()}` },
     ];
     return todas.filter((s) => !resolvidas.includes(s.chave));
-  }, [campos.anexo, resolvidas]);
+  }, [campos.anexo, tipo, resolvidas]);
 
   const registrar = () => {
     const { ehTransferencia, ehEntrada, conta, contaDestino, total } = derivado;
@@ -143,23 +155,31 @@ export function useFormularioDeLancamento(consolida: boolean) {
     setCampos(INICIAL);
     setResolvidas([]);
     setPicker(null);
+    setFolhaDeTexto(null);
   };
+
+  const reembolsoA = campos.reembolso ? campos.pessoa : SEM_REEMBOLSO;
 
   return {
     tipo,
     campos,
     picker,
+    folhaDeTexto,
+    reembolsoA,
     recibo,
     sugestoesPendentes,
     ...derivado,
     alterar,
     trocarTipo,
     alternarCategoria,
+    escolherReembolso,
     aceitarSugestao,
     descartarSugestao,
     aceitarTodas,
     abrirPicker: setPicker,
     fecharPicker: () => setPicker(null),
+    abrirFolhaDeTexto: setFolhaDeTexto,
+    fecharFolhaDeTexto: () => setFolhaDeTexto(null),
     limpar,
     registrar,
     descartarRecibo: () => setRecibo(null),
