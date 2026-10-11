@@ -1,0 +1,1 @@
+export { PainelDoEmprestimo } from './PainelDoEmprestimo';

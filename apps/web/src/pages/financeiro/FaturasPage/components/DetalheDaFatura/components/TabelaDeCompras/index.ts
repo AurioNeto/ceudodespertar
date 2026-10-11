@@ -1,0 +1,1 @@
+export { TabelaDeCompras } from './TabelaDeCompras';

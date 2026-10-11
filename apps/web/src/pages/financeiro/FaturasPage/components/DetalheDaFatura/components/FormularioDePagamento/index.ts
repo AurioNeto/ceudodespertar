@@ -1,0 +1,1 @@
+export { FormularioDePagamento } from './FormularioDePagamento';

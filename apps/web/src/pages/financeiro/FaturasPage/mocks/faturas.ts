@@ -317,8 +317,6 @@ export const faturas: readonly Fatura[] = [
   },
 ];
 
-export const totalDaFatura = (f: Fatura): number => f.compras.reduce((soma, c) => soma + c.valor, 0);
-
 /** Contas de onde a fatura pode ser paga — cartão não paga cartão. */
 export const contasPagadoras: readonly { readonly id: ContaId; readonly nome: string }[] = [
   { id: id<ContaId>('cora'), nome: 'Cora PJ' },

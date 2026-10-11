@@ -1,0 +1,1 @@
+export { AcoesDaFatura } from './AcoesDaFatura';
