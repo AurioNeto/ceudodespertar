@@ -1,0 +1,1 @@
+export { SeloDaAnamnese } from './SeloDaAnamnese';

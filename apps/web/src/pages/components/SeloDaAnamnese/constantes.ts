@@ -1,5 +1,5 @@
 import type { BadgeTone } from '@/ds';
-import type { EstadoDaAnamnese } from '../../../../tipos';
+import type { EstadoDaAnamnese } from './tipos';
 
 export const TOM_DA_ANAMNESE: Record<EstadoDaAnamnese, BadgeTone> = {
   'em dia': 'confirmed',

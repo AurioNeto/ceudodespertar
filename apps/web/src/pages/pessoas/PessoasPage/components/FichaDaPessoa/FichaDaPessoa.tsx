@@ -1,5 +1,5 @@
 import { Avatar, Aviso, Button, Icon, Leitura, StatusBadge } from '@/ds';
-import { TEXTO_DA_ANAMNESE, TOM_DA_ANAMNESE } from '../../constantes';
+import { SeloDaAnamnese } from '@/pages/components/SeloDaAnamnese';
 import type { AcessoAoSistema, GrupoDeAcesso, PessoaDaCasa } from '../../mocks/pessoas';
 import { CartaoDaFicha } from './components/CartaoDaFicha';
 import { ACESSO } from './constantes';
@@ -86,9 +86,7 @@ export function FichaDaPessoa({
             : 'nunca respondeu'
         }
       >
-        <StatusBadge tone={TOM_DA_ANAMNESE[pessoa.anamnese]} style={{ alignSelf: 'flex-start' }}>
-          {TEXTO_DA_ANAMNESE[pessoa.anamnese]}
-        </StatusBadge>
+        <SeloDaAnamnese estado={pessoa.anamnese} style={{ alignSelf: 'flex-start' }} />
         {pessoa.pontos.length ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {pessoa.pontos.map(([titulo, detalhe]) => (

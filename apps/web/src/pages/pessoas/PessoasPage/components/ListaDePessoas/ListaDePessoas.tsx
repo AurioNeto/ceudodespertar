@@ -1,5 +1,5 @@
 import { Avatar, Icon, StatusBadge } from '@/ds';
-import { TEXTO_DA_ANAMNESE, TOM_DA_ANAMNESE } from '../../constantes';
+import { SeloDaAnamnese } from '@/pages/components/SeloDaAnamnese';
 import type { AcessoAoSistema, PessoaDaCasa } from '../../mocks/pessoas';
 
 export interface ListaDePessoasProps {
@@ -42,7 +42,7 @@ export function ListaDePessoas({ pessoas, acessos, onAbrir }: ListaDePessoasProp
               <Icon name="triangle-alert" size={16} color="var(--color-attention)" />
             </span>
           ) : null}
-          <StatusBadge tone={TOM_DA_ANAMNESE[p.anamnese]}>{TEXTO_DA_ANAMNESE[p.anamnese]}</StatusBadge>
+          <SeloDaAnamnese estado={p.anamnese} />
           {acessos[p.id] ? <StatusBadge tone="royal">{acessos[p.id]!.grupo}</StatusBadge> : null}
           {!p.ativa ? <StatusBadge tone="neutral">Inativa</StatusBadge> : null}
         </button>
