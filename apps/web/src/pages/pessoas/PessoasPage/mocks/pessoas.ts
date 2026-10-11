@@ -1,7 +1,7 @@
 import type { Permissao } from '@cdd/contracts';
+import type { EstadoDaAnamnese } from '@/pages/components/SeloDaAnamnese';
 
 export type VinculoDaCasa = 'Fardado' | 'Frequentador' | 'Visitante';
-export type EstadoDaAnamnese = 'em dia' | 'vencida' | 'ausente';
 
 export interface PessoaDaCasa {
   id: number;
