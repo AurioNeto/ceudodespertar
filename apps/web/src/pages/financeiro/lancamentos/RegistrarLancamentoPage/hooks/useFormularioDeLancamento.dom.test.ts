@@ -586,7 +586,7 @@ describe('useFormularioDeLancamento: sugestões do cupom', () => {
     expect(formulario().campos.categorias).toEqual(['Alimentação de cerimônia']);
   });
 
-  it('aceitar a sugestão de categoria com ela já escolhida — desmarca a categoria, em vez de mantê-la', async () => {
+  it('aceitar a sugestão de categoria com ela já escolhida — mantém a categoria, como o Aceitar as 4', async () => {
     const { formulario, agir } = await montarFormulario();
     await agir((f) => {
       f.alterar('anexo', 'IMG.jpg');
@@ -595,7 +595,7 @@ describe('useFormularioDeLancamento: sugestões do cupom', () => {
 
     await agir((f) => f.aceitarSugestao('categoria'));
 
-    expect(formulario().campos.categorias).toEqual([]);
+    expect(formulario().campos.categorias).toEqual(['Alimentação de cerimônia']);
     expect(formulario().sugestoesPendentes.map((s) => s.chave)).not.toContain('categoria');
   });
 

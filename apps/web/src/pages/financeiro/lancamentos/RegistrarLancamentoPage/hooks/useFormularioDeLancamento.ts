@@ -3,6 +3,7 @@ import type { TipoLancamento } from '@cdd/contracts';
 import { INICIAL } from '../mocks/formularioInicial';
 import { SEM_CERIMONIA, SEM_REEMBOLSO } from '../mocks/opcoes';
 import { SUGESTOES_DO_CUPOM, type ChaveSugerida } from '../mocks/sugestoesDoCupom';
+import { comCategoria } from '../utils/categorias';
 import { regrasDoLancamento, type EstadoDoFormulario } from '../utils/regrasDoLancamento';
 import { textosPorTipo } from '../utils/textosPorTipo';
 
@@ -73,7 +74,8 @@ export function useFormularioDeLancamento(consolida: boolean) {
 
   const aceitarSugestao = (chave: ChaveSugerida) => {
     setResolvidas((r) => [...r, chave]);
-    if (chave === 'categoria') alternarCategoria(SUGESTOES_DO_CUPOM.categoria);
+    if (chave === 'categoria')
+      setCampos((c) => ({ ...c, categorias: comCategoria(c.categorias, SUGESTOES_DO_CUPOM.categoria) }));
     else alterar(chave, SUGESTOES_DO_CUPOM[chave]);
   };
 
@@ -86,9 +88,7 @@ export function useFormularioDeLancamento(consolida: boolean) {
       valor: SUGESTOES_DO_CUPOM.valor,
       descricao: SUGESTOES_DO_CUPOM.descricao,
       contraparte: SUGESTOES_DO_CUPOM.contraparte,
-      categorias: c.categorias.includes(SUGESTOES_DO_CUPOM.categoria)
-        ? c.categorias
-        : [...c.categorias, SUGESTOES_DO_CUPOM.categoria],
+      categorias: comCategoria(c.categorias, SUGESTOES_DO_CUPOM.categoria),
     }));
   };
 
@@ -106,7 +106,7 @@ export function useFormularioDeLancamento(consolida: boolean) {
   }, [tipo, campos, consolida]);
 
   const sugestoesPendentes = useMemo(() => {
-    if (!campos.anexo) return [];
+    if (!campos.anexo || tipo !== 'SAIDA') return [];
     const todas: readonly { chave: ChaveSugerida; texto: string }[] = [
       { chave: 'valor', texto: `Valor ${SUGESTOES_DO_CUPOM.valor}` },
       { chave: 'descricao', texto: `Descrição: ${SUGESTOES_DO_CUPOM.descricao}` },
@@ -114,7 +114,7 @@ export function useFormularioDeLancamento(consolida: boolean) {
       { chave: 'categoria', texto: `Categoria: ${SUGESTOES_DO_CUPOM.categoria.toLowerCase()}` },
     ];
     return todas.filter((s) => !resolvidas.includes(s.chave));
-  }, [campos.anexo, resolvidas]);
+  }, [campos.anexo, tipo, resolvidas]);
 
   const registrar = () => {
     const { ehTransferencia, ehEntrada, conta, contaDestino, total } = derivado;

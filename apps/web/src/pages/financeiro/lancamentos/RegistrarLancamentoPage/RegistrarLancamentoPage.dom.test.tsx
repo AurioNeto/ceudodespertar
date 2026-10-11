@@ -1339,18 +1339,18 @@ describe('RegistrarLancamentoPage: comprovante e sugestões da leitura do cupom'
     expect(todos(container, 'button[aria-label="remover categoria Alimentação de cerimônia"]')).toHaveLength(1);
   });
 
-  it('categoria já escolhida à mão — aceitar a sugestão da mesma categoria a remove, em vez de manter', async () => {
+  it('categoria já escolhida à mão — aceitar a sugestão da mesma categoria a mantém', async () => {
     const { container } = await montar(<RegistrarLancamentoPage />);
     await escolherCategoriaExistente(container, 'Alimentação de cerimônia');
     await anexarComprovante(container);
 
     await clicar(botoesDeSugestao(container, 'Aceitar sugestão')[3] as HTMLButtonElement);
 
-    expect(container.querySelector('button[aria-label="remover categoria Alimentação de cerimônia"]')).toBeNull();
-    expect(container.textContent).toContain('nenhuma escolhida');
+    expect(todos(container, 'button[aria-label="remover categoria Alimentação de cerimônia"]')).toHaveLength(1);
+    expect(container.textContent).not.toContain('nenhuma escolhida');
   });
 
-  it('categoria já escolhida à mão — Aceitar as 4 a mantém, ao contrário do aceite individual', async () => {
+  it('categoria já escolhida à mão — Aceitar as 4 a mantém, como o aceite individual', async () => {
     const { container } = await montar(<RegistrarLancamentoPage />);
     await escolherCategoriaExistente(container, 'Alimentação de cerimônia');
     await anexarComprovante(container);
@@ -1418,26 +1418,28 @@ describe('RegistrarLancamentoPage: comprovante e sugestões da leitura do cupom'
   });
 
   it.each([{ tipo: 'Entrada' }, { tipo: 'Transferência' }])(
-    'tipo $tipo com anexo — as quatro sugestões do cupom de compra aparecem do mesmo jeito',
+    'tipo $tipo com anexo — o cupom de compra não gera sugestão',
     async ({ tipo }) => {
       const { container } = await montar(<RegistrarLancamentoPage />);
       await escolherTipo(container, tipo);
 
       await anexarComprovante(container);
 
-      expect(textosDeSugestao(container)).toEqual(TEXTOS_DAS_QUATRO_SUGESTOES);
+      expect(textosDeSugestao(container)).toEqual([]);
     },
   );
 
-  it('transferência — aceitar a categoria grava em campo escondido: ao voltar para saída ela está marcada', async () => {
+  it('transferência com anexo — não há sugestão para aceitar: ao voltar para saída as quatro esperam e nenhuma categoria está marcada', async () => {
     const { container } = await montar(<RegistrarLancamentoPage />);
     await escolherTipo(container, 'Transferência');
     await anexarComprovante(container);
-    await clicar(botoesDeSugestao(container, 'Aceitar sugestão')[3] as HTMLButtonElement);
+    const naTransferencia = botoesDeSugestao(container, 'Aceitar sugestão');
 
     await escolherTipo(container, 'Saída');
 
-    expect(todos(container, 'button[aria-label="remover categoria Alimentação de cerimônia"]')).toHaveLength(1);
+    expect(naTransferencia).toHaveLength(0);
+    expect(textosDeSugestao(container)).toEqual(TEXTOS_DAS_QUATRO_SUGESTOES);
+    expect(todos(container, 'button[aria-label="remover categoria Alimentação de cerimônia"]')).toHaveLength(0);
   });
 });
 
