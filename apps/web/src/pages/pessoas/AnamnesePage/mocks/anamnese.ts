@@ -54,16 +54,6 @@ const PERGUNTAS_V1: readonly PerguntaDoFormulario[] = [
   pergunta('Contato de emergência', 'Texto curto', true, null),
 ];
 
-export const TIPOS_DE_PERGUNTA = [
-  'Sim ou não',
-  'Texto curto',
-  'Texto longo',
-  'Escolha única',
-  'Múltipla escolha',
-  'Data',
-  'Número',
-];
-
 export const versoesIniciais: readonly VersaoDoFormulario[] = [
   {
     id: 'v4',

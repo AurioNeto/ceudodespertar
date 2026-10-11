@@ -1,0 +1,1 @@
+export { HistoricoDaVersao } from './HistoricoDaVersao';
