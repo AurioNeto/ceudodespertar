@@ -1,5 +1,6 @@
+import { reais } from '@cdd/contracts';
 import { Icon } from '@/ds';
-import { formatarValor } from '@/lib/formato';
+import { formatarBRL } from '@/pages/utils/formato';
 import { participantesDe } from '../../mocks/agenda';
 import type { Trabalho } from '../../tipos';
 import { AnamneseDoTrabalho } from './components/AnamneseDoTrabalho';
@@ -75,7 +76,7 @@ export function DetalheDoTrabalho({
         <Numero rotulo="Litros previstos" valor={`${ev.litros}`} nota="reserva no estoque" />
         <Numero
           rotulo="Contribuição"
-          valor={ev.contribuicoes.length ? ev.contribuicoes.map((c) => formatarValor(c).replace(',00', '')).join(' · ') : '—'}
+          valor={ev.contribuicoes.length ? ev.contribuicoes.map((c) => formatarBRL(reais(c)).replace(',00', '')).join(' · ') : '—'}
           nota={ev.contribuicoes.length > 1 ? 'opções sugeridas' : 'sem contribuição'}
         />
       </div>
@@ -118,15 +119,15 @@ export function DetalheDoTrabalho({
 
       <Bloco titulo="Dinheiro da cerimônia">
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(160px,1fr))', gap: 14 }}>
-          <Numero rotulo="Custo previsto" valor={formatarValor(ev.previstoGasto)} />
-          <Numero rotulo="Custo lançado" valor={formatarValor(ev.realizadoGasto)} cor="var(--color-attention)" />
+          <Numero rotulo="Custo previsto" valor={formatarBRL(reais(ev.previstoGasto))} />
+          <Numero rotulo="Custo lançado" valor={formatarBRL(reais(ev.realizadoGasto))} cor="var(--color-attention)" />
           <Numero
             rotulo="Contribuições esperadas"
-            valor={formatarValor(
-              participantes.filter((p) => p.situacao === 'confirmado').reduce((a, p) => a + p.contribuicao, 0),
+            valor={formatarBRL(
+              reais(participantes.filter((p) => p.situacao === 'confirmado').reduce((a, p) => a + p.contribuicao, 0)),
             )}
           />
-          <Numero rotulo="Contribuições recebidas" valor={formatarValor(ev.arrecadado)} cor="var(--color-confirmed)" />
+          <Numero rotulo="Contribuições recebidas" valor={formatarBRL(reais(ev.arrecadado))} cor="var(--color-confirmed)" />
         </div>
         <p style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>
           O bloco vem dos lançamentos com esta cerimônia vinculada — o mesmo campo do registro.

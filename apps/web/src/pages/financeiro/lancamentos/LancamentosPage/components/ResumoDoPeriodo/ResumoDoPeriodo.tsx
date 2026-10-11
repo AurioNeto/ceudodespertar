@@ -1,6 +1,6 @@
 import type { LancamentoNaLista } from '@cdd/contracts';
 import type { Density } from '@/ds';
-import { formatarDinheiro } from '@/pages/utils/formato';
+import { formatarBRL } from '@/pages/utils/formato';
 import { rotuloLabel } from '../../constantes';
 import { totaisDoPeriodo } from '../../utils/totaisDoPeriodo';
 import { Total } from './components/Total';
@@ -26,11 +26,11 @@ export function ResumoDoPeriodo({ lista, densidade }: ResumoDoPeriodoProps) {
         padding: campo ? '10px 12px' : '14px 18px',
       }}
     >
-      <Total rotulo="Entradas" valor={formatarDinheiro(entradas)} cor="var(--color-confirmed)" />
-      <Total rotulo="Saídas" valor={formatarDinheiro(saidas)} cor="var(--color-attention)" />
+      <Total rotulo="Entradas" valor={formatarBRL(entradas)} cor="var(--color-confirmed)" />
+      <Total rotulo="Saídas" valor={formatarBRL(saidas)} cor="var(--color-attention)" />
       <Total
         rotulo={campo ? 'Saldo' : 'Saldo do período'}
-        valor={formatarDinheiro(entradas - saidas)}
+        valor={formatarBRL(entradas - saidas)}
         cor="var(--text-primary)"
       />
       {campo ? null : (

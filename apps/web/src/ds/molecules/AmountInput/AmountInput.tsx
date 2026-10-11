@@ -83,7 +83,7 @@ export function AmountInput({ label, sumLabel, sumNote, value = '', onChange, hi
         <div style={{ marginTop: 9, font: 'var(--text-small)', color: 'var(--color-royal-ink)' }}>
           {sumLabel}{' '}
           <b data-numeric style={{ font: 'var(--text-amount)' }}>
-            {formatarValor(total)}
+            {`R$ ${formatarValor(total)}`}
           </b>{' '}
           {`— ${sumNote}`}
         </div>

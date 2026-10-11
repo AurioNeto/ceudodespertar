@@ -1,5 +1,5 @@
 import type { LancamentoNaLista } from '@cdd/contracts';
-import { formatarDiaMes, formatarDinheiro } from '@/pages/utils/formato';
+import { formatarBRL, formatarDiaMes } from '@/pages/utils/formato';
 import { rotuloDoTipo } from '@/pages/financeiro/lancamentos/utils/rotulosDoLancamento';
 import { valorTabular } from '../../../../constantes';
 import { corDoTipo } from '../../../../utils/corDoTipo';
@@ -66,7 +66,7 @@ export function LinhaDoLivro({ registro: r, selecionado, onAbrir }: LinhaDoLivro
         }}
       >
         {r.tipo === 'ENTRADA' ? '+ ' : r.tipo === 'SAIDA' ? '− ' : ''}
-        {formatarDinheiro(r.valor)}
+        {formatarBRL(r.valor)}
       </span>
     </button>
   );

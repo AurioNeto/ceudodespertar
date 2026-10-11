@@ -108,7 +108,7 @@ export function useFormularioDeLancamento(consolida: boolean) {
   const sugestoesPendentes = useMemo(() => {
     if (!campos.anexo || tipo !== 'SAIDA') return [];
     const todas: readonly { chave: ChaveSugerida; texto: string }[] = [
-      { chave: 'valor', texto: `Valor ${SUGESTOES_DO_CUPOM.valor}` },
+      { chave: 'valor', texto: `Valor R$ ${SUGESTOES_DO_CUPOM.valor}` },
       { chave: 'descricao', texto: `Descrição: ${SUGESTOES_DO_CUPOM.descricao}` },
       { chave: 'contraparte', texto: `Fornecedor: ${SUGESTOES_DO_CUPOM.contraparte}` },
       { chave: 'categoria', texto: `Categoria: ${SUGESTOES_DO_CUPOM.categoria.toLowerCase()}` },
