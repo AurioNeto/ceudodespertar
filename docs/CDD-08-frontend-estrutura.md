@@ -787,7 +787,7 @@ Títulos na ordem de leitura. Dependências por título.
 | Dividir Faturas e Empréstimos (concluída) | Caracterizar financeiro I; Harness; Dividir Contas e fundo | — |
 | Dividir Adiantamentos (concluída) | Caracterizar financeiro I; Harness; Dividir Faturas e Empréstimos | — |
 | Dividir Relatórios (concluída) | Caracterizar financeiro II; Harness; Dividir Adiantamentos | — |
-| Dividir Fechamento e Conciliação | Caracterizar financeiro II; Harness; Dividir Relatórios | — |
+| Dividir Fechamento e Conciliação (concluída) | Caracterizar financeiro II; Harness; Dividir Relatórios | — |
 | Dividir Prestação e Parâmetros | Caracterizar financeiro II; Harness; Dividir Fechamento e Conciliação | — |
 | Dividir Agenda | Caracterizar eventos; Harness; Dividir Prestação e Parâmetros | — |
 | Dividir Inscrição | Caracterizar inscrição; Harness; Dividir Agenda | — |
