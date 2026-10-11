@@ -329,7 +329,7 @@ describe('FeitioPage: Concluir o feitio', () => {
     expect(container.textContent).not.toContain('Concluir cria o lote e fecha o custo.');
   });
 
-  it('painel aberto — começa com litros vazios, Força 2 e a data de 11/09/2026', async () => {
+  it('painel aberto — começa com litros vazios, Força 2 e a data de 02/09/2026', async () => {
     const container = await montarFeitio();
 
     await abrirConclusao(container);
@@ -339,7 +339,7 @@ describe('FeitioPage: Concluir o feitio', () => {
     expect(campo(painel, 'Litros produzidos').placeholder).toBe('0,0');
     expect(campo(painel, 'Litros produzidos').inputMode).toBe('decimal');
     expect(campo(painel, 'Força').value).toBe('Força 2');
-    expect(campo(painel, 'Data de encerramento').value).toBe('11/09/2026');
+    expect(campo(painel, 'Data de encerramento').value).toBe('02/09/2026');
     expect(folhaComTexto(painel, 'span', 'Vai junto com o lote, para a vida toda.')).toBeTruthy();
   });
 
@@ -353,14 +353,14 @@ describe('FeitioPage: Concluir o feitio', () => {
     );
   });
 
-  it('a data de encerramento começa em 11/09/2026 mesmo com o relógio em outro dia', async () => {
+  it('a data de encerramento começa em 02/09/2026 mesmo com o relógio em outro dia', async () => {
     vi.useFakeTimers({ toFake: ['Date'] });
     vi.setSystemTime(new Date('2027-03-15T12:00:00Z'));
     const container = await montarFeitio();
 
     await abrirConclusao(container);
 
-    expect(campo(painelDeConclusao(container), 'Data de encerramento').value).toBe('11/09/2026');
+    expect(campo(painelDeConclusao(container), 'Data de encerramento').value).toBe('02/09/2026');
   });
 
   it('sem litros — Concluir e criar o lote fica desabilitado, com o motivo dos litros no botão e embaixo dele', async () => {
@@ -591,7 +591,7 @@ describe('FeitioPage: feitio concluído', () => {
     await concluirComLitros(container, '40');
 
     expect(folhaComTexto<HTMLSpanElement>(container, 'span', 'Concluído').style.color).toBe(COR.confirmado);
-    expect(folhaComTexto(container, 'span', '08/09/2026 a 11/09/2026 · Casa de feitio · Chácara')).toBeTruthy();
+    expect(folhaComTexto(container, 'span', '08/09/2026 a 02/09/2026 · Casa de feitio · Chácara')).toBeTruthy();
     expect(container.textContent).not.toContain('Em andamento');
     expect(container.textContent).not.toContain('ainda na panela');
   });

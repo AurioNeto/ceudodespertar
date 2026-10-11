@@ -1,20 +1,20 @@
 import { useState } from 'react';
 import { meusLancamentos } from '@/pages/financeiro/mocks/lancamentos';
+import { useCarrossel } from '@/pages/hooks/useCarrossel';
 import { POR_PAGINA } from '../constantes';
 import type { Visao } from '../constantes';
 
 export function useMeusRegistros() {
   const [visao, setVisao] = useState<Visao>('lista');
-  const [indice, setIndice] = useState(0);
   const [pagina, setPagina] = useState(0);
 
   const registros = meusLancamentos;
+  const { atual: indice, irPara } = useCarrossel(registros.length);
   const totalPaginas = Math.max(1, Math.ceil(registros.length / POR_PAGINA));
   const daPagina = registros.slice(pagina * POR_PAGINA, (pagina + 1) * POR_PAGINA);
 
-  const irPara = (i: number) => setIndice((i + registros.length) % registros.length);
   const abrirNoCartao = (i: number) => {
-    setIndice(i);
+    irPara(i);
     setVisao('carrossel');
   };
 

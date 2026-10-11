@@ -2,6 +2,7 @@ import { Icon, rotuloCaixaAlta } from '@/ds';
 import { proximaCerimonia } from '../../../../mocks/cerimonias';
 import { formatarBRL, formatarDiaMes, pluralizar } from '@/pages/utils/formato';
 import { CartazSlot } from '@/pages/components/CartazSlot';
+import { PontosDeAtencao } from '@/pages/components/PontosDeAtencao';
 import { ItemDeMeta } from '../ItemDeMeta';
 import { BlocoDoResumo } from './components/BlocoDoResumo';
 
@@ -71,43 +72,23 @@ export function ResumoDaProxima() {
           />
         </div>
 
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 10,
-            padding: '14px 16px',
-            background: 'var(--color-attention-soft)',
-            border: '1px solid var(--color-attention-border)',
-            borderRadius: 'var(--radius-sm)',
-          }}
-        >
-          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 9 }}>
-            <Icon name="triangle-alert" size={16} color="var(--color-attention)" />
-            <span style={{ font: 'var(--text-body-strong)', color: 'var(--text-primary)' }}>
-              {pluralizar(c.pontosDeAtencao.length, 'ponto')} de atenção em medicação ou saúde
-            </span>
-          </div>
-          {c.pontosDeAtencao.map((a) => (
-            <div
-              key={a.nome}
-              style={{
-                display: 'flex',
-                flexWrap: 'wrap',
-                gap: 8,
-                alignItems: 'baseline',
-                font: 'var(--text-small)',
-                color: 'var(--text-secondary)',
-              }}
-            >
-              <span style={{ font: 'var(--text-body)', color: 'var(--text-primary)' }}>{a.nome}</span>
-              <span>{a.nota}</span>
+        <PontosDeAtencao
+          moldura="ampla"
+          pontos={c.pontosDeAtencao}
+          cabecalho={
+            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 9 }}>
+              <Icon name="triangle-alert" size={16} color="var(--color-attention)" />
+              <span style={{ font: 'var(--text-body-strong)', color: 'var(--text-primary)' }}>
+                {pluralizar(c.pontosDeAtencao.length, 'ponto')} de atenção em medicação ou saúde
+              </span>
             </div>
-          ))}
-          <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>
-            Quem cuida da recepção precisa falar com essas {c.pontosDeAtencao.length} pessoas antes da abertura.
-          </span>
-        </div>
+          }
+          rodape={
+            <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>
+              Quem cuida da recepção precisa falar com essas {c.pontosDeAtencao.length} pessoas antes da abertura.
+            </span>
+          }
+        />
       </div>
     </div>
   );

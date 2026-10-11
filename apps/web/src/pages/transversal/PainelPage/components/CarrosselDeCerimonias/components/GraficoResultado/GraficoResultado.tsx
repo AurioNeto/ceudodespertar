@@ -2,6 +2,7 @@ import { cerimoniasPassadas } from '../../../../mocks/cerimonias';
 import { formatarValor } from '@/lib/formato';
 import { formatarDiaMes } from '@/pages/utils/formato';
 import { x, y } from './utils/escala';
+import { EixoDeCerimonias } from '../../../EixoDeCerimonias';
 
 /** Resultado por cerimônia: linha com área suave e o déficit cruzando o zero. */
 export function GraficoResultado() {
@@ -59,19 +60,14 @@ export function GraficoResultado() {
         </svg>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6,minmax(0,1fr))', gap: 8, marginTop: 2 }}>
-        {pontos.map((p) => (
-          <div
-            key={p.data}
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 2,
-              alignItems: 'center',
-              textAlign: 'center',
-              minWidth: 0,
-            }}
-          >
+      <EixoDeCerimonias
+        corDaData="var(--text-meta)"
+        espaco={8}
+        cerimonias={pontos.map((p) => ({
+          chave: p.data,
+          data: p.data,
+          nome: p.nome,
+          destaque: (
             <span
               style={{
                 font: 'var(--text-amount)',
@@ -82,24 +78,9 @@ export function GraficoResultado() {
             >
               {p.rotulo}
             </span>
-            <span style={{ font: 'var(--text-code)', fontVariantNumeric: 'tabular-nums', color: 'var(--text-meta)' }}>
-              {p.data}
-            </span>
-            <span
-              style={{
-                font: 'var(--text-small)',
-                color: 'var(--text-secondary)',
-                whiteSpace: 'nowrap',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                maxWidth: '100%',
-              }}
-            >
-              {p.nome}
-            </span>
-          </div>
-        ))}
-      </div>
+          ),
+        }))}
+      />
     </div>
   );
 }

@@ -1,7 +1,7 @@
 import { AmountDisplay, Icon, StatusBadge } from '@/ds';
+import { SeloDaAnamnese } from '@/pages/components/SeloDaAnamnese';
 import type { ParticipanteDoTrabalho } from '../../../../tipos';
 import { Bloco } from '../Bloco';
-import { TEXTO_DA_ANAMNESE, TOM_DA_ANAMNESE } from './constantes';
 
 export interface ListaDeParticipantesProps {
   participantes: readonly ParticipanteDoTrabalho[];
@@ -54,7 +54,7 @@ export function ListaDeParticipantes({
                 <Icon name="triangle-alert" size={16} color="var(--color-attention)" />
               </span>
             ) : null}
-            <StatusBadge tone={TOM_DA_ANAMNESE[p.anamnese]}>{TEXTO_DA_ANAMNESE[p.anamnese]}</StatusBadge>
+            <SeloDaAnamnese estado={p.anamnese} />
             <StatusBadge tone={p.situacao === 'confirmado' ? 'royal' : 'pending'}>
               {p.situacao === 'confirmado' ? 'Confirmado' : 'Em espera'}
             </StatusBadge>

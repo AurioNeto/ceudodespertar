@@ -3,6 +3,7 @@ import { conferidoEm, feitioRecente, lotesDeDaime } from './mocks/estoque';
 import { formatarDiaMes, formatarLitros } from '@/pages/utils/formato';
 import { BASE, ESCALA_Y, LARGURA_BARRA, PASSO_X } from './constantes';
 import { derivar } from './utils/derivarEstoque';
+import { EixoDeCerimonias } from '../EixoDeCerimonias';
 import { IndicadoresDoEstoque } from './components/IndicadoresDoEstoque';
 import { LegendaDoEstoque } from './components/LegendaDoEstoque';
 
@@ -135,38 +136,7 @@ export function GraficoEstoque() {
         ))}
       </svg>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '5.5% repeat(6,minmax(0,1fr))', marginTop: 2 }}>
-        <div />
-        {rotulos.map((r) => (
-          <div
-            key={r.chave}
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 2,
-              alignItems: 'center',
-              textAlign: 'center',
-              minWidth: 0,
-            }}
-          >
-            <span style={{ font: 'var(--text-code)', fontVariantNumeric: 'tabular-nums', color: 'var(--text-primary)' }}>
-              {r.data}
-            </span>
-            <span
-              style={{
-                font: 'var(--text-small)',
-                color: 'var(--text-secondary)',
-                whiteSpace: 'nowrap',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                maxWidth: '100%',
-              }}
-            >
-              {r.nome}
-            </span>
-          </div>
-        ))}
-      </div>
+      <EixoDeCerimonias cerimonias={rotulos} corDaData="var(--text-primary)" recuo="5.5%" />
 
       <LegendaDoEstoque legenda={legenda} />
     </div>

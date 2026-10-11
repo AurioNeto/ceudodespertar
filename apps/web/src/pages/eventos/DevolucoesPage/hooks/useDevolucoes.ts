@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { formatarBRL, formatarCompetencia } from '@/pages/utils/formato';
+import { formatarBRL, formatarCompetencia, formatarData } from '@/pages/utils/formato';
 import { contas } from '@/pages/mocks/contas';
+import { hoje } from '@/pages/mocks/relogio';
 import { useDataDeCaixa } from '@/pages/eventos/hooks/useDataDeCaixa';
 import { contaPadraoDoEvento } from '@/pages/eventos/utils/contaPadraoDoEvento';
 import { fila as filaInicial, pagas as pagasIniciais, type DevolucaoNaFila } from '../mocks/devolucoes';
@@ -8,8 +9,6 @@ import { ID_DO_CAMPO_DA_DATA_DA_SAIDA } from '../constantes';
 import type { Paga } from '../tipos';
 import { competenciaDaSaida } from '../utils/competenciaDaSaida';
 import { diasEsperando } from '../utils/diasEsperando';
-
-const HOJE = '11/09/2026';
 
 export function useDevolucoes() {
   const [fila, setFila] = useState<readonly DevolucaoNaFila[]>(filaInicial);
@@ -19,7 +18,7 @@ export function useDevolucoes() {
   );
   const [pagando, setPagando] = useState<string | null>(null);
   const [conta, setConta] = useState(contaPadraoDoEvento);
-  const dataDaSaida = useDataDeCaixa(HOJE, ID_DO_CAMPO_DA_DATA_DA_SAIDA);
+  const dataDaSaida = useDataDeCaixa(formatarData(hoje), ID_DO_CAMPO_DA_DATA_DA_SAIDA);
   const [motivo, setMotivo] = useState('');
   const [recado, setRecado] = useState<string | null>(null);
 

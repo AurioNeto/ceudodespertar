@@ -1,6 +1,7 @@
 /** Agenda de trabalhos — Doc 2 §2. */
 
-import type { EstadoDaAnamnese, ParticipanteDoTrabalho, Trabalho } from '../tipos';
+import type { EstadoDaAnamnese } from '@/pages/components/SeloDaAnamnese';
+import type { ParticipanteDoTrabalho, Trabalho } from '../tipos';
 
 export const trabalhosIniciais: readonly Trabalho[] = [
   {

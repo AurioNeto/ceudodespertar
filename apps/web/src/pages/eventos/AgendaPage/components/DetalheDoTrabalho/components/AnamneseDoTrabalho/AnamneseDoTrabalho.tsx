@@ -1,4 +1,5 @@
 import { Button, Numero } from '@/ds';
+import { PontosDeAtencao } from '@/pages/components/PontosDeAtencao';
 import type { ParticipanteDoTrabalho } from '../../../../tipos';
 import { Bloco } from '../Bloco';
 import { VERSAO_DO_FORMULARIO } from './mocks/formulario';
@@ -29,24 +30,10 @@ export function AnamneseDoTrabalho({ semAnamnese, vencidas, emDia, comAtencao, o
       </div>
 
       {comAtencao.length ? (
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 8,
-            background: 'var(--color-attention-soft)',
-            border: '1px solid var(--color-attention-border)',
-            borderRadius: 'var(--radius)',
-            padding: '12px 14px',
-          }}
-        >
-          {comAtencao.slice(0, 5).map((p) => (
-            <div key={p.nome} style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'baseline' }}>
-              <span style={{ font: 'var(--text-body)', color: 'var(--text-primary)' }}>{p.nome}</span>
-              <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>— {p.atencao}</span>
-            </div>
-          ))}
-        </div>
+        <PontosDeAtencao
+          moldura="compacta"
+          pontos={comAtencao.slice(0, 5).map((p) => ({ nome: p.nome, nota: `— ${p.atencao ?? ''}` }))}
+        />
       ) : null}
 
       <div

@@ -1,3 +1,5 @@
+import type { EstadoDaAnamnese } from '@/pages/components/SeloDaAnamnese';
+
 export type TipoDeTrabalho = 'Concentração' | 'Trabalho de cura' | 'Feitio' | 'Bailado' | 'Reunião do corpo';
 export type SituacaoDoTrabalho = 'planejada' | 'confirmada' | 'realizada' | 'cancelada';
 
@@ -30,8 +32,6 @@ export interface Trabalho {
   arrecadado: number;
   observacoes: string;
 }
-
-export type EstadoDaAnamnese = 'em dia' | 'vencida' | 'ausente';
 
 export interface ParticipanteDoTrabalho {
   nome: string;
