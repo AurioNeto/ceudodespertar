@@ -33,7 +33,7 @@ const NAVEGACAO_TRANSVERSAL = 'pages/transversal/utils/navegacao.ts';
 
 export const CASOS_DAS_FRONTEIRAS = {
   'web-sem-ciclo': {
-    severidade: 'warn',
+    severidade: 'error',
     acusa: [
       'dados/credencialOidc.ts -> dados/oidc.ts',
       `${FATURAS}/utils/ciclo.ts -> ${FATURAS}/utils/fatura.ts`,
@@ -44,7 +44,7 @@ export const CASOS_DAS_FRONTEIRAS = {
     ],
   },
   'lib-e-folha': {
-    severidade: 'warn',
+    severidade: 'error',
     acusa: [
       'lib/impuro.ts -> react',
       'lib/impuro.ts -> ds/index.ts',
@@ -121,7 +121,7 @@ export const CASOS_DAS_FRONTEIRAS = {
     permite: ['ds/organisms/PainelDeAcao/PainelDeAcao.tsx -> ds/molecules/TextField/index.ts'],
   },
   'dados-so-pelo-barrel': {
-    severidade: 'warn',
+    severidade: 'error',
     acusa: [`${FATURAS}/FaturasPage.tsx -> dados/erros.ts`],
     permite: [
       'app/sessao/SessaoProvider.tsx -> dados/index.ts',
@@ -135,7 +135,7 @@ export const CASOS_DAS_FRONTEIRAS = {
     permite: ['main.tsx -> dados/instancias.ts'],
   },
   'app-nao-conhece-paginas': {
-    severidade: 'warn',
+    severidade: 'error',
     acusa: [`app/sessao/SessaoProvider.tsx -> ${ENTRAR}/index.ts`],
     permite: [
       `app/sessao/SessaoProvider.dom.test.tsx -> ${ENTRAR}/index.ts`,
@@ -143,7 +143,7 @@ export const CASOS_DAS_FRONTEIRAS = {
     ],
   },
   'roteador-so-pelo-index-da-pagina': {
-    severidade: 'warn',
+    severidade: 'error',
     acusa: [`app/router.tsx -> ${FATURAS}/FaturasPage.tsx`],
     permite: [
       `app/router.tsx -> ${FATURAS}/index.ts`,
@@ -152,7 +152,7 @@ export const CASOS_DAS_FRONTEIRAS = {
     ],
   },
   'paginas-so-pela-api-publica-do-app': {
-    severidade: 'warn',
+    severidade: 'error',
     acusa: [
       `${FATURAS}/FaturasPage.tsx -> app/shell/Layout.tsx`,
       `${ENTRAR}/EntrarPage.tsx -> app/sessao/SessaoProvider.tsx`,
@@ -323,7 +323,7 @@ export const CASOS_DAS_FRONTEIRAS = {
     ],
   },
   'producao-global-sem-mock': {
-    severidade: 'warn',
+    severidade: 'error',
     acusa: [
       'lib/impuro.ts -> mocks/ids.ts',
       'dados/demonstracao.ts -> pages/mocks/relogio.ts',
@@ -333,7 +333,7 @@ export const CASOS_DAS_FRONTEIRAS = {
     permite: ['app/shell/Layout.tsx -> mocks/filaDeVerificacao.ts'],
   },
   'mock-global-so-dados': {
-    severidade: 'warn',
+    severidade: 'error',
     acusa: [
       'mocks/filaDeVerificacao.ts -> ds/index.ts',
       'mocks/filaDeVerificacao.ts -> app/sessao/index.ts',
@@ -382,7 +382,7 @@ export const CASOS_DAS_FRONTEIRAS = {
     ],
   },
   'camada-cruzada-por-alias': {
-    severidade: 'warn',
+    severidade: 'error',
     acusa: [
       `${FATURAS}/FaturasPage.tsx -> app/sessao/index.ts`,
       `${DEVOLUCOES}/DevolucoesPage.tsx -> pages/mocks/relogio.ts`,

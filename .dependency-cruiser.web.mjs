@@ -7,7 +7,6 @@ const PASTA_DE_UNIDADE_NO_DESTINO = `${SRC}.*/[A-Z][^/]*/|${SRC}[A-Z][^/]*/`;
 const PASTA_DE_MOCKS = `${SRC}(?:mocks|.*/mocks)/`;
 const PASTA_CAMEL_CASE = `${SRC}.*/[a-z][^/A-Z]*[A-Z][^/]*/|${SRC}[a-z][^/A-Z]*[A-Z][^/]*/`;
 const PROFUNDIDADE_MAXIMA_DE_UNIDADE = 6;
-const LINHA_DE_BASE = 'Linha de base da main 1812df6 (404 avisos), reproduzível com pnpm fronteiras:web.';
 
 function origemComUnidadesAninhadas(profundidade) {
   const unidadesCapturadas = '[^A-Z]*/[A-Z][^/]*)'.repeat(profundidade);
@@ -57,18 +56,17 @@ export default {
   forbidden: [
     {
       name: 'web-sem-ciclo',
-      severity: 'warn',
-      comment:
-        `Nenhum ciclo no grafo do web; com tsPreCompilationDeps, import type conta. ${LINHA_DE_BASE}`,
+      severity: 'error',
+      comment: 'Nenhum ciclo no grafo do web; com tsPreCompilationDeps, import type conta.',
       from: { path: SRC },
       to: { circular: true },
     },
     {
       name: 'lib-e-folha',
-      severity: 'warn',
+      severity: 'error',
       comment:
         'lib/ só tem função pura: não importa outra camada nem React. testes/ fica fora do alvo; quem ' +
-        `barra apoio de teste em código de produção é apoio-de-teste-so-em-teste. ${LINHA_DE_BASE}`,
+        'barra apoio de teste em código de produção é apoio-de-teste-so-em-teste.',
       from: { path: `${SRC}lib/` },
       to: { path: `${SRC}(app|components|dados|ds|mocks|pages)/|node_modules/react(-dom)?/` },
     },
@@ -127,12 +125,11 @@ export default {
     },
     {
       name: 'dados-so-pelo-barrel',
-      severity: 'warn',
+      severity: 'error',
       comment:
         'Fora de dados/, só dados/index.ts; o main.tsx também importa dados/instancias.ts. O silencioso.ts, ' +
         'entrada da renovação silenciosa, importa dados/oidc.ts direto: pelo barrel, a página levaria o ' +
-        '@cdd/contracts e o zod (+91 kB). ' +
-        LINHA_DE_BASE,
+        '@cdd/contracts e o zod (+91 kB).',
       from: { path: SRC, pathNot: `${SRC}(?:dados/|silencioso[.]ts$)` },
       to: { path: `${SRC}dados/`, pathNot: `${SRC}dados/(index|instancias)[.]ts$` },
     },
@@ -148,27 +145,25 @@ export default {
     },
     {
       name: 'app-nao-conhece-paginas',
-      severity: 'warn',
-      comment:
-        `Só o roteador, e os testes de app/, conhecem páginas. ${LINHA_DE_BASE}`,
+      severity: 'error',
+      comment: 'Só o roteador, e os testes de app/, conhecem páginas.',
       from: { path: `${SRC}app/`, pathNot: `${SRC}app/router[.]tsx$|[.]test[.]tsx?$` },
       to: { path: `${SRC}pages/` },
     },
     {
       name: 'roteador-so-pelo-index-da-pagina',
-      severity: 'warn',
+      severity: 'error',
       comment:
-        'O roteador importa a unidade de página pelo index.ts dela, o que habilita React.lazy por rota. ' +
-        LINHA_DE_BASE,
+        'O roteador importa a unidade de página pelo index.ts dela, o que habilita React.lazy por rota.',
       from: { path: `${SRC}app/router[.]tsx$` },
       to: { path: `${SRC}pages/`, pathNot: `${SRC}pages/.*/${UNIDADE_DE_PAGINA}/index[.]ts$` },
     },
     {
       name: 'paginas-so-pela-api-publica-do-app',
-      severity: 'warn',
+      severity: 'error',
       comment:
         'Tela usa sessão, rotas, cliente HTTP e a faixa de demonstração só pela API pública de app/: ' +
-        `app/{sessao,rotas,providers,demonstracao}/index.ts. ${LINHA_DE_BASE}`,
+        'app/{sessao,rotas,providers,demonstracao}/index.ts.',
       from: { path: `${SRC}pages/` },
       to: {
         path: `${SRC}app/`,
@@ -241,17 +236,15 @@ export default {
     },
     {
       name: 'producao-global-sem-mock',
-      severity: 'warn',
-      comment:
-        `ds, lib e dados nunca leem dado de demonstração. ${LINHA_DE_BASE}`,
+      severity: 'error',
+      comment: 'ds, lib e dados nunca leem dado de demonstração.',
       from: { path: `${SRC}(ds|lib|dados)/` },
       to: { path: PASTA_DE_MOCKS },
     },
     {
       name: 'mock-global-so-dados',
-      severity: 'warn',
-      comment:
-        `src/mocks é só dado de demonstração e depende só de lib/ e @cdd/contracts. ${LINHA_DE_BASE}`,
+      severity: 'error',
+      comment: 'src/mocks é só dado de demonstração e depende só de lib/ e @cdd/contracts.',
       from: { path: `${SRC}mocks/` },
       to: { path: [`${SRC}(app|components|dados|ds|pages|testes)/`, 'node_modules/(?!@cdd/contracts/)'] },
     },
@@ -289,11 +282,10 @@ export default {
     },
     {
       name: 'camada-cruzada-por-alias',
-      severity: 'warn',
+      severity: 'error',
       comment:
         'Atravessar camada, ou módulo dentro de pages/, só com o alias "@/…"; caminho relativo só ' +
-        'dentro da camada ou do módulo. O alias só resolve com o tsConfig em caminho absoluto. ' +
-        LINHA_DE_BASE,
+        'dentro da camada ou do módulo. O alias só resolve com o tsConfig em caminho absoluto.',
       from: { path: '^(.*apps/web/src/(?:pages/[a-z]+|[a-z]+))/' },
       to: { path: SRC, pathNot: '^$1/', dependencyTypesNot: ['aliased'] },
     },
