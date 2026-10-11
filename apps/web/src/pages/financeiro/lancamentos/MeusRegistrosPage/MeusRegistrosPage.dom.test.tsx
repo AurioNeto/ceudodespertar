@@ -7,7 +7,7 @@ import { barraDeEstado, lerRecibos, usarDensidade, valorDeEntrada, valorDeSaida,
 type Transformacao = (lista: readonly LancamentoNaLista[]) => readonly LancamentoNaLista[];
 
 const registros = vi.hoisted(() => ({ transformar: ((lista) => lista) as Transformacao }));
-vi.mock('@/pages/financeiro/mocks/lancamentos', async (importarOriginal) => {
+vi.mock('@/pages/financeiro/lancamentos/MeusRegistrosPage/mocks/meusLancamentos', async (importarOriginal) => {
   const original = await importarOriginal<{ meusLancamentos: readonly LancamentoNaLista[] }>();
   return {
     ...original,

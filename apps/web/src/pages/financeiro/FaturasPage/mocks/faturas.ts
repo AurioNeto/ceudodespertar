@@ -1,16 +1,6 @@
-import type { Competencia, Conta, ContaId, Fatura, FaturaId, LancamentoId, PessoaId } from '@cdd/contracts';
+import type { Conta, ContaId, Fatura, FaturaId, LancamentoId, PessoaId } from '@cdd/contracts';
 import { competencia, dataLocal, reais } from '@cdd/contracts';
 import { id } from '@/mocks/ids';
-
-/**
- * Cartões e faturas.
- *
- * Os cartões ficam fora de `contas` (mocks/financeiro) de propósito: aquela
- * lista alimenta o saldo consolidado do Painel, e cartão é **passivo**, não
- * saldo. Somá-lo ali faria a casa parecer ter dinheiro que é dívida.
- * Quando `F-07` passar a exibir cartões, é lá que a conta precisa distinguir
- * saldo de dívida — e é o que falta para as duas listas virarem uma só.
- */
 
 export const cartoes: readonly Conta[] = [
   {
@@ -323,5 +313,3 @@ export const contasPagadoras: readonly { readonly id: ContaId; readonly nome: st
   { id: id<ContaId>('especie'), nome: 'Espécie' },
   { id: id<ContaId>('itau'), nome: 'Itaú Munay' },
 ];
-
-export const competenciaDeHoje: Competencia = competencia('2026-09');
