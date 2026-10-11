@@ -48,10 +48,10 @@ export function useAgenda() {
         arrecadado: 0,
       };
       setTrabalhos((lista) => [...lista, novo]);
-      setMes(novo.mes);
-      setAno(novo.ano);
       setMensagem('Cerimônia criada como planejada.');
     }
+    setMes(base.mes);
+    setAno(base.ano);
     setForm(null);
   };
 

@@ -879,7 +879,7 @@ describe('AgendaPage: editar', () => {
     expect(nomesPorDiaNoCalendario(container)['5']).toBeUndefined();
   });
 
-  it('editar a data para outro mês — o calendário continua no mês em que estava, sem a cerimônia', async () => {
+  it('editar a data para outro mês — o calendário vai para o mês novo, com a cerimônia no dia', async () => {
     const { container } = await montar(<AgendaPage />);
     await abrirDetalhe(container, 'Mãe Divina');
     await clicar(botaoComTexto(container, 'Editar'));
@@ -888,9 +888,9 @@ describe('AgendaPage: editar', () => {
 
     await clicar(botaoComTexto(container, 'Voltar para a agenda'));
 
-    expect(mesNaTela(container)).toBe('setembro de 2026');
-    expect(contagemDoMes(container)).toBe('3 cerimônias no mês');
-    expect(nomesPorDiaNoCalendario(container)['5']).toBeUndefined();
+    expect(mesNaTela(container)).toBe('outubro de 2026');
+    expect(contagemDoMes(container)).toBe('2 cerimônias no mês');
+    expect(nomesPorDiaNoCalendario(container)['10']).toEqual(['Mãe Divina']);
   });
 
   it('editar as contribuições para 45,50 — o formulário recusa com a mensagem no campo e a cerimônia segue com 40 · 60 · 90', async () => {
