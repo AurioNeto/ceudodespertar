@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { lerValorDigitado } from '@/lib/numero';
 import {
   lotesIniciais,
   movimentosIniciais,
@@ -10,7 +9,8 @@ import {
   type ReservaDeTrabalho,
 } from '../mocks/ayahuasca';
 import type { Aba, ModoDoFormulario, RascunhoDeMovimento } from '../tipos';
-import { litros } from '../utils/litros';
+import { codigoDoLote } from '../utils/codigoDoLote';
+import { lerLitros, litros } from '../utils/litros';
 import { alternarQuarentenaDoLote } from '../utils/quarentena';
 import { rascunhoDeMovimento } from '../utils/rascunhoDeMovimento';
 import { saldos } from '../utils/saldos';
@@ -35,12 +35,12 @@ export function useEstoqueDeDaime() {
 
   const salvar = () => {
     if (!form || erro) return;
-    const quantidade = lerValorDigitado(form.litros) || 0;
+    const quantidade = lerLitros(form.litros);
 
     if (form.modo === 'feitio') {
       const novo: LoteDeDaime = {
         id: Date.now(),
-        codigo: form.codigo.trim(),
+        codigo: codigoDoLote(form.codigo),
         origem: form.origem.trim() || 'Feitio · CDD',
         data: '02/09/2026',
         forca: form.forca || 'Força 2',
