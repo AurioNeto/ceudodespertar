@@ -1,4 +1,5 @@
 import { reais } from '@cdd/contracts';
+import { Aviso } from '@/ds';
 import { formatarBRL, pluralizar } from '@/pages/utils/formato';
 import type { LinhaDoRelatorio } from '../../mocks/relatorios';
 import type { ValoresAConferir } from '../../tipos';
@@ -16,20 +17,16 @@ const valoresPorTipo = ({ entradas, saidas, transferencias }: ValoresAConferir) 
   ].join(' · ');
 
 export function SituacaoDoRecorte({ aConferir, valoresAConferir }: SituacaoDoRecorteProps) {
+  if (aConferir.length === 0) {
+    return (
+      <div style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>
+        Todos os lançamentos deste recorte estão consolidados.
+      </div>
+    );
+  }
   return (
-    <div
-      style={{
-        font: 'var(--text-small)',
-        color: aConferir.length ? 'var(--color-pending)' : 'var(--text-secondary)',
-        background: aConferir.length ? 'var(--color-pending-soft)' : 'transparent',
-        border: aConferir.length ? '1px solid var(--color-pending-border)' : 0,
-        borderRadius: 'var(--radius)',
-        padding: aConferir.length ? '9px 13px' : 0,
-      }}
-    >
-      {aConferir.length === 0
-        ? 'Todos os lançamentos deste recorte estão consolidados.'
-        : `Inclui ${pluralizar(aConferir.length, 'lançamento a conferir', 'lançamentos a conferir')} (${valoresPorTipo(valoresAConferir)}) — os números podem mudar depois da conferência.`}
-    </div>
+    <Aviso tom="pendente">
+      {`Inclui ${pluralizar(aConferir.length, 'lançamento a conferir', 'lançamentos a conferir')} (${valoresPorTipo(valoresAConferir)}) — os números podem mudar depois da conferência.`}
+    </Aviso>
   );
 }

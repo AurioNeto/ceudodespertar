@@ -1,4 +1,4 @@
-import { Button, CorpoDaTela, Icon, ScreenHeader, useDensidade } from '@/ds';
+import { Aviso, Button, CorpoDaTela, ScreenHeader, useDensidade } from '@/ds';
 import { pluralizar } from '@/pages/utils/formato';
 import { AvisoDeIntervalo } from './components/AvisoDeIntervalo';
 import { CartoesDeKpi } from './components/CartoesDeKpi';
@@ -45,23 +45,9 @@ export function RelatoriosPage() {
 
       <CorpoDaTela densidade={densidade} larguraMaxima={1120}>
         {tela.mensagem ? (
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              gap: 12,
-              background: 'var(--color-royal-soft)',
-              border: '1px solid var(--color-royal-border)',
-              borderRadius: 'var(--radius)',
-              padding: '10px 14px',
-            }}
-          >
-            <span style={{ font: 'var(--text-body)', color: 'var(--color-royal-deep)' }}>{tela.mensagem}</span>
-            <button type="button" aria-label="fechar aviso" onClick={tela.fecharAviso} style={{ color: 'var(--color-royal-deep)' }}>
-              <Icon name="x" size={16} />
-            </button>
-          </div>
+          <Aviso tom="informacao" aoFechar={tela.fecharAviso} rotuloDeFechar="fechar aviso">
+            {tela.mensagem}
+          </Aviso>
         ) : null}
 
         <PainelDeFiltros relatorio={r} resumoDoRecorte={tela.resumoDoRecorte} densidade={densidade} />
