@@ -1,0 +1,1 @@
+export { LinhaDaFatura } from './LinhaDaFatura';

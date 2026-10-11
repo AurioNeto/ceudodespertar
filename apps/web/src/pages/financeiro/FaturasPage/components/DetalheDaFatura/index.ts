@@ -1,0 +1,1 @@
+export { DetalheDaFatura } from './DetalheDaFatura';
