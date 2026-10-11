@@ -26,7 +26,7 @@ export function useTelaDeRelatorios() {
     abrirDrill,
     fecharDrill,
     linhasDoDrill: linhas,
-    totalDoDrill: totalDoDrill(linhas),
+    totalDoDrill: totalDoDrill(linhas, drill),
     mensagem,
     avisar,
     fecharAviso,

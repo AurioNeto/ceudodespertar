@@ -189,7 +189,7 @@ describe('ConciliacaoPage: painel de importação', () => {
 });
 
 describe('ConciliacaoPage: números do topo', () => {
-  it('Sem par conta as linhas do banco e as sugestões, e não os lançamentos sem linha', async () => {
+  it('Sem par conta as linhas do banco e os lançamentos sem linha, e não as sugestões', async () => {
     const { container } = await montar(<ConciliacaoPage />);
 
     expect(indicadores(container)).toEqual(['8', '3', '0', '0']);
@@ -250,7 +250,7 @@ describe('ConciliacaoPage: coluna de linhas do banco sem lançamento', () => {
     expect(contagemDaColuna(container, TITULO_DAS_LINHAS)).toBe('5');
   });
 
-  it('Voltar com outro motivo escolhido — o motivo fica para a próxima linha aberta, sem voltar ao primeiro', async () => {
+  it('Voltar com outro motivo escolhido — o motivo é descartado e a próxima linha aberta começa pelo primeiro', async () => {
     const { container } = await montar(<ConciliacaoPage />);
     await clicar(botaoComTexto(cartaoDaLinha(container, 'TARIFA PACOTE'), 'Ignorar'));
     await escolherOpcao(seletorDe(cartaoDaLinha(container, 'TARIFA PACOTE'), 'Motivo'), MOTIVOS[2] as string);
@@ -258,7 +258,7 @@ describe('ConciliacaoPage: coluna de linhas do banco sem lançamento', () => {
 
     await clicar(botaoComTexto(cartaoDaLinha(container, 'NETFLIX.COM'), 'Ignorar'));
 
-    expect(seletorDe(cartaoDaLinha(container, 'NETFLIX.COM'), 'Motivo').value).toBe(MOTIVOS[2]);
+    expect(seletorDe(cartaoDaLinha(container, 'NETFLIX.COM'), 'Motivo').value).toBe(MOTIVOS[0]);
   });
 
   it('abrir o motivo de outra linha — fecha o da primeira: só uma linha em ignorar por vez', async () => {
@@ -284,7 +284,7 @@ describe('ConciliacaoPage: coluna de linhas do banco sem lançamento', () => {
     expect(recado(container)).toContain('Linha ignorada com o motivo registrado: “Estorno do próprio banco”.');
   });
 
-  it('o motivo escolhido fica para a próxima linha ignorada, sem voltar ao primeiro', async () => {
+  it('o motivo recomeça pelo primeiro a cada linha: o escolhido não vale para a próxima linha ignorada', async () => {
     const { container } = await montar(<ConciliacaoPage />);
     await clicar(botaoComTexto(cartaoDaLinha(container, 'TARIFA PACOTE'), 'Ignorar'));
     await escolherOpcao(seletorDe(cartaoDaLinha(container, 'TARIFA PACOTE'), 'Motivo'), MOTIVOS[3] as string);
@@ -292,7 +292,7 @@ describe('ConciliacaoPage: coluna de linhas do banco sem lançamento', () => {
 
     await clicar(botaoComTexto(cartaoDaLinha(container, 'NETFLIX.COM'), 'Ignorar'));
 
-    expect(seletorDe(cartaoDaLinha(container, 'NETFLIX.COM'), 'Motivo').value).toBe(MOTIVOS[3]);
+    expect(seletorDe(cartaoDaLinha(container, 'NETFLIX.COM'), 'Motivo').value).toBe(MOTIVOS[0]);
   });
 
   it('ignorar todas as linhas — troca a lista pelo estado de que nada sobrou do lado do banco', async () => {
@@ -319,14 +319,14 @@ describe('ConciliacaoPage: coluna de sugestões de casamento', () => {
     expect(textosDaColuna(container, TITULO_DAS_SUGESTOES)).toEqual([SUGESTAO_ASSAI, SUGESTAO_POSTO, SUGESTAO_CORREIOS]);
   });
 
-  it('Casar — tira a sugestão, soma uma conciliada e desconta do Sem par', async () => {
+  it('Casar — tira a sugestão e soma uma conciliada, sem mexer no Sem par', async () => {
     const { container } = await montar(<ConciliacaoPage />);
 
     await clicar(botaoComTexto(cartaoDaSugestao(container, 'ASSAI'), 'Casar'));
 
     expect(contagemDaColuna(container, TITULO_DAS_SUGESTOES)).toBe('2');
     expect(container.textContent).not.toContain('ASSAI ATACADISTA IBIUNA');
-    expect(indicadores(container)).toEqual(['7', '2', '1', '0']);
+    expect(indicadores(container)).toEqual(['8', '2', '1', '0']);
   });
 
   it.each<{ casada: string; ficam: string[] }>([
@@ -403,12 +403,12 @@ describe('ConciliacaoPage: coluna de sugestões de casamento', () => {
     },
   );
 
-  it('Não é o mesmo — o Sem par não muda, porque a linha volta e a sugestão sai', async () => {
+  it('Não é o mesmo — o Sem par sobe dois, porque a linha e o lançamento voltam', async () => {
     const { container } = await montar(<ConciliacaoPage />);
 
     await clicar(botaoComTexto(cartaoDaSugestao(container, 'ASSAI'), 'Não é o mesmo'));
 
-    expect(indicadores(container)).toEqual(['8', '2', '0', '0']);
+    expect(indicadores(container)).toEqual(['10', '2', '0', '0']);
   });
 
   it('Não é o mesmo — o recado diz que os dois voltaram para as colunas de quem está sem par', async () => {
@@ -437,7 +437,7 @@ describe('ConciliacaoPage: coluna de sugestões de casamento', () => {
 
     expect(coluna(container, TITULO_DAS_SUGESTOES).textContent).toContain('Nenhuma sugestão aberta');
     expect(coluna(container, TITULO_DAS_SUGESTOES).textContent).toContain('O motor não encontra mais pares prováveis.');
-    expect(indicadores(container)).toEqual(['5', '0', '3', '0']);
+    expect(indicadores(container)).toEqual(['8', '0', '3', '0']);
   });
 
   it('um novo recado troca o anterior, e fechar recado o remove', async () => {
@@ -484,12 +484,12 @@ describe('ConciliacaoPage: coluna de lançamentos sem linha, com a lista de demo
     expect(contagemDaColuna(container, TITULO_DOS_LANCAMENTOS)).toBe('0');
   });
 
-  it('nenhum lançamento sobrando — as outras colunas e o Sem par continuam como estavam', async () => {
+  it('nenhum lançamento sobrando — as outras colunas continuam como estavam e o Sem par fica só com as linhas do banco', async () => {
     cenario.lancamentos = () => [];
 
     const { container } = await montar(<ConciliacaoPage />);
 
-    expect(indicadores(container)).toEqual(['8', '3', '0', '0']);
+    expect(indicadores(container)).toEqual(['5', '3', '0', '0']);
     expect([contagemDaColuna(container, TITULO_DAS_LINHAS), contagemDaColuna(container, TITULO_DAS_SUGESTOES)]).toEqual(['5', '3']);
   });
 

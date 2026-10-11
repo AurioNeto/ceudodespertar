@@ -1,19 +1,14 @@
 import { useState } from 'react';
 import type { CategoriaId } from '@cdd/contracts';
 import { pluralizar } from '@/pages/utils/formato';
-import type { Aba } from '../constantes';
-import {
-  categorias as categoriasIniciais,
-  LINHAS_DE_RELATORIO,
-  unidades,
-  type CategoriaDoPlano,
-} from '../mocks/parametros';
+import { SEM_LINHA_ESCOLHIDA, type Aba } from '../constantes';
+import { categorias as categoriasIniciais, unidades, type CategoriaDoPlano } from '../mocks/parametros';
 
 export function useCorrecaoDeLinha() {
   const [aba, setAba] = useState<Aba>('categorias');
   const [categorias, setCategorias] = useState<readonly CategoriaDoPlano[]>(categoriasIniciais);
   const [editando, setEditando] = useState<CategoriaId | null>(null);
-  const [linhaEscolhida, setLinhaEscolhida] = useState(LINHAS_DE_RELATORIO[0]!);
+  const [linhaEscolhida, setLinhaEscolhida] = useState(SEM_LINHA_ESCOLHIDA);
   const [recado, setRecado] = useState<string | null>(null);
 
   const semLinha = categorias.filter((c) => c.ativa && !c.linhaRelatorio);
@@ -39,7 +34,7 @@ export function useCorrecaoDeLinha() {
 
   const editar = (c: CategoriaDoPlano) => {
     setEditando(c.id);
-    setLinhaEscolhida(c.linhaRelatorio ?? LINHAS_DE_RELATORIO[0]!);
+    setLinhaEscolhida(c.linhaRelatorio ?? SEM_LINHA_ESCOLHIDA);
   };
 
   const cancelar = () => setEditando(null);

@@ -4,11 +4,16 @@ import type { Periodo, Ponto } from '../tipos';
 export const indice = (p: Ponto) => p.ano * 12 + p.mes;
 export const doIndice = (i: number): Ponto => ({ ano: Math.floor((i - 1) / 12), mes: ((i - 1) % 12) + 1 });
 
+const LIMITE_DO_ANO_ABREVIADO = 100;
+const SECULO_DO_ANO_ABREVIADO = 2000;
+
+const anoCompleto = (ano: number) => (ano < LIMITE_DO_ANO_ABREVIADO ? SECULO_DO_ANO_ABREVIADO + ano : ano);
+
 const analisar = (texto: string): Ponto => {
   const [m, a] = texto.split('/').map((n) => parseInt(n, 10));
   return {
     mes: Number.isNaN(m) ? 1 : Math.min(12, Math.max(1, m ?? 1)),
-    ano: Number.isNaN(a) ? 2026 : (a ?? 2026),
+    ano: Number.isNaN(a) ? 2026 : anoCompleto(a ?? 2026),
   };
 };
 

@@ -239,23 +239,27 @@ export const categorias: readonly CategoriaDoPlano[] = [
   },
 ];
 
-export const LINHAS_DE_RELATORIO: readonly string[] = [
-  'Receita de contribuição',
-  'Receita de hospedagem',
-  'Receita de apoio',
-  'Receita da Lojinha',
-  'Receita da Munay',
-  'Custo de cerimônia',
-  'Custo de feitio',
-  'Custo da Lojinha',
-  'Custo da Munay',
-  'Manutenção',
-  'Deslocamento',
-  'Serviços de terceiros',
-  'Administrativo',
-  'Investimento em benfeitoria',
-  'Movimentação patrimonial',
-];
+export const LINHAS_POR_NATUREZA: Record<Natureza, readonly string[]> = {
+  RECEITA: [
+    'Receita de contribuição',
+    'Receita de hospedagem',
+    'Receita de apoio',
+    'Receita da Lojinha',
+    'Receita da Munay',
+  ],
+  DESPESA: [
+    'Custo de cerimônia',
+    'Custo de feitio',
+    'Custo da Lojinha',
+    'Custo da Munay',
+    'Manutenção',
+    'Deslocamento',
+    'Serviços de terceiros',
+    'Administrativo',
+    'Investimento em benfeitoria',
+    'Movimentação patrimonial',
+  ],
+};
 
 /* ── Unidades ────────────────────────────────────────────────────────────── */
 

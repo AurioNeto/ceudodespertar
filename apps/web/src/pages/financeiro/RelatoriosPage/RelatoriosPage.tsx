@@ -1,5 +1,6 @@
 import { Button, Icon, ScreenHeader, useDensidade } from '@/ds';
 import { pluralizar } from '@/pages/utils/formato';
+import { AvisoDeIntervalo } from './components/AvisoDeIntervalo';
 import { CartoesDeKpi } from './components/CartoesDeKpi';
 import { CustoPorCerimonia } from './components/CustoPorCerimonia';
 import { GavetaDeRecorte } from './components/GavetaDeRecorte';
@@ -73,7 +74,11 @@ export function RelatoriosPage() {
 
         <PainelDeFiltros relatorio={r} resumoDoRecorte={tela.resumoDoRecorte} densidade={densidade} />
 
-        <SituacaoDoRecorte aConferir={r.aConferir} valorAConferir={r.valorAConferir} />
+        {r.intervaloInvertido ? (
+          <AvisoDeIntervalo />
+        ) : (
+          <SituacaoDoRecorte aConferir={r.aConferir} valoresAConferir={r.valoresAConferir} />
+        )}
 
         <CartoesDeKpi kpis={tela.kpis} comparar={r.comparar} densidade={densidade} />
 

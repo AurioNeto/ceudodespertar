@@ -6,3 +6,5 @@ export const REGIME_ROTULO: Record<RegimeDaUnidade, string> = {
   CONTRIBUICAO: 'Contribuição',
   COMERCIAL: 'Comercial',
 };
+
+export const SEM_LINHA_ESCOLHIDA = '';

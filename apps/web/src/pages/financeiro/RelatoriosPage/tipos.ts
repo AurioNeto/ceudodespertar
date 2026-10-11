@@ -21,3 +21,9 @@ export interface Ponto {
   ano: number;
   mes: number;
 }
+
+export interface ValoresAConferir {
+  entradas: number;
+  saidas: number;
+  transferencias: number;
+}

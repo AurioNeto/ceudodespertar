@@ -10,6 +10,8 @@ import {
   sugestoes as sugestoesIniciais,
 } from '../mocks/conciliacao';
 
+const MOTIVO_INICIAL = motivosDeIgnorar[0]!;
+
 export function useConciliacao() {
   const [importado, setImportado] = useState(true);
   const [conta, setConta] = useState<string>(contasComExtrato[0]!.id);
@@ -17,7 +19,7 @@ export function useConciliacao() {
   const [linhas, setLinhas] = useState<readonly LinhaExtrato[]>(linhasIniciais);
   const [lancamentos, setLancamentos] = useState<readonly LancamentoAConciliar[]>(lancamentosIniciais);
   const [ignorando, setIgnorando] = useState<LinhaExtratoId | null>(null);
-  const [motivo, setMotivo] = useState(motivosDeIgnorar[0]!);
+  const [motivo, setMotivo] = useState(MOTIVO_INICIAL);
   const [recado, setRecado] = useState<string | null>(null);
   const [conciliadas, setConciliadas] = useState(0);
   const [ignoradas, setIgnoradas] = useState(0);
@@ -53,11 +55,14 @@ export function useConciliacao() {
 
   const fecharRecado = () => setRecado(null);
 
-  const abrirIgnorar = (id: LinhaExtratoId) => setIgnorando(id);
+  const abrirIgnorar = (id: LinhaExtratoId) => {
+    setIgnorando(id);
+    setMotivo(MOTIVO_INICIAL);
+  };
 
   const cancelarIgnorar = () => setIgnorando(null);
 
-  const totalPendente = linhas.length + sugestoes.length;
+  const totalPendente = linhas.length + lancamentos.length;
 
   return {
     importado,

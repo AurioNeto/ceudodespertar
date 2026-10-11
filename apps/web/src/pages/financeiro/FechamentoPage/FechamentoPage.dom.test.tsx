@@ -120,13 +120,25 @@ const contarCaixa = () => {
   const anterior = cenario.contas;
   cenario.contas = (contas) => anterior(contas).map((c) => (c.tipo === 'DINHEIRO' ? semAlerta(c) : c));
 };
+const comAnexo = (lancamento: LancamentoNaLista): LancamentoNaLista => ({
+  ...lancamento,
+  comprovante: lancamento.comprovante ?? 'anexo.pdf',
+});
+const conferido = (lancamento: LancamentoNaLista): LancamentoNaLista =>
+  lancamento.status === 'A_CONFERIR' ? { ...lancamento, status: 'CONFIRMADO' } : lancamento;
 const anexarTudo = () => {
-  cenario.lancamentos = (lancamentos) => lancamentos.map((l) => ({ ...l, comprovante: l.comprovante ?? 'anexo.pdf' }));
+  const anterior = cenario.lancamentos;
+  cenario.lancamentos = (lancamentos) => anterior(lancamentos).map(comAnexo);
+};
+const conferirLancamentos = () => {
+  const anterior = cenario.lancamentos;
+  cenario.lancamentos = (lancamentos) => anterior(lancamentos).map(conferido);
 };
 const liberarBloqueios = () => {
   liberarFila();
   conciliarContas();
   contarCaixa();
+  conferirLancamentos();
 };
 
 const lancamentoDoMes = (base: LancamentoNaLista, mudancas: Partial<LancamentoNaLista>): LancamentoNaLista => ({
@@ -255,7 +267,7 @@ describe('FechamentoPage: checklist com os dados de demonstração de agosto de 
   it('cabeçalho do checklist — conta os itens que bloqueiam', async () => {
     const { container } = await montarFechamento();
 
-    expect(container.textContent).toContain('3 itens bloqueiam o fechamento');
+    expect(container.textContent).toContain('4 itens bloqueiam o fechamento');
   });
 
   it.each<{ nome: string; ir: string; rota: string; titulo: string }>([
@@ -394,9 +406,19 @@ describe('FechamentoPage: bloqueios individuais', () => {
     );
   });
 
+  it('lançamentos a conferir no mês — bloqueiam, além da fila de verificação', async () => {
+    liberarBloqueios();
+    cenario.lancamentos = (lancamentos) => lancamentos.map(aConferir);
+    const { container } = await montarFechamento();
+
+    expect(estadoDoPeriodo(container).situacao).toBe('Aberto, com 1 pendência');
+    expect(botaoDeFechar(container).disabled).toBe(true);
+  });
+
   it('um único bloqueio — usa o singular na situação, no cabeçalho do checklist e no motivo do botão', async () => {
     liberarFila();
     conciliarContas();
+    conferirLancamentos();
     const { container } = await montarFechamento();
 
     expect(estadoDoPeriodo(container).situacao).toBe('Aberto, com 1 pendência');
@@ -411,7 +433,7 @@ describe('FechamentoPage: situação do período', () => {
 
     expect(estadoDoPeriodo(container)).toEqual({
       competencia: 'Competência 08/2026 · CDD',
-      situacao: 'Aberto, com 3 pendências',
+      situacao: 'Aberto, com 4 pendências',
       orientacao: 'Resolva as pendências abaixo para liberar o fechamento.',
       cor: COR_PENDENTE,
     });
@@ -453,7 +475,7 @@ describe('FechamentoPage: totais do mês, com e sem estorno', () => {
     expect(resumoDoMes(container)).toEqual(['4.425,00', '3.038,35', '1.386,65']);
   });
 
-  it('entrada estornada — continua contando nas entradas, ao contrário da saída estornada', async () => {
+  it('entrada estornada — fica fora das entradas, como a saída estornada fica fora das saídas', async () => {
     cenario.lancamentos = (lancamentos) => {
       const base = lancamentos[0] as LancamentoNaLista;
       return [
@@ -465,7 +487,7 @@ describe('FechamentoPage: totais do mês, com e sem estorno', () => {
     };
     const { container } = await montarFechamento();
 
-    expect(resumoDoMes(container)).toEqual(['150,00', '30,00', '120,00']);
+    expect(resumoDoMes(container)).toEqual(['100,00', '30,00', '70,00']);
   });
 
   it('transferência e lançamento de outra competência — ficam fora de entradas e saídas', async () => {
@@ -501,15 +523,6 @@ describe('FechamentoPage: totais do mês, com e sem estorno', () => {
 });
 
 describe('FechamentoPage: o que o fechamento não confere hoje', () => {
-  it('lançamentos a conferir no mês — não bloqueiam: só a fila de verificação conta', async () => {
-    liberarBloqueios();
-    cenario.lancamentos = (lancamentos) => lancamentos.map(aConferir);
-    const { container } = await montarFechamento();
-
-    expect(estadoDoPeriodo(container).situacao).toBe('Pronto para fechar');
-    expect(botaoDeFechar(container).disabled).toBe(false);
-  });
-
   it('período fechado — não mostra o hash do conjunto de lançamentos', async () => {
     liberarBloqueios();
     const { container } = await montarFechamento();
@@ -538,8 +551,8 @@ describe('FechamentoPage: fechar o período', () => {
 
     expect(botao.textContent).toBe('Fechar agosto de 2026');
     expect(botao.disabled).toBe(true);
-    expect(botao.title).toBe('Resolva 3 pendências antes de fechar.');
-    expect(container.textContent).toContain('Resolva 3 pendências antes de fechar.');
+    expect(botao.title).toBe('Resolva 4 pendências antes de fechar.');
+    expect(container.textContent).toContain('Resolva 4 pendências antes de fechar.');
   });
 
   it('com bloqueios — o cartão de ação diz Fechamento bloqueado e lista os itens que bloqueiam', async () => {
@@ -547,7 +560,8 @@ describe('FechamentoPage: fechar o período', () => {
 
     expect(cartaoDeAcao(container)).toMatchObject({
       titulo: 'Fechamento bloqueado',
-      explicacao: 'Fila de verificação zerada · Contas conciliadas com o extrato · Contagem do caixa em espécie',
+      explicacao:
+        'Fila de verificação zerada · Lançamentos conferidos na competência · Contas conciliadas com o extrato · Contagem do caixa em espécie',
     });
   });
 
@@ -556,7 +570,7 @@ describe('FechamentoPage: fechar o período', () => {
 
     await clicar(botaoDeFechar(container));
 
-    expect(estadoDoPeriodo(container).situacao).toBe('Aberto, com 3 pendências');
+    expect(estadoDoPeriodo(container).situacao).toBe('Aberto, com 4 pendências');
   });
 
   it('sem bloqueios — o botão fica ativo, sem motivo, e o cartão diz Tudo pronto', async () => {

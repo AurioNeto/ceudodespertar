@@ -2,6 +2,7 @@ import { pluralizar } from '@/pages/utils/formato';
 import type { useRelatorio } from '../hooks/useRelatorio';
 import type { LinhaDoRelatorio } from '../mocks/relatorios';
 import type { Drill } from '../tipos';
+import { resultadoDe, somar } from './agregacao';
 
 type Relatorio = ReturnType<typeof useRelatorio>;
 
@@ -59,4 +60,5 @@ export const kpisDoRelatorio = (
 export const linhasDoDrill = (atual: readonly LinhaDoRelatorio[], drill: Drill | null): readonly LinhaDoRelatorio[] =>
   drill ? atual.filter((l) => l[drill.campo] === drill.valor && (!drill.tipo || l.tipo === drill.tipo)) : [];
 
-export const totalDoDrill = (linhas: readonly LinhaDoRelatorio[]) => linhas.reduce((a, l) => a + l.valor, 0);
+export const totalDoDrill = (linhas: readonly LinhaDoRelatorio[], drill: Drill | null) =>
+  drill?.tipo ? somar(linhas, drill.tipo) : resultadoDe(linhas);

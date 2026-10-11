@@ -17,6 +17,7 @@ export function useRelatorio() {
 
   const derivado = useMemo(() => {
     const intv = intervaloDe(periodo, de, ate);
+    const intervaloInvertido = indice(intv.inicio) > indice(intv.fim);
     const passos = indice(intv.fim) - indice(intv.inicio) + 1;
     const intvComparado =
       comparar === 'anterior' ? deslocar(intv, -passos) : comparar === 'ano_passado' ? deslocar(intv, -12) : null;
@@ -85,13 +86,18 @@ export function useRelatorio() {
 
     return {
       atual,
+      intervaloInvertido,
       entradas,
       saidas,
       transferencias,
       resultado: entradas - saidas,
       transferenciasQtd: atual.filter((l) => l.tipo === 'transferencia').length,
       aConferir,
-      valorAConferir: aConferir.reduce((a, l) => a + l.valor, 0),
+      valoresAConferir: {
+        entradas: somar(aConferir, 'entrada'),
+        saidas: somar(aConferir, 'saida'),
+        transferencias: somar(aConferir, 'transferencia'),
+      },
       comparados: comparado
         ? {
             entradas: somar(comparado, 'entrada'),

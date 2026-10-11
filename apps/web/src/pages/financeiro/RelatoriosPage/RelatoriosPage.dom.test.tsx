@@ -239,11 +239,11 @@ describe('RelatoriosPage: indicadores do mês de agosto de 2026 contra o períod
 });
 
 describe('RelatoriosPage: aviso de lançamentos a conferir', () => {
-  it('mês com um lançamento a conferir — avisa a contagem e o valor', async () => {
+  it('mês com um lançamento a conferir — avisa a contagem e o valor, separando entradas de saídas', async () => {
     const { container } = await montar(<RelatoriosPage />);
 
     expect(container.textContent).toContain(
-      'Inclui 1 lançamento a conferir (1.543,68) — os números podem mudar depois da conferência.',
+      'Inclui 1 lançamento a conferir (entradas 0,00 · saídas 1.543,68) — os números podem mudar depois da conferência.',
     );
   });
 
@@ -256,14 +256,14 @@ describe('RelatoriosPage: aviso de lançamentos a conferir', () => {
     expect(container.textContent).not.toContain('Inclui');
   });
 
-  it('dois anos de janela — o plural e o valor somam entradas, saídas e transferências sem distinguir o tipo', async () => {
+  it('dois anos de janela — o plural e o valor separam entradas, saídas e transferências', async () => {
     const { container } = await montar(<RelatoriosPage />);
     await clicar(botaoComTexto(container, 'Personalizado'));
 
     await digitar(campoDeMes(container, 'De'), '01/2025');
 
     expect(container.textContent).toContain(
-      'Inclui 11 lançamentos a conferir (11.200,93) — os números podem mudar depois da conferência.',
+      'Inclui 11 lançamentos a conferir (entradas 2.897,48 · saídas 5.567,55 · transferências 2.735,90) — os números podem mudar depois da conferência.',
     );
   });
 });
@@ -763,12 +763,12 @@ describe('RelatoriosPage: gaveta com os lançamentos de um recorte', () => {
     expect(valoresDaGaveta(container)).toEqual([{ texto: '605,68', cor: COR_PRIMARIA }]);
   });
 
-  it('conta — o total da gaveta soma entradas e saídas como valores positivos, e não bate com o resultado da conta', async () => {
+  it('conta — o total da gaveta é o resultado da conta, entradas menos saídas, igual ao número clicado', async () => {
     const { container } = await montar(<RelatoriosPage />);
 
     await clicar(botaoDeConta(container, 'Cora PJ'));
 
-    expect(cabecalhoDaGaveta(container)[2]).toBe('4 lançamentos · 5.202,22 · ago/26');
+    expect(cabecalhoDaGaveta(container)[2]).toBe('4 lançamentos · -28,54 · ago/26');
     expect(linhaDaConta(container, 'Cora PJ').textContent).toContain('-28,54');
   });
 
