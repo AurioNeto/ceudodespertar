@@ -1,0 +1,1 @@
+export { PainelDeConclusao } from './PainelDeConclusao';
