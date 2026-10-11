@@ -1,6 +1,6 @@
 import type { SugestaoDeCasamento } from '@cdd/contracts';
 import { Button, Icon, StatusBadge } from '@/ds';
-import { formatarData, formatarDinheiro } from '@/pages/utils/formato';
+import { formatarBRL, formatarData } from '@/pages/utils/formato';
 import { Lado } from './components/Lado';
 
 export interface SugestaoProps {
@@ -33,7 +33,7 @@ export function Sugestao({ sugestao, onCasar, onRecusar }: SugestaoProps) {
           rotulo="No banco"
           texto={linha.descricaoBanco}
           data={formatarData(linha.data)}
-          valor={formatarDinheiro(linha.valor)}
+          valor={formatarBRL(linha.valor)}
         />
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingLeft: 2 }}>
           <Icon name="arrow-left-right" size={15} color="var(--color-suggest)" />
@@ -43,7 +43,7 @@ export function Sugestao({ sugestao, onCasar, onRecusar }: SugestaoProps) {
           rotulo="No sistema"
           texto={lancamento.motivo}
           data={formatarData(lancamento.data)}
-          valor={formatarDinheiro(lancamento.valor)}
+          valor={formatarBRL(lancamento.valor)}
         />
       </div>
 
