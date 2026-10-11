@@ -1,0 +1,1 @@
+export { BarraDeContexto } from './BarraDeContexto';

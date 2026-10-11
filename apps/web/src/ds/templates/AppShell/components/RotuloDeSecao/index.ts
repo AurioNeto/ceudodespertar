@@ -1,0 +1,1 @@
+export { RotuloDeSecao } from './RotuloDeSecao';

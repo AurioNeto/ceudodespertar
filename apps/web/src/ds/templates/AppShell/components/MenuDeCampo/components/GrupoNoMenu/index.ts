@@ -1,0 +1,1 @@
+export { GrupoNoMenu } from './GrupoNoMenu';

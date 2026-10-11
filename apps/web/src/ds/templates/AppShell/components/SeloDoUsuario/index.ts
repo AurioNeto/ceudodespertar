@@ -1,0 +1,1 @@
+export { SeloDoUsuario } from './SeloDoUsuario';

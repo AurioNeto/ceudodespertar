@@ -1,0 +1,1 @@
+export { SeloDeContagem } from './SeloDeContagem';

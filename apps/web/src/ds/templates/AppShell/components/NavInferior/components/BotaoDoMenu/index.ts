@@ -1,0 +1,1 @@
+export { BotaoDoMenu } from './BotaoDoMenu';

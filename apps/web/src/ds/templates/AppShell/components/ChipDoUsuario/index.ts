@@ -1,0 +1,1 @@
+export { ChipDoUsuario } from './ChipDoUsuario';
