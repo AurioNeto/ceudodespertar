@@ -1,0 +1,1 @@
+export { LinhaDeUsuario } from './LinhaDeUsuario';

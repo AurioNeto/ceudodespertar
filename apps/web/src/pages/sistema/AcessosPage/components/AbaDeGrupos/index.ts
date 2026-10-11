@@ -1,0 +1,1 @@
+export { AbaDeGrupos } from './AbaDeGrupos';

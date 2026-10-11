@@ -1,0 +1,1 @@
+export { AvisoDeAtencao } from './AvisoDeAtencao';

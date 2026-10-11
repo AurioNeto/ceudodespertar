@@ -2,34 +2,6 @@
   {
     "type": "dependency",
     "from": "apps/web/src/app/router.tsx",
-    "to": "apps/web/src/pages/acessos/AcessosPage.tsx",
-    "unresolvedTo": "../pages/acessos/AcessosPage",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/app/router.tsx",
-    "to": "apps/web/src/pages/auditoria/AuditoriaPage.tsx",
-    "unresolvedTo": "../pages/auditoria/AuditoriaPage",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/app/router.tsx",
     "to": "apps/web/src/pages/entrada/EntrarPage.tsx",
     "unresolvedTo": "../pages/entrada/EntrarPage",
     "dependencyTypes": [
@@ -116,403 +88,6 @@
     "from": "apps/web/src/app/sessao.test.tsx",
     "to": "apps/web/src/pages/entrada/RetornoPage.tsx",
     "unresolvedTo": "../pages/entrada/RetornoPage",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/acessos/AbaDeUsuarios.tsx",
-    "to": "apps/web/src/ds/index.ts",
-    "unresolvedTo": "../../ds",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/acessos/AbaDeUsuarios.tsx",
-    "to": "apps/web/src/lib/useValorComAtraso.ts",
-    "unresolvedTo": "../../lib/useValorComAtraso",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/acessos/AcessosPage.tsx",
-    "to": "apps/web/src/app/sessao/index.ts",
-    "unresolvedTo": "../../app/sessao",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/acessos/AcoesDeAcessos.dom.test.tsx",
-    "to": "apps/web/src/dados/erros.ts",
-    "unresolvedTo": "../../dados/erros",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/acessos/apoioDeTeste.tsx",
-    "to": "apps/web/src/dados/clienteHttp.ts",
-    "unresolvedTo": "../../dados/clienteHttp",
-    "dependencyTypes": [
-      "local",
-      "type-only",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/acessos/apoioDeTeste.tsx",
-    "to": "apps/web/src/dados/erros.ts",
-    "unresolvedTo": "../../dados/erros",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/acessos/CampoDeMotivo.tsx",
-    "to": "apps/web/src/ds/index.ts",
-    "unresolvedTo": "../../ds",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/acessos/comandosDeAcessos.test.ts",
-    "to": "apps/web/src/dados/clienteHttp.ts",
-    "unresolvedTo": "../../dados/clienteHttp",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/acessos/comandosDeAcessos.test.ts",
-    "to": "apps/web/src/dados/credencial.ts",
-    "unresolvedTo": "../../dados/credencial",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/acessos/comandosDeAcessos.ts",
-    "to": "apps/web/src/dados/clienteHttp.ts",
-    "unresolvedTo": "../../dados/clienteHttp",
-    "dependencyTypes": [
-      "local",
-      "type-only",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/acessos/comandosDeAcessos.ts",
-    "to": "apps/web/src/dados/consultaEComando.ts",
-    "unresolvedTo": "../../dados/consultaEComando",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/acessos/consultasDeAcessos.test.ts",
-    "to": "apps/web/src/dados/clienteHttp.ts",
-    "unresolvedTo": "../../dados/clienteHttp",
-    "dependencyTypes": [
-      "local",
-      "type-only",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/acessos/consultasDeAcessos.ts",
-    "to": "apps/web/src/dados/clienteHttp.ts",
-    "unresolvedTo": "../../dados/clienteHttp",
-    "dependencyTypes": [
-      "local",
-      "type-only",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/acessos/consultasDeAcessos.ts",
-    "to": "apps/web/src/dados/consultaEComando.ts",
-    "unresolvedTo": "../../dados/consultaEComando",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/acessos/LinhaDeUsuario.tsx",
-    "to": "apps/web/src/lib/formato.ts",
-    "unresolvedTo": "../../lib/formato",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/acessos/mensagemDeErroDeAcessos.test.ts",
-    "to": "apps/web/src/dados/erros.ts",
-    "unresolvedTo": "../../dados/erros",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/acessos/mensagemDeErroDeAcessos.ts",
-    "to": "apps/web/src/dados/erros.ts",
-    "unresolvedTo": "../../dados/erros",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/acessos/PainelDeConvite.tsx",
-    "to": "apps/web/src/ds/index.ts",
-    "unresolvedTo": "../../ds",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/acessos/PainelDeConvite.tsx",
-    "to": "apps/web/src/lib/chaveDeIdempotencia.ts",
-    "unresolvedTo": "../../lib/chaveDeIdempotencia",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/acessos/PainelDoUsuario.dom.test.tsx",
-    "to": "apps/web/src/app/sessao/index.ts",
-    "unresolvedTo": "../../app/sessao",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/acessos/PainelDoUsuario.dom.test.tsx",
-    "to": "apps/web/src/dados/erros.ts",
-    "unresolvedTo": "../../dados/erros",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/acessos/PainelDoUsuario.tsx",
-    "to": "apps/web/src/ds/index.ts",
-    "unresolvedTo": "../../ds",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/acessos/PainelDoUsuario.tsx",
-    "to": "apps/web/src/lib/chaveDeIdempotencia.ts",
-    "unresolvedTo": "../../lib/chaveDeIdempotencia",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/acessos/SeletorDeGrupos.tsx",
-    "to": "apps/web/src/ds/index.ts",
-    "unresolvedTo": "../../ds",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/acessos/situacaoDeUsuario.ts",
-    "to": "apps/web/src/ds/index.ts",
-    "unresolvedTo": "../../ds",
-    "dependencyTypes": [
-      "local",
-      "type-only",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/acessos/useAcaoNoUsuario.ts",
-    "to": "apps/web/src/app/sessao/index.ts",
-    "unresolvedTo": "../../app/sessao",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/acessos/useAcaoNoUsuario.ts",
-    "to": "apps/web/src/dados/erros.ts",
-    "unresolvedTo": "../../dados/erros",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "camada-cruzada-por-alias"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/auditoria/AuditoriaPage.tsx",
-    "to": "apps/web/src/mocks/auditoria.ts",
-    "unresolvedTo": "../../mocks/auditoria",
     "dependencyTypes": [
       "local",
       "import"
@@ -856,10 +431,13 @@
   },
   {
     "type": "dependency",
-    "from": "apps/web/src/pages/acessos/AcoesDeAcessos.dom.test.tsx",
+    "from": "apps/web/src/pages/sistema/AcessosPage/AcoesDeAcessos.dom.test.tsx",
     "to": "apps/web/src/dados/erros.ts",
-    "unresolvedTo": "../../dados/erros",
+    "unresolvedTo": "@/dados/erros",
     "dependencyTypes": [
+      "aliased",
+      "aliased-tsconfig",
+      "aliased-tsconfig-paths",
       "local",
       "import"
     ],
@@ -870,10 +448,13 @@
   },
   {
     "type": "dependency",
-    "from": "apps/web/src/pages/acessos/apoioDeTeste.tsx",
+    "from": "apps/web/src/pages/sistema/AcessosPage/apoioDeTeste.tsx",
     "to": "apps/web/src/dados/clienteHttp.ts",
-    "unresolvedTo": "../../dados/clienteHttp",
+    "unresolvedTo": "@/dados/clienteHttp",
     "dependencyTypes": [
+      "aliased",
+      "aliased-tsconfig",
+      "aliased-tsconfig-paths",
       "local",
       "type-only",
       "import"
@@ -885,10 +466,13 @@
   },
   {
     "type": "dependency",
-    "from": "apps/web/src/pages/acessos/apoioDeTeste.tsx",
+    "from": "apps/web/src/pages/sistema/AcessosPage/apoioDeTeste.tsx",
     "to": "apps/web/src/dados/erros.ts",
-    "unresolvedTo": "../../dados/erros",
+    "unresolvedTo": "@/dados/erros",
     "dependencyTypes": [
+      "aliased",
+      "aliased-tsconfig",
+      "aliased-tsconfig-paths",
       "local",
       "import"
     ],
@@ -899,10 +483,13 @@
   },
   {
     "type": "dependency",
-    "from": "apps/web/src/pages/acessos/comandosDeAcessos.test.ts",
+    "from": "apps/web/src/pages/sistema/AcessosPage/comandos.test.ts",
     "to": "apps/web/src/dados/clienteHttp.ts",
-    "unresolvedTo": "../../dados/clienteHttp",
+    "unresolvedTo": "@/dados/clienteHttp",
     "dependencyTypes": [
+      "aliased",
+      "aliased-tsconfig",
+      "aliased-tsconfig-paths",
       "local",
       "import"
     ],
@@ -913,10 +500,13 @@
   },
   {
     "type": "dependency",
-    "from": "apps/web/src/pages/acessos/comandosDeAcessos.test.ts",
+    "from": "apps/web/src/pages/sistema/AcessosPage/comandos.test.ts",
     "to": "apps/web/src/dados/credencial.ts",
-    "unresolvedTo": "../../dados/credencial",
+    "unresolvedTo": "@/dados/credencial",
     "dependencyTypes": [
+      "aliased",
+      "aliased-tsconfig",
+      "aliased-tsconfig-paths",
       "local",
       "import"
     ],
@@ -927,10 +517,13 @@
   },
   {
     "type": "dependency",
-    "from": "apps/web/src/pages/acessos/comandosDeAcessos.ts",
+    "from": "apps/web/src/pages/sistema/AcessosPage/comandos.ts",
     "to": "apps/web/src/dados/clienteHttp.ts",
-    "unresolvedTo": "../../dados/clienteHttp",
+    "unresolvedTo": "@/dados/clienteHttp",
     "dependencyTypes": [
+      "aliased",
+      "aliased-tsconfig",
+      "aliased-tsconfig-paths",
       "local",
       "type-only",
       "import"
@@ -942,10 +535,13 @@
   },
   {
     "type": "dependency",
-    "from": "apps/web/src/pages/acessos/comandosDeAcessos.ts",
+    "from": "apps/web/src/pages/sistema/AcessosPage/comandos.ts",
     "to": "apps/web/src/dados/consultaEComando.ts",
-    "unresolvedTo": "../../dados/consultaEComando",
+    "unresolvedTo": "@/dados/consultaEComando",
     "dependencyTypes": [
+      "aliased",
+      "aliased-tsconfig",
+      "aliased-tsconfig-paths",
       "local",
       "import"
     ],
@@ -956,10 +552,30 @@
   },
   {
     "type": "dependency",
-    "from": "apps/web/src/pages/acessos/consultasDeAcessos.test.ts",
-    "to": "apps/web/src/dados/clienteHttp.ts",
-    "unresolvedTo": "../../dados/clienteHttp",
+    "from": "apps/web/src/pages/sistema/AcessosPage/components/AbaDeUsuarios/components/PainelDoUsuario/PainelDoUsuario.dom.test.tsx",
+    "to": "apps/web/src/dados/erros.ts",
+    "unresolvedTo": "@/dados/erros",
     "dependencyTypes": [
+      "aliased",
+      "aliased-tsconfig",
+      "aliased-tsconfig-paths",
+      "local",
+      "import"
+    ],
+    "rule": {
+      "severity": "error",
+      "name": "dados-so-pelo-barrel"
+    }
+  },
+  {
+    "type": "dependency",
+    "from": "apps/web/src/pages/sistema/AcessosPage/consultas.test.ts",
+    "to": "apps/web/src/dados/clienteHttp.ts",
+    "unresolvedTo": "@/dados/clienteHttp",
+    "dependencyTypes": [
+      "aliased",
+      "aliased-tsconfig",
+      "aliased-tsconfig-paths",
       "local",
       "type-only",
       "import"
@@ -971,10 +587,13 @@
   },
   {
     "type": "dependency",
-    "from": "apps/web/src/pages/acessos/consultasDeAcessos.ts",
+    "from": "apps/web/src/pages/sistema/AcessosPage/consultas.ts",
     "to": "apps/web/src/dados/clienteHttp.ts",
-    "unresolvedTo": "../../dados/clienteHttp",
+    "unresolvedTo": "@/dados/clienteHttp",
     "dependencyTypes": [
+      "aliased",
+      "aliased-tsconfig",
+      "aliased-tsconfig-paths",
       "local",
       "type-only",
       "import"
@@ -986,10 +605,13 @@
   },
   {
     "type": "dependency",
-    "from": "apps/web/src/pages/acessos/consultasDeAcessos.ts",
+    "from": "apps/web/src/pages/sistema/AcessosPage/consultas.ts",
     "to": "apps/web/src/dados/consultaEComando.ts",
-    "unresolvedTo": "../../dados/consultaEComando",
+    "unresolvedTo": "@/dados/consultaEComando",
     "dependencyTypes": [
+      "aliased",
+      "aliased-tsconfig",
+      "aliased-tsconfig-paths",
       "local",
       "import"
     ],
@@ -1000,10 +622,13 @@
   },
   {
     "type": "dependency",
-    "from": "apps/web/src/pages/acessos/mensagemDeErroDeAcessos.test.ts",
+    "from": "apps/web/src/pages/sistema/AcessosPage/hooks/useAcaoNoUsuario.ts",
     "to": "apps/web/src/dados/erros.ts",
-    "unresolvedTo": "../../dados/erros",
+    "unresolvedTo": "@/dados/erros",
     "dependencyTypes": [
+      "aliased",
+      "aliased-tsconfig",
+      "aliased-tsconfig-paths",
       "local",
       "import"
     ],
@@ -1014,10 +639,13 @@
   },
   {
     "type": "dependency",
-    "from": "apps/web/src/pages/acessos/mensagemDeErroDeAcessos.ts",
+    "from": "apps/web/src/pages/sistema/AcessosPage/utils/mensagemDeErro.test.ts",
     "to": "apps/web/src/dados/erros.ts",
-    "unresolvedTo": "../../dados/erros",
+    "unresolvedTo": "@/dados/erros",
     "dependencyTypes": [
+      "aliased",
+      "aliased-tsconfig",
+      "aliased-tsconfig-paths",
       "local",
       "import"
     ],
@@ -1028,24 +656,13 @@
   },
   {
     "type": "dependency",
-    "from": "apps/web/src/pages/acessos/PainelDoUsuario.dom.test.tsx",
+    "from": "apps/web/src/pages/sistema/AcessosPage/utils/mensagemDeErro.ts",
     "to": "apps/web/src/dados/erros.ts",
-    "unresolvedTo": "../../dados/erros",
+    "unresolvedTo": "@/dados/erros",
     "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "dados-so-pelo-barrel"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/pages/acessos/useAcaoNoUsuario.ts",
-    "to": "apps/web/src/dados/erros.ts",
-    "unresolvedTo": "../../dados/erros",
-    "dependencyTypes": [
+      "aliased",
+      "aliased-tsconfig",
+      "aliased-tsconfig-paths",
       "local",
       "import"
     ],
@@ -1105,62 +722,6 @@
   },
   {
     "type": "dependency",
-    "from": "apps/web/src/lib/chaveDeIdempotencia.dom.test.tsx",
-    "to": "node_modules/.pnpm/react-dom@19.2.8_react@19.2.8/node_modules/react-dom/client.js",
-    "unresolvedTo": "react-dom/client",
-    "dependencyTypes": [
-      "npm",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "lib-e-folha"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/lib/chaveDeIdempotencia.dom.test.tsx",
-    "to": "node_modules/.pnpm/react@19.2.8/node_modules/react/index.js",
-    "unresolvedTo": "react",
-    "dependencyTypes": [
-      "npm",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "lib-e-folha"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/lib/chaveDeIdempotencia.ts",
-    "to": "node_modules/.pnpm/react@19.2.8/node_modules/react/index.js",
-    "unresolvedTo": "react",
-    "dependencyTypes": [
-      "npm",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "lib-e-folha"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/lib/useValorComAtraso.ts",
-    "to": "node_modules/.pnpm/react@19.2.8/node_modules/react/index.js",
-    "unresolvedTo": "react",
-    "dependencyTypes": [
-      "npm",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "lib-e-folha"
-    }
-  },
-  {
-    "type": "dependency",
     "from": "apps/web/src/mocks/financeiro.ts",
     "to": "apps/web/src/pages/mocks/contas.ts",
     "unresolvedTo": "@/pages/mocks/contas",
@@ -1192,34 +753,6 @@
     "rule": {
       "severity": "error",
       "name": "paginas-so-pela-api-publica-do-app"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/app/router.tsx",
-    "to": "apps/web/src/pages/acessos/AcessosPage.tsx",
-    "unresolvedTo": "../pages/acessos/AcessosPage",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "roteador-so-pelo-index-da-pagina"
-    }
-  },
-  {
-    "type": "dependency",
-    "from": "apps/web/src/app/router.tsx",
-    "to": "apps/web/src/pages/auditoria/AuditoriaPage.tsx",
-    "unresolvedTo": "../pages/auditoria/AuditoriaPage",
-    "dependencyTypes": [
-      "local",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "roteador-so-pelo-index-da-pagina"
     }
   },
   {

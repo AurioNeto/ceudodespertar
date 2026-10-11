@@ -569,7 +569,7 @@ Os testes do #58, do #59, do #61 e do #62 se repartem por describe entre as unid
 | `pages/acessos/PainelDoUsuario.dom.test.tsx` | `.../AbaDeUsuarios/components/PainelDoUsuario/PainelDoUsuario.dom.test.tsx` | mover (do #55) | Mover sistema |
 | `pages/acessos/CampoDeMotivo.tsx` (só `PainelDoUsuario`) | `.../PainelDoUsuario/components/CampoDeMotivo/CampoDeMotivo.tsx` | mover (do #55) | Mover sistema |
 | `pages/acessos/AvisoDeAtencao.tsx` (`PainelDoUsuario` e `CampoDeMotivo`) | `.../PainelDoUsuario/components/AvisoDeAtencao/AvisoDeAtencao.tsx` | mover (do #55) | Mover sistema |
-| `pages/acessos/AcoesDeAcessos.dom.test.tsx` (percorre a página com os dois painéis) | `pages/sistema/AcessosPage/AcoesDeAcessos.dom.test.tsx` | mover (do #55) | Mover sistema |
+| `pages/acessos/AcoesDeAcessos.dom.test.tsx` (percorre a página com os dois painéis; importa `AVISO_DE_VERSAO_DESATUALIZADA` de `./constantes`, `CONVITE_REGISTRADO` pelo `index.ts` de `PainelDeConvite` e `AVISO_LGPD_DO_MOTIVO` pelo `index.ts` de `AbaDeUsuarios`, que o reexporta do `index.ts` de `PainelDoUsuario`, que o reexporta do de `CampoDeMotivo`: importar o `constantes.ts` de uma unidade filha seria violação de `unidade-so-pelo-index-1`) | `pages/sistema/AcessosPage/AcoesDeAcessos.dom.test.tsx` | mover (do #55) | Mover sistema |
 | `pages/acessos/comandosDeAcessos.ts` | `pages/sistema/AcessosPage/comandos.ts` | mover (do #55) | Mover sistema |
 | `pages/acessos/comandosDeAcessos.test.ts` | `pages/sistema/AcessosPage/comandos.test.ts` | mover (do #55) | Mover sistema |
 | `pages/acessos/focarTitulo.ts` (`AcessosPage` e `AbaDeUsuarios`) | `pages/sistema/AcessosPage/utils/focarTitulo.ts` | mover (do #55) | Mover sistema |
@@ -581,13 +581,13 @@ Os testes do #58, do #59, do #61 e do #62 se repartem por describe entre as unid
 | `pages/acessos/textosDeAcessos.ts`: `MOTIVO_OBRIGATORIO` (só `PainelDoUsuario`) | `.../AbaDeUsuarios/components/PainelDoUsuario/constantes.ts` | repartir por export (do #55) | Mover sistema |
 | `pages/acessos/useAcaoNoUsuario.ts` (`PainelDeConvite` e `PainelDoUsuario`) | `pages/sistema/AcessosPage/hooks/useAcaoNoUsuario.ts` | mover (do #55) | Mover sistema |
 | `pages/acessos/useFocoNoPrimeiroCampoInvalido.ts` (do #55; os dois painéis) | `pages/sistema/AcessosPage/hooks/useFocoNoPrimeiroCampoInvalido.ts` | mover (do #55) | Mover sistema |
-| `lib/chaveDeIdempotencia.ts`: `useChaveDeIdempotencia` (PR #55; hook React, que `lib/` não pode ter) | `pages/sistema/AcessosPage/hooks/useChaveDeIdempotencia.ts` | repartir por export (do #55) | Mover sistema |
+| `lib/chaveDeIdempotencia.ts`: `useChaveDeIdempotencia` (PR #55; hook React, que `lib/` não pode ter; leva junto `gerarChaveAleatoria`, privada, que só o hook usa como padrão) | `pages/sistema/AcessosPage/hooks/useChaveDeIdempotencia.ts` | repartir por export (do #55) | Mover sistema |
 | `lib/chaveDeIdempotencia.ts`: `criarGuardiaoDeChave`, `GuardiaoDeChave` e `GeradorDeChave` (PR #55; função pura) | `pages/sistema/AcessosPage/utils/guardiaoDeChave.ts` | repartir por export (do #55) | Mover sistema |
 | `lib/chaveDeIdempotencia.test.ts` (PR #55; testa só `criarGuardiaoDeChave`) | `pages/sistema/AcessosPage/utils/guardiaoDeChave.test.ts` | mover (do #55) | Mover sistema |
 | `lib/chaveDeIdempotencia.dom.test.tsx` (PR #55) | `pages/sistema/AcessosPage/hooks/useChaveDeIdempotencia.dom.test.tsx` (`.dom.test.tsx` porque usa JSX, seção 8.1 do Documento 8; nome final no merge, seção 14 deste anexo) | mover (do #55) | Mover sistema |
 | `lib/useValorComAtraso.ts` (único consumidor: `AbaDeUsuarios`) | `pages/sistema/AcessosPage/components/AbaDeUsuarios/hooks/useValorComAtraso.ts` | mover | Mover sistema |
-| `lib/formato.ts`: `FUSO_DA_CASA`, `DATA_E_HORA`, `formatarDataHora` (único consumidor: `LinhaDeUsuario`) | `pages/sistema/AcessosPage/components/AbaDeUsuarios/components/LinhaDeUsuario/utils/formatarDataHora.ts` | repartir por export | Mover sistema |
-| `lib/formato.test.ts`: describe de `formatarDataHora` (entra com o #58) | `.../LinhaDeUsuario/utils/formatarDataHora.test.ts` | repartir por describe | Mover sistema |
+| `lib/formato.ts`: `FUSO_DA_CASA`, `DATA_E_HORA`, `formatarDataHora` (único consumidor de produção: `LinhaDeUsuario`, que passa a importá-lo de `@/lib/formato`. Ficam em `lib/`: o `it` de `formatarDataHora` no describe de fuso de `pages/utils/formato.test.ts` também o importa, e buscá-lo em `pages/sistema` seria violação nova de `compartilhado-nao-importa-tela`, `compartilhado-de-pages-nao-importa-modulo` e `unidade-so-pelo-index-0`. Descem para `.../LinhaDeUsuario/utils/formatarDataHora.ts` quando esse `it` sair de `pages/utils`) | `lib/formato.ts` | manter | Mover sistema |
+| `lib/formato.test.ts`: describe de `formatarDataHora` (entra com o #58; fica com a função, linha anterior) | `lib/formato.test.ts` | manter | Mover sistema |
 
 ### 12.2 Divisões
 

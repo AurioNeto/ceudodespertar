@@ -777,7 +777,7 @@ Títulos na ordem de leitura. Dependências por título.
 | app/ em subpastas (concluída) | testes/ global e setupFiles | — |
 | dados/ sem efeito e sem ciclo (concluída) | app/ em subpastas | — |
 | Portao no ds (concluída) | dados/ sem efeito e sem ciclo | — |
-| Mover sistema | Portao no ds | e2e do B0 e ajustes do login |
+| Mover sistema (concluída) | Portao no ds | — |
 | Mover transversal | Mover sistema | e2e do B0 e ajustes do login |
 | Fronteiras em erro | Mover transversal | — |
 | Dividir RegistrarLancamento (concluída) | Caracterizar fluxo lancamentos; Harness de captura de telas; lib/formato por export | — |
