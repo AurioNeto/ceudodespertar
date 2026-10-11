@@ -1,4 +1,4 @@
-import { rotuloLabel } from '../../constantes';
+import { Rotulo } from '@/ds';
 
 export function Numero({
   rotulo,
@@ -23,7 +23,7 @@ export function Numero({
         borderRadius: 'var(--radius-sm)',
       }}
     >
-      <span style={rotuloLabel}>{rotulo}</span>
+      <Rotulo>{rotulo}</Rotulo>
       <span
         style={{
           font: 'var(--text-amount-lg)',

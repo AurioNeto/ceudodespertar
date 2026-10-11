@@ -1,4 +1,4 @@
-import { Button, Icon, ScreenHeader, useDensidade, SeletorDeTipo } from '@/ds';
+import { CorpoDaTela, Button, Icon, ScreenHeader, useDensidade, SeletorDeTipo } from '@/ds';
 import { useSessao } from '@/app/sessao';
 import { CalendarioMensal } from './components/CalendarioMensal';
 import { DetalheDoTrabalho } from './components/DetalheDoTrabalho';
@@ -39,15 +39,7 @@ export function AgendaPage() {
         }
       />
 
-      <div
-        style={{
-          padding: campo ? '14px 16px 24px' : '18px 24px 30px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: campo ? 12 : 16,
-          maxWidth: campo ? undefined : 1080,
-        }}
-      >
+      <CorpoDaTela densidade={densidade} larguraMaxima={1080} espaco="compacto">
         {tela.mensagem ? (
           <div
             style={{
@@ -116,7 +108,7 @@ export function AgendaPage() {
             )}
           </>
         )}
-      </div>
+      </CorpoDaTela>
 
       {tela.form ? <FormularioDeTrabalho inicial={tela.form} onCancelar={tela.fecharFormulario} onSalvar={tela.salvar} /> : null}
     </>
