@@ -57,7 +57,7 @@ export function useConciliacao() {
 
   const cancelarIgnorar = () => setIgnorando(null);
 
-  const totalPendente = linhas.length + sugestoes.length;
+  const totalPendente = linhas.length + lancamentos.length;
 
   return {
     importado,
