@@ -73,7 +73,7 @@ export function OpcaoMarcavel({
           placeItems: 'center',
         }}
       >
-        {marcada ? <Icon name="check" size={11} color="var(--bg-card)" /> : null}
+        {marcada ? <Icon name="check" size={11} color="var(--bg-card-solid)" /> : null}
       </span>
       {resposta ? (
         rotulo

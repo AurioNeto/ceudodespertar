@@ -1,4 +1,5 @@
-/* Céu do Despertar — reset mínimo e defaults de documento. */
+/* Céu do Despertar — reset mínimo e defaults de documento. O vidro leve
+   (desfoque de 2px) é aplicado pelo token de fundo do estilo inline. */
 
 *, *::before, *::after { box-sizing: border-box; }
 
@@ -41,4 +42,22 @@ textarea { resize: vertical; }
 ::placeholder { opacity: 1; }
 @supports (not (-webkit-appearance: -apple-pay-button)) or (contain-intrinsic-size: 1px) {
   ::placeholder { color: color-mix(in oklab, currentcolor 50%, transparent); }
+}
+
+[style*="background: var(--bg-card);"],
+[style*="background: var(--bg-glass);"],
+[style*="background: var(--bg-sunken);"],
+[style*="background: var(--bg-hover);"],
+[style*="background: var(--bg-rail);"],
+[style*="background: var(--color-royal-soft);"],
+[style*="background: var(--color-suggest-soft);"],
+[style*="background: var(--color-pending-soft);"],
+[style*="background: var(--color-attention-soft);"],
+[style*="background: var(--color-confirmed-soft);"],
+[style*="background: var(--color-period-soft);"],
+[style*="background: var(--color-neutral-soft);"],
+[style*="background: var(--tone-"],
+[style*="background: var(--chrome-overlay"] {
+  backdrop-filter: var(--glass-leve);
+  -webkit-backdrop-filter: var(--glass-leve);
 }

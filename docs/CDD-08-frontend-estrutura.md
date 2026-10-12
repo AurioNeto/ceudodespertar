@@ -521,6 +521,7 @@ Regras: `camada-cruzada-por-alias` e `ds-so-pelo-barrel` (erro).
 - Os tipos de trabalho da Agenda usam `--tipo-X`, `--tipo-X-bg` e `--tipo-X-fg` (#185).
 - Gráficos usam `--serie-1..3` para série categórica e `--ramp-1..9` para quebra por categoria; cor de estado não identifica série (#181).
 - `marca.css` (estampa em `--flower`) e `texturas.css` (`--tx-*`) ficam em `ds/fundacao`. A marca estática (merkaba) fica em `apps/web/public/marca/`, servida na raiz.
+- Todo fundo translúcido ganha desfoque leve (`--glass-leve`, 2px) por uma regra global no fim de `base.css`, casada pelo token de fundo no estilo inline (`[style*="background: var(--bg-card)"]` e afins). Cartões, barras do shell e scrims têm o desfoque forte (`--glass`) inline, que vence a regra. `--bg-card` passou a translúcido; `--bg-card-solid` existe para SVG e para onde a translucidez atrapalhar.
 - O tema de login do Keycloak espelha os tokens da Noite, com as fontes hospedadas no próprio tema (#180).
 
 ---
