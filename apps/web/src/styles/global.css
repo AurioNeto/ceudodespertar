@@ -4,8 +4,8 @@
 @import '../ds/fundacao/tokens/spacing.css';
 @import '../ds/fundacao/tokens/base.css';
 
-/* Acréscimo da aplicação, fora da cópia fiel dos tokens exportados. */
 @import '../ds/fundacao/marca.css';
+@import '../ds/fundacao/texturas.css';
 
 /* O app ocupa a janela inteira; a rolagem mora dentro do AppShell. */
 html,

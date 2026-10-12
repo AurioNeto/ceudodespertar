@@ -11,7 +11,7 @@ const VISUAL_POR_VARIANTE: readonly [ButtonVariant, string, string, string][] = 
   ['ghost', 'transparent', 'var(--color-royal)', '1.5px solid var(--color-royal-border)'],
   ['quiet', 'var(--bg-sunken)', 'var(--text-primary)', '1px solid var(--color-line)'],
   ['suggest', 'var(--color-suggest-soft)', 'var(--color-suggest)', '1.5px solid var(--color-suggest-border)'],
-  ['onChrome', 'rgba(255, 255, 255, 0.12)', 'rgb(255, 255, 255)', '1.5px solid rgba(255, 255, 255, 0.28)'],
+  ['onChrome', 'var(--chrome-overlay)', 'var(--text-on-chrome)', '1.5px solid var(--chrome-border)'],
 ];
 
 const FUNDO_NO_HOVER: readonly [ButtonVariant, string][] = [
@@ -19,7 +19,7 @@ const FUNDO_NO_HOVER: readonly [ButtonVariant, string][] = [
   ['ghost', 'var(--color-royal-soft)'],
   ['quiet', 'var(--color-line)'],
   ['suggest', 'var(--color-suggest-border)'],
-  ['onChrome', 'rgba(255, 255, 255, 0.2)'],
+  ['onChrome', 'var(--chrome-overlay-strong)'],
 ];
 
 describe('Button — estrutura básica', () => {

@@ -20,7 +20,7 @@ export function FichaDoLote({ lote, movimentos, densidade, onFechar, onQuarenten
       style={{
         position: 'fixed',
         inset: 0,
-        background: 'rgba(59,38,23,.38)',
+        background: 'var(--bg-scrim)',
         display: 'flex',
         alignItems: campo ? 'flex-end' : 'stretch',
         justifyContent: 'flex-end',

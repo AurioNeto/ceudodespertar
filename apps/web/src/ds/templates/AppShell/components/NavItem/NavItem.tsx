@@ -33,7 +33,7 @@ export function NavItem({
         padding: '0 10px',
         borderRadius: 'var(--radius-sm)',
         color: active ? 'var(--color-royal-deep)' : 'var(--text-primary)',
-        background: active ? 'var(--bg-card)' : hot ? 'rgba(26,61,168,.06)' : 'transparent',
+        background: active ? 'var(--bg-card)' : hot ? 'var(--bg-hover)' : 'transparent',
         boxShadow: active ? 'var(--shadow-raised)' : 'none',
         font: active ? '600 13.5px var(--font-body)' : '400 13.5px var(--font-body)',
         position: 'relative',

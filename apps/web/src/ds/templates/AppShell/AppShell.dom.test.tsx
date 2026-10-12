@@ -352,7 +352,7 @@ describe('AppShell: realce ao passar o mouse', () => {
     const inativo = todos<HTMLButtonElement>(navLateral(container), 'button')[1] as HTMLButtonElement;
     expect(inativo.style.background).toBe('transparent');
     await passarMouseSobre(inativo);
-    expect(inativo.style.background).toBe('rgba(26, 61, 168, 0.06)');
+    expect(inativo.style.background).toBe('var(--bg-hover)');
     await tirarMouseDe(inativo);
     expect(inativo.style.background).toBe('transparent');
   });

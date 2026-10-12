@@ -19,7 +19,7 @@ export function ActionBar({ children, note, sticky = true, style }: ActionBarPro
         display: 'flex',
         flexDirection: 'column',
         gap: 8,
-        boxShadow: sticky ? '0 -6px 18px -14px rgba(59,38,23,.4)' : 'none',
+        boxShadow: sticky ? 'var(--shadow-sheet)' : 'none',
         ...style,
       }}
     >

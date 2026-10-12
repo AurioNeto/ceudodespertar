@@ -93,7 +93,7 @@ export function CalendarioMensal({ ano, mes, trabalhos, onAbrir }: CalendarioMen
                       width: '100%',
                       textAlign: 'left',
                       font: '600 11.5px var(--font-body)',
-                      color: cancelada ? 'var(--text-meta)' : '#fff',
+                      color: cancelada ? 'var(--text-meta)' : 'var(--color-ink-inverse)',
                       background: cancelada ? 'var(--color-neutral-soft)' : CORES_POR_TIPO[t.tipo],
                       borderRadius: 'var(--radius-sm)',
                       padding: '4px 7px',

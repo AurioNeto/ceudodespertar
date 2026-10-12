@@ -158,14 +158,14 @@ describe('CalendarioMensal: chips dos trabalhos', () => {
     { tipo: 'Feitio' as const, cor: 'oklch(0.72 0.13 90)' },
     { tipo: 'Bailado' as const, cor: 'oklch(0.58 0.15 25)' },
     { tipo: 'Reunião do corpo' as const, cor: 'oklch(0.62 0.11 205)' },
-  ])('trabalho do tipo $tipo — o chip usa a cor $cor com texto branco e sem risco', async ({ tipo, cor }) => {
+  ])('trabalho do tipo $tipo — o chip usa a cor $cor com a tinta inversa e sem risco', async ({ tipo, cor }) => {
     const { container } = await montar(
       <CalendarioMensal ano={2026} mes={9} trabalhos={[umTrabalho({ tipo, nome: 'Qualquer' })]} onAbrir={() => undefined} />,
     );
 
     const chip = chipDoCalendario(container, 'Qualquer');
 
-    expect([chip.style.background, chip.style.color, chip.style.textDecoration]).toEqual([cor, 'rgb(255, 255, 255)', 'none']);
+    expect([chip.style.background, chip.style.color, chip.style.textDecoration]).toEqual([cor, 'var(--color-ink-inverse)', 'none']);
   });
 
   it.each([

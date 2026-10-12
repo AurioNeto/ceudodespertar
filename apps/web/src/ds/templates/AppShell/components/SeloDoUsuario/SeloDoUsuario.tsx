@@ -8,7 +8,7 @@ export function SeloDoUsuario({ name, decorativo = false }: { name: string; deco
         borderRadius: 'var(--radius-sm)',
         flex: '0 0 auto',
         background: 'var(--color-royal)',
-        color: '#fff',
+        color: 'var(--action-fg)',
         display: 'grid',
         placeItems: 'center',
         font: '700 12px var(--font-data)',
