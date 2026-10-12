@@ -66,7 +66,7 @@ export function AppShell({
         gridTemplateColumns: field ? '1fr' : '240px 1fr',
         height: '100%',
         minHeight: 0,
-        background: 'var(--bg-app)',
+        background: 'var(--sky)',
         color: 'var(--text-primary)',
         ...style,
       }}
