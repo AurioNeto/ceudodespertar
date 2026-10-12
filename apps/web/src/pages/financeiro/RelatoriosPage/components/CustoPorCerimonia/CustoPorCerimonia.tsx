@@ -41,7 +41,7 @@ export function CustoPorCerimonia({ porCerimonia, onAbrirDrill }: CustoPorCerimo
                   display: 'block',
                   height: '100%',
                   borderRadius: 'var(--radius-pill)',
-                  background: 'var(--color-pending)',
+                  background: 'var(--serie-1)',
                   width: `${(c.valor / Math.max(1, ...porCerimonia.map((x) => x.valor))) * 100}%`,
                   transition: 'width 520ms cubic-bezier(.22,.61,.36,1)',
                 }}

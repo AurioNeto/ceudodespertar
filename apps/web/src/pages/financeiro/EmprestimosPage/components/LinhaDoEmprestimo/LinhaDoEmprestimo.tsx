@@ -22,7 +22,7 @@ export function LinhaDoEmprestimo({ emprestimo, ativo, onAbrir }: LinhaDoEmprest
         textAlign: 'left',
         background: ativo ? 'var(--color-royal-soft)' : 'var(--bg-card)',
         border: `1px solid ${ativo ? 'var(--color-royal-border)' : 'var(--color-line)'}`,
-        borderRadius: 'var(--radius)',
+        borderRadius: 'var(--leaf-sm)',
         padding: '12px 14px',
         cursor: 'pointer',
         display: 'flex',

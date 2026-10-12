@@ -15,7 +15,7 @@ export function HistoricoDePrestacoes({ historico }: HistoricoDePrestacoesProps)
           style={{
             background: 'var(--bg-card)',
             border: 'var(--border-hairline)',
-            borderRadius: 'var(--radius)',
+            borderRadius: 'var(--leaf-sm)',
             padding: '12px 15px',
             display: 'flex',
             flexWrap: 'wrap',

@@ -31,7 +31,7 @@ export function TabelaDeCategorias({
       <div
         style={{
           border: 'var(--border-hairline)',
-          borderRadius: 'var(--radius)',
+          borderRadius: 'var(--leaf-lg)',
           background: 'var(--bg-card)',
           overflowX: 'auto',
         }}
@@ -92,7 +92,7 @@ export function TabelaDeCategorias({
                             font: 'var(--text-small)',
                             background: 'var(--bg-sunken)',
                             border: '1px solid var(--color-line)',
-                            borderRadius: 'var(--radius-pill)',
+                            borderRadius: 'var(--leaf-xs)',
                             padding: '2px 9px',
                             color: 'var(--text-secondary)',
                             whiteSpace: 'nowrap',
