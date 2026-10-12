@@ -60,6 +60,12 @@ desenvolvimento (`dev@cdd.local`) chegam por placeholder de variável de
 ambiente (`CDD_KC_ADMIN_SEGREDO`, `CDD_KC_DEV_SENHA`), substituído pelo
 próprio Keycloak no import.
 
+O tema de login (`infra/keycloak/themes/cdd/login`) é montado por bind-mount, então basta
+`docker compose restart keycloak` para recarregá-lo. Os tokens do `cdd.css` são o espelho
+fixo da Noite de `apps/web/src/ds/fundacao/tokens/colors.css`, porque o login não enxerga
+a escolha de clima do app. As fontes (Alegreya, Alegreya Sans SC e Public Sans, licença
+SIL OFL 1.1) ficam hospedadas em `resources/fonts/`, sem requisição externa.
+
 O `cdd-web` usa redirect por origem fixa com caminho em curinga
 (`http://localhost:5173/*`), não um redirect exato — a origem
 (`localhost:5173`) é travada, só o caminho depois dela é livre.

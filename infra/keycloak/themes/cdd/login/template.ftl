@@ -5,7 +5,7 @@
 <html class="${properties.kcHtmlClass!}" lang="${lang}" dir="${(locale.rtl)?then('rtl','ltr')}">
 <head>
     <meta charset="utf-8">
-    <meta name="color-scheme" content="light">
+    <meta name="color-scheme" content="dark">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex, nofollow">
     <title>${tituloDaPagina} · ${msg("cddMarcaNome")}</title>
@@ -41,8 +41,11 @@
   <aside class="cdd-marca">
     <div class="cdd-marca__flor" aria-hidden="true"></div>
     <div class="cdd-marca__nome">
-      <div class="cdd-marca__wordmark">${msg("cddMarcaLinha1")} <span class="cdd-marca__quebra">${msg("cddMarcaLinha2")}</span></div>
-      <div class="cdd-marca__descritor">${msg("cddMarcaDescritor")}</div>
+      <img class="cdd-marca__merkaba" src="${url.resourcesPath}/img/merkaba.png" alt="" aria-hidden="true" width="56" height="66">
+      <div>
+        <div class="cdd-marca__wordmark">${msg("cddMarcaLinha1")} <span class="cdd-marca__quebra">${msg("cddMarcaLinha2")}</span></div>
+        <div class="cdd-marca__descritor">${msg("cddMarcaDescritor")}</div>
+      </div>
     </div>
     <p class="cdd-marca__frase">${msg("cddMarcaFrase")}</p>
   </aside>
