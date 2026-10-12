@@ -65,6 +65,7 @@ export interface CenarioDeSessao {
   readonly entrada: EntradaFalsa;
   readonly buscarEu: (sinal: AbortSignal) => Promise<Eu>;
   readonly aviso?: AvisoDeEncerramentoFalso;
+  readonly guardarConvite?: (convite: string) => void;
 }
 
 export interface TelaMontada {
@@ -101,7 +102,12 @@ export async function montarComSessao(cenario: CenarioDeSessao, arvore: ReactEle
   await act(async () => {
     raiz.render(
       <QueryClientProvider client={clienteDeConsultas}>
-        <SessaoProvider entrada={cenario.entrada} aoEncerrar={aviso.aoEncerrar} buscarEu={cenario.buscarEu}>
+        <SessaoProvider
+          entrada={cenario.entrada}
+          aoEncerrar={aviso.aoEncerrar}
+          buscarEu={cenario.buscarEu}
+          guardarConvite={cenario.guardarConvite ?? (() => undefined)}
+        >
           {arvore}
         </SessaoProvider>
       </QueryClientProvider>,

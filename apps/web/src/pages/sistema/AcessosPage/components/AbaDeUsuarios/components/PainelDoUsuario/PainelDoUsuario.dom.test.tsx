@@ -69,7 +69,7 @@ async function montar(comando: () => Promise<unknown>, usuario = JOAO): Promise<
   await act(async () =>
     raiz.render(
       <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
-        <SessaoProvider entrada={entradaFalsa} aoEncerrar={aoEncerrar} buscarEu={buscarEu}>
+        <SessaoProvider entrada={entradaFalsa} aoEncerrar={aoEncerrar} buscarEu={buscarEu} guardarConvite={() => undefined}>
           <ClienteHttpProvider cliente={cliente}>
             <Anfitriao inicial={usuario} registro={registro} />
           </ClienteHttpProvider>
