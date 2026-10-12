@@ -187,7 +187,7 @@ Os destinos são agrupados por área: `app/`, `dados/`, `lib/`, `ds/`, `testes/`
 | Origem | Destino | Ação | Etapa |
 |---|---|---|---|
 | `components/Avatar.tsx` | `ds/atoms/Avatar/Avatar.tsx` | mover | Primitivos para o ds |
-| `components/Blocos.tsx`: `rotuloCaixaAlta` | `ds/fundacao/estilos.ts` | repartir por export | Primitivos para o ds |
+| `components/Blocos.tsx`: o estilo de caixa alta (hoje `rotuloVersalete`, renomeado no #176) | `ds/fundacao/estilos.ts` | repartir por export | Primitivos para o ds |
 | `components/Blocos.tsx`: `Rotulo` | `ds/atoms/Rotulo/` | repartir por export | Primitivos para o ds |
 | `components/Blocos.tsx`: `Cartao` | `ds/atoms/Cartao/` | repartir por export | Primitivos para o ds |
 | `components/Blocos.tsx`: `BarraDeProporcao` | `ds/atoms/BarraDeProporcao/` | repartir por export | Primitivos para o ds |
@@ -200,7 +200,7 @@ Os destinos são agrupados por área: `app/`, `dados/`, `lib/`, `ds/`, `testes/`
 | `components/Campo.tsx`: `SeletorDeTipo`, `SeletorDeTipoProps` | `ds/molecules/SeletorDeTipo/` | repartir por export | Primitivos para o ds |
 | `components/Campo.tsx`: `CampoDeTags`, `CampoDeTagsProps` (ficam no arquivo até a etapa de mover lancamentos) | ver seção 8 (`RegistrarLancamentoPage/components/CampoDeTags/`) | repartir por export | Primitivos para o ds |
 | `lib/formato.ts`: `iniciais` (fica em `lib/formato` até o `MeuPerfilPage` usar o `Avatar`) | `ds/atoms/Avatar/utils/iniciais.ts` (+ teste) | mover | Primitivos novos e adoção do catálogo |
-| `pages/lancamento/RegistrarLancamentoPage.tsx#rotuloLabel`; 12 constantes `rotuloLabel` das páginas; cópias inline do estilo de rótulo | `ds/atoms/Rotulo/` e `ds/fundacao/estilos.ts` (`rotuloCaixaAlta`) | fundir | Rotulo e CorpoDaTela |
+| `pages/lancamento/RegistrarLancamentoPage.tsx#rotuloLabel`; 12 constantes `rotuloLabel` das páginas; cópias inline do estilo de rótulo | `ds/atoms/Rotulo/` e `ds/fundacao/estilos.ts` (o estilo de caixa alta, hoje `rotuloVersalete`) | fundir | Rotulo e CorpoDaTela |
 | `components/Blocos.tsx#Th`, `Td` (internos do `DataTable` na adoção) | `ds/organisms/DataTable/` | fundir | Primitivos novos e adoção do catálogo |
 | novo (`Marca` do `Portao`, wordmark do `AppShell`, moldura da inscrição pública) | `ds/atoms/Marca/` | fundir | Primitivos novos e adoção do catálogo |
 | novo (`Recado` de `Blocos`, `entrada/Aviso`, `AvisoDeAtencao` do #55 (do #55), callouts das telas) | `ds/molecules/Aviso/` | fundir | Primitivos novos e adoção do catálogo |
@@ -241,7 +241,7 @@ Os testes do #58, do #59, do #61 e do #62 se repartem por describe entre as unid
 | Origem | Destino | Ação | Etapa |
 |---|---|---|---|
 | `components/Avatar.dom.test.tsx` (entra com o #58) | `ds/atoms/Avatar/Avatar.dom.test.tsx` | mover | Primitivos para o ds |
-| `components/Blocos.dom.test.tsx` (entra com o #58), describe `rotuloCaixaAlta` (teste puro) | `ds/fundacao/estilos.test.ts` | repartir por describe | Primitivos para o ds |
+| `components/Blocos.dom.test.tsx` (entra com o #58), describe do estilo de caixa alta (teste puro; hoje `rotuloVersalete`) | `ds/fundacao/estilos.test.ts` | repartir por describe | Primitivos para o ds |
 | `components/Blocos.dom.test.tsx`, describe `Rotulo` | `ds/atoms/Rotulo/Rotulo.dom.test.tsx` | repartir por describe | Primitivos para o ds |
 | `components/Blocos.dom.test.tsx`, describe `Numero` | `ds/molecules/Numero/Numero.dom.test.tsx` | repartir por describe | Primitivos para o ds |
 | `components/Blocos.dom.test.tsx`, describes `Th` e `Td` | `ds/atoms/Th/Th.dom.test.tsx` e `ds/atoms/Td/Td.dom.test.tsx` | repartir por describe | Primitivos para o ds |

@@ -1,0 +1,1479 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Outras Horas da Mata</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,500;0,700;1,400;1,500&family=Alegreya+Sans+SC:wght@700&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* Layout: um guia longo de leitura (coluna de 72ch) com mostruários largos (até 1180px) e mockups de tela
+   que encolhem por transform. O próprio guia veste os dois climas: Amanhecer em tema claro, Noite em tema escuro,
+   com troca manual na barra. Blocos .clima-noite / .clima-amanhecer fixam um clima num subtrecho. */
+:root {
+  --font-title: "Alegreya", Georgia, "Times New Roman", serif;
+  --font-label: "Alegreya Sans SC", "Public Sans", Arial, sans-serif;
+  --font-body: "Public Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  --font-data: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --leaf-xs: 0 8px 0 8px;
+  --leaf-sm: 0 14px 0 14px;
+  --leaf-md: 0 20px 0 20px;
+  --leaf-lg: 0 28px 0 28px;
+  --leaf-xl: 0 36px 0 36px;
+  --leaf-seal: 0 100% 0 100%;
+  --edge-state: 3px;
+  --target-office: 44px;
+  --target-field: 56px;
+  --motion-fast: 120ms cubic-bezier(.2,0,.2,1);
+  --motion: 200ms cubic-bezier(.2,0,.2,1);
+  --mata-copa: #0B1F17; --mata-sub: #10301F; --mata-clareira: #1F4A33; --mata-liquen: #A8C68F; --mata-musgo: #4E8B4A;
+  --mata-cipo: #7A5233; --mata-casca: #5A3B26; --mata-ouro: #D8A949; --mata-luz: #E6F59A; --mata-pele: #EDE6D3; --mata-nevoa: #C9D1BD;
+  --foto: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23C9B48C'/%3E%3Cstop offset='1' stop-color='%238C6440'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='100' height='100' fill='url%28%23g%29'/%3E%3Ccircle cx='50' cy='38' r='17' fill='%23F3E6CF' fill-opacity='.92'/%3E%3Cpath d='M18 100 Q22 66 50 64 Q78 66 82 100Z' fill='%23F3E6CF' fill-opacity='.92'/%3E%3C/svg%3E");
+  --dia-ceu: #E9EDD8; --dia-papel: #F7F5EA; --dia-tinta: #1B3324; --dia-acao: #2F5D3A; --dia-acento: #9A5B12;
+  --tx-onca: radial-gradient(circle at 50% 50%,transparent 0 4px,#2A1A0D 4px 7px,transparent 8px) 0 0/36px 36px,radial-gradient(circle at 50% 50%,#2A1A0D 0 2px,transparent 3px) 18px 18px/36px 36px,radial-gradient(circle at 50% 50%,transparent 0 3px,#3A240F 3px 6px,transparent 7px) 9px 22px/36px 36px,#C99A3E;
+  --tx-gaviao: linear-gradient(135deg,#E3D5B4 25%,transparent 25%) -12px 0/24px 24px,linear-gradient(225deg,#E3D5B4 25%,transparent 25%) -12px 0/24px 24px,linear-gradient(315deg,#E3D5B4 25%,transparent 25%) 0 0/24px 24px,linear-gradient(45deg,#E3D5B4 25%,transparent 25%) 0 0/24px 24px,#6B4A2E;
+  --tx-jiboia: radial-gradient(circle at 50% 0,transparent 0 9px,#24391F 10px 12px,transparent 13px) 0 0/24px 14px,radial-gradient(circle at 50% 0,transparent 0 9px,#24391F 10px 12px,transparent 13px) 12px 7px/24px 14px,#6F8E4E;
+  --tx-arara: repeating-linear-gradient(10deg,rgba(0,0,0,.18) 0 1px,transparent 1px 4px),repeating-linear-gradient(100deg,#C8312B 0 16px,#E8B931 16px 22px,#2C6FB5 22px 38px,#1E8A5A 38px 42px);
+  --tx-tatu: repeating-linear-gradient(90deg,transparent 0 9px,rgba(0,0,0,.22) 9px 10px),repeating-linear-gradient(180deg,#9A8668 0 11px,#5E4F3C 11px 14px);
+  --tx-pirarucu: radial-gradient(circle at 50% 0,transparent 0 10px,#B33A2B 10px 13px,transparent 14px) 0 0/26px 16px,radial-gradient(circle at 50% 0,transparent 0 10px,#B33A2B 10px 13px,transparent 14px) 13px 8px/26px 16px,#4C5A4A;
+  --tx-coruja: radial-gradient(circle at 50% 100%,#E8DCC2 0 6px,#8E7556 6px 9px,transparent 10px) 0 0/20px 14px,radial-gradient(circle at 50% 100%,#E8DCC2 0 6px,#8E7556 6px 9px,transparent 10px) 10px 7px/20px 14px,#6A5640;
+  --tx-beija: radial-gradient(circle at 50% 100%,transparent 0 5px,rgba(8,30,28,.55) 5px 6.5px,transparent 7px) 0 0/14px 10px,radial-gradient(circle at 50% 100%,transparent 0 5px,rgba(8,30,28,.55) 5px 6.5px,transparent 7px) 7px 5px/14px 10px,linear-gradient(135deg,#1E8A6A,#2FD3B0 35%,#3A7BD5 60%,#C2378F 85%,#E0559F);
+  --tx-garca: radial-gradient(circle at 50% 0,transparent 0 11px,#C9D1C4 12px 15px,transparent 16px) 0 0/30px 18px,radial-gradient(circle at 50% 0,transparent 0 11px,#C9D1C4 12px 15px,transparent 16px) 15px 9px/30px 18px,#EEF1E8;
+  --tx-cutia: radial-gradient(circle,rgba(255,230,170,.55) 0 1.2px,transparent 1.8px) 0 0/9px 9px,radial-gradient(circle,rgba(40,22,8,.6) 0 1.2px,transparent 1.8px) 4px 5px/11px 11px,repeating-linear-gradient(62deg,#7A5233 0 3px,#9C7148 3px 6px,#5A3B26 6px 8px);
+  --tx-jabuti: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='27.71' height='48.00'%3E%3Crect width='27.71' height='48.00' fill='%238C6440'/%3E%3Cpolygon points='13.86%2C8.00 0.00%2C16.00 -13.86%2C8.00 -13.86%2C-8.00 -0.00%2C-16.00 13.86%2C-8.00' fill='none' stroke='%233A2718' stroke-width='2'/%3E%3Cpolygon points='41.57%2C8.00 27.71%2C16.00 13.86%2C8.00 13.86%2C-8.00 27.71%2C-16.00 41.57%2C-8.00' fill='none' stroke='%233A2718' stroke-width='2'/%3E%3Cpolygon points='27.71%2C32.00 13.86%2C40.00 0.00%2C32.00 -0.00%2C16.00 13.86%2C8.00 27.71%2C16.00' fill='none' stroke='%233A2718' stroke-width='2'/%3E%3Cpolygon points='13.86%2C56.00 0.00%2C64.00 -13.86%2C56.00 -13.86%2C40.00 -0.00%2C32.00 13.86%2C40.00' fill='none' stroke='%233A2718' stroke-width='2'/%3E%3Cpolygon points='41.57%2C56.00 27.71%2C64.00 13.86%2C56.00 13.86%2C40.00 27.71%2C32.00 41.57%2C40.00' fill='none' stroke='%233A2718' stroke-width='2'/%3E%3Cpolygon points='55.43%2C32.00 41.57%2C40.00 27.71%2C32.00 27.71%2C16.00 41.57%2C8.00 55.43%2C16.00' fill='none' stroke='%233A2718' stroke-width='2'/%3E%3C/svg%3E") 0 0/27.71px 48.00px;
+  --tx-abelha: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='17.32' height='30.00'%3E%3Crect width='17.32' height='30.00' fill='%23E3A93E'/%3E%3Cpolygon points='8.66%2C5.00 0.00%2C10.00 -8.66%2C5.00 -8.66%2C-5.00 -0.00%2C-10.00 8.66%2C-5.00' fill='none' stroke='%232A1A0D' stroke-width='2'/%3E%3Cpolygon points='25.98%2C5.00 17.32%2C10.00 8.66%2C5.00 8.66%2C-5.00 17.32%2C-10.00 25.98%2C-5.00' fill='none' stroke='%232A1A0D' stroke-width='2'/%3E%3Cpolygon points='17.32%2C20.00 8.66%2C25.00 0.00%2C20.00 -0.00%2C10.00 8.66%2C5.00 17.32%2C10.00' fill='none' stroke='%232A1A0D' stroke-width='2'/%3E%3Cpolygon points='8.66%2C35.00 0.00%2C40.00 -8.66%2C35.00 -8.66%2C25.00 -0.00%2C20.00 8.66%2C25.00' fill='none' stroke='%232A1A0D' stroke-width='2'/%3E%3Cpolygon points='25.98%2C35.00 17.32%2C40.00 8.66%2C35.00 8.66%2C25.00 17.32%2C20.00 25.98%2C25.00' fill='none' stroke='%232A1A0D' stroke-width='2'/%3E%3Cpolygon points='34.64%2C20.00 25.98%2C25.00 17.32%2C20.00 17.32%2C10.00 25.98%2C5.00 34.64%2C10.00' fill='none' stroke='%232A1A0D' stroke-width='2'/%3E%3C/svg%3E") 0 0/17.32px 30.00px;
+  --tx-musgo: radial-gradient(circle,#6FA35E 0 1.5px,transparent 2px) 0 0/7px 7px,radial-gradient(circle,#A8C68F 0 1px,transparent 1.5px) 3px 2px/11px 11px,radial-gradient(circle,#3E6B3A 0 2px,transparent 2.5px) 5px 6px/13px 13px,#24452E;
+  --tx-casca: repeating-linear-gradient(180deg,transparent 0 37px,rgba(0,0,0,.35) 37px 39px),repeating-linear-gradient(90deg,#4A3221 0 6px,#5E412B 6px 9px,#3A2718 9px 14px,#6B4A31 14px 16px,#4A3221 16px 23px);
+  --tx-palmeira: repeating-linear-gradient(115deg,#3E7A45 0 3px,#24452E 3px 9px),#24452E;
+  --tx-rainha: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Crect width='120' height='120' fill='%23163826'/%3E%3Cg transform='translate%2830 30%29 rotate%28-35%29'%3E%3Cpath d='M0%2C-24 Q12%2C0 0%2C24 Q-12%2C0 0%2C-24Z' fill='%234E8B4A'/%3E%3Cpath d='M0%2C-22 L0%2C22' stroke='%23C9D9A8' stroke-width='1.2'/%3E%3C/g%3E%3Cg transform='translate%2890 90%29 rotate%2835%29'%3E%3Cpath d='M0%2C-24 Q12%2C0 0%2C24 Q-12%2C0 0%2C-24Z' fill='%236FA35E'/%3E%3Cpath d='M0%2C-22 L0%2C22' stroke='%23C9D9A8' stroke-width='1.2'/%3E%3C/g%3E%3Cg transform='translate%2890 30%29 rotate%28145%29'%3E%3Cpath d='M0%2C-24 Q12%2C0 0%2C24 Q-12%2C0 0%2C-24Z' fill='%233E7A45'/%3E%3Cpath d='M0%2C-22 L0%2C22' stroke='%23C9D9A8' stroke-width='1.2'/%3E%3C/g%3E%3Cg transform='translate%2830 90%29 rotate%28-145%29'%3E%3Cpath d='M0%2C-24 Q12%2C0 0%2C24 Q-12%2C0 0%2C-24Z' fill='%235E9A50'/%3E%3Cpath d='M0%2C-22 L0%2C22' stroke='%23C9D9A8' stroke-width='1.2'/%3E%3C/g%3E%3C/svg%3E") 0 0/120px 120px;
+  --tx-samambaia: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='160'%3E%3Crect width='80' height='160' fill='%23163826'/%3E%3Cpath d='M40 0 q-14 -4 -26 -14 q14 2 26 10Z' fill='%236FA35E'/%3E%3Cpath d='M40 5 q14 -4 26 -14 q-14 2 -26 10Z' fill='%234E8B4A'/%3E%3Cpath d='M40 10 q-14 -4 -26 -14 q14 2 26 10Z' fill='%236FA35E'/%3E%3Cpath d='M40 15 q14 -4 26 -14 q-14 2 -26 10Z' fill='%234E8B4A'/%3E%3Cpath d='M40 20 q-14 -4 -26 -14 q14 2 26 10Z' fill='%236FA35E'/%3E%3Cpath d='M40 25 q14 -4 26 -14 q-14 2 -26 10Z' fill='%234E8B4A'/%3E%3Cpath d='M40 30 q-14 -4 -26 -14 q14 2 26 10Z' fill='%236FA35E'/%3E%3Cpath d='M40 35 q14 -4 26 -14 q-14 2 -26 10Z' fill='%234E8B4A'/%3E%3Cpath d='M40 40 q-14 -4 -26 -14 q14 2 26 10Z' fill='%236FA35E'/%3E%3Cpath d='M40 45 q14 -4 26 -14 q-14 2 -26 10Z' fill='%234E8B4A'/%3E%3Cpath d='M40 50 q-14 -4 -26 -14 q14 2 26 10Z' fill='%236FA35E'/%3E%3Cpath d='M40 55 q14 -4 26 -14 q-14 2 -26 10Z' fill='%234E8B4A'/%3E%3Cpath d='M40 60 q-14 -4 -26 -14 q14 2 26 10Z' fill='%236FA35E'/%3E%3Cpath d='M40 65 q14 -4 26 -14 q-14 2 -26 10Z' fill='%234E8B4A'/%3E%3Cpath d='M40 70 q-14 -4 -26 -14 q14 2 26 10Z' fill='%236FA35E'/%3E%3Cpath d='M40 75 q14 -4 26 -14 q-14 2 -26 10Z' fill='%234E8B4A'/%3E%3Cpath d='M40 80 q-14 -4 -26 -14 q14 2 26 10Z' fill='%236FA35E'/%3E%3Cpath d='M40 85 q14 -4 26 -14 q-14 2 -26 10Z' fill='%234E8B4A'/%3E%3Cpath d='M40 90 q-14 -4 -26 -14 q14 2 26 10Z' fill='%236FA35E'/%3E%3Cpath d='M40 95 q14 -4 26 -14 q-14 2 -26 10Z' fill='%234E8B4A'/%3E%3Cpath d='M40 100 q-14 -4 -26 -14 q14 2 26 10Z' fill='%236FA35E'/%3E%3Cpath d='M40 105 q14 -4 26 -14 q-14 2 -26 10Z' fill='%234E8B4A'/%3E%3Cpath d='M40 110 q-14 -4 -26 -14 q14 2 26 10Z' fill='%236FA35E'/%3E%3Cpath d='M40 115 q14 -4 26 -14 q-14 2 -26 10Z' fill='%234E8B4A'/%3E%3Cpath d='M40 120 q-14 -4 -26 -14 q14 2 26 10Z' fill='%236FA35E'/%3E%3Cpath d='M40 125 q14 -4 26 -14 q-14 2 -26 10Z' fill='%234E8B4A'/%3E%3Cpath d='M40 130 q-14 -4 -26 -14 q14 2 26 10Z' fill='%236FA35E'/%3E%3Cpath d='M40 135 q14 -4 26 -14 q-14 2 -26 10Z' fill='%234E8B4A'/%3E%3Cpath d='M40 140 q-14 -4 -26 -14 q14 2 26 10Z' fill='%236FA35E'/%3E%3Cpath d='M40 145 q14 -4 26 -14 q-14 2 -26 10Z' fill='%234E8B4A'/%3E%3Cpath d='M40 150 q-14 -4 -26 -14 q14 2 26 10Z' fill='%236FA35E'/%3E%3Cpath d='M40 155 q14 -4 26 -14 q-14 2 -26 10Z' fill='%234E8B4A'/%3E%3Cpath d='M40 0 L40 160' stroke='%23A8C68F' stroke-width='1.6'/%3E%3C/svg%3E") 0 0/80px 160px;
+  --tx-folhaseca: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Crect width='120' height='120' fill='%232A1B10'/%3E%3Cg transform='translate%2830 30%29 rotate%28-35%29'%3E%3Cpath d='M0%2C-24 Q12%2C0 0%2C24 Q-12%2C0 0%2C-24Z' fill='%238C6440'/%3E%3Cpath d='M0%2C-22 L0%2C22' stroke='%23E3D5B4' stroke-width='1.2'/%3E%3C/g%3E%3Cg transform='translate%2890 90%29 rotate%2835%29'%3E%3Cpath d='M0%2C-24 Q12%2C0 0%2C24 Q-12%2C0 0%2C-24Z' fill='%23B8874E'/%3E%3Cpath d='M0%2C-22 L0%2C22' stroke='%23E3D5B4' stroke-width='1.2'/%3E%3C/g%3E%3Cg transform='translate%2890 30%29 rotate%28145%29'%3E%3Cpath d='M0%2C-24 Q12%2C0 0%2C24 Q-12%2C0 0%2C-24Z' fill='%236B4A31'/%3E%3Cpath d='M0%2C-22 L0%2C22' stroke='%23E3D5B4' stroke-width='1.2'/%3E%3C/g%3E%3Cg transform='translate%2830 90%29 rotate%28-145%29'%3E%3Cpath d='M0%2C-24 Q12%2C0 0%2C24 Q-12%2C0 0%2C-24Z' fill='%23A07A45'/%3E%3Cpath d='M0%2C-22 L0%2C22' stroke='%23E3D5B4' stroke-width='1.2'/%3E%3C/g%3E%3C/svg%3E") 0 0/120px 120px;
+  --tx-cipo: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='240'%3E%3Cpath d='M12.00 0L12.84 4L13.66 8L14.47 12L15.25 16L16.00 20L16.70 24L17.35 28L17.95 32L18.47 36L18.93 40L19.31 44L19.61 48L19.83 52L19.96 56L20.00 60L19.96 64L19.83 68L19.61 72L19.31 76L18.93 80L18.47 84L17.95 88L17.35 92L16.70 96L16.00 100L15.25 104L14.47 108L13.66 112L12.84 116L12.00 120L11.16 124L10.34 128L9.53 132L8.75 136L8.00 140L7.30 144L6.65 148L6.05 152L5.53 156L5.07 160L4.69 164L4.39 168L4.17 172L4.04 176L4.00 180L4.04 184L4.17 188L4.39 192L4.69 196L5.07 200L5.53 204L6.05 208L6.65 212L7.30 216L8.00 220L8.75 224L9.53 228L10.34 232L11.16 236L12.00 240' fill='none' stroke='%237A5233' stroke-width='3' stroke-linecap='round'/%3E%3Cpath d='M12.00 0L11.16 4L10.34 8L9.53 12L8.75 16L8.00 20L7.30 24L6.65 28L6.05 32L5.53 36L5.07 40L4.69 44L4.39 48L4.17 52L4.04 56L4.00 60L4.04 64L4.17 68L4.39 72L4.69 76L5.07 80L5.53 84L6.05 88L6.65 92L7.30 96L8.00 100L8.75 104L9.53 108L10.34 112L11.16 116L12.00 120L12.84 124L13.66 128L14.47 132L15.25 136L16.00 140L16.70 144L17.35 148L17.95 152L18.47 156L18.93 160L19.31 164L19.61 168L19.83 172L19.96 176L20.00 180L19.96 184L19.83 188L19.61 192L19.31 196L18.93 200L18.47 204L17.95 208L17.35 212L16.70 216L16.00 220L15.25 224L14.47 228L13.66 232L12.84 236L12.00 240' fill='none' stroke='%236FA35E' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E") 0 0/24px 240px,#0B1F17;
+  --tx-flordavida: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='41.569'%3E%3Cg fill='none' stroke='rgba%28168%2C198%2C143%2C.5%29' stroke-width='.8'%3E%3Ccircle cx='-12.00' cy='-20.78' r='24'/%3E%3Ccircle cx='12.00' cy='-20.78' r='24'/%3E%3Ccircle cx='36.00' cy='-20.78' r='24'/%3E%3Ccircle cx='60.00' cy='-20.78' r='24'/%3E%3Ccircle cx='0.00' cy='0.00' r='24'/%3E%3Ccircle cx='24.00' cy='0.00' r='24'/%3E%3Ccircle cx='48.00' cy='0.00' r='24'/%3E%3Ccircle cx='-12.00' cy='20.78' r='24'/%3E%3Ccircle cx='12.00' cy='20.78' r='24'/%3E%3Ccircle cx='36.00' cy='20.78' r='24'/%3E%3Ccircle cx='60.00' cy='20.78' r='24'/%3E%3Ccircle cx='0.00' cy='41.57' r='24'/%3E%3Ccircle cx='24.00' cy='41.57' r='24'/%3E%3Ccircle cx='48.00' cy='41.57' r='24'/%3E%3Ccircle cx='-12.00' cy='62.35' r='24'/%3E%3Ccircle cx='12.00' cy='62.35' r='24'/%3E%3Ccircle cx='36.00' cy='62.35' r='24'/%3E%3Ccircle cx='60.00' cy='62.35' r='24'/%3E%3C/g%3E%3C/svg%3E") 0 0/48px 41.569px,#10301F;
+  --tx-orquidea: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Crect width='80' height='80' fill='%231E3A2C'/%3E%3Cpath transform='translate%2840 40%29 rotate%280%29' d='M0%2C0 Q10%2C-14 0%2C-30 Q-10%2C-14 0%2C0Z' fill='%23C2378F' fill-opacity='.9'/%3E%3Cpath transform='translate%2840 40%29 rotate%2860%29' d='M0%2C0 Q10%2C-14 0%2C-30 Q-10%2C-14 0%2C0Z' fill='%23C2378F' fill-opacity='.9'/%3E%3Cpath transform='translate%2840 40%29 rotate%28120%29' d='M0%2C0 Q10%2C-14 0%2C-30 Q-10%2C-14 0%2C0Z' fill='%23C2378F' fill-opacity='.9'/%3E%3Cpath transform='translate%2840 40%29 rotate%28180%29' d='M0%2C0 Q10%2C-14 0%2C-30 Q-10%2C-14 0%2C0Z' fill='%23C2378F' fill-opacity='.9'/%3E%3Cpath transform='translate%2840 40%29 rotate%28240%29' d='M0%2C0 Q10%2C-14 0%2C-30 Q-10%2C-14 0%2C0Z' fill='%23C2378F' fill-opacity='.9'/%3E%3Cpath transform='translate%2840 40%29 rotate%28300%29' d='M0%2C0 Q10%2C-14 0%2C-30 Q-10%2C-14 0%2C0Z' fill='%23C2378F' fill-opacity='.9'/%3E%3Ccircle cx='40' cy='40' r='5' fill='%23D8A949'/%3E%3C/svg%3E") 0 0/80px 80px;
+  --tx-formiga: radial-gradient(circle,#2A1A0D 0 1.6px,transparent 2.3px) 0 0/9px 9px,radial-gradient(circle,#3A240F 0 1.2px,transparent 1.8px) 4px 5px/9px 9px,repeating-linear-gradient(135deg,rgba(0,0,0,.14) 0 1px,transparent 1px 10px),#9C6B3E;
+  --tx-papelcasca: repeating-linear-gradient(180deg,rgba(120,80,40,.045) 0 1px,transparent 1px 7px),repeating-linear-gradient(93deg,rgba(120,80,40,.05) 0 2px,transparent 2px 11px),#FBF8EF;
+
+  color-scheme: light;
+  --clima-nome: "Amanhecer";
+  --sky: linear-gradient(180deg, #E9EDD8 0%, #D6DEC0 100%);
+  --bg-app: #E9EDD8;
+  --bg-sub: #DDE3C9;
+  --bg-card: #F7F5EA;
+  --bg-card-solid: #F7F5EA;
+  --bg-sunken: rgba(47,93,58,.07);
+  --bg-hover: rgba(47,93,58,.08);
+  --bg-rail: rgba(247,245,234,.72);
+  --bg-header: rgba(247,245,234,.88);
+  --bg-paper: #FBF8EF;
+  --text-primary: #1B3324;
+  --text-title: #764C29;
+  --text-secondary: #3E5444;
+  --text-meta: #5B6B5E;
+  --text-on-action: #F7F5EA;
+  --text-field-label: #8A6539;
+  --text-link: #2F5D3A;
+  --text-link-hover: #764C29;
+  --text-on-paper: #1B3324;
+  --title-on-paper: #764C29;
+  --label-on-paper: #8A6539;
+  --border-subtle: rgba(47,93,58,.14);
+  --border-section: rgba(47,93,58,.28);
+  --border-field: #C6CDB8;
+  --border-brand: #C9A66B;
+  --action-bg: #2F5D3A;
+  --action-bg-hover: #24452E;
+  --action-fg: #F7F5EA;
+  --focus-ring: #2F5D3A;
+  --accent-label: #9A5B12;
+  --accent-icon-active: #9A5B12;
+  --tone-pending: #8F5714;   --tone-pending-bg: #F8ECD9;   --tone-pending-fg: #8F5714;   --tone-pending-soft: #F8ECD9;
+  --tone-attention: #9E3520; --tone-attention-bg: #F8E5DF; --tone-attention-fg: #9E3520; --tone-attention-soft: #F8E5DF;
+  --tone-period: #2E6E7E;    --tone-period-bg: #E1EEF1;    --tone-period-fg: #2E6E7E;    --tone-period-soft: #E1EEF1;
+  --tone-confirmed: #1B6E40; --tone-confirmed-bg: #E2F0E7; --tone-confirmed-fg: #1B6E40; --tone-confirmed-soft: #E2F0E7;
+  --tone-neutral: #5E6775;   --tone-neutral-bg: #EDEEF2;   --tone-neutral-fg: #5E6775;   --tone-neutral-soft: #EDEEF2;
+  --tone-suggest: #5C3E75;   --tone-suggest-bg: #EFE9F3;   --tone-suggest-fg: #5C3E75;   --tone-suggest-soft: #EFE9F3;
+  --shadow-raised: 0 10px 28px rgba(27,51,36,.14);
+  --shadow-float: 0 24px 60px rgba(27,51,36,.22);
+  --ring-card: inset 0 0 0 1px rgba(47,93,58,.18);
+  --ring-card-hover: inset 0 0 0 1px rgba(47,93,58,.4);
+  --flower: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='84' height='72.746'%3E%3Cg fill='none' stroke='rgba%2847%2C93%2C58%2C.2%29' stroke-width='.8'%3E%3Ccircle cx='-21.00' cy='-36.37' r='42'/%3E%3Ccircle cx='21.00' cy='-36.37' r='42'/%3E%3Ccircle cx='63.00' cy='-36.37' r='42'/%3E%3Ccircle cx='105.00' cy='-36.37' r='42'/%3E%3Ccircle cx='0.00' cy='0.00' r='42'/%3E%3Ccircle cx='42.00' cy='0.00' r='42'/%3E%3Ccircle cx='84.00' cy='0.00' r='42'/%3E%3Ccircle cx='-21.00' cy='36.37' r='42'/%3E%3Ccircle cx='21.00' cy='36.37' r='42'/%3E%3Ccircle cx='63.00' cy='36.37' r='42'/%3E%3Ccircle cx='105.00' cy='36.37' r='42'/%3E%3Ccircle cx='0.00' cy='72.75' r='42'/%3E%3Ccircle cx='42.00' cy='72.75' r='42'/%3E%3Ccircle cx='84.00' cy='72.75' r='42'/%3E%3Ccircle cx='-21.00' cy='109.12' r='42'/%3E%3Ccircle cx='21.00' cy='109.12' r='42'/%3E%3Ccircle cx='63.00' cy='109.12' r='42'/%3E%3Ccircle cx='105.00' cy='109.12' r='42'/%3E%3C/g%3E%3C/svg%3E");
+  --vine: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='240'%3E%3Cpath d='M12.00 0L12.84 4L13.66 8L14.47 12L15.25 16L16.00 20L16.70 24L17.35 28L17.95 32L18.47 36L18.93 40L19.31 44L19.61 48L19.83 52L19.96 56L20.00 60L19.96 64L19.83 68L19.61 72L19.31 76L18.93 80L18.47 84L17.95 88L17.35 92L16.70 96L16.00 100L15.25 104L14.47 108L13.66 112L12.84 116L12.00 120L11.16 124L10.34 128L9.53 132L8.75 136L8.00 140L7.30 144L6.65 148L6.05 152L5.53 156L5.07 160L4.69 164L4.39 168L4.17 172L4.04 176L4.00 180L4.04 184L4.17 188L4.39 192L4.69 196L5.07 200L5.53 204L6.05 208L6.65 212L7.30 216L8.00 220L8.75 224L9.53 228L10.34 232L11.16 236L12.00 240' fill='none' stroke='%237A5233' stroke-width='3' stroke-linecap='round'/%3E%3Cpath d='M12.00 0L11.16 4L10.34 8L9.53 12L8.75 16L8.00 20L7.30 24L6.65 28L6.05 32L5.53 36L5.07 40L4.69 44L4.39 48L4.17 52L4.04 56L4.00 60L4.04 64L4.17 68L4.39 72L4.69 76L5.07 80L5.53 84L6.05 88L6.65 92L7.30 96L8.00 100L8.75 104L9.53 108L10.34 112L11.16 116L12.00 120L12.84 124L13.66 128L14.47 132L15.25 136L16.00 140L16.70 144L17.35 148L17.95 152L18.47 156L18.93 160L19.31 164L19.61 168L19.83 172L19.96 176L20.00 180L19.96 184L19.83 188L19.61 192L19.31 196L18.93 200L18.47 204L17.95 208L17.35 212L16.70 216L16.00 220L15.25 224L14.47 228L13.66 232L12.84 236L12.00 240' fill='none' stroke='%234E8B4A' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E");
+  --firefly: transparent;
+  --ray: transparent;
+  --serie-1: #6FA35E; --serie-2: #3987E5; --serie-3: #C98500;
+  --ramp-1: #2F5D3A; --ramp-2: #3E7A45; --ramp-3: #4E8B4A; --ramp-4: #6FA35E; --ramp-5: #8DBA74; --ramp-6: #B2D49C;
+
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { 
+  color-scheme: dark;
+  --clima-nome: "Noite";
+  --sky: radial-gradient(120% 80% at 55% 0%, #1F4A33 0%, #10301F 40%, #0B1F17 100%);
+  --bg-app: #0B1F17;
+  --bg-sub: #10301F;
+  --bg-card: rgba(10,28,20,.86);
+  --bg-card-solid: #0E241A;
+  --bg-sunken: rgba(168,198,143,.07);
+  --bg-hover: rgba(168,198,143,.1);
+  --bg-rail: rgba(8,22,16,.62);
+  --bg-header: rgba(8,22,16,.76);
+  --bg-paper: #FBF8EF;
+  --text-primary: #EDE6D3;
+  --text-title: #EDE6D3;
+  --text-secondary: #C9D1BD;
+  --text-meta: #B5BFA8;
+  --text-on-action: #0B1F17;
+  --text-field-label: #D8A949;
+  --text-link: #A8C68F;
+  --text-link-hover: #EDE6D3;
+  --text-on-paper: #1B3324;
+  --title-on-paper: #764C29;
+  --label-on-paper: #8A6539;
+  --border-subtle: rgba(168,198,143,.14);
+  --border-section: rgba(168,198,143,.26);
+  --border-field: rgba(168,198,143,.38);
+  --border-brand: rgba(201,166,107,.6);
+  --action-bg: #A8C68F;
+  --action-bg-hover: #BCD6A3;
+  --action-fg: #0B1F17;
+  --focus-ring: #A8C68F;
+  --accent-label: #D8A949;
+  --accent-icon-active: #D8A949;
+  --tone-pending: #E3A93E;   --tone-pending-bg: #E3A93E;   --tone-pending-fg: #0B1F17;   --tone-pending-soft: rgba(227,169,62,.14);
+  --tone-attention: #E3734E; --tone-attention-bg: #E3734E; --tone-attention-fg: #0B1F17; --tone-attention-soft: rgba(227,115,78,.14);
+  --tone-period: #7FB8C6;    --tone-period-bg: #7FB8C6;    --tone-period-fg: #0B1F17;    --tone-period-soft: rgba(127,184,198,.14);
+  --tone-confirmed: #A8C68F; --tone-confirmed-bg: #A8C68F; --tone-confirmed-fg: #0B1F17; --tone-confirmed-soft: rgba(168,198,143,.14);
+  --tone-neutral: #8A96A3;   --tone-neutral-bg: #8A96A3;   --tone-neutral-fg: #0B1F17;   --tone-neutral-soft: rgba(138,150,163,.14);
+  --tone-suggest: #B49AD8;   --tone-suggest-bg: #B49AD8;   --tone-suggest-fg: #0B1F17;   --tone-suggest-soft: rgba(180,154,216,.14);
+  --shadow-raised: 0 14px 34px rgba(0,0,0,.35);
+  --shadow-float: 0 30px 70px rgba(0,0,0,.4);
+  --ring-card: inset 0 0 0 1px rgba(168,198,143,.22);
+  --ring-card-hover: inset 0 0 0 1px rgba(168,198,143,.45);
+  --flower: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='84' height='72.746'%3E%3Cg fill='none' stroke='rgba%28168%2C198%2C143%2C.2%29' stroke-width='.8'%3E%3Ccircle cx='-21.00' cy='-36.37' r='42'/%3E%3Ccircle cx='21.00' cy='-36.37' r='42'/%3E%3Ccircle cx='63.00' cy='-36.37' r='42'/%3E%3Ccircle cx='105.00' cy='-36.37' r='42'/%3E%3Ccircle cx='0.00' cy='0.00' r='42'/%3E%3Ccircle cx='42.00' cy='0.00' r='42'/%3E%3Ccircle cx='84.00' cy='0.00' r='42'/%3E%3Ccircle cx='-21.00' cy='36.37' r='42'/%3E%3Ccircle cx='21.00' cy='36.37' r='42'/%3E%3Ccircle cx='63.00' cy='36.37' r='42'/%3E%3Ccircle cx='105.00' cy='36.37' r='42'/%3E%3Ccircle cx='0.00' cy='72.75' r='42'/%3E%3Ccircle cx='42.00' cy='72.75' r='42'/%3E%3Ccircle cx='84.00' cy='72.75' r='42'/%3E%3Ccircle cx='-21.00' cy='109.12' r='42'/%3E%3Ccircle cx='21.00' cy='109.12' r='42'/%3E%3Ccircle cx='63.00' cy='109.12' r='42'/%3E%3Ccircle cx='105.00' cy='109.12' r='42'/%3E%3C/g%3E%3C/svg%3E");
+  --vine: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='240'%3E%3Cpath d='M12.00 0L12.84 4L13.66 8L14.47 12L15.25 16L16.00 20L16.70 24L17.35 28L17.95 32L18.47 36L18.93 40L19.31 44L19.61 48L19.83 52L19.96 56L20.00 60L19.96 64L19.83 68L19.61 72L19.31 76L18.93 80L18.47 84L17.95 88L17.35 92L16.70 96L16.00 100L15.25 104L14.47 108L13.66 112L12.84 116L12.00 120L11.16 124L10.34 128L9.53 132L8.75 136L8.00 140L7.30 144L6.65 148L6.05 152L5.53 156L5.07 160L4.69 164L4.39 168L4.17 172L4.04 176L4.00 180L4.04 184L4.17 188L4.39 192L4.69 196L5.07 200L5.53 204L6.05 208L6.65 212L7.30 216L8.00 220L8.75 224L9.53 228L10.34 232L11.16 236L12.00 240' fill='none' stroke='%237A5233' stroke-width='3' stroke-linecap='round'/%3E%3Cpath d='M12.00 0L11.16 4L10.34 8L9.53 12L8.75 16L8.00 20L7.30 24L6.65 28L6.05 32L5.53 36L5.07 40L4.69 44L4.39 48L4.17 52L4.04 56L4.00 60L4.04 64L4.17 68L4.39 72L4.69 76L5.07 80L5.53 84L6.05 88L6.65 92L7.30 96L8.00 100L8.75 104L9.53 108L10.34 112L11.16 116L12.00 120L12.84 124L13.66 128L14.47 132L15.25 136L16.00 140L16.70 144L17.35 148L17.95 152L18.47 156L18.93 160L19.31 164L19.61 168L19.83 172L19.96 176L20.00 180L19.96 184L19.83 188L19.61 192L19.31 196L18.93 200L18.47 204L17.95 208L17.35 212L16.70 216L16.00 220L15.25 224L14.47 228L13.66 232L12.84 236L12.00 240' fill='none' stroke='%236FA35E' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E");
+  --firefly: #E6F59A;
+  --ray: rgba(232,240,190,.5);
+  --serie-1: #6FA35E; --serie-2: #3987E5; --serie-3: #C98500;
+  --ramp-1: #B9DBA3; --ramp-2: #9CCB82; --ramp-3: #7FB86A; --ramp-4: #5FA35A; --ramp-5: #468A48; --ramp-6: #2F6E3A;
+ } }
+:root[data-theme="dark"] { 
+  color-scheme: dark;
+  --clima-nome: "Noite";
+  --sky: radial-gradient(120% 80% at 55% 0%, #1F4A33 0%, #10301F 40%, #0B1F17 100%);
+  --bg-app: #0B1F17;
+  --bg-sub: #10301F;
+  --bg-card: rgba(10,28,20,.86);
+  --bg-card-solid: #0E241A;
+  --bg-sunken: rgba(168,198,143,.07);
+  --bg-hover: rgba(168,198,143,.1);
+  --bg-rail: rgba(8,22,16,.62);
+  --bg-header: rgba(8,22,16,.76);
+  --bg-paper: #FBF8EF;
+  --text-primary: #EDE6D3;
+  --text-title: #EDE6D3;
+  --text-secondary: #C9D1BD;
+  --text-meta: #B5BFA8;
+  --text-on-action: #0B1F17;
+  --text-field-label: #D8A949;
+  --text-link: #A8C68F;
+  --text-link-hover: #EDE6D3;
+  --text-on-paper: #1B3324;
+  --title-on-paper: #764C29;
+  --label-on-paper: #8A6539;
+  --border-subtle: rgba(168,198,143,.14);
+  --border-section: rgba(168,198,143,.26);
+  --border-field: rgba(168,198,143,.38);
+  --border-brand: rgba(201,166,107,.6);
+  --action-bg: #A8C68F;
+  --action-bg-hover: #BCD6A3;
+  --action-fg: #0B1F17;
+  --focus-ring: #A8C68F;
+  --accent-label: #D8A949;
+  --accent-icon-active: #D8A949;
+  --tone-pending: #E3A93E;   --tone-pending-bg: #E3A93E;   --tone-pending-fg: #0B1F17;   --tone-pending-soft: rgba(227,169,62,.14);
+  --tone-attention: #E3734E; --tone-attention-bg: #E3734E; --tone-attention-fg: #0B1F17; --tone-attention-soft: rgba(227,115,78,.14);
+  --tone-period: #7FB8C6;    --tone-period-bg: #7FB8C6;    --tone-period-fg: #0B1F17;    --tone-period-soft: rgba(127,184,198,.14);
+  --tone-confirmed: #A8C68F; --tone-confirmed-bg: #A8C68F; --tone-confirmed-fg: #0B1F17; --tone-confirmed-soft: rgba(168,198,143,.14);
+  --tone-neutral: #8A96A3;   --tone-neutral-bg: #8A96A3;   --tone-neutral-fg: #0B1F17;   --tone-neutral-soft: rgba(138,150,163,.14);
+  --tone-suggest: #B49AD8;   --tone-suggest-bg: #B49AD8;   --tone-suggest-fg: #0B1F17;   --tone-suggest-soft: rgba(180,154,216,.14);
+  --shadow-raised: 0 14px 34px rgba(0,0,0,.35);
+  --shadow-float: 0 30px 70px rgba(0,0,0,.4);
+  --ring-card: inset 0 0 0 1px rgba(168,198,143,.22);
+  --ring-card-hover: inset 0 0 0 1px rgba(168,198,143,.45);
+  --flower: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='84' height='72.746'%3E%3Cg fill='none' stroke='rgba%28168%2C198%2C143%2C.2%29' stroke-width='.8'%3E%3Ccircle cx='-21.00' cy='-36.37' r='42'/%3E%3Ccircle cx='21.00' cy='-36.37' r='42'/%3E%3Ccircle cx='63.00' cy='-36.37' r='42'/%3E%3Ccircle cx='105.00' cy='-36.37' r='42'/%3E%3Ccircle cx='0.00' cy='0.00' r='42'/%3E%3Ccircle cx='42.00' cy='0.00' r='42'/%3E%3Ccircle cx='84.00' cy='0.00' r='42'/%3E%3Ccircle cx='-21.00' cy='36.37' r='42'/%3E%3Ccircle cx='21.00' cy='36.37' r='42'/%3E%3Ccircle cx='63.00' cy='36.37' r='42'/%3E%3Ccircle cx='105.00' cy='36.37' r='42'/%3E%3Ccircle cx='0.00' cy='72.75' r='42'/%3E%3Ccircle cx='42.00' cy='72.75' r='42'/%3E%3Ccircle cx='84.00' cy='72.75' r='42'/%3E%3Ccircle cx='-21.00' cy='109.12' r='42'/%3E%3Ccircle cx='21.00' cy='109.12' r='42'/%3E%3Ccircle cx='63.00' cy='109.12' r='42'/%3E%3Ccircle cx='105.00' cy='109.12' r='42'/%3E%3C/g%3E%3C/svg%3E");
+  --vine: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='240'%3E%3Cpath d='M12.00 0L12.84 4L13.66 8L14.47 12L15.25 16L16.00 20L16.70 24L17.35 28L17.95 32L18.47 36L18.93 40L19.31 44L19.61 48L19.83 52L19.96 56L20.00 60L19.96 64L19.83 68L19.61 72L19.31 76L18.93 80L18.47 84L17.95 88L17.35 92L16.70 96L16.00 100L15.25 104L14.47 108L13.66 112L12.84 116L12.00 120L11.16 124L10.34 128L9.53 132L8.75 136L8.00 140L7.30 144L6.65 148L6.05 152L5.53 156L5.07 160L4.69 164L4.39 168L4.17 172L4.04 176L4.00 180L4.04 184L4.17 188L4.39 192L4.69 196L5.07 200L5.53 204L6.05 208L6.65 212L7.30 216L8.00 220L8.75 224L9.53 228L10.34 232L11.16 236L12.00 240' fill='none' stroke='%237A5233' stroke-width='3' stroke-linecap='round'/%3E%3Cpath d='M12.00 0L11.16 4L10.34 8L9.53 12L8.75 16L8.00 20L7.30 24L6.65 28L6.05 32L5.53 36L5.07 40L4.69 44L4.39 48L4.17 52L4.04 56L4.00 60L4.04 64L4.17 68L4.39 72L4.69 76L5.07 80L5.53 84L6.05 88L6.65 92L7.30 96L8.00 100L8.75 104L9.53 108L10.34 112L11.16 116L12.00 120L12.84 124L13.66 128L14.47 132L15.25 136L16.00 140L16.70 144L17.35 148L17.95 152L18.47 156L18.93 160L19.31 164L19.61 168L19.83 172L19.96 176L20.00 180L19.96 184L19.83 188L19.61 192L19.31 196L18.93 200L18.47 204L17.95 208L17.35 212L16.70 216L16.00 220L15.25 224L14.47 228L13.66 232L12.84 236L12.00 240' fill='none' stroke='%236FA35E' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E");
+  --firefly: #E6F59A;
+  --ray: rgba(232,240,190,.5);
+  --serie-1: #6FA35E; --serie-2: #3987E5; --serie-3: #C98500;
+  --ramp-1: #B9DBA3; --ramp-2: #9CCB82; --ramp-3: #7FB86A; --ramp-4: #5FA35A; --ramp-5: #468A48; --ramp-6: #2F6E3A;
+ }
+:root[data-clima="noite"], .clima-noite { 
+  color-scheme: dark;
+  --clima-nome: "Noite";
+  --sky: radial-gradient(120% 80% at 55% 0%, #1F4A33 0%, #10301F 40%, #0B1F17 100%);
+  --bg-app: #0B1F17;
+  --bg-sub: #10301F;
+  --bg-card: rgba(10,28,20,.86);
+  --bg-card-solid: #0E241A;
+  --bg-sunken: rgba(168,198,143,.07);
+  --bg-hover: rgba(168,198,143,.1);
+  --bg-rail: rgba(8,22,16,.62);
+  --bg-header: rgba(8,22,16,.76);
+  --bg-paper: #FBF8EF;
+  --text-primary: #EDE6D3;
+  --text-title: #EDE6D3;
+  --text-secondary: #C9D1BD;
+  --text-meta: #B5BFA8;
+  --text-on-action: #0B1F17;
+  --text-field-label: #D8A949;
+  --text-link: #A8C68F;
+  --text-link-hover: #EDE6D3;
+  --text-on-paper: #1B3324;
+  --title-on-paper: #764C29;
+  --label-on-paper: #8A6539;
+  --border-subtle: rgba(168,198,143,.14);
+  --border-section: rgba(168,198,143,.26);
+  --border-field: rgba(168,198,143,.38);
+  --border-brand: rgba(201,166,107,.6);
+  --action-bg: #A8C68F;
+  --action-bg-hover: #BCD6A3;
+  --action-fg: #0B1F17;
+  --focus-ring: #A8C68F;
+  --accent-label: #D8A949;
+  --accent-icon-active: #D8A949;
+  --tone-pending: #E3A93E;   --tone-pending-bg: #E3A93E;   --tone-pending-fg: #0B1F17;   --tone-pending-soft: rgba(227,169,62,.14);
+  --tone-attention: #E3734E; --tone-attention-bg: #E3734E; --tone-attention-fg: #0B1F17; --tone-attention-soft: rgba(227,115,78,.14);
+  --tone-period: #7FB8C6;    --tone-period-bg: #7FB8C6;    --tone-period-fg: #0B1F17;    --tone-period-soft: rgba(127,184,198,.14);
+  --tone-confirmed: #A8C68F; --tone-confirmed-bg: #A8C68F; --tone-confirmed-fg: #0B1F17; --tone-confirmed-soft: rgba(168,198,143,.14);
+  --tone-neutral: #8A96A3;   --tone-neutral-bg: #8A96A3;   --tone-neutral-fg: #0B1F17;   --tone-neutral-soft: rgba(138,150,163,.14);
+  --tone-suggest: #B49AD8;   --tone-suggest-bg: #B49AD8;   --tone-suggest-fg: #0B1F17;   --tone-suggest-soft: rgba(180,154,216,.14);
+  --shadow-raised: 0 14px 34px rgba(0,0,0,.35);
+  --shadow-float: 0 30px 70px rgba(0,0,0,.4);
+  --ring-card: inset 0 0 0 1px rgba(168,198,143,.22);
+  --ring-card-hover: inset 0 0 0 1px rgba(168,198,143,.45);
+  --flower: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='84' height='72.746'%3E%3Cg fill='none' stroke='rgba%28168%2C198%2C143%2C.2%29' stroke-width='.8'%3E%3Ccircle cx='-21.00' cy='-36.37' r='42'/%3E%3Ccircle cx='21.00' cy='-36.37' r='42'/%3E%3Ccircle cx='63.00' cy='-36.37' r='42'/%3E%3Ccircle cx='105.00' cy='-36.37' r='42'/%3E%3Ccircle cx='0.00' cy='0.00' r='42'/%3E%3Ccircle cx='42.00' cy='0.00' r='42'/%3E%3Ccircle cx='84.00' cy='0.00' r='42'/%3E%3Ccircle cx='-21.00' cy='36.37' r='42'/%3E%3Ccircle cx='21.00' cy='36.37' r='42'/%3E%3Ccircle cx='63.00' cy='36.37' r='42'/%3E%3Ccircle cx='105.00' cy='36.37' r='42'/%3E%3Ccircle cx='0.00' cy='72.75' r='42'/%3E%3Ccircle cx='42.00' cy='72.75' r='42'/%3E%3Ccircle cx='84.00' cy='72.75' r='42'/%3E%3Ccircle cx='-21.00' cy='109.12' r='42'/%3E%3Ccircle cx='21.00' cy='109.12' r='42'/%3E%3Ccircle cx='63.00' cy='109.12' r='42'/%3E%3Ccircle cx='105.00' cy='109.12' r='42'/%3E%3C/g%3E%3C/svg%3E");
+  --vine: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='240'%3E%3Cpath d='M12.00 0L12.84 4L13.66 8L14.47 12L15.25 16L16.00 20L16.70 24L17.35 28L17.95 32L18.47 36L18.93 40L19.31 44L19.61 48L19.83 52L19.96 56L20.00 60L19.96 64L19.83 68L19.61 72L19.31 76L18.93 80L18.47 84L17.95 88L17.35 92L16.70 96L16.00 100L15.25 104L14.47 108L13.66 112L12.84 116L12.00 120L11.16 124L10.34 128L9.53 132L8.75 136L8.00 140L7.30 144L6.65 148L6.05 152L5.53 156L5.07 160L4.69 164L4.39 168L4.17 172L4.04 176L4.00 180L4.04 184L4.17 188L4.39 192L4.69 196L5.07 200L5.53 204L6.05 208L6.65 212L7.30 216L8.00 220L8.75 224L9.53 228L10.34 232L11.16 236L12.00 240' fill='none' stroke='%237A5233' stroke-width='3' stroke-linecap='round'/%3E%3Cpath d='M12.00 0L11.16 4L10.34 8L9.53 12L8.75 16L8.00 20L7.30 24L6.65 28L6.05 32L5.53 36L5.07 40L4.69 44L4.39 48L4.17 52L4.04 56L4.00 60L4.04 64L4.17 68L4.39 72L4.69 76L5.07 80L5.53 84L6.05 88L6.65 92L7.30 96L8.00 100L8.75 104L9.53 108L10.34 112L11.16 116L12.00 120L12.84 124L13.66 128L14.47 132L15.25 136L16.00 140L16.70 144L17.35 148L17.95 152L18.47 156L18.93 160L19.31 164L19.61 168L19.83 172L19.96 176L20.00 180L19.96 184L19.83 188L19.61 192L19.31 196L18.93 200L18.47 204L17.95 208L17.35 212L16.70 216L16.00 220L15.25 224L14.47 228L13.66 232L12.84 236L12.00 240' fill='none' stroke='%236FA35E' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E");
+  --firefly: #E6F59A;
+  --ray: rgba(232,240,190,.5);
+  --serie-1: #6FA35E; --serie-2: #3987E5; --serie-3: #C98500;
+  --ramp-1: #B9DBA3; --ramp-2: #9CCB82; --ramp-3: #7FB86A; --ramp-4: #5FA35A; --ramp-5: #468A48; --ramp-6: #2F6E3A;
+ }
+:root[data-clima="amanhecer"], .clima-amanhecer { 
+  color-scheme: light;
+  --clima-nome: "Amanhecer";
+  --sky: linear-gradient(180deg, #E9EDD8 0%, #D6DEC0 100%);
+  --bg-app: #E9EDD8;
+  --bg-sub: #DDE3C9;
+  --bg-card: #F7F5EA;
+  --bg-card-solid: #F7F5EA;
+  --bg-sunken: rgba(47,93,58,.07);
+  --bg-hover: rgba(47,93,58,.08);
+  --bg-rail: rgba(247,245,234,.72);
+  --bg-header: rgba(247,245,234,.88);
+  --bg-paper: #FBF8EF;
+  --text-primary: #1B3324;
+  --text-title: #764C29;
+  --text-secondary: #3E5444;
+  --text-meta: #5B6B5E;
+  --text-on-action: #F7F5EA;
+  --text-field-label: #8A6539;
+  --text-link: #2F5D3A;
+  --text-link-hover: #764C29;
+  --text-on-paper: #1B3324;
+  --title-on-paper: #764C29;
+  --label-on-paper: #8A6539;
+  --border-subtle: rgba(47,93,58,.14);
+  --border-section: rgba(47,93,58,.28);
+  --border-field: #C6CDB8;
+  --border-brand: #C9A66B;
+  --action-bg: #2F5D3A;
+  --action-bg-hover: #24452E;
+  --action-fg: #F7F5EA;
+  --focus-ring: #2F5D3A;
+  --accent-label: #9A5B12;
+  --accent-icon-active: #9A5B12;
+  --tone-pending: #8F5714;   --tone-pending-bg: #F8ECD9;   --tone-pending-fg: #8F5714;   --tone-pending-soft: #F8ECD9;
+  --tone-attention: #9E3520; --tone-attention-bg: #F8E5DF; --tone-attention-fg: #9E3520; --tone-attention-soft: #F8E5DF;
+  --tone-period: #2E6E7E;    --tone-period-bg: #E1EEF1;    --tone-period-fg: #2E6E7E;    --tone-period-soft: #E1EEF1;
+  --tone-confirmed: #1B6E40; --tone-confirmed-bg: #E2F0E7; --tone-confirmed-fg: #1B6E40; --tone-confirmed-soft: #E2F0E7;
+  --tone-neutral: #5E6775;   --tone-neutral-bg: #EDEEF2;   --tone-neutral-fg: #5E6775;   --tone-neutral-soft: #EDEEF2;
+  --tone-suggest: #5C3E75;   --tone-suggest-bg: #EFE9F3;   --tone-suggest-fg: #5C3E75;   --tone-suggest-soft: #EFE9F3;
+  --shadow-raised: 0 10px 28px rgba(27,51,36,.14);
+  --shadow-float: 0 24px 60px rgba(27,51,36,.22);
+  --ring-card: inset 0 0 0 1px rgba(47,93,58,.18);
+  --ring-card-hover: inset 0 0 0 1px rgba(47,93,58,.4);
+  --flower: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='84' height='72.746'%3E%3Cg fill='none' stroke='rgba%2847%2C93%2C58%2C.2%29' stroke-width='.8'%3E%3Ccircle cx='-21.00' cy='-36.37' r='42'/%3E%3Ccircle cx='21.00' cy='-36.37' r='42'/%3E%3Ccircle cx='63.00' cy='-36.37' r='42'/%3E%3Ccircle cx='105.00' cy='-36.37' r='42'/%3E%3Ccircle cx='0.00' cy='0.00' r='42'/%3E%3Ccircle cx='42.00' cy='0.00' r='42'/%3E%3Ccircle cx='84.00' cy='0.00' r='42'/%3E%3Ccircle cx='-21.00' cy='36.37' r='42'/%3E%3Ccircle cx='21.00' cy='36.37' r='42'/%3E%3Ccircle cx='63.00' cy='36.37' r='42'/%3E%3Ccircle cx='105.00' cy='36.37' r='42'/%3E%3Ccircle cx='0.00' cy='72.75' r='42'/%3E%3Ccircle cx='42.00' cy='72.75' r='42'/%3E%3Ccircle cx='84.00' cy='72.75' r='42'/%3E%3Ccircle cx='-21.00' cy='109.12' r='42'/%3E%3Ccircle cx='21.00' cy='109.12' r='42'/%3E%3Ccircle cx='63.00' cy='109.12' r='42'/%3E%3Ccircle cx='105.00' cy='109.12' r='42'/%3E%3C/g%3E%3C/svg%3E");
+  --vine: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='240'%3E%3Cpath d='M12.00 0L12.84 4L13.66 8L14.47 12L15.25 16L16.00 20L16.70 24L17.35 28L17.95 32L18.47 36L18.93 40L19.31 44L19.61 48L19.83 52L19.96 56L20.00 60L19.96 64L19.83 68L19.61 72L19.31 76L18.93 80L18.47 84L17.95 88L17.35 92L16.70 96L16.00 100L15.25 104L14.47 108L13.66 112L12.84 116L12.00 120L11.16 124L10.34 128L9.53 132L8.75 136L8.00 140L7.30 144L6.65 148L6.05 152L5.53 156L5.07 160L4.69 164L4.39 168L4.17 172L4.04 176L4.00 180L4.04 184L4.17 188L4.39 192L4.69 196L5.07 200L5.53 204L6.05 208L6.65 212L7.30 216L8.00 220L8.75 224L9.53 228L10.34 232L11.16 236L12.00 240' fill='none' stroke='%237A5233' stroke-width='3' stroke-linecap='round'/%3E%3Cpath d='M12.00 0L11.16 4L10.34 8L9.53 12L8.75 16L8.00 20L7.30 24L6.65 28L6.05 32L5.53 36L5.07 40L4.69 44L4.39 48L4.17 52L4.04 56L4.00 60L4.04 64L4.17 68L4.39 72L4.69 76L5.07 80L5.53 84L6.05 88L6.65 92L7.30 96L8.00 100L8.75 104L9.53 108L10.34 112L11.16 116L12.00 120L12.84 124L13.66 128L14.47 132L15.25 136L16.00 140L16.70 144L17.35 148L17.95 152L18.47 156L18.93 160L19.31 164L19.61 168L19.83 172L19.96 176L20.00 180L19.96 184L19.83 188L19.61 192L19.31 196L18.93 200L18.47 204L17.95 208L17.35 212L16.70 216L16.00 220L15.25 224L14.47 228L13.66 232L12.84 236L12.00 240' fill='none' stroke='%234E8B4A' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E");
+  --firefly: transparent;
+  --ray: transparent;
+  --serie-1: #6FA35E; --serie-2: #3987E5; --serie-3: #C98500;
+  --ramp-1: #2F5D3A; --ramp-2: #3E7A45; --ramp-3: #4E8B4A; --ramp-4: #6FA35E; --ramp-5: #8DBA74; --ramp-6: #B2D49C;
+ }
+
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: var(--bg-app); color: var(--text-primary); font: 400 15.5px/1.55 var(--font-body); -webkit-font-smoothing: antialiased; }
+.sky { background: var(--sky); background-attachment: fixed; min-height: 100%; position: relative; }
+.sky::before { content: ""; position: fixed; inset: 0; pointer-events: none; background-image: var(--flower); background-size: 84px 72.746px; opacity: .45; z-index: 0; }
+.vine-l, .vine-r { position: fixed; top: 0; bottom: 0; width: 24px; pointer-events: none; background-image: var(--vine); background-size: 24px 240px; opacity: .85; z-index: 0; }
+.vine-l { left: 10px; animation: sap 18s linear infinite; }
+.vine-r { right: 10px; transform: scaleX(-1); animation: sap 22s linear infinite; }
+@keyframes sap { to { background-position: 0 240px; } }
+@keyframes ray { 0%,100% { opacity: .18 } 50% { opacity: .4 } }
+@keyframes fly { 0% { transform: translate(0,0); opacity: 0 } 20% { opacity: 1 } 50% { transform: translate(18px,-22px); opacity: .3 } 80% { opacity: 1 } 100% { transform: translate(-10px,-48px); opacity: 0 } }
+@keyframes pan { from { transform: translateX(0) } to { transform: translateX(-48px) } }
+@keyframes ripple { from { transform: translate(-50%,-50%) scale(0); opacity: .7 } to { transform: translate(-50%,-50%) scale(1); opacity: 0 } }
+@keyframes breathe { 0%,100% { transform: scale(1) } 50% { transform: scale(1.03) } }
+@keyframes sway { 0%,100% { transform: rotate(-1.5deg) } 50% { transform: rotate(1.5deg) } }
+@keyframes peel { 0% { transform: translateY(0) rotate(0); opacity: 1 } 30% { transform: translateY(-4px) } 100% { transform: translateY(130%) rotate(9deg); opacity: 0 } }
+@keyframes shimmer { to { background-position: 200% 0 } }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+
+.ic { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex: 0 0 auto; }
+.ic.sm { width: 15px; height: 15px; } .ic.lg { width: 22px; height: 22px; }
+
+/* ---- barra ---- */
+.bar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; display: flex; align-items: center; gap: 14px; padding: 0 clamp(16px, 4vw, 40px); min-height: 56px; background: var(--bg-header); backdrop-filter: blur(10px); box-shadow: inset 0 -1px 0 var(--border-section); }
+.bar .brand { font: 700 18px var(--font-title); color: var(--text-primary); white-space: nowrap; }
+.bar .tag { font: 700 12px var(--font-label); letter-spacing: .18em; color: var(--text-link); white-space: nowrap; }
+.bar nav { display: flex; gap: 2px; margin-left: auto; overflow-x: auto; scrollbar-width: none; }
+.bar nav::-webkit-scrollbar { display: none; }
+.bar nav a { color: var(--text-secondary); text-decoration: none; font: 500 13px var(--font-body); padding: 8px 10px; border-radius: var(--leaf-xs); white-space: nowrap; }
+.bar nav a:hover { background: var(--bg-hover); color: var(--text-primary); }
+.clima-toggle { display: inline-flex; align-items: center; gap: 8px; min-height: 36px; padding: 0 12px 0 10px; border: 0; cursor: pointer; border-radius: var(--leaf-sm); background: var(--action-bg); color: var(--action-fg); font: 600 13px var(--font-body); white-space: nowrap; }
+.clima-toggle:hover { background: var(--action-bg-hover); }
+.clima-toggle .ic { width: 16px; height: 16px; }
+
+/* ---- página ---- */
+.page { position: relative; z-index: 1; max-width: 1180px; margin: 0 auto; padding-block: 40px 96px; padding-inline: clamp(16px, 4vw, 48px); display: flex; flex-direction: column; gap: 88px; }
+section { display: flex; flex-direction: column; gap: 22px; scroll-margin-top: 72px; }
+.prose { max-width: 72ch; }
+.eyebrow { font: 700 13px var(--font-label); letter-spacing: .16em; color: var(--accent-label); }
+h1, h2, h3, h4 { margin: 0; font-family: var(--font-title); color: var(--text-title); font-weight: 700; letter-spacing: -.01em; text-wrap: balance; }
+h1 { font-size: clamp(40px, 6vw, 60px); line-height: 1.02; }
+h2 { font-size: clamp(28px, 3.4vw, 36px); line-height: 1.1; }
+h3 { font-size: 22px; line-height: 1.2; }
+h4 { font-size: 17px; line-height: 1.25; }
+p { margin: 0; text-wrap: pretty; }
+p.lead { font-size: 18px; line-height: 1.6; color: var(--text-secondary); }
+a { color: var(--text-link); text-decoration: none; border-bottom: 1px solid var(--border-section); }
+a:hover { color: var(--text-link-hover); border-bottom-color: currentColor; }
+code { font: 500 12.5px/1.4 var(--font-data); background: var(--bg-sunken); padding: 1px 5px; border-radius: 4px; color: var(--text-primary); }
+pre { margin: 0; font: 400 12.5px/1.5 var(--font-data); background: var(--bg-card); box-shadow: var(--ring-card); border-radius: var(--leaf-sm); padding: 16px 18px; overflow-x: auto; color: var(--text-primary); }
+.mono { font-family: var(--font-data); font-variant-numeric: tabular-nums; }
+.muted { color: var(--text-secondary); }
+.meta { color: var(--text-meta); font-size: 13px; }
+.small { font-size: 13px; }
+ul, ol { margin: 0; padding-left: 1.2em; display: flex; flex-direction: column; gap: 6px; }
+hr.gold { border: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--border-brand), transparent); margin: 0; }
+.grid { display: grid; gap: 18px; }
+.g2 { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+.g3 { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+.g4 { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+.g6 { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+.card { background: var(--bg-card); box-shadow: var(--ring-card); border-radius: var(--leaf-lg); padding: 20px 22px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.card.tight { padding: 14px 16px; border-radius: var(--leaf-md); }
+.card h4 { color: var(--text-primary); }
+.card .n { font: 700 34px/1 var(--font-title); color: var(--accent-label); }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { display: inline-flex; align-items: center; gap: 6px; padding: 5px 11px; border-radius: var(--leaf-xs); background: var(--bg-sunken); box-shadow: var(--ring-card); font-size: 13px; font-weight: 500; }
+.chip .ic { width: 14px; height: 14px; color: var(--text-link); }
+.decisao { border-left: var(--edge-state) solid var(--action-bg); }
+table.t { width: 100%; border-collapse: collapse; font-size: 14px; }
+table.t th { text-align: left; font: 700 11px var(--font-label); letter-spacing: .14em; color: var(--text-field-label); padding: 10px 12px; border-bottom: 1px solid var(--border-section); background: var(--bg-sunken); }
+table.t td { padding: 10px 12px; border-bottom: 1px solid var(--border-subtle); vertical-align: top; }
+table.t tr:hover td { background: var(--bg-hover); }
+.tw { overflow-x: auto; border-radius: var(--leaf-sm); box-shadow: var(--ring-card); background: var(--bg-card); }
+.tw table.t td, .tw table.t th { white-space: normal; }
+.ok { color: var(--tone-confirmed); font-weight: 600; } .ok.badge-like { }
+.sw { display: flex; flex-direction: column; gap: 6px; }
+.sw .s { height: 56px; border-radius: var(--leaf-sm); box-shadow: var(--ring-card); }
+.sw b { font-size: 14px; } .sw .mono { font-size: 12px; color: var(--text-meta); }
+.sw .use { font-size: 12.5px; color: var(--text-secondary); }
+.before-after { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px; align-items: start; }
+.before { background: #FAF7F0; color: #22304E; border-radius: 10px; border: 1px solid #DEDFE6; padding: 16px; font-family: var(--font-body); display: flex; flex-direction: column; gap: 10px; }
+.before .lbl { font: 400 11px var(--font-body); letter-spacing: .14em; text-transform: uppercase; color: #8A6539; }
+.before .hd { font: 700 20px "Archivo", var(--font-body); color: #764C29; }
+.before .btn { background: #1A3DA8; color: #fff; border-radius: 10px; padding: 10px 16px; font-weight: 600; font-size: 14px; display: inline-flex; width: max-content; }
+.before .pill { background: #F8ECD9; color: #8F5714; border: 1px solid #E4CDA4; border-radius: 999px; padding: 2px 10px; font-size: 12px; font-weight: 600; width: max-content; }
+.before .row { border: 1px solid #DEDFE6; border-left: 3px solid #8F5714; border-radius: 10px; padding: 10px 12px; background: #fff; display: flex; justify-content: space-between; gap: 10px; font-size: 14px; }
+.before .rail { background: #E9EAEF; border-right: 2px solid #1A3DA8; padding: 10px; display: flex; flex-direction: column; gap: 6px; font-size: 13px; }
+.before .rail .on { background: #fff; border-left: 3px solid #1A3DA8; border-radius: 6px; padding: 6px 8px; box-shadow: 0 1px 2px rgba(34,48,78,.07); }
+.caption { font-size: 13px; color: var(--text-meta); }
+
+/* ---- componentes vestidos ---- */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 9px; min-height: var(--target-office); padding: 0 20px; border: 1.5px solid transparent; border-radius: var(--leaf-md); font: 600 15px var(--font-body); cursor: pointer; transition: background var(--motion-fast), transform var(--motion-fast); background: var(--action-bg); color: var(--action-fg); white-space: nowrap; }
+.btn:hover { background: var(--action-bg-hover); transform: translateY(-1px); }
+.btn.field { min-height: var(--target-field); font-size: 16.5px; font-weight: 700; padding: 0 24px; }
+.btn.ghost { background: transparent; color: var(--text-link); border-color: var(--border-section); }
+.btn.ghost:hover { background: var(--bg-hover); }
+.btn.quiet { background: var(--bg-sunken); color: var(--text-primary); border-color: var(--border-subtle); }
+.btn.quiet:hover { background: var(--bg-hover); }
+.btn.suggest { background: var(--tone-suggest-soft); color: var(--tone-suggest); border-color: var(--tone-suggest); }
+.btn.danger { background: transparent; color: var(--tone-attention); border-color: var(--tone-attention); }
+.btn[disabled] { background: var(--bg-sunken); color: var(--text-meta); border-color: var(--border-subtle); cursor: not-allowed; transform: none; }
+.blocked { display: inline-flex; flex-direction: column; gap: 7px; align-items: flex-start; }
+.blocked .why { font-size: 13px; color: var(--tone-attention); max-width: 46ch; }
+.badge { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: var(--leaf-xs); font-size: 11.5px; font-weight: 600; letter-spacing: .01em; white-space: nowrap; }
+.badge .cnt { font: 600 11px var(--font-data); }
+.badge.pending { background: var(--tone-pending-bg); color: var(--tone-pending-fg); }
+.badge.attention { background: var(--tone-attention-bg); color: var(--tone-attention-fg); }
+.badge.period { background: var(--tone-period-bg); color: var(--tone-period-fg); }
+.badge.confirmed { background: var(--tone-confirmed-bg); color: var(--tone-confirmed-fg); }
+.badge.neutral { background: var(--tone-neutral-bg); color: var(--tone-neutral-fg); }
+.badge.suggest { background: var(--tone-suggest-bg); color: var(--tone-suggest-fg); }
+.badge.flag { background: transparent; box-shadow: inset 0 0 0 1.5px var(--tone-attention); color: var(--tone-attention); }
+.field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.field .lbl { font: 700 12px var(--font-label); letter-spacing: .14em; color: var(--text-field-label); }
+.field .in { min-height: var(--target-office); padding: 0 14px; display: flex; align-items: center; gap: 10px; border-radius: var(--leaf-sm); background: var(--bg-card-solid); box-shadow: inset 0 0 0 1.5px var(--border-field); font: 500 15px var(--font-body); color: var(--text-primary); }
+.field.fld .in { min-height: var(--target-field); font-size: 17px; }
+.field .in.focus { box-shadow: inset 0 0 0 1.5px var(--focus-ring), 0 0 0 3px color-mix(in srgb, var(--focus-ring) 25%, transparent); }
+.field .in.err { box-shadow: inset 0 0 0 1.5px var(--tone-attention); }
+.field .hint { font-size: 12.5px; color: var(--text-meta); }
+.field .hint.err { color: var(--tone-attention); }
+.field .in .ic { color: var(--text-meta); margin-left: auto; }
+.navitem { display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 0 12px; border-radius: var(--leaf-sm); font-size: 14px; font-weight: 500; color: var(--text-primary); }
+.navitem .ic { color: var(--text-link); }
+.navitem.on { background: var(--bg-hover); box-shadow: inset 0 0 0 1px var(--border-section); }
+.navitem.on .ic { color: var(--accent-icon-active); }
+.navitem.hover { background: var(--bg-sunken); }
+.navitem .cnt { margin-left: auto; font: 600 12px var(--font-data); padding: 2px 8px; border-radius: var(--leaf-xs); background: var(--tone-pending-bg); color: var(--tone-pending-fg); }
+.navsec { font: 700 12px var(--font-label); letter-spacing: .16em; color: var(--text-link); padding: 14px 10px 4px; }
+.leaf-card { position: relative; overflow: hidden; display: flex; flex-direction: column; border-radius: var(--leaf-lg); background: var(--bg-card); box-shadow: var(--ring-card), var(--shadow-raised); transition: transform 160ms cubic-bezier(.2,0,.2,1), box-shadow 160ms; min-width: 0; }
+.leaf-card:hover { transform: translateY(-3px); box-shadow: var(--ring-card-hover), var(--shadow-raised); }
+.band { position: relative; height: 84px; overflow: hidden; }
+.band .skin { position: absolute; inset: 0 -96px 0 0; animation: pan 9s ease-in-out infinite alternate; }
+.band .fade { position: absolute; inset: 0; background: linear-gradient(180deg, transparent 30%, var(--bg-card-solid)); }
+.band .nm { position: absolute; left: 20px; bottom: 10px; font: 700 15px var(--font-label); letter-spacing: .14em; color: var(--text-primary); text-shadow: 0 1px 4px var(--bg-card-solid), 0 0 3px var(--bg-card-solid); }
+.band.short { height: 44px; }
+.wq-body { display: flex; flex-direction: column; gap: 6px; padding: 14px 20px 20px; }
+.wq-top { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.wq-n { font: 700 50px/1 var(--font-title); }
+.wq-title { font-weight: 600; font-size: 15px; }
+.wq-sub { font-size: 13px; color: var(--text-secondary); }
+.wq-virtue { font: italic 500 14px var(--font-title); color: var(--text-secondary); }
+.wq-since { font: 400 11px var(--font-data); color: var(--text-meta); }
+.recrow { display: grid; grid-template-columns: auto minmax(0,1fr) auto; gap: 4px 12px; align-items: center; padding: 10px 14px; border-radius: var(--leaf-sm); box-shadow: inset var(--edge-state) 0 0 var(--row-tone, var(--tone-pending)); transition: background var(--motion-fast); background: var(--bg-card); }
+.recrow:hover { background: var(--bg-hover); }
+.recrow .paw { grid-row: span 2; width: 34px; height: 34px; border-radius: var(--leaf-seal); background: var(--paw, var(--tx-onca)); box-shadow: inset 0 0 0 1px rgba(0,0,0,.25); }
+.recrow .d { font-size: 14px; font-weight: 500; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.recrow .v { font: 600 14px var(--font-data); font-variant-numeric: tabular-nums; }
+.recrow .m { font: 400 12px var(--font-data); color: var(--text-meta); }
+.recrow .b { justify-self: end; }
+.empty { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 8px; padding: 36px 24px; border-radius: var(--leaf-lg); border: 1.5px dashed var(--border-brand); background-image: var(--flower); background-size: 84px 72.746px; position: relative; }
+.empty h4 { font-size: 20px; color: var(--text-primary); }
+.notice { display: grid; grid-template-columns: auto 1fr; gap: 12px; padding: 14px 16px; border-radius: var(--leaf-sm); background: var(--bg-card); box-shadow: inset var(--edge-state) 0 0 var(--nt, var(--tone-attention)), var(--ring-card); }
+.notice .ic { color: var(--nt, var(--tone-attention)); margin-top: 2px; }
+.notice b { display: block; margin-bottom: 2px; }
+.receipt { background: var(--tx-papelcasca); color: var(--text-on-paper); border-radius: var(--leaf-lg); padding: 22px 24px; display: flex; flex-direction: column; gap: 10px; box-shadow: var(--shadow-raised); max-width: 380px; }
+.receipt .rt { font: 700 12px var(--font-label); letter-spacing: .14em; color: var(--label-on-paper); }
+.receipt .amt { font: 600 38px/1.05 var(--font-data); letter-spacing: -.025em; color: var(--title-on-paper); font-variant-numeric: tabular-nums; }
+.receipt .rule { height: 1px; background: linear-gradient(90deg, transparent, #C9A66B, transparent); }
+.receipt .line { display: flex; justify-content: space-between; gap: 12px; font-size: 13.5px; }
+.receipt .line span:last-child { font-family: var(--font-data); }
+.dt { width: 100%; border-collapse: collapse; font-size: 14px; }
+.dt th { text-align: left; font: 700 11px var(--font-label); letter-spacing: .14em; color: var(--text-field-label); padding: 10px 12px; background: var(--bg-sunken); border-bottom: 1px solid var(--border-section); position: sticky; top: 0; }
+.dt td { padding: 10px 12px; border-bottom: 1px solid var(--border-subtle); }
+.dt tr:nth-child(even) td { background: var(--bg-sunken); }
+.dt td.num, .dt th.num { text-align: right; font-family: var(--font-data); font-variant-numeric: tabular-nums; }
+.skel { display: flex; flex-direction: column; gap: 10px; }
+.skel .r { height: 52px; border-radius: var(--leaf-sm); background: linear-gradient(90deg, var(--bg-sunken) 25%, var(--bg-hover) 50%, var(--bg-sunken) 75%); background-size: 200% 100%; animation: shimmer 1.4s linear infinite; }
+.seal { width: 64px; height: 64px; border-radius: var(--leaf-seal); box-shadow: inset 0 0 0 1px rgba(0,0,0,.3), 0 6px 14px rgba(0,0,0,.25); background-size: cover; flex: 0 0 auto; }
+.seal.sm { width: 36px; height: 36px; }
+.seal.xs { width: 26px; height: 26px; }
+.guard { display: grid; grid-template-columns: auto 1fr; gap: 14px; align-items: start; }
+.guard .nm { font: 700 15px var(--font-label); letter-spacing: .14em; }
+.guard .vt { font: italic 500 14px var(--font-title); color: var(--text-secondary); }
+.guard .dm { font-size: 13px; color: var(--text-meta); }
+.tex { display: flex; flex-direction: column; border-radius: var(--leaf-md); overflow: hidden; background: var(--bg-card); box-shadow: var(--ring-card); }
+.tex .sw2 { height: 78px; background-size: cover; }
+.tex .tx { padding: 10px 12px; display: flex; flex-direction: column; gap: 2px; }
+.tex .tx b { font: 700 12px var(--font-label); letter-spacing: .14em; }
+.tex .tx span { font-size: 12.5px; color: var(--text-secondary); }
+.avatar { width: 32px; height: 32px; border-radius: var(--leaf-seal); display: grid; place-items: center; font: 700 12px var(--font-body); color: var(--action-fg); background: linear-gradient(135deg, var(--mata-musgo), var(--mata-liquen)); box-shadow: inset -3px 3px 0 rgba(11,31,23,.25); }
+.sheet { border-radius: var(--leaf-lg) var(--leaf-lg) 0 0; border-radius: 0 28px 0 0; background: var(--bg-card-solid); box-shadow: var(--ring-card), 0 -2px 24px -6px rgba(0,0,0,.3); padding: 14px 16px 18px; display: flex; flex-direction: column; gap: 6px; }
+.sheet .h { display: flex; align-items: center; justify-content: space-between; font: 700 18px var(--font-title); color: var(--text-primary); }
+.opt { display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 0 12px; border-radius: var(--leaf-sm); font-size: 15px; }
+.opt.on { background: var(--bg-hover); box-shadow: inset 0 0 0 1px var(--border-section); }
+.opt .k { margin-left: auto; font: 500 12px var(--font-data); color: var(--text-meta); }
+.radii { display: flex; gap: 22px; flex-wrap: wrap; align-items: flex-end; }
+.radii .r { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
+.radii .shape { background: linear-gradient(135deg, var(--mata-musgo), var(--mata-liquen)); }
+.radii b { font-size: 13px; } .radii .mono { font-size: 11px; color: var(--text-meta); }
+.typo { display: grid; gap: 4px; padding: 18px 20px; border-radius: var(--leaf-md); background: var(--bg-card); box-shadow: var(--ring-card); }
+.typo .k { font: 400 11.5px var(--font-data); color: var(--text-meta); }
+.flow { display: grid; grid-template-columns: 1fr; gap: 10px; }
+.step { display: grid; grid-template-columns: 34px 1fr; gap: 12px; align-items: start; }
+.step .no { width: 34px; height: 34px; border-radius: var(--leaf-seal); background: var(--action-bg); color: var(--action-fg); display: grid; place-items: center; font: 700 14px var(--font-title); }
+.ux { display: grid; grid-template-columns: 1fr; gap: 12px; }
+.ux .item { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1.3fr); gap: 4px 20px; padding: 14px 18px; border-radius: var(--leaf-md); background: var(--bg-card); box-shadow: var(--ring-card); align-items: start; }
+.ux .item .h { grid-column: 1 / -1; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.ux .item .h b { font-size: 15px; }
+.ux .item .h .cd { font: 500 11.5px var(--font-data); color: var(--text-meta); }
+.ux .item .k { font: 700 11px var(--font-label); letter-spacing: .14em; color: var(--text-field-label); }
+.ux .item .k.p { color: var(--text-link); }
+.ux .item p { font-size: 14px; }
+@media (max-width: 640px) { .ux .item { grid-template-columns: 1fr; } }
+.phase { display: grid; grid-template-columns: 56px 1fr; gap: 16px; align-items: start; padding: 18px 20px; border-radius: var(--leaf-lg); background: var(--bg-card); box-shadow: var(--ring-card); }
+.phase .no { width: 56px; height: 56px; border-radius: var(--leaf-seal); background-size: cover; box-shadow: inset 0 0 0 1px rgba(0,0,0,.3); }
+.phase .body { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.phase .body h4 { font-size: 20px; }
+.phase .cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px 18px; font-size: 14px; }
+.phase .cols b { display: block; font: 700 11px var(--font-label); letter-spacing: .14em; color: var(--text-field-label); margin-bottom: 4px; }
+.voice { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+.voice .v { display: flex; flex-direction: column; gap: 8px; padding: 14px 16px; border-radius: var(--leaf-md); background: var(--bg-card); box-shadow: var(--ring-card); font-size: 14px; }
+.voice .v .y { color: var(--tone-confirmed); } .voice .v .nn { color: var(--tone-attention); }
+.voice .v .y::before { content: "use  "; font: 700 11px var(--font-label); letter-spacing: .14em; }
+.voice .v .nn::before { content: "evite  "; font: 700 11px var(--font-label); letter-spacing: .14em; }
+.copybtn { align-self: flex-start; }
+details { border-radius: var(--leaf-md); background: var(--bg-card); box-shadow: var(--ring-card); padding: 0; }
+details summary { cursor: pointer; padding: 14px 18px; font-weight: 600; list-style: none; display: flex; align-items: center; gap: 10px; }
+details summary::-webkit-details-marker { display: none; }
+details summary::before { content: ""; width: 8px; height: 8px; border-right: 2px solid var(--text-link); border-bottom: 2px solid var(--text-link); transform: rotate(-45deg); transition: transform var(--motion-fast); }
+details[open] summary::before { transform: rotate(45deg); }
+details .dbody { padding: 0 18px 18px; display: flex; flex-direction: column; gap: 12px; }
+
+
+/* ---- avatar de folha ---- */
+.avatar-leaf { position: relative; display: inline-block; width: 48px; height: 48px; padding: 3px; border-radius: var(--leaf-seal); background: var(--guard, var(--tx-onca)); background-size: cover; box-shadow: 0 4px 12px rgba(0,0,0,.3); flex: 0 0 auto; }
+.avatar-leaf i { display: block; width: 100%; height: 100%; border-radius: var(--leaf-seal); background: var(--foto) center/cover; box-shadow: inset 0 0 0 1px rgba(0,0,0,.25); }
+.avatar-leaf.xs { width: 28px; height: 28px; padding: 2px; } .avatar-leaf.sm { width: 36px; height: 36px; padding: 2.5px; } .avatar-leaf.lg { width: 96px; height: 96px; padding: 5px; } .avatar-leaf.xl { width: 132px; height: 132px; padding: 6px; }
+.avatar-leaf.initials i { background: linear-gradient(135deg, var(--mata-musgo), var(--mata-liquen)); display: grid; place-items: center; font: 700 14px var(--font-body); color: #0B1F17; font-style: normal; }
+.guard-pick { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
+.guard-pick .seal { width: 100%; height: auto; aspect-ratio: 1; cursor: pointer; }
+.guard-pick .seal.on { outline: 2.5px solid var(--focus-ring); outline-offset: 2px; }
+/* ---- gráficos ---- */
+.viz { width: 100%; height: auto; display: block; font-family: var(--font-body); overflow: visible; }
+.viz .grid { stroke: var(--border-subtle); stroke-width: 1; }
+.viz .zero { stroke: var(--border-section); stroke-width: 1.5; }
+.viz .tick { fill: var(--text-meta); font: 400 10.5px var(--font-data); }
+.viz .tick2 { fill: var(--text-meta); font: 400 9.5px var(--font-body); }
+.viz .lbl { fill: var(--text-primary); font: 600 11px var(--font-data); }
+.viz .lbl.strong { font-size: 13px; }
+.viz .legt { fill: var(--text-secondary); font: 400 11px var(--font-body); } .viz .legt.strong { fill: var(--text-primary); font-weight: 600; }
+.viz .line { fill: none; stroke: var(--serie-1); stroke-width: 2; stroke-linejoin: round; } .viz .line.acc { stroke: var(--text-primary); }
+.viz .area { fill: var(--serie-1); fill-opacity: .16; }
+.viz .dot { fill: var(--serie-1); stroke: var(--bg-card-solid); stroke-width: 2; } .viz .dot.neg { fill: var(--tone-attention); } .viz .dot.acc { fill: var(--text-primary); }
+.viz .bar.s1 { fill: var(--serie-1); } .viz .bar.s2 { fill: var(--serie-2); } .viz .bar.s3 { fill: var(--serie-3); } .viz .bar.neutral { fill: var(--text-meta); fill-opacity: .55; }
+.viz .hatch { fill-opacity: .28; stroke-width: 1.2; stroke-dasharray: 3 2; } .viz .hatch.s1 { fill: var(--serie-1); stroke: var(--serie-1); } .viz .hatch.s2 { fill: var(--serie-2); stroke: var(--serie-2); } .viz .hatch.s3 { fill: var(--serie-3); stroke: var(--serie-3); }
+.viz .feitio { stroke: var(--accent-label); stroke-width: 1.5; stroke-dasharray: 4 3; }
+.viz.rosca { width: 140px; height: 140px; flex: 0 0 auto; } .viz.rosca .lbl { font-size: 9.5px; } .viz.rosca .lbl.strong { font-size: 10.5px; } .viz .slice { fill: none; stroke-width: 16; transform: rotate(-90deg); transform-origin: 70px 70px; }
+.s-ramp1 { stroke: var(--ramp-1); background: var(--ramp-1); } .s-ramp2 { stroke: var(--ramp-2); background: var(--ramp-2); } .s-ramp3 { stroke: var(--ramp-3); background: var(--ramp-3); } .s-ramp4 { stroke: var(--ramp-4); background: var(--ramp-4); } .s-ramp5 { stroke: var(--ramp-5); background: var(--ramp-5); } .s-ramp6 { stroke: var(--ramp-6); background: var(--ramp-6); }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12.5px; color: var(--text-secondary); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; } .legend i { width: 10px; height: 10px; border-radius: 2px; display: inline-block; } .legend i.ln { width: 14px; height: 2px; border-radius: 0; }
+.qb { display: grid; grid-template-columns: 100px 1fr auto; gap: 10px; align-items: center; font-size: 12.5px; } .qb .qt { height: 10px; background: var(--bg-sunken); border-radius: 3px; overflow: hidden; } .qb .qt i { display: block; height: 100%; border-radius: 3px; } .qb .qv { font-family: var(--font-data); font-variant-numeric: tabular-nums; color: var(--text-secondary); white-space: nowrap; }
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
+.kpi { display: flex; flex-direction: column; gap: 2px; padding: 12px 14px; border-radius: var(--leaf-sm); background: var(--bg-card); box-shadow: var(--ring-card); }
+.kpi .k { font: 700 11px var(--font-label); letter-spacing: .14em; color: var(--text-field-label); } .kpi .v { font: 600 22px/1.1 var(--font-data); font-variant-numeric: tabular-nums; } .kpi .n { font-size: 12px; color: var(--text-meta); }
+.lote { display: grid; grid-template-columns: auto 1fr; gap: 12px; padding: 14px 16px; border-radius: var(--leaf-md); background: var(--bg-card); box-shadow: var(--ring-card); align-items: start; }
+.lote .lb { display: flex; flex-direction: column; gap: 4px; min-width: 0; } .lote .lh { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; } .lote b { font-size: 14px; } .lote .m { font-size: 12px; color: var(--text-meta); }
+.prop { height: 8px; border-radius: 3px; background: var(--bg-sunken); overflow: hidden; } .prop i { display: block; height: 100%; border-radius: 3px; background: var(--serie-1); } .prop i.s2 { background: var(--serie-2); } .prop i.s3 { background: var(--serie-3); } .prop i.warn { background: var(--tone-pending); }
+.propline { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; font-size: 13px; align-items: center; } .propline .prop { grid-column: 1 / -1; }
+.beds { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; } .beds i { aspect-ratio: 1.4; border-radius: 3px; background: var(--bg-sunken); display: block; } .beds i.r { background: var(--tone-pending-soft); box-shadow: inset 0 0 0 1.5px var(--tone-pending); } .beds i.o { background: var(--serie-1); } .beds b { font: 400 10px var(--font-data); color: var(--text-meta); text-align: center; }
+/* ---- painel: carrossel de cerimônias ---- */
+.tabs { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; } .tabs .tab { min-height: 36px; padding: 0 12px; border-radius: var(--leaf-xs); font-size: 13px; font-weight: 600; color: var(--text-secondary); display: inline-flex; align-items: center; } .tabs .tab.on { background: var(--bg-hover); color: var(--text-primary); box-shadow: inset 0 0 0 1px var(--border-section); } .tabs .pager { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; color: var(--text-meta); font: 500 12px var(--font-data); } .tabs .pager span { width: 30px; height: 30px; border-radius: var(--leaf-xs); display: grid; place-items: center; color: var(--text-link); box-shadow: inset 0 0 0 1px var(--border-subtle); }
+.cartaz { width: 132px; height: 178px; border-radius: var(--leaf-md); background: var(--tx-palmeira); box-shadow: var(--ring-card), var(--shadow-raised); display: grid; place-items: end start; padding: 10px; flex: 0 0 auto; } .cartaz span { font: 700 11px var(--font-label); letter-spacing: .14em; color: #EDE6D3; text-shadow: 0 1px 3px rgba(0,0,0,.6); }
+.bloco { display: flex; flex-direction: column; gap: 3px; padding: 10px 12px; border-radius: var(--leaf-sm); background: var(--bg-sunken); } .bloco .k { font: 700 11px var(--font-label); letter-spacing: .14em; color: var(--text-field-label); display: flex; align-items: center; gap: 6px; } .bloco .v { font: 600 24px/1.1 var(--font-data); font-variant-numeric: tabular-nums; } .bloco .n { font-size: 12px; color: var(--text-secondary); }
+.att { display: flex; flex-direction: column; gap: 6px; padding: 12px 14px; border-radius: var(--leaf-sm); background: var(--tone-attention-soft); box-shadow: inset var(--edge-state) 0 0 var(--tone-attention), 0 0 0 1px var(--border-brand); } .att .h { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 14px; } .att .p { display: grid; grid-template-columns: 150px 1fr; gap: 10px; font-size: 13px; } .att .p span:last-child { color: var(--text-secondary); } .att .sens { font: 700 10.5px var(--font-label); letter-spacing: .14em; color: var(--tone-attention); margin-left: auto; }
+.mov { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; } .mov .c { display: flex; flex-direction: column; gap: 4px; } .mov .c .k { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-secondary); } .mov .c .v { font: 600 19px/1.1 var(--font-data); font-variant-numeric: tabular-nums; white-space: nowrap; } .mov .c .n { font-size: 12px; color: var(--text-meta); } .mov .c + .c { padding-left: 14px; border-left: 1px solid var(--border-subtle); }
+
+/* ---- mockups ---- */
+.mockwrap { width: 100%; overflow: hidden; }
+.mock { position: relative; transform-origin: 0 0; border-radius: var(--leaf-lg); overflow: hidden; box-shadow: var(--shadow-float); font-family: var(--font-body); color: var(--text-primary); background: var(--sky); }
+.mock * { min-width: 0; }
+.mock .flowerbg { position: absolute; inset: 0; pointer-events: none; background-image: var(--flower); background-size: 84px 72.746px; opacity: .5; }
+.mock .rays { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.mock .ray { position: absolute; top: -10%; height: 130%; transform: rotate(18deg); filter: blur(18px); background: linear-gradient(180deg, var(--ray), transparent 75%); animation: ray 9s ease-in-out infinite; }
+.mock .fly { position: absolute; width: 4px; height: 4px; border-radius: 50%; background: var(--firefly); box-shadow: 0 0 10px 2px color-mix(in srgb, var(--firefly) 70%, transparent); animation: fly 8s ease-in-out infinite; }
+.m-shell { display: grid; grid-template-columns: 240px minmax(0,1fr); grid-template-rows: 56px 1fr; position: relative; }
+.m-head { grid-column: 1 / -1; position: relative; display: flex; align-items: center; gap: 14px; padding: 0 24px; background: var(--bg-header); box-shadow: inset 0 -1px 0 var(--border-section); }
+.m-head .logo { width: 32px; height: 36px; object-fit: contain; display: block; }
+.unit-mark { width: 16px; height: 18px; object-fit: contain; display: inline-block; }
+.marca-img { width: 40px; height: 46px; object-fit: contain; }
+.m-head .brand { font: 700 18px var(--font-title); color: var(--text-primary); }
+.m-head .unit { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: var(--leaf-xs); background: var(--bg-sunken); box-shadow: inset 0 0 0 1px var(--border-section); font: 700 12px var(--font-label); letter-spacing: .14em; }
+.m-head .search { margin-left: auto; display: inline-flex; align-items: center; gap: 8px; min-width: 260px; padding: 7px 12px; border-radius: var(--leaf-sm); background: var(--bg-sunken); box-shadow: inset 0 0 0 1px var(--border-subtle); font-size: 13px; color: var(--text-meta); }
+.m-head .search .kbd { margin-left: auto; font: 500 11px var(--font-data); padding: 1px 6px; border-radius: 4px; box-shadow: inset 0 0 0 1px var(--border-section); }
+.m-head .bell { position: relative; display: grid; place-items: center; width: 36px; height: 36px; border-radius: var(--leaf-xs); color: var(--text-link); }
+.m-head .bell i { position: absolute; top: 6px; right: 6px; width: 8px; height: 8px; border-radius: 50%; background: var(--tone-pending); }
+.m-head .user { display: flex; align-items: center; gap: 10px; }
+.m-head .user .t { display: flex; flex-direction: column; align-items: flex-end; line-height: 1.2; font-size: 13px; }
+.m-head .user .t span { font-size: 11.5px; color: var(--text-meta); }
+.m-rail { position: relative; padding: 20px 14px 20px 44px; display: flex; flex-direction: column; gap: 4px; background: var(--bg-rail); box-shadow: inset -1px 0 0 var(--border-subtle); }
+.m-rail .vinebar { position: absolute; left: 12px; top: 0; bottom: 0; width: 24px; background-image: var(--vine); background-size: 24px 240px; opacity: .9; animation: sap 14s linear infinite; }
+.m-main { position: relative; padding: 32px 36px 48px; display: flex; flex-direction: column; gap: 28px; }
+.m-hero { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 18px; }
+.m-hero h1 { font-size: 48px; }
+.m-hero p { max-width: 480px; color: var(--text-secondary); font-size: 15.5px; }
+.m-hero .btn { margin-left: auto; min-height: 50px; box-shadow: 0 8px 24px rgba(0,0,0,.25); }
+.m-sec-h { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.m-sec-h h2 { font-size: 24px; }
+.m-row2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 22px; align-items: start; }
+.m-panel { padding: 20px; border-radius: var(--leaf-lg); background: var(--bg-card); box-shadow: var(--ring-card); display: flex; flex-direction: column; gap: 4px; }
+.m-panel h2 { font-size: 21px; }
+.m-panel .sub { font-size: 13px; color: var(--text-secondary); margin-bottom: 8px; }
+.acc { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 12px; align-items: center; padding: 11px 0; box-shadow: inset 0 -1px 0 var(--border-subtle); }
+.acc b { font-size: 14px; font-weight: 600; display: block; }
+.acc span { font-size: 12px; color: var(--text-meta); }
+.acc .v { font: 600 16px var(--font-data); font-variant-numeric: tabular-nums; }
+.bars { display: flex; align-items: flex-end; gap: 6px; height: 64px; padding-top: 6px; }
+.bars i { flex: 1; border-radius: 3px 3px 0 0; background: var(--mata-musgo); opacity: .85; }
+.bars i.s { background: var(--tone-pending); }
+.m-screenhead { display: flex; align-items: center; gap: 14px; padding: 14px 20px; border-radius: var(--leaf-md); background: var(--bg-card); box-shadow: var(--ring-card); }
+.m-screenhead .t { display: flex; flex-direction: column; gap: 2px; }
+.m-screenhead .t .eyebrow { font-size: 12px; }
+.m-screenhead .t h1 { font-size: 26px; }
+.m-screenhead .t p { font-size: 13px; color: var(--text-secondary); }
+.m-screenhead .acts { margin-left: auto; display: flex; gap: 8px; }
+.m-list { display: grid; grid-template-columns: minmax(0,1.3fr) minmax(300px, .9fr); gap: 22px; align-items: start; }
+.m-filters { display: flex; flex-wrap: wrap; gap: 8px; }
+.drawer { padding: 20px; border-radius: var(--leaf-lg); background: var(--bg-card-solid); box-shadow: var(--ring-card), var(--shadow-raised); display: flex; flex-direction: column; gap: 14px; }
+.timeline { display: flex; flex-direction: column; gap: 10px; padding-left: 14px; border-left: 2px solid var(--border-section); }
+.timeline .e { display: flex; flex-direction: column; font-size: 13px; position: relative; }
+.timeline .e::before { content: ""; position: absolute; left: -19px; top: 6px; width: 8px; height: 8px; border-radius: 50%; background: var(--et, var(--tone-confirmed)); }
+.timeline .e span { color: var(--text-meta); font-family: var(--font-data); font-size: 11.5px; }
+.pend { padding: 14px 16px; border-radius: var(--leaf-md); background: var(--tone-attention-soft); box-shadow: inset var(--edge-state) 0 0 var(--tone-attention); display: flex; flex-direction: column; gap: 8px; }
+.pend .q { font: italic 500 16px var(--font-title); }
+.pend .by { font-size: 12px; color: var(--text-meta); }
+.check { display: flex; flex-direction: column; gap: 8px; }
+.check .c { display: grid; grid-template-columns: 26px 1fr auto; gap: 12px; align-items: center; padding: 12px 14px; border-radius: var(--leaf-sm); background: var(--bg-card); box-shadow: var(--ring-card); font-size: 14px; }
+.check .c .dot { width: 22px; height: 22px; border-radius: var(--leaf-seal); display: grid; place-items: center; }
+.check .c.done .dot { background: var(--tone-confirmed); color: var(--tone-confirmed-fg); }
+.check .c.todo .dot { background: var(--tone-pending); color: var(--tone-pending-fg); }
+.check .c .ic { width: 14px; height: 14px; stroke-width: 3; }
+.skin-swap { position: relative; height: 120px; border-radius: var(--leaf-lg); overflow: hidden; }
+.skin-swap .old, .skin-swap .new { position: absolute; inset: 0; }
+.skin-swap .strip { position: absolute; top: 0; bottom: 0; width: 12.7%; overflow: hidden; }
+.skin-swap .strip i { position: absolute; inset: 0; width: 800%; }
+.phone { width: 390px; min-height: 760px; border-radius: 28px; overflow: hidden; background: var(--sky); box-shadow: var(--shadow-float), inset 0 0 0 1px var(--border-section); position: relative; display: flex; flex-direction: column; font-family: var(--font-body); color: var(--text-primary); }
+.phone .flowerbg { position: absolute; inset: 0; pointer-events: none; background-image: var(--flower); background-size: 84px 72.746px; opacity: .55; }
+.phone .p-head { position: relative; display: flex; align-items: center; gap: 10px; padding: 14px 16px 10px; background: var(--bg-header); box-shadow: inset 0 -1px 0 var(--border-section); }
+.phone .p-head .t { display: flex; flex-direction: column; }
+.phone .p-head .eyebrow { font-size: 11px; }
+.phone .p-head h1 { font-size: 22px; }
+.phone .p-body { position: relative; flex: 1; padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+.phone .p-foot { position: relative; padding: 12px 16px 16px; background: var(--bg-header); box-shadow: inset 0 1px 0 var(--border-section); display: flex; flex-direction: column; gap: 6px; }
+.phone .p-foot .note { font-size: 12px; color: var(--text-meta); text-align: center; }
+.phone .tabbar { position: relative; display: grid; grid-template-columns: 1fr 1fr 1.2fr 1fr 1fr; align-items: end; padding: 6px 8px 10px; background: var(--bg-header); box-shadow: inset 0 1px 0 var(--border-section); }
+.phone .tabbar .tb { display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 10.5px; color: var(--text-secondary); padding: 6px 0; }
+.phone .tabbar .tb.on { color: var(--accent-icon-active); }
+.phone .tabbar .tb.main { transform: translateY(-14px); }
+.phone .tabbar .tb.main .big { width: 56px; height: 56px; border-radius: var(--leaf-md); background: var(--action-bg); color: var(--action-fg); display: grid; place-items: center; box-shadow: 0 8px 20px rgba(0,0,0,.25); }
+.amount-hero { display: flex; flex-direction: column; gap: 4px; padding: 16px 18px; border-radius: var(--leaf-lg); background: var(--bg-card); box-shadow: var(--ring-card); }
+.amount-hero .lbl { font: 700 12px var(--font-label); letter-spacing: .14em; color: var(--text-field-label); }
+.amount-hero .v { font: 600 44px/1.05 var(--font-data); letter-spacing: -.025em; font-variant-numeric: tabular-nums; }
+.amount-hero .v small { font-size: 22px; color: var(--text-meta); margin-right: 6px; }
+.seg { display: grid; grid-template-columns: 1fr 1fr 1fr; padding: 4px; border-radius: var(--leaf-sm); background: var(--bg-sunken); box-shadow: var(--ring-card); }
+.seg span { text-align: center; padding: 9px 4px; border-radius: var(--leaf-xs); font-size: 13.5px; font-weight: 600; color: var(--text-secondary); }
+.seg span.on { background: var(--bg-card-solid); color: var(--text-primary); box-shadow: inset 0 0 0 1px var(--border-section); }
+.sugg { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 6px 0 12px; border-radius: var(--leaf-sm); background: var(--tone-suggest-soft); box-shadow: inset 0 0 0 1px var(--tone-suggest); color: var(--text-primary); font-size: 13.5px; }
+.sugg .ok { display: grid; place-items: center; width: 30px; height: 30px; border-radius: var(--leaf-xs); background: var(--tone-suggest); color: var(--text-on-action); }
+.sugg .x { display: grid; place-items: center; width: 30px; height: 30px; color: var(--text-meta); }
+.capt { display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 0 14px; border-radius: var(--leaf-sm); border: 1.5px dashed var(--border-section); font-size: 14px; color: var(--text-secondary); }
+.capt .ic { color: var(--text-link); }
+.verse { font: italic 500 20px/1.4 var(--font-title); text-align: center; text-wrap: balance; }
+.login-card { width: 100%; max-width: 440px; background: var(--bg-paper); color: var(--text-on-paper); border-radius: var(--leaf-xl); padding: 30px 30px 26px; display: flex; flex-direction: column; gap: 20px; box-shadow: var(--shadow-float), inset 0 0 0 1px rgba(47,93,58,.18); }
+.login-card h1 { font-size: 30px; color: var(--title-on-paper); }
+.login-card .field .lbl { color: var(--label-on-paper); }
+.login-card .field .in { background: #fff; color: #1B3324; box-shadow: inset 0 0 0 1.5px #C6CDB8; min-height: 52px; font-size: 17px; }
+.login-card .btn { background: #2F5D3A; color: #F7F5EA; min-height: 56px; font-size: 16px; }
+.login-card a { color: #2F5D3A; border: 0; font-weight: 600; align-self: center; font-size: 14px; }
+.login-card img { width: 100%; max-width: 280px; align-self: center; display: block; }
+.login-card .rule { height: 1px; background: linear-gradient(90deg, transparent, #C9A66B, transparent); }
+.m-login { display: grid; place-items: center; padding: 48px 24px; min-height: 720px; position: relative; }
+.m-login .inner { position: relative; display: flex; flex-direction: column; align-items: center; gap: 26px; width: 100%; max-width: 440px; }
+.kbd { font: 500 11px var(--font-data); padding: 1px 6px; border-radius: 4px; box-shadow: inset 0 0 0 1px var(--border-section); color: var(--text-secondary); }
+.ann { position: absolute; z-index: 3; display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: var(--tone-pending); color: var(--tone-pending-fg); font: 700 12px var(--font-data); box-shadow: 0 2px 8px rgba(0,0,0,.4); }
+.annlist { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 8px 18px; font-size: 14px; }
+.annlist div { display: grid; grid-template-columns: 24px 1fr; gap: 10px; align-items: start; }
+.annlist .no { width: 22px; height: 22px; border-radius: 50%; background: var(--tone-pending); color: var(--tone-pending-fg); font: 700 11px var(--font-data); display: grid; place-items: center; margin-top: 2px; }
+.contrast td.cr { font-family: var(--font-data); font-variant-numeric: tabular-nums; }
+.contrast .pair { display: inline-flex; align-items: center; gap: 8px; }
+.contrast .pair i { width: 30px; height: 20px; border-radius: 4px; display: grid; place-items: center; font: 700 11px var(--font-body); }
+.toc { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px; }
+.toc a { display: flex; gap: 10px; align-items: baseline; padding: 10px 12px; border-radius: var(--leaf-xs); background: var(--bg-card); box-shadow: var(--ring-card); border: 0; color: var(--text-primary); font-size: 14px; }
+.toc a:hover { background: var(--bg-hover); }
+.toc a .no { font: 500 11px var(--font-data); color: var(--text-meta); }
+.footer { padding-top: 24px; border-top: 1px solid var(--border-section); font-size: 13px; color: var(--text-meta); display: flex; flex-wrap: wrap; gap: 8px 24px; }
+@media (max-width: 760px) { .bar nav { display: none; } .m-list { grid-template-columns: 1fr; } .vine-l, .vine-r { display: none; } }
+
+
+:root[data-clima="fogueira"], .clima-fogueira {
+  color-scheme: dark;
+  --clima-nome: "Fogueira na noite";
+  --sky: radial-gradient(90% 70% at 50% 110%, #7A3A14 0%, #3A1A0E 35%, #1A0F0A 75%);
+  --bg-app: #1A0F0A;
+  --bg-sub: #2A160D;
+  --bg-card: rgba(34,20,14,.88);
+  --bg-card-solid: #24150F;
+  --bg-sunken: rgba(242,227,207,.07);
+  --bg-hover: rgba(242,227,207,.1);
+  --bg-rail: rgba(20,11,8,.66);
+  --bg-header: rgba(20,11,8,.78);
+  --bg-paper: #FBF8EF;
+  --text-primary: #F2E3CF;
+  --text-title: #F2E3CF;
+  --text-secondary: #D9C3A8;
+  --text-meta: #B59C84;
+  --text-on-action: #1A0F0A;
+  --text-field-label: #F0A35A;
+  --text-link: #F6D9A8;
+  --text-link-hover: #FFF4E0;
+  --text-on-paper: #1B3324;
+  --title-on-paper: #764C29;
+  --label-on-paper: #8A6539;
+  --border-subtle: rgba(240,163,90,.16);
+  --border-section: rgba(240,163,90,.3);
+  --border-field: rgba(240,163,90,.42);
+  --border-brand: rgba(201,166,107,.6);
+  --action-bg: #F6E3B4;
+  --action-bg-hover: #FFF1CF;
+  --action-fg: #1A0F0A;
+  --focus-ring: #F6E3B4;
+  --accent-label: #F0A35A;
+  --accent-icon-active: #F0A35A;
+  --tone-pending: #E3A93E; --tone-pending-bg: #E3A93E; --tone-pending-fg: #1A0F0A; --tone-pending-soft: color-mix(in srgb, #E3A93E 16%, transparent);
+  --tone-attention: #E3734E; --tone-attention-bg: #E3734E; --tone-attention-fg: #1A0F0A; --tone-attention-soft: color-mix(in srgb, #E3734E 16%, transparent);
+  --tone-period: #7FB8C6; --tone-period-bg: #7FB8C6; --tone-period-fg: #1A0F0A; --tone-period-soft: color-mix(in srgb, #7FB8C6 16%, transparent);
+  --tone-confirmed: #A8C68F; --tone-confirmed-bg: #A8C68F; --tone-confirmed-fg: #1A0F0A; --tone-confirmed-soft: color-mix(in srgb, #A8C68F 16%, transparent);
+  --tone-neutral: #8A96A3; --tone-neutral-bg: #8A96A3; --tone-neutral-fg: #1A0F0A; --tone-neutral-soft: color-mix(in srgb, #8A96A3 16%, transparent);
+  --tone-suggest: #B49AD8; --tone-suggest-bg: #B49AD8; --tone-suggest-fg: #1A0F0A; --tone-suggest-soft: color-mix(in srgb, #B49AD8 16%, transparent);
+  --shadow-raised: 0 14px 34px rgba(0,0,0,.4);
+  --shadow-float: 0 30px 70px rgba(0,0,0,.45);
+  --ring-card: inset 0 0 0 1px rgba(240,163,90,.22);
+  --ring-card-hover: inset 0 0 0 1px rgba(240,163,90,.45);
+  --serie-1: #8DBA74; --serie-2: #E59A5A; --serie-3: #F2CF6B;
+  --ramp-1: #B9DBA3; --ramp-2: #9CCB82; --ramp-3: #7FB86A; --ramp-4: #5FA35A; --ramp-5: #468A48; --ramp-6: #2F6E3A;
+  --firefly: #FFB347;
+  --ray: transparent;
+  --flower: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='84' height='72.746'%3E%3Cg fill='none' stroke='rgba%28240%2C163%2C90%2C.16%29' stroke-width='.8'%3E%3Ccircle cx='-21.00' cy='-36.37' r='42'/%3E%3Ccircle cx='21.00' cy='-36.37' r='42'/%3E%3Ccircle cx='63.00' cy='-36.37' r='42'/%3E%3Ccircle cx='105.00' cy='-36.37' r='42'/%3E%3Ccircle cx='0.00' cy='0.00' r='42'/%3E%3Ccircle cx='42.00' cy='0.00' r='42'/%3E%3Ccircle cx='84.00' cy='0.00' r='42'/%3E%3Ccircle cx='-21.00' cy='36.37' r='42'/%3E%3Ccircle cx='21.00' cy='36.37' r='42'/%3E%3Ccircle cx='63.00' cy='36.37' r='42'/%3E%3Ccircle cx='105.00' cy='36.37' r='42'/%3E%3Ccircle cx='0.00' cy='72.75' r='42'/%3E%3Ccircle cx='42.00' cy='72.75' r='42'/%3E%3Ccircle cx='84.00' cy='72.75' r='42'/%3E%3Ccircle cx='-21.00' cy='109.12' r='42'/%3E%3Ccircle cx='21.00' cy='109.12' r='42'/%3E%3Ccircle cx='63.00' cy='109.12' r='42'/%3E%3Ccircle cx='105.00' cy='109.12' r='42'/%3E%3C/g%3E%3C/svg%3E");
+  --vine: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='240'%3E%3Cpath d='M12.00 0L12.84 4L13.66 8L14.47 12L15.25 16L16.00 20L16.70 24L17.35 28L17.95 32L18.47 36L18.93 40L19.31 44L19.61 48L19.83 52L19.96 56L20.00 60L19.96 64L19.83 68L19.61 72L19.31 76L18.93 80L18.47 84L17.95 88L17.35 92L16.70 96L16.00 100L15.25 104L14.47 108L13.66 112L12.84 116L12.00 120L11.16 124L10.34 128L9.53 132L8.75 136L8.00 140L7.30 144L6.65 148L6.05 152L5.53 156L5.07 160L4.69 164L4.39 168L4.17 172L4.04 176L4.00 180L4.04 184L4.17 188L4.39 192L4.69 196L5.07 200L5.53 204L6.05 208L6.65 212L7.30 216L8.00 220L8.75 224L9.53 228L10.34 232L11.16 236L12.00 240' fill='none' stroke='%237A5233' stroke-width='3' stroke-linecap='round'/%3E%3Cpath d='M12.00 0L11.16 4L10.34 8L9.53 12L8.75 16L8.00 20L7.30 24L6.65 28L6.05 32L5.53 36L5.07 40L4.69 44L4.39 48L4.17 52L4.04 56L4.00 60L4.04 64L4.17 68L4.39 72L4.69 76L5.07 80L5.53 84L6.05 88L6.65 92L7.30 96L8.00 100L8.75 104L9.53 108L10.34 112L11.16 116L12.00 120L12.84 124L13.66 128L14.47 132L15.25 136L16.00 140L16.70 144L17.35 148L17.95 152L18.47 156L18.93 160L19.31 164L19.61 168L19.83 172L19.96 176L20.00 180L19.96 184L19.83 188L19.61 192L19.31 196L18.93 200L18.47 204L17.95 208L17.35 212L16.70 216L16.00 220L15.25 224L14.47 228L13.66 232L12.84 236L12.00 240' fill='none' stroke='%23C9743A' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E");
+}
+
+:root[data-clima="chuva"], .clima-chuva {
+  color-scheme: dark;
+  --clima-nome: "Chuva";
+  --sky: radial-gradient(120% 80% at 40% 0%, #24505A 0%, #153640 45%, #0D2128 100%);
+  --bg-app: #0D2128;
+  --bg-sub: #133038;
+  --bg-card: rgba(10,30,36,.88);
+  --bg-card-solid: #102A31;
+  --bg-sunken: rgba(180,224,207,.07);
+  --bg-hover: rgba(180,224,207,.1);
+  --bg-rail: rgba(8,24,30,.66);
+  --bg-header: rgba(8,24,30,.78);
+  --bg-paper: #FBF8EF;
+  --text-primary: #E6EEEC;
+  --text-title: #E6EEEC;
+  --text-secondary: #BCD0CF;
+  --text-meta: #9DB4B4;
+  --text-on-action: #0D2128;
+  --text-field-label: #9CC8D6;
+  --text-link: #B4E0CF;
+  --text-link-hover: #F2FBF7;
+  --text-on-paper: #1B3324;
+  --title-on-paper: #764C29;
+  --label-on-paper: #8A6539;
+  --border-subtle: rgba(127,184,198,.16);
+  --border-section: rgba(127,184,198,.3);
+  --border-field: rgba(127,184,198,.42);
+  --border-brand: rgba(201,166,107,.5);
+  --action-bg: #B4E0CF;
+  --action-bg-hover: #CDEEE0;
+  --action-fg: #0D2128;
+  --focus-ring: #B4E0CF;
+  --accent-label: #9CC8D6;
+  --accent-icon-active: #9CC8D6;
+  --tone-pending: #E3A93E; --tone-pending-bg: #E3A93E; --tone-pending-fg: #0D2128; --tone-pending-soft: color-mix(in srgb, #E3A93E 16%, transparent);
+  --tone-attention: #E3734E; --tone-attention-bg: #E3734E; --tone-attention-fg: #0D2128; --tone-attention-soft: color-mix(in srgb, #E3734E 16%, transparent);
+  --tone-period: #7FB8C6; --tone-period-bg: #7FB8C6; --tone-period-fg: #0D2128; --tone-period-soft: color-mix(in srgb, #7FB8C6 16%, transparent);
+  --tone-confirmed: #A8C68F; --tone-confirmed-bg: #A8C68F; --tone-confirmed-fg: #0D2128; --tone-confirmed-soft: color-mix(in srgb, #A8C68F 16%, transparent);
+  --tone-neutral: #8A96A3; --tone-neutral-bg: #8A96A3; --tone-neutral-fg: #0D2128; --tone-neutral-soft: color-mix(in srgb, #8A96A3 16%, transparent);
+  --tone-suggest: #B49AD8; --tone-suggest-bg: #B49AD8; --tone-suggest-fg: #0D2128; --tone-suggest-soft: color-mix(in srgb, #B49AD8 16%, transparent);
+  --shadow-raised: 0 14px 34px rgba(0,0,0,.4);
+  --shadow-float: 0 30px 70px rgba(0,0,0,.45);
+  --ring-card: inset 0 0 0 1px rgba(127,184,198,.22);
+  --ring-card-hover: inset 0 0 0 1px rgba(127,184,198,.45);
+  --serie-1: #8DBA74; --serie-2: #5FA8C9; --serie-3: #D9B45A;
+  --ramp-1: #B9DBA3; --ramp-2: #9CCB82; --ramp-3: #7FB86A; --ramp-4: #5FA35A; --ramp-5: #468A48; --ramp-6: #2F6E3A;
+  --firefly: transparent;
+  --ray: transparent;
+  --flower: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='84' height='72.746'%3E%3Cg fill='none' stroke='rgba%28127%2C184%2C198%2C.18%29' stroke-width='.8'%3E%3Ccircle cx='-21.00' cy='-36.37' r='42'/%3E%3Ccircle cx='21.00' cy='-36.37' r='42'/%3E%3Ccircle cx='63.00' cy='-36.37' r='42'/%3E%3Ccircle cx='105.00' cy='-36.37' r='42'/%3E%3Ccircle cx='0.00' cy='0.00' r='42'/%3E%3Ccircle cx='42.00' cy='0.00' r='42'/%3E%3Ccircle cx='84.00' cy='0.00' r='42'/%3E%3Ccircle cx='-21.00' cy='36.37' r='42'/%3E%3Ccircle cx='21.00' cy='36.37' r='42'/%3E%3Ccircle cx='63.00' cy='36.37' r='42'/%3E%3Ccircle cx='105.00' cy='36.37' r='42'/%3E%3Ccircle cx='0.00' cy='72.75' r='42'/%3E%3Ccircle cx='42.00' cy='72.75' r='42'/%3E%3Ccircle cx='84.00' cy='72.75' r='42'/%3E%3Ccircle cx='-21.00' cy='109.12' r='42'/%3E%3Ccircle cx='21.00' cy='109.12' r='42'/%3E%3Ccircle cx='63.00' cy='109.12' r='42'/%3E%3Ccircle cx='105.00' cy='109.12' r='42'/%3E%3C/g%3E%3C/svg%3E");
+  --vine: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='240'%3E%3Cpath d='M12.00 0L12.84 4L13.66 8L14.47 12L15.25 16L16.00 20L16.70 24L17.35 28L17.95 32L18.47 36L18.93 40L19.31 44L19.61 48L19.83 52L19.96 56L20.00 60L19.96 64L19.83 68L19.61 72L19.31 76L18.93 80L18.47 84L17.95 88L17.35 92L16.70 96L16.00 100L15.25 104L14.47 108L13.66 112L12.84 116L12.00 120L11.16 124L10.34 128L9.53 132L8.75 136L8.00 140L7.30 144L6.65 148L6.05 152L5.53 156L5.07 160L4.69 164L4.39 168L4.17 172L4.04 176L4.00 180L4.04 184L4.17 188L4.39 192L4.69 196L5.07 200L5.53 204L6.05 208L6.65 212L7.30 216L8.00 220L8.75 224L9.53 228L10.34 232L11.16 236L12.00 240' fill='none' stroke='%234C5A4A' stroke-width='3' stroke-linecap='round'/%3E%3Cpath d='M12.00 0L11.16 4L10.34 8L9.53 12L8.75 16L8.00 20L7.30 24L6.65 28L6.05 32L5.53 36L5.07 40L4.69 44L4.39 48L4.17 52L4.04 56L4.00 60L4.04 64L4.17 68L4.39 72L4.69 76L5.07 80L5.53 84L6.05 88L6.65 92L7.30 96L8.00 100L8.75 104L9.53 108L10.34 112L11.16 116L12.00 120L12.84 124L13.66 128L14.47 132L15.25 136L16.00 140L16.70 144L17.35 148L17.95 152L18.47 156L18.93 160L19.31 164L19.61 168L19.83 172L19.96 176L20.00 180L19.96 184L19.83 188L19.61 192L19.31 196L18.93 200L18.47 204L17.95 208L17.35 212L16.70 216L16.00 220L15.25 224L14.47 228L13.66 232L12.84 236L12.00 240' fill='none' stroke='%235FA8C9' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E");
+}
+
+:root[data-clima="cachimbo"], .clima-cachimbo {
+  color-scheme: dark;
+  --clima-nome: "Roda de cachimbo";
+  --sky: radial-gradient(70% 50% at 50% 60%, #3A2A20 0%, #241A14 40%, #16100C 100%);
+  --bg-app: #16100C;
+  --bg-sub: #241A14;
+  --bg-card: rgba(36,26,20,.9);
+  --bg-card-solid: #2A1E17;
+  --bg-sunken: rgba(234,226,214,.07);
+  --bg-hover: rgba(234,226,214,.1);
+  --bg-rail: rgba(18,13,10,.66);
+  --bg-header: rgba(18,13,10,.8);
+  --bg-paper: #FBF8EF;
+  --text-primary: #EAE2D6;
+  --text-title: #EAE2D6;
+  --text-secondary: #CFC3B4;
+  --text-meta: #A89C8E;
+  --text-on-action: #16100C;
+  --text-field-label: #B99B6A;
+  --text-link: #D9C9A3;
+  --text-link-hover: #FFF8EC;
+  --text-on-paper: #1B3324;
+  --title-on-paper: #764C29;
+  --label-on-paper: #8A6539;
+  --border-subtle: rgba(217,201,163,.14);
+  --border-section: rgba(217,201,163,.28);
+  --border-field: rgba(217,201,163,.4);
+  --border-brand: rgba(201,166,107,.55);
+  --action-bg: #D9C9A3;
+  --action-bg-hover: #EADDBE;
+  --action-fg: #16100C;
+  --focus-ring: #D9C9A3;
+  --accent-label: #B99B6A;
+  --accent-icon-active: #B99B6A;
+  --tone-pending: #E3A93E; --tone-pending-bg: #E3A93E; --tone-pending-fg: #16100C; --tone-pending-soft: color-mix(in srgb, #E3A93E 16%, transparent);
+  --tone-attention: #E3734E; --tone-attention-bg: #E3734E; --tone-attention-fg: #16100C; --tone-attention-soft: color-mix(in srgb, #E3734E 16%, transparent);
+  --tone-period: #7FB8C6; --tone-period-bg: #7FB8C6; --tone-period-fg: #16100C; --tone-period-soft: color-mix(in srgb, #7FB8C6 16%, transparent);
+  --tone-confirmed: #A8C68F; --tone-confirmed-bg: #A8C68F; --tone-confirmed-fg: #16100C; --tone-confirmed-soft: color-mix(in srgb, #A8C68F 16%, transparent);
+  --tone-neutral: #8A96A3; --tone-neutral-bg: #8A96A3; --tone-neutral-fg: #16100C; --tone-neutral-soft: color-mix(in srgb, #8A96A3 16%, transparent);
+  --tone-suggest: #B49AD8; --tone-suggest-bg: #B49AD8; --tone-suggest-fg: #16100C; --tone-suggest-soft: color-mix(in srgb, #B49AD8 16%, transparent);
+  --shadow-raised: 0 14px 34px rgba(0,0,0,.4);
+  --shadow-float: 0 30px 70px rgba(0,0,0,.45);
+  --ring-card: inset 0 0 0 1px rgba(217,201,163,.2);
+  --ring-card-hover: inset 0 0 0 1px rgba(217,201,163,.42);
+  --serie-1: #9CB07C; --serie-2: #C9743A; --serie-3: #D9C9A3;
+  --ramp-1: #B9DBA3; --ramp-2: #9CCB82; --ramp-3: #7FB86A; --ramp-4: #5FA35A; --ramp-5: #468A48; --ramp-6: #2F6E3A;
+  --firefly: transparent;
+  --ray: transparent;
+  --flower: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='84' height='72.746'%3E%3Cg fill='none' stroke='rgba%28217%2C201%2C163%2C.14%29' stroke-width='.8'%3E%3Ccircle cx='-21.00' cy='-36.37' r='42'/%3E%3Ccircle cx='21.00' cy='-36.37' r='42'/%3E%3Ccircle cx='63.00' cy='-36.37' r='42'/%3E%3Ccircle cx='105.00' cy='-36.37' r='42'/%3E%3Ccircle cx='0.00' cy='0.00' r='42'/%3E%3Ccircle cx='42.00' cy='0.00' r='42'/%3E%3Ccircle cx='84.00' cy='0.00' r='42'/%3E%3Ccircle cx='-21.00' cy='36.37' r='42'/%3E%3Ccircle cx='21.00' cy='36.37' r='42'/%3E%3Ccircle cx='63.00' cy='36.37' r='42'/%3E%3Ccircle cx='105.00' cy='36.37' r='42'/%3E%3Ccircle cx='0.00' cy='72.75' r='42'/%3E%3Ccircle cx='42.00' cy='72.75' r='42'/%3E%3Ccircle cx='84.00' cy='72.75' r='42'/%3E%3Ccircle cx='-21.00' cy='109.12' r='42'/%3E%3Ccircle cx='21.00' cy='109.12' r='42'/%3E%3Ccircle cx='63.00' cy='109.12' r='42'/%3E%3Ccircle cx='105.00' cy='109.12' r='42'/%3E%3C/g%3E%3C/svg%3E");
+  --vine: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='240'%3E%3Cpath d='M12.00 0L12.84 4L13.66 8L14.47 12L15.25 16L16.00 20L16.70 24L17.35 28L17.95 32L18.47 36L18.93 40L19.31 44L19.61 48L19.83 52L19.96 56L20.00 60L19.96 64L19.83 68L19.61 72L19.31 76L18.93 80L18.47 84L17.95 88L17.35 92L16.70 96L16.00 100L15.25 104L14.47 108L13.66 112L12.84 116L12.00 120L11.16 124L10.34 128L9.53 132L8.75 136L8.00 140L7.30 144L6.65 148L6.05 152L5.53 156L5.07 160L4.69 164L4.39 168L4.17 172L4.04 176L4.00 180L4.04 184L4.17 188L4.39 192L4.69 196L5.07 200L5.53 204L6.05 208L6.65 212L7.30 216L8.00 220L8.75 224L9.53 228L10.34 232L11.16 236L12.00 240' fill='none' stroke='%235A3B26' stroke-width='3' stroke-linecap='round'/%3E%3Cpath d='M12.00 0L11.16 4L10.34 8L9.53 12L8.75 16L8.00 20L7.30 24L6.65 28L6.05 32L5.53 36L5.07 40L4.69 44L4.39 48L4.17 52L4.04 56L4.00 60L4.04 64L4.17 68L4.39 72L4.69 76L5.07 80L5.53 84L6.05 88L6.65 92L7.30 96L8.00 100L8.75 104L9.53 108L10.34 112L11.16 116L12.00 120L12.84 124L13.66 128L14.47 132L15.25 136L16.00 140L16.70 144L17.35 148L17.95 152L18.47 156L18.93 160L19.31 164L19.61 168L19.83 172L19.96 176L20.00 180L19.96 184L19.83 188L19.61 192L19.31 196L18.93 200L18.47 204L17.95 208L17.35 212L16.70 216L16.00 220L15.25 224L14.47 228L13.66 232L12.84 236L12.00 240' fill='none' stroke='%239C7148' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E");
+}
+
+:root[data-clima="miracao"], .clima-miracao {
+  color-scheme: dark;
+  --clima-nome: "Miração sagrada";
+  --sky: radial-gradient(120% 80% at 55% 0%, #4A2A7A 0%, #241A4C 38%, #140F2A 100%);
+  --bg-app: #140F2A;
+  --bg-sub: #1E1640;
+  --bg-card: rgba(24,18,52,.88);
+  --bg-card-solid: #1C1540;
+  --bg-sunken: rgba(240,232,255,.07);
+  --bg-hover: rgba(240,232,255,.1);
+  --bg-rail: rgba(14,10,32,.66);
+  --bg-header: rgba(14,10,32,.78);
+  --bg-paper: #FBF8EF;
+  --text-primary: #F0E8FF;
+  --text-title: #F0E8FF;
+  --text-secondary: #CBBFE6;
+  --text-meta: #A79BC6;
+  --text-on-action: #140F2A;
+  --text-field-label: #F09AD0;
+  --text-link: #8BE3C9;
+  --text-link-hover: #F0E8FF;
+  --text-on-paper: #1B3324;
+  --title-on-paper: #764C29;
+  --label-on-paper: #8A6539;
+  --border-subtle: rgba(139,227,201,.16);
+  --border-section: rgba(139,227,201,.3);
+  --border-field: rgba(139,227,201,.42);
+  --border-brand: rgba(201,166,107,.6);
+  --action-bg: #8BE3C9;
+  --action-bg-hover: #A8F0DB;
+  --action-fg: #140F2A;
+  --focus-ring: #8BE3C9;
+  --accent-label: #F09AD0;
+  --accent-icon-active: #F09AD0;
+  --tone-pending: #E3A93E; --tone-pending-bg: #E3A93E; --tone-pending-fg: #140F2A; --tone-pending-soft: color-mix(in srgb, #E3A93E 16%, transparent);
+  --tone-attention: #E3734E; --tone-attention-bg: #E3734E; --tone-attention-fg: #140F2A; --tone-attention-soft: color-mix(in srgb, #E3734E 16%, transparent);
+  --tone-period: #7FB8C6; --tone-period-bg: #7FB8C6; --tone-period-fg: #140F2A; --tone-period-soft: color-mix(in srgb, #7FB8C6 16%, transparent);
+  --tone-confirmed: #A8C68F; --tone-confirmed-bg: #A8C68F; --tone-confirmed-fg: #140F2A; --tone-confirmed-soft: color-mix(in srgb, #A8C68F 16%, transparent);
+  --tone-neutral: #8A96A3; --tone-neutral-bg: #8A96A3; --tone-neutral-fg: #140F2A; --tone-neutral-soft: color-mix(in srgb, #8A96A3 16%, transparent);
+  --tone-suggest: #B49AD8; --tone-suggest-bg: #B49AD8; --tone-suggest-fg: #140F2A; --tone-suggest-soft: color-mix(in srgb, #B49AD8 16%, transparent);
+  --shadow-raised: 0 14px 34px rgba(0,0,0,.4);
+  --shadow-float: 0 30px 70px rgba(0,0,0,.45);
+  --ring-card: inset 0 0 0 1px rgba(139,227,201,.22);
+  --ring-card-hover: inset 0 0 0 1px rgba(139,227,201,.45);
+  --serie-1: #8DBA74; --serie-2: #5FA8E0; --serie-3: #F2CF6B;
+  --ramp-1: #B9DBA3; --ramp-2: #9CCB82; --ramp-3: #7FB86A; --ramp-4: #5FA35A; --ramp-5: #468A48; --ramp-6: #2F6E3A;
+  --firefly: #FFE9FF;
+  --ray: transparent;
+  --flower: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='84' height='72.746'%3E%3Cg fill='none' stroke='rgba%28240%2C154%2C208%2C.22%29' stroke-width='.8'%3E%3Ccircle cx='-21.00' cy='-36.37' r='42'/%3E%3Ccircle cx='21.00' cy='-36.37' r='42'/%3E%3Ccircle cx='63.00' cy='-36.37' r='42'/%3E%3Ccircle cx='105.00' cy='-36.37' r='42'/%3E%3Ccircle cx='0.00' cy='0.00' r='42'/%3E%3Ccircle cx='42.00' cy='0.00' r='42'/%3E%3Ccircle cx='84.00' cy='0.00' r='42'/%3E%3Ccircle cx='-21.00' cy='36.37' r='42'/%3E%3Ccircle cx='21.00' cy='36.37' r='42'/%3E%3Ccircle cx='63.00' cy='36.37' r='42'/%3E%3Ccircle cx='105.00' cy='36.37' r='42'/%3E%3Ccircle cx='0.00' cy='72.75' r='42'/%3E%3Ccircle cx='42.00' cy='72.75' r='42'/%3E%3Ccircle cx='84.00' cy='72.75' r='42'/%3E%3Ccircle cx='-21.00' cy='109.12' r='42'/%3E%3Ccircle cx='21.00' cy='109.12' r='42'/%3E%3Ccircle cx='63.00' cy='109.12' r='42'/%3E%3Ccircle cx='105.00' cy='109.12' r='42'/%3E%3C/g%3E%3C/svg%3E");
+  --vine: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='240'%3E%3Cpath d='M12.00 0L12.84 4L13.66 8L14.47 12L15.25 16L16.00 20L16.70 24L17.35 28L17.95 32L18.47 36L18.93 40L19.31 44L19.61 48L19.83 52L19.96 56L20.00 60L19.96 64L19.83 68L19.61 72L19.31 76L18.93 80L18.47 84L17.95 88L17.35 92L16.70 96L16.00 100L15.25 104L14.47 108L13.66 112L12.84 116L12.00 120L11.16 124L10.34 128L9.53 132L8.75 136L8.00 140L7.30 144L6.65 148L6.05 152L5.53 156L5.07 160L4.69 164L4.39 168L4.17 172L4.04 176L4.00 180L4.04 184L4.17 188L4.39 192L4.69 196L5.07 200L5.53 204L6.05 208L6.65 212L7.30 216L8.00 220L8.75 224L9.53 228L10.34 232L11.16 236L12.00 240' fill='none' stroke='%235C3E75' stroke-width='3' stroke-linecap='round'/%3E%3Cpath d='M12.00 0L11.16 4L10.34 8L9.53 12L8.75 16L8.00 20L7.30 24L6.65 28L6.05 32L5.53 36L5.07 40L4.69 44L4.39 48L4.17 52L4.04 56L4.00 60L4.04 64L4.17 68L4.39 72L4.69 76L5.07 80L5.53 84L6.05 88L6.65 92L7.30 96L8.00 100L8.75 104L9.53 108L10.34 112L11.16 116L12.00 120L12.84 124L13.66 128L14.47 132L15.25 136L16.00 140L16.70 144L17.35 148L17.95 152L18.47 156L18.93 160L19.31 164L19.61 168L19.83 172L19.96 176L20.00 180L19.96 184L19.83 188L19.61 192L19.31 196L18.93 200L18.47 204L17.95 208L17.35 212L16.70 216L16.00 220L15.25 224L14.47 228L13.66 232L12.84 236L12.00 240' fill='none' stroke='%238BE3C9' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E");
+}
+
+
+/* ---- efeitos de ambiente ---- */
+.fx { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.fx > * { display: none; }
+@keyframes fogo { 0%,100% { opacity: .55; transform: scale(1) } 30% { opacity: .75; transform: scale(1.04) } 60% { opacity: .5; transform: scale(.98) } }
+@keyframes brasa { 0% { transform: translate(0,0); opacity: 0 } 15% { opacity: 1 } 60% { transform: translate(14px,-160px); opacity: .7 } 100% { transform: translate(-8px,-320px); opacity: 0 } }
+@keyframes fumaca { 0% { transform: translate(0,0) scale(1); opacity: 0 } 20% { opacity: .1 } 100% { transform: translate(40px,-60%) scale(1.6); opacity: 0 } }
+@keyframes chuva { to { background-position: -60px 240px, -30px 180px } }
+@keyframes gota { 0% { transform: translate(-50%,-50%) scale(.1); opacity: .5 } 100% { transform: translate(-50%,-50%) scale(1); opacity: 0 } }
+@keyframes nevoa { 0% { transform: translateX(-6%) } 100% { transform: translateX(6%) } }
+@keyframes fio { 0% { transform: translateY(0) rotate(0) scaleX(1); opacity: 0 } 15% { opacity: .12 } 100% { transform: translateY(-70%) rotate(8deg) scaleX(1.8); opacity: 0 } }
+@keyframes brasaPulsa { 0%,100% { opacity: .5; box-shadow: 0 0 6px 2px rgba(201,116,58,.4) } 50% { opacity: 1; box-shadow: 0 0 14px 5px rgba(201,116,58,.7) } }
+@keyframes aurora { 0% { transform: translateX(-10%) rotate(-6deg); filter: hue-rotate(0deg) } 50% { transform: translateX(8%) rotate(-4deg); filter: hue-rotate(40deg) } 100% { transform: translateX(-10%) rotate(-6deg); filter: hue-rotate(0deg) } }
+@keyframes florAcesa { 0%,100% { opacity: .14 } 50% { opacity: .28 } }
+@keyframes estrela { 0%,100% { opacity: 0; transform: scale(.6) } 50% { opacity: 1; transform: scale(1) } }
+[data-clima="fogueira"] .fx .fogo, .clima-fogueira .fx .fogo { display: block; position: absolute; left: 50%; bottom: -30%; width: 120%; height: 70%; transform: translateX(-50%); background: radial-gradient(50% 60% at 50% 100%, rgba(240,140,60,.55), rgba(160,70,20,.25) 40%, transparent 70%); filter: blur(24px); animation: fogo 4s ease-in-out infinite; }
+[data-clima="fogueira"] .fx .brasa, .clima-fogueira .fx .brasa { display: block; position: absolute; bottom: 8%; width: 3px; height: 3px; border-radius: 50%; background: #FFB347; box-shadow: 0 0 8px 2px rgba(255,150,60,.7); animation: brasa 7s ease-out infinite; }
+[data-clima="fogueira"] .fx .fumo, .clima-fogueira .fx .fumo { display: block; position: absolute; bottom: 0; width: 220px; height: 220px; border-radius: 50%; background: rgba(242,227,207,.9); filter: blur(40px); animation: fumaca 32s linear infinite; }
+[data-clima="chuva"] .fx .chuva, .clima-chuva .fx .chuva { display: block; position: absolute; inset: -20% 0 0 0; background: repeating-linear-gradient(104deg, transparent 0 34px, rgba(180,224,207,.14) 34px 35px, transparent 35px 60px), repeating-linear-gradient(104deg, transparent 0 22px, rgba(180,224,207,.08) 22px 23px, transparent 23px 41px); background-size: 60px 240px, 41px 180px; animation: chuva 1.6s linear infinite; }
+[data-clima="chuva"] .fx .gota, .clima-chuva .fx .gota { display: block; position: absolute; width: 90px; height: 90px; border-radius: 50%; border: 1.5px solid rgba(180,224,207,.6); animation: gota 5s ease-out infinite; }
+[data-clima="chuva"] .fx .nevoa, .clima-chuva .fx .nevoa { display: block; position: absolute; left: -10%; right: -10%; bottom: -5%; height: 32%; background: radial-gradient(60% 60% at 50% 70%, rgba(180,224,207,.14), transparent 70%); filter: blur(22px); animation: nevoa 30s ease-in-out infinite alternate; }
+[data-clima="cachimbo"] .fx .fio, .clima-cachimbo .fx .fio { display: block; position: absolute; bottom: -10%; width: 60px; height: 60%; border-radius: 50%; background: linear-gradient(180deg, rgba(234,226,214,.9), transparent); filter: blur(18px); animation: fio 22s ease-out infinite; transform-origin: 50% 100%; }
+[data-clima="cachimbo"] .fx .brasinha, .clima-cachimbo .fx .brasinha { display: block; position: absolute; left: 22px; bottom: 26px; width: 6px; height: 6px; border-radius: 50%; background: #C9743A; animation: brasaPulsa 4s ease-in-out infinite; }
+[data-clima="cachimbo"] .fx .roda, .clima-cachimbo .fx .roda { display: block; position: absolute; left: 50%; top: 55%; width: 640px; height: 640px; transform: translate(-50%,-50%); border-radius: 50%; border: 1px solid rgba(217,201,163,.12); background: radial-gradient(circle, rgba(201,116,58,.08), transparent 60%); }
+[data-clima="cachimbo"] .fx .roda i, .clima-cachimbo .fx .roda i { position: absolute; left: 50%; top: 50%; width: 7px; height: 7px; margin: -3.5px; border-radius: 50%; background: rgba(217,201,163,.22); transform: rotate(var(--a)) translateY(-320px); }
+[data-clima="miracao"] .fx .aurora, .clima-miracao .fx .aurora { display: block; position: absolute; left: -20%; width: 140%; height: 34%; filter: blur(36px); opacity: .5; background: linear-gradient(90deg, rgba(139,227,201,.5), rgba(240,154,208,.5) 50%, rgba(95,168,224,.5)); animation: aurora 48s ease-in-out infinite; }
+[data-clima="miracao"] .fx .flor, .clima-miracao .fx .flor { display: block; position: absolute; inset: 0; background-image: var(--flower); background-size: 84px 72.746px; animation: florAcesa 9s ease-in-out infinite; }
+[data-clima="miracao"] .fx .estrela, .clima-miracao .fx .estrela { display: block; position: absolute; width: 3px; height: 3px; border-radius: 50%; background: #FFF3FA; box-shadow: 0 0 8px 2px rgba(240,154,208,.7); animation: estrela 5s ease-in-out infinite; }
+.sky > .fx { position: fixed; z-index: 0; }
+.page { z-index: 1; }
+.pick { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; }
+.pick button { all: unset; cursor: pointer; display: flex; flex-direction: column; gap: 8px; padding: 12px 14px; border-radius: var(--leaf-md); background: var(--bg-card); box-shadow: var(--ring-card); color: var(--text-primary); }
+.pick button:hover { box-shadow: var(--ring-card-hover); } .pick button[aria-pressed="true"] { outline: 2.5px solid var(--focus-ring); outline-offset: 2px; }
+.pick button .sw3 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; } .pick button .sw3 i { height: 18px; border-radius: 3px; display: block; }
+.pick button b { font: 700 15px var(--font-title); } .pick button span { font-size: 12px; color: var(--text-meta); }
+.mock .fx { z-index: 0; } .mock .m-shell { position: relative; z-index: 1; }
+
+</style>
+</head>
+<body>
+<svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true"><symbol id="i-arrow-left" viewBox="0 0 24 24"><path d="m12 19-7-7 7-7" />
+  <path d="M19 12H5" /></symbol><symbol id="i-bed" viewBox="0 0 24 24"><path d="M2 4v16" />
+  <path d="M2 8h18a2 2 0 0 1 2 2v10" />
+  <path d="M2 17h20" />
+  <path d="M6 8v9" /></symbol><symbol id="i-bell" viewBox="0 0 24 24"><path d="M10.268 21a2 2 0 0 0 3.464 0" />
+  <path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326" /></symbol><symbol id="i-calendar-days" viewBox="0 0 24 24"><path d="M8 2v4" />
+  <path d="M16 2v4" />
+  <rect width="18" height="18" x="3" y="4" rx="2" />
+  <path d="M3 10h18" />
+  <path d="M8 14h.01" />
+  <path d="M12 14h.01" />
+  <path d="M16 14h.01" />
+  <path d="M8 18h.01" />
+  <path d="M12 18h.01" />
+  <path d="M16 18h.01" /></symbol><symbol id="i-camera" viewBox="0 0 24 24"><path d="M13.997 4a2 2 0 0 1 1.76 1.05l.486.9A2 2 0 0 0 18.003 7H20a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1.997a2 2 0 0 0 1.759-1.048l.489-.904A2 2 0 0 1 10.004 4z" />
+  <circle cx="12" cy="13" r="3" /></symbol><symbol id="i-chart-no-axes-column" viewBox="0 0 24 24"><path d="M5 21v-6" />
+  <path d="M12 21V3" />
+  <path d="M19 21V9" /></symbol><symbol id="i-check-check" viewBox="0 0 24 24"><path d="M18 6 7 17l-5-5" />
+  <path d="m22 10-7.5 7.5L13 16" /></symbol><symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" /></symbol><symbol id="i-chevron-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" /></symbol><symbol id="i-circle-plus" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" />
+  <path d="M8 12h8" />
+  <path d="M12 8v8" /></symbol><symbol id="i-file-text" viewBox="0 0 24 24"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
+  <path d="M14 2v4a2 2 0 0 0 2 2h4" />
+  <path d="M10 9H8" />
+  <path d="M16 13H8" />
+  <path d="M16 17H8" /></symbol><symbol id="i-flask-conical" viewBox="0 0 24 24"><path d="M14 2v6a2 2 0 0 0 .245.96l5.51 10.08A2 2 0 0 1 18 22H6a2 2 0 0 1-1.755-2.96l5.51-10.08A2 2 0 0 0 10 8V2" />
+  <path d="M6.453 15h11.094" />
+  <path d="M8.5 2h7" /></symbol><symbol id="i-inbox" viewBox="0 0 24 24"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12" />
+  <path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z" /></symbol><symbol id="i-landmark" viewBox="0 0 24 24"><path d="M10 18v-7" />
+  <path d="M11.12 2.198a2 2 0 0 1 1.76.006l7.866 3.847c.476.233.31.949-.22.949H3.474c-.53 0-.695-.716-.22-.949z" />
+  <path d="M14 18v-7" />
+  <path d="M18 18v-7" />
+  <path d="M3 22h18" />
+  <path d="M6 18v-7" /></symbol><symbol id="i-list" viewBox="0 0 24 24"><path d="M3 5h.01" />
+  <path d="M3 12h.01" />
+  <path d="M3 19h.01" />
+  <path d="M8 5h13" />
+  <path d="M8 12h13" />
+  <path d="M8 19h13" /></symbol><symbol id="i-lock" viewBox="0 0 24 24"><rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
+  <path d="M7 11V7a5 5 0 0 1 10 0v4" /></symbol><symbol id="i-log-in" viewBox="0 0 24 24"><path d="m10 17 5-5-5-5" />
+  <path d="M15 12H3" />
+  <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" /></symbol><symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 5h16" />
+  <path d="M4 12h16" />
+  <path d="M4 19h16" /></symbol><symbol id="i-message-circle-question" viewBox="0 0 24 24"><path d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719" />
+  <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+  <path d="M12 17h.01" /></symbol><symbol id="i-moon" viewBox="0 0 24 24"><path d="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401" /></symbol><symbol id="i-package" viewBox="0 0 24 24"><path d="M11 21.73a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73z" />
+  <path d="M12 22V12" />
+  <polyline points="3.29 7 12 12 20.71 7" />
+  <path d="m7.5 4.27 9 5.15" /></symbol><symbol id="i-paperclip" viewBox="0 0 24 24"><path d="m16 6-8.414 8.586a2 2 0 0 0 2.829 2.829l8.414-8.586a4 4 0 1 0-5.657-5.657l-8.379 8.551a6 6 0 1 0 8.485 8.485l8.379-8.551" /></symbol><symbol id="i-receipt-text" viewBox="0 0 24 24"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z" />
+  <path d="M14 8H8" />
+  <path d="M16 12H8" />
+  <path d="M13 16H8" /></symbol><symbol id="i-repeat" viewBox="0 0 24 24"><path d="m17 2 4 4-4 4" />
+  <path d="M3 11v-1a4 4 0 0 1 4-4h14" />
+  <path d="m7 22-4-4 4-4" />
+  <path d="M21 13v1a4 4 0 0 1-4 4H3" /></symbol><symbol id="i-scale" viewBox="0 0 24 24"><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z" />
+  <path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z" />
+  <path d="M7 21h10" />
+  <path d="M12 3v18" />
+  <path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2" /></symbol><symbol id="i-search" viewBox="0 0 24 24"><path d="m21 21-4.34-4.34" />
+  <circle cx="11" cy="11" r="8" /></symbol><symbol id="i-settings" viewBox="0 0 24 24"><path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915" />
+  <circle cx="12" cy="12" r="3" /></symbol><symbol id="i-shield" viewBox="0 0 24 24"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" /></symbol><symbol id="i-sparkles" viewBox="0 0 24 24"><path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z" />
+  <path d="M20 2v4" />
+  <path d="M22 4h-4" />
+  <circle cx="4" cy="20" r="2" /></symbol><symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" />
+  <path d="M12 2v2" />
+  <path d="M12 20v2" />
+  <path d="m4.93 4.93 1.41 1.41" />
+  <path d="m17.66 17.66 1.41 1.41" />
+  <path d="M2 12h2" />
+  <path d="M20 12h2" />
+  <path d="m6.34 17.66-1.41 1.41" />
+  <path d="m19.07 4.93-1.41 1.41" /></symbol><symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+  <path d="M16 3.128a4 4 0 0 1 0 7.744" />
+  <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+  <circle cx="9" cy="7" r="4" /></symbol><symbol id="i-wallet" viewBox="0 0 24 24"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1" />
+  <path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4" /></symbol><symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18" />
+  <path d="m6 6 12 12" /></symbol></svg>
+<div class="sky">
+<div class="vine-l"></div><div class="vine-r"></div>
+<div class="fx" id="pagefx"></div>
+<header class="bar">
+  <span class="brand">Céu do Despertar</span>
+  <span class="tag">outras horas da mata</span>
+  <nav aria-label="Climas"><a href="#fogueira">Fogueira</a><a href="#chuva">Chuva</a><a href="#cachimbo">Cachimbo</a><a href="#miracao">Miração</a><a href="#comparacao">Comparação</a></nav>
+  <button class="clima-toggle" id="climaToggle" type="button"><svg class="ic"><use href="#i-moon"/></svg><span id="climaLabel">Clima</span></button>
+</header>
+<main class="page">
+<section id="capa">
+  <span class="eyebrow">força da mata · climas alternativos · referência para ideia futura · 10 de outubro de 2026</span>
+  <h1>Outras Horas da Mata</h1>
+  <p class="lead prose">Quatro climas que vestem o mesmo sistema. Nenhum deles muda fonte, forma, componente ou regra: Alegreya nos títulos, versalete nos rótulos, raio de folha, barra de estado de 3px e as seis cores de estado ficam como no guia. O que muda é o que um clima pode mudar: superfície, tinta, ação, sobrancelha, fio, textura das faixas e os efeitos de ambiente. Cada um é um bloco <code>[data-clima="…"]</code> a mais no mesmo <code>clima.css</code>.</p>
+  <p class="small muted prose">Escolha um clima para aplicá-lo a esta página inteira; os mockups ficam fixos no clima de cada seção. Contraste calculado para cada par essencial: todos passam AA e a maioria AAA. Partículas e auroras desligam com movimento reduzido e nunca aparecem no campo.</p>
+  <div class="pick" id="pick"><button type="button" data-pick="noite" aria-pressed="false"><div class="sw3"><i style="background:#0B1F17"></i><i style="background:#1F4A33"></i><i style="background:#A8C68F"></i><i style="background:#D8A949"></i><i style="background:#EDE6D3"></i></div><b>Noite</b><span>clima-base do escritório</span></button><button type="button" data-pick="fogueira" aria-pressed="false"><div class="sw3"><i style="background:#1A0F0A"></i><i style="background:#2A160D"></i><i style="background:#F6E3B4"></i><i style="background:#F0A35A"></i><i style="background:#F2E3CF"></i></div><b>Fogueira na noite</b><span>aplicar ao guia</span></button><button type="button" data-pick="chuva" aria-pressed="false"><div class="sw3"><i style="background:#0D2128"></i><i style="background:#133038"></i><i style="background:#B4E0CF"></i><i style="background:#9CC8D6"></i><i style="background:#E6EEEC"></i></div><b>Chuva</b><span>aplicar ao guia</span></button><button type="button" data-pick="cachimbo" aria-pressed="false"><div class="sw3"><i style="background:#16100C"></i><i style="background:#241A14"></i><i style="background:#D9C9A3"></i><i style="background:#B99B6A"></i><i style="background:#EAE2D6"></i></div><b>Roda de cachimbo</b><span>aplicar ao guia</span></button><button type="button" data-pick="miracao" aria-pressed="false"><div class="sw3"><i style="background:#140F2A"></i><i style="background:#1E1640"></i><i style="background:#8BE3C9"></i><i style="background:#F09AD0"></i><i style="background:#F0E8FF"></i></div><b>Miração sagrada</b><span>aplicar ao guia</span></button></div>
+</section>
+
+<section id="fogueira">
+  <span class="eyebrow">clima alternativo · fogueira na noite</span>
+  <h2>Fogueira na noite</h2>
+  <p class="lead prose">A roda em volta do fogo. A luz vem de baixo, quente e inconstante; o céu acima é quase preto. Brasas sobem devagar e a fumaça atravessa o campo de visão sem tocar o texto.</p>
+  <div class="grid g6"><div class="sw"><div class="s" style="background:#1A0F0A"></div><b>fundo</b><span class="mono">#1A0F0A</span></div><div class="sw"><div class="s" style="background:#2A160D"></div><b>intermediário</b><span class="mono">#2A160D</span></div><div class="sw"><div class="s" style="background:#24150F"></div><b>cartão</b><span class="mono">#24150F</span></div><div class="sw"><div class="s" style="background:#F6E3B4"></div><b>ação</b><span class="mono">#F6E3B4</span></div><div class="sw"><div class="s" style="background:#F0A35A"></div><b>sobrancelha</b><span class="mono">#F0A35A</span></div><div class="sw"><div class="s" style="background:#F2E3CF"></div><b>tinta</b><span class="mono">#F2E3CF</span></div></div>
+  
+  <div class="mockwrap"><div class="mock clima-fogueira" data-w="1180" style="width:1180px">
+    <div class="fx"><div class="fogo"></div><div class="brasa" style="left:18%;animation-delay:0.0s;animation-duration:6s"></div><div class="brasa" style="left:24%;animation-delay:0.7s;animation-duration:7s"></div><div class="brasa" style="left:30%;animation-delay:1.4s;animation-duration:8s"></div><div class="brasa" style="left:36%;animation-delay:2.1s;animation-duration:9s"></div><div class="brasa" style="left:42%;animation-delay:2.8s;animation-duration:6s"></div><div class="brasa" style="left:48%;animation-delay:3.5s;animation-duration:7s"></div><div class="brasa" style="left:54%;animation-delay:4.2s;animation-duration:8s"></div><div class="brasa" style="left:60%;animation-delay:4.9s;animation-duration:9s"></div><div class="brasa" style="left:66%;animation-delay:5.6s;animation-duration:6s"></div><div class="brasa" style="left:72%;animation-delay:6.3s;animation-duration:7s"></div><div class="brasa" style="left:78%;animation-delay:7.0s;animation-duration:8s"></div><div class="fumo" style="left:30%;animation-delay:-8s"></div><div class="fumo" style="left:60%;animation-delay:-20s"></div></div>
+    <div class="m-shell">
+      <div class="m-head"><img class="logo" src="merkaba.png" alt=""><span class="brand">Céu do Despertar</span><span class="tag" style="font:700 12px var(--font-label);letter-spacing:.18em;color:var(--text-link)">fogueira na noite</span><span class="unit"><img class="unit-mark" src="merkaba.png" alt="">cdd<svg class="ic sm"><use href="#i-chevron-down"/></svg></span><span class="search"><svg class="ic sm"><use href="#i-search"/></svg>Buscar<span class="kbd">⌘K</span></span><span class="bell"><svg class="ic"><use href="#i-bell"/></svg><i></i></span><span class="user"><span class="t"><b>Aurio Neto</b><span>Tesouraria · onça</span></span><span class="avatar-leaf sm" style="--guard:var(--tx-onca)"><i></i></span></span></div>
+      <div class="m-rail"><div class="vinebar"></div>
+        <div class="navitem on"><svg class="ic"><use href="#i-inbox"/></svg>Painel do dia<span class="cnt">10</span></div>
+        <div class="navitem"><svg class="ic"><use href="#i-circle-plus"/></svg>Registrar gasto</div>
+        <div class="navsec">financeiro</div>
+        <div class="navitem"><svg class="ic"><use href="#i-check-check"/></svg>Conferência<span class="cnt">7</span></div>
+        <div class="navitem"><svg class="ic"><use href="#i-list"/></svg>Lançamentos</div>
+        <div class="navitem"><svg class="ic"><use href="#i-lock"/></svg>Fechamento</div>
+      </div>
+      <div class="m-main" style="padding:28px 32px 36px;gap:22px">
+        <div class="m-hero"><div style="display:flex;flex-direction:column;gap:8px;flex:1 1 380px"><span class="eyebrow">t-02 · painel do dia · fogueira na noite</span><h1 style="font-size:42px">Boa noite, Aurio</h1><p>Dez itens pedem você hoje; o mais antigo espera desde 12/08.</p></div><span class="btn"><svg class="ic"><use href="#i-circle-plus"/></svg>Registrar gasto</span><span class="btn ghost">Ver lançamentos</span></div>
+        <div class="grid g3">
+          <div class="leaf-card"><div class="band"><div class="skin" style="background:var(--tx-casca)"></div><div class="fade"></div><span class="nm">onça</span></div><div class="wq-body"><div class="wq-top"><span class="wq-n" style="color:var(--tone-pending)">7</span><span class="badge pending">A conferir</span></div><span class="wq-title">Lançamentos a conferir</span><span class="wq-virtue">Paciência e atenção.</span><span class="wq-since">desde 12/08 · 58 dias</span></div></div>
+          <div class="leaf-card"><div class="band"><div class="skin" style="background:var(--tx-aneis);animation-duration:7s"></div><div class="fade"></div><span class="nm">gavião</span></div><div class="wq-body"><div class="wq-top"><span class="wq-n" style="color:var(--tone-attention)">2</span><span class="badge attention">Pergunta aberta</span></div><span class="wq-title">Seus registros com pergunta</span><span class="wq-virtue">Visão do alto.</span><span class="wq-since">desde 21/08 · 49 dias</span></div></div>
+          <div class="leaf-card"><div class="band"><div class="skin" style="background:var(--tx-onca);animation-duration:11s"></div><div class="fade"></div><span class="nm">jiboia</span></div><div class="wq-body"><div class="wq-top"><span class="wq-n" style="color:var(--tone-period)">1</span><span class="badge period">Período</span></div><span class="wq-title">Período anterior ainda aberto</span><span class="wq-virtue">Troca de pele.</span><span class="wq-since">desde 01/10 · 9 dias</span></div></div>
+        </div>
+        <div class="m-row2">
+          <div class="m-panel"><h2>Trilha</h2><span class="sub">Os últimos passos registrados</span>
+            <div class="recrow" style="--row-tone:var(--tone-pending);background:transparent"><span class="avatar-leaf xs" style="--guard:var(--tx-onca);grid-row:span 2"><i></i></span><span class="d">mercado cerimônia mãe divina</span><span class="v">R$ 187,40</span><span class="m">08/10 · CDD · Aurio</span><span class="b badge pending">A conferir</span></div>
+            <div class="recrow" style="--row-tone:var(--tone-suggest);background:transparent"><span class="avatar-leaf xs" style="--guard:var(--tx-pirarucu);grid-row:span 2"><i></i></span><span class="d">PIX recebido · Maria S.</span><span class="v">R$ 150,00</span><span class="m">04/10 · extrato · par sugerido</span><span class="b badge suggest">Sugestão</span></div>
+            <div class="recrow" style="--row-tone:var(--tone-confirmed);background:transparent"><span class="avatar-leaf xs" style="--guard:var(--tx-tatu);grid-row:span 2"><i></i></span><span class="d">ração cavalos (23/02)</span><span class="v">R$ 312,00</span><span class="m">03/10 · Chácara · Joel</span><span class="b badge confirmed">Confirmado</span></div>
+            <div class="recrow" style="--row-tone:var(--tone-neutral);background:transparent"><span class="avatar-leaf xs" style="--guard:var(--tx-coruja);grid-row:span 2"><i></i></span><span class="d">estorno lanche feitio</span><span class="v">−R$ 48,00</span><span class="m">30/09 · CDD · Lia</span><span class="b badge neutral">Estornado</span></div></div>
+          <div class="m-panel" style="gap:12px"><h2>Componentes</h2>
+            <div class="chips" style="gap:8px"><span class="btn" style="min-height:38px;font-size:13px">Primária</span><span class="btn ghost" style="min-height:38px;font-size:13px">Ghost</span><span class="btn quiet" style="min-height:38px;font-size:13px">Quiet</span><span class="btn suggest" style="min-height:38px;font-size:13px">Sugestão</span><span class="btn danger" style="min-height:38px;font-size:13px">Estornar</span></div>
+            <div class="chips" style="gap:8px"><span class="badge pending">A conferir</span><span class="badge attention">Pendência</span><span class="badge period">Período</span><span class="badge confirmed">Confirmado</span><span class="badge neutral">Estornado</span><span class="badge suggest">Sugestão</span></div>
+            <div class="field"><span class="lbl">descrição</span><div class="in focus">mercado cerimônia mãe divina</div><span class="hint">Como está no comprovante</span></div>
+            <div class="notice" style="--nt:var(--tone-attention)"><svg class="ic"><use href="#i-x"/></svg><div><b>Não dá para confirmar sem categoria.</b><span class="small muted">A regra em português, com o caminho.</span></div></div>
+            <div class="bars" style="height:48px"><i style="height:40%"></i><i style="height:55%"></i><i style="height:30%"></i><i style="height:70%"></i><i style="height:48%"></i><i style="height:62%"></i><i style="height:35%"></i><i style="height:80%"></i><i class="s" style="height:28%"></i></div></div>
+        </div>
+      </div>
+    </div>
+  </div></div>
+  <div class="grid g2" style="align-items:start">
+    <div class="tw"><table class="t"><thead><tr><th>Token</th><th>Valor</th></tr></thead><tbody><tr><td><code>--sky</code></td><td class="mono" style="font-size:12px">radial-gradient(90% 70% at 50% 110%, #7A3A14 0%, #3A1A0E 35%, #1A0F0A 75%)</td></tr><tr><td><code>--bg-app</code></td><td class="mono" style="font-size:12px">#1A0F0A</td></tr><tr><td><code>--bg-card</code></td><td class="mono" style="font-size:12px">rgba(34,20,14,.88)</td></tr><tr><td><code>--text-primary</code></td><td class="mono" style="font-size:12px">#F2E3CF</td></tr><tr><td><code>--text-secondary / --text-meta</code></td><td class="mono" style="font-size:12px">#D9C3A8 / #B59C84</td></tr><tr><td><code>--text-field-label / --accent-label</code></td><td class="mono" style="font-size:12px">#F0A35A</td></tr><tr><td><code>--text-link</code></td><td class="mono" style="font-size:12px">#F6D9A8</td></tr><tr><td><code>--action-bg / --action-fg</code></td><td class="mono" style="font-size:12px">#F6E3B4 / #1A0F0A</td></tr><tr><td><code>--border-section</code></td><td class="mono" style="font-size:12px">rgba(240,163,90,.3)</td></tr><tr><td><code>--serie-1 / 2 / 3</code></td><td class="mono" style="font-size:12px">#8DBA74 / #E59A5A / #F2CF6B</td></tr><tr><td><code>--vine</code></td><td class="mono" style="font-size:12px">#7A5233 + #C9743A</td></tr><tr><td><code>faixas de guardião</code></td><td class="mono" style="font-size:12px">casca  ·  aneis  ·  onca</td></tr></tbody></table></div>
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div class="tw"><table class="t"><thead><tr><th>Efeito de ambiente</th><th>Tempo</th><th>Regra</th></tr></thead><tbody><tr><td><b>Luz da fogueira</b></td><td class="mono">3 a 5s · opacidade e escala · contínuo</td><td>Brilho radial na base da tela; nunca sobe além do terço inferior</td></tr><tr><td><b>Brasa</b></td><td class="mono">5 a 9s · sobe, oscila e apaga</td><td>Partícula laranja de 3px; 10 a 14 no Painel; nenhuma no campo</td></tr><tr><td><b>Fumaça</b></td><td class="mono">28 a 40s · deriva para cima, alterna</td><td>Mancha desfocada a 8%; atravessa o respiro, nunca o cartão</td></tr><tr><td><b>Estalo</b></td><td class="mono">uma vez, 600ms, ao confirmar</td><td>Faísca curta no botão primário; substitui a onda do toque</td></tr></tbody></table></div>
+      <div class="grid g2"><div class="card tight"><h4>Quando usar</h4><p class="small muted">Noites de trabalho longo em que o escritório prefere calor ao verde; cerimônias de inverno; a tela de Fechamento, que marca um ciclo que se encerra no fogo.</p></div><div class="card tight"><h4>Cuidado</h4><p class="small muted">O laranja da brasa vive perto da resina (A conferir) e do urucum (atenção). Por isso a ação ficou na luz da chama, creme claro, e a brasa só aparece em sobrancelha e partícula.</p></div></div>
+    </div>
+  </div>
+  <details><summary>Contraste verificado (WCAG 2) e CSS do clima</summary><div class="dbody">
+    <div class="tw"><table class="t contrast"><thead><tr><th>Par</th><th>Razão</th><th>Nível</th></tr></thead><tbody><tr><td>Texto principal / fundo</td><td class="cr">14.9 : 1</td><td>AAA</td></tr><tr><td>Texto principal / cartão</td><td class="cr">14.0 : 1</td><td>AAA</td></tr><tr><td>Apoio / cartão</td><td class="cr">10.4 : 1</td><td>AAA</td></tr><tr><td>Metadado / cartão</td><td class="cr">6.8 : 1</td><td>AA</td></tr><tr><td>Rótulo / fundo</td><td class="cr">9.0 : 1</td><td>AAA</td></tr><tr><td>Tinta / botão primário</td><td class="cr">14.8 : 1</td><td>AAA</td></tr><tr><td>Link / cartão</td><td class="cr">13.0 : 1</td><td>AAA</td></tr><tr><td>Tinta / etiqueta pending</td><td class="cr">9.0 : 1</td><td>AAA</td></tr><tr><td>Tinta / etiqueta attention</td><td class="cr">6.1 : 1</td><td>AA</td></tr><tr><td>Tinta / etiqueta period</td><td class="cr">8.6 : 1</td><td>AAA</td></tr><tr><td>Tinta / etiqueta confirmed</td><td class="cr">10.0 : 1</td><td>AAA</td></tr><tr><td>Tinta / etiqueta neutral</td><td class="cr">6.2 : 1</td><td>AA</td></tr><tr><td>Tinta / etiqueta suggest</td><td class="cr">7.7 : 1</td><td>AAA</td></tr></tbody></table></div>
+    <pre>[data-clima="fogueira"] {
+  color-scheme: dark;
+  --clima-nome: "Fogueira na noite";
+  --sky: radial-gradient(90% 70% at 50% 110%, #7A3A14 0%, #3A1A0E 35%, #1A0F0A 75%);
+  --bg-app: #1A0F0A;
+  --bg-sub: #2A160D;
+  --bg-card: rgba(34,20,14,.88);
+  --bg-card-solid: #24150F;
+  --bg-sunken: rgba(242,227,207,.07);
+  --bg-hover: rgba(242,227,207,.1);
+  --bg-rail: rgba(20,11,8,.66);
+  --bg-header: rgba(20,11,8,.78);
+  --bg-paper: #FBF8EF;
+  --text-primary: #F2E3CF;
+  --text-title: #F2E3CF;
+  --text-secondary: #D9C3A8;
+  --text-meta: #B59C84;
+  --text-on-action: #1A0F0A;
+  --text-field-label: #F0A35A;
+  --text-link: #F6D9A8;
+  --text-link-hover: #FFF4E0;
+  --text-on-paper: #1B3324;
+  --title-on-paper: #764C29;
+  --label-on-paper: #8A6539;
+  --border-subtle: rgba(240,163,90,.16);
+  --border-section: rgba(240,163,90,.3);
+  --border-field: rgba(240,163,90,.42);
+  --border-brand: rgba(201,166,107,.6);
+  --action-bg: #F6E3B4;
+  --action-bg-hover: #FFF1CF;
+  --action-fg: #1A0F0A;
+  --focus-ring: #F6E3B4;
+  --accent-label: #F0A35A;
+  --accent-icon-active: #F0A35A;
+  --tone-pending: #E3A93E; --tone-pending-bg: #E3A93E; --tone-pending-fg: #1A0F0A; --tone-pending-soft: color-mix(in srgb, #E3A93E 16%, transparent);
+  --tone-attention: #E3734E; --tone-attention-bg: #E3734E; --tone-attention-fg: #1A0F0A; --tone-attention-soft: color-mix(in srgb, #E3734E 16%, transparent);
+  --tone-period: #7FB8C6; --tone-period-bg: #7FB8C6; --tone-period-fg: #1A0F0A; --tone-period-soft: color-mix(in srgb, #7FB8C6 16%, transparent);
+  --tone-confirmed: #A8C68F; --tone-confirmed-bg: #A8C68F; --tone-confirmed-fg: #1A0F0A; --tone-confirmed-soft: color-mix(in srgb, #A8C68F 16%, transparent);
+  --tone-neutral: #8A96A3; --tone-neutral-bg: #8A96A3; --tone-neutral-fg: #1A0F0A; --tone-neutral-soft: color-mix(in srgb, #8A96A3 16%, transparent);
+  --tone-suggest: #B49AD8; --tone-suggest-bg: #B49AD8; --tone-suggest-fg: #1A0F0A; --tone-suggest-soft: color-mix(in srgb, #B49AD8 16%, transparent);
+  --shadow-raised: 0 14px 34px rgba(0,0,0,.4);
+  --shadow-float: 0 30px 70px rgba(0,0,0,.45);
+  --ring-card: inset 0 0 0 1px rgba(240,163,90,.22);
+  --ring-card-hover: inset 0 0 0 1px rgba(240,163,90,.45);
+  --serie-1: #8DBA74; --serie-2: #E59A5A; --serie-3: #F2CF6B;
+  --ramp-1: #B9DBA3; --ramp-2: #9CCB82; --ramp-3: #7FB86A; --ramp-4: #5FA35A; --ramp-5: #468A48; --ramp-6: #2F6E3A;
+  --firefly: #FFB347;
+  --ray: transparent;
+}</pre>
+  </div></details>
+</section>
+<section id="chuva">
+  <span class="eyebrow">clima alternativo · chuva</span>
+  <h2>Chuva</h2>
+  <p class="lead prose">Mata molhada e rio cheio. Verde-azulado de folha encharcada, fio de água nas bordas, chuva fina atravessando a tela em diagonal. Tudo mais frio e mais quieto.</p>
+  <div class="grid g6"><div class="sw"><div class="s" style="background:#0D2128"></div><b>fundo</b><span class="mono">#0D2128</span></div><div class="sw"><div class="s" style="background:#133038"></div><b>intermediário</b><span class="mono">#133038</span></div><div class="sw"><div class="s" style="background:#102A31"></div><b>cartão</b><span class="mono">#102A31</span></div><div class="sw"><div class="s" style="background:#B4E0CF"></div><b>ação</b><span class="mono">#B4E0CF</span></div><div class="sw"><div class="s" style="background:#9CC8D6"></div><b>sobrancelha</b><span class="mono">#9CC8D6</span></div><div class="sw"><div class="s" style="background:#E6EEEC"></div><b>tinta</b><span class="mono">#E6EEEC</span></div></div>
+  
+  <div class="mockwrap"><div class="mock clima-chuva" data-w="1180" style="width:1180px">
+    <div class="fx"><div class="chuva"></div><div class="nevoa"></div><div class="gota" style="left:22%;top:38%"></div><div class="gota" style="left:70%;top:66%;animation-delay:2.4s"></div><div class="gota" style="left:48%;top:80%;animation-delay:4.1s"></div></div>
+    <div class="m-shell">
+      <div class="m-head"><img class="logo" src="merkaba.png" alt=""><span class="brand">Céu do Despertar</span><span class="tag" style="font:700 12px var(--font-label);letter-spacing:.18em;color:var(--text-link)">chuva</span><span class="unit"><img class="unit-mark" src="merkaba.png" alt="">cdd<svg class="ic sm"><use href="#i-chevron-down"/></svg></span><span class="search"><svg class="ic sm"><use href="#i-search"/></svg>Buscar<span class="kbd">⌘K</span></span><span class="bell"><svg class="ic"><use href="#i-bell"/></svg><i></i></span><span class="user"><span class="t"><b>Aurio Neto</b><span>Tesouraria · onça</span></span><span class="avatar-leaf sm" style="--guard:var(--tx-onca)"><i></i></span></span></div>
+      <div class="m-rail"><div class="vinebar"></div>
+        <div class="navitem on"><svg class="ic"><use href="#i-inbox"/></svg>Painel do dia<span class="cnt">10</span></div>
+        <div class="navitem"><svg class="ic"><use href="#i-circle-plus"/></svg>Registrar gasto</div>
+        <div class="navsec">financeiro</div>
+        <div class="navitem"><svg class="ic"><use href="#i-check-check"/></svg>Conferência<span class="cnt">7</span></div>
+        <div class="navitem"><svg class="ic"><use href="#i-list"/></svg>Lançamentos</div>
+        <div class="navitem"><svg class="ic"><use href="#i-lock"/></svg>Fechamento</div>
+      </div>
+      <div class="m-main" style="padding:28px 32px 36px;gap:22px">
+        <div class="m-hero"><div style="display:flex;flex-direction:column;gap:8px;flex:1 1 380px"><span class="eyebrow">t-02 · painel do dia · chuva</span><h1 style="font-size:42px">Boa noite, Aurio</h1><p>Dez itens pedem você hoje; o mais antigo espera desde 12/08.</p></div><span class="btn"><svg class="ic"><use href="#i-circle-plus"/></svg>Registrar gasto</span><span class="btn ghost">Ver lançamentos</span></div>
+        <div class="grid g3">
+          <div class="leaf-card"><div class="band"><div class="skin" style="background:var(--tx-pirarucu)"></div><div class="fade"></div><span class="nm">onça</span></div><div class="wq-body"><div class="wq-top"><span class="wq-n" style="color:var(--tone-pending)">7</span><span class="badge pending">A conferir</span></div><span class="wq-title">Lançamentos a conferir</span><span class="wq-virtue">Paciência e atenção.</span><span class="wq-since">desde 12/08 · 58 dias</span></div></div>
+          <div class="leaf-card"><div class="band"><div class="skin" style="background:var(--tx-musgo);animation-duration:7s"></div><div class="fade"></div><span class="nm">gavião</span></div><div class="wq-body"><div class="wq-top"><span class="wq-n" style="color:var(--tone-attention)">2</span><span class="badge attention">Pergunta aberta</span></div><span class="wq-title">Seus registros com pergunta</span><span class="wq-virtue">Visão do alto.</span><span class="wq-since">desde 21/08 · 49 dias</span></div></div>
+          <div class="leaf-card"><div class="band"><div class="skin" style="background:var(--tx-nervura);animation-duration:11s"></div><div class="fade"></div><span class="nm">jiboia</span></div><div class="wq-body"><div class="wq-top"><span class="wq-n" style="color:var(--tone-period)">1</span><span class="badge period">Período</span></div><span class="wq-title">Período anterior ainda aberto</span><span class="wq-virtue">Troca de pele.</span><span class="wq-since">desde 01/10 · 9 dias</span></div></div>
+        </div>
+        <div class="m-row2">
+          <div class="m-panel"><h2>Trilha</h2><span class="sub">Os últimos passos registrados</span>
+            <div class="recrow" style="--row-tone:var(--tone-pending);background:transparent"><span class="avatar-leaf xs" style="--guard:var(--tx-onca);grid-row:span 2"><i></i></span><span class="d">mercado cerimônia mãe divina</span><span class="v">R$ 187,40</span><span class="m">08/10 · CDD · Aurio</span><span class="b badge pending">A conferir</span></div>
+            <div class="recrow" style="--row-tone:var(--tone-suggest);background:transparent"><span class="avatar-leaf xs" style="--guard:var(--tx-pirarucu);grid-row:span 2"><i></i></span><span class="d">PIX recebido · Maria S.</span><span class="v">R$ 150,00</span><span class="m">04/10 · extrato · par sugerido</span><span class="b badge suggest">Sugestão</span></div>
+            <div class="recrow" style="--row-tone:var(--tone-confirmed);background:transparent"><span class="avatar-leaf xs" style="--guard:var(--tx-tatu);grid-row:span 2"><i></i></span><span class="d">ração cavalos (23/02)</span><span class="v">R$ 312,00</span><span class="m">03/10 · Chácara · Joel</span><span class="b badge confirmed">Confirmado</span></div>
+            <div class="recrow" style="--row-tone:var(--tone-neutral);background:transparent"><span class="avatar-leaf xs" style="--guard:var(--tx-coruja);grid-row:span 2"><i></i></span><span class="d">estorno lanche feitio</span><span class="v">−R$ 48,00</span><span class="m">30/09 · CDD · Lia</span><span class="b badge neutral">Estornado</span></div></div>
+          <div class="m-panel" style="gap:12px"><h2>Componentes</h2>
+            <div class="chips" style="gap:8px"><span class="btn" style="min-height:38px;font-size:13px">Primária</span><span class="btn ghost" style="min-height:38px;font-size:13px">Ghost</span><span class="btn quiet" style="min-height:38px;font-size:13px">Quiet</span><span class="btn suggest" style="min-height:38px;font-size:13px">Sugestão</span><span class="btn danger" style="min-height:38px;font-size:13px">Estornar</span></div>
+            <div class="chips" style="gap:8px"><span class="badge pending">A conferir</span><span class="badge attention">Pendência</span><span class="badge period">Período</span><span class="badge confirmed">Confirmado</span><span class="badge neutral">Estornado</span><span class="badge suggest">Sugestão</span></div>
+            <div class="field"><span class="lbl">descrição</span><div class="in focus">mercado cerimônia mãe divina</div><span class="hint">Como está no comprovante</span></div>
+            <div class="notice" style="--nt:var(--tone-attention)"><svg class="ic"><use href="#i-x"/></svg><div><b>Não dá para confirmar sem categoria.</b><span class="small muted">A regra em português, com o caminho.</span></div></div>
+            <div class="bars" style="height:48px"><i style="height:40%"></i><i style="height:55%"></i><i style="height:30%"></i><i style="height:70%"></i><i style="height:48%"></i><i style="height:62%"></i><i style="height:35%"></i><i style="height:80%"></i><i class="s" style="height:28%"></i></div></div>
+        </div>
+      </div>
+    </div>
+  </div></div>
+  <div class="grid g2" style="align-items:start">
+    <div class="tw"><table class="t"><thead><tr><th>Token</th><th>Valor</th></tr></thead><tbody><tr><td><code>--sky</code></td><td class="mono" style="font-size:12px">radial-gradient(120% 80% at 40% 0%, #24505A 0%, #153640 45%, #0D2128 100%)</td></tr><tr><td><code>--bg-app</code></td><td class="mono" style="font-size:12px">#0D2128</td></tr><tr><td><code>--bg-card</code></td><td class="mono" style="font-size:12px">rgba(10,30,36,.88)</td></tr><tr><td><code>--text-primary</code></td><td class="mono" style="font-size:12px">#E6EEEC</td></tr><tr><td><code>--text-secondary / --text-meta</code></td><td class="mono" style="font-size:12px">#BCD0CF / #9DB4B4</td></tr><tr><td><code>--text-field-label / --accent-label</code></td><td class="mono" style="font-size:12px">#9CC8D6</td></tr><tr><td><code>--text-link</code></td><td class="mono" style="font-size:12px">#B4E0CF</td></tr><tr><td><code>--action-bg / --action-fg</code></td><td class="mono" style="font-size:12px">#B4E0CF / #0D2128</td></tr><tr><td><code>--border-section</code></td><td class="mono" style="font-size:12px">rgba(127,184,198,.3)</td></tr><tr><td><code>--serie-1 / 2 / 3</code></td><td class="mono" style="font-size:12px">#8DBA74 / #5FA8C9 / #D9B45A</td></tr><tr><td><code>--vine</code></td><td class="mono" style="font-size:12px">#4C5A4A + #5FA8C9</td></tr><tr><td><code>faixas de guardião</code></td><td class="mono" style="font-size:12px">pirarucu  ·  musgo  ·  nervura</td></tr></tbody></table></div>
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div class="tw"><table class="t"><thead><tr><th>Efeito de ambiente</th><th>Tempo</th><th>Regra</th></tr></thead><tbody><tr><td><b>Chuva fina</b></td><td class="mono">1,6s · linear · contínuo</td><td>Traços diagonais de 1px a 14%; param em movimento reduzido e no campo</td></tr><tr><td><b>Gota na superfície</b></td><td class="mono">a cada 4 a 7s · 900ms</td><td>Anel que se expande em um ponto aleatório do respiro, nunca sobre cartão</td></tr><tr><td><b>Névoa baixa</b></td><td class="mono">30s · deriva horizontal</td><td>Faixa desfocada no terço inferior</td></tr><tr><td><b>Escorrer</b></td><td class="mono">uma vez, 700ms, ao confirmar</td><td>A barra de estado da linha desce como água até firmar em folha</td></tr></tbody></table></div>
+      <div class="grid g2"><div class="card tight"><h4>Quando usar</h4><p class="small muted">Temporada de chuvas; conciliação bancária, em que o banco já é o rio; quem prefere um escritório sem calor nenhum.</p></div><div class="card tight"><h4>Cuidado</h4><p class="small muted">O azul do rio é a cor do tom Período. A ação ficou na espuma, um verde-água claro, para não disputar com a etiqueta de período nem com a sugestão.</p></div></div>
+    </div>
+  </div>
+  <details><summary>Contraste verificado (WCAG 2) e CSS do clima</summary><div class="dbody">
+    <div class="tw"><table class="t contrast"><thead><tr><th>Par</th><th>Razão</th><th>Nível</th></tr></thead><tbody><tr><td>Texto principal / fundo</td><td class="cr">14.1 : 1</td><td>AAA</td></tr><tr><td>Texto principal / cartão</td><td class="cr">12.7 : 1</td><td>AAA</td></tr><tr><td>Apoio / cartão</td><td class="cr">9.3 : 1</td><td>AAA</td></tr><tr><td>Metadado / cartão</td><td class="cr">6.9 : 1</td><td>AA</td></tr><tr><td>Rótulo / fundo</td><td class="cr">9.2 : 1</td><td>AAA</td></tr><tr><td>Tinta / botão primário</td><td class="cr">11.5 : 1</td><td>AAA</td></tr><tr><td>Link / cartão</td><td class="cr">10.4 : 1</td><td>AAA</td></tr><tr><td>Tinta / etiqueta pending</td><td class="cr">7.9 : 1</td><td>AAA</td></tr><tr><td>Tinta / etiqueta attention</td><td class="cr">5.4 : 1</td><td>AA</td></tr><tr><td>Tinta / etiqueta period</td><td class="cr">7.6 : 1</td><td>AAA</td></tr><tr><td>Tinta / etiqueta confirmed</td><td class="cr">8.8 : 1</td><td>AAA</td></tr><tr><td>Tinta / etiqueta neutral</td><td class="cr">5.5 : 1</td><td>AA</td></tr><tr><td>Tinta / etiqueta suggest</td><td class="cr">6.8 : 1</td><td>AA</td></tr></tbody></table></div>
+    <pre>[data-clima="chuva"] {
+  color-scheme: dark;
+  --clima-nome: "Chuva";
+  --sky: radial-gradient(120% 80% at 40% 0%, #24505A 0%, #153640 45%, #0D2128 100%);
+  --bg-app: #0D2128;
+  --bg-sub: #133038;
+  --bg-card: rgba(10,30,36,.88);
+  --bg-card-solid: #102A31;
+  --bg-sunken: rgba(180,224,207,.07);
+  --bg-hover: rgba(180,224,207,.1);
+  --bg-rail: rgba(8,24,30,.66);
+  --bg-header: rgba(8,24,30,.78);
+  --bg-paper: #FBF8EF;
+  --text-primary: #E6EEEC;
+  --text-title: #E6EEEC;
+  --text-secondary: #BCD0CF;
+  --text-meta: #9DB4B4;
+  --text-on-action: #0D2128;
+  --text-field-label: #9CC8D6;
+  --text-link: #B4E0CF;
+  --text-link-hover: #F2FBF7;
+  --text-on-paper: #1B3324;
+  --title-on-paper: #764C29;
+  --label-on-paper: #8A6539;
+  --border-subtle: rgba(127,184,198,.16);
+  --border-section: rgba(127,184,198,.3);
+  --border-field: rgba(127,184,198,.42);
+  --border-brand: rgba(201,166,107,.5);
+  --action-bg: #B4E0CF;
+  --action-bg-hover: #CDEEE0;
+  --action-fg: #0D2128;
+  --focus-ring: #B4E0CF;
+  --accent-label: #9CC8D6;
+  --accent-icon-active: #9CC8D6;
+  --tone-pending: #E3A93E; --tone-pending-bg: #E3A93E; --tone-pending-fg: #0D2128; --tone-pending-soft: color-mix(in srgb, #E3A93E 16%, transparent);
+  --tone-attention: #E3734E; --tone-attention-bg: #E3734E; --tone-attention-fg: #0D2128; --tone-attention-soft: color-mix(in srgb, #E3734E 16%, transparent);
+  --tone-period: #7FB8C6; --tone-period-bg: #7FB8C6; --tone-period-fg: #0D2128; --tone-period-soft: color-mix(in srgb, #7FB8C6 16%, transparent);
+  --tone-confirmed: #A8C68F; --tone-confirmed-bg: #A8C68F; --tone-confirmed-fg: #0D2128; --tone-confirmed-soft: color-mix(in srgb, #A8C68F 16%, transparent);
+  --tone-neutral: #8A96A3; --tone-neutral-bg: #8A96A3; --tone-neutral-fg: #0D2128; --tone-neutral-soft: color-mix(in srgb, #8A96A3 16%, transparent);
+  --tone-suggest: #B49AD8; --tone-suggest-bg: #B49AD8; --tone-suggest-fg: #0D2128; --tone-suggest-soft: color-mix(in srgb, #B49AD8 16%, transparent);
+  --shadow-raised: 0 14px 34px rgba(0,0,0,.4);
+  --shadow-float: 0 30px 70px rgba(0,0,0,.45);
+  --ring-card: inset 0 0 0 1px rgba(127,184,198,.22);
+  --ring-card-hover: inset 0 0 0 1px rgba(127,184,198,.45);
+  --serie-1: #8DBA74; --serie-2: #5FA8C9; --serie-3: #D9B45A;
+  --ramp-1: #B9DBA3; --ramp-2: #9CCB82; --ramp-3: #7FB86A; --ramp-4: #5FA35A; --ramp-5: #468A48; --ramp-6: #2F6E3A;
+  --firefly: transparent;
+  --ray: transparent;
+}</pre>
+  </div></details>
+</section>
+<section id="cachimbo">
+  <span class="eyebrow">clima alternativo · roda de cachimbo</span>
+  <h2>Roda de cachimbo</h2>
+  <p class="lead prose">Noite de terra batida, a roda sentada, a brasa pequena do cachimbo e a fumaça que sobe em fio e se abre. Marrons de madeira e palha, cinza quente de fumaça, quase sem verde.</p>
+  <div class="grid g6"><div class="sw"><div class="s" style="background:#16100C"></div><b>fundo</b><span class="mono">#16100C</span></div><div class="sw"><div class="s" style="background:#241A14"></div><b>intermediário</b><span class="mono">#241A14</span></div><div class="sw"><div class="s" style="background:#2A1E17"></div><b>cartão</b><span class="mono">#2A1E17</span></div><div class="sw"><div class="s" style="background:#D9C9A3"></div><b>ação</b><span class="mono">#D9C9A3</span></div><div class="sw"><div class="s" style="background:#B99B6A"></div><b>sobrancelha</b><span class="mono">#B99B6A</span></div><div class="sw"><div class="s" style="background:#EAE2D6"></div><b>tinta</b><span class="mono">#EAE2D6</span></div></div>
+  
+  <div class="mockwrap"><div class="mock clima-cachimbo" data-w="1180" style="width:1180px">
+    <div class="fx"><div class="roda"><i style="--a:0deg"></i><i style="--a:30deg"></i><i style="--a:60deg"></i><i style="--a:90deg"></i><i style="--a:120deg"></i><i style="--a:150deg"></i><i style="--a:180deg"></i><i style="--a:210deg"></i><i style="--a:240deg"></i><i style="--a:270deg"></i><i style="--a:300deg"></i><i style="--a:330deg"></i></div><div class="fio" style="left:26px;animation-delay:-4s"></div><div class="fio" style="left:40px;animation-delay:-14s;animation-duration:26s"></div><div class="brasinha"></div></div>
+    <div class="m-shell">
+      <div class="m-head"><img class="logo" src="merkaba.png" alt=""><span class="brand">Céu do Despertar</span><span class="tag" style="font:700 12px var(--font-label);letter-spacing:.18em;color:var(--text-link)">roda de cachimbo</span><span class="unit"><img class="unit-mark" src="merkaba.png" alt="">cdd<svg class="ic sm"><use href="#i-chevron-down"/></svg></span><span class="search"><svg class="ic sm"><use href="#i-search"/></svg>Buscar<span class="kbd">⌘K</span></span><span class="bell"><svg class="ic"><use href="#i-bell"/></svg><i></i></span><span class="user"><span class="t"><b>Aurio Neto</b><span>Tesouraria · onça</span></span><span class="avatar-leaf sm" style="--guard:var(--tx-onca)"><i></i></span></span></div>
+      <div class="m-rail"><div class="vinebar"></div>
+        <div class="navitem on"><svg class="ic"><use href="#i-inbox"/></svg>Painel do dia<span class="cnt">10</span></div>
+        <div class="navitem"><svg class="ic"><use href="#i-circle-plus"/></svg>Registrar gasto</div>
+        <div class="navsec">financeiro</div>
+        <div class="navitem"><svg class="ic"><use href="#i-check-check"/></svg>Conferência<span class="cnt">7</span></div>
+        <div class="navitem"><svg class="ic"><use href="#i-list"/></svg>Lançamentos</div>
+        <div class="navitem"><svg class="ic"><use href="#i-lock"/></svg>Fechamento</div>
+      </div>
+      <div class="m-main" style="padding:28px 32px 36px;gap:22px">
+        <div class="m-hero"><div style="display:flex;flex-direction:column;gap:8px;flex:1 1 380px"><span class="eyebrow">t-02 · painel do dia · roda de cachimbo</span><h1 style="font-size:42px">Boa noite, Aurio</h1><p>Dez itens pedem você hoje; o mais antigo espera desde 12/08.</p></div><span class="btn"><svg class="ic"><use href="#i-circle-plus"/></svg>Registrar gasto</span><span class="btn ghost">Ver lançamentos</span></div>
+        <div class="grid g3">
+          <div class="leaf-card"><div class="band"><div class="skin" style="background:var(--tx-folhaseca)"></div><div class="fade"></div><span class="nm">onça</span></div><div class="wq-body"><div class="wq-top"><span class="wq-n" style="color:var(--tone-pending)">7</span><span class="badge pending">A conferir</span></div><span class="wq-title">Lançamentos a conferir</span><span class="wq-virtue">Paciência e atenção.</span><span class="wq-since">desde 12/08 · 58 dias</span></div></div>
+          <div class="leaf-card"><div class="band"><div class="skin" style="background:var(--tx-terra);animation-duration:7s"></div><div class="fade"></div><span class="nm">gavião</span></div><div class="wq-body"><div class="wq-top"><span class="wq-n" style="color:var(--tone-attention)">2</span><span class="badge attention">Pergunta aberta</span></div><span class="wq-title">Seus registros com pergunta</span><span class="wq-virtue">Visão do alto.</span><span class="wq-since">desde 21/08 · 49 dias</span></div></div>
+          <div class="leaf-card"><div class="band"><div class="skin" style="background:var(--tx-aneis);animation-duration:11s"></div><div class="fade"></div><span class="nm">jiboia</span></div><div class="wq-body"><div class="wq-top"><span class="wq-n" style="color:var(--tone-period)">1</span><span class="badge period">Período</span></div><span class="wq-title">Período anterior ainda aberto</span><span class="wq-virtue">Troca de pele.</span><span class="wq-since">desde 01/10 · 9 dias</span></div></div>
+        </div>
+        <div class="m-row2">
+          <div class="m-panel"><h2>Trilha</h2><span class="sub">Os últimos passos registrados</span>
+            <div class="recrow" style="--row-tone:var(--tone-pending);background:transparent"><span class="avatar-leaf xs" style="--guard:var(--tx-onca);grid-row:span 2"><i></i></span><span class="d">mercado cerimônia mãe divina</span><span class="v">R$ 187,40</span><span class="m">08/10 · CDD · Aurio</span><span class="b badge pending">A conferir</span></div>
+            <div class="recrow" style="--row-tone:var(--tone-suggest);background:transparent"><span class="avatar-leaf xs" style="--guard:var(--tx-pirarucu);grid-row:span 2"><i></i></span><span class="d">PIX recebido · Maria S.</span><span class="v">R$ 150,00</span><span class="m">04/10 · extrato · par sugerido</span><span class="b badge suggest">Sugestão</span></div>
+            <div class="recrow" style="--row-tone:var(--tone-confirmed);background:transparent"><span class="avatar-leaf xs" style="--guard:var(--tx-tatu);grid-row:span 2"><i></i></span><span class="d">ração cavalos (23/02)</span><span class="v">R$ 312,00</span><span class="m">03/10 · Chácara · Joel</span><span class="b badge confirmed">Confirmado</span></div>
+            <div class="recrow" style="--row-tone:var(--tone-neutral);background:transparent"><span class="avatar-leaf xs" style="--guard:var(--tx-coruja);grid-row:span 2"><i></i></span><span class="d">estorno lanche feitio</span><span class="v">−R$ 48,00</span><span class="m">30/09 · CDD · Lia</span><span class="b badge neutral">Estornado</span></div></div>
+          <div class="m-panel" style="gap:12px"><h2>Componentes</h2>
+            <div class="chips" style="gap:8px"><span class="btn" style="min-height:38px;font-size:13px">Primária</span><span class="btn ghost" style="min-height:38px;font-size:13px">Ghost</span><span class="btn quiet" style="min-height:38px;font-size:13px">Quiet</span><span class="btn suggest" style="min-height:38px;font-size:13px">Sugestão</span><span class="btn danger" style="min-height:38px;font-size:13px">Estornar</span></div>
+            <div class="chips" style="gap:8px"><span class="badge pending">A conferir</span><span class="badge attention">Pendência</span><span class="badge period">Período</span><span class="badge confirmed">Confirmado</span><span class="badge neutral">Estornado</span><span class="badge suggest">Sugestão</span></div>
+            <div class="field"><span class="lbl">descrição</span><div class="in focus">mercado cerimônia mãe divina</div><span class="hint">Como está no comprovante</span></div>
+            <div class="notice" style="--nt:var(--tone-attention)"><svg class="ic"><use href="#i-x"/></svg><div><b>Não dá para confirmar sem categoria.</b><span class="small muted">A regra em português, com o caminho.</span></div></div>
+            <div class="bars" style="height:48px"><i style="height:40%"></i><i style="height:55%"></i><i style="height:30%"></i><i style="height:70%"></i><i style="height:48%"></i><i style="height:62%"></i><i style="height:35%"></i><i style="height:80%"></i><i class="s" style="height:28%"></i></div></div>
+        </div>
+      </div>
+    </div>
+  </div></div>
+  <div class="grid g2" style="align-items:start">
+    <div class="tw"><table class="t"><thead><tr><th>Token</th><th>Valor</th></tr></thead><tbody><tr><td><code>--sky</code></td><td class="mono" style="font-size:12px">radial-gradient(70% 50% at 50% 60%, #3A2A20 0%, #241A14 40%, #16100C 100%)</td></tr><tr><td><code>--bg-app</code></td><td class="mono" style="font-size:12px">#16100C</td></tr><tr><td><code>--bg-card</code></td><td class="mono" style="font-size:12px">rgba(36,26,20,.9)</td></tr><tr><td><code>--text-primary</code></td><td class="mono" style="font-size:12px">#EAE2D6</td></tr><tr><td><code>--text-secondary / --text-meta</code></td><td class="mono" style="font-size:12px">#CFC3B4 / #A89C8E</td></tr><tr><td><code>--text-field-label / --accent-label</code></td><td class="mono" style="font-size:12px">#B99B6A</td></tr><tr><td><code>--text-link</code></td><td class="mono" style="font-size:12px">#D9C9A3</td></tr><tr><td><code>--action-bg / --action-fg</code></td><td class="mono" style="font-size:12px">#D9C9A3 / #16100C</td></tr><tr><td><code>--border-section</code></td><td class="mono" style="font-size:12px">rgba(217,201,163,.28)</td></tr><tr><td><code>--serie-1 / 2 / 3</code></td><td class="mono" style="font-size:12px">#9CB07C / #C9743A / #D9C9A3</td></tr><tr><td><code>--vine</code></td><td class="mono" style="font-size:12px">#5A3B26 + #9C7148</td></tr><tr><td><code>faixas de guardião</code></td><td class="mono" style="font-size:12px">folhaseca  ·  terra  ·  aneis</td></tr></tbody></table></div>
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div class="tw"><table class="t"><thead><tr><th>Efeito de ambiente</th><th>Tempo</th><th>Regra</th></tr></thead><tbody><tr><td><b>Fumaça em fio</b></td><td class="mono">18 a 26s · sobe, curva e abre</td><td>Dois ou três fios desfocados saindo da base do rail; opacidade 10%</td></tr><tr><td><b>Brasa do cachimbo</b></td><td class="mono">4s · pulsa</td><td>Um ponto só, no canto inferior do rail, laranja escuro</td></tr><tr><td><b>A roda</b></td><td class="mono">estático</td><td>Anel tênue no fundo do Painel, com pontos no lugar de quem senta; some atrás de cartão</td></tr><tr><td><b>Sopro</b></td><td class="mono">uma vez, 500ms, ao confirmar</td><td>A fumaça se afasta do botão por um instante</td></tr></tbody></table></div>
+      <div class="grid g2"><div class="card tight"><h4>Quando usar</h4><p class="small muted">Conferência e relatórios no fim do dia; quem quer menos cor na tela e mais silêncio; as telas de Pessoas e acolhimento.</p></div><div class="card tight"><h4>Cuidado</h4><p class="small muted">Com pouca cor de ambiente, as cores de estado ficam mais fortes do que nos outros climas. É intencional: o dado é a única coisa colorida.</p></div></div>
+    </div>
+  </div>
+  <details><summary>Contraste verificado (WCAG 2) e CSS do clima</summary><div class="dbody">
+    <div class="tw"><table class="t contrast"><thead><tr><th>Par</th><th>Razão</th><th>Nível</th></tr></thead><tbody><tr><td>Texto principal / fundo</td><td class="cr">14.7 : 1</td><td>AAA</td></tr><tr><td>Texto principal / cartão</td><td class="cr">12.6 : 1</td><td>AAA</td></tr><tr><td>Apoio / cartão</td><td class="cr">9.3 : 1</td><td>AAA</td></tr><tr><td>Metadado / cartão</td><td class="cr">6.0 : 1</td><td>AA</td></tr><tr><td>Rótulo / fundo</td><td class="cr">7.1 : 1</td><td>AAA</td></tr><tr><td>Tinta / botão primário</td><td class="cr">11.5 : 1</td><td>AAA</td></tr><tr><td>Link / cartão</td><td class="cr">9.9 : 1</td><td>AAA</td></tr><tr><td>Tinta / etiqueta pending</td><td class="cr">9.0 : 1</td><td>AAA</td></tr><tr><td>Tinta / etiqueta attention</td><td class="cr">6.1 : 1</td><td>AA</td></tr><tr><td>Tinta / etiqueta period</td><td class="cr">8.6 : 1</td><td>AAA</td></tr><tr><td>Tinta / etiqueta confirmed</td><td class="cr">10.0 : 1</td><td>AAA</td></tr><tr><td>Tinta / etiqueta neutral</td><td class="cr">6.3 : 1</td><td>AA</td></tr><tr><td>Tinta / etiqueta suggest</td><td class="cr">7.7 : 1</td><td>AAA</td></tr></tbody></table></div>
+    <pre>[data-clima="cachimbo"] {
+  color-scheme: dark;
+  --clima-nome: "Roda de cachimbo";
+  --sky: radial-gradient(70% 50% at 50% 60%, #3A2A20 0%, #241A14 40%, #16100C 100%);
+  --bg-app: #16100C;
+  --bg-sub: #241A14;
+  --bg-card: rgba(36,26,20,.9);
+  --bg-card-solid: #2A1E17;
+  --bg-sunken: rgba(234,226,214,.07);
+  --bg-hover: rgba(234,226,214,.1);
+  --bg-rail: rgba(18,13,10,.66);
+  --bg-header: rgba(18,13,10,.8);
+  --bg-paper: #FBF8EF;
+  --text-primary: #EAE2D6;
+  --text-title: #EAE2D6;
+  --text-secondary: #CFC3B4;
+  --text-meta: #A89C8E;
+  --text-on-action: #16100C;
+  --text-field-label: #B99B6A;
+  --text-link: #D9C9A3;
+  --text-link-hover: #FFF8EC;
+  --text-on-paper: #1B3324;
+  --title-on-paper: #764C29;
+  --label-on-paper: #8A6539;
+  --border-subtle: rgba(217,201,163,.14);
+  --border-section: rgba(217,201,163,.28);
+  --border-field: rgba(217,201,163,.4);
+  --border-brand: rgba(201,166,107,.55);
+  --action-bg: #D9C9A3;
+  --action-bg-hover: #EADDBE;
+  --action-fg: #16100C;
+  --focus-ring: #D9C9A3;
+  --accent-label: #B99B6A;
+  --accent-icon-active: #B99B6A;
+  --tone-pending: #E3A93E; --tone-pending-bg: #E3A93E; --tone-pending-fg: #16100C; --tone-pending-soft: color-mix(in srgb, #E3A93E 16%, transparent);
+  --tone-attention: #E3734E; --tone-attention-bg: #E3734E; --tone-attention-fg: #16100C; --tone-attention-soft: color-mix(in srgb, #E3734E 16%, transparent);
+  --tone-period: #7FB8C6; --tone-period-bg: #7FB8C6; --tone-period-fg: #16100C; --tone-period-soft: color-mix(in srgb, #7FB8C6 16%, transparent);
+  --tone-confirmed: #A8C68F; --tone-confirmed-bg: #A8C68F; --tone-confirmed-fg: #16100C; --tone-confirmed-soft: color-mix(in srgb, #A8C68F 16%, transparent);
+  --tone-neutral: #8A96A3; --tone-neutral-bg: #8A96A3; --tone-neutral-fg: #16100C; --tone-neutral-soft: color-mix(in srgb, #8A96A3 16%, transparent);
+  --tone-suggest: #B49AD8; --tone-suggest-bg: #B49AD8; --tone-suggest-fg: #16100C; --tone-suggest-soft: color-mix(in srgb, #B49AD8 16%, transparent);
+  --shadow-raised: 0 14px 34px rgba(0,0,0,.4);
+  --shadow-float: 0 30px 70px rgba(0,0,0,.45);
+  --ring-card: inset 0 0 0 1px rgba(217,201,163,.2);
+  --ring-card-hover: inset 0 0 0 1px rgba(217,201,163,.42);
+  --serie-1: #9CB07C; --serie-2: #C9743A; --serie-3: #D9C9A3;
+  --ramp-1: #B9DBA3; --ramp-2: #9CCB82; --ramp-3: #7FB86A; --ramp-4: #5FA35A; --ramp-5: #468A48; --ramp-6: #2F6E3A;
+  --firefly: transparent;
+  --ray: transparent;
+}</pre>
+  </div></details>
+</section>
+<section id="miracao">
+  <span class="eyebrow">clima alternativo · miração sagrada</span>
+  <h2>Miração sagrada</h2>
+  <p class="lead prose">Índigo profundo com auroras que mudam de cor devagar, a flor da vida acesa ao fundo e pequenos pontos de luz piscando. É o clima mais intenso: tudo o que brilha fica no respiro, o cartão continua escuro e sóbrio.</p>
+  <div class="grid g6"><div class="sw"><div class="s" style="background:#140F2A"></div><b>fundo</b><span class="mono">#140F2A</span></div><div class="sw"><div class="s" style="background:#1E1640"></div><b>intermediário</b><span class="mono">#1E1640</span></div><div class="sw"><div class="s" style="background:#1C1540"></div><b>cartão</b><span class="mono">#1C1540</span></div><div class="sw"><div class="s" style="background:#8BE3C9"></div><b>ação</b><span class="mono">#8BE3C9</span></div><div class="sw"><div class="s" style="background:#F09AD0"></div><b>sobrancelha</b><span class="mono">#F09AD0</span></div><div class="sw"><div class="s" style="background:#F0E8FF"></div><b>tinta</b><span class="mono">#F0E8FF</span></div></div>
+  
+  <div class="mockwrap"><div class="mock clima-miracao" data-w="1180" style="width:1180px">
+    <div class="fx"><div class="flor"></div><div class="aurora" style="top:4%"></div><div class="aurora" style="top:40%;animation-delay:-24s;animation-duration:60s"></div><div class="estrela" style="left:2%;top:5%;animation-delay:0.0s"></div><div class="estrela" style="left:39%;top:58%;animation-delay:0.9s"></div><div class="estrela" style="left:76%;top:21%;animation-delay:1.8s"></div><div class="estrela" style="left:16%;top:74%;animation-delay:2.7s"></div><div class="estrela" style="left:53%;top:37%;animation-delay:3.6s"></div><div class="estrela" style="left:90%;top:90%;animation-delay:4.5s"></div><div class="estrela" style="left:30%;top:53%;animation-delay:5.4s"></div><div class="estrela" style="left:67%;top:16%;animation-delay:6.3s"></div></div>
+    <div class="m-shell">
+      <div class="m-head"><img class="logo" src="merkaba.png" alt=""><span class="brand">Céu do Despertar</span><span class="tag" style="font:700 12px var(--font-label);letter-spacing:.18em;color:var(--text-link)">miração sagrada</span><span class="unit"><img class="unit-mark" src="merkaba.png" alt="">cdd<svg class="ic sm"><use href="#i-chevron-down"/></svg></span><span class="search"><svg class="ic sm"><use href="#i-search"/></svg>Buscar<span class="kbd">⌘K</span></span><span class="bell"><svg class="ic"><use href="#i-bell"/></svg><i></i></span><span class="user"><span class="t"><b>Aurio Neto</b><span>Tesouraria · onça</span></span><span class="avatar-leaf sm" style="--guard:var(--tx-onca)"><i></i></span></span></div>
+      <div class="m-rail"><div class="vinebar"></div>
+        <div class="navitem on"><svg class="ic"><use href="#i-inbox"/></svg>Painel do dia<span class="cnt">10</span></div>
+        <div class="navitem"><svg class="ic"><use href="#i-circle-plus"/></svg>Registrar gasto</div>
+        <div class="navsec">financeiro</div>
+        <div class="navitem"><svg class="ic"><use href="#i-check-check"/></svg>Conferência<span class="cnt">7</span></div>
+        <div class="navitem"><svg class="ic"><use href="#i-list"/></svg>Lançamentos</div>
+        <div class="navitem"><svg class="ic"><use href="#i-lock"/></svg>Fechamento</div>
+      </div>
+      <div class="m-main" style="padding:28px 32px 36px;gap:22px">
+        <div class="m-hero"><div style="display:flex;flex-direction:column;gap:8px;flex:1 1 380px"><span class="eyebrow">t-02 · painel do dia · miração sagrada</span><h1 style="font-size:42px">Boa noite, Aurio</h1><p>Dez itens pedem você hoje; o mais antigo espera desde 12/08.</p></div><span class="btn"><svg class="ic"><use href="#i-circle-plus"/></svg>Registrar gasto</span><span class="btn ghost">Ver lançamentos</span></div>
+        <div class="grid g3">
+          <div class="leaf-card"><div class="band"><div class="skin" style="background:var(--tx-beija)"></div><div class="fade"></div><span class="nm">onça</span></div><div class="wq-body"><div class="wq-top"><span class="wq-n" style="color:var(--tone-pending)">7</span><span class="badge pending">A conferir</span></div><span class="wq-title">Lançamentos a conferir</span><span class="wq-virtue">Paciência e atenção.</span><span class="wq-since">desde 12/08 · 58 dias</span></div></div>
+          <div class="leaf-card"><div class="band"><div class="skin" style="background:var(--tx-flordavida);animation-duration:7s"></div><div class="fade"></div><span class="nm">gavião</span></div><div class="wq-body"><div class="wq-top"><span class="wq-n" style="color:var(--tone-attention)">2</span><span class="badge attention">Pergunta aberta</span></div><span class="wq-title">Seus registros com pergunta</span><span class="wq-virtue">Visão do alto.</span><span class="wq-since">desde 21/08 · 49 dias</span></div></div>
+          <div class="leaf-card"><div class="band"><div class="skin" style="background:var(--tx-musgo);animation-duration:11s"></div><div class="fade"></div><span class="nm">jiboia</span></div><div class="wq-body"><div class="wq-top"><span class="wq-n" style="color:var(--tone-period)">1</span><span class="badge period">Período</span></div><span class="wq-title">Período anterior ainda aberto</span><span class="wq-virtue">Troca de pele.</span><span class="wq-since">desde 01/10 · 9 dias</span></div></div>
+        </div>
+        <div class="m-row2">
+          <div class="m-panel"><h2>Trilha</h2><span class="sub">Os últimos passos registrados</span>
+            <div class="recrow" style="--row-tone:var(--tone-pending);background:transparent"><span class="avatar-leaf xs" style="--guard:var(--tx-onca);grid-row:span 2"><i></i></span><span class="d">mercado cerimônia mãe divina</span><span class="v">R$ 187,40</span><span class="m">08/10 · CDD · Aurio</span><span class="b badge pending">A conferir</span></div>
+            <div class="recrow" style="--row-tone:var(--tone-suggest);background:transparent"><span class="avatar-leaf xs" style="--guard:var(--tx-pirarucu);grid-row:span 2"><i></i></span><span class="d">PIX recebido · Maria S.</span><span class="v">R$ 150,00</span><span class="m">04/10 · extrato · par sugerido</span><span class="b badge suggest">Sugestão</span></div>
+            <div class="recrow" style="--row-tone:var(--tone-confirmed);background:transparent"><span class="avatar-leaf xs" style="--guard:var(--tx-tatu);grid-row:span 2"><i></i></span><span class="d">ração cavalos (23/02)</span><span class="v">R$ 312,00</span><span class="m">03/10 · Chácara · Joel</span><span class="b badge confirmed">Confirmado</span></div>
+            <div class="recrow" style="--row-tone:var(--tone-neutral);background:transparent"><span class="avatar-leaf xs" style="--guard:var(--tx-coruja);grid-row:span 2"><i></i></span><span class="d">estorno lanche feitio</span><span class="v">−R$ 48,00</span><span class="m">30/09 · CDD · Lia</span><span class="b badge neutral">Estornado</span></div></div>
+          <div class="m-panel" style="gap:12px"><h2>Componentes</h2>
+            <div class="chips" style="gap:8px"><span class="btn" style="min-height:38px;font-size:13px">Primária</span><span class="btn ghost" style="min-height:38px;font-size:13px">Ghost</span><span class="btn quiet" style="min-height:38px;font-size:13px">Quiet</span><span class="btn suggest" style="min-height:38px;font-size:13px">Sugestão</span><span class="btn danger" style="min-height:38px;font-size:13px">Estornar</span></div>
+            <div class="chips" style="gap:8px"><span class="badge pending">A conferir</span><span class="badge attention">Pendência</span><span class="badge period">Período</span><span class="badge confirmed">Confirmado</span><span class="badge neutral">Estornado</span><span class="badge suggest">Sugestão</span></div>
+            <div class="field"><span class="lbl">descrição</span><div class="in focus">mercado cerimônia mãe divina</div><span class="hint">Como está no comprovante</span></div>
+            <div class="notice" style="--nt:var(--tone-attention)"><svg class="ic"><use href="#i-x"/></svg><div><b>Não dá para confirmar sem categoria.</b><span class="small muted">A regra em português, com o caminho.</span></div></div>
+            <div class="bars" style="height:48px"><i style="height:40%"></i><i style="height:55%"></i><i style="height:30%"></i><i style="height:70%"></i><i style="height:48%"></i><i style="height:62%"></i><i style="height:35%"></i><i style="height:80%"></i><i class="s" style="height:28%"></i></div></div>
+        </div>
+      </div>
+    </div>
+  </div></div>
+  <div class="grid g2" style="align-items:start">
+    <div class="tw"><table class="t"><thead><tr><th>Token</th><th>Valor</th></tr></thead><tbody><tr><td><code>--sky</code></td><td class="mono" style="font-size:12px">radial-gradient(120% 80% at 55% 0%, #4A2A7A 0%, #241A4C 38%, #140F2A 100%)</td></tr><tr><td><code>--bg-app</code></td><td class="mono" style="font-size:12px">#140F2A</td></tr><tr><td><code>--bg-card</code></td><td class="mono" style="font-size:12px">rgba(24,18,52,.88)</td></tr><tr><td><code>--text-primary</code></td><td class="mono" style="font-size:12px">#F0E8FF</td></tr><tr><td><code>--text-secondary / --text-meta</code></td><td class="mono" style="font-size:12px">#CBBFE6 / #A79BC6</td></tr><tr><td><code>--text-field-label / --accent-label</code></td><td class="mono" style="font-size:12px">#F09AD0</td></tr><tr><td><code>--text-link</code></td><td class="mono" style="font-size:12px">#8BE3C9</td></tr><tr><td><code>--action-bg / --action-fg</code></td><td class="mono" style="font-size:12px">#8BE3C9 / #140F2A</td></tr><tr><td><code>--border-section</code></td><td class="mono" style="font-size:12px">rgba(139,227,201,.3)</td></tr><tr><td><code>--serie-1 / 2 / 3</code></td><td class="mono" style="font-size:12px">#8DBA74 / #5FA8E0 / #F2CF6B</td></tr><tr><td><code>--vine</code></td><td class="mono" style="font-size:12px">#5C3E75 + #8BE3C9</td></tr><tr><td><code>faixas de guardião</code></td><td class="mono" style="font-size:12px">beija  ·  flordavida  ·  musgo</td></tr></tbody></table></div>
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div class="tw"><table class="t"><thead><tr><th>Efeito de ambiente</th><th>Tempo</th><th>Regra</th></tr></thead><tbody><tr><td><b>Aurora</b></td><td class="mono">40 a 60s · desliza e muda de matiz</td><td>Duas faixas desfocadas atrás do respiro; intensidade 0 a 3 no perfil, padrão 1</td></tr><tr><td><b>Flor acesa</b></td><td class="mono">9s · respira · opacidade 14 a 26%</td><td>A estampa da flor da vida ganha brilho; nunca atrás de texto</td></tr><tr><td><b>Ponto de luz</b></td><td class="mono">3 a 7s · pisca</td><td>Partícula branca-rosa de 2 a 3px; 10 no login, 6 no Painel, 0 no campo</td></tr><tr><td><b>Abertura</b></td><td class="mono">uma vez, 1,2s, ao entrar</td><td>A flor da vida se expande do centro no login e some; reduzida vira fade</td></tr></tbody></table></div>
+      <div class="grid g2"><div class="card tight"><h4>Quando usar</h4><p class="small muted">Login e telas de cerimônia; a tela de inscrição pública, para quem chega de fora; uso curto. Não é clima para a conferência de oito horas.</p></div><div class="card tight"><h4>Cuidado</h4><p class="small muted">O violeta é o tom da Sugestão. A ação ficou no jade luminoso e a sobrancelha no rosa do ápice da merkaba, para que o roxo continue significando "o sistema propõe". Intensidade das auroras ajustável no perfil, de 0 a 3.</p></div></div>
+    </div>
+  </div>
+  <details><summary>Contraste verificado (WCAG 2) e CSS do clima</summary><div class="dbody">
+    <div class="tw"><table class="t contrast"><thead><tr><th>Par</th><th>Razão</th><th>Nível</th></tr></thead><tbody><tr><td>Texto principal / fundo</td><td class="cr">15.6 : 1</td><td>AAA</td></tr><tr><td>Texto principal / cartão</td><td class="cr">14.4 : 1</td><td>AAA</td></tr><tr><td>Apoio / cartão</td><td class="cr">9.9 : 1</td><td>AAA</td></tr><tr><td>Metadado / cartão</td><td class="cr">6.6 : 1</td><td>AA</td></tr><tr><td>Rótulo / fundo</td><td class="cr">9.0 : 1</td><td>AAA</td></tr><tr><td>Tinta / botão primário</td><td class="cr">12.3 : 1</td><td>AAA</td></tr><tr><td>Link / cartão</td><td class="cr">11.3 : 1</td><td>AAA</td></tr><tr><td>Tinta / etiqueta pending</td><td class="cr">8.8 : 1</td><td>AAA</td></tr><tr><td>Tinta / etiqueta attention</td><td class="cr">6.0 : 1</td><td>AA</td></tr><tr><td>Tinta / etiqueta period</td><td class="cr">8.5 : 1</td><td>AAA</td></tr><tr><td>Tinta / etiqueta confirmed</td><td class="cr">9.8 : 1</td><td>AAA</td></tr><tr><td>Tinta / etiqueta neutral</td><td class="cr">6.2 : 1</td><td>AA</td></tr><tr><td>Tinta / etiqueta suggest</td><td class="cr">7.6 : 1</td><td>AAA</td></tr></tbody></table></div>
+    <pre>[data-clima="miracao"] {
+  color-scheme: dark;
+  --clima-nome: "Miração sagrada";
+  --sky: radial-gradient(120% 80% at 55% 0%, #4A2A7A 0%, #241A4C 38%, #140F2A 100%);
+  --bg-app: #140F2A;
+  --bg-sub: #1E1640;
+  --bg-card: rgba(24,18,52,.88);
+  --bg-card-solid: #1C1540;
+  --bg-sunken: rgba(240,232,255,.07);
+  --bg-hover: rgba(240,232,255,.1);
+  --bg-rail: rgba(14,10,32,.66);
+  --bg-header: rgba(14,10,32,.78);
+  --bg-paper: #FBF8EF;
+  --text-primary: #F0E8FF;
+  --text-title: #F0E8FF;
+  --text-secondary: #CBBFE6;
+  --text-meta: #A79BC6;
+  --text-on-action: #140F2A;
+  --text-field-label: #F09AD0;
+  --text-link: #8BE3C9;
+  --text-link-hover: #F0E8FF;
+  --text-on-paper: #1B3324;
+  --title-on-paper: #764C29;
+  --label-on-paper: #8A6539;
+  --border-subtle: rgba(139,227,201,.16);
+  --border-section: rgba(139,227,201,.3);
+  --border-field: rgba(139,227,201,.42);
+  --border-brand: rgba(201,166,107,.6);
+  --action-bg: #8BE3C9;
+  --action-bg-hover: #A8F0DB;
+  --action-fg: #140F2A;
+  --focus-ring: #8BE3C9;
+  --accent-label: #F09AD0;
+  --accent-icon-active: #F09AD0;
+  --tone-pending: #E3A93E; --tone-pending-bg: #E3A93E; --tone-pending-fg: #140F2A; --tone-pending-soft: color-mix(in srgb, #E3A93E 16%, transparent);
+  --tone-attention: #E3734E; --tone-attention-bg: #E3734E; --tone-attention-fg: #140F2A; --tone-attention-soft: color-mix(in srgb, #E3734E 16%, transparent);
+  --tone-period: #7FB8C6; --tone-period-bg: #7FB8C6; --tone-period-fg: #140F2A; --tone-period-soft: color-mix(in srgb, #7FB8C6 16%, transparent);
+  --tone-confirmed: #A8C68F; --tone-confirmed-bg: #A8C68F; --tone-confirmed-fg: #140F2A; --tone-confirmed-soft: color-mix(in srgb, #A8C68F 16%, transparent);
+  --tone-neutral: #8A96A3; --tone-neutral-bg: #8A96A3; --tone-neutral-fg: #140F2A; --tone-neutral-soft: color-mix(in srgb, #8A96A3 16%, transparent);
+  --tone-suggest: #B49AD8; --tone-suggest-bg: #B49AD8; --tone-suggest-fg: #140F2A; --tone-suggest-soft: color-mix(in srgb, #B49AD8 16%, transparent);
+  --shadow-raised: 0 14px 34px rgba(0,0,0,.4);
+  --shadow-float: 0 30px 70px rgba(0,0,0,.45);
+  --ring-card: inset 0 0 0 1px rgba(139,227,201,.22);
+  --ring-card-hover: inset 0 0 0 1px rgba(139,227,201,.45);
+  --serie-1: #8DBA74; --serie-2: #5FA8E0; --serie-3: #F2CF6B;
+  --ramp-1: #B9DBA3; --ramp-2: #9CCB82; --ramp-3: #7FB86A; --ramp-4: #5FA35A; --ramp-5: #468A48; --ramp-6: #2F6E3A;
+  --firefly: #FFE9FF;
+  --ray: transparent;
+}</pre>
+  </div></details>
+</section>
+<section id="comparacao">
+  <span class="eyebrow">comparação</span>
+  <h2>Os seis climas lado a lado</h2>
+  <div class="tw"><table class="t"><thead><tr><th>Clima</th><th>Fundo</th><th>Ação</th><th>Sobrancelha</th><th>Ambiente</th><th>Indicação</th></tr></thead><tbody>
+    <tr><td><b>Noite</b> (base)</td><td class="mono" style="font-size:12px">#0B1F17</td><td class="mono" style="font-size:12px">#A8C68F</td><td class="mono" style="font-size:12px">#D8A949</td><td>Seiva, raio de luz, vaga-lume</td><td>Escritório, padrão</td></tr>
+    <tr><td><b>Amanhecer</b> (base)</td><td class="mono" style="font-size:12px">#E9EDD8</td><td class="mono" style="font-size:12px">#2F5D3A</td><td class="mono" style="font-size:12px">#9A5B12</td><td>Nenhum</td><td>Campo, padrão</td></tr>
+    <tr><td><b>Fogueira na noite</b></td><td class='mono' style='font-size:12px'>#1A0F0A</td><td class='mono' style='font-size:12px'>#F6E3B4</td><td class='mono' style='font-size:12px'>#F0A35A</td><td>Luz da fogueira, brasa, fumaça</td><td>Noites de trabalho longo em que o escritório prefere calor ao verde</td></tr><tr><td><b>Chuva</b></td><td class='mono' style='font-size:12px'>#0D2128</td><td class='mono' style='font-size:12px'>#B4E0CF</td><td class='mono' style='font-size:12px'>#9CC8D6</td><td>Chuva fina, gota na superfície, névoa baixa</td><td>Temporada de chuvas</td></tr><tr><td><b>Roda de cachimbo</b></td><td class='mono' style='font-size:12px'>#16100C</td><td class='mono' style='font-size:12px'>#D9C9A3</td><td class='mono' style='font-size:12px'>#B99B6A</td><td>Fumaça em fio, brasa do cachimbo, a roda</td><td>Conferência e relatórios no fim do dia</td></tr><tr><td><b>Miração sagrada</b></td><td class='mono' style='font-size:12px'>#140F2A</td><td class='mono' style='font-size:12px'>#8BE3C9</td><td class='mono' style='font-size:12px'>#F09AD0</td><td>Aurora, flor acesa, ponto de luz</td><td>Login e telas de cerimônia</td></tr>
+  </tbody></table></div>
+  <div class="grid g3">
+    <div class="card tight"><h4>O que um clima pode mudar</h4><p class="small muted">Superfície, tinta, ação, sobrancelha, fio, sombra, flor da vida, cipó, as três texturas das faixas de guardião, as três cores de série dos gráficos e a camada de ambiente.</p></div>
+    <div class="card tight"><h4>O que um clima nunca muda</h4><p class="small muted">Fontes, raios, barra de estado, as seis cores de estado e seus nomes, o significado do violeta (sugestão), a estrutura do shell, qualquer componente. Papel de documento (login, recibo) continua papel.</p></div>
+    <div class="card tight"><h4>Como entra no sistema</h4><p class="small muted">Preferência em Meu perfil, ao lado de Noite, Amanhecer e Automático. A camada de ambiente é um componente só (<code>Ambiente</code>) que lê o clima e a intensidade; cada clima declara suas partículas. Nenhum deles é padrão: o Noite segue sendo o clima do escritório.</p></div>
+  </div>
+  <div class="footer"><span>Outras Horas da Mata · climas alternativos para o Sistema de Gestão do Céu do Despertar · referência</span><span>10 de outubro de 2026</span></div>
+</section>
+</main>
+</div>
+<script>
+(function(){
+  var root=document.documentElement, btn=document.getElementById('climaToggle'), lbl=document.getElementById('climaLabel'), fx=document.getElementById('pagefx');
+  var FX={fogueira:"<div class=\"fogo\"></div><div class=\"brasa\" style=\"left:18%;animation-delay:0.0s;animation-duration:6s\"></div><div class=\"brasa\" style=\"left:24%;animation-delay:0.7s;animation-duration:7s\"></div><div class=\"brasa\" style=\"left:30%;animation-delay:1.4s;animation-duration:8s\"></div><div class=\"brasa\" style=\"left:36%;animation-delay:2.1s;animation-duration:9s\"></div><div class=\"brasa\" style=\"left:42%;animation-delay:2.8s;animation-duration:6s\"></div><div class=\"brasa\" style=\"left:48%;animation-delay:3.5s;animation-duration:7s\"></div><div class=\"brasa\" style=\"left:54%;animation-delay:4.2s;animation-duration:8s\"></div><div class=\"brasa\" style=\"left:60%;animation-delay:4.9s;animation-duration:9s\"></div><div class=\"brasa\" style=\"left:66%;animation-delay:5.6s;animation-duration:6s\"></div><div class=\"brasa\" style=\"left:72%;animation-delay:6.3s;animation-duration:7s\"></div><div class=\"brasa\" style=\"left:78%;animation-delay:7.0s;animation-duration:8s\"></div><div class=\"fumo\" style=\"left:30%;animation-delay:-8s\"></div><div class=\"fumo\" style=\"left:60%;animation-delay:-20s\"></div>",chuva:"<div class=\"chuva\"></div><div class=\"nevoa\"></div><div class=\"gota\" style=\"left:22%;top:38%\"></div><div class=\"gota\" style=\"left:70%;top:66%;animation-delay:2.4s\"></div><div class=\"gota\" style=\"left:48%;top:80%;animation-delay:4.1s\"></div>",cachimbo:"<div class=\"roda\"><i style=\"--a:0deg\"></i><i style=\"--a:30deg\"></i><i style=\"--a:60deg\"></i><i style=\"--a:90deg\"></i><i style=\"--a:120deg\"></i><i style=\"--a:150deg\"></i><i style=\"--a:180deg\"></i><i style=\"--a:210deg\"></i><i style=\"--a:240deg\"></i><i style=\"--a:270deg\"></i><i style=\"--a:300deg\"></i><i style=\"--a:330deg\"></i></div><div class=\"fio\" style=\"left:26px;animation-delay:-4s\"></div><div class=\"fio\" style=\"left:40px;animation-delay:-14s;animation-duration:26s\"></div><div class=\"brasinha\"></div>",miracao:"<div class=\"flor\"></div><div class=\"aurora\" style=\"top:4%\"></div><div class=\"aurora\" style=\"top:40%;animation-delay:-24s;animation-duration:60s\"></div><div class=\"estrela\" style=\"left:2%;top:5%;animation-delay:0.0s\"></div><div class=\"estrela\" style=\"left:39%;top:58%;animation-delay:0.9s\"></div><div class=\"estrela\" style=\"left:76%;top:21%;animation-delay:1.8s\"></div><div class=\"estrela\" style=\"left:16%;top:74%;animation-delay:2.7s\"></div><div class=\"estrela\" style=\"left:53%;top:37%;animation-delay:3.6s\"></div><div class=\"estrela\" style=\"left:90%;top:90%;animation-delay:4.5s\"></div><div class=\"estrela\" style=\"left:30%;top:53%;animation-delay:5.4s\"></div><div class=\"estrela\" style=\"left:67%;top:16%;animation-delay:6.3s\"></div>"};
+  function current(){ var c=root.getAttribute('data-clima'); if(c) return c; var t=root.getAttribute('data-theme'); if(t==='dark') return 'noite'; if(t==='light') return 'amanhecer'; return (window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches)?'noite':'amanhecer'; }
+  function paint(){ var c=current(); lbl.textContent=c==='noite'?'Noite · ver Amanhecer':(c==='amanhecer'?'Amanhecer · ver Noite':c.charAt(0).toUpperCase()+c.slice(1)+' · voltar ao Noite'); fx.innerHTML=FX[c]||''; document.querySelectorAll('#pick button').forEach(function(b){ b.setAttribute('aria-pressed', b.getAttribute('data-pick')===c?'true':'false'); }); }
+  btn.addEventListener('click',function(){ var c=current(); var n=c==='noite'?'amanhecer':'noite'; root.setAttribute('data-clima',n); paint(); });
+  document.querySelectorAll('#pick button').forEach(function(b){ b.addEventListener('click',function(){ root.setAttribute('data-clima',b.getAttribute('data-pick')); paint(); }); });
+  paint();
+  function fit(){ document.querySelectorAll('.mock[data-w]').forEach(function(m){ var w=+m.getAttribute('data-w'), avail=m.parentElement.clientWidth, s=Math.min(1,avail/w); m.style.transform='scale('+s+')'; m.parentElement.style.height=(m.offsetHeight*s)+'px'; }); }
+  window.addEventListener('resize',fit); window.addEventListener('load',fit); fit(); setTimeout(fit,600);
+})();
+</script>
+
+</body>
+</html>
