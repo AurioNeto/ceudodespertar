@@ -394,3 +394,61 @@ describe('política de 401', () => {
     expect(fetchFalso).toHaveBeenCalledTimes(1);
   });
 });
+
+describe('espera pedida pela API', () => {
+  function resposta429(corpo: Record<string, unknown>, cabecalhos: Record<string, string> = {}): Response {
+    return new Response(JSON.stringify({ erro: 'CONVITE_REENVIADO_RECENTEMENTE', correlacaoId: 'corr-429', ...corpo }), {
+      status: 429,
+      headers: { 'Content-Type': 'application/json', ...cabecalhos },
+    });
+  }
+
+  it('lê a espera do cabeçalho Retry-After no 429', async () => {
+    const { cliente } = montar(resposta429({ detalhes: { retryAfterSegundos: 10 } }, { 'Retry-After': '42' }));
+
+    const erro = await capturar(cliente.requisitar({ metodo: 'POST', caminho: '/x' }));
+
+    expect(erro).toBeInstanceOf(ErroDaApi);
+    expect((erro as ErroDaApi).codigo).toBe('CONVITE_REENVIADO_RECENTEMENTE');
+    expect((erro as ErroDaApi).esperaEmSegundos).toBe(42);
+  });
+
+  it('sem Retry-After, usa detalhes.retryAfterSegundos arredondado para cima', async () => {
+    const { cliente } = montar(resposta429({ detalhes: { retryAfterSegundos: 29.2 } }));
+
+    const erro = await capturar(cliente.requisitar({ metodo: 'POST', caminho: '/x' }));
+
+    expect((erro as ErroDaApi).esperaEmSegundos).toBe(30);
+  });
+
+  it('Retry-After fora do formato de segundos cai nos detalhes', async () => {
+    const { cliente } = montar(
+      resposta429({ detalhes: { retryAfterSegundos: 15 } }, { 'Retry-After': 'Wed, 21 Oct 2026 07:28:00 GMT' }),
+    );
+
+    const erro = await capturar(cliente.requisitar({ metodo: 'POST', caminho: '/x' }));
+
+    expect((erro as ErroDaApi).esperaEmSegundos).toBe(15);
+  });
+
+  it('429 sem espera em nenhum dos dois fica sem espera', async () => {
+    const { cliente } = montar(resposta429({}));
+
+    const erro = await capturar(cliente.requisitar({ metodo: 'POST', caminho: '/x' }));
+
+    expect((erro as ErroDaApi).esperaEmSegundos).toBeNull();
+  });
+
+  it('só o 429 carrega espera, mesmo que outro status traga Retry-After', async () => {
+    const { cliente } = montar(
+      new Response(JSON.stringify({ erro: 'SERVICO_INDISPONIVEL', correlacaoId: 'c', detalhes: { retryAfterSegundos: 5 } }), {
+        status: 503,
+        headers: { 'Content-Type': 'application/json', 'Retry-After': '5' },
+      }),
+    );
+
+    const erro = await capturar(cliente.requisitar({ metodo: 'GET', caminho: '/x' }));
+
+    expect((erro as ErroDaApi).esperaEmSegundos).toBeNull();
+  });
+});

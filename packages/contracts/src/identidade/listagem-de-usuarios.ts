@@ -5,7 +5,7 @@ import type { GrupoResumido, SituacaoUsuario } from './tipos.js';
 export const LIMITE_PADRAO_DA_LISTAGEM_DE_USUARIOS = 50;
 export const LIMITE_MAXIMO_DA_LISTAGEM_DE_USUARIOS = 100;
 const TAMANHO_MAXIMO_DO_CURSOR = 512;
-const TAMANHO_MAXIMO_DA_BUSCA = 200;
+export const TAMANHO_MAXIMO_DA_BUSCA = 200;
 
 export const SITUACOES_DE_USUARIO = ['ATIVO', 'CONVITE_PENDENTE', 'SUSPENSO', 'REVOGADO'] as const satisfies readonly SituacaoUsuario[];
 
