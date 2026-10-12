@@ -11,7 +11,9 @@ export function CarrosselDeCerimonias() {
   return (
     <div
       style={{
-        background: 'var(--bg-card)',
+        background: 'var(--bg-glass)',
+        backdropFilter: 'var(--glass)',
+        WebkitBackdropFilter: 'var(--glass)',
         border: 'var(--border-hairline)',
         borderRadius: 'var(--leaf-lg)',
         overflow: 'hidden',

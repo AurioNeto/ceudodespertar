@@ -26,7 +26,9 @@ export function DataTable<R extends Record<string, ReactNode>>({
         border: 'var(--border-hairline)',
         borderRadius: 'var(--leaf-lg)',
         overflow: 'hidden',
-        background: 'var(--bg-card)',
+        background: 'var(--bg-glass)',
+        backdropFilter: 'var(--glass)',
+        WebkitBackdropFilter: 'var(--glass)',
         ...style,
       }}
     >

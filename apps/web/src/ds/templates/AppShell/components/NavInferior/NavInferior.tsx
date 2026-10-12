@@ -23,7 +23,15 @@ export function NavInferior({
   onNavigate,
 }: NavInferiorProps) {
   return (
-    <nav style={{ display: 'flex', background: 'var(--bg-card)', borderTop: '1px solid var(--color-line)' }}>
+    <nav
+      style={{
+        display: 'flex',
+        background: 'var(--bg-glass)',
+        backdropFilter: 'var(--glass)',
+        WebkitBackdropFilter: 'var(--glass)',
+        borderTop: '1px solid var(--color-line)',
+      }}
+    >
       {naBarra.map((item) => (
         <ItemDaBarra key={item.id} item={item} active={item.id === activeId} onNavigate={onNavigate} />
       ))}

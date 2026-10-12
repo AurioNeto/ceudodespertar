@@ -15,6 +15,7 @@
   --radius-pill: 999px;  /* só em badge de estado — nunca estrutural */
 
   --border-hairline: 1px solid var(--color-line);
+  --glass: blur(16px) saturate(1.15);
   --edge-state: 3px;     /* barra de estado à esquerda — a assinatura do sistema */
 
   --leaf-xs:   0 8px 0 8px;
@@ -66,5 +67,11 @@
   :root {
     --motion-fast: 0ms; /* @kind other */
     --motion: 0ms;      /* @kind other */
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  :root {
+    --glass: none;
   }
 }

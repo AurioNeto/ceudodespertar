@@ -19,7 +19,9 @@ export function TwoAxisGuard({
   return (
     <div
       style={{
-        background: 'var(--bg-card)',
+        background: 'var(--bg-glass)',
+        backdropFilter: 'var(--glass)',
+        WebkitBackdropFilter: 'var(--glass)',
         border: '1px solid var(--color-neutral-border)',
         borderTop: 'var(--edge-state) solid var(--color-neutral)',
         borderRadius: 'var(--leaf-md)',

@@ -17,7 +17,9 @@ export function Cartao({
     <Elemento
       aria-label={rotuloAcessivel}
       style={{
-        background: 'var(--bg-card)',
+        background: 'var(--bg-glass)',
+        backdropFilter: 'var(--glass)',
+        WebkitBackdropFilter: 'var(--glass)',
         border: 'var(--border-hairline)',
         borderRadius: 'var(--leaf-lg)',
         padding: campo ? '15px 16px' : '18px 20px',

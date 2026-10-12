@@ -15,7 +15,9 @@ export function GraficoEstoque() {
   return (
     <div
       style={{
-        background: 'var(--bg-card)',
+        background: 'var(--bg-glass)',
+        backdropFilter: 'var(--glass)',
+        WebkitBackdropFilter: 'var(--glass)',
         border: 'var(--border-hairline)',
         borderRadius: 'var(--leaf-lg)',
         padding: '16px 20px 20px',

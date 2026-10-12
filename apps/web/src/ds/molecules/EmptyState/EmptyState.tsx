@@ -14,7 +14,9 @@ export function EmptyState({ title, description, action, style }: EmptyStateProp
       style={{
         textAlign: 'center',
         padding: '44px 24px',
-        background: 'var(--bg-card)',
+        background: 'var(--bg-glass)',
+        backdropFilter: 'var(--glass)',
+        WebkitBackdropFilter: 'var(--glass)',
         border: '1px dashed var(--color-line-gold)',
         borderRadius: 'var(--leaf-lg)',
         position: 'relative',
