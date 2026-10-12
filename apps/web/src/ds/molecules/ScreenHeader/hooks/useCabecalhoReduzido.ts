@@ -1,10 +1,11 @@
-import { useEffect, useRef, useState } from 'react';
+import { type FocusEvent, useEffect, useRef, useState } from 'react';
 
 const QUASE_INTEIRA = 0.99;
 
 export function useCabecalhoReduzido() {
   const sentinela = useRef<HTMLDivElement>(null);
-  const [reduzido, setReduzido] = useState(false);
+  const [sentinelaFora, setSentinelaFora] = useState(false);
+  const [focoNoCabecalho, setFocoNoCabecalho] = useState(false);
 
   useEffect(() => {
     const alvo = sentinela.current;
@@ -12,8 +13,8 @@ export function useCabecalhoReduzido() {
     const observador = new IntersectionObserver(
       ([entrada]) => {
         if (!entrada) return;
-        if (!entrada.isIntersecting) setReduzido(true);
-        else if (entrada.intersectionRatio > QUASE_INTEIRA) setReduzido(false);
+        if (!entrada.isIntersecting) setSentinelaFora(true);
+        else if (entrada.intersectionRatio > QUASE_INTEIRA) setSentinelaFora(false);
       },
       { threshold: [0, 1] },
     );
@@ -21,5 +22,12 @@ export function useCabecalhoReduzido() {
     return () => observador.disconnect();
   }, []);
 
-  return { sentinela, reduzido };
+  const aoFocar = (evento: FocusEvent<HTMLElement>) => setFocoNoCabecalho(!(evento.target instanceof HTMLHeadingElement));
+  const aoDesfocar = (evento: FocusEvent<HTMLElement>) => {
+    const destino = evento.relatedTarget;
+    const focoFicaNoCabecalho = destino instanceof Node && evento.currentTarget.contains(destino);
+    if (!focoFicaNoCabecalho) setFocoNoCabecalho(false);
+  };
+
+  return { sentinela, reduzido: sentinelaFora && !focoNoCabecalho, aoFocar, aoDesfocar };
 }

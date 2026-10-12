@@ -75,5 +75,8 @@
   :root {
     --glass: none;
     --glass-leve: none;
+    --bg-card: var(--color-surface-solid);
+    --bg-glass: var(--color-surface-solid);
+    --bg-rail: var(--color-surface-solid);
   }
 }

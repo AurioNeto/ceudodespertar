@@ -95,7 +95,7 @@ export function AppShell({
           ref={foco.principal}
           tabIndex={-1}
           className="cdd-papel-estampado"
-          style={{ flex: 1, minWidth: 0, minHeight: 0, overflow: 'auto' }}
+          style={{ flex: 1, minWidth: 0, minHeight: 0, overflow: 'auto', overflowAnchor: 'none' }}
         >
           {children}
         </main>
