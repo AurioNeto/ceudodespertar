@@ -15,6 +15,8 @@ export interface ScreenHeaderProps {
 
 const FOLGA_PARA_REDUZIR = 120;
 
+const identificadorDoCodigo = (code: string) => (code.split(' · ')[0] ?? code).trim();
+
 export function ScreenHeader({ code, title, subtitle, actions, density = 'office', style }: ScreenHeaderProps) {
   const { sentinela, reduzido } = useCabecalhoReduzido();
   const campo = density === 'field';
@@ -62,7 +64,7 @@ export function ScreenHeader({ code, title, subtitle, actions, density = 'office
                 marginBottom: reduzido ? 0 : 5,
               }}
             >
-              {code}
+              {reduzido ? identificadorDoCodigo(code) : code}
             </div>
           ) : null}
           {reduzido && code ? (
