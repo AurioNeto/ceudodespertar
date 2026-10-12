@@ -9,7 +9,7 @@ export const VARIANTS = {
     color: 'var(--color-suggest)',
     border: '1.5px solid var(--color-suggest-border)',
   },
-  onChrome: { background: 'rgba(255,255,255,.12)', color: '#FFFFFF', border: '1.5px solid rgba(255,255,255,.28)' },
+  onChrome: { background: 'var(--chrome-overlay)', color: 'var(--text-on-chrome)', border: '1.5px solid var(--chrome-border)' },
 } satisfies Record<string, CSSProperties>;
 
 export const HOVER = {
@@ -17,5 +17,5 @@ export const HOVER = {
   ghost: 'var(--color-royal-soft)',
   quiet: 'var(--color-line)',
   suggest: 'var(--color-suggest-border)',
-  onChrome: 'rgba(255,255,255,.2)',
+  onChrome: 'var(--chrome-overlay-strong)',
 } satisfies Record<keyof typeof VARIANTS, string>;

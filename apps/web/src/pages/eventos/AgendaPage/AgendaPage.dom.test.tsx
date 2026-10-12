@@ -112,12 +112,12 @@ describe('AgendaPage: calendário do mês', () => {
     expect(chipDoCalendario(container, 'Mãe Divina').title).toBe('Mãe Divina · 20:00 às 04:00');
   });
 
-  it('chip de concentração — usa a cor do tipo, com texto branco', async () => {
+  it('chip de concentração — usa a cor do tipo, com a tinta inversa', async () => {
     const { container } = await montar(<AgendaPage />);
 
     const chip = chipDoCalendario(container, 'Mãe Divina');
 
-    expect([chip.style.background, chip.style.color]).toEqual(['oklch(0.52 0.13 265)', 'rgb(255, 255, 255)']);
+    expect([chip.style.background, chip.style.color]).toEqual(['oklch(0.52 0.13 265)', 'var(--color-ink-inverse)']);
   });
 
   it('hoje (02/09/2026, do relógio da demonstração) — só o dia 2 vem destacado', async () => {
