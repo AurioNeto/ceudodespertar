@@ -1,5 +1,6 @@
 import { Icon } from '../../../../atoms/Icon';
 import type { Density } from '../../../../fundacao/densidade';
+import { rotuloVersalete } from '../../../../fundacao/estilos';
 
 export interface BarraDeContextoProps {
   institution: string;
@@ -18,20 +19,16 @@ export function BarraDeContexto({ institution, unit, user, onUnitClick, densidad
         display: 'flex',
         alignItems: 'center',
         gap: 12,
-        background: field ? 'var(--bg-rail)' : 'var(--bg-card)',
+        background: 'var(--bg-card)',
         borderBottom: '1px solid var(--color-line)',
-        borderTop: field ? '2px solid var(--color-royal)' : 0,
         padding: field ? '11px 16px' : '0 20px',
-        minHeight: field ? 56 : 52,
+        minHeight: field ? 60 : 56,
         flex: '0 0 auto',
       }}
     >
       <span
         style={{
-          font: 'var(--text-label)',
-          letterSpacing: 'var(--tracking-label)',
-          textTransform: 'uppercase',
-          color: 'var(--text-field-label)',
+          ...rotuloVersalete,
         }}
       >
         {institution}
@@ -45,7 +42,7 @@ export function BarraDeContexto({ institution, unit, user, onUnitClick, densidad
           gap: 6,
           font: '600 13px var(--font-body)',
           padding: '5px 10px',
-          borderRadius: 'var(--radius-sm)',
+          borderRadius: 'var(--leaf-xs)',
           background: 'var(--color-royal-soft)',
           color: 'var(--color-royal-ink)',
         }}

@@ -31,10 +31,10 @@ export function NavItem({
         textAlign: 'left',
         minHeight: densidade === 'field' ? 'var(--target-field)' : 'var(--target-office)',
         padding: '0 10px',
-        borderRadius: 'var(--radius-sm)',
+        borderRadius: 'var(--leaf-sm)',
         color: active ? 'var(--color-royal-deep)' : 'var(--text-primary)',
         background: active ? 'var(--bg-card)' : hot ? 'var(--bg-hover)' : 'transparent',
-        boxShadow: active ? 'var(--shadow-raised)' : 'none',
+        boxShadow: active ? 'var(--ring-card)' : 'none',
         font: active ? '600 13.5px var(--font-body)' : '400 13.5px var(--font-body)',
         position: 'relative',
         overflow: 'hidden',
@@ -53,7 +53,7 @@ export function NavItem({
           }}
         />
       ) : null}
-      <Icon name={item.icon} size={17} color={active ? 'var(--color-royal)' : 'var(--text-meta)'} />
+      <Icon name={item.icon} size={17} color={active ? 'var(--color-label)' : 'var(--text-meta)'} />
       <span style={{ flex: 1 }}>{item.label}</span>
       <SeloDeContagem count={item.count} />
     </button>

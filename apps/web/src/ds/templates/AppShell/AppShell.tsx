@@ -63,7 +63,7 @@ export function AppShell({
       data-density={density}
       style={{
         display: 'grid',
-        gridTemplateColumns: field ? '1fr' : '232px 1fr',
+        gridTemplateColumns: field ? '1fr' : '240px 1fr',
         height: '100%',
         minHeight: 0,
         background: 'var(--bg-app)',
