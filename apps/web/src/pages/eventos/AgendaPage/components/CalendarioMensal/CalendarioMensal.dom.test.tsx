@@ -54,7 +54,7 @@ describe('CalendarioMensal: cabeçalho e grade', () => {
 
     const celulas = todos<HTMLDivElement>(container, 'div[style*="min-height: 96px"]');
 
-    expect([celulas[0]!.style.background, celulas[2]!.style.background]).toEqual(['var(--bg-sunken)', 'var(--bg-card)']);
+    expect([celulas[0]!.style.background, celulas[2]!.style.background]).toEqual(['var(--bg-sunken)', 'var(--bg-card-solid)']);
   });
 
   it('última coluna da semana — fica sem borda à direita, as outras têm o fio', async () => {

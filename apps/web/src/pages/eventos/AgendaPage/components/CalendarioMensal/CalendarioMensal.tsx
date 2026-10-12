@@ -55,7 +55,7 @@ export function CalendarioMensal({ ano, mes, trabalhos, onAbrir }: CalendarioMen
                 padding: '7px 8px',
                 borderRight: (i + 1) % 7 === 0 ? 0 : 'var(--border-hairline)',
                 borderBottom: 'var(--border-hairline)',
-                background: dia ? 'var(--bg-card)' : 'var(--bg-sunken)',
+                background: dia ? 'var(--bg-card-solid)' : 'var(--bg-sunken)',
                 display: 'flex',
                 flexDirection: 'column',
                 gap: 5,

@@ -43,6 +43,8 @@ export function DevolucoesPage() {
           flexDirection: 'column',
           gap: campo ? 14 : 18,
           maxWidth: campo ? undefined : 980,
+          width: '100%',
+          margin: '0 auto',
           minWidth: 0,
         }}
       >
