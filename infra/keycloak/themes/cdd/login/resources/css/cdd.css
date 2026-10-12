@@ -1,42 +1,96 @@
-/* Tokens espelhados de apps/web/src/ds/fundacao/tokens (colors, typography, spacing).
-   As webfonts do front vêm do Google Fonts; aqui a pilha é a mesma, só que sem
-   requisição externa: Archivo/Public Sans se estiverem instaladas, senão o
-   sistema. */
-:root {
-  --color-paper: #faf7f0;
-  --color-surface: #ffffff;
-  --color-surface-sunken: #f0f1f4;
-  --color-surface-warm: #f3eee2;
-  --color-line: #dedfe6;
-  --color-line-strong: #c6c9d6;
-  --color-line-gold: #e3d9c5;
-  --color-ink: #22304e;
-  --color-ink-muted: #4c5670;
-  --color-ink-inverse: #ffffff;
-  --color-ink-brand: #764c29;
-  --color-label: #8a6539;
-  --color-royal: #1a3da8;
-  --color-royal-hover: #14307f;
-  --color-royal-soft: #e9edfa;
-  --color-royal-border: #c2cfef;
-  --color-pending: #8f5714;
-  --color-pending-soft: #f8ecd9;
-  --color-pending-border: #e4cda4;
-  --color-confirmed: #1b6e40;
-  --color-confirmed-soft: #e2f0e7;
-  --color-confirmed-border: #b6d8c3;
-  --color-attention: #9e3520;
-  --color-attention-soft: #f8e5df;
-  --color-attention-border: #e6c4b8;
+/* Céu do Despertar — tema de login do Keycloak, clima Força da Mata.
+   Espelho fixo da Noite de apps/web/src/ds/fundacao/tokens/colors.css (o
+   login não enxerga a escolha de clima do app). Fontes hospedadas no tema. */
 
-  --font-display: "Archivo", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+@font-face {
+  font-family: "Alegreya";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("../fonts/alegreya-700-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "Alegreya Sans SC";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("../fonts/alegreya-sans-sc-700-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "Public Sans";
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url("../fonts/public-sans-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+:root {
+  color-scheme: dark;
+
+  --color-paper:            #0B1F17;
+  --color-surface:          #0E241A;
+  --color-surface-sunken:   rgba(168,198,143,.07);
+  --color-surface-rail:     rgba(8,22,16,.62);
+  --color-surface-warm:     #10301F;
+  --color-line:             rgba(168,198,143,.14);
+  --color-line-strong:      rgba(168,198,143,.26);
+  --color-line-gold:        rgba(201,166,107,.6);
+  --color-ink:              #EDE6D3;
+  --color-ink-muted:        #C9D1BD;
+  --color-ink-subtle:       #B5BFA8;
+  --color-ink-inverse:      #0B1F17;
+  --color-ink-brand:        #EDE6D3;
+  --color-label:            #D8A949;
+  --color-royal:            #A8C68F;
+  --color-royal-hover:      #BCD6A3;
+  --color-royal-deep:       #BCD6A3;
+  --color-royal-ink:        #BCD6A3;
+  --color-royal-soft:       rgba(168,198,143,.14);
+  --color-royal-border:     rgba(168,198,143,.38);
+  --color-suggest:          #B49AD8;
+  --color-suggest-hover:    #C7B2E4;
+  --color-suggest-soft:     rgba(180,154,216,.14);
+  --color-suggest-border:   rgba(180,154,216,.4);
+  --color-pending:          #E3A93E;
+  --color-pending-soft:     rgba(227,169,62,.14);
+  --color-pending-border:   rgba(227,169,62,.4);
+  --color-confirmed:        #A8C68F;
+  --color-confirmed-soft:   rgba(168,198,143,.14);
+  --color-confirmed-border: rgba(168,198,143,.4);
+  --color-attention:        #E3734E;
+  --color-attention-soft:   rgba(227,115,78,.14);
+  --color-attention-border: rgba(227,115,78,.4);
+  --color-period:           #7FB8C6;
+  --color-period-soft:      rgba(127,184,198,.14);
+  --color-period-border:    rgba(127,184,198,.4);
+  --color-neutral:          #8A96A3;
+  --color-neutral-soft:     rgba(138,150,163,.14);
+  --color-neutral-border:   rgba(138,150,163,.4);
+
+  --border-field:           rgba(168,198,143,.38);
+  --bg-hover:               rgba(168,198,143,.1);
+  --shadow-raised:          0 14px 34px rgba(0,0,0,.35);
+  --bg-paper:               #FBF8EF;
+  --text-on-paper:          #1B3324;
+  --title-on-paper:         #764C29;
+  --label-on-paper:         #8A6539;
+  --border-brand:           var(--color-line-gold);
+
+  --font-display: "Alegreya", Georgia, "Times New Roman", serif;
+  --font-label: "Alegreya Sans SC", "Alegreya Sans", sans-serif;
   --font-body: "Public Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 
-  --radius-sm: 6px;
-  --radius: 10px;
-  --radius-lg: 14px;
+  --leaf-xs: 0 8px 0 8px;
+  --leaf-sm: 0 14px 0 14px;
+  --leaf-md: 0 20px 0 20px;
+  --leaf-lg: 0 28px 0 28px;
+  --leaf-xl: 0 36px 0 36px;
   --target: 48px;
-  --shadow-raised: 0 1px 2px rgba(34, 48, 78, 0.07), 0 6px 16px -8px rgba(34, 48, 78, 0.2);
   --estampa-flor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='166.277' viewBox='0 0 96 166.277'%3E%3Cg fill='none' stroke='%23E3D9C5' stroke-width='1' stroke-opacity='0.6'%3E%3Ccircle cx='48' cy='-83.138' r='96'/%3E%3Ccircle cx='0' cy='0' r='96'/%3E%3Ccircle cx='96' cy='0' r='96'/%3E%3Ccircle cx='-48' cy='83.138' r='96'/%3E%3Ccircle cx='48' cy='83.138' r='96'/%3E%3Ccircle cx='144' cy='83.138' r='96'/%3E%3Ccircle cx='0' cy='166.277' r='96'/%3E%3Ccircle cx='96' cy='166.277' r='96'/%3E%3Ccircle cx='48' cy='249.415' r='96'/%3E%3C/g%3E%3C/svg%3E");
 
   --pf-v5-global--FontFamily--text: var(--font-body);
@@ -45,8 +99,8 @@
   --pf-v5-global--primary-color--200: var(--color-royal-hover);
   --pf-v5-global--link--Color: var(--color-royal);
   --pf-v5-global--link--Color--hover: var(--color-royal-hover);
-  --pf-v5-global--BorderRadius--sm: var(--radius-sm);
-  --pf-v5-global--BorderColor--100: var(--color-line-strong);
+  --pf-v5-global--BorderRadius--sm: 14px;
+  --pf-v5-global--BorderColor--100: var(--border-field);
   --pf-v5-global--Color--100: var(--color-ink);
   --pf-v5-global--Color--200: var(--color-ink-muted);
   --pf-v5-global--BackgroundColor--100: var(--color-surface);
@@ -81,8 +135,8 @@ body.cdd-corpo {
   flex-direction: column;
   justify-content: space-between;
   padding: 44px;
-  background: var(--color-surface-warm);
-  border-right: 1px solid var(--color-line-gold);
+  background: var(--bg-paper);
+  border-right: 1px solid var(--border-brand);
 }
 
 .cdd-marca__flor {
@@ -100,11 +154,23 @@ body.cdd-corpo {
   position: relative;
 }
 
+.cdd-marca__nome {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.cdd-marca__merkaba {
+  flex: none;
+  display: block;
+  width: 56px;
+  height: 66px;
+}
+
 .cdd-marca__wordmark {
-  font: 800 34px/1.02 var(--font-display);
+  font: 700 36px/1.02 var(--font-display);
   letter-spacing: 0.01em;
-  text-transform: uppercase;
-  color: var(--color-ink-brand);
+  color: var(--title-on-paper);
 }
 
 .cdd-marca__quebra {
@@ -113,18 +179,17 @@ body.cdd-corpo {
 
 .cdd-marca__descritor {
   margin-top: 12px;
-  font: 400 11px/1.3 var(--font-body);
+  font: 700 12px/1.3 var(--font-label);
   letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--color-label);
+  color: var(--label-on-paper);
 }
 
 .cdd-marca__frase {
   max-width: 30ch;
   margin: 0;
   padding-top: 18px;
-  border-top: 1px solid var(--color-line-gold);
-  color: var(--color-ink-muted);
+  border-top: 1px solid var(--border-brand);
+  color: var(--text-on-paper);
 }
 
 .cdd-conteudo {
@@ -141,7 +206,7 @@ body.cdd-corpo {
 
 .cdd-titulo {
   margin: 0;
-  font: 700 27px/1.15 var(--font-display);
+  font: 700 30px/1.1 var(--font-display);
   letter-spacing: -0.02em;
   color: var(--color-ink-brand);
 }
@@ -179,7 +244,7 @@ body.cdd-corpo {
   padding: 12px 14px;
   border: 1px solid var(--color-line-strong);
   border-left-width: 3px;
-  border-radius: var(--radius);
+  border-radius: var(--leaf-md);
   background: var(--color-surface-sunken);
   font-size: 14px;
 }
@@ -214,7 +279,7 @@ body.cdd-corpo {
   background: var(--color-royal-soft);
   border-color: var(--color-royal-border);
   border-left-color: var(--color-royal);
-  color: var(--color-royal-hover);
+  color: var(--color-royal);
 }
 
 .cdd-rodape {
@@ -233,24 +298,20 @@ body.cdd-corpo {
 }
 
 .cdd-cartao .pf-v5-c-form__label-text {
-  font: 400 11px/1.3 var(--font-body);
+  font: 700 12px/1.3 var(--font-label);
   letter-spacing: 0.14em;
-  text-transform: uppercase;
   color: var(--color-label);
 }
 
 .cdd-cartao .pf-v5-c-form-control {
   height: var(--target);
-  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-field);
+  border-radius: var(--leaf-sm);
   background: var(--color-surface);
-  --pf-v5-c-form-control--BorderColor: var(--color-line-strong);
-  --pf-v5-c-form-control--BorderRadius: var(--radius-sm);
-  --pf-v5-c-form-control--BorderBottomColor: var(--color-line-strong);
-  --pf-v5-c-form-control--hover--BorderBottomColor: var(--color-line-strong);
-}
-
-.cdd-cartao .pf-v5-c-form-control {
-  border: 1px solid var(--color-line-strong);
+  --pf-v5-c-form-control--BorderColor: var(--border-field);
+  --pf-v5-c-form-control--BorderBottomColor: var(--border-field);
+  --pf-v5-c-form-control--hover--BorderBottomColor: var(--border-field);
+  --pf-v5-c-form-control--BackgroundColor: var(--color-surface);
 }
 
 .cdd-cartao .pf-v5-c-form-control::before,
@@ -260,16 +321,23 @@ body.cdd-corpo {
 
 .cdd-cartao .pf-v5-c-form-control:focus-within {
   border-color: var(--color-royal);
-  box-shadow: 0 0 0 1px var(--color-royal);
+  box-shadow: 0 0 0 3px var(--color-royal-soft);
 }
 
 .cdd-cartao .pf-v5-c-form-control.pf-m-error {
   border-color: var(--color-attention);
-  box-shadow: none;
+  box-shadow: 0 0 0 3px var(--color-attention-soft);
 }
 
 .cdd-cartao .pf-v5-c-form-control input {
+  height: 100%;
   background: transparent;
+  font: 400 16px/1.4 var(--font-body);
+  color: var(--color-ink);
+}
+
+.cdd-cartao .pf-v5-c-form-control input::placeholder {
+  color: var(--color-ink-subtle);
 }
 
 .cdd-cartao .pf-v5-c-form-control input:focus-visible {
@@ -277,13 +345,13 @@ body.cdd-corpo {
 }
 
 .cdd-cartao .pf-v5-c-input-group__item.pf-m-fill .pf-v5-c-form-control {
-  border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+  border-radius: 0 0 0 14px;
 }
 
 .cdd-cartao .pf-v5-c-button.pf-m-control {
-  border: 1px solid var(--color-line-strong);
+  border: 1px solid var(--border-field);
   border-left-width: 0;
-  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  border-radius: 0 14px 0 0;
   background: var(--color-surface);
   color: var(--color-ink-muted);
 }
@@ -292,19 +360,9 @@ body.cdd-corpo {
   display: none;
 }
 
-.cdd-cartao .pf-v5-c-form-control input {
-  height: 100%;
-  font: 400 16px/1.4 var(--font-body);
-  color: var(--color-ink);
-}
-
-.cdd-cartao .pf-v5-c-form-control.pf-m-error {
-  border-color: var(--color-attention);
-}
-
 .cdd-cartao .pf-v5-c-button {
   min-height: var(--target);
-  border-radius: var(--radius-sm);
+  border-radius: var(--leaf-md);
   font: 600 15px/1.3 var(--font-body);
 }
 
@@ -319,8 +377,12 @@ body.cdd-corpo {
 
 .cdd-cartao .pf-v5-c-button.pf-m-secondary {
   border: 1px solid var(--color-royal-border);
-  background: var(--color-surface);
+  background: transparent;
   color: var(--color-royal);
+}
+
+.cdd-cartao .pf-v5-c-button.pf-m-secondary::after {
+  display: none;
 }
 
 .cdd-cartao a.pf-v5-c-button {
@@ -342,6 +404,16 @@ body.cdd-corpo {
   color: var(--color-ink-inverse);
 }
 
+.cdd-cartao .pf-v5-c-check__label {
+  color: var(--color-ink-muted);
+}
+
+.cdd-cartao .pf-v5-c-check__input {
+  accent-color: var(--color-royal);
+  background: var(--color-surface);
+  border: 1px solid var(--border-field);
+}
+
 :focus-visible {
   outline: 2.5px solid var(--color-royal);
   outline-offset: 2px;
@@ -356,11 +428,16 @@ body.cdd-corpo {
   .cdd-marca {
     padding: 20px 18px;
     border-right: 0;
-    border-bottom: 1px solid var(--color-line-gold);
+    border-bottom: 1px solid var(--border-brand);
+  }
+
+  .cdd-marca__merkaba {
+    width: 30px;
+    height: 35px;
   }
 
   .cdd-marca__wordmark {
-    font-size: 17px;
+    font-size: 16px;
     line-height: 1.05;
   }
 
