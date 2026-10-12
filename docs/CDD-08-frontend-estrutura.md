@@ -133,7 +133,7 @@ As categorias do Documento 5 §4 dizem o papel do componente; o nível atômico 
 
 | Nível | Pasta | Conteúdo | Importa |
 |---|---|---|---|
-| Fundação | `ds/fundacao/` | `Density` (`densidade.ts`), `SheetOption` (`opcao.ts`), `rotuloCaixaAlta` (`estilos.ts`), `useDensidade`, `marca.css` e tokens CSS | `lib/` |
+| Fundação | `ds/fundacao/` | `Density` (`densidade.ts`), `SheetOption` (`opcao.ts`), `rotuloVersalete` (`estilos.ts`), `useDensidade`, `marca.css`, `texturas.css` e tokens CSS | `lib/` |
 | Providers (base) | `ds/providers/` | `RegimeVocabulary` e `useTermo` | base (`fundacao`, `providers`) e `lib/` |
 | Átomos | `ds/atoms/` | `Button`, `Icon`, `StatusBadge`, `Rotulo`, `Cartao` e demais átomos (tabela 4.3) | base e átomos |
 | Moléculas | `ds/molecules/` | `TextField`, `Select`, `EmptyState` e demais moléculas | base, átomos e moléculas |
@@ -175,7 +175,7 @@ Catálogo = item do catálogo do Documento 5 §4. Consumidores = uso de hoje, an
 | `Density` | fundação (tipo) | não | `ds/fundacao/densidade.ts` | `ds` inteiro, `useDensidade`, páginas |
 | `SheetOption` | fundação (tipo) | não | `ds/fundacao/opcao.ts` | `BottomSheet`, `Select`, `CampoDeTags`, mocks de opções |
 | `useDensidade` | fundação (hook) | não | `ds/fundacao/useDensidade.ts` | `app/Layout` e 31 arquivos de `pages` |
-| `rotuloCaixaAlta` | fundação (estilo) | não | `ds/fundacao/estilos.ts` | `Rotulo`, `Th`; 12 constantes `rotuloLabel` das páginas (etapa de rótulo e corpo da tela) |
+| `rotuloVersalete` (o estilo de caixa alta, renomeado no #176) | fundação (estilo) | não | `ds/fundacao/estilos.ts` | `Rotulo`, `Th` e o spread nas telas; as 12 constantes `rotuloLabel` das páginas foram fundidas no `Rotulo` (etapa de rótulo e corpo da tela) |
 | `Button` | átomo | não | `ds/atoms/Button/` | 23 áreas |
 | `Icon` | átomo | não | `ds/atoms/Icon/` | 23 áreas |
 | `TextField` | molécula | não | `ds/molecules/TextField/` | 13 áreas |
@@ -512,8 +512,16 @@ Regras: `camada-cruzada-por-alias` e `ds-so-pelo-barrel` (erro).
 - Variáveis CSS dos tokens e estilo inline, com cor sempre por `var(--…)`.
 - Tokens, marca e keyframes globais ficam em `ds/fundacao/`. `styles/global.css` é só a entrada.
 - O Tailwind não é mais usado (#173). O reset dos elementos nativos que as telas usam está no fim do `ds/fundacao/tokens/base.css`.
-- A fonte da verdade visual dos tokens é o guia Força da Mata, que hoje vive fora do repo (`~/Downloads/forca-da-mata-guia`; o dono decide onde versionar). Não é mais o design system exportado v3.
-- Os tokens têm dois climas, escolhidos por `data-clima` na raiz: `noite` (padrão, vale também sem o atributo) e `amanhecer`. Os nomes continuam os mesmos e só o valor muda por clima; a família `royal` passa a significar ação. Cor, sombra e atmosfera (`--sky`, `--flower`, `--vine`) moram em `tokens/colors.css`; as texturas, em `ds/fundacao/texturas.css`. A marca estática (a merkaba recortada da logo) vive em `apps/web/public/marca/` e é servida na raiz; o átomo `Marca` compõe merkaba, nome e tagline. A pessoa escolhe o clima em Meu perfil (#175). A escolha fica só neste aparelho, na chave `cdd.clima` do `localStorage`, e o `ClimaProvider` (`ds/providers/ClimaProvider`, montado em `main.tsx` por fora da sessão) põe o `data-clima` na raiz. Sem escolha, ou em aparelho novo, vale a Noite. Para não piscar em Noite antes da montagem, um script inline no `index.html` aplica o Amanhecer salvo; ele espelha `CHAVE_DO_CLIMA` e `COR_DO_TEMA_POR_CLIMA` de `ds/providers/ClimaProvider/constantes.ts`, e as duas cópias mudam juntas.
+- A fonte da verdade visual é o guia Força da Mata, versionado em `docs/design/forca-da-mata/` (guia, tokens de referência, logo e merkaba).
+- Os tokens de `ds/fundacao/tokens` têm dois climas por `data-clima` na raiz: `noite` (padrão, vale também sem o atributo) e `amanhecer`. Os nomes são os do design system, e só o valor muda por clima (#174).
+- O clima é escolhido em Meu perfil e guardado no `localStorage` (`cdd.clima`), só no aparelho. O `ClimaProvider` (`ds/providers/ClimaProvider`, montado em `main.tsx` por fora da sessão) põe o atributo na raiz. Um script inline no `index.html` aplica o Amanhecer salvo antes da montagem; ele espelha as constantes do provider, e as duas cópias mudam juntas (#175).
+- A forma de folha vem dos tokens `--leaf-*`, com as versões espelhadas para o que abre de baixo ou da lateral. Os `--radius-*` ficam só em barras, trilhos e células de grade (#176 a #178, #182 a #186).
+- Rótulos usam `rotuloVersalete` (`ds/fundacao/estilos.ts`, Alegreya Sans SC, sem `uppercase`). O caixa alta só fica em abreviação ou sigla.
+- Etiquetas usam `--tone-X-bg` e `--tone-X-fg`: cheias na Noite, suaves no Amanhecer (#176, #177).
+- Os tipos de trabalho da Agenda usam `--tipo-X`, `--tipo-X-bg` e `--tipo-X-fg` (#185).
+- Gráficos usam `--serie-1..3` para série categórica e `--ramp-1..9` para quebra por categoria; cor de estado não identifica série (#181).
+- `marca.css` (estampa em `--flower`) e `texturas.css` (`--tx-*`) ficam em `ds/fundacao`. A marca estática (merkaba) fica em `apps/web/public/marca/`, servida na raiz.
+- O tema de login do Keycloak espelha os tokens da Noite, com as fontes hospedadas no próprio tema (#180).
 
 ---
 
@@ -526,6 +534,7 @@ apps/web/
 ├── test/estrutural/              fronteiras.test.ts, casosDasFronteiras.ts, fixtures/apps/web/src/…, fixtures-negativas/apps/web/src/…
 ├── captura/                      captura de telas (seção 13.6); saida/ fica fora do git
 ├── scripts/                      conferir-movimento.mjs (+ conferir-movimento/), conferir-estrutura.mjs (+ conferir-estrutura/)
+├── public/marca/merkaba.png      marca estática, servida na raiz (/marca/merkaba.png)
 └── src/
     ├── main.tsx                  raiz de composição; único importador de dados/instancias.ts
     ├── silencioso.ts, env.d.ts
@@ -548,10 +557,11 @@ apps/web/
     ├── testes/                   configurarDom.ts (setupFiles), sessaoDeTeste.tsx, fabricas.ts, montagem.tsx
     ├── ds/                       DESIGN SYSTEM (global por definição)
     │   ├── index.ts              barrel único
-    │   ├── fundacao/             densidade.ts (Density), opcao.ts (SheetOption), estilos.ts (rotuloCaixaAlta),
-    │   │                         useDensidade.ts (+ .dom.test.ts), marca.css,
+    │   ├── fundacao/             densidade.ts (Density), opcao.ts (SheetOption), estilos.ts (rotuloVersalete),
+    │   │                         useDensidade.ts (+ .dom.test.ts), marca.css, texturas.css,
     │   │                         tokens/{fonts, colors, typography, spacing, base}.css
-    │   ├── providers/            RegimeVocabulary/ {…, useTermo.ts, constantes.ts}
+    │   ├── providers/            RegimeVocabulary/ {…, useTermo.ts, constantes.ts},
+    │   │                         ClimaProvider/ {…, hooks/useClima.ts, constantes.ts, tipos.ts}
     │   ├── atoms/                Icon/ {…, registro.ts}, Button/ {…, constantes.ts}, StatusBadge/ {…, constantes.ts},
     │   │                         AmountDisplay/, FlowerOfLife/, Rotulo/, RotuloDeCampo/, Cartao/, Interruptor/,
     │   │                         Avatar/ (+ utils/iniciais.ts) (F), BarraDeProporcao/, Th/, Td/,
@@ -990,7 +1000,7 @@ Uma tabela por grupo, na ordem das caracterizações. Os testes citados vêm dos
 | Prestação: o recado diz "Agosto de 2026" com maiúscula no meio da frase, e o documento diz "agosto de 2026" | `pages/prestacao/PrestacaoDeContasPage.tsx:58` e `:259`; teste `pages/prestacao/PrestacaoDeContasPage.dom.test.tsx` (entra com o #84) | PR próprio, depois da caracterização de financeiro II (#84) |
 | Parâmetros: texto e rótulo errados. O recado de trocar a linha diz que os lançamentos "estavam fora do relatório"; o tipo MANUTENCAO sai "Manutencao"; a Lojinha tem faturamento e não tem teto, e o bloco não aparece; "Editar" não faz nada | `pages/parametros/ParametrosPage.tsx:43`, `:264`, `:388` e `:429`; teste `pages/parametros/ParametrosPage.dom.test.tsx` (entra com o #84) | PR próprio, depois da caracterização de financeiro II (#84) |
 | Relatórios: "Fundo próprio contra as metas" fixa meta de 6.000 e 12.000 e não muda com o período nem com os filtros; em Contas e fundo, os dois fundos têm meta null | `mocks/relatorios.ts:122-144` (`metasDeFundo`) contra `mocks/financeiro.ts:89` e `:99`; teste `pages/relatorios/RelatoriosPage.dom.test.tsx` (entra com o #84) | PR próprio (dado de demonstração), depois da caracterização de financeiro II (#84) |
-| O `Cartao` local de Relatórios tem padding fixo de 16px 18px, gap 12 e raio `var(--radius-lg)`. O `Cartao` do `ds` usa 18px 20px no escritório e 15px 16px em campo, gap 14 e raio `var(--radius)` | `pages/financeiro/RelatoriosPage/components/Cartao/Cartao.tsx:6-23`; `ds/atoms/Cartao/Cartao.tsx` | Na adoção do `Cartao` do `ds` (anexo, seção 4.3), com captura de Relatórios |
+| O `Cartao` local de Relatórios tinha padding fixo de 16px 18px, gap 12 e raio `var(--radius-lg)`, contra 18px 20px (escritório) ou 15px 16px (campo), gap 14 e `var(--radius)` do `Cartao` do `ds`. Resolvido no #162: o local saiu e Relatórios usa o `Cartao` do `ds`, hoje com `--leaf-lg` (#176); não sobra divergência | `pages/financeiro/RelatoriosPage/components/Cartao/Cartao.tsx:6-23`; `ds/atoms/Cartao/Cartao.tsx` | Na adoção do `Cartao` do `ds` (anexo, seção 4.3), com captura de Relatórios |
 | O item "Competência anterior fechada" do Fechamento só informa: não há tela nem comando para fechar a competência anterior | `pages/financeiro/FechamentoPage/utils/checklist.ts:27` | Depende do backend |
 | "Fila de verificação zerada" e "Lançamentos conferidos na competência" leem fontes diferentes na demonstração (fila e lançamentos de agosto); no domínio são o mesmo conjunto | `pages/financeiro/FechamentoPage/utils/checklist.ts:35` e `:43` | Depende do backend |
 | A tela de Parâmetros mostra o faturamento da Munay (43.700) de mock próprio, que não acompanha o recebimento registrado em Contratações | `pages/financeiro/ParametrosPage/mocks/parametros.ts:297`; `pages/eventos/ContratacoesPage/mocks/contratacoes.ts:144` | PR próprio |
@@ -1081,7 +1091,7 @@ Cada padrão aparece uma vez, com os lugares conferidos na `main`. Os detalhes d
 | Sobreposição sem papel de diálogo, Esc nem foco | `pages/registros/LancamentosPage.tsx:413` (gaveta); `pages/verificacao/PainelDeRevisao.tsx:62`; `pages/ayahuasca/AyahuascaPage.tsx:585` e `:703`; `ds/BottomSheet.tsx` (seção 14). Contraste: `ds/PainelDeAcao.tsx:143` (`role="dialog"`) | PR próprio por tela, depois das caracterizações de lançamentos e pessoas e estoque (#82, #87). O anexo troca gavetas e o modal de movimento pelo `PainelDeAcao` (anexo, linhas 206 e 226) |
 | Texto ou botão que promete o que a tela não faz | `pages/contas/ContasEFundoPage.tsx:168-170` ("Transferir entre contas"); `pages/conciliacao/ConciliacaoPage.tsx:350-352` ("Registrar lançamento"); `pages/parametros/ParametrosPage.tsx:429` ("Editar") | PR próprio por tela, depois das caracterizações (#83, #84). Desfazer do registro (#140) e descartar da Anamnese (#145) saíram (seção 14.1) |
 | Cor literal fora de `var(--…)`, contra a seção 10.5 | `pages/eventos/AgendaPage/components/DetalheDoTrabalho/components/CabecalhoDoTrabalho/CabecalhoDoTrabalho.tsx:26` (`#fff`); `pages/eventos/AgendaPage/components/CalendarioMensal/CalendarioMensal.tsx:96` (`#fff`); `pages/eventos/AgendaPage/components/FormularioDeTrabalho/FormularioDeTrabalho.tsx:23` (`rgba(20,20,24,0.42)`). No `ds`: `ds/templates/AppShell/components/NavItem/NavItem.tsx:36` (`rgba(26,61,168,.06)`), `ds/templates/AppShell/components/SeloDoUsuario/SeloDoUsuario.tsx:11` (`#fff`), `ds/molecules/SkeletonList/components/BarraDeEsqueleto/BarraDeEsqueleto.tsx:9` (`#EAE3D3`) e `ds/atoms/Button/constantes.ts:12` e `:20` (`#FFFFFF` e `rgba(255,255,255,…)` na variante `onChrome`) | PR próprio por tela, depois da caracterização de eventos (#85), trocando pelo token. Os do `ds` têm caracterização (#59 e #61) e podem andar antes |
-| Rótulo de caixa alta copiado, com as mesmas propriedades em outra ordem de chaves | `pages/financeiro/RelatoriosPage/constantes.ts:3` (`rotuloLabel`) contra `ds/fundacao/estilos.ts:3` (`rotuloCaixaAlta`) | Etapa "Rotulo e CorpoDaTela" (seção 13.7) |
+| Rótulo de caixa alta copiado, com as mesmas propriedades em outra ordem de chaves | `pages/financeiro/RelatoriosPage/constantes.ts:3` (`rotuloLabel`) contra `ds/fundacao/estilos.ts:3` (o estilo de caixa alta, hoje `rotuloVersalete`). Resolvido no #156: o `rotuloLabel` foi fundido no `Rotulo` do `ds` | Etapa "Rotulo e CorpoDaTela" (seção 13.7) |
 | Grade repetida entre a tabela e a linha do livro: a mesma `gridTemplateColumns` nos dois | `pages/financeiro/lancamentos/LancamentosPage/components/TabelaDoLivro/TabelaDoLivro.tsx:24` e `pages/financeiro/lancamentos/LancamentosPage/components/TabelaDoLivro/components/LinhaDoLivro/LinhaDoLivro.tsx:21`; apontado na revisão do #107 | PR próprio, sem efeito visual: uma constante só |
 
 ---
@@ -1103,6 +1113,10 @@ Respondidas pelo dono em 09/10/2026 e em 10/10/2026. Cada uma vira correção em
 | Que ícone a conta mostra na tela e no modal de contas? | Os 3 casos nas duas: `wallet` (caixa), `credit-card` (conta pessoal de terceiro) e `landmark` (banco). O modal muda | PR próprio, depois da caracterização de financeiro I |
 | Que data a demonstração usa como "hoje"? | `2026-09-02`, uma data só, em `pages/mocks/relogio.ts`. Devoluções, Contratações e Feitio passam a usá-la: prazos e "dias esperando" mudam nelas. É a mesma data do relógio da captura de telas | Composição de domínio |
 | O que fazer com o Tailwind? | Remover: as regras do preflight de que as telas dependem vão para `ds/fundacao/tokens/base.css`, o plugin e o `@theme` saem. A captura de telas foi dispensada pelo dono; a validação visual é dele | Entregue no #173, na épica do redesign |
+| Quando acontece a validação visual do redesign Força da Mata? (12/10/2026) | Só no fim da épica `refactor/epica-redesign`, pelo dono. Nenhuma PR da épica tem captura de telas nem teste novo | Épica do redesign, #173 a #186 |
+| Onde fica a escolha do clima? (12/10/2026) | No `localStorage` do aparelho (`cdd.clima`), escolhida em Meu perfil. Sem backend, sem endpoint e sem troca automática por densidade ou hora | Entregue no #175 |
+| Qual é o clima padrão? (12/10/2026) | A Noite, sem escolha e em aparelho novo. O login do Keycloak, que não enxerga a escolha, fica fixo na Noite | Entregue no #174, #175 e #180 |
+| Onde fica o guia Força da Mata? (12/10/2026) | Versionado no repo, em `docs/design/forca-da-mata/` | Esta PR (documentação da épica) |
 | O cartão "Acesso ao sistema" da ficha de Pessoas (`PessoasPage.tsx:398-444`) repete a gestão de acesso da tela Acessos. O que fazer? | Fica como demonstração até Pessoas ligar no backend (B4); então vira link para Acessos, para não haver dois lugares que concedem acesso. A decisão sobre dados de saúde (08/10) não cobre este cartão | Na ligação de Pessoas ao backend |
 | Ligar a catraca de avisos das fronteiras no CI? | Sim: os avisos conhecidos ficam numa linha de base versionada e aviso novo falha o PR. A linha de base só cai; cada etapa de mover a regenera | Feito em PR próprio, depois do merge do #57, do #58 e do #59, com os imports do apoio de teste já pelo alias `@/`. Retirada na etapa Fronteiras em erro (#129), com a linha de base em zero desde o #128; o histórico está na seção 12.2 |
 | Como a Agenda lê "Contribuições sugeridas"? | Só valores inteiros em reais, separados por vírgula, como o placeholder ("40, 60, 90"). Valor com centavos é recusado com mensagem no campo; hoje `45,50` vira 45 e 50 | Entregue no #143. Contribuição negativa (`-40`) segue aceita (seção 14.3, Eventos) |
