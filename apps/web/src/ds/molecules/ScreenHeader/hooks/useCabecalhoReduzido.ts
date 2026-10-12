@@ -22,7 +22,7 @@ export function useCabecalhoReduzido() {
     return () => observador.disconnect();
   }, []);
 
-  const aoFocar = () => setFocoNoCabecalho(true);
+  const aoFocar = (evento: FocusEvent<HTMLElement>) => setFocoNoCabecalho(!(evento.target instanceof HTMLHeadingElement));
   const aoDesfocar = (evento: FocusEvent<HTMLElement>) => {
     const destino = evento.relatedTarget;
     const focoFicaNoCabecalho = destino instanceof Node && evento.currentTarget.contains(destino);
