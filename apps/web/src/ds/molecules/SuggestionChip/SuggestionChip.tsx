@@ -24,7 +24,7 @@ export function SuggestionChip({ children, onAccept, onDismiss, density = 'field
         background: 'var(--color-suggest-soft)',
         border: '1px dashed var(--color-suggest-border)',
         color: 'var(--color-suggest)',
-        borderRadius: 'var(--radius-pill)',
+        borderRadius: 'var(--leaf-xs)',
         padding: density === 'field' ? '0 6px 0 14px' : '0 4px 0 12px',
         minHeight: alvo,
         font: '600 13.5px var(--font-body)',
@@ -38,7 +38,7 @@ export function SuggestionChip({ children, onAccept, onDismiss, density = 'field
           icone="check"
           onClick={onAccept}
           title="Aceitar sugestão"
-          style={{ borderRadius: 'var(--radius-pill)', color: 'var(--color-suggest)' }}
+          style={{ borderRadius: 'var(--leaf-xs)', color: 'var(--color-suggest)' }}
         />
       ) : null}
       {onDismiss ? (
@@ -47,7 +47,7 @@ export function SuggestionChip({ children, onAccept, onDismiss, density = 'field
           tamanhoDoIcone={16}
           onClick={onDismiss}
           title="Descartar sugestão"
-          style={{ borderRadius: 'var(--radius-pill)' }}
+          style={{ borderRadius: 'var(--leaf-xs)' }}
         />
       ) : null}
     </span>

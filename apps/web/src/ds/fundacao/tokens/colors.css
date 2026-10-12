@@ -51,6 +51,7 @@
   --color-period-border:    rgba(127,184,198,.4);
   --color-neutral:          #8A96A3;
   --color-neutral-soft:     rgba(138,150,163,.14);
+  --color-neutral-border:   rgba(138,150,163,.4);
 
   --tone-pending-bg:        var(--color-pending);
   --tone-pending-fg:        var(--color-ink-inverse);
@@ -64,6 +65,8 @@
   --tone-neutral-fg:        var(--color-ink-inverse);
   --tone-suggest-bg:        var(--color-suggest);
   --tone-suggest-fg:        var(--color-ink-inverse);
+  --tone-royal-bg:          var(--color-royal);
+  --tone-royal-fg:          var(--color-ink-inverse);
 
   --border-field:           rgba(168,198,143,.38);
 
@@ -135,6 +138,7 @@
   --color-period-border:    #B9D6DD;
   --color-neutral:          #5E6775;
   --color-neutral-soft:     #EDEEF2;
+  --color-neutral-border:   #D5D8DF;
 
   --tone-pending-bg:        var(--color-pending-soft);
   --tone-pending-fg:        var(--color-pending);
@@ -148,6 +152,8 @@
   --tone-neutral-fg:        var(--color-neutral);
   --tone-suggest-bg:        var(--color-suggest-soft);
   --tone-suggest-fg:        var(--color-suggest);
+  --tone-royal-bg:          var(--color-royal-soft);
+  --tone-royal-fg:          var(--color-royal-ink);
 
   --border-field:           #C6CDB8;
 

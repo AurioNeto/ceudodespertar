@@ -1,4 +1,4 @@
-import { useId } from 'react';
+import { useId, useState } from 'react';
 import type { Density } from '../../fundacao/densidade';
 import type { SheetOption } from '../../fundacao/opcao';
 import { RotuloDeCampo } from '../../atoms/RotuloDeCampo';
@@ -15,6 +15,9 @@ export interface SelectProps {
 
 export function Select({ label, value, options, onChange, hint, erro = false, density = 'office' }: SelectProps) {
   const id = useId();
+  const [emFoco, setEmFoco] = useState(false);
+  const corDaBorda = erro ? 'var(--color-attention)' : emFoco ? 'var(--focus-ring)' : 'var(--border-field)';
+  const halo = erro ? '0 0 0 3px var(--color-attention-soft)' : emFoco ? '0 0 0 3px var(--color-royal-soft)' : 'none';
   return (
     <div style={{ display: 'flex', flexDirection: 'column' }}>
       <RotuloDeCampo htmlFor={id}>{label}</RotuloDeCampo>
@@ -22,16 +25,19 @@ export function Select({ label, value, options, onChange, hint, erro = false, de
         id={id}
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        onFocus={() => setEmFoco(true)}
+        onBlur={() => setEmFoco(false)}
         style={{
           width: '100%',
           minHeight: density === 'field' ? 'var(--target-field)' : 'var(--target-office)',
-          border: `1px solid ${erro ? 'var(--color-attention)' : 'var(--color-line-strong)'}`,
+          border: `1px solid ${corDaBorda}`,
           background: 'var(--bg-card)',
-          borderRadius: 'var(--radius)',
+          borderRadius: 'var(--leaf-sm)',
           padding: '10px 13px',
           font: 'var(--text-body)',
           color: 'var(--text-primary)',
           outline: 'none',
+          boxShadow: halo,
         }}
       >
         {options.map((o) => (

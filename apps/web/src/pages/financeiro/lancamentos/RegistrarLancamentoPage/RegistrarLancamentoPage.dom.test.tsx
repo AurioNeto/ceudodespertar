@@ -543,8 +543,8 @@ describe('RegistrarLancamentoPage: troca de tipo', () => {
 
     await escolherOpcao(campoRotulado<HTMLSelectElement>(container, 'Conta de destino'), 'cora');
 
-    expect(antes).toEqual(['1px solid var(--color-line-strong)', '1px solid var(--color-line-strong)']);
-    expect(bordas()).toEqual(['1px solid var(--color-line-strong)', '1px solid var(--color-attention)']);
+    expect(antes).toEqual(['1px solid var(--border-field)', '1px solid var(--border-field)']);
+    expect(bordas()).toEqual(['1px solid var(--border-field)', '1px solid var(--color-attention)']);
   });
 
   it('categorias escolhidas na saída — ir para transferência e voltar não as perde', async () => {

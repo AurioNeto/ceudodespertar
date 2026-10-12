@@ -235,7 +235,7 @@ describe('ContratacoesPage: cartões', () => {
 
   it.each([
     { contratante: LUZ_DO_NORTE, rotulo: 'Proposta', cor: 'var(--tone-suggest-fg)' },
-    { contratante: ESTRELA_GUIA, rotulo: 'Confirmada', cor: 'var(--color-royal-ink)' },
+    { contratante: ESTRELA_GUIA, rotulo: 'Confirmada', cor: 'var(--tone-royal-fg)' },
     { contratante: JACI, rotulo: 'Realizada', cor: 'var(--tone-confirmed-fg)' },
     { contratante: SEMENTE_VIVA, rotulo: 'Cancelada', cor: 'var(--tone-neutral-fg)' },
   ])('$contratante — o selo diz $rotulo no tom $cor', async ({ contratante, rotulo, cor }) => {

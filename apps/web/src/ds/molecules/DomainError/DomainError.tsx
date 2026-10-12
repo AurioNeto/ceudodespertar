@@ -18,10 +18,10 @@ export function DomainError({ rule, explanation, way, style }: DomainErrorProps)
   return (
     <div
       style={{
-        background: 'var(--bg-sunken)',
-        border: 'var(--border-hairline)',
-        borderLeft: 'var(--edge-state) solid var(--color-ink-brand)',
-        borderRadius: '0 var(--radius) var(--radius) 0',
+        background: 'var(--color-attention-soft)',
+        border: '1px solid var(--color-attention-border)',
+        borderLeft: 'var(--edge-state) solid var(--color-attention)',
+        borderRadius: 'var(--leaf-md)',
         padding: '14px 16px',
         ...style,
       }}

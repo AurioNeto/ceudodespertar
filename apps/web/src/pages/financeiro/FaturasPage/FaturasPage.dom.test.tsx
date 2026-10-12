@@ -223,7 +223,7 @@ describe('FaturasPage em escritório: cabeçalho, cartões e lista de faturas', 
   });
 
   it.each([
-    { competencia: 'setembro de 2026', rotulo: 'Aberta', cor: 'var(--color-royal-ink)', fundo: 'var(--color-royal-soft)' },
+    { competencia: 'setembro de 2026', rotulo: 'Aberta', cor: 'var(--tone-royal-fg)', fundo: 'var(--tone-royal-bg)' },
     { competencia: 'agosto de 2026', rotulo: 'Fechada, a pagar', cor: 'var(--tone-pending-fg)', fundo: 'var(--tone-pending-bg)' },
     { competencia: 'julho de 2026', rotulo: 'Paga', cor: 'var(--tone-confirmed-fg)', fundo: 'var(--tone-confirmed-bg)' },
   ])('selo da fatura de $competencia — diz $rotulo no tom $cor', async ({ competencia, rotulo, cor, fundo }) => {

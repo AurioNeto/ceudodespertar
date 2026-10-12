@@ -123,9 +123,9 @@ describe('Select', () => {
     expect(elemento(tela.container, 'select').style.border).toBe('1px solid var(--color-attention)');
   });
 
-  it('sem erro a borda usa o tom de linha forte', async () => {
+  it('sem erro a borda usa o tom de borda de campo', async () => {
     const tela = await montarSelect();
 
-    expect(elemento(tela.container, 'select').style.border).toBe('1px solid var(--color-line-strong)');
+    expect(elemento(tela.container, 'select').style.border).toBe('1px solid var(--border-field)');
   });
 });

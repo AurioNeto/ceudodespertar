@@ -16,14 +16,14 @@ export function EmptyState({ title, description, action, style }: EmptyStateProp
         padding: '44px 24px',
         background: 'var(--bg-card)',
         border: '1px dashed var(--color-line-gold)',
-        borderRadius: 'var(--radius-lg)',
+        borderRadius: 'var(--leaf-lg)',
         position: 'relative',
         overflow: 'hidden',
         ...style,
       }}
     >
       <FlowerOfLife />
-      <h3 style={{ position: 'relative', font: '700 18px var(--font-display)', color: 'var(--text-title)' }}>
+      <h3 style={{ position: 'relative', font: 'var(--text-title-sm)', color: 'var(--text-title)' }}>
         {title}
       </h3>
       {description ? (

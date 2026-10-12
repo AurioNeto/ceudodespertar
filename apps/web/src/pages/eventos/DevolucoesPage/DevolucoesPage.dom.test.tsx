@@ -170,7 +170,7 @@ describe('DevolucoesPage: cartões da fila', () => {
   it('selos — Contratante em royal, dias esperando em atenção e período fechado em neutro', async () => {
     const { container } = await montar(<DevolucoesPage />);
 
-    expect(folhaComTextoExato(container, 'Contratante')!.style.color).toBe('var(--color-royal-ink)');
+    expect(folhaComTextoExato(container, 'Contratante')!.style.color).toBe('var(--tone-royal-fg)');
     expect(folhaComTextoExato(container, '45 dias esperando')!.style.color).toBe('var(--tone-attention-fg)');
     expect(folhaComTextoExato(container, 'período fechado')!.style.color).toBe('var(--tone-neutral-fg)');
   });

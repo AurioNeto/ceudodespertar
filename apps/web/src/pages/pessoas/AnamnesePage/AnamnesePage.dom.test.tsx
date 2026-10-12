@@ -28,7 +28,7 @@ const COR_DO_TOM = {
   confirmado: 'var(--tone-confirmed-fg)',
   sugestao: 'var(--tone-suggest-fg)',
   neutro: 'var(--tone-neutral-fg)',
-  royal: 'var(--color-royal-ink)',
+  royal: 'var(--tone-royal-fg)',
 } as const;
 
 const PERGUNTAS_DA_V3 = [

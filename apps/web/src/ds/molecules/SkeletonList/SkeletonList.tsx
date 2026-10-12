@@ -14,7 +14,7 @@ export function SkeletonList({ rows = 4, style }: { rows?: number; style?: CSSPr
           style={{
             background: 'var(--bg-card)',
             border: 'var(--border-hairline)',
-            borderRadius: 'var(--radius)',
+            borderRadius: 'var(--leaf-sm)',
             padding: '15px 16px',
           }}
         >

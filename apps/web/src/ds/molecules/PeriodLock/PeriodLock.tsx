@@ -82,9 +82,9 @@ export function PeriodLock(props: PeriodLockProps) {
   return (
     <div
       style={{
-        background: 'var(--bg-sunken)',
-        border: 'var(--border-hairline)',
-        borderRadius: 'var(--radius)',
+        background: 'var(--color-period-soft)',
+        border: '1px solid var(--color-period-border)',
+        borderRadius: 'var(--leaf-md)',
         padding: '15px 16px',
         display: 'flex',
         gap: 13,
@@ -93,7 +93,7 @@ export function PeriodLock(props: PeriodLockProps) {
     >
       <Icon name="lock" size={19} color="var(--color-ink-brand)" style={{ marginTop: 2 }} />
       <div style={{ flex: 1 }}>
-        <div style={{ font: 'var(--text-body-strong)', color: 'var(--text-title)' }}>{props.title}</div>
+        <div style={{ font: 'var(--text-body-strong)', color: 'var(--color-period)' }}>{props.title}</div>
         <p style={{ marginTop: 5, font: 'var(--text-small)', color: 'var(--text-secondary)' }}>{props.reason}</p>
         {props.canReopen ? (
           <ReopenWithReason
