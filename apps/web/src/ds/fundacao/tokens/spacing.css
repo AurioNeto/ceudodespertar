@@ -23,6 +23,8 @@
   --leaf-lg:   0 28px 0 28px;
   --leaf-xl:   0 36px 0 36px;
   --leaf-seal: 0 100% 0 100%;
+  --leaf-lg-espelhada: 28px 0 28px 0;
+  --leaf-xl-espelhada: 36px 0 36px 0;
 
   /* densidade — a escolha de cada tela está no Doc 4, coluna "Plataforma" */
   --target-field:  56px;  /* campo: em pé, uma mão, com pressa */

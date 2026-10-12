@@ -20,7 +20,7 @@ export function PermissionDenied({ title, description, style }: PermissionDenied
         ...style,
       }}
     >
-      <Icon name="ban" size={20} color="var(--color-attention)" style={{ marginTop: 2 }} />
+      <Icon name="ban" size={20} color="var(--color-neutral)" style={{ marginTop: 2 }} />
       <div>
         <div style={{ font: 'var(--text-title-sm)', color: 'var(--text-title)' }}>{title}</div>
         <p style={{ marginTop: 7, font: 'var(--text-body)', color: 'var(--text-secondary)', maxWidth: '58ch' }}>

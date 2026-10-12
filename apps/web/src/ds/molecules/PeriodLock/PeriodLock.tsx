@@ -91,7 +91,7 @@ export function PeriodLock(props: PeriodLockProps) {
         ...props.style,
       }}
     >
-      <Icon name="lock" size={19} color="var(--color-ink-brand)" style={{ marginTop: 2 }} />
+      <Icon name="lock" size={19} color="var(--color-period)" style={{ marginTop: 2 }} />
       <div style={{ flex: 1 }}>
         <div style={{ font: 'var(--text-body-strong)', color: 'var(--color-period)' }}>{props.title}</div>
         <p style={{ marginTop: 5, font: 'var(--text-small)', color: 'var(--text-secondary)' }}>{props.reason}</p>

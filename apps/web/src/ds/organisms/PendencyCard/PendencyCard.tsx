@@ -3,6 +3,7 @@ import type { CSSProperties } from 'react';
 import { Button } from '../../atoms/Button';
 import { Icon } from '../../atoms/Icon';
 import { TextField } from '../../molecules/TextField';
+import { rotuloVersalete } from '../../fundacao/estilos';
 
 export interface PendencyTexts {
   openHeading: string;
@@ -69,7 +70,7 @@ export function PendencyCard(props: PendencyCardProps) {
         background: 'var(--color-attention-soft)',
         border: '1px solid var(--color-attention-border)',
         borderLeft: 'var(--edge-state) solid var(--color-attention)',
-        borderRadius: '0 var(--radius) var(--radius) 0',
+        borderRadius: 'var(--leaf-md)',
         padding: '14px 16px',
         ...style,
       }}
@@ -79,9 +80,7 @@ export function PendencyCard(props: PendencyCardProps) {
         <span
           id={headingId}
           style={{
-            font: 'var(--text-label)',
-            letterSpacing: 'var(--tracking-label)',
-            textTransform: 'uppercase',
+            ...rotuloVersalete,
             color: 'var(--color-attention)',
           }}
         >
@@ -113,17 +112,14 @@ function AnswerBlock({ label, answer }: AnswerBlockProps) {
         marginTop: 12,
         background: 'var(--bg-card)',
         border: 'var(--border-hairline)',
-        borderRadius: 'var(--radius-sm)',
+        borderRadius: 'var(--leaf-sm)',
         padding: '10px 12px',
       }}
     >
       <span
         style={{
           display: 'block',
-          font: 'var(--text-label)',
-          letterSpacing: 'var(--tracking-label)',
-          textTransform: 'uppercase',
-          color: 'var(--text-field-label)',
+          ...rotuloVersalete,
           marginBottom: 4,
         }}
       >
