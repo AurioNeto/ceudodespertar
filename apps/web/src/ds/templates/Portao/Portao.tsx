@@ -19,7 +19,7 @@ export function Portao({ titulo, descricao, children }: PortaoProps) {
         display: 'grid',
         gridTemplateColumns: campo ? 'minmax(0,1fr)' : 'minmax(0,44%) minmax(0,56%)',
         gridTemplateRows: campo ? 'auto 1fr' : undefined,
-        background: 'var(--bg-app)',
+        background: 'var(--sky)',
       }}
     >
       <LadoDaMarca campo={campo} />

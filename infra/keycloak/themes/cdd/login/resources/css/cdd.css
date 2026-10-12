@@ -32,6 +32,8 @@
 :root {
   color-scheme: dark;
 
+  --sky: radial-gradient(120% 80% at 55% 0%, #1F4A33 0%, #10301F 40%, #0B1F17 100%);
+
   --color-paper:            #0B1F17;
   --color-surface:          #0E241A;
   --color-surface-sunken:   rgba(168,198,143,.07);
@@ -116,7 +118,7 @@ body {
 
 body.cdd-corpo {
   margin: 0;
-  background: var(--color-paper);
+  background: var(--sky) fixed, var(--color-paper);
   color: var(--color-ink);
   font: 400 15px/1.5 var(--font-body);
   -webkit-font-smoothing: antialiased;
