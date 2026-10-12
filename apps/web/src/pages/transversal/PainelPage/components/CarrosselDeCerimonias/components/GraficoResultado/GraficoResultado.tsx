@@ -15,6 +15,7 @@ export function GraficoResultado() {
       nome: c.nome,
       rotulo: `${valor < 0 ? '− ' : '+ '}R$ ${formatarValor(Math.abs(valor) / 1000).replace(',00', '')} mil`,
       cor: valor < 0 ? 'var(--color-attention)' : 'var(--serie-2)',
+      corDoRotulo: valor < 0 ? 'var(--color-attention)' : 'var(--text-primary)',
     };
   });
 
@@ -73,7 +74,7 @@ export function GraficoResultado() {
                 font: 'var(--text-amount)',
                 letterSpacing: 'var(--tracking-amount)',
                 fontVariantNumeric: 'tabular-nums',
-                color: p.cor,
+                color: p.corDoRotulo,
               }}
             >
               {p.rotulo}

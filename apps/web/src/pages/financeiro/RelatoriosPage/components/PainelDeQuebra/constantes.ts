@@ -11,3 +11,5 @@ export const PALETA = [
 ];
 
 export const RAIO = 60;
+
+export const ALCANCE_DO_RESPIRO = { de: 42, ate: 82 };

@@ -13,6 +13,7 @@ export const fatiasDaQuebra = (itens: readonly FatiaDaQuebra[], total: number, h
       fracao,
       dash: `${(fracao * CIRCUNFERENCIA).toFixed(2)} ${CIRCUNFERENCIA.toFixed(2)}`,
       offset: (-acumulado * CIRCUNFERENCIA).toFixed(2),
+      inicio: acumulado,
       destacado: hover === i,
       apagado: hover != null && hover !== i,
     };
