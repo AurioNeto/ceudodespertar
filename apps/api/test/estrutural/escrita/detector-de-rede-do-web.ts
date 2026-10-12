@@ -95,14 +95,22 @@ class ColetorDeRede {
   }
 
   private usoPorIndice(acesso: ts.ElementAccessExpression): void {
-    const argumento = acesso.argumentExpression;
-    if (!ts.isStringLiteralLike(argumento)) return;
-    const simbolo = this.checker.getTypeAtLocation(acesso.expression).getProperty(argumento.text);
-    if (simbolo === undefined) return;
-    if (ehGlobalDeRede(simbolo)) this.usoDeRede(acesso, argumento.text);
-    if (this.ehRequisitarDaCamadaDeDados(simbolo) && !this.naCamadaDeDados) {
-      this.violar(acesso, 'requisitar-indeterminado', argumento.text);
+    const tipoDoAlvo = this.checker.getTypeAtLocation(acesso.expression);
+    for (const nome of this.nomesDoIndice(acesso.argumentExpression)) {
+      const simbolo = tipoDoAlvo.getProperty(nome);
+      if (simbolo === undefined) continue;
+      if (ehGlobalDeRede(simbolo)) this.usoDeRede(acesso, nome);
+      if (this.ehRequisitarDaCamadaDeDados(simbolo) && !this.naCamadaDeDados) {
+        this.violar(acesso, 'requisitar-indeterminado', nome);
+      }
     }
+  }
+
+  private nomesDoIndice(argumento: ts.Expression): readonly string[] {
+    if (ts.isStringLiteralLike(argumento)) return [argumento.text];
+    const tipo = this.checker.getTypeAtLocation(argumento);
+    const possiveis = tipo.isUnion() ? tipo.types : [tipo];
+    return possiveis.filter((possivel) => possivel.isStringLiteral()).map((literal) => literal.value);
   }
 
   private usoDeRede(no: ts.Node, nome: string): void {

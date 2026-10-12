@@ -86,6 +86,22 @@ export const CASOS_PLANTADOS_COM_VIOLACAO: readonly CasoPlantado[] = [
       'requisitar-indeterminado|requisitar',
     ],
   },
+  {
+    arquivo: 'pages/plantadas/indiceComChaveNaoLiteral.ts',
+    conteudo: [
+      IMPORTA_O_CLIENTE,
+      "const k = 'fetch';",
+      "export const f = () => window[k]('/x', { method: 'POST' });",
+      "const m = 'requisitar';",
+      "export const g = (cliente: ClienteHttp) => cliente[m]({ metodo: 'POST', caminho: '/x' });",
+      "export const h = (cliente: ClienteHttp, chave: 'requisitar' | 'toString') => cliente[chave];",
+    ].join('\n'),
+    violacoes: [
+      'rede-fora-da-camada-de-dados|fetch',
+      'requisitar-indeterminado|requisitar',
+      'requisitar-indeterminado|requisitar',
+    ],
+  },
 ];
 
 export const CASOS_PLANTADOS_PERMITIDOS: readonly CasoPlantado[] = [
