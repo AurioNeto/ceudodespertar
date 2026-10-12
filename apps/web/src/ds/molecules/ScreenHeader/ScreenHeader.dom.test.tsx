@@ -25,7 +25,7 @@ describe('ScreenHeader: título', () => {
 
   it('o cabeçalho é um elemento header', async () => {
     const { container } = await montar(<ScreenHeader title="Acessos" />);
-    expect(container.firstElementChild?.tagName).toBe('HEADER');
+    expect(container.querySelector('header')?.tagName).toBe('HEADER');
   });
 
   it('trocar o título nas props troca o texto sem remontar o cabeçalho', async () => {
