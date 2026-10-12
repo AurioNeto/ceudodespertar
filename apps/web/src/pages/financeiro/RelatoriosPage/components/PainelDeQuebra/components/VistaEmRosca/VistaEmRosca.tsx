@@ -55,7 +55,7 @@ export function VistaEmRosca({ fatias, emFoco, total, densidade, onAbrir, onHove
                       y1={80 - ALCANCE_DO_RESPIRO.de * Math.cos(angulo)}
                       x2={80 + ALCANCE_DO_RESPIRO.ate * Math.sin(angulo)}
                       y2={80 - ALCANCE_DO_RESPIRO.ate * Math.cos(angulo)}
-                      stroke="var(--bg-card)"
+                      stroke="var(--bg-card-solid)"
                       strokeWidth={2}
                       pointerEvents="none"
                     />

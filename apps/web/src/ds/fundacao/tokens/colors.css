@@ -10,7 +10,8 @@
   color-scheme: dark;
 
   --color-paper:            #0B1F17;
-  --color-surface:          #0E241A;
+  --color-surface:          rgba(10,28,20,.80);
+  --color-surface-solid:    #0E241A;
   --color-surface-sunken:   rgba(168,198,143,.07);
   --color-surface-rail:     rgba(8,22,16,.62);
   --color-surface-warm:     #10301F;
@@ -117,7 +118,8 @@
   color-scheme: light;
 
   --color-paper:            #E9EDD8;
-  --color-surface:          #F7F5EA;
+  --color-surface:          rgba(247,245,234,.80);
+  --color-surface-solid:    #F7F5EA;
   --color-surface-sunken:   rgba(47,93,58,.07);
   --color-surface-rail:     rgba(247,245,234,.72);
   --color-surface-warm:     #FBF8EF;
@@ -241,6 +243,7 @@
 
   --bg-app:            var(--color-paper);
   --bg-card:           var(--color-surface);
+  --bg-card-solid:     var(--color-surface-solid);
   --bg-glass:          var(--color-surface-glass);
   --bg-sunken:         var(--color-surface-sunken);
   --bg-rail:           var(--color-surface-rail);

@@ -84,7 +84,7 @@ export function Declaracao({
             placeItems: 'center',
           }}
         >
-          {declarado ? <Icon name="check" size={14} color="var(--bg-card)" /> : null}
+          {declarado ? <Icon name="check" size={14} color="var(--bg-card-solid)" /> : null}
         </span>
         <span style={{ font: 'var(--text-body)', color: 'var(--text-primary)' }}>{TEXTO_DA_DECLARACAO}</span>
       </button>

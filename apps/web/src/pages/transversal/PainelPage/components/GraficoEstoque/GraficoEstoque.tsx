@@ -57,7 +57,7 @@ export function GraficoEstoque() {
               patternUnits="userSpaceOnUse"
               patternTransform="rotate(45)"
             >
-              <rect width={7} height={7} fill="var(--bg-card)" />
+              <rect width={7} height={7} fill="var(--bg-card-solid)" />
               <line x1={0} y1={0} x2={0} y2={7} stroke={lote.cor} strokeWidth={2.6} />
             </pattern>
           ))}

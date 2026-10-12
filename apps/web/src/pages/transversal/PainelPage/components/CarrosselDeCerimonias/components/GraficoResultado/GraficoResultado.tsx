@@ -56,7 +56,7 @@ export function GraficoResultado() {
             strokeLinecap="round"
           />
           {pontos.map((p) => (
-            <circle key={p.data} cx={p.x} cy={p.y} r={4.5} fill="var(--bg-card)" stroke={p.cor} strokeWidth={2.5} />
+            <circle key={p.data} cx={p.x} cy={p.y} r={4.5} fill="var(--bg-card-solid)" stroke={p.cor} strokeWidth={2.5} />
           ))}
         </svg>
       </div>
