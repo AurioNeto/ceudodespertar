@@ -33,7 +33,7 @@ export function LinhaGerenciavel({
         gap: 12,
         padding: '10px 12px',
         border: 'var(--border-hairline)',
-        borderRadius: 'var(--radius-sm)',
+        borderRadius: 'var(--leaf-sm)',
         background: ativa ? 'var(--bg-card)' : 'var(--bg-sunken)',
         opacity: ativa ? 1 : 0.7,
       }}
@@ -56,7 +56,7 @@ export function LinhaGerenciavel({
           flex: '0 0 auto',
           border: '1px solid var(--color-line)',
           background: 'var(--bg-card)',
-          borderRadius: 'var(--radius-pill)',
+          borderRadius: 'var(--leaf-seal)',
           color: 'var(--text-secondary)',
         }}
       />
@@ -70,7 +70,7 @@ export function LinhaGerenciavel({
           padding: '0 14px',
           minHeight: 38,
           font: 'var(--text-small)',
-          borderRadius: 'var(--radius-sm)',
+          borderRadius: 'var(--leaf-md)',
           cursor: bloqueio ? 'not-allowed' : 'pointer',
           border: `1px solid ${ativa ? 'var(--color-line)' : 'var(--color-confirmed)'}`,
           background: 'var(--bg-card)',

@@ -16,7 +16,7 @@ export function CartaoDeConta({ conta, ultimaConciliacao }: CartaoDeContaProps) 
         background: 'var(--bg-card)',
         border: 'var(--border-hairline)',
         borderLeft: `3px solid ${conta.conciliacao === 'PENDENTE' ? 'var(--color-pending)' : 'var(--color-confirmed)'}`,
-        borderRadius: 'var(--radius)',
+        borderRadius: 'var(--leaf-md)',
         padding: '14px 16px',
         display: 'flex',
         flexDirection: 'column',

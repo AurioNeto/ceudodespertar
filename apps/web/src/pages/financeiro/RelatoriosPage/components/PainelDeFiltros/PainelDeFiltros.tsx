@@ -23,7 +23,7 @@ export function PainelDeFiltros({ relatorio: r, resumoDoRecorte, densidade }: Pa
       style={{
         background: 'var(--bg-card)',
         border: 'var(--border-hairline)',
-        borderRadius: 'var(--radius-lg)',
+        borderRadius: 'var(--leaf-lg)',
         padding: campo ? '12px 14px' : '14px 18px',
         display: 'flex',
         flexDirection: 'column',

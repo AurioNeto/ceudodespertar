@@ -12,7 +12,7 @@ export function SaldosDoFechamento({ contasAtivas, totalSaldos }: SaldosDoFecham
       style={{
         background: 'var(--bg-card)',
         border: 'var(--border-hairline)',
-        borderRadius: 'var(--radius-lg)',
+        borderRadius: 'var(--leaf-lg)',
         padding: '16px 18px',
         display: 'flex',
         flexDirection: 'column',

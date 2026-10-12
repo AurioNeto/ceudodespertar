@@ -26,7 +26,7 @@ export function FundoProprio({ fundoProprio, comprometido, livre, reservas, dens
         style={{
           background: 'var(--bg-card)',
           border: 'var(--border-hairline)',
-          borderRadius: 'var(--radius-lg)',
+          borderRadius: 'var(--leaf-lg)',
           padding: '18px 20px',
           display: 'flex',
           flexDirection: 'column',
@@ -67,7 +67,7 @@ export function FundoProprio({ fundoProprio, comprometido, livre, reservas, dens
                 style={{
                   width: 10,
                   height: 10,
-                  borderRadius: 'var(--radius-pill)',
+                  borderRadius: 'var(--leaf-seal)',
                   flex: '0 0 auto',
                   background: r.cor,
                 }}

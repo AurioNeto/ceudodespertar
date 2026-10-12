@@ -63,7 +63,7 @@ export function GerenciarContasModal({
                   font: 'var(--text-small)',
                   padding: '9px 16px',
                   minHeight: 38,
-                  borderRadius: 'var(--radius-sm)',
+                  borderRadius: 'var(--leaf-sm)',
                   cursor: 'pointer',
                   border: `1px solid ${aba === a ? 'var(--color-royal-border)' : 'var(--color-line)'}`,
                   background: aba === a ? 'var(--color-royal-soft)' : 'var(--bg-card)',
@@ -113,7 +113,7 @@ export function GerenciarContasModal({
                       style={{
                         width: 10,
                         height: 10,
-                        borderRadius: 'var(--radius-pill)',
+                        borderRadius: 'var(--leaf-seal)',
                         background: corDaReserva(i),
                         flex: '0 0 auto',
                       }}

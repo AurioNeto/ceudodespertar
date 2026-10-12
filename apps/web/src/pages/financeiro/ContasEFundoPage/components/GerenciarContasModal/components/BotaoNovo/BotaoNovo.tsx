@@ -12,9 +12,9 @@ export function BotaoNovo({ rotulo, onClick }: BotaoNovoProps) {
         alignSelf: 'flex-start',
         font: 'var(--text-small)',
         padding: '8px 14px',
-        borderRadius: 'var(--radius-sm)',
+        borderRadius: 'var(--leaf-md)',
         cursor: 'pointer',
-        border: '1px dashed var(--color-line-strong)',
+        border: '1px dashed var(--border-field)',
         background: 'var(--bg-card)',
         color: 'var(--color-royal-deep)',
       }}
