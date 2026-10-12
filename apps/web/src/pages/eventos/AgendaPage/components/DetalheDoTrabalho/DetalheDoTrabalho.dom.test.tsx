@@ -63,12 +63,12 @@ describe('DetalheDoTrabalho: cabeçalho', () => {
     expect(elemento(container, 'h2').style.textDecoration).toBe('line-through');
   });
 
-  it('tipo — aparece como selo com a cor do tipo e a tinta inversa', async () => {
+  it('tipo — aparece como selo com a cor do tipo e a tinta do tipo', async () => {
     const { container } = await montarDetalhe({ trabalho: umTrabalho({ tipo: 'Feitio' }) });
 
     const selo = folhaComTextoExato(container, 'Feitio')!;
 
-    expect([selo.style.background, selo.style.color]).toEqual(['oklch(0.72 0.13 90)', 'var(--color-ink-inverse)']);
+    expect([selo.style.background, selo.style.color]).toEqual(['var(--tipo-feitio-bg)', 'var(--tipo-feitio-fg)']);
   });
 
   it.each([

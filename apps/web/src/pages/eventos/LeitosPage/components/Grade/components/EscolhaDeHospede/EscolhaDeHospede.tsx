@@ -29,7 +29,7 @@ export function EscolhaDeHospede({
       style={{
         background: 'var(--bg-sunken)',
         border: '1px solid var(--color-line)',
-        borderRadius: 'var(--radius)',
+        borderRadius: 'var(--leaf-lg)',
         padding: campo ? '14px 15px' : '15px 17px',
         display: 'flex',
         flexDirection: 'column',
@@ -60,7 +60,7 @@ export function EscolhaDeHospede({
               style={{
                 textAlign: 'left',
                 border: 'var(--border-hairline)',
-                borderRadius: 'var(--radius)',
+                borderRadius: 'var(--leaf-sm)',
                 background: 'var(--bg-card)',
                 padding: campo ? '13px 14px' : '11px 14px',
                 cursor: 'pointer',

@@ -112,12 +112,12 @@ describe('AgendaPage: calendário do mês', () => {
     expect(chipDoCalendario(container, 'Mãe Divina').title).toBe('Mãe Divina · 20:00 às 04:00');
   });
 
-  it('chip de concentração — usa a cor do tipo, com a tinta inversa', async () => {
+  it('chip de concentração — usa a cor do tipo, com a tinta do tipo', async () => {
     const { container } = await montar(<AgendaPage />);
 
     const chip = chipDoCalendario(container, 'Mãe Divina');
 
-    expect([chip.style.background, chip.style.color]).toEqual(['oklch(0.52 0.13 265)', 'var(--color-ink-inverse)']);
+    expect([chip.style.background, chip.style.color]).toEqual(['var(--tipo-concentracao-bg)', 'var(--tipo-concentracao-fg)']);
   });
 
   it('hoje (02/09/2026, do relógio da demonstração) — só o dia 2 vem destacado', async () => {
@@ -143,11 +143,11 @@ describe('AgendaPage: calendário do mês', () => {
     ]);
 
     expect(legenda).toEqual([
-      ['Concentração', 'oklch(0.52 0.13 265)'],
-      ['Trabalho de cura', 'oklch(0.64 0.12 155)'],
-      ['Feitio', 'oklch(0.72 0.13 90)'],
-      ['Bailado', 'oklch(0.58 0.15 25)'],
-      ['Reunião do corpo', 'oklch(0.62 0.11 205)'],
+      ['Concentração', 'var(--tipo-concentracao)'],
+      ['Trabalho de cura', 'var(--tipo-cura)'],
+      ['Feitio', 'var(--tipo-feitio)'],
+      ['Bailado', 'var(--tipo-bailado)'],
+      ['Reunião do corpo', 'var(--tipo-reuniao)'],
     ]);
   });
 
@@ -819,7 +819,7 @@ describe('AgendaPage: nova cerimônia', () => {
 
     const chip = chipDoCalendario(container, 'Bailado novo');
 
-    expect(chip.style.background).toBe('oklch(0.58 0.15 25)');
+    expect(chip.style.background).toBe('var(--tipo-bailado-bg)');
   });
 });
 

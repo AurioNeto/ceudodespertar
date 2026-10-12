@@ -44,7 +44,7 @@ export function PainelDeContaEData({
       style={{
         background: 'var(--bg-sunken)',
         border: '1px solid var(--color-line)',
-        borderRadius: 'var(--radius)',
+        borderRadius: 'var(--leaf-lg)',
         padding: campo ? '14px 15px' : '15px 17px',
         display: 'flex',
         flexDirection: 'column',

@@ -106,7 +106,7 @@ export function Cadastro({
               style={{
                 background: 'var(--bg-sunken)',
                 border: '1px solid var(--color-line)',
-                borderRadius: 'var(--radius)',
+                borderRadius: 'var(--leaf-lg)',
                 padding: '13px 15px',
                 display: 'flex',
                 flexDirection: 'column',

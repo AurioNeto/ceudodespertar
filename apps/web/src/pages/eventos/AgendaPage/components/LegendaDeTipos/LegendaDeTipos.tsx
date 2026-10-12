@@ -8,7 +8,7 @@ export function LegendaDeTipos() {
           key={tipo}
           style={{ display: 'flex', alignItems: 'center', gap: 7, font: 'var(--text-small)', color: 'var(--text-secondary)' }}
         >
-          <span style={{ width: 10, height: 10, borderRadius: 2, background: CORES_POR_TIPO[tipo] }} />
+          <span style={{ width: 10, height: 10, borderRadius: 2, background: CORES_POR_TIPO[tipo].cheia }} />
           {tipo}
         </span>
       ))}

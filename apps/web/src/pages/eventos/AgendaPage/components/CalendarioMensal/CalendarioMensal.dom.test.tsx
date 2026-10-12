@@ -153,19 +153,19 @@ describe('CalendarioMensal: chips dos trabalhos', () => {
   });
 
   it.each([
-    { tipo: 'Concentração' as const, cor: 'oklch(0.52 0.13 265)' },
-    { tipo: 'Trabalho de cura' as const, cor: 'oklch(0.64 0.12 155)' },
-    { tipo: 'Feitio' as const, cor: 'oklch(0.72 0.13 90)' },
-    { tipo: 'Bailado' as const, cor: 'oklch(0.58 0.15 25)' },
-    { tipo: 'Reunião do corpo' as const, cor: 'oklch(0.62 0.11 205)' },
-  ])('trabalho do tipo $tipo — o chip usa a cor $cor com a tinta inversa e sem risco', async ({ tipo, cor }) => {
+    { tipo: 'Concentração' as const, cor: 'var(--tipo-concentracao-bg)', tinta: 'var(--tipo-concentracao-fg)' },
+    { tipo: 'Trabalho de cura' as const, cor: 'var(--tipo-cura-bg)', tinta: 'var(--tipo-cura-fg)' },
+    { tipo: 'Feitio' as const, cor: 'var(--tipo-feitio-bg)', tinta: 'var(--tipo-feitio-fg)' },
+    { tipo: 'Bailado' as const, cor: 'var(--tipo-bailado-bg)', tinta: 'var(--tipo-bailado-fg)' },
+    { tipo: 'Reunião do corpo' as const, cor: 'var(--tipo-reuniao-bg)', tinta: 'var(--tipo-reuniao-fg)' },
+  ])('trabalho do tipo $tipo — o chip usa a cor $cor com a tinta do tipo e sem risco', async ({ tipo, cor, tinta }) => {
     const { container } = await montar(
       <CalendarioMensal ano={2026} mes={9} trabalhos={[umTrabalho({ tipo, nome: 'Qualquer' })]} onAbrir={() => undefined} />,
     );
 
     const chip = chipDoCalendario(container, 'Qualquer');
 
-    expect([chip.style.background, chip.style.color, chip.style.textDecoration]).toEqual([cor, 'var(--color-ink-inverse)', 'none']);
+    expect([chip.style.background, chip.style.color, chip.style.textDecoration]).toEqual([cor, tinta, 'none']);
   });
 
   it.each([
@@ -179,7 +179,7 @@ describe('CalendarioMensal: chips dos trabalhos', () => {
 
     const chip = chipDoCalendario(container, 'Qualquer');
 
-    expect([chip.style.background, chip.style.textDecoration]).toEqual(['oklch(0.52 0.13 265)', 'none']);
+    expect([chip.style.background, chip.style.textDecoration]).toEqual(['var(--tipo-concentracao-bg)', 'none']);
   });
 
   it('situação cancelada — o chip fica riscado, com fundo neutro e texto de meta, qualquer que seja o tipo', async () => {
