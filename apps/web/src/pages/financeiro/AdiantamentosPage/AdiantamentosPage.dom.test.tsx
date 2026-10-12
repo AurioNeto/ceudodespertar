@@ -328,7 +328,7 @@ describe('AdiantamentosPage: o que cada perspectiva vê', () => {
 
 describe('AdiantamentosPage: selo e borda de cada estado', () => {
   it.each([
-    { secao: 'A ressarcir', pessoa: 'Paty Munay', motivo: 'camisetas', selo: 'A ressarcir', cor: 'var(--color-royal-ink)', borda: 'var(--color-royal)' },
+    { secao: 'A ressarcir', pessoa: 'Paty Munay', motivo: 'camisetas', selo: 'A ressarcir', cor: 'var(--tone-royal-fg)', borda: 'var(--color-royal)' },
     { secao: 'Fechados', pessoa: 'Carlos Andrade', motivo: 'diesel', selo: 'Ressarcido', cor: 'var(--tone-confirmed-fg)', borda: 'var(--color-confirmed)' },
   ])('linha $selo — o selo e a borda esquerda seguem o estado', async ({ secao, pessoa, motivo, selo, cor, borda }) => {
     const { container } = await montar(<AdiantamentosPage />);

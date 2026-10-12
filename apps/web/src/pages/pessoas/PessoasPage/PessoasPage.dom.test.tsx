@@ -56,7 +56,7 @@ const COR_DO_TOM = {
   sugestao: 'var(--tone-suggest-fg)',
   pendente: 'var(--tone-pending-fg)',
   neutro: 'var(--tone-neutral-fg)',
-  royal: 'var(--color-royal-ink)',
+  royal: 'var(--tone-royal-fg)',
 } as const;
 
 const linhasDePessoas = (container: HTMLElement) =>

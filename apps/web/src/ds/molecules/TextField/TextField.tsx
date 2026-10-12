@@ -1,8 +1,9 @@
-import { useId } from 'react';
-import type { CSSProperties, InputHTMLAttributes, ReactNode, TextareaHTMLAttributes } from 'react';
+import { useId, useState } from 'react';
+import type { CSSProperties, FocusEvent, InputHTMLAttributes, ReactNode, TextareaHTMLAttributes } from 'react';
 import type { Density } from '../../fundacao/densidade';
 import { BotaoDeIcone } from '../../atoms/BotaoDeIcone';
 import type { IconName } from '../../atoms/Icon';
+import { rotuloVersalete } from '../../fundacao/estilos';
 
 type NativeProps = Omit<
   InputHTMLAttributes<HTMLInputElement> & TextareaHTMLAttributes<HTMLTextAreaElement>,
@@ -40,9 +41,12 @@ export function TextField({
   readOnly,
   style,
   type = 'text',
+  onFocus,
+  onBlur,
   ...rest
 }: TextFieldProps) {
   const generated = useId();
+  const [emFoco, setEmFoco] = useState(false);
   const fid = id ?? generated;
   const field = density === 'field';
   const medidaDaAcao = field ? 42 : 36;
@@ -50,18 +54,28 @@ export function TextField({
   const mensagem = error ?? hint;
   const descritoPor = [rest['aria-describedby'], mensagem ? idDaMensagem : undefined].filter(Boolean).join(' ') || undefined;
   const ligacaoAcessivel = { 'aria-describedby': descritoPor, ...(error ? { 'aria-invalid': true } : {}) } as const;
+  const aoFocar = (evento: FocusEvent<HTMLInputElement & HTMLTextAreaElement>) => {
+    setEmFoco(true);
+    onFocus?.(evento);
+  };
+  const aoSair = (evento: FocusEvent<HTMLInputElement & HTMLTextAreaElement>) => {
+    setEmFoco(false);
+    onBlur?.(evento);
+  };
+  const corDaBorda = error ? 'var(--color-attention)' : emFoco ? 'var(--focus-ring)' : 'var(--border-field)';
+  const halo = error ? '0 0 0 3px var(--color-attention-soft)' : emFoco ? '0 0 0 3px var(--color-royal-soft)' : 'none';
 
   const controlStyle: CSSProperties = {
     width: '100%',
     minHeight: field ? 'var(--target-field)' : 'var(--target-office)',
-    border: `1px solid ${error ? 'var(--color-attention)' : 'var(--color-line-strong)'}`,
+    border: `1px solid ${corDaBorda}`,
     background: readOnly ? 'var(--bg-sunken)' : 'var(--bg-card)',
-    borderRadius: 'var(--radius)',
+    borderRadius: 'var(--leaf-sm)',
     padding: field ? '12px 14px' : '10px 13px',
     font: field ? 'var(--text-body-lg)' : 'var(--text-body)',
     color: 'var(--text-primary)',
     outline: 'none',
-    boxShadow: error ? '0 0 0 3px var(--color-attention-soft)' : 'none',
+    boxShadow: halo,
     paddingRight: suffix ? 64 : action ? (field ? 52 : 46) : undefined,
     resize: 'vertical',
   };
@@ -72,10 +86,7 @@ export function TextField({
         <label
           htmlFor={fid}
           style={{
-            font: 'var(--text-label)',
-            letterSpacing: 'var(--tracking-label)',
-            textTransform: 'uppercase',
-            color: 'var(--text-field-label)',
+            ...rotuloVersalete,
             marginBottom: 7,
           }}
         >
@@ -85,9 +96,9 @@ export function TextField({
 
       <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
         {multiline ? (
-          <textarea id={fid} readOnly={readOnly} rows={3} style={controlStyle} {...rest} {...ligacaoAcessivel} />
+          <textarea id={fid} readOnly={readOnly} rows={3} style={controlStyle} {...rest} onFocus={aoFocar} onBlur={aoSair} {...ligacaoAcessivel} />
         ) : (
-          <input id={fid} type={type} readOnly={readOnly} style={controlStyle} {...rest} {...ligacaoAcessivel} />
+          <input id={fid} type={type} readOnly={readOnly} style={controlStyle} {...rest} onFocus={aoFocar} onBlur={aoSair} {...ligacaoAcessivel} />
         )}
         {suffix ? (
           <span

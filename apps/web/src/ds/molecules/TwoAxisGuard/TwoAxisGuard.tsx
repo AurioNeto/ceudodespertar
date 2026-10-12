@@ -20,9 +20,9 @@ export function TwoAxisGuard({
     <div
       style={{
         background: 'var(--bg-card)',
-        border: '1px solid var(--color-royal-border)',
-        borderTop: 'var(--edge-state) solid var(--color-royal)',
-        borderRadius: '0 0 var(--radius) var(--radius)',
+        border: '1px solid var(--color-neutral-border)',
+        borderTop: 'var(--edge-state) solid var(--color-neutral)',
+        borderRadius: 'var(--leaf-md)',
         padding: '18px 18px 16px',
         display: 'flex',
         gap: 14,
@@ -40,9 +40,9 @@ export function TwoAxisGuard({
             style={{
               marginTop: 10,
               font: 'var(--text-small)',
-              color: 'var(--color-royal-ink)',
-              background: 'var(--color-royal-soft)',
-              borderRadius: 'var(--radius-sm)',
+              color: 'var(--color-neutral)',
+              background: 'var(--color-neutral-soft)',
+              borderRadius: 'var(--leaf-xs)',
               padding: '8px 11px',
               display: 'inline-block',
             }}

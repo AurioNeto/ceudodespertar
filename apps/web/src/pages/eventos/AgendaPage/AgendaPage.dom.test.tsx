@@ -269,7 +269,7 @@ describe('AgendaPage: lista', () => {
 
   it.each([
     { posicao: 0, situacao: 'Realizada', tom: 'var(--tone-confirmed-fg)' },
-    { posicao: 1, situacao: 'Confirmada', tom: 'var(--color-royal-ink)' },
+    { posicao: 1, situacao: 'Confirmada', tom: 'var(--tone-royal-fg)' },
     { posicao: 2, situacao: 'Planejada', tom: 'var(--tone-pending-fg)' },
   ])('item $posicao da lista — o selo $situacao usa o tom $tom', async ({ posicao, situacao, tom }) => {
     const { container } = await montar(<AgendaPage />);

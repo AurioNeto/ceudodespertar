@@ -43,7 +43,7 @@ const COR = {
   atencao: 'var(--color-attention)',
   pendente: 'var(--color-pending)',
   royal: 'var(--color-royal)',
-  royalDoSelo: 'var(--color-royal-ink)',
+  royalDoSelo: 'var(--tone-royal-fg)',
   confirmadoDoSelo: 'var(--tone-confirmed-fg)',
   pendenteDoSelo: 'var(--tone-pending-fg)',
   neutroDoSelo: 'var(--tone-neutral-fg)',

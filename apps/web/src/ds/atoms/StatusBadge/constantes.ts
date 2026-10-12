@@ -5,5 +5,5 @@ export const TONES = {
   period: { bg: 'var(--tone-period-bg)', fg: 'var(--tone-period-fg)' },
   neutral: { bg: 'var(--tone-neutral-bg)', fg: 'var(--tone-neutral-fg)' },
   suggest: { bg: 'var(--tone-suggest-bg)', fg: 'var(--tone-suggest-fg)' },
-  royal: { bg: 'var(--color-royal-soft)', fg: 'var(--color-royal-ink)' },
+  royal: { bg: 'var(--tone-royal-bg)', fg: 'var(--tone-royal-fg)' },
 } satisfies Record<string, { bg: string; fg: string }>;

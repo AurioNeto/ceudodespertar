@@ -11,9 +11,9 @@ export function PermissionDenied({ title, description, style }: PermissionDenied
   return (
     <div
       style={{
-        background: 'var(--color-attention-soft)',
-        border: '1px solid var(--color-attention-border)',
-        borderRadius: 'var(--radius)',
+        background: 'var(--color-neutral-soft)',
+        border: '1px solid var(--color-neutral-border)',
+        borderRadius: 'var(--leaf-md)',
         padding: '17px 18px',
         display: 'flex',
         gap: 13,

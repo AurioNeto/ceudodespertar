@@ -35,7 +35,7 @@ export function Aviso({
       style={{
         background: t.fundo,
         border: `1px solid ${t.borda}`,
-        borderRadius: 'var(--radius)',
+        borderRadius: 'var(--leaf-md)',
         padding: '12px 15px',
         display: 'flex',
         gap: 10,

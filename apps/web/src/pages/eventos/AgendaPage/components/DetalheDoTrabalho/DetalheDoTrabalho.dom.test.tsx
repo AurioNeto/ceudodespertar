@@ -73,7 +73,7 @@ describe('DetalheDoTrabalho: cabeçalho', () => {
 
   it.each([
     { situacao: 'planejada' as const, texto: 'Planejada', cor: 'var(--tone-pending-fg)' },
-    { situacao: 'confirmada' as const, texto: 'Confirmada', cor: 'var(--color-royal-ink)' },
+    { situacao: 'confirmada' as const, texto: 'Confirmada', cor: 'var(--tone-royal-fg)' },
     { situacao: 'realizada' as const, texto: 'Realizada', cor: 'var(--tone-confirmed-fg)' },
     { situacao: 'cancelada' as const, texto: 'Cancelada', cor: 'var(--tone-neutral-fg)' },
   ])('situação $situacao — o selo diz $texto no tom $cor', async ({ situacao, texto, cor }) => {

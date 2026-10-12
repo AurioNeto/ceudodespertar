@@ -1,5 +1,6 @@
 import type { CSSProperties, ReactNode } from 'react';
 import type { Density } from '../../fundacao/densidade';
+import { rotuloVersalete } from '../../fundacao/estilos';
 
 export interface ScreenHeaderProps {
   /** Código da tela no mapa de telas (T-02, F-09...). */
@@ -17,7 +18,6 @@ export function ScreenHeader({ code, title, subtitle, actions, density = 'office
       style={{
         background: 'var(--bg-card)',
         borderBottom: '1px solid var(--color-line)',
-        borderTop: '2px solid var(--color-royal)',
         padding: density === 'field' ? '17px 20px 16px' : '21px 24px 20px',
         display: 'flex',
         gap: 20,
@@ -30,10 +30,7 @@ export function ScreenHeader({ code, title, subtitle, actions, density = 'office
         {code ? (
           <div
             style={{
-              font: 'var(--text-label)',
-              letterSpacing: 'var(--tracking-label)',
-              textTransform: 'uppercase',
-              color: 'var(--text-field-label)',
+              ...rotuloVersalete,
               marginBottom: 5,
             }}
           >

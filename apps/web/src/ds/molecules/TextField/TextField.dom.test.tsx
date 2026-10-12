@@ -245,7 +245,7 @@ describe('TextField: estado de erro', () => {
 
   it('sem erro a borda é neutra e não há sombra', async () => {
     await montar({ hint: 'Como aparece no crachá' });
-    expect(campo().style.border).toBe('1px solid var(--color-line-strong)');
+    expect(campo().style.border).toBe('1px solid var(--border-field)');
     expect(campo().style.boxShadow).toBe('none');
   });
 

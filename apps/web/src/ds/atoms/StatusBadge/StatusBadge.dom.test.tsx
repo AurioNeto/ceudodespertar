@@ -15,7 +15,7 @@ const CORES_POR_TOM: readonly [BadgeTone, string, string][] = [
   ['attention', 'var(--tone-attention-bg)', 'var(--tone-attention-fg)'],
   ['neutral', 'var(--tone-neutral-bg)', 'var(--tone-neutral-fg)'],
   ['suggest', 'var(--tone-suggest-bg)', 'var(--tone-suggest-fg)'],
-  ['royal', 'var(--color-royal-soft)', 'var(--color-royal-ink)'],
+  ['royal', 'var(--tone-royal-bg)', 'var(--tone-royal-fg)'],
 ];
 
 describe('StatusBadge — tom e texto', () => {
@@ -132,6 +132,6 @@ describe('StatusBadge — style', () => {
     );
 
     const elementoDoSelo = selo(container);
-    expect([elementoDoSelo.style.marginLeft, elementoDoSelo.style.color]).toEqual(['8px', 'var(--color-royal-ink)']);
+    expect([elementoDoSelo.style.marginLeft, elementoDoSelo.style.color]).toEqual(['8px', 'var(--tone-royal-fg)']);
   });
 });

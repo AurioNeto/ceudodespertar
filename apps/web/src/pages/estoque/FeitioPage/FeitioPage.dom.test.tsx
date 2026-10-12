@@ -200,7 +200,7 @@ describe('FeitioPage: feitio em andamento', () => {
     const container = await montarFeitio();
 
     expect(folhaComTexto(container, 'span', 'Feitio de setembro')).toBeTruthy();
-    expect(folhaComTexto<HTMLSpanElement>(container, 'span', 'Em andamento').style.color).toBe('var(--color-royal-ink)');
+    expect(folhaComTexto<HTMLSpanElement>(container, 'span', 'Em andamento').style.color).toBe('var(--tone-royal-fg)');
     expect(folhaComTexto(container, 'span', '08/09/2026 · ainda na panela · Casa de feitio · Chácara')).toBeTruthy();
     expect(textosDasFolhas(cartaoDe(container, 'Quem está fazendo').parentElement as HTMLElement)).toContain('Chico Aguiar');
   });
