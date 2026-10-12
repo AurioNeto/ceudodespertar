@@ -1,0 +1,1 @@
+export { EscolhaDoClima } from './EscolhaDoClima';

@@ -16,6 +16,8 @@ export type { ButtonVariant } from './atoms/Button';
 export type { Density } from './fundacao/densidade';
 export { useDensidade } from './fundacao/useDensidade';
 export { Cartao } from './atoms/Cartao';
+export { ClimaProvider, CLIMAS, useClima } from './providers/ClimaProvider';
+export type { Clima } from './providers/ClimaProvider';
 export { ConfirmAction } from './molecules/ConfirmAction';
 export { CorpoDaTela } from './templates/CorpoDaTela';
 export { DataTable } from './organisms/DataTable';

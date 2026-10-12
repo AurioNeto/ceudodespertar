@@ -4,6 +4,14 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#0B1F17" />
+    <script>
+      try {
+        if (localStorage.getItem('cdd.clima') === 'amanhecer') {
+          document.documentElement.dataset.clima = 'amanhecer';
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#E9EDD8');
+        }
+      } catch {}
+    </script>
     <title>Céu do Despertar · Sistema de Gestão</title>
   </head>
   <body>
