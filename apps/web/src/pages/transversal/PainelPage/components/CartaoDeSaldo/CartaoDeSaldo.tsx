@@ -12,7 +12,7 @@ export function CartaoDeSaldo() {
         minWidth: 0,
         background: 'var(--bg-brand)',
         border: '1px solid var(--border-brand)',
-        borderRadius: 'var(--radius-lg)',
+        borderRadius: 'var(--leaf-lg)',
         padding: '18px 20px 16px',
         display: 'flex',
         flexDirection: 'column',

@@ -25,7 +25,7 @@ export function AbaDeReservas({ reservas, reservado, onAlternar }: AbaDeReservas
             padding: '12px 14px',
             border: 'var(--border-hairline)',
             borderLeft: `3px solid ${reservado[r.id] ? 'var(--color-confirmed)' : 'var(--color-line-strong)'}`,
-            borderRadius: 'var(--radius)',
+            borderRadius: 'var(--leaf-sm)',
             background: 'var(--bg-card)',
           }}
         >

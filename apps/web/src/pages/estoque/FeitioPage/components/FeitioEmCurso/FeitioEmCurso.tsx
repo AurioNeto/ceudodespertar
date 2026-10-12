@@ -47,7 +47,7 @@ export function FeitioEmCurso({
               font: 'var(--text-small)',
               background: 'var(--bg-sunken)',
               border: '1px solid var(--color-line)',
-              borderRadius: 'var(--radius-pill)',
+              borderRadius: 'var(--leaf-xs)',
               padding: '2px 10px',
               color: 'var(--text-secondary)',
             }}
@@ -62,7 +62,7 @@ export function FeitioEmCurso({
           style={{
             background: 'var(--color-confirmed-soft)',
             border: '1px solid var(--color-confirmed-border)',
-            borderRadius: 'var(--radius)',
+            borderRadius: 'var(--leaf-md)',
             padding: '12px 15px',
             display: 'flex',
             flexWrap: 'wrap',

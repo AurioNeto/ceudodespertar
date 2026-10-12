@@ -23,7 +23,7 @@ export function ListaDePessoas({ pessoas, acessos, onAbrir }: ListaDePessoasProp
             flexWrap: 'wrap',
             padding: '11px 14px',
             border: 'var(--border-hairline)',
-            borderRadius: 'var(--radius)',
+            borderRadius: 'var(--leaf-sm)',
             background: p.ativa ? 'var(--bg-card)' : 'var(--bg-sunken)',
             opacity: p.ativa ? 1 : 0.75,
             cursor: 'pointer',

@@ -134,7 +134,7 @@ describe('AgendaPage: calendário do mês', () => {
     expect(texto.endsWith('ConcentraçãoTrabalho de curaFeitioBailadoReunião do corpo')).toBe(true);
   });
 
-  it('legenda — cada tipo traz o quadradinho na mesma cor do chip, na ordem do mapa de cores', async () => {
+  it('legenda — cada tipo traz o quadradinho na cor cheia do tipo, na ordem do mapa de cores', async () => {
     const { container } = await montar(<AgendaPage />);
 
     const legenda = todos<HTMLSpanElement>(container, 'span[style*="width: 10px"]').map((quadrado) => [

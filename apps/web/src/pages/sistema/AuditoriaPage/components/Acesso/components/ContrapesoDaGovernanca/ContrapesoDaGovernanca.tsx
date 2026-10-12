@@ -7,7 +7,7 @@ export function ContrapesoDaGovernanca() {
         background: 'var(--color-suggest-soft)',
         border: '1px solid var(--color-suggest-border)',
         borderLeft: 'var(--edge-state) solid var(--color-suggest)',
-        borderRadius: '0 var(--radius) var(--radius) 0',
+        borderRadius: 'var(--leaf-md)',
         padding: '15px 17px',
         display: 'flex',
         gap: 12,

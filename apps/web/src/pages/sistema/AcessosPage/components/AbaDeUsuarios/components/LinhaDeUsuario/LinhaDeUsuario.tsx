@@ -24,7 +24,7 @@ export function LinhaDeUsuario({ usuario, aoGerenciar }: LinhaDeUsuarioProps) {
         flexWrap: 'wrap',
         padding: '11px 14px',
         border: 'var(--border-hairline)',
-        borderRadius: 'var(--radius)',
+        borderRadius: 'var(--leaf-sm)',
         background: 'var(--bg-card)',
       }}
     >

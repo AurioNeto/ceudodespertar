@@ -13,7 +13,7 @@ export function Kpi({ rotulo, valor, nota, cor = 'var(--color-royal-deep)' }: Kp
       style={{
         background: 'var(--bg-card)',
         border: 'var(--border-hairline)',
-        borderRadius: 'var(--radius)',
+        borderRadius: 'var(--leaf-lg)',
         padding: '13px 15px',
         display: 'flex',
         flexDirection: 'column',

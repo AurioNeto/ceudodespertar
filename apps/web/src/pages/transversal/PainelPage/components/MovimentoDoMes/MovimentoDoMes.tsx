@@ -13,7 +13,7 @@ export function MovimentoDoMes() {
         minWidth: 0,
         background: 'var(--bg-card)',
         border: 'var(--border-hairline)',
-        borderRadius: 'var(--radius-lg)',
+        borderRadius: 'var(--leaf-lg)',
         padding: '18px 22px',
         display: 'flex',
         flexDirection: 'column',

@@ -17,7 +17,7 @@ export function BotaoDaPergunta({ rotulo, onClick, children }: BotaoDaPerguntaPr
         height: 32,
         border: '1px solid var(--color-line)',
         background: 'var(--bg-card)',
-        borderRadius: 'var(--radius-sm)',
+        borderRadius: 'var(--leaf-xs)',
         cursor: 'pointer',
         color: 'var(--text-secondary)',
       }}

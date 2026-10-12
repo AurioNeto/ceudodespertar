@@ -27,7 +27,7 @@ export function BlocoDoResumo({
         padding: '12px 14px',
         background: destacado ? 'var(--bg-brand)' : 'var(--bg-card)',
         border: destacado ? '1px solid var(--border-brand)' : 'var(--border-hairline)',
-        borderRadius: 'var(--radius-sm)',
+        borderRadius: 'var(--leaf-sm)',
       }}
     >
       <Rotulo style={{ display: 'flex', alignItems: 'center', gap: 7 }}>

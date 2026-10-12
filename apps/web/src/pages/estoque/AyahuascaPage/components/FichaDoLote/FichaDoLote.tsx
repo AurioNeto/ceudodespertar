@@ -35,7 +35,7 @@ export function FichaDoLote({ lote, movimentos, densidade, onFechar, onQuarenten
           overflow: 'auto',
           background: 'var(--bg-app)',
           borderLeft: campo ? 0 : '1px solid var(--color-line-strong)',
-          borderRadius: campo ? 'var(--radius-lg) var(--radius-lg) 0 0' : 0,
+          borderRadius: campo ? 'var(--leaf-xl-espelhada)' : 0,
           boxShadow: 'var(--shadow-sheet)',
           padding: '18px 20px 24px',
           display: 'flex',
@@ -53,7 +53,7 @@ export function FichaDoLote({ lote, movimentos, densidade, onFechar, onQuarenten
           style={{
             background: 'var(--bg-card)',
             border: 'var(--border-hairline)',
-            borderRadius: 'var(--radius)',
+            borderRadius: 'var(--leaf-lg)',
             padding: '14px 16px',
             display: 'grid',
             gridTemplateColumns: 'repeat(2,minmax(0,1fr))',
@@ -74,7 +74,7 @@ export function FichaDoLote({ lote, movimentos, densidade, onFechar, onQuarenten
           style={{
             background: 'var(--bg-card)',
             border: 'var(--border-hairline)',
-            borderRadius: 'var(--radius)',
+            borderRadius: 'var(--leaf-lg)',
             padding: '14px 16px',
             display: 'flex',
             flexDirection: 'column',
