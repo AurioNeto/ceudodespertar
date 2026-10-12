@@ -8,9 +8,6 @@ export function FaixaDeDemonstracao() {
     <div
       role="note"
       style={{
-        position: 'sticky',
-        top: 0,
-        zIndex: 1,
         display: 'flex',
         alignItems: 'center',
         gap: 8,

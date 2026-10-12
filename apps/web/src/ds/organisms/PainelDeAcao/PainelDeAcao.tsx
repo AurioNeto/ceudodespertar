@@ -130,6 +130,8 @@ function PainelAberto({
         position: 'fixed',
         inset: 0,
         background: 'var(--bg-scrim)',
+        backdropFilter: 'var(--glass)',
+        WebkitBackdropFilter: 'var(--glass)',
         display: 'flex',
         zIndex: 40,
         ...FUNDO_POR_VARIANTE[variante],

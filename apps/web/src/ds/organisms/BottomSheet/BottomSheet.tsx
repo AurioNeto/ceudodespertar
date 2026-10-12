@@ -31,6 +31,8 @@ export function BottomSheet({
         position: 'absolute',
         inset: 0,
         background: 'var(--bg-scrim)',
+        backdropFilter: 'var(--glass)',
+        WebkitBackdropFilter: 'var(--glass)',
         display: 'flex',
         alignItems: 'flex-end',
         zIndex: 40,
