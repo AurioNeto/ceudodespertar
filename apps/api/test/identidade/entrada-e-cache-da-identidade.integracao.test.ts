@@ -11,6 +11,7 @@ const ADMIN = 'sub-admin';
 const ALVO = 'sub-alvo';
 const NUL = '\u0000';
 const NUL_NA_URL = '%00';
+const ROTA_AUDITORIA = '/api/v1/identidade/auditoria';
 
 function cursorComNulNoNome(): string {
   const posicao = { chaveDeNome: `a${NUL}`, id: '3f2504e0-4f89-41d3-9a0c-0305e82c3301' };
@@ -33,7 +34,7 @@ describe('entrada e cache das rotas da identidade', () => {
   });
 
   async function semearCasa() {
-    const administracao = novoGrupoNomeado('Administração', ['sistema.usuario.gerenciar', 'sistema.grupo.gerenciar']);
+    const administracao = novoGrupoNomeado('Administração', ['sistema.usuario.gerenciar', 'sistema.grupo.gerenciar', 'sistema.auditoria.ler']);
     const leitura = novoGrupoNomeado('Leitura', ['financeiro.lancamento.ler']);
     const admin = usuarioAtivoEm(ADMIN, [administracao]);
     const alvo = usuarioAtivoEm(ALVO, [leitura]);
@@ -138,6 +139,7 @@ describe('entrada e cache das rotas da identidade', () => {
       { rota: 'GET /identidade/usuarios', caminho: () => ROTA_USUARIOS },
       { rota: 'GET /identidade/usuarios/:id', caminho: (id: string) => `${ROTA_USUARIOS}/${id}` },
       { rota: 'GET /eu', caminho: () => ROTA_EU },
+      { rota: 'GET /identidade/auditoria', caminho: () => ROTA_AUDITORIA },
     ])('$rota responde Cache-Control: no-store', async ({ caminho }) => {
       const { alvo } = await semearCasa();
 

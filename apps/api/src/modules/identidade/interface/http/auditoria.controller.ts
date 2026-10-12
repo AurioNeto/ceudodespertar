@@ -1,4 +1,4 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Header, Query } from '@nestjs/common';
 import { FiltroDeAuditoria } from '@cdd/contracts';
 import type { PaginaDeAuditoria } from '@cdd/contracts';
 import { ContextoAtual } from '../../../../shared/infrastructure/autenticacao/requisicao-autenticada.js';
@@ -14,6 +14,7 @@ export class AuditoriaController {
   @RequerPermissao('sistema.auditoria.ler')
   @ModoDeTransacao('leitura-que-grava')
   @Get()
+  @Header('Cache-Control', 'no-store')
   consultar(
     @ContextoAtual() acesso: ContextoDeAcesso,
     @Query({ schema: FiltroDeAuditoria }) filtro: FiltroDeAuditoria,
