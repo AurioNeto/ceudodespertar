@@ -16,7 +16,9 @@ export function ScreenHeader({ code, title, subtitle, actions, density = 'office
   return (
     <header
       style={{
-        background: 'var(--bg-card)',
+        background: 'var(--bg-glass)',
+        backdropFilter: 'var(--glass)',
+        WebkitBackdropFilter: 'var(--glass)',
         borderBottom: '1px solid var(--color-line)',
         padding: density === 'field' ? '17px 20px 16px' : '21px 24px 20px',
         display: 'flex',

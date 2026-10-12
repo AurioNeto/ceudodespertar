@@ -11,7 +11,9 @@ export function MovimentoDoMes() {
       style={{
         flex: '3 1 480px',
         minWidth: 0,
-        background: 'var(--bg-card)',
+        background: 'var(--bg-glass)',
+        backdropFilter: 'var(--glass)',
+        WebkitBackdropFilter: 'var(--glass)',
         border: 'var(--border-hairline)',
         borderRadius: 'var(--leaf-lg)',
         padding: '18px 22px',

@@ -12,7 +12,9 @@ export function SkeletonList({ rows = 4, style }: { rows?: number; style?: CSSPr
         <div
           key={i}
           style={{
-            background: 'var(--bg-card)',
+            background: 'var(--bg-glass)',
+            backdropFilter: 'var(--glass)',
+            WebkitBackdropFilter: 'var(--glass)',
             border: 'var(--border-hairline)',
             borderRadius: 'var(--leaf-sm)',
             padding: '15px 16px',

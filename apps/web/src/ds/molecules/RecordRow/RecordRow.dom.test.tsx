@@ -105,7 +105,7 @@ describe('RecordRow — seleção e densidade', () => {
     const { container } = await montar(<RecordRow description="Mercado" amount={1} />);
 
     const linha = linhaDe(container);
-    expect([linha.style.background, linha.style.border]).toEqual(['var(--bg-card)', '1px solid var(--color-line)']);
+    expect([linha.style.background, linha.style.border]).toEqual(['var(--bg-glass)', '1px solid var(--color-line)']);
   });
 
   it('selected — fundo e borda em azul real', async () => {

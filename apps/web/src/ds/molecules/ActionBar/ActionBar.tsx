@@ -13,7 +13,9 @@ export function ActionBar({ children, note, sticky = true, style }: ActionBarPro
       style={{
         position: sticky ? 'sticky' : 'static',
         bottom: 0,
-        background: 'var(--bg-card)',
+        background: 'var(--bg-glass)',
+        backdropFilter: 'var(--glass)',
+        WebkitBackdropFilter: 'var(--glass)',
         borderTop: '1px solid var(--color-line)',
         padding: '12px 20px 14px',
         display: 'flex',
