@@ -1,0 +1,1 @@
+DROP INDEX shared.outbox_despachados_por_instituicao;

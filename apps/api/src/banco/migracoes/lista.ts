@@ -10,6 +10,7 @@ import { MigracaoB0008AuditoriaGrupoEditado } from './b0-008-auditoria-grupo-edi
 import { MigracaoB0009UsuarioGrupoPorGrupo } from './b0-009-usuario-grupo-por-grupo/migracao.js';
 import { MigracaoB0010ResolverConvite } from './b0-010-resolver-convite/migracao.js';
 import { MigracaoB0011Bootstrap } from './b0-011-bootstrap/migracao.js';
+import { MigracaoB0012OutboxExpurgo } from './b0-012-outbox-expurgo/migracao.js';
 
 export const MIGRACOES_DO_CDD = [
   { name: 'b0-000-esquemas', class: MigracaoB0000Esquemas },
@@ -24,4 +25,5 @@ export const MIGRACOES_DO_CDD = [
   { name: 'b0-009-usuario-grupo-por-grupo', class: MigracaoB0009UsuarioGrupoPorGrupo },
   { name: 'b0-010-resolver-convite', class: MigracaoB0010ResolverConvite },
   { name: 'b0-011-bootstrap', class: MigracaoB0011Bootstrap },
+  { name: 'b0-012-outbox-expurgo', class: MigracaoB0012OutboxExpurgo },
 ];

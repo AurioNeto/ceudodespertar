@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { DiscoveryModule } from '@nestjs/core';
 import { BancoModule } from '../banco/banco.module.js';
+import { ExpurgoDoOutbox } from './expurgo-do-outbox.js';
 import { Despachante, TIMEOUT_DO_CONSUMIDOR_EM_MS, lerTimeoutDoConsumidorEmMs } from './despachante.js';
 import { MODO_DO_PROCESSO, lerModoDoProcesso } from './modo-do-processo.js';
 import { RegistroDeConsumidores } from './registro-de-consumidores.js';
@@ -19,6 +20,7 @@ import { VigiaDeEventosEsgotados } from './vigia-de-eventos-esgotados.js';
     { provide: MODO_DO_PROCESSO, useFactory: () => lerModoDoProcesso(process.env) },
     Despachante,
     VigiaDeEventosEsgotados,
+    ExpurgoDoOutbox,
   ],
   exports: [RepositorioDoOutbox, SinalizadorDeEventos],
 })
