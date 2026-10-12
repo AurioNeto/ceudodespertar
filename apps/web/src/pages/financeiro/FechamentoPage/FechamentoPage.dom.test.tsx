@@ -48,6 +48,7 @@ vi.mock('@/pages/financeiro/mocks/lancamentos', async (importarOriginal) => {
 const COR_PENDENTE = 'var(--color-pending)';
 const COR_CONFIRMADA = 'var(--color-confirmed)';
 const COR_DE_ATENCAO = 'var(--color-attention)';
+const COR_DO_SELO_CONFIRMADO = 'var(--tone-confirmed-fg)';
 const COR_DE_MARCA = 'var(--color-royal-deep)';
 const MENOS = '− ';
 
@@ -775,7 +776,7 @@ describe('FechamentoPage: meses anteriores', () => {
 
     const selos = todos<HTMLSpanElement>(container, 'span').filter((s) => s.textContent === 'Fechado');
 
-    expect(selos.map((s) => s.style.color)).toEqual([COR_CONFIRMADA, COR_CONFIRMADA, COR_CONFIRMADA, COR_CONFIRMADA]);
+    expect(selos.map((s) => s.style.color)).toEqual([COR_DO_SELO_CONFIRMADO, COR_DO_SELO_CONFIRMADO, COR_DO_SELO_CONFIRMADO, COR_DO_SELO_CONFIRMADO]);
   });
 
   it('o resultado de maio, negativo, fica em atenção e os positivos em verde', async () => {

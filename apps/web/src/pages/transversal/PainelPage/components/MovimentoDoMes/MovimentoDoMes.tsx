@@ -1,4 +1,4 @@
-import { AmountDisplay, Icon, rotuloCaixaAlta } from '@/ds';
+import { AmountDisplay, Icon, rotuloVersalete } from '@/ds';
 import { competenciaAnterior, movimentoDoMes } from '../../mocks/resumoFinanceiro';
 import { competenciaAtual } from '@/pages/mocks/relogio';
 import { competenciaPorExtenso, formatarBRL, formatarCompetencia } from '@/pages/utils/formato';
@@ -22,7 +22,7 @@ export function MovimentoDoMes() {
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
         <Icon name="chart-no-axes-column" size={18} color="var(--color-royal)" />
-        <div style={rotuloCaixaAlta}>Movimento de {formatarCompetencia(competenciaAtual)}</div>
+        <div style={rotuloVersalete}>Movimento de {formatarCompetencia(competenciaAtual)}</div>
         <span style={{ marginLeft: 'auto', font: 'var(--text-small)', color: 'var(--text-secondary)' }}>
           comparado com {formatarCompetencia(competenciaAnterior)}
         </span>

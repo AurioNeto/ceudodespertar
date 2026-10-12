@@ -234,10 +234,10 @@ describe('ContratacoesPage: cartões', () => {
   });
 
   it.each([
-    { contratante: LUZ_DO_NORTE, rotulo: 'Proposta', cor: 'var(--color-suggest)' },
+    { contratante: LUZ_DO_NORTE, rotulo: 'Proposta', cor: 'var(--tone-suggest-fg)' },
     { contratante: ESTRELA_GUIA, rotulo: 'Confirmada', cor: 'var(--color-royal-ink)' },
-    { contratante: JACI, rotulo: 'Realizada', cor: 'var(--color-confirmed)' },
-    { contratante: SEMENTE_VIVA, rotulo: 'Cancelada', cor: 'var(--color-neutral)' },
+    { contratante: JACI, rotulo: 'Realizada', cor: 'var(--tone-confirmed-fg)' },
+    { contratante: SEMENTE_VIVA, rotulo: 'Cancelada', cor: 'var(--tone-neutral-fg)' },
   ])('$contratante — o selo diz $rotulo no tom $cor', async ({ contratante, rotulo, cor }) => {
     const { container } = await montar(<ContratacoesPage />);
 

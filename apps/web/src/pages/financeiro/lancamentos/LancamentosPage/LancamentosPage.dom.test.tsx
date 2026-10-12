@@ -772,8 +772,8 @@ describe('LancamentosPage: gaveta de detalhe', () => {
 
     expect([selo.textContent, selo.style.color, selo.style.background]).toEqual([
       situacao,
-      `var(--color-${tom})`,
-      `var(--color-${tom}-soft)`,
+      `var(--tone-${tom}-fg)`,
+      `var(--tone-${tom}-bg)`,
     ]);
   });
 

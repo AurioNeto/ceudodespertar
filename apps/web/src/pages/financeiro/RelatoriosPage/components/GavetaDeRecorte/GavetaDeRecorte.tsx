@@ -1,5 +1,5 @@
 import { reais } from '@cdd/contracts';
-import { AmountDisplay, Button, PainelDeAcao, rotuloCaixaAlta, varianteDoPainel, type Density } from '@/ds';
+import { AmountDisplay, Button, PainelDeAcao, rotuloVersalete, varianteDoPainel, type Density } from '@/ds';
 import { formatarBRL, pluralizar } from '@/pages/utils/formato';
 import type { LinhaDoRelatorio } from '../../mocks/relatorios';
 import type { Drill } from '../../tipos';
@@ -32,7 +32,7 @@ export function GavetaDeRecorte({
       aoFechar={onFechar}
     >
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-        <div style={rotuloCaixaAlta}>{drill.rotulo}</div>
+        <div style={rotuloVersalete}>{drill.rotulo}</div>
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           {linhasDoDrill.slice(0, 40).map((l) => (
             <div

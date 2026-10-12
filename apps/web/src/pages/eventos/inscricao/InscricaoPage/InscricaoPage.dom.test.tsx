@@ -639,7 +639,7 @@ describe('InscricaoPage: estado da anamnese', () => {
     const container = await abrirComPessoa(pessoa);
 
     expect(folhaComTexto(container, 'span', selo)).toBeDefined();
-    expect(corDoSelo(container, selo)).toBe(`var(--color-${tom})`);
+    expect(corDoSelo(container, selo)).toBe(`var(--tone-${tom}-fg)`);
     expect(folhaComTexto(container, 'span', nota)).toBeDefined();
     expect(textoDe(container)).toContain(frase);
   });
@@ -652,7 +652,7 @@ describe('InscricaoPage: estado da anamnese', () => {
 
     await clicar(interruptor(container, 'Consagra neste trabalho'));
 
-    expect(corDoSelo(container, 'Não se aplica')).toBe('var(--color-neutral)');
+    expect(corDoSelo(container, 'Não se aplica')).toBe('var(--tone-neutral-fg)');
   });
 
   it('quem não consagra — o selo vira Não se aplica e a frase diz que o estado antigo continua guardado', async () => {

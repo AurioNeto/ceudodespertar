@@ -8,7 +8,7 @@ export function Avatar({ nome }: { nome: string }) {
         width: 34,
         height: 34,
         flex: '0 0 auto',
-        borderRadius: 'var(--radius-sm)',
+        borderRadius: 'var(--leaf-seal)',
         background: 'var(--color-royal-soft)',
         color: 'var(--color-royal-deep)',
         display: 'grid',

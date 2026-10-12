@@ -258,9 +258,9 @@ describe('ContasEFundoPage: cartão de cada conta', () => {
   });
 
   it.each([
-    { nome: 'Cora PJ', selo: 'Conciliada em 01/09', cor: 'var(--color-confirmed)' },
-    { nome: 'Espécie', selo: 'Contagem pendente', cor: 'var(--color-pending)' },
-    { nome: 'Nubank Paty', selo: 'A conferir', cor: 'var(--color-pending)' },
+    { nome: 'Cora PJ', selo: 'Conciliada em 01/09', cor: 'var(--tone-confirmed-fg)' },
+    { nome: 'Espécie', selo: 'Contagem pendente', cor: 'var(--tone-pending-fg)' },
+    { nome: 'Nubank Paty', selo: 'A conferir', cor: 'var(--tone-pending-fg)' },
   ])('selo da conta $nome — diz $selo no tom $cor', async ({ nome, selo, cor }) => {
     const { container } = await montar(<ContasEFundoPage />);
 

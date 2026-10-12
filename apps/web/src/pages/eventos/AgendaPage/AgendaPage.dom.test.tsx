@@ -268,9 +268,9 @@ describe('AgendaPage: lista', () => {
   });
 
   it.each([
-    { posicao: 0, situacao: 'Realizada', tom: 'var(--color-confirmed)' },
+    { posicao: 0, situacao: 'Realizada', tom: 'var(--tone-confirmed-fg)' },
     { posicao: 1, situacao: 'Confirmada', tom: 'var(--color-royal-ink)' },
-    { posicao: 2, situacao: 'Planejada', tom: 'var(--color-pending)' },
+    { posicao: 2, situacao: 'Planejada', tom: 'var(--tone-pending-fg)' },
   ])('item $posicao da lista — o selo $situacao usa o tom $tom', async ({ posicao, situacao, tom }) => {
     const { container } = await montar(<AgendaPage />);
     await abrirLista(container);
@@ -289,7 +289,7 @@ describe('AgendaPage: lista', () => {
 
     const selo = todos<HTMLSpanElement>(itensDaLista(container)[1]!, 'span').find((span) => span.textContent === 'Cancelada')!;
 
-    expect(selo.style.color).toBe('var(--color-neutral)');
+    expect(selo.style.color).toBe('var(--tone-neutral-fg)');
   });
 
   it('voltar à vista em calendário — retoma o mês que estava aberto', async () => {

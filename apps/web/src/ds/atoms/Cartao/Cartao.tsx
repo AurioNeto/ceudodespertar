@@ -19,7 +19,7 @@ export function Cartao({
       style={{
         background: 'var(--bg-card)',
         border: 'var(--border-hairline)',
-        borderRadius: 'var(--radius)',
+        borderRadius: 'var(--leaf-lg)',
         padding: campo ? '15px 16px' : '18px 20px',
         display: 'flex',
         flexDirection: 'column',

@@ -1,5 +1,5 @@
 import { Fragment } from 'react';
-import { rotuloCaixaAlta } from '../../fundacao/estilos';
+import { rotuloVersalete } from '../../fundacao/estilos';
 import { FONTE_DAS_LINHAS, RESPIRO_DA_LEGENDA } from './constantes';
 
 export type TamanhoDaMarca = 'pequeno' | 'medio' | 'grande';
@@ -28,7 +28,7 @@ export function Marca({ linhas, legenda, tamanho }: MarcaProps) {
           </Fragment>
         ))}
       </div>
-      {legenda ? <div style={{ ...rotuloCaixaAlta, marginTop: RESPIRO_DA_LEGENDA[tamanho] }}>{legenda}</div> : null}
+      {legenda ? <div style={{ ...rotuloVersalete, marginTop: RESPIRO_DA_LEGENDA[tamanho] }}>{legenda}</div> : null}
     </>
   );
 }

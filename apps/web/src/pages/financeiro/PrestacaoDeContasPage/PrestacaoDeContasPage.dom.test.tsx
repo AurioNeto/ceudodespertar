@@ -403,7 +403,7 @@ describe('PrestacaoDeContasPage: prestações já geradas', () => {
       const selo = entrada.children[1]?.children[0]?.children[1];
       return selo instanceof HTMLElement ? selo.style.color : null;
     };
-    expect(historico(container).map(corDoSelo)).toEqual([COR_CONFIRMADA, 'var(--color-pending)', COR_CONFIRMADA]);
+    expect(historico(container).map(corDoSelo)).toEqual(['var(--tone-confirmed-fg)', 'var(--tone-pending-fg)', 'var(--tone-confirmed-fg)']);
   });
 
   it('Gerar PDF — põe a prestação no topo do histórico, com autor e data de demonstração e o hash sorteado', async () => {
