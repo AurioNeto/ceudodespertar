@@ -154,7 +154,7 @@ export function CartaoDeContratacao({
         <div
           style={{
             background: 'var(--bg-sunken)',
-            borderRadius: 'var(--radius)',
+            borderRadius: 'var(--leaf-sm)',
             padding: '11px 14px',
             display: 'flex',
             flexWrap: 'wrap',

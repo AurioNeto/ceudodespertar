@@ -25,7 +25,7 @@ export function Lado({
       style={{
         border: '1px solid var(--color-line)',
         borderLeft: `var(--edge-state) solid ${cor}`,
-        borderRadius: '0 var(--radius) var(--radius) 0',
+        borderRadius: 'var(--leaf-md)',
         padding: '12px 14px',
         display: 'flex',
         flexDirection: 'column',

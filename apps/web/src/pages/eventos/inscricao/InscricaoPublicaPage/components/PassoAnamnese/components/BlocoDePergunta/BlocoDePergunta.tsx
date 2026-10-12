@@ -1,5 +1,5 @@
 import type { Pergunta, PerguntaPendente } from '@cdd/contracts';
-import { Icon, StatusBadge, Cartao } from '@/ds';
+import { Icon, StatusBadge, Cartao, rotuloVersalete } from '@/ds';
 import { TextField } from '@/ds';
 import { OpcaoMarcavel } from '../../../../../components/OpcaoMarcavel';
 import { disparaAlerta } from '../../../../utils/regraDeAlerta';
@@ -136,9 +136,7 @@ export function BlocoDePergunta({
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: 5,
-                font: 'var(--text-label)',
-                letterSpacing: 'var(--tracking-label)',
-                textTransform: 'uppercase',
+                ...rotuloVersalete,
                 color: 'var(--color-suggest)',
               }}
             >

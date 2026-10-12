@@ -1062,7 +1062,7 @@ describe('InscricaoPage: hospedagem e leito', () => {
     ]);
   });
 
-  it('hospedagem — só a opção marcada leva o ícone de check no marcador, e o marcador é redondo', async () => {
+  it('hospedagem — só a opção marcada leva o ícone de check no marcador, e o marcador tem a forma de selo', async () => {
     const container = await abrirComPessoa('Helena Duarte');
     const rotulos = ['Não vai dormir na casa', 'Colchonete próprio na igreja', 'Beliche no dormitório', 'Quarto'];
     const iconesAntes = rotulos.map((rotulo) => temIcone(opcaoEmLinha(container, rotulo), 'check'));
@@ -1072,10 +1072,10 @@ describe('InscricaoPage: hospedagem e leito', () => {
     expect(iconesAntes).toEqual([true, false, false, false]);
     expect(rotulos.map((rotulo) => temIcone(opcaoEmLinha(container, rotulo), 'check'))).toEqual([false, false, true, false]);
     expect(rotulos.map((rotulo) => marcadorDaOpcao(opcaoEmLinha(container, rotulo)).style.borderRadius)).toEqual([
-      '50%',
-      '50%',
-      '50%',
-      '50%',
+      'var(--leaf-seal)',
+      'var(--leaf-seal)',
+      'var(--leaf-seal)',
+      'var(--leaf-seal)',
     ]);
   });
 
@@ -1252,7 +1252,7 @@ describe('InscricaoPage: alimentação', () => {
     const iconeMarcada = temIcone(ceia(), 'check');
     await clicar(ceia());
 
-    expect(antesDoClique).toEqual([false, '5px']);
+    expect(antesDoClique).toEqual([false, 'var(--leaf-xs)']);
     expect(iconeMarcada).toBe(true);
     expect(temIcone(ceia(), 'check')).toBe(false);
   });

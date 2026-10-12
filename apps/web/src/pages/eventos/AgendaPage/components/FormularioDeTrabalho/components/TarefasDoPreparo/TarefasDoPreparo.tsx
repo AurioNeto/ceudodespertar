@@ -1,4 +1,4 @@
-import { Button } from '@/ds';
+import { Button, rotuloVersalete } from '@/ds';
 import type { TarefaDePreparo } from '../../../../tipos';
 import { BotaoDaTarefa } from './components/BotaoDaTarefa';
 import { entradaDaTarefa } from './constantes';
@@ -15,10 +15,7 @@ export function TarefasDoPreparo({ preparo, onMexerNasTarefas, onMover }: Tarefa
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 12 }}>
         <span
           style={{
-            font: 'var(--text-label)',
-            letterSpacing: 'var(--tracking-label)',
-            textTransform: 'uppercase',
-            color: 'var(--text-field-label)',
+            ...rotuloVersalete,
           }}
         >
           Lista de preparo

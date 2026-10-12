@@ -40,7 +40,7 @@ export function ListaDePreparo({
                 gap: 12,
                 padding: '10px 12px',
                 border: 'var(--border-hairline)',
-                borderRadius: 'var(--radius)',
+                borderRadius: 'var(--leaf-sm)',
                 background: feita ? 'var(--color-confirmed-soft)' : 'var(--bg-card)',
                 cursor: onAlternarTarefa ? 'pointer' : 'default',
               }}
