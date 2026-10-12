@@ -16,6 +16,9 @@ export function ScreenHeader({ code, title, subtitle, actions, density = 'office
   return (
     <header
       style={{
+        position: 'sticky',
+        top: 0,
+        zIndex: 2,
         background: 'var(--bg-glass)',
         backdropFilter: 'var(--glass)',
         WebkitBackdropFilter: 'var(--glass)',
