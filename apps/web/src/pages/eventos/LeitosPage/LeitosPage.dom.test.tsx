@@ -200,7 +200,7 @@ describe('LeitosPage: mapa do evento', () => {
   });
 
   it.each([
-    { onde: 'noite 24, célula livre', leito: 'Beliche 2 · inferior', posicao: 0, borda: '1px dashed var(--color-line-strong)', fundo: 'var(--bg-card)' },
+    { onde: 'noite 24, célula livre', leito: 'Beliche 2 · inferior', posicao: 0, borda: '1px dashed var(--color-line-strong)', fundo: 'var(--bg-card-solid)' },
     { onde: 'noite 25, célula livre (conflito)', leito: 'Beliche 2 · inferior', posicao: 1, borda: '1px dashed var(--color-pending)', fundo: 'var(--color-pending-soft)' },
     { onde: 'noite 24, célula ocupada', leito: 'Beliche 1 · superior', posicao: 0, borda: '1px solid var(--color-royal)', fundo: 'var(--color-royal-soft)' },
     { onde: 'noite 25, célula ocupada (conflito)', leito: 'Beliche 1 · superior', posicao: 1, borda: '1px solid var(--color-pending)', fundo: 'var(--color-royal-soft)' },

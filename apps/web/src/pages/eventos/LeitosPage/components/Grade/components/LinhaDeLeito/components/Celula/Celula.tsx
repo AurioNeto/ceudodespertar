@@ -87,7 +87,7 @@ export function Celula({
               ? 'var(--color-royal-soft)'
               : conflita
                 ? 'var(--color-pending-soft)'
-                : 'var(--bg-card)',
+                : 'var(--bg-card-solid)',
         minHeight: campo ? 52 : 48,
         padding: 4,
         display: 'flex',
