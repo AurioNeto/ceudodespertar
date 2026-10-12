@@ -26,7 +26,7 @@ export function FaixaDoPeriodo({ fechado, bloqueios, entradas, saidas, resultado
       style={{
         background: fechado ? 'var(--bg-card)' : 'var(--bg-brand)',
         border: `1px solid ${fechado ? 'var(--color-confirmed)' : 'var(--border-brand)'}`,
-        borderRadius: 'var(--radius-lg)',
+        borderRadius: 'var(--leaf-lg)',
         padding: campo ? '14px 16px' : '18px 20px',
         display: 'flex',
         flexWrap: 'wrap',

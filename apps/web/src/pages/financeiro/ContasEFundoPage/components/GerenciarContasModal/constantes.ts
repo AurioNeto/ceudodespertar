@@ -1,8 +1,8 @@
 export const entrada = {
   minHeight: 40,
-  border: '1px solid var(--color-line-strong)',
+  border: '1px solid var(--border-field)',
   background: 'var(--bg-card)',
-  borderRadius: 'var(--radius-sm)',
+  borderRadius: 'var(--leaf-sm)',
   padding: '8px 12px',
   font: 'var(--text-body)',
   color: 'var(--text-primary)',

@@ -26,7 +26,7 @@ export function CartoesDeKpi({ kpis, comparar, densidade }: CartoesDeKpiProps) {
           style={{
             background: 'var(--bg-card)',
             border: 'var(--border-hairline)',
-            borderRadius: 'var(--radius)',
+            borderRadius: 'var(--leaf-lg)',
             padding: campo ? '11px 12px' : '13px 15px',
             display: 'flex',
             flexDirection: 'column',

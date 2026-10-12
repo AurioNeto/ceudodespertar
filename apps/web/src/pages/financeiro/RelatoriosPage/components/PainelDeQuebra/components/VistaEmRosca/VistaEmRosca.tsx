@@ -88,7 +88,7 @@ export function VistaEmRosca({ fatias, emFoco, total, densidade, onAbrir, onHove
                 style={{
                   width: 10,
                   height: 10,
-                  borderRadius: 'var(--radius-pill)',
+                  borderRadius: 'var(--leaf-seal)',
                   flex: '0 0 auto',
                   background: f.cor,
                   transform: `scale(${f.destacado ? 1.35 : 1})`,

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { reais } from '@cdd/contracts';
+import { rotuloVersalete } from '@/ds';
 import { formatarBRL } from '@/pages/utils/formato';
 import { ItemDaLegenda } from './components/ItemDaLegenda';
 import { pontosDaLinha } from './utils/pontosDaLinha';
@@ -34,7 +35,7 @@ export function GraficoSerie({ serie, acumulados, escala, rotuloPeriodo, campo =
       style={{
         background: 'var(--bg-card)',
         border: 'var(--border-hairline)',
-        borderRadius: 'var(--radius-lg)',
+        borderRadius: 'var(--leaf-lg)',
         padding: campo ? '14px 14px' : '16px 18px',
         display: 'flex',
         flexDirection: 'column',
@@ -87,7 +88,7 @@ export function GraficoSerie({ serie, acumulados, escala, rotuloPeriodo, campo =
                       pointerEvents: 'none',
                       background: 'var(--color-ink-brand)',
                       color: 'var(--bg-card)',
-                      borderRadius: 'var(--radius-sm)',
+                      borderRadius: 'var(--leaf-sm)',
                       padding: '8px 10px',
                       display: 'flex',
                       flexDirection: 'column',
@@ -98,9 +99,8 @@ export function GraficoSerie({ serie, acumulados, escala, rotuloPeriodo, campo =
                   >
                     <span
                       style={{
-                        font: 'var(--text-label)',
-                        letterSpacing: 'var(--tracking-label)',
-                        textTransform: 'uppercase',
+                        ...rotuloVersalete,
+                        color: 'inherit',
                         opacity: 0.7,
                       }}
                     >

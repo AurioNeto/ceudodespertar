@@ -27,7 +27,7 @@ export function PainelDeQuebra({ titulo, itens, onAbrir, campo = false }: Painel
       style={{
         background: 'var(--bg-card)',
         border: 'var(--border-hairline)',
-        borderRadius: 'var(--radius-lg)',
+        borderRadius: 'var(--leaf-lg)',
         padding: campo ? '14px' : '16px 18px',
         display: 'flex',
         flexDirection: 'column',
@@ -47,7 +47,7 @@ export function PainelDeQuebra({ titulo, itens, onAbrir, campo = false }: Painel
                 font: 'var(--text-small)',
                 padding: '6px 11px',
                 minHeight: 32,
-                borderRadius: 'var(--radius-sm)',
+                borderRadius: 'var(--leaf-sm)',
                 cursor: 'pointer',
                 border: `1px solid ${vista === v ? 'var(--color-royal-border)' : 'var(--color-line)'}`,
                 background: vista === v ? 'var(--color-royal-soft)' : 'var(--bg-card)',
