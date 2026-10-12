@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { useLayoutEffect, useState, type ReactNode } from 'react';
 import { CHAVE_DO_CLIMA, CLIMA_PADRAO, COR_DO_TEMA_POR_CLIMA } from './constantes';
 import { Ctx } from './hooks/useClima';
 import type { Clima } from './tipos';
@@ -38,7 +38,7 @@ export interface ClimaProviderProps {
 export function ClimaProvider({ children, armazenamento }: ClimaProviderProps) {
   const [clima, setClima] = useState<Clima>(() => lerClima(armazenamento));
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     aplicarNoDocumento(clima);
   }, [clima]);
 
