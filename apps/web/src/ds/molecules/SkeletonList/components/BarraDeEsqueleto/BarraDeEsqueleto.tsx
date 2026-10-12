@@ -5,8 +5,8 @@ export function BarraDeEsqueleto({ w, h = 11, top = 0 }: { w: string; h?: number
         width: w,
         height: h,
         marginTop: top,
-        borderRadius: 'var(--radius-sm)',
-        background: 'linear-gradient(90deg,var(--bg-sunken) 25%,#EAE3D3 37%,var(--bg-sunken) 63%)',
+        borderRadius: 'var(--leaf-xs)',
+        background: 'linear-gradient(90deg,var(--bg-sunken) 25%,var(--bg-hover) 37%,var(--bg-sunken) 63%)',
         backgroundSize: '400% 100%',
         animation: 'cdd-sh 1.3s ease infinite',
       }}

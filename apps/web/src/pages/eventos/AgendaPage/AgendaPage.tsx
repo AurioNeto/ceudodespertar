@@ -20,7 +20,6 @@ export function AgendaPage() {
   return (
     <>
       <ScreenHeader
-        code={campo ? 'E-01' : 'E-01 · Agenda'}
         title={tela.emDetalhe ? 'Cerimônia' : 'Agenda'}
         subtitle={
           tela.emDetalhe

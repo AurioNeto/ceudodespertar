@@ -15,7 +15,6 @@ export function AnamnesePage() {
   return (
     <>
       <ScreenHeader
-        code={campo ? 'F-10' : 'F-10 · Anamnese'}
         title="Anamnese"
         subtitle={campo ? undefined : 'O formulário, suas versões e o que cada uma exige'}
         density={densidade}

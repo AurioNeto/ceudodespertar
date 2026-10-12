@@ -39,7 +39,7 @@ export function AbaDeLotes({ lotes, densidade, onAbrir }: AbaDeLotesProps) {
               padding: '14px 16px',
               border: 'var(--border-hairline)',
               borderLeft: `3px solid ${cor}`,
-              borderRadius: 'var(--radius)',
+              borderRadius: 'var(--leaf-md)',
               background: 'var(--bg-card)',
               cursor: 'pointer',
               height: '100%',

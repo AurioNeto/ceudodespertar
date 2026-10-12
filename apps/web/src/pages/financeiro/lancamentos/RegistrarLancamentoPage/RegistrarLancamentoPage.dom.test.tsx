@@ -216,7 +216,6 @@ describe('RegistrarLancamentoPage: cabeçalho e estado de entrada nas duas densi
     const { container } = await montar(<RegistrarLancamentoPage />);
 
     expect(elemento(container, 'h1').textContent).toBe('Registrar lançamento');
-    expect(container.textContent).toContain('F-01 · Lançamento');
     expect(container.textContent).toContain('Grava como a conferir · competência 08/2026 · CDD');
   });
 
@@ -228,11 +227,11 @@ describe('RegistrarLancamentoPage: cabeçalho e estado de entrada nas duas densi
     expect(container.textContent).not.toContain('Grava como a conferir · competência');
   });
 
-  it('campo — o cabeçalho traz só o código F-01, sem subtítulo nem nota do tipo', async () => {
+  it('campo — o cabeçalho traz só o título, sem subtítulo nem nota do tipo', async () => {
     usarDensidade('field');
     const { container } = await montar(<RegistrarLancamentoPage />);
 
-    expect(elemento(container, 'header').textContent).toBe('F-01Registrar lançamento');
+    expect(elemento(container, 'header').textContent).toBe('Registrar lançamento');
     expect(container.textContent).not.toContain('Dinheiro que saiu para fora da casa.');
   });
 
@@ -543,8 +542,8 @@ describe('RegistrarLancamentoPage: troca de tipo', () => {
 
     await escolherOpcao(campoRotulado<HTMLSelectElement>(container, 'Conta de destino'), 'cora');
 
-    expect(antes).toEqual(['1px solid var(--color-line-strong)', '1px solid var(--color-line-strong)']);
-    expect(bordas()).toEqual(['1px solid var(--color-line-strong)', '1px solid var(--color-attention)']);
+    expect(antes).toEqual(['1px solid var(--border-field)', '1px solid var(--border-field)']);
+    expect(bordas()).toEqual(['1px solid var(--border-field)', '1px solid var(--color-attention)']);
   });
 
   it('categorias escolhidas na saída — ir para transferência e voltar não as perde', async () => {
@@ -620,7 +619,7 @@ describe('RegistrarLancamentoPage: valor, soma e leitura do que o usuário escre
     expect(mensagemNoCampoDoValor(container)).toBe(true);
   });
 
-  it('valor negativo — o registro é bloqueado com a mensagem no campo (Doc 4, F-01: nunca aceita valor negativo)', async () => {
+  it('valor negativo — o registro é bloqueado com a mensagem no campo (Doc 4: nunca aceita valor negativo)', async () => {
     const { container } = await montar(<RegistrarLancamentoPage />);
     await digitar(campoDoValor(container), '-50');
 
@@ -1030,7 +1029,7 @@ describe('RegistrarLancamentoPage: campos padrão e folhas de escolha em campo',
     expect(container.textContent).toContain(ROTULO_DO_BLOCO_PADRAO);
   });
 
-  it('campo — só a descrição tem rótulo de campo, e data, fornecedor, unidade e reembolso entram nos padrões que abrem folha (Doc 4, F-01: padrões todos editáveis)', async () => {
+  it('campo — só a descrição tem rótulo de campo, e data, fornecedor, unidade e reembolso entram nos padrões que abrem folha (Doc 4: padrões todos editáveis)', async () => {
     usarDensidade('field');
     const { container } = await montar(<RegistrarLancamentoPage />);
 

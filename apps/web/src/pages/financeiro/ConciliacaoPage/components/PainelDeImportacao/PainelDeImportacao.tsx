@@ -18,7 +18,7 @@ export function PainelDeImportacao({ densidade, importado, conta, onConta, onImp
       style={{
         background: 'var(--bg-card)',
         border: 'var(--border-hairline)',
-        borderRadius: 'var(--radius)',
+        borderRadius: 'var(--leaf-lg)',
         padding: campo ? '15px 16px' : '17px 20px',
         display: 'flex',
         flexWrap: 'wrap',
@@ -37,8 +37,8 @@ export function PainelDeImportacao({ densidade, importado, conta, onConta, onImp
         <Rotulo>Arquivo do banco</Rotulo>
         <div
           style={{
-            border: '1px dashed var(--color-line-strong)',
-            borderRadius: 'var(--radius)',
+            border: '1px dashed var(--border-field)',
+            borderRadius: 'var(--leaf-sm)',
             padding: '10px 13px',
             display: 'flex',
             alignItems: 'center',

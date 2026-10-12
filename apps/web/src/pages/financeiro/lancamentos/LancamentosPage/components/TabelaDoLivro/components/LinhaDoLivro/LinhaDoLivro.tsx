@@ -51,7 +51,7 @@ export function LinhaDoLivro({ registro: r, selecionado, onAbrir }: LinhaDoLivro
           justifySelf: 'start',
           font: 'var(--text-small)',
           padding: '3px 10px',
-          borderRadius: 'var(--radius-pill)',
+          borderRadius: 'var(--leaf-xs)',
           border: `1px solid ${corDoTipo(r.tipo)}`,
           color: corDoTipo(r.tipo),
         }}

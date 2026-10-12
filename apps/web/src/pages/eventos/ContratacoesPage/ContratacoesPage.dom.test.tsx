@@ -81,9 +81,9 @@ describe('ContratacoesPage: cabeçalho e totais', () => {
   it.each([
     {
       densidade: 'office' as const,
-      esperado: 'E-13 · ContrataçõesContrataçõesO que a Munay toca fora de casa · unidade comercial',
+      esperado: 'ContrataçõesO que a Munay toca fora de casa · unidade comercial',
     },
-    { densidade: 'field' as const, esperado: 'E-13Contratações' },
+    { densidade: 'field' as const, esperado: 'Contratações' },
   ])('densidade $densidade — o cabeçalho é $esperado', async ({ densidade, esperado }) => {
     fixarDensidade(densidade);
 
@@ -234,10 +234,10 @@ describe('ContratacoesPage: cartões', () => {
   });
 
   it.each([
-    { contratante: LUZ_DO_NORTE, rotulo: 'Proposta', cor: 'var(--color-suggest)' },
-    { contratante: ESTRELA_GUIA, rotulo: 'Confirmada', cor: 'var(--color-royal-ink)' },
-    { contratante: JACI, rotulo: 'Realizada', cor: 'var(--color-confirmed)' },
-    { contratante: SEMENTE_VIVA, rotulo: 'Cancelada', cor: 'var(--color-neutral)' },
+    { contratante: LUZ_DO_NORTE, rotulo: 'Proposta', cor: 'var(--tone-suggest-fg)' },
+    { contratante: ESTRELA_GUIA, rotulo: 'Confirmada', cor: 'var(--tone-royal-fg)' },
+    { contratante: JACI, rotulo: 'Realizada', cor: 'var(--tone-confirmed-fg)' },
+    { contratante: SEMENTE_VIVA, rotulo: 'Cancelada', cor: 'var(--tone-neutral-fg)' },
   ])('$contratante — o selo diz $rotulo no tom $cor', async ({ contratante, rotulo, cor }) => {
     const { container } = await montar(<ContratacoesPage />);
 

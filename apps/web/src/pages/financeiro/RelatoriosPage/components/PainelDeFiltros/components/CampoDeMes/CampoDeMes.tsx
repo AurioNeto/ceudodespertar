@@ -16,9 +16,9 @@ export function CampoDeMes({ rotulo, valor, onMudar }: CampoDeMesProps) {
         placeholder="03/2026"
         style={{
           minHeight: 'var(--target-office)',
-          border: '1px solid var(--color-line-strong)',
+          border: '1px solid var(--border-field)',
           background: 'var(--bg-card)',
-          borderRadius: 'var(--radius)',
+          borderRadius: 'var(--leaf-sm)',
           padding: '10px 13px',
           font: 'var(--text-body)',
           color: 'var(--text-primary)',

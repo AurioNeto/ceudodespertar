@@ -112,21 +112,20 @@ async function ignorarLinha(container: HTMLElement, descricao: string) {
 }
 
 describe('ConciliacaoPage: cabeçalho', () => {
-  it('escritório — mostra os dois códigos por extenso, o título e o subtítulo', async () => {
+  it('escritório — mostra o título e o subtítulo', async () => {
     const { container } = await montar(<ConciliacaoPage />);
 
     const cabecalho = elemento(container, 'header');
-    expect(cabecalho.textContent).toContain('F-25 e F-26 · Importação e conciliação');
     expect(elemento(cabecalho, 'h1').textContent).toBe('Conciliação');
     expect(cabecalho.textContent).toContain('O extrato é a verdade bancária; o registro é a intenção · CDD');
   });
 
-  it('campo — mostra os dois códigos abreviados, sem subtítulo', async () => {
+  it('campo — mostra só o título, sem subtítulo', async () => {
     fixarDensidade(true);
 
     const { container } = await montar(<ConciliacaoPage />);
 
-    expect(elemento(container, 'header').textContent).toBe('F-25 · F-26Conciliação');
+    expect(elemento(container, 'header').textContent).toBe('Conciliação');
   });
 });
 

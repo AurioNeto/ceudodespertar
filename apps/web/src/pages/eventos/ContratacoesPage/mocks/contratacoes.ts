@@ -3,7 +3,7 @@ import { reais } from '@cdd/contracts';
 import { id } from '@/mocks/ids';
 
 /**
- * `E-13` — o que a Munay faz fora de casa.
+ * O que a Munay faz fora de casa.
  *
  * Quatro contratações porque são quatro estados que pedem coisas diferentes da
  * tesouraria: uma proposta que ainda não é nada, uma confirmada esperando o

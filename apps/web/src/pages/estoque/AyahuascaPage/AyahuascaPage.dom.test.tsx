@@ -43,7 +43,10 @@ const COR = {
   atencao: 'var(--color-attention)',
   pendente: 'var(--color-pending)',
   royal: 'var(--color-royal)',
-  royalDoSelo: 'var(--color-royal-ink)',
+  royalDoSelo: 'var(--tone-royal-fg)',
+  confirmadoDoSelo: 'var(--tone-confirmed-fg)',
+  pendenteDoSelo: 'var(--tone-pending-fg)',
+  neutroDoSelo: 'var(--tone-neutral-fg)',
   neutro: 'var(--color-neutral)',
   linhaForte: 'var(--color-line-strong)',
 } as const;
@@ -180,13 +183,12 @@ async function registrarSaida(container: HTMLElement, litros: string, trabalho =
 }
 
 describe('AyahuascaPage: cabeçalho nas duas densidades', () => {
-  it('escritório — mostra o código com o nome da tela, o título, o subtítulo e as três ações', async () => {
+  it('escritório — mostra o título, o subtítulo e as três ações', async () => {
     const container = await montarAyahuasca();
 
     const cabecalho = elemento(container, 'header');
 
     expect(elemento(cabecalho, 'h1').textContent).toBe('Ayahuasca');
-    expect(folhaComTexto(cabecalho, 'div', 'E-02 · Ayahuasca')).toBeTruthy();
     expect(folhaComTexto(cabecalho, 'p', 'Lotes, movimentos e reservas por trabalho · CDD')).toBeTruthy();
     expect(todos(cabecalho, 'button').map((botao) => botao.textContent)).toEqual([
       'Entrada de feitio',
@@ -195,13 +197,12 @@ describe('AyahuascaPage: cabeçalho nas duas densidades', () => {
     ]);
   });
 
-  it('campo — mostra só o código e o título, sem subtítulo, com as mesmas três ações', async () => {
+  it('campo — mostra só o título, sem subtítulo, com as mesmas três ações', async () => {
     definirDensidade('field');
     const container = await montarAyahuasca();
 
     const cabecalho = elemento(container, 'header');
 
-    expect(folhaComTexto(cabecalho, 'div', 'E-02')).toBeTruthy();
     expect(cabecalho.querySelector('p')).toBeNull();
     expect(todos(cabecalho, 'button').map((botao) => botao.textContent)).toEqual([
       'Entrada de feitio',
@@ -298,9 +299,9 @@ describe('AyahuascaPage: aba Lotes', () => {
   });
 
   it.each([
-    { nome: 'em uso', codigo: 'Lote 12/2025', situacao: 'Em uso', cor: COR.confirmado },
+    { nome: 'em uso', codigo: 'Lote 12/2025', situacao: 'Em uso', cor: COR.confirmadoDoSelo },
     { nome: 'lacrado', codigo: 'Lote 06/2026', situacao: 'Lacrado', cor: COR.royalDoSelo },
-    { nome: 'esgotado', codigo: 'Lote 09/2025', situacao: 'Esgotado', cor: COR.neutro },
+    { nome: 'esgotado', codigo: 'Lote 09/2025', situacao: 'Esgotado', cor: COR.neutroDoSelo },
   ])('lote $nome — o selo tem o texto $situacao no tom correspondente', async ({ codigo, situacao, cor }) => {
     const container = await montarAyahuasca();
 
@@ -455,7 +456,7 @@ describe('AyahuascaPage: quarentena', () => {
 
     expect(textoDoAviso(container)).toBe('Lote 12/2025 posto em quarentena — fora do estoque disponível.');
     expect(textosDasFolhas(painelDaFicha(container))[1]).toBe('Quarentena');
-    expect(folhaComTexto<HTMLSpanElement>(painelDaFicha(container), 'span', 'Quarentena').style.color).toBe(COR.pendente);
+    expect(folhaComTexto<HTMLSpanElement>(painelDaFicha(container), 'span', 'Quarentena').style.color).toBe(COR.pendenteDoSelo);
     expect(botaoPresente(container, 'Tirar da quarentena')).toBe(true);
   });
 
@@ -483,7 +484,7 @@ describe('AyahuascaPage: quarentena', () => {
     await colocarEmQuarentena(container, 'Lote 12/2025');
 
     const cartao = cartaoDoLote(container, 'Lote 12/2025');
-    expect(folhaComTexto<HTMLSpanElement>(cartao, 'span', 'Quarentena').style.color).toBe(COR.pendente);
+    expect(folhaComTexto<HTMLSpanElement>(cartao, 'span', 'Quarentena').style.color).toBe(COR.pendenteDoSelo);
     expect(barraDoLote(cartao).style.background).toBe(COR.pendente);
   });
 
@@ -729,9 +730,9 @@ describe('AyahuascaPage: aba Reservas', () => {
 
     await abrirAba(container, 'Reservas');
 
-    expect(folhaComTexto<HTMLSpanElement>(reservaDe(container, 'Mãe Divina'), 'span', 'Reservado').style.color).toBe(COR.confirmado);
+    expect(folhaComTexto<HTMLSpanElement>(reservaDe(container, 'Mãe Divina'), 'span', 'Reservado').style.color).toBe(COR.confirmadoDoSelo);
     expect(botaoPresente(container, 'Liberar')).toBe(true);
-    expect(folhaComTexto<HTMLSpanElement>(reservaDe(container, 'Trabalho de cura'), 'span', 'Sem reserva').style.color).toBe(COR.pendente);
+    expect(folhaComTexto<HTMLSpanElement>(reservaDe(container, 'Trabalho de cura'), 'span', 'Sem reserva').style.color).toBe(COR.pendenteDoSelo);
     expect(todos(container, 'button').filter((botao) => botao.textContent === 'Reservar')).toHaveLength(2);
   });
 

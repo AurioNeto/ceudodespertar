@@ -1,4 +1,4 @@
-import { AmountDisplay, Icon, rotuloCaixaAlta } from '@/ds';
+import { AmountDisplay, Icon, rotuloVersalete } from '@/ds';
 import { saldoConsolidado, saldoEmBanco, saldoEmCaixa } from '../../mocks/resumoFinanceiro';
 import { fundoProprio } from '@/pages/mocks/contas';
 import { LinhaDeSaldo } from './components/LinhaDeSaldo';
@@ -12,7 +12,7 @@ export function CartaoDeSaldo() {
         minWidth: 0,
         background: 'var(--bg-brand)',
         border: '1px solid var(--border-brand)',
-        borderRadius: 'var(--radius-lg)',
+        borderRadius: 'var(--leaf-lg)',
         padding: '18px 20px 16px',
         display: 'flex',
         flexDirection: 'column',
@@ -21,7 +21,7 @@ export function CartaoDeSaldo() {
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
         <Icon name="landmark" size={18} color="var(--color-royal-deep)" />
-        <div style={rotuloCaixaAlta}>Saldo consolidado da unidade</div>
+        <div style={rotuloVersalete}>Saldo consolidado da unidade</div>
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
         <div style={{ display: 'flex' }}>

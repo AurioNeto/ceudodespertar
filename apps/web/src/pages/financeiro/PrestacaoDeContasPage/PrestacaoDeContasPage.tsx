@@ -12,7 +12,6 @@ export function PrestacaoDeContasPage() {
   return (
     <>
       <ScreenHeader
-        code={campo ? 'F-24' : 'F-24 · Prestação de contas'}
         title="Prestação de contas"
         subtitle={campo ? undefined : 'Exportação sob demanda, quando alguém pede · CDD'}
         density={densidade}
@@ -23,7 +22,7 @@ export function PrestacaoDeContasPage() {
           style={{
             background: 'var(--bg-card)',
             border: 'var(--border-hairline)',
-            borderRadius: 'var(--radius)',
+            borderRadius: 'var(--leaf-lg)',
             padding: campo ? '15px 16px' : '17px 20px',
             display: 'flex',
             flexDirection: 'column',

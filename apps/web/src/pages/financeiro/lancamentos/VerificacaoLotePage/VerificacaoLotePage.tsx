@@ -13,7 +13,6 @@ export function VerificacaoLotePage() {
   return (
     <div style={{ position: 'relative', minHeight: '100%' }}>
       <ScreenHeader
-        code={campo ? 'F-05' : 'F-05 · Verificação de lote'}
         title="Verificação de lote"
         subtitle={
           campo
@@ -67,7 +66,7 @@ export function VerificacaoLotePage() {
                 marginLeft: 'auto',
                 font: 'var(--text-small)',
                 padding: '7px 13px',
-                borderRadius: 'var(--radius-sm)',
+                borderRadius: 'var(--leaf-md)',
                 cursor: fila.deAltaConfianca.length ? 'pointer' : 'not-allowed',
                 border: '1px solid var(--color-confirmed)',
                 background: 'var(--bg-card)',

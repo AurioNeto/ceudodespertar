@@ -63,19 +63,19 @@ describe('DetalheDoTrabalho: cabeçalho', () => {
     expect(elemento(container, 'h2').style.textDecoration).toBe('line-through');
   });
 
-  it('tipo — aparece como selo com a cor do tipo e texto branco', async () => {
+  it('tipo — aparece como selo com a cor do tipo e a tinta do tipo', async () => {
     const { container } = await montarDetalhe({ trabalho: umTrabalho({ tipo: 'Feitio' }) });
 
     const selo = folhaComTextoExato(container, 'Feitio')!;
 
-    expect([selo.style.background, selo.style.color]).toEqual(['oklch(0.72 0.13 90)', 'rgb(255, 255, 255)']);
+    expect([selo.style.background, selo.style.color]).toEqual(['var(--tipo-feitio-bg)', 'var(--tipo-feitio-fg)']);
   });
 
   it.each([
-    { situacao: 'planejada' as const, texto: 'Planejada', cor: 'var(--color-pending)' },
-    { situacao: 'confirmada' as const, texto: 'Confirmada', cor: 'var(--color-royal-ink)' },
-    { situacao: 'realizada' as const, texto: 'Realizada', cor: 'var(--color-confirmed)' },
-    { situacao: 'cancelada' as const, texto: 'Cancelada', cor: 'var(--color-neutral)' },
+    { situacao: 'planejada' as const, texto: 'Planejada', cor: 'var(--tone-pending-fg)' },
+    { situacao: 'confirmada' as const, texto: 'Confirmada', cor: 'var(--tone-royal-fg)' },
+    { situacao: 'realizada' as const, texto: 'Realizada', cor: 'var(--tone-confirmed-fg)' },
+    { situacao: 'cancelada' as const, texto: 'Cancelada', cor: 'var(--tone-neutral-fg)' },
   ])('situação $situacao — o selo diz $texto no tom $cor', async ({ situacao, texto, cor }) => {
     const { container } = await montarDetalhe({ trabalho: umTrabalho({ situacao }) });
 

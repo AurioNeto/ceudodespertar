@@ -35,7 +35,7 @@ export function BuscaDePessoa({ busca, onBusca, onEscolher, densidade }: BuscaDe
             style={{
               textAlign: 'left',
               border: 'var(--border-hairline)',
-              borderRadius: 'var(--radius)',
+              borderRadius: 'var(--leaf-sm)',
               background: 'var(--bg-card)',
               padding: campo ? '13px 14px' : '12px 15px',
               cursor: 'pointer',

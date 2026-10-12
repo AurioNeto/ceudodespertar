@@ -18,7 +18,7 @@ export function BotaoDaTarefa({
         flex: '0 0 auto',
         border: '1px solid var(--color-line)',
         background: 'var(--bg-card)',
-        borderRadius: 'var(--radius-sm)',
+        borderRadius: 'var(--leaf-xs)',
         cursor: 'pointer',
         color: 'var(--text-secondary)',
       }}

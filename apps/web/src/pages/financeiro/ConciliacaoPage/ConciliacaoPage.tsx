@@ -14,7 +14,6 @@ export function ConciliacaoPage() {
   return (
     <>
       <ScreenHeader
-        code={campo ? 'F-25 · F-26' : 'F-25 e F-26 · Importação e conciliação'}
         title="Conciliação"
         subtitle={campo ? undefined : 'O extrato é a verdade bancária; o registro é a intenção · CDD'}
         density={densidade}
@@ -37,7 +36,7 @@ export function ConciliacaoPage() {
               style={{
                 background: 'var(--bg-card)',
                 border: 'var(--border-hairline)',
-                borderRadius: 'var(--radius)',
+                borderRadius: 'var(--leaf-lg)',
                 padding: campo ? '15px 16px' : '17px 20px',
                 display: 'grid',
                 gridTemplateColumns: campo ? 'repeat(2, minmax(0,1fr))' : 'repeat(4, minmax(0,1fr))',

@@ -1,5 +1,5 @@
 import { AmountDisplay, type Density } from '@/ds';
-import { RAIO } from '../../constantes';
+import { ALCANCE_DO_RESPIRO, RAIO } from '../../constantes';
 import type { FatiaDaQuebra } from '../../tipos';
 import type { fatiasDaQuebra } from '../../utils/fatias';
 
@@ -45,6 +45,23 @@ export function VistaEmRosca({ fatias, emFoco, total, densidade, onAbrir, onHove
                 }}
               />
             ))}
+            {fatias.length > 1
+              ? fatias.map((f) => {
+                  const angulo = f.inicio * 2 * Math.PI;
+                  return (
+                    <line
+                      key={`respiro-${f.nome}`}
+                      x1={80 + ALCANCE_DO_RESPIRO.de * Math.sin(angulo)}
+                      y1={80 - ALCANCE_DO_RESPIRO.de * Math.cos(angulo)}
+                      x2={80 + ALCANCE_DO_RESPIRO.ate * Math.sin(angulo)}
+                      y2={80 - ALCANCE_DO_RESPIRO.ate * Math.cos(angulo)}
+                      stroke="var(--bg-card-solid)"
+                      strokeWidth={2}
+                      pointerEvents="none"
+                    />
+                  );
+                })
+              : null}
           </svg>
         </div>
 
@@ -71,7 +88,7 @@ export function VistaEmRosca({ fatias, emFoco, total, densidade, onAbrir, onHove
                 style={{
                   width: 10,
                   height: 10,
-                  borderRadius: 'var(--radius-pill)',
+                  borderRadius: 'var(--leaf-seal)',
                   flex: '0 0 auto',
                   background: f.cor,
                   transform: `scale(${f.destacado ? 1.35 : 1})`,

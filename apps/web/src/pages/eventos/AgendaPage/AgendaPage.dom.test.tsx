@@ -112,12 +112,12 @@ describe('AgendaPage: calendário do mês', () => {
     expect(chipDoCalendario(container, 'Mãe Divina').title).toBe('Mãe Divina · 20:00 às 04:00');
   });
 
-  it('chip de concentração — usa a cor do tipo, com texto branco', async () => {
+  it('chip de concentração — usa a cor do tipo, com a tinta do tipo', async () => {
     const { container } = await montar(<AgendaPage />);
 
     const chip = chipDoCalendario(container, 'Mãe Divina');
 
-    expect([chip.style.background, chip.style.color]).toEqual(['oklch(0.52 0.13 265)', 'rgb(255, 255, 255)']);
+    expect([chip.style.background, chip.style.color]).toEqual(['var(--tipo-concentracao-bg)', 'var(--tipo-concentracao-fg)']);
   });
 
   it('hoje (02/09/2026, do relógio da demonstração) — só o dia 2 vem destacado', async () => {
@@ -134,7 +134,7 @@ describe('AgendaPage: calendário do mês', () => {
     expect(texto.endsWith('ConcentraçãoTrabalho de curaFeitioBailadoReunião do corpo')).toBe(true);
   });
 
-  it('legenda — cada tipo traz o quadradinho na mesma cor do chip, na ordem do mapa de cores', async () => {
+  it('legenda — cada tipo traz o quadradinho na cor cheia do tipo, na ordem do mapa de cores', async () => {
     const { container } = await montar(<AgendaPage />);
 
     const legenda = todos<HTMLSpanElement>(container, 'span[style*="width: 10px"]').map((quadrado) => [
@@ -143,11 +143,11 @@ describe('AgendaPage: calendário do mês', () => {
     ]);
 
     expect(legenda).toEqual([
-      ['Concentração', 'oklch(0.52 0.13 265)'],
-      ['Trabalho de cura', 'oklch(0.64 0.12 155)'],
-      ['Feitio', 'oklch(0.72 0.13 90)'],
-      ['Bailado', 'oklch(0.58 0.15 25)'],
-      ['Reunião do corpo', 'oklch(0.62 0.11 205)'],
+      ['Concentração', 'var(--tipo-concentracao)'],
+      ['Trabalho de cura', 'var(--tipo-cura)'],
+      ['Feitio', 'var(--tipo-feitio)'],
+      ['Bailado', 'var(--tipo-bailado)'],
+      ['Reunião do corpo', 'var(--tipo-reuniao)'],
     ]);
   });
 
@@ -214,7 +214,7 @@ describe('AgendaPage: calendário do mês', () => {
 
     expect(container.textContent).toContain('19/09 · Trabalho de cura');
     expect(container.querySelector('button[aria-label="Próximo mês"]')).toBeNull();
-    expect(cabecalho(container)).toBe('E-01 · AgendaCerimônia');
+    expect(cabecalho(container)).toBe('Cerimônia');
   });
 
   it('voltar do detalhe — retorna ao calendário no mês em que estava', async () => {
@@ -268,9 +268,9 @@ describe('AgendaPage: lista', () => {
   });
 
   it.each([
-    { posicao: 0, situacao: 'Realizada', tom: 'var(--color-confirmed)' },
-    { posicao: 1, situacao: 'Confirmada', tom: 'var(--color-royal-ink)' },
-    { posicao: 2, situacao: 'Planejada', tom: 'var(--color-pending)' },
+    { posicao: 0, situacao: 'Realizada', tom: 'var(--tone-confirmed-fg)' },
+    { posicao: 1, situacao: 'Confirmada', tom: 'var(--tone-royal-fg)' },
+    { posicao: 2, situacao: 'Planejada', tom: 'var(--tone-pending-fg)' },
   ])('item $posicao da lista — o selo $situacao usa o tom $tom', async ({ posicao, situacao, tom }) => {
     const { container } = await montar(<AgendaPage />);
     await abrirLista(container);
@@ -289,7 +289,7 @@ describe('AgendaPage: lista', () => {
 
     const selo = todos<HTMLSpanElement>(itensDaLista(container)[1]!, 'span').find((span) => span.textContent === 'Cancelada')!;
 
-    expect(selo.style.color).toBe('var(--color-neutral)');
+    expect(selo.style.color).toBe('var(--tone-neutral-fg)');
   });
 
   it('voltar à vista em calendário — retoma o mês que estava aberto', async () => {
@@ -819,7 +819,7 @@ describe('AgendaPage: nova cerimônia', () => {
 
     const chip = chipDoCalendario(container, 'Bailado novo');
 
-    expect(chip.style.background).toBe('oklch(0.58 0.15 25)');
+    expect(chip.style.background).toBe('var(--tipo-bailado-bg)');
   });
 });
 
@@ -923,11 +923,11 @@ describe('AgendaPage: densidade', () => {
   it.each([
     {
       densidade: 'office' as const,
-      cabecalho: 'E-01 · AgendaAgendaOs trabalhos do centro, no calendário ou em lista · CDDNova cerimônia',
+      cabecalho: 'AgendaOs trabalhos do centro, no calendário ou em lista · CDDNova cerimônia',
       espacamento: '18px 24px 30px',
       larguraMaxima: '1080px',
     },
-    { densidade: 'field' as const, cabecalho: 'E-01AgendaNova cerimônia', espacamento: '14px 16px 24px', larguraMaxima: '' },
+    { densidade: 'field' as const, cabecalho: 'AgendaNova cerimônia', espacamento: '14px 16px 24px', larguraMaxima: '' },
   ])('densidade $densidade — cabeçalho, respiro e largura máxima da tela', async ({ densidade, cabecalho: esperado, espacamento, larguraMaxima }) => {
     fixarDensidade(densidade);
 

@@ -14,7 +14,7 @@ export function Chip({ ativo, onClick, children }: ChipProps) {
         font: 'var(--text-small)',
         padding: '7px 13px',
         minHeight: 36,
-        borderRadius: 'var(--radius-pill)',
+        borderRadius: 'var(--leaf-xs)',
         cursor: 'pointer',
         border: `1px solid ${ativo ? 'var(--color-royal-border)' : 'var(--color-line)'}`,
         background: ativo ? 'var(--color-royal-soft)' : 'var(--bg-card)',

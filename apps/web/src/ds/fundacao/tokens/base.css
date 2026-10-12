@@ -1,10 +1,11 @@
-/* Céu do Despertar — reset mínimo e defaults de documento. */
+/* Céu do Despertar — reset mínimo e defaults de documento. O vidro leve
+   (desfoque de 2px) é aplicado pelo token de fundo do estilo inline. */
 
 *, *::before, *::after { box-sizing: border-box; }
 
 body {
   margin: 0;
-  background: var(--bg-app);
+  background: var(--sky) fixed, var(--bg-app);
   color: var(--text-primary);
   font: var(--text-body);
   -webkit-font-smoothing: antialiased;
@@ -25,3 +26,29 @@ code { font: var(--text-code); background: var(--bg-sunken); padding: 1px 5px; b
 
 /* numerais tabulares obrigatórios em toda coluna de valor */
 [data-numeric], .cdd-amount { font-variant-numeric: tabular-nums; }
+
+html { -webkit-text-size-adjust: 100%; -webkit-tap-highlight-color: transparent; }
+h1, h2, h3, h4 { font-size: inherit; font-weight: inherit; }
+b, strong { font-weight: bolder; }
+ul, dl, dd, fieldset, legend, th, td { margin: 0; padding: 0; }
+ul { list-style: none; }
+fieldset { border: 0 solid; }
+table { text-indent: 0; border-color: inherit; border-collapse: collapse; }
+img, svg { display: block; vertical-align: middle; }
+img { max-width: 100%; height: auto; }
+input, textarea, select, button { margin: 0; padding: 0; border: 0 solid; border-radius: 0; font: inherit; letter-spacing: inherit; color: inherit; background-color: transparent; opacity: 1; }
+button, input:where([type='button'], [type='reset'], [type='submit']) { appearance: button; }
+textarea { resize: vertical; }
+::placeholder { opacity: 1; }
+@supports (not (-webkit-appearance: -apple-pay-button)) or (contain-intrinsic-size: 1px) {
+  ::placeholder { color: color-mix(in oklab, currentcolor 50%, transparent); }
+}
+
+[style*="background: var(--bg-card);"],
+[style*="background: var(--bg-glass);"],
+[style*="background: var(--bg-rail);"],
+[style*="background: var(--color-royal-soft);"],
+[style*="background: var(--color-suggest-soft);"] {
+  backdrop-filter: var(--glass-leve);
+  -webkit-backdrop-filter: var(--glass-leve);
+}

@@ -20,7 +20,7 @@ export function LinhaDaFatura({ fatura, ativa, onAbrir }: LinhaDaFaturaProps) {
         textAlign: 'left',
         background: ativa ? 'var(--color-royal-soft)' : 'var(--bg-card)',
         border: `1px solid ${ativa ? 'var(--color-royal-border)' : 'var(--color-line)'}`,
-        borderRadius: 'var(--radius)',
+        borderRadius: 'var(--leaf-sm)',
         padding: '11px 13px',
         cursor: 'pointer',
         display: 'flex',

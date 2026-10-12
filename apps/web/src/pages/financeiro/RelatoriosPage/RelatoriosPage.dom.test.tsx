@@ -113,23 +113,22 @@ const botoesComTexto = (container: HTMLElement, texto: string) =>
   todos<HTMLButtonElement>(container, 'button').filter((b) => b.textContent === texto);
 
 describe('RelatoriosPage: cabeçalho', () => {
-  it('escritório — mostra o código com o nome da tela, o título e o subtítulo', async () => {
+  it('escritório — mostra o título e o subtítulo', async () => {
     const { container } = await montar(<RelatoriosPage />);
 
     const cabecalho = elemento(container, 'header');
-    expect(cabecalho.textContent).toContain('F-06 · Relatórios');
     expect(elemento(cabecalho, 'h1').textContent).toBe('Relatórios');
     expect(cabecalho.textContent).toContain('Período, unidade e recorte — do total ao lançamento');
   });
 
-  it('campo — mostra só o código e o título, sem subtítulo', async () => {
+  it('campo — mostra só o título, sem subtítulo', async () => {
     fixarDensidade(true);
 
     const { container } = await montar(<RelatoriosPage />);
 
     const cabecalho = elemento(container, 'header');
     expect(cabecalho.querySelector('p')).toBeNull();
-    expect(cabecalho.textContent).toBe('F-06RelatóriosPDFPlanilha');
+    expect(cabecalho.textContent).toBe('RelatóriosPDFPlanilha');
   });
 });
 

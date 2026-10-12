@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import type { GrupoId } from '@cdd/contracts';
-import { InfraError, SkeletonList } from '@/ds';
+import { InfraError, rotuloVersalete, SkeletonList } from '@/ds';
 import { useConsultasDeAcessos } from '../../consultas';
 
 export interface SeletorDeGruposProps {
@@ -28,10 +28,7 @@ export function SeletorDeGrupos({ selecionados, aoMudar, desabilitado = false, l
         style={{
           padding: 0,
           marginBottom: 'var(--space-2)',
-          font: 'var(--text-label)',
-          letterSpacing: 'var(--tracking-label)',
-          textTransform: 'uppercase',
-          color: 'var(--text-field-label)',
+          ...rotuloVersalete,
         }}
       >
         {legenda}

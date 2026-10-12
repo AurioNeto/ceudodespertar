@@ -1,4 +1,5 @@
 import type { Anexo } from '@cdd/contracts';
+import { rotuloVersalete } from '@/ds';
 
 export interface CartazSlotProps {
   cartaz?: Anexo | null;
@@ -21,7 +22,7 @@ export function CartazSlot({ cartaz, largura, altura, alt = 'Cartaz da cerimôni
         width: largura,
         height: altura,
         border: 'var(--border-hairline)',
-        borderRadius: 'var(--radius-sm)',
+        borderRadius: 'var(--leaf-sm)',
         overflow: 'hidden',
         background: 'var(--bg-brand)',
         display: 'flex',
@@ -34,9 +35,7 @@ export function CartazSlot({ cartaz, largura, altura, alt = 'Cartaz da cerimôni
       ) : (
         <span
           style={{
-            font: 'var(--text-label)',
-            textTransform: 'uppercase',
-            letterSpacing: 'var(--tracking-label)',
+            ...rotuloVersalete,
             color: 'var(--text-meta)',
           }}
         >

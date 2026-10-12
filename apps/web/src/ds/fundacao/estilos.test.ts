@@ -1,12 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { rotuloCaixaAlta } from './estilos';
+import { rotuloVersalete } from './estilos';
 
-describe('rotuloCaixaAlta', () => {
+describe('rotuloVersalete', () => {
   it('é o conjunto de estilos do rótulo em caixa alta que as telas espalham no próprio estilo', () => {
-    expect(rotuloCaixaAlta).toEqual({
+    expect(rotuloVersalete).toEqual({
       font: 'var(--text-label)',
       letterSpacing: 'var(--tracking-label)',
-      textTransform: 'uppercase',
       color: 'var(--text-field-label)',
     });
   });

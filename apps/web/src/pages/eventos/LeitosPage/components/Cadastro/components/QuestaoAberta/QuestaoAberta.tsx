@@ -7,7 +7,7 @@ export function QuestaoAberta() {
       style={{
         background: 'var(--color-suggest-soft)',
         border: '1px solid var(--color-suggest-border)',
-        borderRadius: 'var(--radius)',
+        borderRadius: 'var(--leaf-md)',
         padding: '13px 16px',
         display: 'flex',
         gap: 11,

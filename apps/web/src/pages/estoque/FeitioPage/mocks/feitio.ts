@@ -12,7 +12,7 @@ import { dataLocal, reais } from '@cdd/contracts';
 import { id } from '@/mocks/ids';
 
 /**
- * `S-04` — um feitio em andamento e os anteriores, para o custo por litro ter
+ * Um feitio em andamento e os anteriores, para o custo por litro ter
  * série. Os números de matéria-prima do feitio de março vieram do Doc 2 §4.3,
  * que é onde a conta que a casa nunca fechou está escrita por extenso.
  */

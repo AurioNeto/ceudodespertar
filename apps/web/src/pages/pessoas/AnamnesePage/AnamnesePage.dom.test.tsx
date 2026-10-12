@@ -25,10 +25,10 @@ afterEach(async () => {
 });
 
 const COR_DO_TOM = {
-  confirmado: 'var(--color-confirmed)',
-  sugestao: 'var(--color-suggest)',
-  neutro: 'var(--color-neutral)',
-  royal: 'var(--color-royal-ink)',
+  confirmado: 'var(--tone-confirmed-fg)',
+  sugestao: 'var(--tone-suggest-fg)',
+  neutro: 'var(--tone-neutral-fg)',
+  royal: 'var(--tone-royal-fg)',
 } as const;
 
 const PERGUNTAS_DA_V3 = [
@@ -135,24 +135,22 @@ async function abrirFormularioDeNovaPergunta(container: HTMLElement) {
 }
 
 describe('AnamnesePage: cabeçalho nas duas densidades', () => {
-  it('escritório — mostra o código com o nome da tela, o título, o subtítulo e Novo rascunho', async () => {
+  it('escritório — mostra o título, o subtítulo e Novo rascunho', async () => {
     const container = await montarAnamnese();
 
     const cabecalho = cabecalhoDaTela(container);
 
     expect(elemento(cabecalho, 'h1').textContent).toBe('Anamnese');
-    expect(folhaComTexto(cabecalho, 'div', 'F-10 · Anamnese')).toBeTruthy();
     expect(folhaComTexto(cabecalho, 'p', 'O formulário, suas versões e o que cada uma exige')).toBeTruthy();
     expect(botaoComTexto(cabecalho, 'Novo rascunho')).toBeTruthy();
   });
 
-  it('campo — mostra só o código e o título, sem subtítulo', async () => {
+  it('campo — mostra só o título, sem subtítulo', async () => {
     definirDensidade('field');
     const container = await montarAnamnese();
 
     const cabecalho = cabecalhoDaTela(container);
 
-    expect(folhaComTexto(cabecalho, 'div', 'F-10')).toBeTruthy();
     expect(cabecalho.querySelector('p')).toBeNull();
     expect(botaoComTexto(cabecalho, 'Novo rascunho')).toBeTruthy();
   });

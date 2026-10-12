@@ -18,7 +18,7 @@ export function Interruptor({
         width: 52,
         height: 30,
         flex: '0 0 auto',
-        borderRadius: 'var(--radius-pill)',
+        borderRadius: 'var(--leaf-seal)',
         cursor: 'pointer',
         padding: 3,
         display: 'flex',
@@ -31,7 +31,7 @@ export function Interruptor({
         style={{
           width: 24,
           height: 24,
-          borderRadius: '50%',
+          borderRadius: 'var(--leaf-seal)',
           background: 'var(--bg-card)',
           boxShadow: 'var(--shadow-raised)',
           display: 'block',

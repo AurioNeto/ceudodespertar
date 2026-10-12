@@ -10,7 +10,7 @@ import { SemLeito } from './components/SemLeito';
 import { useAlocacaoDeLeitos } from './hooks/useAlocacaoDeLeitos';
 
 /**
- * `E-10` · Mapa de leitos e `E-15` · Cadastro — Doc 4 §7 e Doc 2 §2.6.
+ * Mapa de leitos e Cadastro — Doc 4 §7 e Doc 2 §2.6.
  *
  * Duas telas do Doc num lugar só porque quem aloca é quem sabe quantos leitos
  * existem, e ir e voltar entre telas para descobrir que falta um beliche é o
@@ -41,7 +41,6 @@ export function LeitosPage() {
   return (
     <>
       <ScreenHeader
-        code={campo ? 'E-10 · E-15' : 'E-10 e E-15 · Leitos'}
         title="Leitos"
         subtitle={campo ? undefined : `${eventoDoMapa.nome} · ${eventoDoMapa.periodo} · ${eventoDoMapa.local}`}
         density={densidade}
@@ -54,6 +53,8 @@ export function LeitosPage() {
           flexDirection: 'column',
           gap: campo ? 14 : 18,
           maxWidth: campo ? undefined : 1060,
+          width: '100%',
+          margin: '0 auto',
           minWidth: 0,
         }}
       >

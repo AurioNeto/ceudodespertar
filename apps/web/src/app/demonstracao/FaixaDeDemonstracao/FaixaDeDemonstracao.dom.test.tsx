@@ -38,10 +38,10 @@ describe('FaixaDeDemonstracao', () => {
     ]);
   });
 
-  it('fica colada no topo ao rolar a tela', async () => {
+  it('rola com a tela, sem ficar colada no topo', async () => {
     const { container } = await montar(<FaixaDeDemonstracao />);
 
     const faixa = faixaDe(container);
-    expect([faixa.style.position, faixa.style.top]).toEqual(['sticky', '0px']);
+    expect([faixa.style.position, faixa.style.top]).toEqual(['', '']);
   });
 });

@@ -40,10 +40,10 @@ describe('FlowerOfLife', () => {
     );
   });
 
-  it('é uma marca d\'água: cobre o pai e fica quase transparente', async () => {
+  it('é uma marca d\'água: cobre o pai e fica translúcida', async () => {
     const { container } = await montar(<FlowerOfLife />);
 
     const figura = elemento<SVGElement>(container, 'svg');
-    expect([figura.style.position, figura.style.opacity]).toEqual(['absolute', '0.06']);
+    expect([figura.style.position, figura.style.opacity]).toEqual(['absolute', '0.5']);
   });
 });

@@ -1,5 +1,6 @@
 import { CorpoDaTela, ScreenHeader, useDensidade } from '@/ds';
 import { useSessao } from '@/app/sessao';
+import { EscolhaDoClima } from './components/EscolhaDoClima';
 import { PerfilDoEu } from './components/PerfilDoEu';
 
 export function MeuPerfilPage() {
@@ -10,13 +11,13 @@ export function MeuPerfilPage() {
   return (
     <>
       <ScreenHeader
-        code={campo ? 'F-11' : 'F-11 · Meu perfil'}
         title="Meu perfil"
         subtitle={campo ? undefined : 'Seus dados de acesso ao sistema'}
         density={densidade}
       />
       <CorpoDaTela densidade={densidade} larguraMaxima={860} espaco="compacto">
         {estado.tipo === 'ativa' ? <PerfilDoEu eu={estado.eu} densidade={densidade} aoSair={encerrar} /> : null}
+        <EscolhaDoClima densidade={densidade} />
       </CorpoDaTela>
     </>
   );

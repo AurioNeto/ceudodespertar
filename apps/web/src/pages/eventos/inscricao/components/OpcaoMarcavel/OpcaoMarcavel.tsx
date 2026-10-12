@@ -51,8 +51,8 @@ export function OpcaoMarcavel({
       onClick={onEscolher}
       style={{
         textAlign: 'left',
-        borderRadius: 'var(--radius)',
-        border: `1px solid ${marcada ? 'var(--color-royal)' : 'var(--color-line-strong)'}`,
+        borderRadius: 'var(--leaf-sm)',
+        border: `1px solid ${marcada ? 'var(--color-royal)' : 'var(--border-field)'}`,
         background: marcada ? 'var(--color-royal-soft)' : 'var(--bg-card)',
         cursor: 'pointer',
         display: 'flex',
@@ -66,14 +66,14 @@ export function OpcaoMarcavel({
           width: 18,
           height: 18,
           flexShrink: 0,
-          borderRadius: multipla ? 5 : '50%',
-          border: `2px solid ${marcada ? 'var(--color-royal)' : 'var(--color-line-strong)'}`,
+          borderRadius: multipla ? 'var(--leaf-xs)' : 'var(--leaf-seal)',
+          border: `2px solid ${marcada ? 'var(--color-royal)' : 'var(--border-field)'}`,
           background: marcada ? 'var(--color-royal)' : 'transparent',
           display: 'grid',
           placeItems: 'center',
         }}
       >
-        {marcada ? <Icon name="check" size={11} color="var(--bg-card)" /> : null}
+        {marcada ? <Icon name="check" size={11} color="var(--bg-card-solid)" /> : null}
       </span>
       {resposta ? (
         rotulo

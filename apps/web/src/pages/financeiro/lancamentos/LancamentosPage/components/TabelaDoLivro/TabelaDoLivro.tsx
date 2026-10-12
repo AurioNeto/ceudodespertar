@@ -14,7 +14,7 @@ export function TabelaDoLivro({ registros, selecionado, onAbrir }: TabelaDoLivro
       style={{
         background: 'var(--bg-card)',
         border: 'var(--border-hairline)',
-        borderRadius: 'var(--radius)',
+        borderRadius: 'var(--leaf-lg)',
         overflow: 'hidden',
       }}
     >

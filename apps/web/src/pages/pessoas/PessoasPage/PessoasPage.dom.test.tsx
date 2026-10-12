@@ -52,11 +52,11 @@ const TODAS_AS_PESSOAS = [
 ];
 
 const COR_DO_TOM = {
-  confirmado: 'var(--color-confirmed)',
-  sugestao: 'var(--color-suggest)',
-  pendente: 'var(--color-pending)',
-  neutro: 'var(--color-neutral)',
-  royal: 'var(--color-royal-ink)',
+  confirmado: 'var(--tone-confirmed-fg)',
+  sugestao: 'var(--tone-suggest-fg)',
+  pendente: 'var(--tone-pending-fg)',
+  neutro: 'var(--tone-neutral-fg)',
+  royal: 'var(--tone-royal-fg)',
 } as const;
 
 const linhasDePessoas = (container: HTMLElement) =>
@@ -79,7 +79,7 @@ const linhaDe = (container: HTMLElement, nome: string) => {
 
 const selosDe = (origem: HTMLElement) =>
   todos<HTMLSpanElement>(origem, 'span').filter(
-    (span) => span.childElementCount === 0 && span.style.borderRadius === 'var(--radius-pill)',
+    (span) => span.childElementCount === 0 && span.style.borderRadius === 'var(--leaf-xs)',
   );
 
 const seloComTexto = (origem: HTMLElement, texto: string) => {
@@ -143,25 +143,23 @@ async function buscar(container: HTMLElement, texto: string) {
 }
 
 describe('PessoasPage: cabeçalho nas duas densidades', () => {
-  it('escritório — mostra o código com o nome da tela, o título e o subtítulo', async () => {
+  it('escritório — mostra o título e o subtítulo', async () => {
     definirDensidade('office');
     const container = await montarPessoas();
 
     const cabecalho = cabecalhoDaTela(container);
 
     expect(elemento(cabecalho, 'h1').textContent).toBe('Pessoas');
-    expect(folhaComTexto(cabecalho, 'div', 'F-09 · Pessoas')).toBeTruthy();
     expect(folhaComTexto(cabecalho, 'p', 'Quem é da casa e quem entra no sistema — dois eixos, um cadastro só')).toBeTruthy();
   });
 
-  it('campo — mostra só o código e o título, sem subtítulo', async () => {
+  it('campo — mostra só o título, sem subtítulo', async () => {
     definirDensidade('field');
     const container = await montarPessoas();
 
     const cabecalho = cabecalhoDaTela(container);
 
     expect(elemento(cabecalho, 'h1').textContent).toBe('Pessoas');
-    expect(folhaComTexto(cabecalho, 'div', 'F-09')).toBeTruthy();
     expect(cabecalho.querySelector('p')).toBeNull();
     expect(cabecalho.textContent).not.toContain('dois eixos');
   });

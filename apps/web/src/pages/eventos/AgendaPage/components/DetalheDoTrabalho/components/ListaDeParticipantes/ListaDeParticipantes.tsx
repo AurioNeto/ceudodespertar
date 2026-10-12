@@ -39,7 +39,7 @@ export function ListaDeParticipantes({
               padding: '10px 12px',
               border: 'var(--border-hairline)',
               borderLeft: `3px solid ${p.situacao === 'confirmado' ? 'var(--color-confirmed)' : 'var(--color-pending)'}`,
-              borderRadius: 'var(--radius)',
+              borderRadius: 'var(--leaf-sm)',
               background: 'var(--bg-card)',
               cursor: 'pointer',
               textAlign: 'left',

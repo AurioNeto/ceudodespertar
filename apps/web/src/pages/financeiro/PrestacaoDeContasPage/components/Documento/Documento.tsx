@@ -1,4 +1,4 @@
-import { AmountDisplay, type Density } from '@/ds';
+import { AmountDisplay, rotuloVersalete, type Density } from '@/ds';
 import { formatarBRL } from '@/pages/utils/formato';
 import type { DadosDaPrestacao, NivelDeDetalhe } from '../../mocks/prestacao';
 import { Linha } from './components/Linha';
@@ -23,7 +23,7 @@ export function Documento({ dados, nivel, unidadeRotulo, densidade, totalReceita
       style={{
         background: 'var(--bg-brand)',
         border: '1px solid var(--color-line-gold)',
-        borderRadius: 'var(--radius)',
+        borderRadius: 'var(--leaf-xl)',
         padding: campo ? '20px 18px' : '30px 34px',
         display: 'flex',
         flexDirection: 'column',
@@ -32,14 +32,7 @@ export function Documento({ dados, nivel, unidadeRotulo, densidade, totalReceita
       }}
     >
       <header style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
-        <span
-          style={{
-            font: 'var(--text-label)',
-            letterSpacing: 'var(--tracking-label)',
-            textTransform: 'uppercase',
-            color: 'var(--text-field-label)',
-          }}
-        >
+        <span style={rotuloVersalete}>
           Céu do Despertar · Prestação de contas
         </span>
         <h2 style={{ font: 'var(--text-title)', color: 'var(--text-title)', margin: 0 }}>
@@ -69,7 +62,7 @@ export function Documento({ dados, nivel, unidadeRotulo, densidade, totalReceita
         style={{
           background: 'var(--bg-card)',
           border: '1px solid var(--color-line-gold)',
-          borderRadius: 'var(--radius)',
+          borderRadius: 'var(--leaf-lg)',
           padding: campo ? '14px 16px' : '16px 20px',
           display: 'flex',
           flexWrap: 'wrap',

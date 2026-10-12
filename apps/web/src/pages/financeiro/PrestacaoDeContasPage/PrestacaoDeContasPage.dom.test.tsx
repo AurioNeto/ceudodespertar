@@ -94,21 +94,20 @@ const recado = (container: HTMLElement) => container.querySelector('[role="statu
 const sortearSempre = (valor: number) => vi.spyOn(Math, 'random').mockReturnValue(valor);
 
 describe('PrestacaoDeContasPage: cabeçalho', () => {
-  it('escritório — mostra o código com o nome, o título e o subtítulo', async () => {
+  it('escritório — mostra o título e o subtítulo', async () => {
     const { container } = await montar(<PrestacaoDeContasPage />);
 
     const cabecalho = elemento(container, 'header');
-    expect(cabecalho.textContent).toContain('F-24 · Prestação de contas');
     expect(elemento(cabecalho, 'h1').textContent).toBe('Prestação de contas');
     expect(cabecalho.textContent).toContain('Exportação sob demanda, quando alguém pede · CDD');
   });
 
-  it('campo — mostra só o código e o título', async () => {
+  it('campo — mostra só o título', async () => {
     fixarDensidade(true);
 
     const { container } = await montar(<PrestacaoDeContasPage />);
 
-    expect(elemento(container, 'header').textContent).toBe('F-24Prestação de contas');
+    expect(elemento(container, 'header').textContent).toBe('Prestação de contas');
   });
 });
 
@@ -403,7 +402,7 @@ describe('PrestacaoDeContasPage: prestações já geradas', () => {
       const selo = entrada.children[1]?.children[0]?.children[1];
       return selo instanceof HTMLElement ? selo.style.color : null;
     };
-    expect(historico(container).map(corDoSelo)).toEqual([COR_CONFIRMADA, 'var(--color-pending)', COR_CONFIRMADA]);
+    expect(historico(container).map(corDoSelo)).toEqual(['var(--tone-confirmed-fg)', 'var(--tone-pending-fg)', 'var(--tone-confirmed-fg)']);
   });
 
   it('Gerar PDF — põe a prestação no topo do histórico, com autor e data de demonstração e o hash sorteado', async () => {

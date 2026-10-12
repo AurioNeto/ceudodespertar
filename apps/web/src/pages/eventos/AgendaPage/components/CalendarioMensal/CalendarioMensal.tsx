@@ -3,6 +3,7 @@ import type { Trabalho } from '../../tipos';
 import { hoje } from '@/pages/mocks/relogio';
 import { DIAS_DA_SEMANA } from './constantes';
 import { celulasDoMes } from './utils/celulasDoMes';
+import { rotuloVersalete } from '@/ds';
 
 export interface CalendarioMensalProps {
   ano: number;
@@ -21,7 +22,7 @@ export function CalendarioMensal({ ano, mes, trabalhos, onAbrir }: CalendarioMen
       style={{
         background: 'var(--bg-card)',
         border: 'var(--border-hairline)',
-        borderRadius: 'var(--radius-lg)',
+        borderRadius: 'var(--leaf-lg)',
         overflow: 'hidden',
       }}
     >
@@ -31,10 +32,8 @@ export function CalendarioMensal({ ano, mes, trabalhos, onAbrir }: CalendarioMen
             key={d}
             style={{
               padding: '9px 10px',
-              font: 'var(--text-label)',
-              letterSpacing: 'var(--tracking-label)',
+              ...rotuloVersalete,
               textTransform: 'uppercase',
-              color: 'var(--text-field-label)',
               borderBottom: '1px solid var(--color-line-strong)',
             }}
           >
@@ -56,7 +55,7 @@ export function CalendarioMensal({ ano, mes, trabalhos, onAbrir }: CalendarioMen
                 padding: '7px 8px',
                 borderRight: (i + 1) % 7 === 0 ? 0 : 'var(--border-hairline)',
                 borderBottom: 'var(--border-hairline)',
-                background: dia ? 'var(--bg-card)' : 'var(--bg-sunken)',
+                background: dia ? 'var(--bg-card-solid)' : 'var(--bg-sunken)',
                 display: 'flex',
                 flexDirection: 'column',
                 gap: 5,
@@ -69,7 +68,7 @@ export function CalendarioMensal({ ano, mes, trabalhos, onAbrir }: CalendarioMen
                     fontVariantNumeric: 'tabular-nums',
                     color: ehHoje ? 'var(--color-ink-inverse)' : 'var(--text-meta)',
                     background: ehHoje ? 'var(--color-royal)' : 'transparent',
-                    borderRadius: 'var(--radius-pill)',
+                    borderRadius: 'var(--leaf-seal)',
                     width: 22,
                     height: 22,
                     display: 'grid',
@@ -93,9 +92,9 @@ export function CalendarioMensal({ ano, mes, trabalhos, onAbrir }: CalendarioMen
                       width: '100%',
                       textAlign: 'left',
                       font: '600 11.5px var(--font-body)',
-                      color: cancelada ? 'var(--text-meta)' : '#fff',
-                      background: cancelada ? 'var(--color-neutral-soft)' : CORES_POR_TIPO[t.tipo],
-                      borderRadius: 'var(--radius-sm)',
+                      color: cancelada ? 'var(--text-meta)' : CORES_POR_TIPO[t.tipo].tinta,
+                      background: cancelada ? 'var(--color-neutral-soft)' : CORES_POR_TIPO[t.tipo].fundo,
+                      borderRadius: 'var(--leaf-xs)',
                       padding: '4px 7px',
                       cursor: 'pointer',
                       overflow: 'hidden',

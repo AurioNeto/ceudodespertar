@@ -19,7 +19,7 @@ export function CartaoDoTopo({ cartao, divida, ativo, onEscolher }: CartaoDoTopo
         background: 'var(--bg-card)',
         border: `1px solid ${ativo ? 'var(--color-royal-border)' : 'var(--color-line)'}`,
         borderLeft: `var(--edge-state) solid ${ativo ? 'var(--color-royal)' : 'transparent'}`,
-        borderRadius: 'var(--radius)',
+        borderRadius: 'var(--leaf-md)',
         padding: '13px 16px',
         cursor: 'pointer',
         boxShadow: ativo ? 'var(--shadow-raised)' : 'none',

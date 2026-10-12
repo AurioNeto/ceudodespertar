@@ -15,7 +15,6 @@ export function FechamentoPage() {
   return (
     <>
       <ScreenHeader
-        code={campo ? 'F-07' : 'F-07 · Fechamento'}
         title="Fechamento"
         subtitle={campo ? undefined : 'Confere o que falta, registra o saldo e trava o período · CDD'}
         density={densidade}

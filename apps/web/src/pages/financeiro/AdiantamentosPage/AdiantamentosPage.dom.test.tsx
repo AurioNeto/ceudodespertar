@@ -133,11 +133,10 @@ async function registrarNovoAdiantamento(container: HTMLElement, valor: string, 
 }
 
 describe('AdiantamentosPage: cabeçalho, perspectivas e resumo', () => {
-  it('cabeçalho em escritório — mostra o código com o nome da tela, o título e o subtítulo', async () => {
+  it('cabeçalho em escritório — mostra o título e o subtítulo', async () => {
     const { container } = await montar(<AdiantamentosPage />);
 
     expect(textosDasFolhas(elemento(container, 'header'))).toEqual([
-      'F-11 · Adiantamentos e reembolsos',
       'Adiantamentos',
       'Quem tirou do próprio bolso e ainda não voltou · CDD',
     ]);
@@ -328,8 +327,8 @@ describe('AdiantamentosPage: o que cada perspectiva vê', () => {
 
 describe('AdiantamentosPage: selo e borda de cada estado', () => {
   it.each([
-    { secao: 'A ressarcir', pessoa: 'Paty Munay', motivo: 'camisetas', selo: 'A ressarcir', cor: 'var(--color-royal-ink)', borda: 'var(--color-royal)' },
-    { secao: 'Fechados', pessoa: 'Carlos Andrade', motivo: 'diesel', selo: 'Ressarcido', cor: 'var(--color-confirmed)', borda: 'var(--color-confirmed)' },
+    { secao: 'A ressarcir', pessoa: 'Paty Munay', motivo: 'camisetas', selo: 'A ressarcir', cor: 'var(--tone-royal-fg)', borda: 'var(--color-royal)' },
+    { secao: 'Fechados', pessoa: 'Carlos Andrade', motivo: 'diesel', selo: 'Ressarcido', cor: 'var(--tone-confirmed-fg)', borda: 'var(--color-confirmed)' },
   ])('linha $selo — o selo e a borda esquerda seguem o estado', async ({ secao, pessoa, motivo, selo, cor, borda }) => {
     const { container } = await montar(<AdiantamentosPage />);
 
@@ -345,7 +344,7 @@ describe('AdiantamentosPage: selo e borda de cada estado', () => {
 
     const linha = linhaDe(container, ...LINHA_DE_PATY_A_AUTORIZAR);
 
-    expect((folhasComTexto(linha, 'Aguardando autorização')[0] as HTMLElement).style.color).toBe('var(--color-pending)');
+    expect((folhasComTexto(linha, 'Aguardando autorização')[0] as HTMLElement).style.color).toBe('var(--tone-pending-fg)');
     expect(linha.style.borderLeft).toContain('var(--color-pending)');
   });
 
@@ -358,7 +357,7 @@ describe('AdiantamentosPage: selo e borda de cada estado', () => {
 
     const linha = linhaDe(container, 'Fechados', 'Paty Munay', 'compras da cozinha');
 
-    expect((folhasComTexto(linha, 'Recusado')[0] as HTMLElement).style.color).toBe('var(--color-attention)');
+    expect((folhasComTexto(linha, 'Recusado')[0] as HTMLElement).style.color).toBe('var(--tone-attention-fg)');
     expect(linha.style.borderLeft).toContain('var(--color-attention)');
   });
 
@@ -367,7 +366,7 @@ describe('AdiantamentosPage: selo e borda de cada estado', () => {
 
     const selo = folhasComTexto(linhaDe(container, ...LINHA_DE_PATY_A_RESSARCIR), 'há 53 dias')[0] as HTMLElement;
 
-    expect(selo.style.color).toBe('var(--color-attention)');
+    expect(selo.style.color).toBe('var(--tone-attention-fg)');
   });
 });
 
@@ -886,10 +885,10 @@ describe('AdiantamentosPage em campo', () => {
     fixarDensidade(true);
   });
 
-  it('cabeçalho — mostra só o código F-11 e o título, sem subtítulo', async () => {
+  it('cabeçalho — mostra só o título, sem subtítulo', async () => {
     const { container } = await montar(<AdiantamentosPage />);
 
-    expect(textosDasFolhas(elemento(container, 'header'))).toEqual(['F-11', 'Adiantamentos']);
+    expect(textosDasFolhas(elemento(container, 'header'))).toEqual(['Adiantamentos']);
   });
 
   it('resumo e listas — trazem os mesmos valores do escritório', async () => {

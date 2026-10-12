@@ -23,7 +23,7 @@ export function SugestoesDoCupom({
       style={{
         background: campo ? 'transparent' : 'var(--color-suggest-soft)',
         border: campo ? 0 : '1px dashed var(--color-suggest-border)',
-        borderRadius: 'var(--radius-lg)',
+        borderRadius: 'var(--leaf-lg)',
         padding: campo ? 0 : 16,
         display: 'flex',
         flexDirection: 'column',

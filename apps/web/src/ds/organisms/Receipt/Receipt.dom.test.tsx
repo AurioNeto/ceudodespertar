@@ -20,9 +20,9 @@ const linhasDe = (container: HTMLElement) =>
   ]);
 
 const SINAL_E_COR_POR_TOM: readonly [ReceiptTone, string, string, string][] = [
-  ['entrada', SINAL_DE_MAIS, 'var(--color-confirmed)', 'var(--color-confirmed)'],
-  ['saida', SINAL_DE_MENOS, 'var(--color-attention)', 'var(--color-attention)'],
-  ['transferencia', '', 'var(--text-primary)', 'var(--color-royal)'],
+  ['entrada', SINAL_DE_MAIS, 'var(--title-on-paper)', 'var(--title-on-paper)'],
+  ['saida', SINAL_DE_MENOS, 'var(--title-on-paper)', 'var(--title-on-paper)'],
+  ['transferencia', '', 'var(--title-on-paper)', 'var(--title-on-paper)'],
 ];
 
 describe('Receipt — título e valor', () => {
@@ -92,10 +92,10 @@ describe('Receipt — tom', () => {
     expect(valorDe(container).style.color).toBe(corDoValor);
   });
 
-  it.each(SINAL_E_COR_POR_TOM)('tom %s — título na cor da régua', async (tom, _sinal, _corDoValor, corDaRegua) => {
+  it.each(SINAL_E_COR_POR_TOM)('tom %s — título na cor de título do papel', async (tom, _sinal, _corDoValor, corDoTitulo) => {
     const { container } = await montar(<Receipt tone={tom} title="Título" />);
 
-    expect(folhaComTexto<HTMLDivElement>(container, 'div', 'Título').style.color).toBe(corDaRegua);
+    expect(folhaComTexto<HTMLDivElement>(container, 'div', 'Título').style.color).toBe(corDoTitulo);
   });
 
   it('régua pontilhada — é a primeira peça do recibo, com 4px de altura', async () => {

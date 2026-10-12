@@ -11,9 +11,11 @@ export function CarrosselDeCerimonias() {
   return (
     <div
       style={{
-        background: 'var(--bg-card)',
+        background: 'var(--bg-glass)',
+        backdropFilter: 'var(--glass)',
+        WebkitBackdropFilter: 'var(--glass)',
         border: 'var(--border-hairline)',
-        borderRadius: 'var(--radius-lg)',
+        borderRadius: 'var(--leaf-lg)',
         overflow: 'hidden',
       }}
     >
@@ -39,7 +41,7 @@ export function CarrosselDeCerimonias() {
                 font: i === slide ? 'var(--text-body-strong)' : 'var(--text-body)',
                 padding: '10px 14px',
                 minHeight: 44,
-                borderRadius: 'var(--radius-sm)',
+                borderRadius: 'var(--leaf-sm)',
                 cursor: 'pointer',
                 border: `1px solid ${i === slide ? 'var(--color-royal-border)' : 'transparent'}`,
                 background: i === slide ? 'var(--color-royal-soft)' : 'transparent',

@@ -8,7 +8,7 @@ import { Teto } from './components/Teto';
 import { useContratacoes } from './hooks/useContratacoes';
 
 /**
- * `E-13` · Contratações — Doc 4 §7 e Doc 2 §2.3.
+ * Contratações — Doc 4 §7 e Doc 2 §2.3.
  *
  * O que a Munay faz fora de casa, e a tela existe para desfazer um nó de uma
  * palavra só. **Cachê** aponta para os dois lados: o contratante paga a Munay
@@ -29,7 +29,6 @@ export function ContratacoesPage() {
   return (
     <>
       <ScreenHeader
-        code={campo ? 'E-13' : 'E-13 · Contratações'}
         title="Contratações"
         subtitle={campo ? undefined : 'O que a Munay toca fora de casa · unidade comercial'}
         density={densidade}
@@ -42,6 +41,8 @@ export function ContratacoesPage() {
           flexDirection: 'column',
           gap: campo ? 14 : 18,
           maxWidth: campo ? undefined : 1020,
+          width: '100%',
+          margin: '0 auto',
           minWidth: 0,
         }}
       >

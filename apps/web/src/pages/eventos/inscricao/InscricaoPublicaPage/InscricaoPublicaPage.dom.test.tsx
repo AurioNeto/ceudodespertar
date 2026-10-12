@@ -924,7 +924,7 @@ describe('InscricaoPublicaPage: participação, valor e total', () => {
     ]);
   });
 
-  it('hospedagem — só a opção marcada leva o ícone de check no marcador, e o marcador é redondo', async () => {
+  it('hospedagem — só a opção marcada leva o ícone de check no marcador, e o marcador tem a forma de selo', async () => {
     const container = await chegarEmParticipacaoComoHelena();
     const rotulos = ['Não vai dormir na casa', 'Colchonete próprio na igreja', 'Beliche no dormitório', 'Quarto'];
     const opcao = (rotulo: string) => elemento<HTMLButtonElement>(container, `button[aria-label="${rotulo}"]`);
@@ -936,10 +936,10 @@ describe('InscricaoPublicaPage: participação, valor e total', () => {
     expect(antes).toEqual([true, false, false, false]);
     expect(icones()).toEqual([false, false, false, true]);
     expect(rotulos.map((rotulo) => elemento<HTMLSpanElement>(opcao(rotulo), 'span[aria-hidden]').style.borderRadius)).toEqual([
-      '50%',
-      '50%',
-      '50%',
-      '50%',
+      'var(--leaf-seal)',
+      'var(--leaf-seal)',
+      'var(--leaf-seal)',
+      'var(--leaf-seal)',
     ]);
   });
 

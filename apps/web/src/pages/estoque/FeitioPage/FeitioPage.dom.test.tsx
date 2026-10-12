@@ -57,6 +57,7 @@ afterEach(async () => {
 
 const COR = {
   confirmado: 'var(--color-confirmed)',
+  confirmadoDoSelo: 'var(--tone-confirmed-fg)',
   royal: 'var(--color-royal)',
   neutro: 'var(--color-neutral)',
   textoSecundario: 'var(--text-secondary)',
@@ -150,24 +151,22 @@ async function concluirComLitros(container: HTMLElement, litros: string) {
 }
 
 describe('FeitioPage: cabeçalho nas duas densidades', () => {
-  it('escritório — mostra o código com o nome da tela, o título e o subtítulo, sem ação no cabeçalho', async () => {
+  it('escritório — mostra o título e o subtítulo, sem ação no cabeçalho', async () => {
     const container = await montarFeitio();
 
     const cabecalho = elemento(container, 'header');
 
     expect(elemento(cabecalho, 'h1').textContent).toBe('Feitio');
-    expect(folhaComTexto(cabecalho, 'div', 'S-04 · Feitio')).toBeTruthy();
     expect(folhaComTexto(cabecalho, 'p', 'Onde evento, custo e estoque se encontram · CDD')).toBeTruthy();
     expect(todos(cabecalho, 'button')).toHaveLength(0);
   });
 
-  it('campo — mostra só o código e o título, sem subtítulo', async () => {
+  it('campo — mostra só o título, sem subtítulo', async () => {
     definirDensidade('field');
     const container = await montarFeitio();
 
     const cabecalho = elemento(container, 'header');
 
-    expect(folhaComTexto(cabecalho, 'div', 'S-04')).toBeTruthy();
     expect(cabecalho.querySelector('p')).toBeNull();
   });
 });
@@ -199,7 +198,7 @@ describe('FeitioPage: feitio em andamento', () => {
     const container = await montarFeitio();
 
     expect(folhaComTexto(container, 'span', 'Feitio de setembro')).toBeTruthy();
-    expect(folhaComTexto<HTMLSpanElement>(container, 'span', 'Em andamento').style.color).toBe('var(--color-royal-ink)');
+    expect(folhaComTexto<HTMLSpanElement>(container, 'span', 'Em andamento').style.color).toBe('var(--tone-royal-fg)');
     expect(folhaComTexto(container, 'span', '08/09/2026 · ainda na panela · Casa de feitio · Chácara')).toBeTruthy();
     expect(textosDasFolhas(cartaoDe(container, 'Quem está fazendo').parentElement as HTMLElement)).toContain('Chico Aguiar');
   });
@@ -590,7 +589,7 @@ describe('FeitioPage: feitio concluído', () => {
 
     await concluirComLitros(container, '40');
 
-    expect(folhaComTexto<HTMLSpanElement>(container, 'span', 'Concluído').style.color).toBe(COR.confirmado);
+    expect(folhaComTexto<HTMLSpanElement>(container, 'span', 'Concluído').style.color).toBe(COR.confirmadoDoSelo);
     expect(folhaComTexto(container, 'span', '08/09/2026 a 02/09/2026 · Casa de feitio · Chácara')).toBeTruthy();
     expect(container.textContent).not.toContain('Em andamento');
     expect(container.textContent).not.toContain('ainda na panela');

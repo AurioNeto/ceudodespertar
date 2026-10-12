@@ -29,7 +29,7 @@ export function SeletorDeTipo<T extends string>({
               minHeight: campo ? 'var(--target-field)' : 40,
               flex: campo ? 1 : undefined,
               textAlign: 'center',
-              borderRadius: 'var(--radius-sm)',
+              borderRadius: 'var(--leaf-sm)',
               cursor: 'pointer',
               border: `1px solid ${on ? 'var(--color-royal-border)' : 'var(--color-line)'}`,
               background: on ? 'var(--color-royal-soft)' : 'var(--bg-card)',

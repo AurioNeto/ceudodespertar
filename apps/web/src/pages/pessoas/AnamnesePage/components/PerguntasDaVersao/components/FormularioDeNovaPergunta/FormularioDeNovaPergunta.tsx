@@ -17,7 +17,7 @@ export function FormularioDeNovaPergunta({ rascunho, onMudar, onAdicionar, onCan
         flexDirection: 'column',
         gap: 12,
         background: 'var(--bg-sunken)',
-        borderRadius: 'var(--radius)',
+        borderRadius: 'var(--leaf-lg)',
         padding: '13px 14px',
       }}
     >

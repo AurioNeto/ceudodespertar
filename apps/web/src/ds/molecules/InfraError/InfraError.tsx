@@ -15,7 +15,7 @@ export function InfraError({ title = 'Não deu para carregar', description, onRe
       style={{
         background: 'var(--color-pending-soft)',
         border: '1px solid var(--color-pending-border)',
-        borderRadius: 'var(--radius)',
+        borderRadius: 'var(--leaf-md)',
         padding: '15px 16px',
         display: 'flex',
         gap: 13,

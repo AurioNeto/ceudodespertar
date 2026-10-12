@@ -1,7 +1,8 @@
 # Céu do Despertar — Sistema de Gestão
 
 Front-end do sistema, implementado a partir do handoff de design que está em
-`project/`. Segue o método do Doc 1 §8.1 — design → front-end (com mocks) →
+`project/` e vestido depois com o guia Força da Mata, a fonte visual atual, em
+`docs/design/forca-da-mata/`. Segue o método do Doc 1 §8.1 — design → front-end (com mocks) →
 backend: as telas existem em React com fixtures tipadas, e o backend
 implementa depois os contratos de `packages/contracts`.
 
@@ -15,11 +16,12 @@ pnpm typecheck
 | Onde | O que é |
 |---|---|
 | `apps/web/src/ds` | Design system em TSX, portado do bundle exportado |
-| `apps/web/src/ds/fundacao/tokens` | Tokens do design system — a fonte da verdade visual |
+| `apps/web/src/ds/fundacao/tokens` | Tokens do design system, com dois climas (Noite, o padrão, e Amanhecer) por `data-clima` |
 | `apps/web/src/pages` | As 13 telas |
 | `apps/web/src/mocks` | Fixtures tipadas; saem quando o backend entrar |
 | `packages/contracts` | Tipos do domínio e read models (Doc 2 e Doc 3) |
-| `project/` | O bundle de design original, mantido como referência |
+| `project/` | O bundle de design original (handoff), mantido como referência |
+| `docs/design/forca-da-mata/` | O guia Força da Mata, fonte visual atual: guia em texto e em HTML, tokens de referência, logo e merkaba |
 
 O que ainda não existe: backend (NestJS + MikroORM + PostgreSQL), Keycloak e
 os testes. A sessão do usuário e as permissões são fixtures.
@@ -59,6 +61,12 @@ segredo do client de serviço `cdd-api-admin` e a senha do usuário de
 desenvolvimento (`dev@cdd.local`) chegam por placeholder de variável de
 ambiente (`CDD_KC_ADMIN_SEGREDO`, `CDD_KC_DEV_SENHA`), substituído pelo
 próprio Keycloak no import.
+
+O tema de login (`infra/keycloak/themes/cdd/login`) é montado por bind-mount, então basta
+`docker compose restart keycloak` para recarregá-lo. Os tokens do `cdd.css` são o espelho
+fixo da Noite de `apps/web/src/ds/fundacao/tokens/colors.css`, porque o login não enxerga
+a escolha de clima do app. As fontes (Alegreya, Alegreya Sans SC e Public Sans, licença
+SIL OFL 1.1) ficam hospedadas em `resources/fonts/`, sem requisição externa.
 
 O `cdd-web` usa redirect por origem fixa com caminho em curinga
 (`http://localhost:5173/*`), não um redirect exato — a origem

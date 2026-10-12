@@ -1,6 +1,7 @@
 import type { CSSProperties, ReactNode } from 'react';
 import { Icon } from '../../atoms/Icon';
 import type { Density } from '../../fundacao/densidade';
+import { rotuloVersalete } from '../../fundacao/estilos';
 
 export interface DefaultFieldProps {
   label: string;
@@ -26,7 +27,7 @@ export function DefaultField({ label, value, origin, onEdit, density = 'field', 
         minHeight: density === 'field' ? 'var(--target-field)' : 'var(--target-office)',
         background: 'var(--bg-card)',
         border: 'var(--border-hairline)',
-        borderRadius: 'var(--radius)',
+        borderRadius: 'var(--leaf-sm)',
         padding: '9px 13px',
         cursor: 'pointer',
         ...style,
@@ -36,10 +37,7 @@ export function DefaultField({ label, value, origin, onEdit, density = 'field', 
         <span
           style={{
             display: 'block',
-            font: 'var(--text-label)',
-            letterSpacing: 'var(--tracking-label)',
-            textTransform: 'uppercase',
-            color: 'var(--text-field-label)',
+            ...rotuloVersalete,
           }}
         >
           {label}

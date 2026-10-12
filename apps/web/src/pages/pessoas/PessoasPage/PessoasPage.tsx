@@ -15,7 +15,6 @@ export function PessoasPage() {
   return (
     <>
       <ScreenHeader
-        code={campo ? 'F-09' : 'F-09 · Pessoas'}
         title="Pessoas"
         subtitle={campo ? undefined : 'Quem é da casa e quem entra no sistema — dois eixos, um cadastro só'}
         density={densidade}
@@ -65,9 +64,9 @@ export function PessoasPage() {
                   placeholder="nome, cidade ou telefone"
                   style={{
                     minHeight: 'var(--target-office)',
-                    border: '1px solid var(--color-line-strong)',
+                    border: '1px solid var(--border-field)',
                     background: 'var(--bg-card)',
-                    borderRadius: 'var(--radius)',
+                    borderRadius: 'var(--leaf-sm)',
                     padding: '10px 13px',
                     font: 'var(--text-body)',
                     color: 'var(--text-primary)',

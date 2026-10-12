@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { CSSProperties } from 'react';
 import { formatarValor } from '@/lib/formato';
 import { lerSoma } from '@/lib/numero';
+import { rotuloVersalete } from '../../fundacao/estilos';
 
 export interface AmountInputProps {
   label: string;
@@ -30,7 +31,7 @@ export function AmountInput({ label, sumLabel, sumNote, value = '', onChange, hi
       style={{
         background: 'var(--bg-brand)',
         border: '1px solid var(--border-brand)',
-        borderRadius: 'var(--radius-lg)',
+        borderRadius: 'var(--leaf-lg)',
         padding: '18px 20px 16px',
         ...style,
       }}
@@ -38,10 +39,7 @@ export function AmountInput({ label, sumLabel, sumNote, value = '', onChange, hi
       <span
         style={{
           display: 'block',
-          font: 'var(--text-label)',
-          letterSpacing: 'var(--tracking-label)',
-          textTransform: 'uppercase',
-          color: 'var(--text-field-label)',
+          ...rotuloVersalete,
           marginBottom: 6,
         }}
       >

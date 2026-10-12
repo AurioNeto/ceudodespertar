@@ -23,9 +23,9 @@ export function CabecalhoDoTrabalho({ trabalho: ev, onEditar, onDuplicar, onCanc
           <span
             style={{
               font: '600 12px var(--font-body)',
-              color: '#fff',
-              background: CORES_POR_TIPO[ev.tipo],
-              borderRadius: 'var(--radius-pill)',
+              color: CORES_POR_TIPO[ev.tipo].tinta,
+              background: CORES_POR_TIPO[ev.tipo].fundo,
+              borderRadius: 'var(--leaf-xs)',
               padding: '4px 11px',
             }}
           >

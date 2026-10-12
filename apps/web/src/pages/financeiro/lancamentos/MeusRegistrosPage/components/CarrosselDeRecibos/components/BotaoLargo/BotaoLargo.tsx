@@ -13,7 +13,7 @@ export function BotaoLargo({ rotulo, onClick }: BotaoLargoProps) {
         minHeight: 48,
         border: '1px solid var(--color-line-strong)',
         background: 'var(--bg-card)',
-        borderRadius: 'var(--radius)',
+        borderRadius: 'var(--leaf-md)',
         cursor: 'pointer',
         font: 'var(--text-body-strong)',
         color: 'var(--text-primary)',

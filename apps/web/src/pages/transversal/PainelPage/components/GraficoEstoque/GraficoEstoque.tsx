@@ -15,9 +15,11 @@ export function GraficoEstoque() {
   return (
     <div
       style={{
-        background: 'var(--bg-card)',
+        background: 'var(--bg-glass)',
+        backdropFilter: 'var(--glass)',
+        WebkitBackdropFilter: 'var(--glass)',
         border: 'var(--border-hairline)',
-        borderRadius: 'var(--radius-lg)',
+        borderRadius: 'var(--leaf-lg)',
         padding: '16px 20px 20px',
         display: 'flex',
         flexDirection: 'column',
@@ -55,7 +57,7 @@ export function GraficoEstoque() {
               patternUnits="userSpaceOnUse"
               patternTransform="rotate(45)"
             >
-              <rect width={7} height={7} fill="var(--bg-card)" />
+              <rect width={7} height={7} fill="var(--bg-card-solid)" />
               <line x1={0} y1={0} x2={0} y2={7} stroke={lote.cor} strokeWidth={2.6} />
             </pattern>
           ))}
@@ -84,11 +86,11 @@ export function GraficoEstoque() {
           x2={xFeitio}
           y1={26}
           y2={BASE}
-          stroke="var(--color-pending)"
+          stroke="var(--text-secondary)"
           strokeWidth={1}
           strokeDasharray="5 4"
         />
-        <text x={xFeitio + 6} y={18} fill="var(--color-pending)" fontSize={13} fontFamily="var(--font-data)">
+        <text x={xFeitio + 6} y={18} fill="var(--text-secondary)" fontSize={13} fontFamily="var(--font-data)">
           feitio {feitioRecente.data} · + {formatarLitros(feitioRecente.litros)} L
         </text>
 

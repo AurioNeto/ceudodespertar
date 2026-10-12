@@ -75,9 +75,9 @@ describe('DevolucoesPage: cabeçalho e totais', () => {
   it.each([
     {
       densidade: 'office' as const,
-      esperado: 'E-09 · Devoluções a pagarDevoluções a pagarO que o Acolhimento pediu e a Tesouraria paga · CDD',
+      esperado: 'Devoluções a pagarO que o Acolhimento pediu e a Tesouraria paga · CDD',
     },
-    { densidade: 'field' as const, esperado: 'E-09Devoluções a pagar' },
+    { densidade: 'field' as const, esperado: 'Devoluções a pagar' },
   ])('densidade $densidade — o cabeçalho é $esperado', async ({ densidade, esperado }) => {
     fixarDensidade(densidade);
 
@@ -170,9 +170,9 @@ describe('DevolucoesPage: cartões da fila', () => {
   it('selos — Contratante em royal, dias esperando em atenção e período fechado em neutro', async () => {
     const { container } = await montar(<DevolucoesPage />);
 
-    expect(folhaComTextoExato(container, 'Contratante')!.style.color).toBe('var(--color-royal-ink)');
-    expect(folhaComTextoExato(container, '45 dias esperando')!.style.color).toBe('var(--color-attention)');
-    expect(folhaComTextoExato(container, 'período fechado')!.style.color).toBe('var(--color-neutral)');
+    expect(folhaComTextoExato(container, 'Contratante')!.style.color).toBe('var(--tone-royal-fg)');
+    expect(folhaComTextoExato(container, '45 dias esperando')!.style.color).toBe('var(--tone-attention-fg)');
+    expect(folhaComTextoExato(container, 'período fechado')!.style.color).toBe('var(--tone-neutral-fg)');
   });
 });
 

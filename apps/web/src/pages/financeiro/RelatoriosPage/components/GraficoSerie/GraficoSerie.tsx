@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { reais } from '@cdd/contracts';
+import { rotuloVersalete } from '@/ds';
 import { formatarBRL } from '@/pages/utils/formato';
 import { ItemDaLegenda } from './components/ItemDaLegenda';
 import { pontosDaLinha } from './utils/pontosDaLinha';
@@ -34,7 +35,7 @@ export function GraficoSerie({ serie, acumulados, escala, rotuloPeriodo, campo =
       style={{
         background: 'var(--bg-card)',
         border: 'var(--border-hairline)',
-        borderRadius: 'var(--radius-lg)',
+        borderRadius: 'var(--leaf-lg)',
         padding: campo ? '14px 14px' : '16px 18px',
         display: 'flex',
         flexDirection: 'column',
@@ -47,9 +48,9 @@ export function GraficoSerie({ serie, acumulados, escala, rotuloPeriodo, campo =
         </span>
         <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>{rotuloPeriodo}</span>
         <span style={{ marginLeft: 'auto', display: 'flex', gap: 14, flexWrap: 'wrap' }}>
-          <ItemDaLegenda cor="var(--color-confirmed)">entradas</ItemDaLegenda>
-          <ItemDaLegenda cor="var(--color-attention)">saídas</ItemDaLegenda>
-          <ItemDaLegenda cor="var(--color-royal-deep)" linha>
+          <ItemDaLegenda cor="var(--serie-1)">entradas</ItemDaLegenda>
+          <ItemDaLegenda cor="var(--serie-3)">saídas</ItemDaLegenda>
+          <ItemDaLegenda cor="var(--serie-2)" linha>
             resultado acumulado
           </ItemDaLegenda>
         </span>
@@ -87,7 +88,7 @@ export function GraficoSerie({ serie, acumulados, escala, rotuloPeriodo, campo =
                       pointerEvents: 'none',
                       background: 'var(--color-ink-brand)',
                       color: 'var(--bg-card)',
-                      borderRadius: 'var(--radius-sm)',
+                      borderRadius: 'var(--leaf-sm)',
                       padding: '8px 10px',
                       display: 'flex',
                       flexDirection: 'column',
@@ -98,9 +99,8 @@ export function GraficoSerie({ serie, acumulados, escala, rotuloPeriodo, campo =
                   >
                     <span
                       style={{
-                        font: 'var(--text-label)',
-                        letterSpacing: 'var(--tracking-label)',
-                        textTransform: 'uppercase',
+                        ...rotuloVersalete,
+                        color: 'inherit',
                         opacity: 0.7,
                       }}
                     >
@@ -119,7 +119,7 @@ export function GraficoSerie({ serie, acumulados, escala, rotuloPeriodo, campo =
                     style={{
                       width: campo ? 9 : 14,
                       borderRadius: '3px 3px 0 0',
-                      background: 'var(--color-confirmed)',
+                      background: 'var(--serie-1)',
                       height: `${Math.max(2, (d.entrada / escala) * 100)}%`,
                       opacity: apagado ? 0.45 : 1,
                       transition: transicao,
@@ -131,7 +131,7 @@ export function GraficoSerie({ serie, acumulados, escala, rotuloPeriodo, campo =
                     style={{
                       width: campo ? 9 : 14,
                       borderRadius: '0 0 3px 3px',
-                      background: 'var(--color-attention)',
+                      background: 'var(--serie-3)',
                       height: `${Math.max(2, (d.saida / escala) * 100)}%`,
                       opacity: apagado ? 0.45 : 1,
                       transition: transicao,
@@ -188,7 +188,7 @@ export function GraficoSerie({ serie, acumulados, escala, rotuloPeriodo, campo =
           <polyline
             points={linhaDoAcumulado}
             fill="none"
-            stroke="var(--color-royal-deep)"
+            stroke="var(--serie-2)"
             strokeWidth={2}
             vectorEffect="non-scaling-stroke"
             strokeLinejoin="round"

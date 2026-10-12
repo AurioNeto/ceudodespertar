@@ -62,14 +62,14 @@ describe('TwoAxisGuard: não é erro de sistema', () => {
     expect(todos(container, 'button, input, textarea, select, a')).toHaveLength(0);
   });
 
-  it('a borda do topo, o ícone e a exigência usam o tom do eixo de autorização (royal)', async () => {
+  it('a borda do topo e a exigência ficam no tom neutro; o ícone, no tom royal', async () => {
     const { container } = await montar(guarda({ requirement: EXIGENCIA }));
     const icone = elemento<SVGElement>(container, 'svg');
     const exigencia = folhaComTexto<HTMLElement>(container, 'p', EXIGENCIA);
-    expect(raizDe(container).style.borderTop).toContain('var(--color-royal)');
+    expect(raizDe(container).style.borderTop).toContain('var(--color-neutral)');
     expect(icone.getAttribute('stroke')).toBe('var(--color-royal)');
-    expect(exigencia.style.color).toBe('var(--color-royal-ink)');
-    expect(exigencia.style.background).toBe('var(--color-royal-soft)');
+    expect(exigencia.style.color).toBe('var(--color-neutral)');
+    expect(exigencia.style.background).toBe('var(--color-neutral-soft)');
   });
 
   it('nenhum estilo que o jsdom serializa no guarda usa o tom de atenção nem o de pendência', async () => {

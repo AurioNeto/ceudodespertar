@@ -11,7 +11,7 @@ export function HistoricoDoLancamento({ historico }: HistoricoDoLancamentoProps)
       style={{
         background: 'var(--bg-card)',
         border: 'var(--border-hairline)',
-        borderRadius: 'var(--radius)',
+        borderRadius: 'var(--leaf-lg)',
         padding: '14px 16px',
         display: 'flex',
         flexDirection: 'column',

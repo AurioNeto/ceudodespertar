@@ -16,7 +16,7 @@ export function Sugestao({ sugestao, onCasar, onRecusar }: SugestaoProps) {
       style={{
         background: 'var(--color-suggest-soft)',
         border: '1px solid var(--color-suggest-border)',
-        borderRadius: 'var(--radius)',
+        borderRadius: 'var(--leaf-md)',
         padding: '13px 15px',
         display: 'flex',
         flexDirection: 'column',

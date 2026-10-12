@@ -48,6 +48,7 @@ vi.mock('@/pages/financeiro/mocks/lancamentos', async (importarOriginal) => {
 const COR_PENDENTE = 'var(--color-pending)';
 const COR_CONFIRMADA = 'var(--color-confirmed)';
 const COR_DE_ATENCAO = 'var(--color-attention)';
+const COR_DO_SELO_CONFIRMADO = 'var(--tone-confirmed-fg)';
 const COR_DE_MARCA = 'var(--color-royal-deep)';
 const MENOS = '− ';
 
@@ -196,21 +197,20 @@ async function fecharOPeriodo(container: HTMLElement) {
 }
 
 describe('FechamentoPage: cabeçalho', () => {
-  it('escritório — mostra o código com o nome, o título e o subtítulo', async () => {
+  it('escritório — mostra o título e o subtítulo', async () => {
     const { container } = await montarFechamento();
 
     const cabecalho = elemento(container, 'header');
-    expect(cabecalho.textContent).toContain('F-07 · Fechamento');
     expect(elemento(cabecalho, 'h1').textContent).toBe('Fechamento');
     expect(cabecalho.textContent).toContain('Confere o que falta, registra o saldo e trava o período · CDD');
   });
 
-  it('campo — mostra só o código e o título, sem subtítulo', async () => {
+  it('campo — mostra só o título, sem subtítulo', async () => {
     fixarDensidade(true);
 
     const { container } = await montarFechamento();
 
-    expect(elemento(container, 'header').textContent).toBe('F-07Fechamento');
+    expect(elemento(container, 'header').textContent).toBe('Fechamento');
   });
 });
 
@@ -775,7 +775,7 @@ describe('FechamentoPage: meses anteriores', () => {
 
     const selos = todos<HTMLSpanElement>(container, 'span').filter((s) => s.textContent === 'Fechado');
 
-    expect(selos.map((s) => s.style.color)).toEqual([COR_CONFIRMADA, COR_CONFIRMADA, COR_CONFIRMADA, COR_CONFIRMADA]);
+    expect(selos.map((s) => s.style.color)).toEqual([COR_DO_SELO_CONFIRMADO, COR_DO_SELO_CONFIRMADO, COR_DO_SELO_CONFIRMADO, COR_DO_SELO_CONFIRMADO]);
   });
 
   it('o resultado de maio, negativo, fica em atenção e os positivos em verde', async () => {

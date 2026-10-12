@@ -17,9 +17,9 @@ export function FlowerOfLife() {
     <svg
       viewBox="0 0 200 200"
       aria-hidden="true"
-      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.06 }}
+      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.5 }}
     >
-      <g fill="none" stroke="var(--color-label)" strokeWidth="1.4">
+      <g fill="none" stroke="var(--color-line-gold)" strokeWidth="1.4">
         {centros.map(([x, y]) => (
           <circle key={`${x}-${y}`} cx={x} cy={y} r={34} />
         ))}

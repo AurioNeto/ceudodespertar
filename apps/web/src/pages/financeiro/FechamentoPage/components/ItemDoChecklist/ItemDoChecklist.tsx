@@ -41,7 +41,7 @@ export function ItemDoChecklist({ item: i, densidade }: ItemDoChecklistProps) {
         padding: campo ? '11px 12px' : '12px 14px',
         border: 'var(--border-hairline)',
         borderLeft: `3px solid ${cor}`,
-        borderRadius: 'var(--radius)',
+        borderRadius: 'var(--leaf-sm)',
         background: 'var(--bg-card)',
       }}
     >

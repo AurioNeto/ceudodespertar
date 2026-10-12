@@ -1,6 +1,7 @@
 import type { CSSProperties } from 'react';
 import { Icon } from '../../atoms/Icon';
 import type { SheetOption } from '../../fundacao/opcao';
+import { rotuloVersalete } from '../../fundacao/estilos';
 
 export interface BottomSheetProps {
   open?: boolean;
@@ -30,6 +31,8 @@ export function BottomSheet({
         position: 'absolute',
         inset: 0,
         background: 'var(--bg-scrim)',
+        backdropFilter: 'var(--glass)',
+        WebkitBackdropFilter: 'var(--glass)',
         display: 'flex',
         alignItems: 'flex-end',
         zIndex: 40,
@@ -41,7 +44,7 @@ export function BottomSheet({
         style={{
           width: '100%',
           background: 'var(--bg-card)',
-          borderRadius: 'var(--radius-lg) var(--radius-lg) 0 0',
+          borderRadius: 'var(--leaf-xl-espelhada)',
           boxShadow: 'var(--shadow-sheet)',
           padding: '8px 0 14px',
           maxHeight: '78%',
@@ -56,10 +59,7 @@ export function BottomSheet({
           <div
             style={{
               padding: '0 20px 10px',
-              font: 'var(--text-label)',
-              letterSpacing: 'var(--tracking-label)',
-              textTransform: 'uppercase',
-              color: 'var(--text-field-label)',
+              ...rotuloVersalete,
             }}
           >
             {title}

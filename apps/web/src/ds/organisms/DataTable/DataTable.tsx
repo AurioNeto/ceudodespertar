@@ -1,4 +1,5 @@
 import type { CSSProperties, ReactNode } from 'react';
+import { rotuloVersalete } from '../../fundacao/estilos';
 
 export interface Column<R> {
   key: keyof R & string;
@@ -23,9 +24,11 @@ export function DataTable<R extends Record<string, ReactNode>>({
     <div
       style={{
         border: 'var(--border-hairline)',
-        borderRadius: 'var(--radius)',
+        borderRadius: 'var(--leaf-lg)',
         overflow: 'hidden',
-        background: 'var(--bg-card)',
+        background: 'var(--bg-glass)',
+        backdropFilter: 'var(--glass)',
+        WebkitBackdropFilter: 'var(--glass)',
         ...style,
       }}
     >
@@ -51,10 +54,7 @@ export function DataTable<R extends Record<string, ReactNode>>({
                 scope="col"
                 style={{
                   textAlign: c.numeric ? 'right' : 'left',
-                  font: 'var(--text-label)',
-                  letterSpacing: 'var(--tracking-label)',
-                  textTransform: 'uppercase',
-                  color: 'var(--text-field-label)',
+                  ...rotuloVersalete,
                   padding: '11px 13px',
                   background: 'var(--bg-sunken)',
                   borderBottom: '1px solid var(--color-line-strong)',
@@ -68,7 +68,7 @@ export function DataTable<R extends Record<string, ReactNode>>({
         </thead>
         <tbody>
           {rows.map((r, i) => (
-            <tr key={i}>
+            <tr key={i} style={i % 2 === 1 ? { background: 'var(--bg-sunken)' } : undefined}>
               {columns.map((c) => (
                 <td
                   key={c.key}

@@ -52,8 +52,8 @@ async function abrirFaturaDeSetembro(container: HTMLElement) {
   await clicar(botaoDaFatura);
 }
 
-const COR_DO_SELO_PENDENTE = 'var(--color-pending)';
-const FUNDO_DO_SELO_PENDENTE = 'var(--color-pending-soft)';
+const COR_DO_SELO_PENDENTE = 'var(--tone-pending-fg)';
+const FUNDO_DO_SELO_PENDENTE = 'var(--tone-pending-bg)';
 
 const selosPendentesDaLinha = (linha: HTMLElement) =>
   todos<HTMLSpanElement>(linha, 'span').filter((span) => span.style.color === COR_DO_SELO_PENDENTE);
@@ -168,11 +168,10 @@ const fixarDensidade = (campo: boolean) =>
   }));
 
 describe('FaturasPage em escritório: cabeçalho, cartões e lista de faturas', () => {
-  it('cabeçalho — mostra o código com o nome da tela, o título e o subtítulo', async () => {
+  it('cabeçalho — mostra o título e o subtítulo', async () => {
     const { container } = await montar(<FaturasPage />);
 
     expect(textosDasFolhas(elemento(container, 'header'))).toEqual([
-      'F-09 · Faturas de cartão',
       'Faturas de cartão',
       'A compra é despesa; pagar a fatura é transferência · CDD',
     ]);
@@ -223,9 +222,9 @@ describe('FaturasPage em escritório: cabeçalho, cartões e lista de faturas', 
   });
 
   it.each([
-    { competencia: 'setembro de 2026', rotulo: 'Aberta', cor: 'var(--color-royal-ink)', fundo: 'var(--color-royal-soft)' },
-    { competencia: 'agosto de 2026', rotulo: 'Fechada, a pagar', cor: 'var(--color-pending)', fundo: 'var(--color-pending-soft)' },
-    { competencia: 'julho de 2026', rotulo: 'Paga', cor: 'var(--color-confirmed)', fundo: 'var(--color-confirmed-soft)' },
+    { competencia: 'setembro de 2026', rotulo: 'Aberta', cor: 'var(--tone-royal-fg)', fundo: 'var(--tone-royal-bg)' },
+    { competencia: 'agosto de 2026', rotulo: 'Fechada, a pagar', cor: 'var(--tone-pending-fg)', fundo: 'var(--tone-pending-bg)' },
+    { competencia: 'julho de 2026', rotulo: 'Paga', cor: 'var(--tone-confirmed-fg)', fundo: 'var(--tone-confirmed-bg)' },
   ])('selo da fatura de $competencia — diz $rotulo no tom $cor', async ({ competencia, rotulo, cor, fundo }) => {
     const { container } = await montar(<FaturasPage />);
 
@@ -595,10 +594,10 @@ describe('FaturasPage em campo', () => {
     fixarDensidade(true);
   });
 
-  it('cabeçalho — mostra só o código F-09 e o título, sem subtítulo', async () => {
+  it('cabeçalho — mostra só o título, sem subtítulo', async () => {
     const { container } = await montar(<FaturasPage />);
 
-    expect(textosDasFolhas(elemento(container, 'header'))).toEqual(['F-09', 'Faturas de cartão']);
+    expect(textosDasFolhas(elemento(container, 'header'))).toEqual(['Faturas de cartão']);
   });
 
   it('tabela de compras — esconde as colunas Grupo e Quem registrou', async () => {

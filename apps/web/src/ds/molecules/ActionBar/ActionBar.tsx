@@ -13,13 +13,15 @@ export function ActionBar({ children, note, sticky = true, style }: ActionBarPro
       style={{
         position: sticky ? 'sticky' : 'static',
         bottom: 0,
-        background: 'var(--bg-card)',
+        background: 'var(--bg-glass)',
+        backdropFilter: 'var(--glass)',
+        WebkitBackdropFilter: 'var(--glass)',
         borderTop: '1px solid var(--color-line)',
         padding: '12px 20px 14px',
         display: 'flex',
         flexDirection: 'column',
         gap: 8,
-        boxShadow: sticky ? '0 -6px 18px -14px rgba(59,38,23,.4)' : 'none',
+        boxShadow: sticky ? 'var(--shadow-sheet)' : 'none',
         ...style,
       }}
     >

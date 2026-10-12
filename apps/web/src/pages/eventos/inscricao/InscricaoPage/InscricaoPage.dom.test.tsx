@@ -124,21 +124,18 @@ const SEM_PENDENCIA: string[][] = [];
 const PENDENCIA_DE_EMERGENCIA = ['Contato de emergência e restrição alimentar', 'IN4'];
 
 describe('InscricaoPage: abertura e escolha do evento', () => {
-  it('escritório — mostra o código com o nome da tela, o título e o subtítulo', async () => {
+  it('escritório — mostra o título e o subtítulo', async () => {
     const container = await abrir();
 
-    expect(folhaComTexto(container, 'div', 'E-06 · Inscrição')).toBeDefined();
     expect(elemento(container, 'h1').textContent).toBe('Inscrição');
     expect(folhaComTexto(container, 'p', 'Inscrever alguém num trabalho · CDD')).toBeDefined();
   });
 
-  it('campo — mostra só o código E-06, sem o nome da tela e sem subtítulo', async () => {
+  it('campo — o cabeçalho não tem subtítulo', async () => {
     definirDensidade(true);
 
     const container = await abrir();
 
-    expect(folhaComTexto(container, 'div', 'E-06')).toBeDefined();
-    expect(textoDe(container)).not.toContain('E-06 · Inscrição');
     expect(container.querySelector('header p')).toBeNull();
   });
 
@@ -639,7 +636,7 @@ describe('InscricaoPage: estado da anamnese', () => {
     const container = await abrirComPessoa(pessoa);
 
     expect(folhaComTexto(container, 'span', selo)).toBeDefined();
-    expect(corDoSelo(container, selo)).toBe(`var(--color-${tom})`);
+    expect(corDoSelo(container, selo)).toBe(`var(--tone-${tom}-fg)`);
     expect(folhaComTexto(container, 'span', nota)).toBeDefined();
     expect(textoDe(container)).toContain(frase);
   });
@@ -652,7 +649,7 @@ describe('InscricaoPage: estado da anamnese', () => {
 
     await clicar(interruptor(container, 'Consagra neste trabalho'));
 
-    expect(corDoSelo(container, 'Não se aplica')).toBe('var(--color-neutral)');
+    expect(corDoSelo(container, 'Não se aplica')).toBe('var(--tone-neutral-fg)');
   });
 
   it('quem não consagra — o selo vira Não se aplica e a frase diz que o estado antigo continua guardado', async () => {
@@ -1062,7 +1059,7 @@ describe('InscricaoPage: hospedagem e leito', () => {
     ]);
   });
 
-  it('hospedagem — só a opção marcada leva o ícone de check no marcador, e o marcador é redondo', async () => {
+  it('hospedagem — só a opção marcada leva o ícone de check no marcador, e o marcador tem a forma de selo', async () => {
     const container = await abrirComPessoa('Helena Duarte');
     const rotulos = ['Não vai dormir na casa', 'Colchonete próprio na igreja', 'Beliche no dormitório', 'Quarto'];
     const iconesAntes = rotulos.map((rotulo) => temIcone(opcaoEmLinha(container, rotulo), 'check'));
@@ -1072,10 +1069,10 @@ describe('InscricaoPage: hospedagem e leito', () => {
     expect(iconesAntes).toEqual([true, false, false, false]);
     expect(rotulos.map((rotulo) => temIcone(opcaoEmLinha(container, rotulo), 'check'))).toEqual([false, false, true, false]);
     expect(rotulos.map((rotulo) => marcadorDaOpcao(opcaoEmLinha(container, rotulo)).style.borderRadius)).toEqual([
-      '50%',
-      '50%',
-      '50%',
-      '50%',
+      'var(--leaf-seal)',
+      'var(--leaf-seal)',
+      'var(--leaf-seal)',
+      'var(--leaf-seal)',
     ]);
   });
 
@@ -1252,7 +1249,7 @@ describe('InscricaoPage: alimentação', () => {
     const iconeMarcada = temIcone(ceia(), 'check');
     await clicar(ceia());
 
-    expect(antesDoClique).toEqual([false, '5px']);
+    expect(antesDoClique).toEqual([false, 'var(--leaf-xs)']);
     expect(iconeMarcada).toBe(true);
     expect(temIcone(ceia(), 'check')).toBe(false);
   });

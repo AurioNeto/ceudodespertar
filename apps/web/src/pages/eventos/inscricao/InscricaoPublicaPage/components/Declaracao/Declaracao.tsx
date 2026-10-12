@@ -64,8 +64,8 @@ export function Declaracao({
           gap: 13,
           alignItems: 'flex-start',
           padding: campo ? '15px 16px' : '17px 19px',
-          borderRadius: 'var(--radius)',
-          border: `1px solid ${declarado ? 'var(--color-royal)' : 'var(--color-line-strong)'}`,
+          borderRadius: 'var(--leaf-sm)',
+          border: `1px solid ${declarado ? 'var(--color-royal)' : 'var(--border-field)'}`,
           background: declarado ? 'var(--color-royal-soft)' : 'var(--bg-card)',
           cursor: 'pointer',
         }}
@@ -76,15 +76,15 @@ export function Declaracao({
             width: 22,
             height: 22,
             flexShrink: 0,
-            borderRadius: 6,
+            borderRadius: 'var(--leaf-xs)',
             marginTop: 1,
-            border: `2px solid ${declarado ? 'var(--color-royal)' : 'var(--color-line-strong)'}`,
+            border: `2px solid ${declarado ? 'var(--color-royal)' : 'var(--border-field)'}`,
             background: declarado ? 'var(--color-royal)' : 'transparent',
             display: 'grid',
             placeItems: 'center',
           }}
         >
-          {declarado ? <Icon name="check" size={14} color="var(--bg-card)" /> : null}
+          {declarado ? <Icon name="check" size={14} color="var(--bg-card-solid)" /> : null}
         </span>
         <span style={{ font: 'var(--text-body)', color: 'var(--text-primary)' }}>{TEXTO_DA_DECLARACAO}</span>
       </button>

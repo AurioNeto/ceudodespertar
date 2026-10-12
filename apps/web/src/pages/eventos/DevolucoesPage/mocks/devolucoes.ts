@@ -3,7 +3,7 @@ import { competencia, reais } from '@cdd/contracts';
 import { id } from '@/mocks/ids';
 
 /**
- * `E-09` — a fila da Tesouraria.
+ * A fila da Tesouraria.
  *
  * O que chega aqui já passou pelo Acolhimento: alguém cancelou a inscrição e
  * registrou que a pessoa **pediu** o dinheiro de volta. Quem apenas faltou não

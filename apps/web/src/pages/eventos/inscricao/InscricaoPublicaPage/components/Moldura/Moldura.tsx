@@ -15,7 +15,7 @@ export function Moldura({ densidade, passo, children }: MolduraProps) {
   const campo = densidade === 'field';
   const indice = ORDEM.indexOf(passo);
   return (
-    <div style={{ minHeight: '100%', background: 'var(--bg-app)', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ minHeight: '100%', background: 'var(--sky)', display: 'flex', flexDirection: 'column' }}>
       <header
         style={{
           position: 'relative',

@@ -26,7 +26,7 @@ export function ListaDeVersoes({ versoes, selecionadaId, onSelecionar }: ListaDe
               padding: '11px 13px',
               border: `1px solid ${on ? 'var(--color-royal-border)' : 'var(--color-line)'}`,
               background: on ? 'var(--color-royal-soft)' : 'var(--bg-card)',
-              borderRadius: 'var(--radius)',
+              borderRadius: 'var(--leaf-sm)',
               cursor: 'pointer',
               textAlign: 'left',
             }}

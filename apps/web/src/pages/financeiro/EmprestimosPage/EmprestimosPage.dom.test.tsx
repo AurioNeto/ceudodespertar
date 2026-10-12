@@ -148,11 +148,10 @@ async function registrarNovoEmprestimo(container: HTMLElement, valor: string, mo
 }
 
 describe('EmprestimosPage em escritório: cabeçalho e resumo', () => {
-  it('cabeçalho — mostra o código com o nome da tela, o título e o subtítulo', async () => {
+  it('cabeçalho — mostra o título e o subtítulo', async () => {
     const { container } = await montar(<EmprestimosPage />);
 
     expect(textosDasFolhas(elemento(container, 'header'))).toEqual([
-      'F-10 · Empréstimos',
       'Empréstimos',
       'Movimentação patrimonial: não é receita nem despesa · CDD',
     ]);
@@ -254,8 +253,8 @@ describe('EmprestimosPage em escritório: lista e detalhe', () => {
   });
 
   it.each([
-    { contraparte: 'Érico Santana', rotulo: 'Concedido', cor: 'var(--color-royal-ink)' },
-    { contraparte: 'Marta Neto', rotulo: 'Recebido', cor: 'var(--color-pending)' },
+    { contraparte: 'Érico Santana', rotulo: 'Concedido', cor: 'var(--tone-royal-fg)' },
+    { contraparte: 'Marta Neto', rotulo: 'Recebido', cor: 'var(--tone-pending-fg)' },
   ])('selo de $contraparte no detalhe — diz $rotulo no tom $cor', async ({ contraparte, rotulo, cor }) => {
     const { container } = await montar(<EmprestimosPage />);
     await abrirEmprestimo(container, contraparte);
@@ -894,10 +893,10 @@ describe('EmprestimosPage em campo', () => {
     fixarDensidade(true);
   });
 
-  it('cabeçalho — mostra só o código F-10 e o título, sem subtítulo, e mantém o botão Novo empréstimo', async () => {
+  it('cabeçalho — mostra só o título, sem subtítulo, e mantém o botão Novo empréstimo', async () => {
     const { container } = await montar(<EmprestimosPage />);
 
-    expect(textosDasFolhas(elemento(container, 'header'))).toEqual(['F-10', 'Empréstimos']);
+    expect(textosDasFolhas(elemento(container, 'header'))).toEqual(['Empréstimos']);
     expect(textosDosBotoes(container)).toContain('Novo empréstimo');
   });
 

@@ -9,7 +9,7 @@ import { PorQueApurar } from './components/PorQueApurar';
 import { useFeitio } from './hooks/useFeitio';
 
 /**
- * `S-04` · Feitio — Doc 4 §8 e Doc 2 §4.3.
+ * Feitio — Doc 4 §8 e Doc 2 §4.3.
  *
  * O único lugar do sistema onde evento, custo e estoque se encontram: o feitio
  * é um evento, o que se gasta nele são lançamentos vinculados ao mesmo evento,
@@ -31,7 +31,6 @@ export function FeitioPage() {
   return (
     <>
       <ScreenHeader
-        code={campo ? 'S-04' : 'S-04 · Feitio'}
         title="Feitio"
         subtitle={campo ? undefined : 'Onde evento, custo e estoque se encontram · CDD'}
         density={densidade}

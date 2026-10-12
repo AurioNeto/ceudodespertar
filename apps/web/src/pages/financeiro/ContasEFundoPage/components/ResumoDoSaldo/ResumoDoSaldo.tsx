@@ -28,7 +28,7 @@ export function ResumoDoSaldo({
       style={{
         background: 'var(--bg-brand)',
         border: '1px solid var(--border-brand)',
-        borderRadius: 'var(--radius-lg)',
+        borderRadius: 'var(--leaf-lg)',
         padding: campo ? '16px 18px' : '18px 20px',
         display: 'flex',
         flexWrap: 'wrap',

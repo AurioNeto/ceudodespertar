@@ -11,16 +11,16 @@ export function PermissionDenied({ title, description, style }: PermissionDenied
   return (
     <div
       style={{
-        background: 'var(--color-attention-soft)',
-        border: '1px solid var(--color-attention-border)',
-        borderRadius: 'var(--radius)',
+        background: 'var(--color-neutral-soft)',
+        border: '1px solid var(--color-neutral-border)',
+        borderRadius: 'var(--leaf-md)',
         padding: '17px 18px',
         display: 'flex',
         gap: 13,
         ...style,
       }}
     >
-      <Icon name="ban" size={20} color="var(--color-attention)" style={{ marginTop: 2 }} />
+      <Icon name="ban" size={20} color="var(--color-neutral)" style={{ marginTop: 2 }} />
       <div>
         <div style={{ font: 'var(--text-title-sm)', color: 'var(--text-title)' }}>{title}</div>
         <p style={{ marginTop: 7, font: 'var(--text-body)', color: 'var(--text-secondary)', maxWidth: '58ch' }}>

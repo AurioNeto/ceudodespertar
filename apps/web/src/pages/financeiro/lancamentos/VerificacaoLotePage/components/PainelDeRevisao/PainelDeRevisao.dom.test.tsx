@@ -107,7 +107,7 @@ describe('PainelDeRevisao: o que mostra do item', () => {
 
     const selo = folhaComTexto<HTMLSpanElement>(container, 'span', texto);
 
-    expect([selo.style.color, selo.style.background]).toEqual([`var(--color-${tom})`, `var(--color-${tom}-soft)`]);
+    expect([selo.style.color, selo.style.background]).toEqual([`var(--tone-${tom}-fg)`, `var(--tone-${tom}-bg)`]);
   });
 
   it.each([

@@ -33,7 +33,7 @@ export function LegendaDoEstoque({ legenda }: { legenda: { nome: string; cor: st
             width={15}
             height={15}
             fill="url(#hachura-1)"
-            stroke="var(--color-royal)"
+            stroke="var(--serie-1)"
             strokeWidth={1}
             strokeDasharray="3 3"
           />

@@ -158,20 +158,20 @@ const PAGINA_2_DE_AGOSTO = [
 ];
 
 describe('LancamentosPage: cabeçalho e lista nas duas densidades', () => {
-  it('escritório — o cabeçalho traz o código F-03, o título e o subtítulo da unidade', async () => {
+  it('escritório — o cabeçalho traz o título e o subtítulo da unidade', async () => {
     const { container } = await montar(<LancamentosPage />);
 
     expect(elemento(container, 'h1').textContent).toBe('Lançamentos');
     expect(elemento(container, 'header').textContent).toBe(
-      'F-03 · LançamentosLançamentosTodos os lançamentos da unidade, de todas as pessoas · CDD',
+      'LançamentosTodos os lançamentos da unidade, de todas as pessoas · CDD',
     );
   });
 
-  it('campo — o cabeçalho traz só o código F-03 e o título', async () => {
+  it('campo — o cabeçalho traz só o título', async () => {
     usarDensidade('field');
     const { container } = await montar(<LancamentosPage />);
 
-    expect(elemento(container, 'header').textContent).toBe('F-03Lançamentos');
+    expect(elemento(container, 'header').textContent).toBe('Lançamentos');
   });
 
   it('escritório — a tabela tem as seis colunas e as oito primeiras linhas de agosto, na ordem do livro', async () => {
@@ -772,8 +772,8 @@ describe('LancamentosPage: gaveta de detalhe', () => {
 
     expect([selo.textContent, selo.style.color, selo.style.background]).toEqual([
       situacao,
-      `var(--color-${tom})`,
-      `var(--color-${tom}-soft)`,
+      `var(--tone-${tom}-fg)`,
+      `var(--tone-${tom}-bg)`,
     ]);
   });
 
