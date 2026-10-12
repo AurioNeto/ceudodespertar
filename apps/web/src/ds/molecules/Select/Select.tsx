@@ -17,7 +17,7 @@ export function Select({ label, value, options, onChange, hint, erro = false, de
   const id = useId();
   const [emFoco, setEmFoco] = useState(false);
   const corDaBorda = erro ? 'var(--color-attention)' : emFoco ? 'var(--focus-ring)' : 'var(--border-field)';
-  const halo = erro ? '0 0 0 3px var(--color-attention-soft)' : emFoco ? '0 0 0 3px var(--color-royal-soft)' : 'none';
+  const halo = erro ? '0 0 0 3px var(--color-attention-soft)' : emFoco ? '0 0 0 3px color-mix(in srgb, var(--focus-ring) 45%, transparent)' : 'none';
   return (
     <div style={{ display: 'flex', flexDirection: 'column' }}>
       <RotuloDeCampo htmlFor={id}>{label}</RotuloDeCampo>

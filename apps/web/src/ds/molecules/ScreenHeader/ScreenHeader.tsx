@@ -12,8 +12,10 @@ export interface ScreenHeaderProps {
 
 const FOLGA_PARA_REDUZIR = 120;
 
+const acoesEscondidas: CSSProperties = { visibility: 'hidden', width: 0, height: 0, overflow: 'hidden' };
+
 export function ScreenHeader({ title, subtitle, actions, density = 'office', style }: ScreenHeaderProps) {
-  const { sentinela, reduzido } = useCabecalhoReduzido();
+  const { sentinela, reduzido, aoFocar, aoDesfocar } = useCabecalhoReduzido();
   const campo = density === 'field';
   const respiroCompleto = campo ? '17px 20px 16px' : '21px 24px 20px';
   const respiroReduzido = campo ? '8px 20px' : '8px 24px';
@@ -26,6 +28,8 @@ export function ScreenHeader({ title, subtitle, actions, density = 'office', sty
         style={{ height: FOLGA_PARA_REDUZIR, marginBottom: -FOLGA_PARA_REDUZIR, pointerEvents: 'none' }}
       />
       <header
+        onFocus={aoFocar}
+        onBlur={aoDesfocar}
         style={{
           position: 'sticky',
           top: 0,
@@ -60,7 +64,19 @@ export function ScreenHeader({ title, subtitle, actions, density = 'office', sty
             </p>
           ) : null}
         </div>
-        {!reduzido && actions ? <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>{actions}</div> : null}
+        {actions ? (
+          <div
+            inert={reduzido}
+            style={{
+              display: 'flex',
+              gap: 10,
+              flexWrap: 'wrap',
+              ...(reduzido ? acoesEscondidas : undefined),
+            }}
+          >
+            {actions}
+          </div>
+        ) : null}
       </header>
     </>
   );

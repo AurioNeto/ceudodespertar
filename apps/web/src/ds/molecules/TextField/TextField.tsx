@@ -63,7 +63,7 @@ export function TextField({
     onBlur?.(evento);
   };
   const corDaBorda = error ? 'var(--color-attention)' : emFoco ? 'var(--focus-ring)' : 'var(--border-field)';
-  const halo = error ? '0 0 0 3px var(--color-attention-soft)' : emFoco ? '0 0 0 3px var(--color-royal-soft)' : 'none';
+  const halo = error ? '0 0 0 3px var(--color-attention-soft)' : emFoco ? '0 0 0 3px color-mix(in srgb, var(--focus-ring) 45%, transparent)' : 'none';
 
   const controlStyle: CSSProperties = {
     width: '100%',
