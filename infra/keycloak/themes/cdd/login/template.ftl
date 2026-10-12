@@ -1,4 +1,8 @@
 <#import "footer.ftl" as loginFooter>
+<#function textoSemMarcacao conteudo>
+    <#local bruto = conteudo?is_markup_output?then(conteudo?markup_string, conteudo)>
+    <#return bruto?replace("<[^>]*>", " ", "r")?replace("&nbsp;", " ")?replace("&lt;", "<")?replace("&gt;", ">")?replace("&quot;", "\"")?replace("&#39;", "'")?replace("&amp;", "&")?replace("\\s+", " ", "r")?trim>
+</#function>
 <#macro registrationLayout bodyClass="" displayInfo=false displayMessage=true displayRequiredFields=false>
 <#assign tituloDaPagina><#nested "header"></#assign>
 <!DOCTYPE html>
@@ -8,7 +12,7 @@
     <meta name="color-scheme" content="dark">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex, nofollow">
-    <title>${tituloDaPagina} · ${msg("cddMarcaNome")}</title>
+    <title>${textoSemMarcacao(tituloDaPagina)} · ${msg("cddMarcaNome")}</title>
     <link rel="icon" href="${url.resourcesPath}/img/favicon.svg" type="image/svg+xml" />
     <#if properties.stylesCommon?has_content>
         <#list properties.stylesCommon?split(' ') as style>
