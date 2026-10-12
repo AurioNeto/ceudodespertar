@@ -79,12 +79,15 @@
   --ring-card:              inset 0 0 0 1px rgba(168,198,143,.22);
   --ring-card-hover:        inset 0 0 0 1px rgba(168,198,143,.45);
 
-  --ramp-1:                 #B9DBA3;
-  --ramp-2:                 #9CCB82;
-  --ramp-3:                 #7FB86A;
-  --ramp-4:                 #5FA35A;
-  --ramp-5:                 #468A48;
-  --ramp-6:                 #2F6E3A;
+  --ramp-1:                 #C3E0C2;
+  --ramp-2:                 #B2D8B1;
+  --ramp-3:                 #A1D09F;
+  --ramp-4:                 #8FC98D;
+  --ramp-5:                 #7DC27A;
+  --ramp-6:                 #6ABB67;
+  --ramp-7:                 #57B554;
+  --ramp-8:                 #4AA947;
+  --ramp-9:                 #41983E;
 
   --sky: radial-gradient(120% 80% at 55% 0%, #1F4A33 0%, #10301F 40%, #0B1F17 100%);
   --flower: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='84' height='72.746'%3E%3Cg fill='none' stroke='rgba%28168%2C198%2C143%2C.2%29' stroke-width='.8'%3E%3Ccircle cx='-21.00' cy='-36.37' r='42'/%3E%3Ccircle cx='21.00' cy='-36.37' r='42'/%3E%3Ccircle cx='63.00' cy='-36.37' r='42'/%3E%3Ccircle cx='105.00' cy='-36.37' r='42'/%3E%3Ccircle cx='0.00' cy='0.00' r='42'/%3E%3Ccircle cx='42.00' cy='0.00' r='42'/%3E%3Ccircle cx='84.00' cy='0.00' r='42'/%3E%3Ccircle cx='-21.00' cy='36.37' r='42'/%3E%3Ccircle cx='21.00' cy='36.37' r='42'/%3E%3Ccircle cx='63.00' cy='36.37' r='42'/%3E%3Ccircle cx='105.00' cy='36.37' r='42'/%3E%3Ccircle cx='0.00' cy='72.75' r='42'/%3E%3Ccircle cx='42.00' cy='72.75' r='42'/%3E%3Ccircle cx='84.00' cy='72.75' r='42'/%3E%3Ccircle cx='-21.00' cy='109.12' r='42'/%3E%3Ccircle cx='21.00' cy='109.12' r='42'/%3E%3Ccircle cx='63.00' cy='109.12' r='42'/%3E%3Ccircle cx='105.00' cy='109.12' r='42'/%3E%3C/g%3E%3C/svg%3E");
@@ -166,12 +169,15 @@
   --ring-card:              inset 0 0 0 1px rgba(47,93,58,.18);
   --ring-card-hover:        inset 0 0 0 1px rgba(47,93,58,.4);
 
-  --ramp-1:                 #2F5D3A;
-  --ramp-2:                 #3E7A45;
-  --ramp-3:                 #4E8B4A;
-  --ramp-4:                 #6FA35E;
-  --ramp-5:                 #8DBA74;
-  --ramp-6:                 #B2D49C;
+  --ramp-1:                 #244323;
+  --ramp-2:                 #284D27;
+  --ramp-3:                 #2C572B;
+  --ramp-4:                 #30622E;
+  --ramp-5:                 #346C32;
+  --ramp-6:                 #377735;
+  --ramp-7:                 #3B8238;
+  --ramp-8:                 #3E8D3B;
+  --ramp-9:                 #41983E;
 
   --sky: linear-gradient(180deg, #E9EDD8 0%, #D6DEC0 100%);
   --flower: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='84' height='72.746'%3E%3Cg fill='none' stroke='rgba%2847%2C93%2C58%2C.2%29' stroke-width='.8'%3E%3Ccircle cx='-21.00' cy='-36.37' r='42'/%3E%3Ccircle cx='21.00' cy='-36.37' r='42'/%3E%3Ccircle cx='63.00' cy='-36.37' r='42'/%3E%3Ccircle cx='105.00' cy='-36.37' r='42'/%3E%3Ccircle cx='0.00' cy='0.00' r='42'/%3E%3Ccircle cx='42.00' cy='0.00' r='42'/%3E%3Ccircle cx='84.00' cy='0.00' r='42'/%3E%3Ccircle cx='-21.00' cy='36.37' r='42'/%3E%3Ccircle cx='21.00' cy='36.37' r='42'/%3E%3Ccircle cx='63.00' cy='36.37' r='42'/%3E%3Ccircle cx='105.00' cy='36.37' r='42'/%3E%3Ccircle cx='0.00' cy='72.75' r='42'/%3E%3Ccircle cx='42.00' cy='72.75' r='42'/%3E%3Ccircle cx='84.00' cy='72.75' r='42'/%3E%3Ccircle cx='-21.00' cy='109.12' r='42'/%3E%3Ccircle cx='21.00' cy='109.12' r='42'/%3E%3Ccircle cx='63.00' cy='109.12' r='42'/%3E%3Ccircle cx='105.00' cy='109.12' r='42'/%3E%3C/g%3E%3C/svg%3E");

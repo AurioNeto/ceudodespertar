@@ -11,8 +11,8 @@ const ITENS = [
   { nome: 'Secretaria', valor: 100 },
 ];
 
-const PRIMEIRA_COR = 'oklch(0.52 0.13 265)';
-const SEGUNDA_COR = 'oklch(0.62 0.11 205)';
+const PRIMEIRA_COR = 'var(--ramp-1)';
+const SEGUNDA_COR = 'var(--ramp-2)';
 const CIRCUNFERENCIA = '376.99';
 
 async function montarPainel(itens = ITENS, campo = false) {
@@ -175,7 +175,7 @@ describe('PainelDeQuebra: vista em rosca', () => {
     expect(fatias(container).map((c) => c.getAttribute('stroke'))).toEqual([
       PRIMEIRA_COR,
       SEGUNDA_COR,
-      'oklch(0.64 0.12 155)',
+      'var(--ramp-3)',
     ]);
   });
 

@@ -84,11 +84,11 @@ export function GraficoEstoque() {
           x2={xFeitio}
           y1={26}
           y2={BASE}
-          stroke="var(--color-pending)"
+          stroke="var(--text-secondary)"
           strokeWidth={1}
           strokeDasharray="5 4"
         />
-        <text x={xFeitio + 6} y={18} fill="var(--color-pending)" fontSize={13} fontFamily="var(--font-data)">
+        <text x={xFeitio + 6} y={18} fill="var(--text-secondary)" fontSize={13} fontFamily="var(--font-data)">
           feitio {feitioRecente.data} · + {formatarLitros(feitioRecente.litros)} L
         </text>
 

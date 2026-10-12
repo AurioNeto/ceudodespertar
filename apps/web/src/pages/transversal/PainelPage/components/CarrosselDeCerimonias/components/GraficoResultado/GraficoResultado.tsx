@@ -14,7 +14,8 @@ export function GraficoResultado() {
       data: formatarDiaMes(c.data),
       nome: c.nome,
       rotulo: `${valor < 0 ? '− ' : '+ '}R$ ${formatarValor(Math.abs(valor) / 1000).replace(',00', '')} mil`,
-      cor: valor < 0 ? 'var(--color-attention)' : 'var(--color-royal)',
+      cor: valor < 0 ? 'var(--color-attention)' : 'var(--serie-2)',
+      corDoRotulo: valor < 0 ? 'var(--color-attention)' : 'var(--text-primary)',
     };
   });
 
@@ -41,7 +42,7 @@ export function GraficoResultado() {
           role="img"
           aria-label="Resultado por cerimônia nas seis últimas cerimônias"
         >
-          <path d={area} fill="var(--color-royal-soft)" />
+          <path d={area} fill="color-mix(in srgb, var(--serie-2) 14%, transparent)" />
           <line x1={16} x2={612} y1={zeroY} y2={zeroY} stroke="var(--border-section)" strokeWidth={1} />
           <text x={16} y={zeroY - 5} fill="var(--text-secondary)" fontSize={12} fontFamily="var(--font-data)">
             0
@@ -49,7 +50,7 @@ export function GraficoResultado() {
           <polyline
             points={linha}
             fill="none"
-            stroke="var(--color-royal)"
+            stroke="var(--serie-2)"
             strokeWidth={2.5}
             strokeLinejoin="round"
             strokeLinecap="round"
@@ -73,7 +74,7 @@ export function GraficoResultado() {
                 font: 'var(--text-amount)',
                 letterSpacing: 'var(--tracking-amount)',
                 fontVariantNumeric: 'tabular-nums',
-                color: p.cor,
+                color: p.corDoRotulo,
               }}
             >
               {p.rotulo}
