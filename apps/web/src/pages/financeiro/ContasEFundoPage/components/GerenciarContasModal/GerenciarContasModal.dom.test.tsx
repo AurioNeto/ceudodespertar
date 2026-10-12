@@ -203,8 +203,8 @@ describe('GerenciarContasModal: aba de contas', () => {
   });
 
   it.each([
-    { nome: 'Banco da Casa', selo: 'Ativa', cor: 'var(--color-confirmed)', fundo: 'var(--color-confirmed-soft)' },
-    { nome: 'Conta Antiga', selo: 'Inativa', cor: 'var(--color-neutral)', fundo: 'var(--color-neutral-soft)' },
+    { nome: 'Banco da Casa', selo: 'Ativa', cor: 'var(--tone-confirmed-fg)', fundo: 'var(--tone-confirmed-bg)' },
+    { nome: 'Conta Antiga', selo: 'Inativa', cor: 'var(--tone-neutral-fg)', fundo: 'var(--tone-neutral-bg)' },
   ])('selo da conta $nome — diz $selo no tom $cor', async ({ nome, selo, cor, fundo }) => {
     const { container } = await montarModal();
 
@@ -290,8 +290,8 @@ describe('GerenciarContasModal: aba de fundos', () => {
   });
 
   it.each([
-    { nome: 'Obra do dormitório', selo: 'Ativo', cor: 'var(--color-confirmed)', fundo: 'var(--color-confirmed-soft)' },
-    { nome: 'Feitio de dezembro', selo: 'Inativo', cor: 'var(--color-neutral)', fundo: 'var(--color-neutral-soft)' },
+    { nome: 'Obra do dormitório', selo: 'Ativo', cor: 'var(--tone-confirmed-fg)', fundo: 'var(--tone-confirmed-bg)' },
+    { nome: 'Feitio de dezembro', selo: 'Inativo', cor: 'var(--tone-neutral-fg)', fundo: 'var(--tone-neutral-bg)' },
   ])('selo do fundo $nome — diz $selo no tom $cor', async ({ nome, selo, cor, fundo }) => {
     const { container } = await montarModal();
     await abrirAbaDeFundos(container);

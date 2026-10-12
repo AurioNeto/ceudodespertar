@@ -1,4 +1,4 @@
-import { Select, rotuloCaixaAlta } from '@/ds';
+import { Select, rotuloVersalete } from '@/ds';
 import {
   opcoesDeCategoria,
   opcoesDeCerimonia,
@@ -20,7 +20,7 @@ export interface ClassificacaoNoEscritorioProps {
 export function ClassificacaoNoEscritorio({ formulario: f }: ClassificacaoNoEscritorioProps) {
   return (
     <>
-      <div style={rotuloCaixaAlta}>Classificação</div>
+      <div style={rotuloVersalete}>Classificação</div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 14 }}>
         {f.temGrupo ? (

@@ -10,11 +10,11 @@ const TEXTO_DO_CONSUMIDOR = 'Texto do consumidor';
 const selo = (container: HTMLElement) => elemento<HTMLSpanElement>(container, ':scope > span');
 
 const CORES_POR_TOM: readonly [BadgeTone, string, string][] = [
-  ['pending', 'var(--color-pending-soft)', 'var(--color-pending)'],
-  ['confirmed', 'var(--color-confirmed-soft)', 'var(--color-confirmed)'],
-  ['attention', 'var(--color-attention-soft)', 'var(--color-attention)'],
-  ['neutral', 'var(--color-neutral-soft)', 'var(--color-neutral)'],
-  ['suggest', 'var(--color-suggest-soft)', 'var(--color-suggest)'],
+  ['pending', 'var(--tone-pending-bg)', 'var(--tone-pending-fg)'],
+  ['confirmed', 'var(--tone-confirmed-bg)', 'var(--tone-confirmed-fg)'],
+  ['attention', 'var(--tone-attention-bg)', 'var(--tone-attention-fg)'],
+  ['neutral', 'var(--tone-neutral-bg)', 'var(--tone-neutral-fg)'],
+  ['suggest', 'var(--tone-suggest-bg)', 'var(--tone-suggest-fg)'],
   ['royal', 'var(--color-royal-soft)', 'var(--color-royal-ink)'],
 ];
 
@@ -23,7 +23,7 @@ describe('StatusBadge — tom e texto', () => {
     const { container } = await montar(<StatusBadge>{TEXTO_DO_CONSUMIDOR}</StatusBadge>);
 
     expect(container.textContent).toBe(TEXTO_DO_CONSUMIDOR);
-    expect(selo(container).style.color).toBe('var(--color-pending)');
+    expect(selo(container).style.color).toBe('var(--tone-pending-fg)');
   });
 
   it.each(CORES_POR_TOM)('tom %s — o texto vem só dos filhos, sem rótulo próprio do tom', async (tom) => {

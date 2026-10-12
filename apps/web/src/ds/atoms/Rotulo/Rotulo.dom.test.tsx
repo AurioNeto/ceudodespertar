@@ -17,7 +17,7 @@ describe('Rotulo', () => {
     const rotulo = elemento(tela.container, 'span');
     expect(rotulo.style.color).toBe('red');
     expect(rotulo.style.marginBottom).toBe('4px');
-    expect(rotulo.style.textTransform).toBe('uppercase');
+    expect(rotulo.style.textTransform).toBe('');
   });
 
   it('aceita elementos como conteúdo', async () => {

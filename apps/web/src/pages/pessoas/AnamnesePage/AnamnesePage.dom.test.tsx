@@ -25,9 +25,9 @@ afterEach(async () => {
 });
 
 const COR_DO_TOM = {
-  confirmado: 'var(--color-confirmed)',
-  sugestao: 'var(--color-suggest)',
-  neutro: 'var(--color-neutral)',
+  confirmado: 'var(--tone-confirmed-fg)',
+  sugestao: 'var(--tone-suggest-fg)',
+  neutro: 'var(--tone-neutral-fg)',
   royal: 'var(--color-royal-ink)',
 } as const;
 

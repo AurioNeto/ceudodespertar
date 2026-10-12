@@ -22,7 +22,7 @@ export function BotaoDeIcone({ icone, tamanhoDoIcone = 18, medida = 'var(--tap-m
         placeItems: 'center',
         minWidth: medida,
         minHeight: medida,
-        borderRadius: 'var(--radius-sm)',
+        borderRadius: 'var(--leaf-sm)',
         color: 'var(--text-meta)',
         cursor: 'pointer',
         ...style,

@@ -52,10 +52,10 @@ const TODAS_AS_PESSOAS = [
 ];
 
 const COR_DO_TOM = {
-  confirmado: 'var(--color-confirmed)',
-  sugestao: 'var(--color-suggest)',
-  pendente: 'var(--color-pending)',
-  neutro: 'var(--color-neutral)',
+  confirmado: 'var(--tone-confirmed-fg)',
+  sugestao: 'var(--tone-suggest-fg)',
+  pendente: 'var(--tone-pending-fg)',
+  neutro: 'var(--tone-neutral-fg)',
   royal: 'var(--color-royal-ink)',
 } as const;
 
@@ -79,7 +79,7 @@ const linhaDe = (container: HTMLElement, nome: string) => {
 
 const selosDe = (origem: HTMLElement) =>
   todos<HTMLSpanElement>(origem, 'span').filter(
-    (span) => span.childElementCount === 0 && span.style.borderRadius === 'var(--radius-pill)',
+    (span) => span.childElementCount === 0 && span.style.borderRadius === 'var(--leaf-xs)',
   );
 
 const seloComTexto = (origem: HTMLElement, texto: string) => {

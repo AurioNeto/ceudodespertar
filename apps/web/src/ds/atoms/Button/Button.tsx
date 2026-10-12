@@ -46,7 +46,7 @@ export function Button({
         minHeight: field ? 'var(--target-field)' : 'var(--target-office)',
         width: fullWidth ? '100%' : undefined,
         padding: field ? '0 22px' : '0 18px',
-        borderRadius: 'var(--radius)',
+        borderRadius: 'var(--leaf-md)',
         font: field ? '700 16.5px var(--font-body)' : '600 15px var(--font-body)',
         display: 'inline-flex',
         alignItems: 'center',

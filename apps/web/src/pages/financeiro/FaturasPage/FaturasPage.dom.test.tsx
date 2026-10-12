@@ -52,8 +52,8 @@ async function abrirFaturaDeSetembro(container: HTMLElement) {
   await clicar(botaoDaFatura);
 }
 
-const COR_DO_SELO_PENDENTE = 'var(--color-pending)';
-const FUNDO_DO_SELO_PENDENTE = 'var(--color-pending-soft)';
+const COR_DO_SELO_PENDENTE = 'var(--tone-pending-fg)';
+const FUNDO_DO_SELO_PENDENTE = 'var(--tone-pending-bg)';
 
 const selosPendentesDaLinha = (linha: HTMLElement) =>
   todos<HTMLSpanElement>(linha, 'span').filter((span) => span.style.color === COR_DO_SELO_PENDENTE);
@@ -224,8 +224,8 @@ describe('FaturasPage em escritório: cabeçalho, cartões e lista de faturas', 
 
   it.each([
     { competencia: 'setembro de 2026', rotulo: 'Aberta', cor: 'var(--color-royal-ink)', fundo: 'var(--color-royal-soft)' },
-    { competencia: 'agosto de 2026', rotulo: 'Fechada, a pagar', cor: 'var(--color-pending)', fundo: 'var(--color-pending-soft)' },
-    { competencia: 'julho de 2026', rotulo: 'Paga', cor: 'var(--color-confirmed)', fundo: 'var(--color-confirmed-soft)' },
+    { competencia: 'agosto de 2026', rotulo: 'Fechada, a pagar', cor: 'var(--tone-pending-fg)', fundo: 'var(--tone-pending-bg)' },
+    { competencia: 'julho de 2026', rotulo: 'Paga', cor: 'var(--tone-confirmed-fg)', fundo: 'var(--tone-confirmed-bg)' },
   ])('selo da fatura de $competencia — diz $rotulo no tom $cor', async ({ competencia, rotulo, cor, fundo }) => {
     const { container } = await montar(<FaturasPage />);
 

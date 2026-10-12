@@ -255,7 +255,7 @@ describe('EmprestimosPage em escritório: lista e detalhe', () => {
 
   it.each([
     { contraparte: 'Érico Santana', rotulo: 'Concedido', cor: 'var(--color-royal-ink)' },
-    { contraparte: 'Marta Neto', rotulo: 'Recebido', cor: 'var(--color-pending)' },
+    { contraparte: 'Marta Neto', rotulo: 'Recebido', cor: 'var(--tone-pending-fg)' },
   ])('selo de $contraparte no detalhe — diz $rotulo no tom $cor', async ({ contraparte, rotulo, cor }) => {
     const { container } = await montar(<EmprestimosPage />);
     await abrirEmprestimo(container, contraparte);

@@ -1,4 +1,4 @@
-import { Icon, rotuloCaixaAlta } from '@/ds';
+import { Icon, rotuloVersalete } from '@/ds';
 import { proximaCerimonia } from '../../../../mocks/cerimonias';
 import { formatarBRL, formatarDiaMes, pluralizar } from '@/pages/utils/formato';
 import { CartazSlot } from '@/pages/components/CartazSlot';
@@ -16,7 +16,7 @@ export function ResumoDaProxima() {
 
       <div style={{ flex: '1 1 460px', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 18 }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-          <div style={rotuloCaixaAlta}>Próxima cerimônia · em {pluralizar(c.emDias, 'dia')}</div>
+          <div style={rotuloVersalete}>Próxima cerimônia · em {pluralizar(c.emDias, 'dia')}</div>
           <h2
             style={{ font: 'var(--text-title)', letterSpacing: 'var(--tracking-display)', color: 'var(--text-title)' }}
           >

@@ -171,8 +171,8 @@ describe('DevolucoesPage: cartões da fila', () => {
     const { container } = await montar(<DevolucoesPage />);
 
     expect(folhaComTextoExato(container, 'Contratante')!.style.color).toBe('var(--color-royal-ink)');
-    expect(folhaComTextoExato(container, '45 dias esperando')!.style.color).toBe('var(--color-attention)');
-    expect(folhaComTextoExato(container, 'período fechado')!.style.color).toBe('var(--color-neutral)');
+    expect(folhaComTextoExato(container, '45 dias esperando')!.style.color).toBe('var(--tone-attention-fg)');
+    expect(folhaComTextoExato(container, 'período fechado')!.style.color).toBe('var(--tone-neutral-fg)');
   });
 });
 

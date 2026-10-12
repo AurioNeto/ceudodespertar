@@ -533,7 +533,7 @@ describe('ParametrosPage: aba Unidades e regimes', () => {
       const selo = Array.from(cartaoDaUnidade(container, nome).firstElementChild?.children ?? []).find((c) => c.tagName === 'SPAN' && (c as HTMLElement).style.borderRadius !== '') as HTMLElement;
       return selo.style.color;
     };
-    expect(['Munay', 'CDD', 'Chácara'].map(corDoSelo)).toEqual(['var(--color-royal-ink)', 'var(--color-confirmed)', COR_PENDENTE]);
+    expect(['Munay', 'CDD', 'Chácara'].map(corDoSelo)).toEqual(['var(--color-royal-ink)', 'var(--tone-confirmed-fg)', 'var(--tone-pending-fg)']);
   });
 
   it('cada unidade mostra a nota; o CNPJ só aparece para quem tem documento', async () => {

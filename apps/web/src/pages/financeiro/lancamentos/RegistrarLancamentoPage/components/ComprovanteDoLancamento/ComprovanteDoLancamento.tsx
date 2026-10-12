@@ -1,4 +1,4 @@
-import { AttachmentCapture, rotuloCaixaAlta, type Density } from '@/ds';
+import { AttachmentCapture, rotuloVersalete, type Density } from '@/ds';
 import { TEXTOS_DO_ANEXO } from './constantes';
 
 export interface ComprovanteDoLancamentoProps {
@@ -22,7 +22,7 @@ export function ComprovanteDoLancamento({ anexo, densidade, onAlterarAnexo }: Co
         gap: 12,
       }}
     >
-      {campo ? null : <div style={rotuloCaixaAlta}>Comprovante</div>}
+      {campo ? null : <div style={rotuloVersalete}>Comprovante</div>}
       {anexo ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {campo ? null : (
@@ -36,7 +36,7 @@ export function ComprovanteDoLancamento({ anexo, densidade, onAlterarAnexo }: Co
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                ...rotuloCaixaAlta,
+                ...rotuloVersalete,
               }}
             >
               foto do cupom

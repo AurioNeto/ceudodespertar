@@ -57,6 +57,7 @@ afterEach(async () => {
 
 const COR = {
   confirmado: 'var(--color-confirmed)',
+  confirmadoDoSelo: 'var(--tone-confirmed-fg)',
   royal: 'var(--color-royal)',
   neutro: 'var(--color-neutral)',
   textoSecundario: 'var(--text-secondary)',
@@ -590,7 +591,7 @@ describe('FeitioPage: feitio concluído', () => {
 
     await concluirComLitros(container, '40');
 
-    expect(folhaComTexto<HTMLSpanElement>(container, 'span', 'Concluído').style.color).toBe(COR.confirmado);
+    expect(folhaComTexto<HTMLSpanElement>(container, 'span', 'Concluído').style.color).toBe(COR.confirmadoDoSelo);
     expect(folhaComTexto(container, 'span', '08/09/2026 a 02/09/2026 · Casa de feitio · Chácara')).toBeTruthy();
     expect(container.textContent).not.toContain('Em andamento');
     expect(container.textContent).not.toContain('ainda na panela');

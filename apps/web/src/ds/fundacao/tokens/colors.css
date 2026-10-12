@@ -52,6 +52,21 @@
   --color-neutral:          #8A96A3;
   --color-neutral-soft:     rgba(138,150,163,.14);
 
+  --tone-pending-bg:        var(--color-pending);
+  --tone-pending-fg:        var(--color-ink-inverse);
+  --tone-attention-bg:      var(--color-attention);
+  --tone-attention-fg:      var(--color-ink-inverse);
+  --tone-period-bg:         var(--color-period);
+  --tone-period-fg:         var(--color-ink-inverse);
+  --tone-confirmed-bg:      var(--color-confirmed);
+  --tone-confirmed-fg:      var(--color-ink-inverse);
+  --tone-neutral-bg:        var(--color-neutral);
+  --tone-neutral-fg:        var(--color-ink-inverse);
+  --tone-suggest-bg:        var(--color-suggest);
+  --tone-suggest-fg:        var(--color-ink-inverse);
+
+  --border-field:           rgba(168,198,143,.38);
+
   --bg-hover:               rgba(168,198,143,.1);
   --bg-scrim:               rgba(0,0,0,.55);
 
@@ -121,6 +136,21 @@
   --color-neutral:          #5E6775;
   --color-neutral-soft:     #EDEEF2;
 
+  --tone-pending-bg:        var(--color-pending-soft);
+  --tone-pending-fg:        var(--color-pending);
+  --tone-attention-bg:      var(--color-attention-soft);
+  --tone-attention-fg:      var(--color-attention);
+  --tone-period-bg:         var(--color-period-soft);
+  --tone-period-fg:         var(--color-period);
+  --tone-confirmed-bg:      var(--color-confirmed-soft);
+  --tone-confirmed-fg:      var(--color-confirmed);
+  --tone-neutral-bg:        var(--color-neutral-soft);
+  --tone-neutral-fg:        var(--color-neutral);
+  --tone-suggest-bg:        var(--color-suggest-soft);
+  --tone-suggest-fg:        var(--color-suggest);
+
+  --border-field:           #C6CDB8;
+
   --bg-hover:               rgba(47,93,58,.08);
   --bg-scrim:               rgba(27,51,36,.38);
 
@@ -185,6 +215,11 @@
   --action-fg:         var(--color-ink-inverse);
   --focus-ring:        var(--color-royal);
 
+  --tone-pending:      var(--color-pending);
+  --tone-attention:    var(--color-attention);
+  --tone-confirmed:    var(--color-confirmed);
+  --tone-neutral:      var(--color-neutral);
+  --tone-suggest:      var(--color-suggest);
   --tone-period:       var(--color-period);
 
   /* compatibilidade com a v1 e a v2 */

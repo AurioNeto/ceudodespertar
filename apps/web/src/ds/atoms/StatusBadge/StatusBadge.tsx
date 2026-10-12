@@ -1,7 +1,7 @@
 import type { CSSProperties, ReactNode } from 'react';
 import { TONES } from './constantes';
 
-export type BadgeTone = 'pending' | 'confirmed' | 'attention' | 'neutral' | 'suggest' | 'royal';
+export type BadgeTone = 'pending' | 'confirmed' | 'attention' | 'period' | 'neutral' | 'suggest' | 'royal';
 
 export interface StatusBadgeProps {
   tone?: BadgeTone;
@@ -18,9 +18,10 @@ export function StatusBadge({ tone = 'pending', children, count, style }: Status
         display: 'inline-flex',
         alignItems: 'center',
         gap: 6,
-        borderRadius: 'var(--radius-pill)',
+        borderRadius: 'var(--leaf-xs)',
         padding: '4px 11px',
-        font: '600 12px var(--font-body)',
+        font: '700 12px/1.3 var(--font-label)',
+        letterSpacing: '.06em',
         background: t.bg,
         color: t.fg,
         whiteSpace: 'nowrap',

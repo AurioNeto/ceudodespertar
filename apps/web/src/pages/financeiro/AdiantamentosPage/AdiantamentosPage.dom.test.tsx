@@ -329,7 +329,7 @@ describe('AdiantamentosPage: o que cada perspectiva vê', () => {
 describe('AdiantamentosPage: selo e borda de cada estado', () => {
   it.each([
     { secao: 'A ressarcir', pessoa: 'Paty Munay', motivo: 'camisetas', selo: 'A ressarcir', cor: 'var(--color-royal-ink)', borda: 'var(--color-royal)' },
-    { secao: 'Fechados', pessoa: 'Carlos Andrade', motivo: 'diesel', selo: 'Ressarcido', cor: 'var(--color-confirmed)', borda: 'var(--color-confirmed)' },
+    { secao: 'Fechados', pessoa: 'Carlos Andrade', motivo: 'diesel', selo: 'Ressarcido', cor: 'var(--tone-confirmed-fg)', borda: 'var(--color-confirmed)' },
   ])('linha $selo — o selo e a borda esquerda seguem o estado', async ({ secao, pessoa, motivo, selo, cor, borda }) => {
     const { container } = await montar(<AdiantamentosPage />);
 
@@ -345,7 +345,7 @@ describe('AdiantamentosPage: selo e borda de cada estado', () => {
 
     const linha = linhaDe(container, ...LINHA_DE_PATY_A_AUTORIZAR);
 
-    expect((folhasComTexto(linha, 'Aguardando autorização')[0] as HTMLElement).style.color).toBe('var(--color-pending)');
+    expect((folhasComTexto(linha, 'Aguardando autorização')[0] as HTMLElement).style.color).toBe('var(--tone-pending-fg)');
     expect(linha.style.borderLeft).toContain('var(--color-pending)');
   });
 
@@ -358,7 +358,7 @@ describe('AdiantamentosPage: selo e borda de cada estado', () => {
 
     const linha = linhaDe(container, 'Fechados', 'Paty Munay', 'compras da cozinha');
 
-    expect((folhasComTexto(linha, 'Recusado')[0] as HTMLElement).style.color).toBe('var(--color-attention)');
+    expect((folhasComTexto(linha, 'Recusado')[0] as HTMLElement).style.color).toBe('var(--tone-attention-fg)');
     expect(linha.style.borderLeft).toContain('var(--color-attention)');
   });
 
@@ -367,7 +367,7 @@ describe('AdiantamentosPage: selo e borda de cada estado', () => {
 
     const selo = folhasComTexto(linhaDe(container, ...LINHA_DE_PATY_A_RESSARCIR), 'há 53 dias')[0] as HTMLElement;
 
-    expect(selo.style.color).toBe('var(--color-attention)');
+    expect(selo.style.color).toBe('var(--tone-attention-fg)');
   });
 });
 
