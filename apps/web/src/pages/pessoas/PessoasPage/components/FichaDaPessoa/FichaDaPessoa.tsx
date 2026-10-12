@@ -115,9 +115,9 @@ export function FichaDaPessoa({
                 aria-label="Grupo de permissão"
                 style={{
                   minHeight: 38,
-                  border: '1px solid var(--color-line-strong)',
+                  border: '1px solid var(--border-field)',
                   background: 'var(--bg-card)',
-                  borderRadius: 'var(--radius-sm)',
+                  borderRadius: 'var(--leaf-sm)',
                   padding: '6px 10px',
                   font: 'var(--text-small)',
                   color: 'var(--text-primary)',

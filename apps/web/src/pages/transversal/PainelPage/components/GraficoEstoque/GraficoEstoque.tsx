@@ -17,7 +17,7 @@ export function GraficoEstoque() {
       style={{
         background: 'var(--bg-card)',
         border: 'var(--border-hairline)',
-        borderRadius: 'var(--radius-lg)',
+        borderRadius: 'var(--leaf-lg)',
         padding: '16px 20px 20px',
         display: 'flex',
         flexDirection: 'column',

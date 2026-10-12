@@ -63,7 +63,7 @@ export function PainelDeConclusao({
         <div
           style={{
             background: 'var(--bg-sunken)',
-            borderRadius: 'var(--radius)',
+            borderRadius: 'var(--leaf-sm)',
             padding: '12px 15px',
             display: 'flex',
             flexWrap: 'wrap',
