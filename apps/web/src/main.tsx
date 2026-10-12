@@ -7,6 +7,7 @@ import { criarFontesReais, escolherFontesDaSessao, SessaoProvider } from './app/
 import { criarClienteDeConsultas } from './dados';
 import { clienteHttp, credencial, servicoDeEntrada } from './dados/instancias';
 import { ClienteHttpProvider } from './app/providers';
+import { ClimaProvider } from './ds';
 import './styles/global.css';
 
 const clienteDeConsultas = criarClienteDeConsultas();
@@ -19,13 +20,15 @@ if (!container) throw new Error('#root não encontrado');
 void escolherFontesDaSessao(fontesReais).then((fontes) => {
   createRoot(container).render(
     <StrictMode>
-      <QueryClientProvider client={clienteDeConsultas}>
-        <ClienteHttpProvider cliente={clienteHttp}>
-          <SessaoProvider {...fontes}>
-            <RouterProvider router={router} />
-          </SessaoProvider>
-        </ClienteHttpProvider>
-      </QueryClientProvider>
+      <ClimaProvider>
+        <QueryClientProvider client={clienteDeConsultas}>
+          <ClienteHttpProvider cliente={clienteHttp}>
+            <SessaoProvider {...fontes}>
+              <RouterProvider router={router} />
+            </SessaoProvider>
+          </ClienteHttpProvider>
+        </QueryClientProvider>
+      </ClimaProvider>
     </StrictMode>,
   );
 });

@@ -513,7 +513,7 @@ Regras: `camada-cruzada-por-alias` e `ds-so-pelo-barrel` (erro).
 - Tokens, marca e keyframes globais ficam em `ds/fundacao/`. `styles/global.css` é só a entrada.
 - O Tailwind não é mais usado (#173). O reset dos elementos nativos que as telas usam está no fim do `ds/fundacao/tokens/base.css`.
 - A fonte da verdade visual dos tokens é o guia Força da Mata, que hoje vive fora do repo (`~/Downloads/forca-da-mata-guia`; o dono decide onde versionar). Não é mais o design system exportado v3.
-- Os tokens têm dois climas, escolhidos por `data-clima` na raiz: `noite` (padrão, vale também sem o atributo) e `amanhecer`. Os nomes continuam os mesmos e só o valor muda por clima; a família `royal` passa a significar ação. Cor, sombra e atmosfera (`--sky`, `--flower`, `--vine`) moram em `tokens/colors.css`; as texturas, em `ds/fundacao/texturas.css`. A escolha do clima pela pessoa (perfil e `localStorage`) chega na tarefa seguinte da épica do redesign.
+- Os tokens têm dois climas, escolhidos por `data-clima` na raiz: `noite` (padrão, vale também sem o atributo) e `amanhecer`. Os nomes continuam os mesmos e só o valor muda por clima; a família `royal` passa a significar ação. Cor, sombra e atmosfera (`--sky`, `--flower`, `--vine`) moram em `tokens/colors.css`; as texturas, em `ds/fundacao/texturas.css`. A pessoa escolhe o clima em Meu perfil (#175). A escolha fica só neste aparelho, na chave `cdd.clima` do `localStorage`, e o `ClimaProvider` (`ds/providers/ClimaProvider`, montado em `main.tsx` por fora da sessão) põe o `data-clima` na raiz. Sem escolha, ou em aparelho novo, vale a Noite.
 
 ---
 
