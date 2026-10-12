@@ -16,7 +16,7 @@ export function Reembolso({ formulario: f }: ReembolsoProps) {
             gap: 14,
             background: 'var(--bg-card)',
             border: 'var(--border-hairline)',
-            borderRadius: 'var(--radius)',
+            borderRadius: 'var(--leaf-lg)',
             padding: '12px 14px',
           }}
         >

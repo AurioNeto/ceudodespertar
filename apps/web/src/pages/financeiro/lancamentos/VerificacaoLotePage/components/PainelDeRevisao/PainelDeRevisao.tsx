@@ -42,7 +42,7 @@ export function PainelDeRevisao({ item, campo, onFechar, onAprovar, onDevolver }
             gap: 10,
             background: 'var(--bg-sunken)',
             border: 'var(--border-hairline)',
-            borderRadius: 'var(--radius)',
+            borderRadius: 'var(--leaf-md)',
             padding: '10px 12px',
           }}
         >

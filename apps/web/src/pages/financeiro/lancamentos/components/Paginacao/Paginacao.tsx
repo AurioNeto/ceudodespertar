@@ -13,7 +13,7 @@ const botao = {
   font: 'var(--text-body)',
   padding: '8px 16px',
   minHeight: 38,
-  borderRadius: 'var(--radius-sm)',
+  borderRadius: 'var(--leaf-xs)',
   cursor: 'pointer',
   border: '1px solid var(--color-line)',
   background: 'var(--bg-card)',
@@ -24,7 +24,7 @@ const botaoCampo = {
   border: '1px solid var(--color-line)',
   background: 'var(--bg-card)',
   color: 'var(--text-secondary)',
-  borderRadius: 'var(--radius-pill)',
+  borderRadius: 'var(--leaf-xs)',
 } as const;
 
 const estadoDoBotao = (desligado: boolean) =>

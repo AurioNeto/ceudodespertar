@@ -17,7 +17,7 @@ export function ChipDeFiltro({ ativo, tamanho, onEscolher, children }: ChipDeFil
       style={{
         font: 'var(--text-small)',
         ...TAMANHO_DO_CHIP[tamanho],
-        borderRadius: 'var(--radius-pill)',
+        borderRadius: 'var(--leaf-xs)',
         cursor: 'pointer',
         border: `1px solid ${ativo ? 'var(--color-royal-border)' : 'var(--color-line)'}`,
         background: ativo ? 'var(--color-royal-soft)' : 'var(--bg-card)',

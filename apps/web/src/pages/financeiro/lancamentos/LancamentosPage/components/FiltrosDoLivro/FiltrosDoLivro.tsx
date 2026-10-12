@@ -30,7 +30,7 @@ export function FiltrosDoLivro({ filtros, densidade, onFiltrar, onLimpar }: Filt
       style={{
         background: 'var(--bg-card)',
         border: 'var(--border-hairline)',
-        borderRadius: 'var(--radius-lg)',
+        borderRadius: 'var(--leaf-lg)',
         padding: 16,
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit,minmax(180px,1fr))',
@@ -71,9 +71,9 @@ export function FiltrosDoLivro({ filtros, densidade, onFiltrar, onLimpar }: Filt
           aria-label="Buscar por motivo, fornecedor ou quem lançou"
           style={{
             minHeight: 'var(--target-office)',
-            border: '1px solid var(--color-line-strong)',
+            border: '1px solid var(--border-field)',
             background: 'var(--bg-card)',
-            borderRadius: 'var(--radius)',
+            borderRadius: 'var(--leaf-sm)',
             padding: '10px 13px',
             font: 'var(--text-body)',
             color: 'var(--text-primary)',

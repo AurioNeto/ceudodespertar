@@ -14,7 +14,7 @@ export function CartaoDeFormulario({ titulo, densidade, children }: CartaoDeForm
         background: 'var(--bg-card)',
         border: '1px solid var(--color-royal-border)',
         borderLeft: 'var(--edge-state) solid var(--color-royal)',
-        borderRadius: 'var(--radius)',
+        borderRadius: 'var(--leaf-md)',
         padding: densidade === 'field' ? '15px 16px' : '18px 20px',
         display: 'flex',
         flexDirection: 'column',

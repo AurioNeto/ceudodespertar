@@ -20,7 +20,7 @@ export function ResumoDoPeriodo({ lista, densidade }: ResumoDoPeriodoProps) {
         gap: campo ? 10 : 14,
         background: 'var(--bg-sunken)',
         border: 'var(--border-hairline)',
-        borderRadius: 'var(--radius)',
+        borderRadius: 'var(--leaf-lg)',
         padding: campo ? '10px 12px' : '14px 18px',
       }}
     >

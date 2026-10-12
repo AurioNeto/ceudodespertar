@@ -15,7 +15,7 @@ export function ComprovanteDoLancamento({ anexo, densidade, onAlterarAnexo }: Co
       style={{
         background: 'var(--bg-card)',
         border: 'var(--border-hairline)',
-        borderRadius: 'var(--radius-lg)',
+        borderRadius: 'var(--leaf-lg)',
         padding: campo ? 0 : 16,
         display: 'flex',
         flexDirection: 'column',
@@ -30,7 +30,7 @@ export function ComprovanteDoLancamento({ anexo, densidade, onAlterarAnexo }: Co
               style={{
                 height: 210,
                 border: 'var(--border-hairline)',
-                borderRadius: 'var(--radius-sm)',
+                borderRadius: 'var(--leaf-sm)',
                 overflow: 'hidden',
                 background: 'var(--bg-sunken)',
                 display: 'flex',

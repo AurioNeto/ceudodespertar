@@ -16,7 +16,7 @@ export function SetaRedonda({ rotulo, onClick }: SetaRedondaProps) {
         flex: '0 0 auto',
         border: '1px solid var(--color-line-strong)',
         background: 'var(--bg-card)',
-        borderRadius: 'var(--radius-pill)',
+        borderRadius: 'var(--leaf-seal)',
         color: 'var(--text-primary)',
       }}
     />
