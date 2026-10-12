@@ -13,7 +13,7 @@ export function SeletorDePerspectiva({ atual, onTrocar, densidade }: SeletorDePe
     <div
       style={{
         border: '1px dashed var(--color-line-gold)',
-        borderRadius: 'var(--radius)',
+        borderRadius: 'var(--leaf-md)',
         padding: campo ? '12px 14px' : '13px 16px',
         display: 'flex',
         flexWrap: 'wrap',
@@ -41,7 +41,7 @@ export function SeletorDePerspectiva({ atual, onTrocar, densidade }: SeletorDePe
               onClick={() => onTrocar(p.chave)}
               style={{
                 padding: '7px 12px',
-                borderRadius: 'var(--radius-sm)',
+                borderRadius: 'var(--leaf-sm)',
                 cursor: 'pointer',
                 border: `1px solid ${on ? 'var(--color-royal-border)' : 'var(--color-line)'}`,
                 background: on ? 'var(--color-royal-soft)' : 'var(--bg-card)',

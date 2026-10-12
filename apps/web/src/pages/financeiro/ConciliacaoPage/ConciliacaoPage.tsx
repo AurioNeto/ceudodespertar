@@ -37,7 +37,7 @@ export function ConciliacaoPage() {
               style={{
                 background: 'var(--bg-card)',
                 border: 'var(--border-hairline)',
-                borderRadius: 'var(--radius)',
+                borderRadius: 'var(--leaf-lg)',
                 padding: campo ? '15px 16px' : '17px 20px',
                 display: 'grid',
                 gridTemplateColumns: campo ? 'repeat(2, minmax(0,1fr))' : 'repeat(4, minmax(0,1fr))',

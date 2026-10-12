@@ -29,7 +29,7 @@ export function LinhaDoExtrato({
         background: 'var(--bg-card)',
         border: 'var(--border-hairline)',
         borderLeft: 'var(--edge-state) solid var(--color-attention)',
-        borderRadius: '0 var(--radius) var(--radius) 0',
+        borderRadius: 'var(--leaf-sm)',
         padding: '12px 14px',
         display: 'flex',
         flexDirection: 'column',

@@ -28,7 +28,7 @@ export function Linha({ adiantamento, densidade, idade, children }: LinhaProps) 
                 ? 'var(--color-attention)'
                 : 'var(--color-confirmed)'
         }`,
-        borderRadius: '0 var(--radius) var(--radius) 0',
+        borderRadius: 'var(--leaf-sm)',
         padding: campo ? '13px 14px' : '14px 17px',
         display: 'flex',
         flexWrap: 'wrap',
