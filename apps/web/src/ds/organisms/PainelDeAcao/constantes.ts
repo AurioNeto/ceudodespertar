@@ -10,20 +10,20 @@ export const DIALOGO_POR_VARIANTE = {
   folha: {
     width: '100%',
     maxHeight: '90dvh',
-    borderRadius: 'var(--radius-lg) var(--radius-lg) 0 0',
+    borderRadius: 'var(--leaf-xl-espelhada)',
     boxShadow: 'var(--shadow-sheet)',
   },
   lateral: {
     width: 'min(440px, 100vw)',
     height: '100%',
-    borderRadius: 0,
+    borderRadius: 'var(--leaf-lg-espelhada)',
     boxShadow: 'var(--shadow-raised)',
     borderLeft: 'var(--border-hairline)',
   },
   central: {
     width: 'min(640px, 100%)',
     maxHeight: '100%',
-    borderRadius: 'var(--radius-lg)',
+    borderRadius: 'var(--leaf-lg)',
     boxShadow: 'var(--shadow-raised)',
   },
 } satisfies Record<string, CSSProperties>;

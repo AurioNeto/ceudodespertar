@@ -231,14 +231,14 @@ describe('PainelDeAcao', () => {
     expect(document.activeElement).toBe(novoCampo);
   });
 
-  it('folha encosta embaixo com cantos de cima arredondados e no máximo 90dvh', async () => {
+  it('folha encosta embaixo com a folha espelhada e no máximo 90dvh', async () => {
     await montar({ variante: 'folha' });
     await clicar(botao('Abrir'));
     const d = dialogo() as HTMLElement;
     const fundo = d.parentElement as HTMLElement;
     expect(d.dataset['variante']).toBe('folha');
     expect(fundo.style.alignItems).toBe('flex-end');
-    expect(d.style.borderRadius).toBe('var(--radius-lg) var(--radius-lg) 0 0');
+    expect(d.style.borderRadius).toBe('var(--leaf-xl-espelhada)');
     expect(d.style.maxHeight).toBe('90dvh');
   });
 

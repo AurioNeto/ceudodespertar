@@ -1,13 +1,14 @@
 import type { CSSProperties, ReactNode } from 'react';
 import { AmountDisplay } from '../../atoms/AmountDisplay';
+import { rotuloVersalete } from '../../fundacao/estilos';
 
 /** A régua pontilhada do recibo diz a natureza do lançamento (chat 3). */
 export type ReceiptTone = 'entrada' | 'saida' | 'transferencia';
 
 const REGUA: Record<ReceiptTone, string> = {
-  entrada: 'var(--color-confirmed)',
-  saida: 'var(--color-attention)',
-  transferencia: 'var(--color-royal)',
+  entrada: 'var(--on-paper-confirmed)',
+  saida: 'var(--on-paper-attention)',
+  transferencia: 'var(--on-paper-action)',
 };
 
 export interface ReceiptLine {
@@ -41,9 +42,9 @@ export function Receipt({
   return (
     <div
       style={{
-        background: 'var(--bg-card)',
+        background: 'var(--bg-paper)',
         border: '1px solid var(--border-brand)',
-        borderRadius: 'var(--radius-lg)',
+        borderRadius: 'var(--leaf-xl)',
         padding: '20px 20px 18px',
         position: 'relative',
         overflow: 'hidden',
@@ -62,17 +63,15 @@ export function Receipt({
       />
       <div
         style={{
-          font: 'var(--text-label)',
-          letterSpacing: 'var(--tracking-label)',
-          textTransform: 'uppercase',
-          color: cor,
+          ...rotuloVersalete,
+          color: 'var(--title-on-paper)',
           marginBottom: 8,
         }}
       >
         {title}
       </div>
 
-      {amount != null ? <AmountDisplay value={amount} nature={natureza} size="hero" /> : null}
+      {amount != null ? <AmountDisplay value={amount} nature={natureza} size="hero" style={{ color: 'var(--title-on-paper)' }} /> : null}
 
       <dl style={{ margin: '16px 0 0', display: 'grid', gap: 7 }}>
         {lines.map((l) => (
@@ -88,15 +87,13 @@ export function Receipt({
           >
             <dt
               style={{
-                font: 'var(--text-label)',
-                letterSpacing: 'var(--tracking-label)',
-                textTransform: 'uppercase',
-                color: 'var(--text-field-label)',
+                ...rotuloVersalete,
+                color: 'var(--label-on-paper)',
               }}
             >
               {l.label}
             </dt>
-            <dd style={{ margin: 0, font: 'var(--text-body-strong)', color: 'var(--text-primary)', textAlign: 'right' }}>
+            <dd style={{ margin: 0, font: 'var(--text-body-strong)', color: 'var(--text-on-paper)', textAlign: 'right' }}>
               {l.value}
             </dd>
           </div>
@@ -104,7 +101,7 @@ export function Receipt({
       </dl>
 
       {footnote ? (
-        <p style={{ marginTop: 14, font: 'var(--text-small)', color: 'var(--text-secondary)' }}>{footnote}</p>
+        <p style={{ marginTop: 14, font: 'var(--text-small)', color: 'var(--text-on-paper)' }}>{footnote}</p>
       ) : null}
       {children}
     </div>
