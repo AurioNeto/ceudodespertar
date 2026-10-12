@@ -13,6 +13,7 @@ export function CorpoDaTela({ densidade, larguraMaxima, espaco = 'padrao', child
   const compacto = espaco === 'compacto';
   const gapDoCampo = compacto ? 12 : 14;
   const gapDoEscritorio = compacto ? 16 : 18;
+  const centralizado = !campo && larguraMaxima !== undefined;
 
   return (
     <div
@@ -22,6 +23,9 @@ export function CorpoDaTela({ densidade, larguraMaxima, espaco = 'padrao', child
         flexDirection: 'column',
         gap: campo ? gapDoCampo : gapDoEscritorio,
         maxWidth: campo ? undefined : larguraMaxima,
+        width: centralizado ? '100%' : undefined,
+        marginLeft: centralizado ? 'auto' : undefined,
+        marginRight: centralizado ? 'auto' : undefined,
         minWidth: 0,
       }}
     >

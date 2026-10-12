@@ -20,6 +20,7 @@ export function PainelPage() {
         style={{
           padding: '22px 24px 44px',
           maxWidth: 1220,
+          margin: '0 auto',
           display: 'flex',
           flexDirection: 'column',
           gap: 20,
