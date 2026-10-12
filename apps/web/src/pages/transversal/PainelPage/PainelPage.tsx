@@ -11,7 +11,6 @@ export function PainelPage() {
   return (
     <>
       <ScreenHeader
-        code="T-02 · Painel"
         title="Painel"
         subtitle={`Competência ${formatarCompetencia(competenciaAtual)} · CDD — o que o dinheiro e as cerimônias estão fazendo agora.`}
       />

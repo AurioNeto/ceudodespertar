@@ -9,7 +9,7 @@ import { useDevolucoes } from './hooks/useDevolucoes';
 import { diasEsperando } from './utils/diasEsperando';
 
 /**
- * `E-09` · Devoluções a pagar — Doc 4 §7 e Doc 2 §2.9.
+ * Devoluções a pagar — Doc 4 §7 e Doc 2 §2.9.
  *
  * A metade financeira de um ato que acontece em duas telas e duas pessoas
  * (DV3): o Acolhimento cancela a inscrição e registra que a pessoa **pediu** o
@@ -30,7 +30,6 @@ export function DevolucoesPage() {
   return (
     <>
       <ScreenHeader
-        code={campo ? 'E-09' : 'E-09 · Devoluções a pagar'}
         title="Devoluções a pagar"
         subtitle={campo ? undefined : 'O que o Acolhimento pediu e a Tesouraria paga · CDD'}
         density={densidade}

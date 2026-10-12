@@ -15,7 +15,6 @@ export function PessoasPage() {
   return (
     <>
       <ScreenHeader
-        code={campo ? 'F-09' : 'F-09 · Pessoas'}
         title="Pessoas"
         subtitle={campo ? undefined : 'Quem é da casa e quem entra no sistema — dois eixos, um cadastro só'}
         density={densidade}

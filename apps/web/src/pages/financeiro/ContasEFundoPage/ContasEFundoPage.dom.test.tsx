@@ -88,11 +88,10 @@ async function criarFundo(container: HTMLElement, nome: string, valor: string) {
 }
 
 describe('ContasEFundoPage em escritório: cabeçalho e resumo da unidade', () => {
-  it('cabeçalho — mostra o código com o nome da tela, o título e o subtítulo', async () => {
+  it('cabeçalho — mostra o título e o subtítulo', async () => {
     const { container } = await montar(<ContasEFundoPage />);
 
     expect(textosDasFolhas(elemento(container, 'header'))).toEqual([
-      'F-04 · Contas e fundo',
       'Contas e fundo',
       'Saldo por conta e destino do fundo próprio · CDD',
     ]);
@@ -341,10 +340,10 @@ describe('ContasEFundoPage em campo', () => {
     fixarDensidade(true);
   });
 
-  it('cabeçalho — mostra só o código F-04 e o título, sem subtítulo', async () => {
+  it('cabeçalho — mostra só o título, sem subtítulo', async () => {
     const { container } = await montar(<ContasEFundoPage />);
 
-    expect(textosDasFolhas(elemento(container, 'header'))).toEqual(['F-04', 'Contas e fundo']);
+    expect(textosDasFolhas(elemento(container, 'header'))).toEqual(['Contas e fundo']);
   });
 
   it('resumo — mostra os mesmos valores do escritório', async () => {

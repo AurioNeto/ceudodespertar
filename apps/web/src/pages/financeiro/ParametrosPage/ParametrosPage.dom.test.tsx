@@ -102,21 +102,20 @@ const abrirUnidades = (container: HTMLElement) => clicar(botaoComTexto(container
 const abrirInstituicao = (container: HTMLElement) => clicar(botaoComTexto(container, 'Instituição'));
 
 describe('ParametrosPage: cabeçalho e abas', () => {
-  it('escritório — mostra os três códigos por extenso, o título e o subtítulo', async () => {
+  it('escritório — mostra o título e o subtítulo', async () => {
     const { container } = await montar(<ParametrosPage />);
 
     const cabecalho = elemento(container, 'header');
-    expect(cabecalho.textContent).toContain('F-15, F-16 e A-03 · Parâmetros');
     expect(elemento(cabecalho, 'h1').textContent).toBe('Parâmetros');
     expect(cabecalho.textContent).toContain('Plano de contas, unidades e o que a casa configura · CDD');
   });
 
-  it('campo — mostra os três códigos abreviados e nenhum subtítulo', async () => {
+  it('campo — mostra só o título, sem subtítulo', async () => {
     fixarDensidade(true);
 
     const { container } = await montar(<ParametrosPage />);
 
-    expect(elemento(container, 'header').textContent).toBe('F-15 · F-16 · A-03Parâmetros');
+    expect(elemento(container, 'header').textContent).toBe('Parâmetros');
   });
 
   it('abre na aba Categorias, com as outras duas desmarcadas', async () => {

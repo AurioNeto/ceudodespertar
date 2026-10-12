@@ -104,9 +104,9 @@ describe('LeitosPage: cabeçalho e abas', () => {
   it.each([
     {
       densidade: 'office' as const,
-      esperado: 'E-10 e E-15 · LeitosLeitosJornada de três dias · 24 a 26/10/2026 · Chácara · Ibiúna',
+      esperado: 'LeitosJornada de três dias · 24 a 26/10/2026 · Chácara · Ibiúna',
     },
-    { densidade: 'field' as const, esperado: 'E-10 · E-15Leitos' },
+    { densidade: 'field' as const, esperado: 'Leitos' },
   ])('densidade $densidade — o cabeçalho é $esperado', async ({ densidade, esperado }) => {
     fixarDensidade(densidade);
 

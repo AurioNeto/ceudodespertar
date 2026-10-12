@@ -4,7 +4,7 @@ import { Trilha } from './components/Trilha';
 import { useAuditoria } from './hooks/useAuditoria';
 
 /**
- * `A-04` · Auditoria — Doc 4 §9 e Doc 3 §10.4.
+ * Auditoria — Doc 4 §9 e Doc 3 §10.4.
  *
  * Duas visões, e a segunda é a razão de a tela existir cedo: o log de acesso a
  * dado sensível é o contrapeso ao poder do Acolhimento sobre a anamnese. Quem
@@ -22,7 +22,6 @@ export function AuditoriaPage() {
   return (
     <>
       <ScreenHeader
-        code={campo ? 'A-04' : 'A-04 · Auditoria'}
         title="Auditoria"
         subtitle={campo ? undefined : 'A trilha das operações e o log de leitura de dado sensível · CDD'}
         density={densidade}

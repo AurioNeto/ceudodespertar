@@ -143,25 +143,23 @@ async function buscar(container: HTMLElement, texto: string) {
 }
 
 describe('PessoasPage: cabeçalho nas duas densidades', () => {
-  it('escritório — mostra o código com o nome da tela, o título e o subtítulo', async () => {
+  it('escritório — mostra o título e o subtítulo', async () => {
     definirDensidade('office');
     const container = await montarPessoas();
 
     const cabecalho = cabecalhoDaTela(container);
 
     expect(elemento(cabecalho, 'h1').textContent).toBe('Pessoas');
-    expect(folhaComTexto(cabecalho, 'div', 'F-09 · Pessoas')).toBeTruthy();
     expect(folhaComTexto(cabecalho, 'p', 'Quem é da casa e quem entra no sistema — dois eixos, um cadastro só')).toBeTruthy();
   });
 
-  it('campo — mostra só o código e o título, sem subtítulo', async () => {
+  it('campo — mostra só o título, sem subtítulo', async () => {
     definirDensidade('field');
     const container = await montarPessoas();
 
     const cabecalho = cabecalhoDaTela(container);
 
     expect(elemento(cabecalho, 'h1').textContent).toBe('Pessoas');
-    expect(folhaComTexto(cabecalho, 'div', 'F-09')).toBeTruthy();
     expect(cabecalho.querySelector('p')).toBeNull();
     expect(cabecalho.textContent).not.toContain('dois eixos');
   });

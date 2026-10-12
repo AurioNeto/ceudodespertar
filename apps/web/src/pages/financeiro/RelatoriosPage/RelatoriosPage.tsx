@@ -21,7 +21,6 @@ export function RelatoriosPage() {
   return (
     <div style={{ position: 'relative', minHeight: '100%' }}>
       <ScreenHeader
-        code={campo ? 'F-06' : 'F-06 · Relatórios'}
         title="Relatórios"
         subtitle={campo ? undefined : 'Período, unidade e recorte — do total ao lançamento'}
         density={densidade}

@@ -14,7 +14,7 @@ import { PessoaEscolhida } from './components/PessoaEscolhida';
 import { useInscricao } from './hooks/useInscricao';
 
 /**
- * `E-06` · Inscrição — Doc 4 §7 e Doc 2 §2.4.
+ * Inscrição — Doc 4 §7 e Doc 2 §2.4.
  *
  * A tela onde os invariantes de inscrição se encontram: `EQUIPE` é isento e
  * não zero (IN1), criança estelar exige responsável, modalidade e autorização
@@ -37,7 +37,6 @@ export function InscricaoPage() {
   return (
     <>
       <ScreenHeader
-        code={campo ? 'E-06' : 'E-06 · Inscrição'}
         title="Inscrição"
         subtitle={campo ? undefined : 'Inscrever alguém num trabalho · CDD'}
         density={densidade}

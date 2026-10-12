@@ -168,11 +168,10 @@ const fixarDensidade = (campo: boolean) =>
   }));
 
 describe('FaturasPage em escritório: cabeçalho, cartões e lista de faturas', () => {
-  it('cabeçalho — mostra o código com o nome da tela, o título e o subtítulo', async () => {
+  it('cabeçalho — mostra o título e o subtítulo', async () => {
     const { container } = await montar(<FaturasPage />);
 
     expect(textosDasFolhas(elemento(container, 'header'))).toEqual([
-      'F-09 · Faturas de cartão',
       'Faturas de cartão',
       'A compra é despesa; pagar a fatura é transferência · CDD',
     ]);
@@ -595,10 +594,10 @@ describe('FaturasPage em campo', () => {
     fixarDensidade(true);
   });
 
-  it('cabeçalho — mostra só o código F-09 e o título, sem subtítulo', async () => {
+  it('cabeçalho — mostra só o título, sem subtítulo', async () => {
     const { container } = await montar(<FaturasPage />);
 
-    expect(textosDasFolhas(elemento(container, 'header'))).toEqual(['F-09', 'Faturas de cartão']);
+    expect(textosDasFolhas(elemento(container, 'header'))).toEqual(['Faturas de cartão']);
   });
 
   it('tabela de compras — esconde as colunas Grupo e Quem registrou', async () => {

@@ -75,9 +75,9 @@ describe('DevolucoesPage: cabeçalho e totais', () => {
   it.each([
     {
       densidade: 'office' as const,
-      esperado: 'E-09 · Devoluções a pagarDevoluções a pagarO que o Acolhimento pediu e a Tesouraria paga · CDD',
+      esperado: 'Devoluções a pagarO que o Acolhimento pediu e a Tesouraria paga · CDD',
     },
-    { densidade: 'field' as const, esperado: 'E-09Devoluções a pagar' },
+    { densidade: 'field' as const, esperado: 'Devoluções a pagar' },
   ])('densidade $densidade — o cabeçalho é $esperado', async ({ densidade, esperado }) => {
     fixarDensidade(densidade);
 

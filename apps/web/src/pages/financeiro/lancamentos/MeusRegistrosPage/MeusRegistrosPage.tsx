@@ -11,7 +11,6 @@ export function MeusRegistrosPage() {
   return (
     <>
       <ScreenHeader
-        code={campo ? 'F-02' : 'F-02 · Meus registros'}
         title="Meus registros"
         subtitle={campo ? undefined : 'O que você lançou nos últimos 30 dias · CDD'}
         density={densidade}

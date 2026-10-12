@@ -133,11 +133,10 @@ async function registrarNovoAdiantamento(container: HTMLElement, valor: string, 
 }
 
 describe('AdiantamentosPage: cabeçalho, perspectivas e resumo', () => {
-  it('cabeçalho em escritório — mostra o código com o nome da tela, o título e o subtítulo', async () => {
+  it('cabeçalho em escritório — mostra o título e o subtítulo', async () => {
     const { container } = await montar(<AdiantamentosPage />);
 
     expect(textosDasFolhas(elemento(container, 'header'))).toEqual([
-      'F-11 · Adiantamentos e reembolsos',
       'Adiantamentos',
       'Quem tirou do próprio bolso e ainda não voltou · CDD',
     ]);
@@ -886,10 +885,10 @@ describe('AdiantamentosPage em campo', () => {
     fixarDensidade(true);
   });
 
-  it('cabeçalho — mostra só o código F-11 e o título, sem subtítulo', async () => {
+  it('cabeçalho — mostra só o título, sem subtítulo', async () => {
     const { container } = await montar(<AdiantamentosPage />);
 
-    expect(textosDasFolhas(elemento(container, 'header'))).toEqual(['F-11', 'Adiantamentos']);
+    expect(textosDasFolhas(elemento(container, 'header'))).toEqual(['Adiantamentos']);
   });
 
   it('resumo e listas — trazem os mesmos valores do escritório', async () => {

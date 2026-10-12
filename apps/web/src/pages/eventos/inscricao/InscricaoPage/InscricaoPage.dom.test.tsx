@@ -124,21 +124,18 @@ const SEM_PENDENCIA: string[][] = [];
 const PENDENCIA_DE_EMERGENCIA = ['Contato de emergência e restrição alimentar', 'IN4'];
 
 describe('InscricaoPage: abertura e escolha do evento', () => {
-  it('escritório — mostra o código com o nome da tela, o título e o subtítulo', async () => {
+  it('escritório — mostra o título e o subtítulo', async () => {
     const container = await abrir();
 
-    expect(folhaComTexto(container, 'div', 'E-06 · Inscrição')).toBeDefined();
     expect(elemento(container, 'h1').textContent).toBe('Inscrição');
     expect(folhaComTexto(container, 'p', 'Inscrever alguém num trabalho · CDD')).toBeDefined();
   });
 
-  it('campo — mostra só o código E-06, sem o nome da tela e sem subtítulo', async () => {
+  it('campo — o cabeçalho não tem subtítulo', async () => {
     definirDensidade(true);
 
     const container = await abrir();
 
-    expect(folhaComTexto(container, 'div', 'E-06')).toBeDefined();
-    expect(textoDe(container)).not.toContain('E-06 · Inscrição');
     expect(container.querySelector('header p')).toBeNull();
   });
 

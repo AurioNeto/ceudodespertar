@@ -16,6 +16,7 @@ A épica `refactor/epica-redesign` levou o guia para o `apps/web` e, em alguns p
 - **Gráficos.** Séries categóricas usam `--serie-1..3` em ordem fixa; quebras por categoria usam a rampa `--ramp-1..9`, recalculada para manter pelo menos 3:1 contra o cartão. Cor de estado não identifica série (#181).
 - **Tema de login do Keycloak.** É fixo na Noite, porque o login não enxerga a escolha do app, e as fontes ficam hospedadas no próprio tema (#180).
 - **Tailwind.** Saiu antes de tudo; o reset dos elementos nativos foi para o `base.css` (#173).
+- **Códigos de tela.** Não entram na interface. Continuam como referência nos documentos (Doc 4, Doc 8 e este guia), e o cabeçalho das telas mostra só título, subtítulo e ações (decisão do dono, 12/10/2026).
 
 Ficou fora da épica, para fases futuras:
 

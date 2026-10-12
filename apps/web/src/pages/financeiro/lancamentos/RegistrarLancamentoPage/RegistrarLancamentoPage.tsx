@@ -33,7 +33,6 @@ export function RegistrarLancamentoPage() {
   return (
     <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', minHeight: '100%' }}>
       <ScreenHeader
-        code={campo ? 'F-01' : 'F-01 · Lançamento'}
         title="Registrar lançamento"
         subtitle={
           campo

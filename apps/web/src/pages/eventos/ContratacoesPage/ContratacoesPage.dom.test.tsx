@@ -81,9 +81,9 @@ describe('ContratacoesPage: cabeçalho e totais', () => {
   it.each([
     {
       densidade: 'office' as const,
-      esperado: 'E-13 · ContrataçõesContrataçõesO que a Munay toca fora de casa · unidade comercial',
+      esperado: 'ContrataçõesO que a Munay toca fora de casa · unidade comercial',
     },
-    { densidade: 'field' as const, esperado: 'E-13Contratações' },
+    { densidade: 'field' as const, esperado: 'Contratações' },
   ])('densidade $densidade — o cabeçalho é $esperado', async ({ densidade, esperado }) => {
     fixarDensidade(densidade);
 

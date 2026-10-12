@@ -1,11 +1,8 @@
 import type { CSSProperties, ReactNode } from 'react';
 import type { Density } from '../../fundacao/densidade';
-import { rotuloVersalete } from '../../fundacao/estilos';
 import { useCabecalhoReduzido } from './hooks/useCabecalhoReduzido';
 
 export interface ScreenHeaderProps {
-  /** Código da tela no mapa de telas (T-02, F-09...). */
-  code?: string;
   title: string;
   subtitle?: string;
   actions?: ReactNode;
@@ -15,9 +12,7 @@ export interface ScreenHeaderProps {
 
 const FOLGA_PARA_REDUZIR = 120;
 
-const identificadorDoCodigo = (code: string) => (code.split(' · ')[0] ?? code).trim();
-
-export function ScreenHeader({ code, title, subtitle, actions, density = 'office', style }: ScreenHeaderProps) {
+export function ScreenHeader({ title, subtitle, actions, density = 'office', style }: ScreenHeaderProps) {
   const { sentinela, reduzido } = useCabecalhoReduzido();
   const campo = density === 'field';
   const respiroCompleto = campo ? '17px 20px 16px' : '21px 24px 20px';
@@ -48,30 +43,7 @@ export function ScreenHeader({ code, title, subtitle, actions, density = 'office
           ...style,
         }}
       >
-        <div
-          style={{
-            flex: 1,
-            minWidth: 240,
-            display: reduzido ? 'flex' : undefined,
-            alignItems: reduzido ? 'baseline' : undefined,
-            gap: reduzido ? 8 : undefined,
-          }}
-        >
-          {code ? (
-            <div
-              style={{
-                ...rotuloVersalete,
-                marginBottom: reduzido ? 0 : 5,
-              }}
-            >
-              {reduzido ? identificadorDoCodigo(code) : code}
-            </div>
-          ) : null}
-          {reduzido && code ? (
-            <span aria-hidden="true" style={{ color: 'var(--text-secondary)' }}>
-              ·
-            </span>
-          ) : null}
+        <div style={{ flex: 1, minWidth: 240 }}>
           <h1
             tabIndex={-1}
             style={

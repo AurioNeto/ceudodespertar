@@ -37,22 +37,11 @@ describe('ScreenHeader: título', () => {
   });
 });
 
-describe('ScreenHeader: sobrancelha', () => {
-  it('o código da tela aparece acima do título', async () => {
-    const { container } = await montar(<ScreenHeader code="T-02" title="Acessos" />);
-    expect(blocoDeTexto(container).children[0]?.textContent).toBe('T-02');
-    expect(blocoDeTexto(container).children[1]?.tagName).toBe('H1');
-  });
-
-  it('sem código o bloco de texto começa direto no título', async () => {
+describe('ScreenHeader: bloco de texto', () => {
+  it('o bloco de texto começa direto no título', async () => {
     const { container } = await montar(<ScreenHeader title="Acessos" />);
     expect(blocoDeTexto(container).children).toHaveLength(1);
     expect(blocoDeTexto(container).children[0]?.tagName).toBe('H1');
-  });
-
-  it('código vazio não ocupa lugar', async () => {
-    const { container } = await montar(<ScreenHeader code="" title="Acessos" />);
-    expect(blocoDeTexto(container).children).toHaveLength(1);
   });
 });
 
@@ -74,10 +63,10 @@ describe('ScreenHeader: subtítulo', () => {
     expect(blocoDeTexto(container).children).toHaveLength(1);
   });
 
-  it('código, título e subtítulo juntos ficam nessa ordem', async () => {
-    const { container } = await montar(<ScreenHeader code="T-02" title="Acessos" subtitle="Quem entra." />);
+  it('título e subtítulo juntos ficam nessa ordem', async () => {
+    const { container } = await montar(<ScreenHeader title="Acessos" subtitle="Quem entra." />);
     const tags = Array.from(blocoDeTexto(container).children).map((filho) => filho.tagName);
-    expect(tags).toEqual(['DIV', 'H1', 'P']);
+    expect(tags).toEqual(['H1', 'P']);
   });
 });
 
