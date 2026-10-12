@@ -13,7 +13,6 @@ export function EmprestimosPage() {
   return (
     <>
       <ScreenHeader
-        code={campo ? 'F-10' : 'F-10 · Empréstimos'}
         title="Empréstimos"
         subtitle={campo ? undefined : 'Movimentação patrimonial: não é receita nem despesa · CDD'}
         density={densidade}

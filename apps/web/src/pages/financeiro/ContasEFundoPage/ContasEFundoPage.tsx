@@ -17,7 +17,6 @@ export function ContasEFundoPage() {
   return (
     <div style={{ position: 'relative', minHeight: '100%' }}>
       <ScreenHeader
-        code={campo ? 'F-04' : 'F-04 · Contas e fundo'}
         title="Contas e fundo"
         subtitle={campo ? undefined : 'Saldo por conta e destino do fundo próprio · CDD'}
         density={densidade}

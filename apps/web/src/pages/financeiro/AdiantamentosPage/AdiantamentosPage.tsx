@@ -15,7 +15,6 @@ export function AdiantamentosPage() {
   return (
     <>
       <ScreenHeader
-        code={campo ? 'F-11' : 'F-11 · Adiantamentos e reembolsos'}
         title="Adiantamentos"
         subtitle={campo ? undefined : 'Quem tirou do próprio bolso e ainda não voltou · CDD'}
         density={densidade}

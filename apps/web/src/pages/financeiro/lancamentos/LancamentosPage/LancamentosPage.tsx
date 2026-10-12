@@ -16,7 +16,6 @@ export function LancamentosPage() {
   return (
     <div style={{ position: 'relative', minHeight: '100%' }}>
       <ScreenHeader
-        code={campo ? 'F-03' : 'F-03 · Lançamentos'}
         title="Lançamentos"
         subtitle={campo ? undefined : 'Todos os lançamentos da unidade, de todas as pessoas · CDD'}
         density={densidade}

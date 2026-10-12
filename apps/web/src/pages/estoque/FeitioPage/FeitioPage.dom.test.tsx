@@ -151,24 +151,22 @@ async function concluirComLitros(container: HTMLElement, litros: string) {
 }
 
 describe('FeitioPage: cabeçalho nas duas densidades', () => {
-  it('escritório — mostra o código com o nome da tela, o título e o subtítulo, sem ação no cabeçalho', async () => {
+  it('escritório — mostra o título e o subtítulo, sem ação no cabeçalho', async () => {
     const container = await montarFeitio();
 
     const cabecalho = elemento(container, 'header');
 
     expect(elemento(cabecalho, 'h1').textContent).toBe('Feitio');
-    expect(folhaComTexto(cabecalho, 'div', 'S-04 · Feitio')).toBeTruthy();
     expect(folhaComTexto(cabecalho, 'p', 'Onde evento, custo e estoque se encontram · CDD')).toBeTruthy();
     expect(todos(cabecalho, 'button')).toHaveLength(0);
   });
 
-  it('campo — mostra só o código e o título, sem subtítulo', async () => {
+  it('campo — mostra só o título, sem subtítulo', async () => {
     definirDensidade('field');
     const container = await montarFeitio();
 
     const cabecalho = elemento(container, 'header');
 
-    expect(folhaComTexto(cabecalho, 'div', 'S-04')).toBeTruthy();
     expect(cabecalho.querySelector('p')).toBeNull();
   });
 });

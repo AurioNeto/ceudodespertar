@@ -14,7 +14,6 @@ export function ParametrosPage() {
   return (
     <>
       <ScreenHeader
-        code={campo ? 'F-15 · F-16 · A-03' : 'F-15, F-16 e A-03 · Parâmetros'}
         title="Parâmetros"
         subtitle={campo ? undefined : 'Plano de contas, unidades e o que a casa configura · CDD'}
         density={densidade}

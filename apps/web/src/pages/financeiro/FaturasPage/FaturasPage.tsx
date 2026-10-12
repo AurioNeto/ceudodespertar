@@ -12,7 +12,6 @@ export function FaturasPage() {
   return (
     <>
       <ScreenHeader
-        code={campo ? 'F-09' : 'F-09 · Faturas de cartão'}
         title="Faturas de cartão"
         subtitle={campo ? undefined : 'A compra é despesa; pagar a fatura é transferência · CDD'}
         density={densidade}

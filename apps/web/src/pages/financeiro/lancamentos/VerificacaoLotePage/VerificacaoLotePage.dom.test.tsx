@@ -152,19 +152,19 @@ const aprovarNoPainel = (container: HTMLElement) =>
   clicar(botaoComTexto(container.ownerDocument.body, 'Aprovar e consolidar'));
 
 describe('VerificacaoLotePage: cabeçalho e linhas da fila', () => {
-  it('escritório — o cabeçalho traz o código F-05 (Doc 4: F-03 é a Fila de conferência), o título e o subtítulo', async () => {
+  it('escritório — o cabeçalho traz o título e o subtítulo', async () => {
     const { container } = await montar(<VerificacaoLotePage />);
 
     expect(elemento(container, 'header').textContent).toBe(
-      'F-05 · Verificação de loteVerificação de loteO que a captura automática propôs, esperando uma pessoa confirmar · só Tesouraria e administradores',
+      'Verificação de loteO que a captura automática propôs, esperando uma pessoa confirmar · só Tesouraria e administradores',
     );
   });
 
-  it('campo — o cabeçalho traz só o código F-05 e o título', async () => {
+  it('campo — o cabeçalho traz só o título', async () => {
     usarDensidade('field');
     const { container } = await montar(<VerificacaoLotePage />);
 
-    expect(elemento(container, 'header').textContent).toBe('F-05Verificação de lote');
+    expect(elemento(container, 'header').textContent).toBe('Verificação de lote');
   });
 
   it('escritório — as doze linhas da fila, na ordem do mock, com data, origem, remetente, categoria, confiança e valor', async () => {

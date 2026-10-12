@@ -183,13 +183,12 @@ async function registrarSaida(container: HTMLElement, litros: string, trabalho =
 }
 
 describe('AyahuascaPage: cabeçalho nas duas densidades', () => {
-  it('escritório — mostra o código com o nome da tela, o título, o subtítulo e as três ações', async () => {
+  it('escritório — mostra o título, o subtítulo e as três ações', async () => {
     const container = await montarAyahuasca();
 
     const cabecalho = elemento(container, 'header');
 
     expect(elemento(cabecalho, 'h1').textContent).toBe('Ayahuasca');
-    expect(folhaComTexto(cabecalho, 'div', 'E-02 · Ayahuasca')).toBeTruthy();
     expect(folhaComTexto(cabecalho, 'p', 'Lotes, movimentos e reservas por trabalho · CDD')).toBeTruthy();
     expect(todos(cabecalho, 'button').map((botao) => botao.textContent)).toEqual([
       'Entrada de feitio',
@@ -198,13 +197,12 @@ describe('AyahuascaPage: cabeçalho nas duas densidades', () => {
     ]);
   });
 
-  it('campo — mostra só o código e o título, sem subtítulo, com as mesmas três ações', async () => {
+  it('campo — mostra só o título, sem subtítulo, com as mesmas três ações', async () => {
     definirDensidade('field');
     const container = await montarAyahuasca();
 
     const cabecalho = elemento(container, 'header');
 
-    expect(folhaComTexto(cabecalho, 'div', 'E-02')).toBeTruthy();
     expect(cabecalho.querySelector('p')).toBeNull();
     expect(todos(cabecalho, 'button').map((botao) => botao.textContent)).toEqual([
       'Entrada de feitio',

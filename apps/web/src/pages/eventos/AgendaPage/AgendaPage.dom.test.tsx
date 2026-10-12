@@ -214,7 +214,7 @@ describe('AgendaPage: calendário do mês', () => {
 
     expect(container.textContent).toContain('19/09 · Trabalho de cura');
     expect(container.querySelector('button[aria-label="Próximo mês"]')).toBeNull();
-    expect(cabecalho(container)).toBe('E-01 · AgendaCerimônia');
+    expect(cabecalho(container)).toBe('Cerimônia');
   });
 
   it('voltar do detalhe — retorna ao calendário no mês em que estava', async () => {
@@ -923,11 +923,11 @@ describe('AgendaPage: densidade', () => {
   it.each([
     {
       densidade: 'office' as const,
-      cabecalho: 'E-01 · AgendaAgendaOs trabalhos do centro, no calendário ou em lista · CDDNova cerimônia',
+      cabecalho: 'AgendaOs trabalhos do centro, no calendário ou em lista · CDDNova cerimônia',
       espacamento: '18px 24px 30px',
       larguraMaxima: '1080px',
     },
-    { densidade: 'field' as const, cabecalho: 'E-01AgendaNova cerimônia', espacamento: '14px 16px 24px', larguraMaxima: '' },
+    { densidade: 'field' as const, cabecalho: 'AgendaNova cerimônia', espacamento: '14px 16px 24px', larguraMaxima: '' },
   ])('densidade $densidade — cabeçalho, respiro e largura máxima da tela', async ({ densidade, cabecalho: esperado, espacamento, larguraMaxima }) => {
     fixarDensidade(densidade);
 

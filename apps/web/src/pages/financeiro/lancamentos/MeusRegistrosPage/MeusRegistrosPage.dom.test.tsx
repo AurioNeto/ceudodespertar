@@ -85,19 +85,19 @@ const visaoMarcada = (container: HTMLElement) => [
 ];
 
 describe('MeusRegistrosPage: cabeçalho e lista simplificada', () => {
-  it('escritório — o cabeçalho traz o código F-02, o título e o subtítulo dos últimos 30 dias', async () => {
+  it('escritório — o cabeçalho traz o título e o subtítulo dos últimos 30 dias', async () => {
     const { container } = await montar(<MeusRegistrosPage />);
 
     expect(elemento(container, 'header').textContent).toBe(
-      'F-02 · Meus registrosMeus registrosO que você lançou nos últimos 30 dias · CDD',
+      'Meus registrosO que você lançou nos últimos 30 dias · CDD',
     );
   });
 
-  it('campo — o cabeçalho traz só o código F-02 e o título', async () => {
+  it('campo — o cabeçalho traz só o título', async () => {
     usarDensidade('field');
     const { container } = await montar(<MeusRegistrosPage />);
 
-    expect(elemento(container, 'header').textContent).toBe('F-02Meus registros');
+    expect(elemento(container, 'header').textContent).toBe('Meus registros');
   });
 
   it('abre na lista simplificada, com o seletor marcado nela', async () => {
@@ -154,7 +154,7 @@ describe('MeusRegistrosPage: cabeçalho e lista simplificada', () => {
     expect(barraDeEstado(linha).style.background).toBe(borda);
   });
 
-  it('escritório — não há resumo: nem contagem de lançamentos, nem saídas, nem entradas (Doc 4, F-02: nunca agrega)', async () => {
+  it('escritório — não há resumo: nem contagem de lançamentos, nem saídas, nem entradas (Doc 4: nunca agrega)', async () => {
     const { container } = await montar(<MeusRegistrosPage />);
 
     expect(resumo(container)).toBeNull();
@@ -171,7 +171,7 @@ describe('MeusRegistrosPage: cabeçalho e lista simplificada', () => {
 });
 
 describe('MeusRegistrosPage: estorno sem totais', () => {
-  it('saída estornada — segue na lista, e a tela não tem totais em que ela entre ou saia (Doc 4, F-02)', async () => {
+  it('saída estornada — segue na lista, e a tela não tem totais em que ela entre ou saia (Doc 4)', async () => {
     registros.transformar = (lista) =>
       lista.map((registro) => (registro.id === lista[0]?.id ? { ...registro, status: 'ESTORNADO' as const } : registro));
     const { container } = await montar(<MeusRegistrosPage />);
@@ -180,7 +180,7 @@ describe('MeusRegistrosPage: estorno sem totais', () => {
     expect(motivosDaLista(container)).toContain('mercado cerimônia mãe divina');
   });
 
-  it('entrada estornada — também não há total: o estorno não divide Meus registros de Lançamentos (Doc 4, F-02)', async () => {
+  it('entrada estornada — também não há total: o estorno não divide Meus registros de Lançamentos (Doc 4)', async () => {
     registros.transformar = (lista) =>
       lista.map((registro) => (registro.id === lista[1]?.id ? { ...registro, status: 'ESTORNADO' as const } : registro));
     const { container } = await montar(<MeusRegistrosPage />);
@@ -292,7 +292,7 @@ describe('MeusRegistrosPage: visão completa em carrossel', () => {
     ]);
   });
 
-  it('o recibo da saída traz cerimônia, sem conta nem categoria (Doc 4, F-02) — e o rodapé de consolidado', async () => {
+  it('o recibo da saída traz cerimônia, sem conta nem categoria (Doc 4) — e o rodapé de consolidado', async () => {
     const { container } = await montar(<MeusRegistrosPage />);
 
     await abrirVisaoCompleta(container);
@@ -312,7 +312,7 @@ describe('MeusRegistrosPage: visão completa em carrossel', () => {
     });
   });
 
-  it('o recibo da transferência pendente — sem as contas de origem e destino (Doc 4, F-02), e o rodapé diz a conferir', async () => {
+  it('o recibo da transferência pendente — sem as contas de origem e destino (Doc 4), e o rodapé diz a conferir', async () => {
     const { container } = await montar(<MeusRegistrosPage />);
 
     await abrirVisaoCompleta(container);

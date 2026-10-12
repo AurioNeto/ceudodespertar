@@ -197,21 +197,20 @@ async function fecharOPeriodo(container: HTMLElement) {
 }
 
 describe('FechamentoPage: cabeçalho', () => {
-  it('escritório — mostra o código com o nome, o título e o subtítulo', async () => {
+  it('escritório — mostra o título e o subtítulo', async () => {
     const { container } = await montarFechamento();
 
     const cabecalho = elemento(container, 'header');
-    expect(cabecalho.textContent).toContain('F-07 · Fechamento');
     expect(elemento(cabecalho, 'h1').textContent).toBe('Fechamento');
     expect(cabecalho.textContent).toContain('Confere o que falta, registra o saldo e trava o período · CDD');
   });
 
-  it('campo — mostra só o código e o título, sem subtítulo', async () => {
+  it('campo — mostra só o título, sem subtítulo', async () => {
     fixarDensidade(true);
 
     const { container } = await montarFechamento();
 
-    expect(elemento(container, 'header').textContent).toBe('F-07Fechamento');
+    expect(elemento(container, 'header').textContent).toBe('Fechamento');
   });
 });
 

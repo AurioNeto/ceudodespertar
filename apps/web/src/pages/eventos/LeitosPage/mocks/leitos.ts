@@ -2,7 +2,7 @@ import type { Dormitorio, DormitorioId, Hospedagem, InscricaoId, LeitoId, TipoLe
 import { id } from '@/mocks/ids';
 
 /**
- * `E-10` e `E-15` — o mapa e o cadastro.
+ * O mapa e o cadastro.
  *
  * A jornada de três dias é o evento do mapa porque tem **duas noites**: com
  * uma só, ML1 e ML4 não aparecem. O conflito com outro evento no mesmo local

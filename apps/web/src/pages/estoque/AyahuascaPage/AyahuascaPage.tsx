@@ -18,7 +18,6 @@ export function AyahuascaPage() {
   return (
     <>
       <ScreenHeader
-        code={campo ? 'E-02' : 'E-02 · Ayahuasca'}
         title="Ayahuasca"
         subtitle={campo ? undefined : 'Lotes, movimentos e reservas por trabalho · CDD'}
         density={densidade}

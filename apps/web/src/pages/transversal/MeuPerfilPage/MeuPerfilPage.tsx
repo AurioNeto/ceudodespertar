@@ -11,7 +11,6 @@ export function MeuPerfilPage() {
   return (
     <>
       <ScreenHeader
-        code={campo ? 'F-11' : 'F-11 · Meu perfil'}
         title="Meu perfil"
         subtitle={campo ? undefined : 'Seus dados de acesso ao sistema'}
         density={densidade}

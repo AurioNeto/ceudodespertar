@@ -13,7 +13,6 @@ export function VerificacaoLotePage() {
   return (
     <div style={{ position: 'relative', minHeight: '100%' }}>
       <ScreenHeader
-        code={campo ? 'F-05' : 'F-05 · Verificação de lote'}
         title="Verificação de lote"
         subtitle={
           campo
