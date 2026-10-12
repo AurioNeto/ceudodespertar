@@ -19,7 +19,7 @@ export function RailDeNavegacao({ ref, brand, nav, activeId, onNavigate, childre
     <aside
       ref={ref}
       style={{
-        background: 'var(--bg-rail)',
+        background: 'var(--vine) left top / 24px 240px repeat-y, var(--bg-rail)',
         borderRight: '1px solid var(--color-line-strong)',
         display: 'flex',
         flexDirection: 'column',

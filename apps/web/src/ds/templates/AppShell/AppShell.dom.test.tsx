@@ -79,10 +79,10 @@ const teclarEsc = () =>
   });
 
 describe('AppShell: estrutura por densidade', () => {
-  it('sem densidade vale a de escritório, com coluna lateral de 232px', async () => {
+  it('sem densidade vale a de escritório, com coluna lateral de 240px', async () => {
     const { container } = await montar(<AppShell {...IDENTIDADE} user={USUARIA}>conteúdo</AppShell>);
     expect(raiz(container).dataset['density']).toBe('office');
-    expect(raiz(container).style.gridTemplateColumns).toBe('232px 1fr');
+    expect(raiz(container).style.gridTemplateColumns).toBe('240px 1fr');
     expect(todos(container, 'aside')).toHaveLength(1);
   });
 
@@ -130,7 +130,8 @@ describe('AppShell: estrutura por densidade', () => {
 });
 
 describe('AppShell: marca da lateral', () => {
-  const blocoDaMarca = (container: HTMLElement) => lateral(container).firstElementChild?.firstElementChild as HTMLElement;
+  const blocoDaMarca = (container: HTMLElement) =>
+    lateral(container).firstElementChild?.firstElementChild?.lastElementChild?.firstElementChild as HTMLElement;
 
   it('a lateral abre com o nome da casa em duas linhas e a legenda que recebeu', async () => {
     const { container } = await montar(<AppShell {...IDENTIDADE} user={USUARIA}>conteúdo</AppShell>);
@@ -611,9 +612,9 @@ describe('AppShell: navegação inferior em campo', () => {
     const { container } = await montarEmCampo({ nav: NAV, activeId: 'fila' });
     const [painel, fila] = todos<HTMLButtonElement>(navInferior(container), 'button');
     expect(fila?.style.color).toBe('var(--color-royal)');
-    expect(fila?.style.borderTop).toBe('2px solid var(--color-royal)');
+    expect(fila?.style.borderTop).toBe('var(--edge-state) solid var(--color-royal)');
     expect(painel?.style.color).toBe('var(--text-secondary)');
-    expect(painel?.style.borderTop).toBe('2px solid transparent');
+    expect(painel?.style.borderTop).toBe('var(--edge-state) solid transparent');
     const atuais = todos(navInferior(container), 'button').map((botao) => botao.getAttribute('aria-current'));
     expect(atuais).toEqual([null, 'page', null, null]);
   });
@@ -761,7 +762,7 @@ describe('AppShell: menu de campo', () => {
   it('com o ativo dentro do menu, o botão Menu ganha o tom royal e a borda de cima; fora dele, não', async () => {
     const dentro = await montarComMenu({ nav: NAV, activeId: 'acessos' });
     expect(botaoDoMenu(dentro.container).style.color).toBe('var(--color-royal)');
-    expect(botaoDoMenu(dentro.container).style.borderTop).toBe('2px solid var(--color-royal)');
+    expect(botaoDoMenu(dentro.container).style.borderTop).toBe('var(--edge-state) solid var(--color-royal)');
     expect(botaoDoMenu(dentro.container).hasAttribute('aria-current')).toBe(false);
     await dentro.atualizar(
       <AppShell {...IDENTIDADE} user={USUARIA} density="field" nav={NAV} activeId="painel">
@@ -769,7 +770,7 @@ describe('AppShell: menu de campo', () => {
       </AppShell>,
     );
     expect(botaoDoMenu(dentro.container).style.color).toBe('var(--text-secondary)');
-    expect(botaoDoMenu(dentro.container).style.borderTop).toBe('2px solid transparent');
+    expect(botaoDoMenu(dentro.container).style.borderTop).toBe('var(--edge-state) solid transparent');
   });
 
   it('os itens do menu e o Meu perfil são alvos de toque de campo', async () => {
@@ -800,7 +801,7 @@ describe('AppShell: menu de campo', () => {
   it('na página do usuário o Meu perfil leva aria-current=page e o botão Menu é realçado, sem aria-current', async () => {
     const { container } = await montarComMenu({ nav: NAV, activeId: 'perfil', userActive: true, onUserClick: vi.fn() });
     expect(botaoDoMenu(container).style.color).toBe('var(--color-royal)');
-    expect(botaoDoMenu(container).style.borderTop).toBe('2px solid var(--color-royal)');
+    expect(botaoDoMenu(container).style.borderTop).toBe('var(--edge-state) solid var(--color-royal)');
     expect(botaoDoMenu(container).hasAttribute('aria-current')).toBe(false);
     expect(todos(navInferior(container), 'button').map((botao) => botao.getAttribute('aria-current'))).toEqual([
       null,
@@ -819,7 +820,7 @@ describe('AppShell: menu de campo', () => {
   it('fora da página do usuário o Meu perfil não é marcado e o Menu não é realçado, mesmo com activeId alheio à navegação', async () => {
     const { container } = await montarComMenu({ nav: NAV, activeId: 'perfil', onUserClick: vi.fn() });
     expect(botaoDoMenu(container).style.color).toBe('var(--text-secondary)');
-    expect(botaoDoMenu(container).style.borderTop).toBe('2px solid transparent');
+    expect(botaoDoMenu(container).style.borderTop).toBe('var(--edge-state) solid transparent');
     await abrirMenu(container);
     expect(todos(dialogoAberto(), 'nav button').map((botao) => botao.getAttribute('aria-current'))).toEqual([
       null,

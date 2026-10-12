@@ -10,5 +10,5 @@ export const estiloDoBotaoDaBarra = (ativo: boolean): CSSProperties => ({
   justifyContent: 'center',
   gap: 3,
   color: ativo ? 'var(--color-royal)' : 'var(--text-secondary)',
-  borderTop: `2px solid ${ativo ? 'var(--color-royal)' : 'transparent'}`,
+  borderTop: `var(--edge-state) solid ${ativo ? 'var(--color-royal)' : 'transparent'}`,
 });

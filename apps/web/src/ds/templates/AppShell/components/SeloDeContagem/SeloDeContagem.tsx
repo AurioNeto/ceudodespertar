@@ -7,9 +7,9 @@ export function SeloDeContagem({ count, style }: { count: number | undefined; st
       data-numeric
       style={{
         font: '600 11.5px var(--font-data)',
-        background: 'var(--color-pending-soft)',
-        color: 'var(--color-pending)',
-        borderRadius: 'var(--radius-pill)',
+        background: 'var(--tone-pending-bg)',
+        color: 'var(--tone-pending-fg)',
+        borderRadius: 'var(--leaf-xs)',
         padding: '1px 7px',
         ...style,
       }}

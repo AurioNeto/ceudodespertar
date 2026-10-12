@@ -61,6 +61,7 @@ function LadoDaMarca({ campo }: { campo: boolean }) {
       linhas={campo ? ['Céu do Despertar'] : ['Céu do', 'Despertar']}
       legenda="Sistema de gestão"
       tamanho={campo ? 'pequeno' : 'grande'}
+      sobrePapel
     />
   );
 
@@ -68,8 +69,8 @@ function LadoDaMarca({ campo }: { campo: boolean }) {
     return (
       <header
         style={{
-          background: 'var(--bg-brand)',
-          borderBottom: '1px solid var(--color-line-gold)',
+          background: 'var(--bg-paper)',
+          borderBottom: '1px solid var(--border-brand)',
           padding: '20px 18px',
         }}
       >
@@ -83,8 +84,8 @@ function LadoDaMarca({ campo }: { campo: boolean }) {
       style={{
         position: 'relative',
         overflow: 'hidden',
-        background: 'var(--bg-brand)',
-        borderRight: '1px solid var(--color-line-gold)',
+        background: 'var(--bg-paper)',
+        borderRight: '1px solid var(--border-brand)',
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'space-between',
@@ -101,8 +102,8 @@ function LadoDaMarca({ campo }: { campo: boolean }) {
       <div style={{ position: 'relative' }}>{marca}</div>
 
       <div style={{ position: 'relative', maxWidth: '30ch' }}>
-        <div style={{ height: 1, background: 'var(--color-line-gold)', marginBottom: 18 }} />
-        <p style={{ font: 'var(--text-body)', color: 'var(--text-secondary)' }}>
+        <div style={{ height: 1, background: 'var(--border-brand)', marginBottom: 18 }} />
+        <p style={{ font: 'var(--text-body)', color: 'var(--text-on-paper)' }}>
           O registro único do que a casa move: dinheiro, cerimônias, pessoas e o daime.
         </p>
       </div>
