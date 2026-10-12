@@ -18,7 +18,7 @@ export function PontosDoCarrossel({ registros, indice, onIrPara }: PontosDoCarro
           style={{
             width: i === indice ? 26 : 9,
             height: 9,
-            borderRadius: 'var(--radius-pill)',
+            borderRadius: 'var(--leaf-seal)',
             cursor: 'pointer',
             padding: 0,
             background: i === indice ? 'var(--color-royal)' : 'var(--color-line-strong)',

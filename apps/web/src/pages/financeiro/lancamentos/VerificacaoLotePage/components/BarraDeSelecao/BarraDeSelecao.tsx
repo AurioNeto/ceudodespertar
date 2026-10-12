@@ -17,7 +17,7 @@ export function BarraDeSelecao({ quantidade, onAprovar, onLimpar }: BarraDeSelec
         flexWrap: 'wrap',
         background: 'var(--bg-brand)',
         border: '1px solid var(--border-brand)',
-        borderRadius: 'var(--radius)',
+        borderRadius: 'var(--leaf-md)',
         padding: '10px 14px',
       }}
     >

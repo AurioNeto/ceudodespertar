@@ -24,7 +24,7 @@ export function FormularioDeDevolucao({
         gap: 10,
         background: 'var(--color-attention-soft)',
         border: '1px solid var(--color-attention-border)',
-        borderRadius: 'var(--radius)',
+        borderRadius: 'var(--leaf-md)',
         padding: '12px 14px',
       }}
     >

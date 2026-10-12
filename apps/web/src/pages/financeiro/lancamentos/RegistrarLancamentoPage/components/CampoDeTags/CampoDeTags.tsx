@@ -27,9 +27,9 @@ export function CampoDeTags({
       <div
         style={{
           minHeight: 'var(--target-office)',
-          border: '1px solid var(--color-line-strong)',
+          border: '1px solid var(--border-field)',
           background: 'var(--bg-card)',
-          borderRadius: 'var(--radius)',
+          borderRadius: 'var(--leaf-sm)',
           padding: '8px 10px',
           display: 'flex',
           flexWrap: 'wrap',
@@ -47,7 +47,7 @@ export function CampoDeTags({
               background: 'var(--color-royal-soft)',
               border: '1px solid var(--color-royal-border)',
               color: 'var(--color-royal-deep)',
-              borderRadius: 'var(--radius-pill)',
+              borderRadius: 'var(--leaf-xs)',
               padding: '4px 6px 4px 12px',
               font: 'var(--text-body)',
             }}
@@ -59,7 +59,7 @@ export function CampoDeTags({
               onClick={() => onRemover(c)}
               tamanhoDoIcone={14}
               medida={22}
-              style={{ color: 'var(--color-royal-deep)', borderRadius: 'var(--radius-pill)' }}
+              style={{ color: 'var(--color-royal-deep)', borderRadius: 'var(--leaf-seal)' }}
             />
           </span>
         ))}
@@ -77,10 +77,10 @@ export function CampoDeTags({
               type="button"
               onClick={() => onAdicionar(o.value)}
               style={{
-                border: '1px dashed var(--color-line-strong)',
+                border: '1px dashed var(--border-field)',
                 background: 'var(--bg-card)',
                 color: 'var(--text-secondary)',
-                borderRadius: 'var(--radius-pill)',
+                borderRadius: 'var(--leaf-xs)',
                 padding: '5px 12px',
                 font: 'var(--text-small)',
                 cursor: 'pointer',
