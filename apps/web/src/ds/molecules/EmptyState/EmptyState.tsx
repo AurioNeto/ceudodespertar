@@ -22,7 +22,9 @@ export function EmptyState({ title, description, action, style }: EmptyStateProp
         ...style,
       }}
     >
-      <FlowerOfLife />
+      <div aria-hidden="true" style={{ position: 'absolute', inset: 0, opacity: 0.12 }}>
+        <FlowerOfLife />
+      </div>
       <h3 style={{ position: 'relative', font: 'var(--text-title-sm)', color: 'var(--text-title)' }}>
         {title}
       </h3>

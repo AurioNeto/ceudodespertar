@@ -4,8 +4,8 @@ import { GraficoSerie, type GraficoSerieProps } from './GraficoSerie';
 
 afterEach(desmontarTudo);
 
-const COR_DA_ENTRADA = 'var(--color-confirmed)';
-const COR_DA_SAIDA = 'var(--color-attention)';
+const COR_DA_ENTRADA = 'var(--serie-1)';
+const COR_DA_SAIDA = 'var(--serie-3)';
 
 const PROPS_BASE: GraficoSerieProps = {
   serie: [
