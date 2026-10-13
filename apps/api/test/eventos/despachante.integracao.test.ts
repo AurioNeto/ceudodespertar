@@ -1,11 +1,12 @@
 import { randomUUID } from 'node:crypto';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { criarBancoDeTeste, derrubarBancoDeTeste } from '../integracao/banco-de-teste.js';
 import type { BancoDeTeste } from '../integracao/banco-de-teste.js';
 import { ContextoDaRequisicao } from '../../src/shared/infrastructure/contexto-da-requisicao.js';
 import { UnidadeDeTrabalho } from '../../src/shared/infrastructure/banco/unidade-de-trabalho.js';
-import { Despachante } from '../../src/shared/infrastructure/eventos/despachante.js';
+import { Despachante, MENSAGEM_DE_EVENTO_SEM_CONSUMIDOR } from '../../src/shared/infrastructure/eventos/despachante.js';
+import { EventosSemConsumidor } from '../../src/shared/infrastructure/eventos/eventos-sem-consumidor.decorator.js';
 import { ReageA } from '../../src/shared/infrastructure/eventos/reage-a.decorator.js';
 import { RepositorioDoOutbox } from '../../src/shared/infrastructure/eventos/repositorio-do-outbox.js';
 import { SinalizadorDeEventos } from '../../src/shared/infrastructure/eventos/sinalizador-de-eventos.js';
@@ -60,6 +61,99 @@ class ConsumidorLeContextoDaInstituicao {
     this.instituicoesVistas.push(linhas[0]?.instituicaoId ?? null);
   }
 }
+
+@Injectable()
+class ConsumidorDaVersaoNova {
+  readonly eventos: EventoDeDominio[] = [];
+
+  @ReageA('teste.EventoDaVersaoNova', 'ConsumidorDaVersaoNova.reagir')
+  async reagir(evento: EventoDeDominio): Promise<void> {
+    this.eventos.push(evento);
+  }
+}
+
+@Injectable()
+@EventosSemConsumidor('teste.EventoSoDeRegistro')
+class DeclaracaoDeEventoSemConsumidor {}
+
+describe('Despachante · evento sem consumidor registrado (Documento 7 §9)', () => {
+  let banco: BancoDeTeste;
+
+  beforeEach(async () => {
+    banco = await criarBancoDeTeste();
+    await semearInstituicoes(banco);
+  });
+
+  afterEach(async () => {
+    await derrubarBancoDeTeste(banco);
+  });
+
+  it('tipo sem consumidor e sem declaração fica pendente, com tentativa, ultimo_erro próprio, backoff e aviso', async () => {
+    const avisos = vi.spyOn(Logger.prototype, 'warn').mockImplementation(() => undefined);
+    const app = await subirContextoDeEventos(banco);
+    try {
+      const evento = criarEvento({ tipo: 'teste.EventoDaVersaoNova' });
+      await gravarEvento(app, evento);
+
+      await app.get(Despachante).executarCiclo();
+
+      const linha = await linhaDoOutbox(banco, evento.eventoId);
+      expect(linha?.publicado_em).toBeNull();
+      expect(linha?.tentativas).toBe(1);
+      expect(linha?.ultimo_erro).toBe(
+        'ErroDeEventoSemConsumidor - nenhum consumidor registrado para o tipo neste processo',
+      );
+      expect(linha?.proxima_tentativa_em).not.toBeNull();
+      expect(avisos).toHaveBeenCalledWith(
+        { evento: evento.eventoId, tipo: 'teste.EventoDaVersaoNova', tentativas: 1 },
+        MENSAGEM_DE_EVENTO_SEM_CONSUMIDOR,
+      );
+    } finally {
+      avisos.mockRestore();
+      await encerrarContextoDeEventos(app);
+    }
+  });
+
+  it('no deploy com duas versões, o evento que a versão antiga não conhece é entregue pela nova', async () => {
+    const evento = criarEvento({ tipo: 'teste.EventoDaVersaoNova' });
+    const versaoAntiga = await subirContextoDeEventos(banco);
+    try {
+      await gravarEvento(versaoAntiga, evento);
+      await versaoAntiga.get(Despachante).executarCiclo();
+    } finally {
+      await encerrarContextoDeEventos(versaoAntiga);
+    }
+    await banco.owner.query('update shared.outbox set proxima_tentativa_em = null where evento_id = $1', [
+      evento.eventoId,
+    ]);
+
+    const versaoNova = await subirContextoDeEventos(banco, [ConsumidorDaVersaoNova]);
+    try {
+      await versaoNova.get(Despachante).executarCiclo();
+
+      expect(versaoNova.get(ConsumidorDaVersaoNova).eventos.map((e) => e.eventoId)).toEqual([evento.eventoId]);
+      expect((await linhaDoOutbox(banco, evento.eventoId))?.publicado_em).not.toBeNull();
+    } finally {
+      await encerrarContextoDeEventos(versaoNova);
+    }
+  });
+
+  it('tipo declarado em @EventosSemConsumidor é publicado sem tentativa', async () => {
+    const app = await subirContextoDeEventos(banco, [DeclaracaoDeEventoSemConsumidor]);
+    try {
+      const evento = criarEvento({ tipo: 'teste.EventoSoDeRegistro' });
+      await gravarEvento(app, evento);
+
+      await app.get(Despachante).executarCiclo();
+
+      const linha = await linhaDoOutbox(banco, evento.eventoId);
+      expect(linha?.publicado_em).not.toBeNull();
+      expect(linha?.tentativas).toBe(0);
+    } finally {
+      await encerrarContextoDeEventos(app);
+    }
+  });
+});
 
 describe('Despachante · entrega do outbox (Documento 7 §9)', () => {
   let banco: BancoDeTeste;
