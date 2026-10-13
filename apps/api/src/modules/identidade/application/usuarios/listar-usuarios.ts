@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import type { FiltroDeUsuarios, PaginaDeUsuarios } from '@cdd/contracts';
 import { erroDeDominio, ErroDeDominioException } from '../../../../shared/kernel/erro-de-dominio.js';
+import { detalhesDeCorpoInvalido } from '../../../../shared/kernel/problemas-de-validacao.js';
 import {
   codificarCursorDeUsuarios,
   decodificarCursorDeUsuarios,
@@ -10,6 +11,8 @@ import type { PosicaoDaListagem } from './cursor-de-usuarios.js';
 import { LeitorDeUsuarios } from './leitor-de-usuarios.js';
 import type { UsuarioComPosicao } from './leitor-de-usuarios.js';
 
+const REGRA_DO_CURSOR_INVALIDO = 'formato';
+
 function posicaoDoCursor(cursor: string | undefined): PosicaoDaListagem | null {
   if (cursor === undefined) return null;
   try {
@@ -17,7 +20,7 @@ function posicaoDoCursor(cursor: string | undefined): PosicaoDaListagem | null {
   } catch (erro) {
     if (!(erro instanceof ErroDeCursorDeUsuariosInvalido)) throw erro;
     throw new ErroDeDominioException(
-      erroDeDominio('CORPO_INVALIDO', { problemas: [{ caminho: 'depois', mensagem: erro.message }], total: 1 }),
+      erroDeDominio('CORPO_INVALIDO', detalhesDeCorpoInvalido([{ caminho: 'depois', regra: REGRA_DO_CURSOR_INVALIDO }])),
     );
   }
 }

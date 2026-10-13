@@ -19,6 +19,7 @@ export const AlterarGruposDoUsuario = z.object({
     .max(MAXIMO_DE_GRUPOS_POR_USUARIO)
     .refine((grupos) => new Set(grupos).size === grupos.length, {
       message: 'grupos não pode conter itens duplicados',
+      params: { regra: 'sem_duplicados' },
     }),
 });
 

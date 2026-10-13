@@ -53,15 +53,15 @@ describe('entrada e cache das rotas da identidade', () => {
 
   describe('caractere NUL na entrada responde 400 CORPO_INVALIDO e nunca 500', () => {
     it.each([
-      { campo: 'busca', consulta: `busca=a${NUL_NA_URL}b` },
-      { campo: 'depois', consulta: `depois=${cursorComNulNoNome()}` },
-    ])('$campo na listagem de usuários', async ({ campo, consulta }) => {
+      { campo: 'busca', consulta: `busca=a${NUL_NA_URL}b`, regra: 'sem_caractere_nulo' },
+      { campo: 'depois', consulta: `depois=${cursorComNulNoNome()}`, regra: 'formato' },
+    ])('$campo na listagem de usuários', async ({ campo, consulta, regra }) => {
       await semearCasa();
 
       const { status, corpo } = await ler(`${ROTA_USUARIOS}?${consulta}`);
 
       expect(status).toBe(400);
-      expect(corpo).toMatchObject({ erro: 'CORPO_INVALIDO', detalhes: { problemas: [{ caminho: campo }] } });
+      expect(corpo).toMatchObject({ erro: 'CORPO_INVALIDO', detalhes: { problemas: [{ caminho: campo, regra }] } });
     });
 
     it('nome no convite', async () => {
@@ -72,7 +72,7 @@ describe('entrada e cache das rotas da identidade', () => {
       });
 
       expect(resposta.status).toBe(400);
-      expect(resposta.corpo).toMatchObject({ erro: 'CORPO_INVALIDO', detalhes: { problemas: [{ caminho: 'nome' }] } });
+      expect(resposta.corpo).toMatchObject({ erro: 'CORPO_INVALIDO', detalhes: { problemas: [{ caminho: 'nome', regra: 'sem_caractere_nulo' }] } });
     });
 
     it('motivo da desativação', async () => {
@@ -84,7 +84,7 @@ describe('entrada e cache das rotas da identidade', () => {
       });
 
       expect(resposta.status).toBe(400);
-      expect(resposta.corpo).toMatchObject({ erro: 'CORPO_INVALIDO', detalhes: { problemas: [{ caminho: 'motivo' }] } });
+      expect(resposta.corpo).toMatchObject({ erro: 'CORPO_INVALIDO', detalhes: { problemas: [{ caminho: 'motivo', regra: 'sem_caractere_nulo' }] } });
     });
 
     it('nome do grupo ao renomear', async () => {
@@ -97,7 +97,7 @@ describe('entrada e cache das rotas da identidade', () => {
       });
 
       expect(resposta.status).toBe(400);
-      expect(resposta.corpo).toMatchObject({ erro: 'CORPO_INVALIDO', detalhes: { problemas: [{ caminho: 'nome' }] } });
+      expect(resposta.corpo).toMatchObject({ erro: 'CORPO_INVALIDO', detalhes: { problemas: [{ caminho: 'nome', regra: 'sem_caractere_nulo' }] } });
     });
   });
 

@@ -1,6 +1,6 @@
 # TSK-415: Fakes de teste em `src/` entram no build
 
-- **Estado:** 📌 Backlog técnico
+- **Estado:** ✅ Em PR: `tsconfig.build.json` exclui `**/*.fake.ts`, e um teste estrutural da api garante que nenhum `*.spec.ts` nem `*.fake.ts` entra no build (dist conferido sem `*.fake.js`)
 - **Responsável sugerido:** limpio
 
 ## Contexto
@@ -19,4 +19,4 @@
 
 - https://github.com/AurioNeto/ceudodespertar/pull/24
 
-_Atualizado em 07/10/2026._
+_Atualizado em 13/10/2026._

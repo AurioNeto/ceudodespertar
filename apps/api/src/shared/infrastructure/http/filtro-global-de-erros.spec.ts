@@ -308,7 +308,7 @@ describe('FiltroGlobalDeErros', () => {
 
   it('corpo inválido (CORPO_INVALIDO) responde 400 com os problemas em detalhes', () => {
     const correlacaoId = randomUUID();
-    const problemas = { problemas: [{ caminho: 'nome', mensagem: 'obrigatório' }] };
+    const problemas = { problemas: [{ caminho: 'nome', regra: 'obrigatorio' }], total: 1 };
 
     comCorrelacaoId(correlacaoId, () => {
       filtro.catch(new ErroDeDominioException(erroDeDominio('CORPO_INVALIDO', problemas)), hostFalso(capturada));

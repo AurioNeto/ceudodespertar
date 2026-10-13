@@ -3,6 +3,7 @@ import type { DetalheDeAuditoria, FiltroDeAuditoria, PaginaDeAuditoria, Registro
 import { UnidadeDeTrabalho } from '../../../../shared/infrastructure/banco/unidade-de-trabalho.js';
 import { Relogio } from '../../../../shared/infrastructure/relogio.js';
 import { erroDeDominio, ErroDeDominioException } from '../../../../shared/kernel/erro-de-dominio.js';
+import { detalhesDeCorpoInvalido } from '../../../../shared/kernel/problemas-de-validacao.js';
 import type { AcessoDoUsuario } from '../acesso-do-usuario.js';
 import { codificarCursor, decodificarCursor, ErroDeCursorInvalido } from './cursor-de-auditoria.js';
 import type { PosicaoDaTrilha } from './cursor-de-auditoria.js';
@@ -12,6 +13,8 @@ import { ROTULOS_DE_AUDITORIA } from './rotulos-de-auditoria.js';
 import { TrilhaDeAuditoria } from './trilha-de-auditoria.js';
 
 const AGREGADO_DA_TRILHA = 'Auditoria';
+
+const REGRA_DO_CURSOR_INVALIDO = 'formato';
 
 function detalhesDoFiltro(filtro: FiltroDeAuditoria): DetalheDeAuditoria[] {
   return [
@@ -28,7 +31,7 @@ function posicaoDoCursor(cursor: string | undefined): PosicaoDaTrilha | null {
   } catch (erro) {
     if (!(erro instanceof ErroDeCursorInvalido)) throw erro;
     throw new ErroDeDominioException(
-      erroDeDominio('CORPO_INVALIDO', { problemas: [{ caminho: 'depois', mensagem: erro.message }], total: 1 }),
+      erroDeDominio('CORPO_INVALIDO', detalhesDeCorpoInvalido([{ caminho: 'depois', regra: REGRA_DO_CURSOR_INVALIDO }])),
     );
   }
 }

@@ -94,7 +94,7 @@ describe('ListarUsuarios', () => {
     const consulta = new ListarUsuarios(new LeitorQueRegistra([])).executar({ depois: 'lixo', limite: 2 });
 
     await expect(consulta).rejects.toMatchObject({
-      erroDeDominio: { codigo: 'CORPO_INVALIDO', detalhes: { problemas: [{ caminho: 'depois' }] } },
+      erroDeDominio: { codigo: 'CORPO_INVALIDO', detalhes: { problemas: [{ caminho: 'depois', regra: 'formato' }], total: 1 } },
     });
     await expect(consulta).rejects.toBeInstanceOf(ErroDeDominioException);
   });

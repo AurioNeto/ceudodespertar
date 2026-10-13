@@ -19,6 +19,7 @@ export const FiltroDeAuditoria = z
   })
   .refine(({ de, ate }) => de === undefined || ate === undefined || Date.parse(de) <= Date.parse(ate), {
     message: 'de não pode ser posterior a ate',
+    params: { regra: 'intervalo_invertido' },
     path: ['de'],
   });
 
