@@ -1,9 +1,20 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import type { Eu } from '@cdd/contracts';
-import { criarEntradaFalsa, criarEu, ler, montarComSessao } from '@/testes/sessaoDeTeste';
+import { act } from 'react';
+import { ErroDeRede } from '@/dados';
+import {
+  assentar,
+  criarAvisoDeEncerramentoFalso,
+  criarEntradaFalsa,
+  criarEu,
+  ler,
+  montarComSessao,
+} from '@/testes/sessaoDeTeste';
 import type { TelaMontada } from '@/testes/sessaoDeTeste';
 import { erroDaApi as erroDoEu } from '@/testes/fabricas';
+import { CHAVE_DO_EU } from '../SessaoProvider';
+import { INTERVALO_DE_NOVA_TENTATIVA_DO_EU_EM_MS } from '../utils/derivarEstado';
 import { ExigeSessao } from './ExigeSessao';
 
 let tela: TelaMontada | null = null;
@@ -66,5 +77,122 @@ describe('ExigeSessao', () => {
     expect(ler(tela, 'de')).toBeUndefined();
     expect(ler(tela, 'protegida')).toBeUndefined();
     expect(tela.texto()).toContain('Verificando seu acesso');
+  });
+
+  describe('no meio da sessão', () => {
+    function RotasComFormulario() {
+      return (
+        <MemoryRouter initialEntries={['/lancamentos']}>
+          <Routes>
+            <Route path="/entrar" element={<DestinoDaEntrada />} />
+            <Route
+              path="/lancamentos"
+              element={
+                <ExigeSessao>
+                  <input data-testid="rascunho" defaultValue="" />
+                </ExigeSessao>
+              }
+            />
+          </Routes>
+        </MemoryRouter>
+      );
+    }
+
+    async function comSessaoAtiva(proximas: Array<() => Promise<Eu>>, recusa = criarAvisoDeEncerramentoFalso()) {
+      let chamadas = 0;
+      const buscarEu = () => (proximas[chamadas++] ?? (() => Promise.resolve(criarEu())))();
+      tela = await montarComSessao({ entrada: criarEntradaFalsa(true), buscarEu, recusa }, <RotasComFormulario />);
+      const campo = tela.container.querySelector<HTMLInputElement>('[data-testid="rascunho"]');
+      if (!campo) throw new Error('formulário não montou');
+      campo.value = 'lançamento pela metade';
+      return { campo, recusa };
+    }
+
+    async function refazerOEu() {
+      await act(async () => {
+        await tela?.clienteDeConsultas.invalidateQueries({ queryKey: CHAVE_DO_EU });
+      });
+      await assentar();
+    }
+
+    it.each([
+      ['indisponibilidade', () => Promise.reject(erroDoEu(503, 'SERVICO_INDISPONIVEL'))],
+      ['falha de rede', () => Promise.reject(new ErroDeRede(new Error('offline')))],
+    ])('%s no refetch do /eu mantém a rota e o formulário', async (_caso, falhar) => {
+      const { campo } = await comSessaoAtiva([() => Promise.resolve(criarEu()), falhar]);
+
+      await refazerOEu();
+
+      expect(ler(tela, 'de')).toBeUndefined();
+      expect(tela?.container.querySelector('[data-testid="rascunho"]')).toBe(campo);
+      expect(campo.value).toBe('lançamento pela metade');
+    });
+
+    it.each(['USUARIO_SUSPENSO', 'USUARIO_REVOGADO'] as const)(
+      '401 %s em outra chamada leva à tela de recusa',
+      async (codigo) => {
+        const { recusa } = await comSessaoAtiva([
+          () => Promise.resolve(criarEu()),
+          () => Promise.reject(erroDoEu(401, codigo)),
+        ]);
+
+        await act(async () => recusa.disparar());
+        await assentar();
+
+        expect(ler(tela, 'de')).toBe('/lancamentos');
+      },
+    );
+
+    it('401 USUARIO_SUSPENSO no refetch do próprio /eu também leva à tela de recusa', async () => {
+      await comSessaoAtiva([() => Promise.resolve(criarEu()), () => Promise.reject(erroDoEu(401, 'USUARIO_SUSPENSO'))]);
+
+      await refazerOEu();
+
+      expect(ler(tela, 'de')).toBe('/lancamentos');
+    });
+
+    it('a recusa avisada pela própria busca do /eu não refaz a busca em laço', async () => {
+      const recusa = criarAvisoDeEncerramentoFalso();
+      const LIMITE = 6;
+      let chamadas = 0;
+      const buscarEu = () => {
+        chamadas += 1;
+        if (chamadas === 1) return Promise.resolve(criarEu());
+        if (chamadas >= LIMITE) return Promise.resolve(criarEu());
+        recusa.disparar();
+        return Promise.reject(erroDoEu(401, 'USUARIO_REVOGADO'));
+      };
+      tela = await montarComSessao({ entrada: criarEntradaFalsa(true), buscarEu, recusa }, <RotasComFormulario />);
+
+      await refazerOEu();
+      await assentar();
+
+      expect(chamadas).toBe(2);
+      expect(ler(tela, 'de')).toBe('/lancamentos');
+    });
+
+    it('depois de uma falha passageira, busca o /eu de novo sozinha', async () => {
+      vi.useFakeTimers({ shouldAdvanceTime: true });
+      try {
+        let chamadas = 0;
+        const buscarEu = () => {
+          chamadas += 1;
+          return chamadas === 2 ? Promise.reject(erroDoEu(503, 'SERVICO_INDISPONIVEL')) : Promise.resolve(criarEu());
+        };
+        tela = await montarComSessao({ entrada: criarEntradaFalsa(true), buscarEu }, <RotasComFormulario />);
+        await refazerOEu();
+        expect(chamadas).toBe(2);
+
+        await act(async () => {
+          await vi.advanceTimersByTimeAsync(INTERVALO_DE_NOVA_TENTATIVA_DO_EU_EM_MS);
+        });
+        await assentar();
+
+        expect(chamadas).toBe(3);
+        expect(ler(tela, 'de')).toBeUndefined();
+      } finally {
+        vi.useRealTimers();
+      }
+    });
   });
 });

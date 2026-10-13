@@ -7,6 +7,7 @@ import {
   CAMINHO_DE_RETORNO,
   ESCOPO_OIDC,
   ESPERA_DA_RENOVACAO_SILENCIOSA_EM_SEGUNDOS,
+  PRAZO_DAS_CHAMADAS_OIDC_EM_SEGUNDOS,
 } from './caminhosOidc';
 
 export interface AmbienteOidc {
@@ -47,6 +48,7 @@ export function configuracaoOidc(ambiente: AmbienteOidc): UserManagerSettings {
     redirect_uri: `${ambiente.origem}${CAMINHO_DE_RETORNO}`,
     silent_redirect_uri: `${ambiente.origem}${CAMINHO_DA_RENOVACAO_SILENCIOSA}`,
     silentRequestTimeoutInSeconds: ESPERA_DA_RENOVACAO_SILENCIOSA_EM_SEGUNDOS,
+    requestTimeoutInSeconds: PRAZO_DAS_CHAMADAS_OIDC_EM_SEGUNDOS,
     post_logout_redirect_uri: `${ambiente.origem}${CAMINHO_DA_ENTRADA}`,
     response_type: 'code',
     scope: ESCOPO_OIDC,

@@ -7,7 +7,7 @@ import { destinoSeguro } from '@/app/rotas';
 import { usuarioDaSessao } from '../estadoDaSessao';
 import type { EstadoDaSessao, UsuarioDaSessao } from '../estadoDaSessao';
 import { useExisteUsuarioOidc } from '../hooks/useExisteUsuarioOidc';
-import { derivarEstado } from '../utils/derivarEstado';
+import { derivarEstado, intervaloDeNovaTentativaDoEu } from '../utils/derivarEstado';
 
 export const CHAVE_DO_EU = ['eu'] as const;
 
@@ -25,6 +25,7 @@ export interface Sessao {
 export interface SessaoProviderProps {
   readonly entrada: ServicoDeEntrada;
   readonly aoEncerrar: (ouvinte: () => void) => () => void;
+  readonly aoAcessoRecusado: (ouvinte: () => void) => () => void;
   readonly buscarEu: (sinal: AbortSignal) => Promise<Eu>;
   readonly guardarConvite: (convite: string) => void;
   readonly children: ReactNode;
@@ -32,7 +33,14 @@ export interface SessaoProviderProps {
 
 const Contexto = createContext<Sessao | null>(null);
 
-export function SessaoProvider({ entrada, aoEncerrar, buscarEu, guardarConvite, children }: SessaoProviderProps) {
+export function SessaoProvider({
+  entrada,
+  aoEncerrar,
+  aoAcessoRecusado,
+  buscarEu,
+  guardarConvite,
+  children,
+}: SessaoProviderProps) {
   const clienteDeConsultas = useQueryClient();
   const [temUsuario, setTemUsuario] = useExisteUsuarioOidc(entrada);
 
@@ -40,6 +48,7 @@ export function SessaoProvider({ entrada, aoEncerrar, buscarEu, guardarConvite, 
     queryKey: CHAVE_DO_EU,
     queryFn: ({ signal }) => buscarEu(signal),
     enabled: temUsuario === true,
+    refetchInterval: ({ state }) => intervaloDeNovaTentativaDoEu(state),
   });
 
   const estado = useMemo(
@@ -53,6 +62,15 @@ export function SessaoProvider({ entrada, aoEncerrar, buscarEu, guardarConvite, 
   }, [clienteDeConsultas, setTemUsuario]);
 
   useEffect(() => aoEncerrar(limparSessao), [aoEncerrar, limparSessao]);
+
+  useEffect(
+    () =>
+      aoAcessoRecusado(() => {
+        if (clienteDeConsultas.getQueryState(CHAVE_DO_EU)?.fetchStatus !== 'idle') return;
+        void clienteDeConsultas.invalidateQueries({ queryKey: CHAVE_DO_EU });
+      }),
+    [aoAcessoRecusado, clienteDeConsultas],
+  );
 
   const entrar = useCallback(
     async (destino: string) => {

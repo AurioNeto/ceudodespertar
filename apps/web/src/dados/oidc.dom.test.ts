@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { User, UserManager } from 'oidc-client-ts';
 import type { IWindow } from 'oidc-client-ts';
-import { CAMINHO_DE_RETORNO } from './caminhosOidc';
+import { CAMINHO_DE_RETORNO, PRAZO_DAS_CHAMADAS_OIDC_EM_SEGUNDOS } from './caminhosOidc';
 import {
   ErroDeConfiguracaoOidc,
   ErroDeEntrada,
@@ -67,6 +67,10 @@ describe('configuracaoOidc', () => {
   it('declara a página mínima que recebe a renovação silenciosa, dentro do padrão de redirect do realm', () => {
     expect(configuracao.silent_redirect_uri).toBe('http://localhost:5173/silencioso.html');
     expect(configuracao.silentRequestTimeoutInSeconds).toBe(5);
+  });
+
+  it('dá prazo a toda chamada ao provedor, inclusive a busca do .well-known', () => {
+    expect(configuracao.requestTimeoutInSeconds).toBe(PRAZO_DAS_CHAMADAS_OIDC_EM_SEGUNDOS);
   });
 
   it('desliga a renovação automática, que furaria a renovação única', () => {
