@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { TAMANHO_DO_CHIP } from './constantes';
+import { fundoComVidro } from '@/ds';
 
 export interface ChipDeFiltroProps {
   ativo: boolean;
@@ -20,7 +21,7 @@ export function ChipDeFiltro({ ativo, tamanho, onEscolher, children }: ChipDeFil
         borderRadius: 'var(--leaf-xs)',
         cursor: 'pointer',
         border: `1px solid ${ativo ? 'var(--color-royal-border)' : 'var(--color-line)'}`,
-        background: ativo ? 'var(--color-royal-soft)' : 'var(--bg-card)',
+        ...fundoComVidro(ativo ? 'var(--color-royal-soft)' : 'var(--bg-card)'),
         color: ativo ? 'var(--color-royal-deep)' : 'var(--text-secondary)',
       }}
     >

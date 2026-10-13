@@ -1,4 +1,4 @@
-import { Icon, Rotulo, type IconName } from '@/ds';
+import { Icon, Rotulo, type IconName, fundoComVidro } from '@/ds';
 import { numeroGrande } from '../../../../../../constantes';
 
 export function BlocoDoResumo({
@@ -25,7 +25,7 @@ export function BlocoDoResumo({
         flexDirection: 'column',
         gap: 6,
         padding: '12px 14px',
-        background: destacado ? 'var(--bg-brand)' : 'var(--bg-card)',
+        ...fundoComVidro(destacado ? 'var(--bg-brand)' : 'var(--bg-card)'),
         border: destacado ? '1px solid var(--border-brand)' : 'var(--border-hairline)',
         borderRadius: 'var(--leaf-sm)',
       }}

@@ -1,6 +1,6 @@
 import { Icon } from '../../../../atoms/Icon';
 import type { Density } from '../../../../fundacao/densidade';
-import { rotuloVersalete } from '../../../../fundacao/estilos';
+import { rotuloVersalete, vidroLeve } from '../../../../fundacao/estilos';
 
 export interface BarraDeContextoProps {
   institution: string;
@@ -46,6 +46,7 @@ export function BarraDeContexto({ institution, unit, user, onUnitClick, densidad
           padding: '5px 10px',
           borderRadius: 'var(--leaf-xs)',
           background: 'var(--color-royal-soft)',
+          ...vidroLeve,
           color: 'var(--color-royal-ink)',
         }}
       >

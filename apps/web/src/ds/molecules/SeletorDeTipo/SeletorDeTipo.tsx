@@ -1,3 +1,4 @@
+import { fundoComVidro } from '../../fundacao/estilos';
 export interface SeletorDeTipoProps<T extends string> {
   opcoes: readonly { valor: T; label: string }[];
   valor: T;
@@ -32,7 +33,7 @@ export function SeletorDeTipo<T extends string>({
               borderRadius: 'var(--leaf-sm)',
               cursor: 'pointer',
               border: `1px solid ${on ? 'var(--color-royal-border)' : 'var(--color-line)'}`,
-              background: on ? 'var(--color-royal-soft)' : 'var(--bg-card)',
+              ...fundoComVidro(on ? 'var(--color-royal-soft)' : 'var(--bg-card)'),
               color: on ? 'var(--color-royal-deep)' : 'var(--text-secondary)',
             }}
           >

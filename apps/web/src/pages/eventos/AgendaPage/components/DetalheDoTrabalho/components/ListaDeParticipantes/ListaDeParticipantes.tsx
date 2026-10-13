@@ -1,4 +1,4 @@
-import { AmountDisplay, Icon, StatusBadge } from '@/ds';
+import { AmountDisplay, Icon, StatusBadge, vidroLeve } from '@/ds';
 import { SeloDaAnamnese } from '@/pages/components/SeloDaAnamnese';
 import type { ParticipanteDoTrabalho } from '../../../../tipos';
 import { Bloco } from '../Bloco';
@@ -41,6 +41,7 @@ export function ListaDeParticipantes({
               borderLeft: `3px solid ${p.situacao === 'confirmado' ? 'var(--color-confirmed)' : 'var(--color-pending)'}`,
               borderRadius: 'var(--leaf-sm)',
               background: 'var(--bg-card)',
+              ...vidroLeve,
               cursor: 'pointer',
               textAlign: 'left',
             }}

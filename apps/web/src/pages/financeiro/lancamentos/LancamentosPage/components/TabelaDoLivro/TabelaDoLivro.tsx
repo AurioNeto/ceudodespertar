@@ -1,5 +1,5 @@
 import type { LancamentoNaLista } from '@cdd/contracts';
-import { Rotulo } from '@/ds';
+import { Rotulo, vidroLeve } from '@/ds';
 import { LinhaDoLivro } from './components/LinhaDoLivro';
 
 export interface TabelaDoLivroProps {
@@ -13,6 +13,7 @@ export function TabelaDoLivro({ registros, selecionado, onAbrir }: TabelaDoLivro
     <div
       style={{
         background: 'var(--bg-card)',
+        ...vidroLeve,
         border: 'var(--border-hairline)',
         borderRadius: 'var(--leaf-lg)',
         overflow: 'hidden',

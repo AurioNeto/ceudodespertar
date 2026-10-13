@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { ButtonHTMLAttributes, ReactNode } from 'react';
 import type { Density } from '../../fundacao/densidade';
+import { fundoComVidro } from '../../fundacao/estilos';
 import { Icon, type IconName } from '../Icon';
 import { HOVER, VARIANTS } from './constantes';
 
@@ -34,6 +35,7 @@ export function Button({
   const [hot, setHot] = useState(false);
   const field = density === 'field';
   const glyph = iconName ? <Icon name={iconName} size={field ? 20 : 18} /> : null;
+  const fundoDoBotao = disabled ? 'var(--bg-sunken)' : hot ? HOVER[variant] : VARIANTS[variant].background;
 
   const btn = (
     <button
@@ -56,10 +58,8 @@ export function Button({
         transform: hot && !disabled ? 'translateY(-1px)' : 'none',
         cursor: disabled ? 'not-allowed' : 'pointer',
         ...VARIANTS[variant],
-        ...(hot && !disabled ? { background: HOVER[variant] } : null),
-        ...(disabled
-          ? { background: 'var(--bg-sunken)', color: 'var(--color-ink-subtle)', border: '1px solid var(--color-line)' }
-          : null),
+        ...(disabled ? { color: 'var(--color-ink-subtle)', border: '1px solid var(--color-line)' } : null),
+        ...fundoComVidro(fundoDoBotao),
         ...style,
       }}
       {...rest}

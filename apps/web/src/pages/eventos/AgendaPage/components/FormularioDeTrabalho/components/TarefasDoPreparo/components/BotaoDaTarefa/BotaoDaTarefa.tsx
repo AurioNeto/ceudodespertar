@@ -1,3 +1,4 @@
+import { vidroLeve } from '@/ds';
 export function BotaoDaTarefa({
   rotulo,
   onClick,
@@ -18,6 +19,7 @@ export function BotaoDaTarefa({
         flex: '0 0 auto',
         border: '1px solid var(--color-line)',
         background: 'var(--bg-card)',
+        ...vidroLeve,
         borderRadius: 'var(--leaf-xs)',
         cursor: 'pointer',
         color: 'var(--text-secondary)',

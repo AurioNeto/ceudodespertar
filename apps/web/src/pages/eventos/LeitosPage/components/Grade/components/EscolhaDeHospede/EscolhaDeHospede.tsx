@@ -1,4 +1,4 @@
-import { Button, Icon, Rotulo, type Density } from '@/ds';
+import { Button, Icon, Rotulo, type Density, vidroLeve } from '@/ds';
 import { pluralizar } from '@/pages/utils/formato';
 import type { NoiteId } from '../../../../mocks/leitos';
 import type { Pendencia } from '../../../../tipos';
@@ -62,6 +62,7 @@ export function EscolhaDeHospede({
                 border: 'var(--border-hairline)',
                 borderRadius: 'var(--leaf-sm)',
                 background: 'var(--bg-card)',
+                ...vidroLeve,
                 padding: campo ? '13px 14px' : '11px 14px',
                 cursor: 'pointer',
                 display: 'flex',

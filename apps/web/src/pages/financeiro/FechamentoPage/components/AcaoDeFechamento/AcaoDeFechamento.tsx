@@ -1,4 +1,4 @@
-import { Button, ConfirmAction, PeriodLock, type Density } from '@/ds';
+import { Button, ConfirmAction, PeriodLock, type Density, vidroLeve } from '@/ds';
 import { competenciaPorExtenso, pluralizar } from '@/pages/utils/formato';
 import { competenciaAtual } from '@/pages/mocks/relogio';
 import type { ItemDoChecklist } from '../ItemDoChecklist';
@@ -32,6 +32,7 @@ export function AcaoDeFechamento({
     <div
       style={{
         background: 'var(--bg-card)',
+        ...vidroLeve,
         border: 'var(--border-hairline)',
         borderRadius: 'var(--leaf-lg)',
         padding: '16px 18px',

@@ -1,4 +1,4 @@
-import { Button, CorpoDaTela, ScreenHeader, useDensidade, Select, SeletorDeTipo, Recado, Rotulo } from '@/ds';
+import { Button, CorpoDaTela, ScreenHeader, useDensidade, Select, SeletorDeTipo, Recado, Rotulo, vidroLeve } from '@/ds';
 import { Documento } from './components/Documento';
 import { ExplicacaoDoNivel } from './components/ExplicacaoDoNivel';
 import { HistoricoDePrestacoes } from './components/HistoricoDePrestacoes';
@@ -21,6 +21,7 @@ export function PrestacaoDeContasPage() {
         <div
           style={{
             background: 'var(--bg-card)',
+            ...vidroLeve,
             border: 'var(--border-hairline)',
             borderRadius: 'var(--leaf-lg)',
             padding: campo ? '15px 16px' : '17px 20px',

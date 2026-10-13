@@ -1,10 +1,11 @@
-import { Icon } from '@/ds';
+import { Icon, vidroLeve } from '@/ds';
 
 export function ContrapesoDaGovernanca() {
   return (
     <div
       style={{
         background: 'var(--color-suggest-soft)',
+        ...vidroLeve,
         border: '1px solid var(--color-suggest-border)',
         borderLeft: 'var(--edge-state) solid var(--color-suggest)',
         borderRadius: 'var(--leaf-md)',

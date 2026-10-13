@@ -1,3 +1,4 @@
+import { vidroLeve } from '../../../../fundacao/estilos';
 export function SeloDoUsuario({ name, decorativo = false }: { name: string; decorativo?: boolean }) {
   return (
     <span
@@ -8,6 +9,7 @@ export function SeloDoUsuario({ name, decorativo = false }: { name: string; deco
         borderRadius: 'var(--leaf-seal)',
         flex: '0 0 auto',
         background: 'var(--color-royal-soft)',
+        ...vidroLeve,
         color: 'var(--color-royal-ink)',
         display: 'grid',
         placeItems: 'center',

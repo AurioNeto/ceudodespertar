@@ -1,4 +1,4 @@
-import { Button, Icon, Select, Rotulo, type Density } from '@/ds';
+import { Button, Icon, Select, Rotulo, type Density, vidroLeve } from '@/ds';
 import { formatarData, pluralizar } from '@/pages/utils/formato';
 import { contasComExtrato, importacao } from '../../mocks/conciliacao';
 
@@ -17,6 +17,7 @@ export function PainelDeImportacao({ densidade, importado, conta, onConta, onImp
     <div
       style={{
         background: 'var(--bg-card)',
+        ...vidroLeve,
         border: 'var(--border-hairline)',
         borderRadius: 'var(--leaf-lg)',
         padding: campo ? '15px 16px' : '17px 20px',

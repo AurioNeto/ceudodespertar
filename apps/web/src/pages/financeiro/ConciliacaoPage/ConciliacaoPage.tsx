@@ -1,4 +1,4 @@
-import { CorpoDaTela, EmptyState, ScreenHeader, useDensidade, Numero, Recado } from '@/ds';
+import { CorpoDaTela, EmptyState, ScreenHeader, useDensidade, Numero, Recado, vidroLeve } from '@/ds';
 import { Coluna } from './components/Coluna';
 import { LancamentoSozinho } from './components/LancamentoSozinho';
 import { LinhaDoExtrato } from './components/LinhaDoExtrato';
@@ -35,6 +35,7 @@ export function ConciliacaoPage() {
             <div
               style={{
                 background: 'var(--bg-card)',
+                ...vidroLeve,
                 border: 'var(--border-hairline)',
                 borderRadius: 'var(--leaf-lg)',
                 padding: campo ? '15px 16px' : '17px 20px',
