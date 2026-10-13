@@ -24,8 +24,6 @@ As correções de comportamento (#140 a #145) e o R$ em todo valor (#147 a #152)
 
 ## Decisões do dono (13/10/2026)
 
-Todas conforme a recomendação da orquestração:
-
 1. **Valor negativo:** `− R$ 110,00` em todas as telas, com a forma centralizada no `formatarBRL`.
 2. **Parcela negativa num valor somado:** vetada; cada parcela precisa ser positiva.
 3. **Período fechado:** o bloqueio vale também na aprovação individual ("Aprovar e consolidar").
@@ -38,8 +36,8 @@ Todas conforme a recomendação da orquestração:
 
 ## O que precisa ser feito
 
-- O dono responde cada pergunta.
-- Cada resposta entra na seção 15 do Doc 8, e a linha correspondente sai da 14.3 ou da 14.4 quando o PR da tela entrar.
+- Cada decisão vira um PR pequeno do front, na tela da coluna "Tela".
+- Quando o PR de cada decisão entrar, a linha correspondente do Doc 8 deixa de ser "Pergunta ao dono" na seção 14.3 (ou na 14.4, a do sinal negativo) e passa à seção 15 como decisão.
 
 ## Critérios de aceite
 
@@ -52,4 +50,4 @@ Todas conforme a recomendação da orquestração:
 - https://github.com/AurioNeto/ceudodespertar/pull/146 (registro das correções e das perguntas)
 - https://github.com/AurioNeto/ceudodespertar/pull/153 (registro do R$ e do sinal negativo)
 
-_Atualizado em 12/10/2026._
+_Atualizado em 13/10/2026._
