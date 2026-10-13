@@ -1,3 +1,4 @@
+import { criarAtivacaoDeConvite } from './ativacaoDeConvite';
 import { criarClienteHttp } from './clienteHttp';
 import { criarCredencialOidc } from './credencialOidc';
 import { criarComando, criarConsulta } from './consultaEComando';
@@ -8,5 +9,6 @@ const gerenciadorOidc = criarGerenciadorOidc(lerAmbienteOidc(import.meta.env, wi
 export const credencial = criarCredencialOidc(gerenciadorOidc);
 export const servicoDeEntrada = criarServicoDeEntrada(gerenciadorOidc);
 export const clienteHttp = criarClienteHttp({ credencial });
+export const ativacaoDeConvite = criarAtivacaoDeConvite({ clienteHttp });
 export const consulta = criarConsulta(clienteHttp);
 export const comando = criarComando(clienteHttp);

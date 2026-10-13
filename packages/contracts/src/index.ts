@@ -7,3 +7,4 @@ export * from './identidade/index.js';
 export * from './estoque.js';
 export * from './readmodels.js';
 export * from './comandos/identidade.js';
+export * from './entrada.js';

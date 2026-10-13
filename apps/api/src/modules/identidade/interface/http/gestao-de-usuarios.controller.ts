@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Put, Query, Res } from '@nestjs/common';
+import { Body, Controller, Get, Header, HttpCode, HttpStatus, Param, Post, Put, Query, Res } from '@nestjs/common';
 import {
   AlterarGruposDoUsuario,
   DesativarUsuario as ComandoDesativarUsuario,
@@ -53,12 +53,14 @@ export class GestaoDeUsuariosController {
 
   @Get()
   @ModoDeTransacao('leitura')
+  @Header('Cache-Control', 'no-store')
   listar(@Query({ schema: FiltroDeUsuarios }) filtro: FiltroDeUsuarios): Promise<PaginaDeUsuarios> {
     return this.listarUsuarios.executar(filtro);
   }
 
   @Get(':id')
   @ModoDeTransacao('leitura')
+  @Header('Cache-Control', 'no-store')
   obter(@Param({ schema: ParametrosDoUsuario }) { id }: ParametrosDoUsuario): Promise<Result<UsuarioListado, ErroDeDominio>> {
     return this.obterUsuario.executar(id);
   }

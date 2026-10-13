@@ -10,7 +10,7 @@ export const RESPIRO_DA_LEGENDA = {
   grande: 12,
 } satisfies Record<string, number>;
 
-export const CAMINHO_DA_MERKABA = '/marca/merkaba.png';
+export const CAMINHO_DA_MERKABA = `${import.meta.env.BASE_URL}marca/merkaba.png`;
 
 export const MEDIDA_DA_MERKABA = {
   pequeno: { largura: 30, altura: 35 },

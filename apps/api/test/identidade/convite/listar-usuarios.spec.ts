@@ -114,6 +114,7 @@ describe('cursor de usuários', () => {
     ['base64 que não é JSON', Buffer.from('não é json').toString('base64url')],
     ['JSON sem os campos', Buffer.from('{}').toString('base64url')],
     ['id que não é uuid', Buffer.from(JSON.stringify({ chaveDeNome: 'a', id: 'x' })).toString('base64url')],
+    ['chave de nome com NUL', Buffer.from(JSON.stringify({ chaveDeNome: 'a\u0000', id: ID_A })).toString('base64url')],
   ])('rejeita %s', (_descricao, cursor) => {
     expect(() => decodificarCursorDeUsuarios(cursor)).toThrow(ErroDeCursorDeUsuariosInvalido);
   });

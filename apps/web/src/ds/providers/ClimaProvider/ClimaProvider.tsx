@@ -1,4 +1,4 @@
-import { useLayoutEffect, useState, type ReactNode } from 'react';
+import { useEffect, useLayoutEffect, useState, type ReactNode } from 'react';
 import { CHAVE_DO_CLIMA, CLIMA_PADRAO, COR_DO_TEMA_POR_CLIMA } from './constantes';
 import { Ctx } from './hooks/useClima';
 import type { Clima } from './tipos';
@@ -41,6 +41,14 @@ export function ClimaProvider({ children, armazenamento }: ClimaProviderProps) {
   useLayoutEffect(() => {
     aplicarNoDocumento(clima);
   }, [clima]);
+
+  useEffect(() => {
+    const seguirOutraAba = (evento: StorageEvent) => {
+      if (evento.key === CHAVE_DO_CLIMA && ehClima(evento.newValue)) setClima(evento.newValue);
+    };
+    window.addEventListener('storage', seguirOutraAba);
+    return () => window.removeEventListener('storage', seguirOutraAba);
+  }, []);
 
   const definirClima = (escolhido: Clima) => {
     gravarClima(armazenamento, escolhido);

@@ -1,4 +1,4 @@
-import type { CodigoDeRecusa } from '@/app/sessao';
+import type { CodigoDeConviteRecusado, CodigoDeRecusa } from '@/app/sessao';
 import type { MensagemDeEntrada } from '../tipos';
 
 export const MENSAGENS_DE_RECUSA: Readonly<Record<CodigoDeRecusa, MensagemDeEntrada>> = {
@@ -6,7 +6,7 @@ export const MENSAGENS_DE_RECUSA: Readonly<Record<CodigoDeRecusa, MensagemDeEntr
     tom: 'pendente',
     titulo: 'Seu convite ainda não foi aceito',
     corpo:
-      'Abra o e-mail do convite e defina sua senha por lá. Se o e-mail não chegou ou o link venceu, peça à administração da casa para reenviar.',
+      'Abra o e-mail do convite e defina sua senha pelo link. O link vale uma vez só: se você já definiu a senha mas fechou a página antes de voltar para cá, ou se o e-mail não chegou ou o link venceu, peça à administração da casa um novo convite.',
   },
   USUARIO_SUSPENSO: {
     tom: 'atencao',
@@ -24,6 +24,43 @@ export const MENSAGENS_DE_RECUSA: Readonly<Record<CodigoDeRecusa, MensagemDeEntr
     corpo:
       'Você entrou, mas esta conta não está cadastrada no sistema. Confira se usou o e-mail certo ou peça à administração da casa para convidar você.',
   },
+};
+
+export const MENSAGENS_DE_CONVITE_RECUSADO: Readonly<Record<CodigoDeConviteRecusado, MensagemDeEntrada>> = {
+  CONVITE_INVALIDO: {
+    tom: 'atencao',
+    titulo: 'Este convite não foi reconhecido',
+    corpo: 'O link do convite não vale. Peça à administração da casa para enviar um novo convite.',
+  },
+  CONVITE_EXPIRADO: {
+    tom: 'atencao',
+    titulo: 'O convite venceu',
+    corpo: 'O prazo para aceitar este convite acabou. Peça à administração da casa para reenviá-lo.',
+  },
+  CONVITE_JA_USADO: {
+    tom: 'atencao',
+    titulo: 'Este convite já foi aceito',
+    corpo:
+      'O convite já foi usado por outra conta. Se você já tem acesso, continue ou saia e entre com ela; se não, peça um novo convite à administração da casa.',
+  },
+  SUJEITO_JA_VINCULADO: {
+    tom: 'atencao',
+    titulo: 'Esta conta já está em uso',
+    corpo:
+      'A conta com que você entrou já está ligada a outro acesso no sistema, e o convite não foi aceito. Fale com a administração da casa.',
+  },
+  CONVITE_DE_OUTRO_SUJEITO: {
+    tom: 'atencao',
+    titulo: 'O convite é para outra conta',
+    corpo:
+      'Você entrou com uma conta diferente da que recebeu o convite, e ele não foi aceito. Peça à administração da casa um novo convite e entre com o e-mail para o qual ele for enviado.',
+  },
+};
+
+export const MENSAGEM_DE_CONVITE_RECEBIDO: MensagemDeEntrada = {
+  tom: 'confirmado',
+  titulo: 'Senha definida',
+  corpo: 'Agora entre com o seu e-mail e a senha que você acabou de criar para ativar o seu acesso.',
 };
 
 export const MENSAGEM_DE_INDISPONIBILIDADE: MensagemDeEntrada = {

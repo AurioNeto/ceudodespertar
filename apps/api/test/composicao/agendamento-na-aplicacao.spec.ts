@@ -4,6 +4,10 @@ import { criarAplicacao } from '../../src/composicao/aplicacao.js';
 import { AppModule } from '../../src/composicao/app.module.js';
 import { Despachante } from '../../src/shared/infrastructure/eventos/despachante.js';
 import {
+  ExpurgoDoOutbox,
+  INTERVALO_DO_EXPURGO_EM_MS as INTERVALO_DO_EXPURGO_DO_OUTBOX_EM_MS,
+} from '../../src/shared/infrastructure/eventos/expurgo-do-outbox.js';
+import {
   INTERVALO_DA_VIGIA_EM_MS,
   VigiaDeEventosEsgotados,
 } from '../../src/shared/infrastructure/eventos/vigia-de-eventos-esgotados.js';
@@ -19,6 +23,7 @@ describe('trabalhos em segundo plano agendados pela aplicação', () => {
   const executarCiclo = vi.spyOn(Despachante.prototype, 'executarCiclo');
   const verificar = vi.spyOn(VigiaDeEventosEsgotados.prototype, 'verificar');
   const expurgar = vi.spyOn(ExpurgoDeChavesDeIdempotencia.prototype, 'expurgar');
+  const expurgarOutbox = vi.spyOn(ExpurgoDoOutbox.prototype, 'expurgar');
 
   beforeAll(async () => {
     vi.stubEnv('OIDC_EMISSOR', 'http://localhost:8080/realms/cdd');
@@ -29,6 +34,7 @@ describe('trabalhos em segundo plano agendados pela aplicação', () => {
     executarCiclo.mockResolvedValue(undefined);
     verificar.mockResolvedValue(undefined);
     expurgar.mockResolvedValue(undefined);
+    expurgarOutbox.mockResolvedValue(undefined);
     vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval'] });
     app = await criarAplicacao(AppModule);
     await app.init();
@@ -63,5 +69,14 @@ describe('trabalhos em segundo plano agendados pela aplicação', () => {
     await vi.advanceTimersByTimeAsync(INTERVALO_DO_EXPURGO_EM_MS);
 
     expect(expurgar).toHaveBeenCalledTimes(2);
+  });
+
+  it('o expurgo dos eventos despachados do outbox roda na partida e a cada hora', async () => {
+    const antes = expurgarOutbox.mock.calls.length;
+    expect(antes).toBeGreaterThanOrEqual(1);
+
+    await vi.advanceTimersByTimeAsync(INTERVALO_DO_EXPURGO_DO_OUTBOX_EM_MS);
+
+    expect(expurgarOutbox.mock.calls.length - antes).toBe(1);
   });
 });

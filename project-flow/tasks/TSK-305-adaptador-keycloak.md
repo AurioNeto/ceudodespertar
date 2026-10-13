@@ -1,6 +1,6 @@
 # TSK-305: Adaptador do Keycloak: convite por e-mail, ativação e suspensão
 
-- **Estado:** 🚧 API concluída (PRs 1 a 6 e 8 mesclados em #51, #52, #65, #74, #76, #79 e #80); PR 7 (front) entregue em duas partes, a rota /entrar (#200) e o reenvio do convite com o 429 em Acessos; falta o aceite real no Keycloak local
+- **Estado:** 🚧 API concluída (PRs 1 a 6 e 8 mesclados em #51, #52, #65, #74, #76, #79 e #80); PR 7 (front) em duas partes da issue #77: parte 1, a rota /entrar, mesclada em #200; parte 2, o reenvio do convite com o 429 em Acessos, em #202; falta o aceite real no Keycloak local
 - **Peça do plano:** I10
 - **Responsável sugerido:** escudo + limpio (crivo)
 - **Depende de:** [TSK-304](TSK-304-gestao-de-usuarios-e-grupos.md), [TSK-002](TSK-002-mesclar-identidade-guarda-front-tema.md)
@@ -65,4 +65,4 @@ O desenho está no scratchpad da sessão (`tsk305-desenho.md`).
 
 - https://github.com/AurioNeto/ceudodespertar/pull/29
 
-_Atualizado em 12/10/2026 (front entregue em duas partes)._
+_Atualizado em 13/10/2026 (front /entrar mesclado em #200; reenvio com o 429 em #202)._

@@ -14,6 +14,16 @@ describe('estadoDoErroDoEu', () => {
     expect(estadoDoErroDoEu(erro(401, codigo))).toEqual({ tipo: 'recusada', codigo });
   });
 
+  it.each([
+    ['CONVITE_INVALIDO', 400],
+    ['CONVITE_EXPIRADO', 410],
+    ['CONVITE_JA_USADO', 409],
+    ['SUJEITO_JA_VINCULADO', 409],
+    ['CONVITE_DE_OUTRO_SUJEITO', 403],
+  ] as const)('leva %s da ativação ao convite recusado com o mesmo código', (codigo, status) => {
+    expect(estadoDoErroDoEu(erro(status, codigo))).toEqual({ tipo: 'convite-recusado', codigo });
+  });
+
   it('trata 503 do provedor como indisponibilidade, sem recusa', () => {
     expect(estadoDoErroDoEu(erro(503, 'PROVEDOR_DE_IDENTIDADE_INDISPONIVEL'))).toEqual({ tipo: 'indisponivel' });
   });
