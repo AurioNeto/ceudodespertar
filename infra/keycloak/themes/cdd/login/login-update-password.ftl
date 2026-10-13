@@ -3,11 +3,12 @@
 <#import "field.ftl" as field>
 <#import "buttons.ftl" as buttons>
 <#import "password-validation.ftl" as validator>
+<#import "regras-de-senha.ftl" as regrasDeSenha>
 <@layout.registrationLayout displayMessage=!messagesPerField.existsError('password','password-confirm'); section>
     <#if section = "header">
         ${msg("updatePasswordTitle")}
     <#elseif section = "form">
-        <p class="cdd-descricao">${msg("cddSenhaRegras")}</p>
+        <@regrasDeSenha.descricao/>
         <form id="kc-passwd-update-form" class="${properties.kcFormClass!}" data-bloqueia-envio-duplo action="${url.loginAction}" method="post" novalidate="novalidate">
             <@field.password name="password-new" label=msg("passwordNew") fieldName="password" autocomplete="new-password" autofocus=true />
             <@field.password name="password-confirm" label=msg("passwordConfirm") autocomplete="new-password" />

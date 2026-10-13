@@ -1,6 +1,6 @@
 # TSK-416: Tema do Keycloak: texto de senha, e-mail de ações e título
 
-- **Estado:** 📌 Backlog técnico
+- **Estado:** 🔍 Em revisão (texto da senha pela política, título sem marcação, e-mail de ações genérico e tema de e-mail na Força da Mata)
 - **Responsável sugerido:** vitro
 
 ## Contexto
@@ -22,4 +22,18 @@ Achados do #29. O tema de login foi refeito na Força da Mata (#180 e #197, na `
 - https://github.com/AurioNeto/ceudodespertar/pull/29#discussion_r4187822019
 - https://github.com/AurioNeto/ceudodespertar/pull/29#discussion_r4187822143
 
-_Atualizado em 12/10/2026._
+## Decisões do dono
+
+- **Assunto do e-mail de convite (13/10):** "Sistema de Gestão CDD" (`executeActionsSubject`). O assunto da redefinição de senha não muda.
+
+## Conferência ao vivo (12/10)
+
+Num Keycloak 26.4.7 isolado, com o tema da branch:
+- a tela de definir senha mostrou a política `length(10) and digits(1) and notEmail and notUsername and lowerCase(1)` como "Use pelo menos 10 caracteres, com uma letra minúscula e um número. A senha não pode ser igual ao seu e-mail.";
+- trocar a política no realm por `length(12) and maxLength(64) and upperCase(2) and digits(1) and specialChars(1) and passwordHistory(3)` mudou o texto sem editar o tema;
+- o `<title>` da tela de consentimento deixou de mostrar a marcação do header herdado;
+- os e-mails de ações e de redefinição saíram no Mailpit sem Archivo e sem caixa alta.
+
+`passwordPolicies` chega ao tema como bean, não como mapa: `notEmail` e `notUsername` são booleanos sempre presentes, e o `msg()` do Keycloak repassa os argumentos como texto, então o plural usa duas chaves em vez de `choice`.
+
+_Atualizado em 13/10/2026 (assunto do e-mail de convite decidido pelo dono)._

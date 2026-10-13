@@ -137,7 +137,7 @@ describe('aceite do convite contra o Keycloak e o Mailpit reais — ciclo de vid
     const noKeycloak = await keycloak.usuarioPorEmail(emCurso.email);
     convidada.emailVerificadoAntesDoLink = noKeycloak?.emailVerified ?? true;
 
-    expect(mensagem?.assunto).toBe('Defina sua senha no Céu do Despertar');
+    expect(mensagem?.assunto).toBe('Sistema de Gestão CDD');
     expect(mensagem?.para).toEqual([emCurso.email]);
     expect(emCurso.link.startsWith(`${ambiente.emissor}/login-actions/action-token?key=`)).toBe(true);
     expect(conviteDoLinkDoEmail(emCurso.link)).toMatch(FORMATO_DO_TOKEN_DE_CONVITE);

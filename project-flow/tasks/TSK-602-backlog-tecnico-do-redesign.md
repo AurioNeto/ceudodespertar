@@ -16,7 +16,7 @@ O pre-review da PR da épica (#196) deixou cinco minors de desenho que o dono de
 4. **Clima entre abas.** O provider não escuta o evento `storage`; duas abas ficam com climas diferentes até recarregar. Decidir se sincroniza. ([pergunta](https://github.com/AurioNeto/ceudodespertar/pull/196#discussion_r4251890459)) **Decisão do dono (12/10): sincronizar pelo evento `storage`.** Mesclado em #205.
 5. **Degradê fixo no iOS.** `background-attachment: fixed` no `body`; conferir no iPhone (app, Portão e inscrição pública) e, se piscar, trocar por pseudo-elemento fixo. ([achado](https://github.com/AurioNeto/ceudodespertar/pull/196#discussion_r4251890252))
 6. **Verificações em aparelho real:** rolagem de Lançamentos num Android de campo (desfoque de 16px por `RecordRow`); impressão na Noite (texto claro sem o fundo escuro); custo aceito do cabeçalho: clique com mouse num botão do cabeçalho o segura completo até o próximo clique fora.
-7. **Tema de e-mail do Keycloak** ainda cita Archivo e caixa alta inline (`themes/cdd/email/**`); ficou fora da épica. Junto com os três pontos da [TSK-416](TSK-416-tema-keycloak-ressalvas.md).
+7. **Tema de e-mail do Keycloak** ainda cita Archivo e caixa alta inline (`themes/cdd/email/**`); ficou fora da épica. Junto com os três pontos da [TSK-416](TSK-416-tema-keycloak-ressalvas.md). Em revisão: e-mail no Amanhecer, Alegreya no título e versalete no descritor (12/10).
 8. **Telas de erro e de senha do Keycloak**: só login inválido e redefinição com e-mail vazio foram conferidas no navegador (#197); `login-update-password` e `info`/`error` não.
 
 ## Critérios de aceite

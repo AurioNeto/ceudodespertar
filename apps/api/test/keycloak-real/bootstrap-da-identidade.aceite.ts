@@ -56,7 +56,7 @@ describe('aceite do bootstrap da identidade por convite contra o Keycloak e o Ma
     expect(saidaDoCli.codigo).toBe(0);
     expect(saidaDoCli.stderr).toBe('');
     expect(saidaDoCli.stdout).toContain('Próximo passo');
-    expect(mensagem?.assunto).toBe('Defina sua senha no Céu do Despertar');
+    expect(mensagem?.assunto).toBe('Sistema de Gestão CDD');
     expect(conviteDoLinkDoEmail(link)).toMatch(FORMATO_DO_TOKEN_DE_CONVITE);
     expect(saidaDoCli.stdout).not.toContain(conviteDoLinkDoEmail(link));
   });
