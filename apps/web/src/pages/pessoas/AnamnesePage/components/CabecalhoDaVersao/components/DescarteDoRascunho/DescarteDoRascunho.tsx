@@ -1,16 +1,16 @@
-import { useState } from 'react';
 import { Button } from '@/ds';
+import { useDescarteDoRascunho } from './hooks/useDescarteDoRascunho';
 
 export interface DescarteDoRascunhoProps {
   onDescartar: () => void;
 }
 
 export function DescarteDoRascunho({ onDescartar }: DescarteDoRascunhoProps) {
-  const [confirmando, setConfirmando] = useState(false);
+  const { confirmando, pedirConfirmacao, manterRascunho } = useDescarteDoRascunho();
 
   if (!confirmando) {
     return (
-      <Button variant="ghost" iconName="trash-2" onClick={() => setConfirmando(true)}>
+      <Button variant="ghost" iconName="trash-2" onClick={pedirConfirmacao}>
         Descartar rascunho
       </Button>
     );
@@ -25,7 +25,7 @@ export function DescarteDoRascunho({ onDescartar }: DescarteDoRascunhoProps) {
         <Button iconName="trash-2" onClick={onDescartar}>
           Descartar
         </Button>
-        <Button variant="quiet" onClick={() => setConfirmando(false)}>
+        <Button variant="quiet" onClick={manterRascunho}>
           Manter rascunho
         </Button>
       </div>

@@ -1,19 +1,13 @@
-import { Navigate, useLocation } from 'react-router-dom';
-import { Button, Portao, SkeletonList, useDensidade } from '@/ds';
-import { destinoDaNavegacao } from '@/app/rotas';
-import { useSessao } from '@/app/sessao';
+import { Navigate } from 'react-router-dom';
+import { Button, Portao, SkeletonList } from '@/ds';
 import { MensagemDeEntradaNaTela } from '../components/MensagemDeEntradaNaTela';
 import { DESCRICAO_DA_ENTRADA, MENSAGEM_DE_CONVITE_RECEBIDO, MENSAGEM_DE_FALHA_AO_INICIAR } from './constantes';
-import { useConviteDaUrl } from './hooks/useConviteDaUrl';
-import { useInicioDaEntrada } from './hooks/useInicioDaEntrada';
+import { useEntrada } from './hooks/useEntrada';
 import { mensagemDoEstado } from './utils/mensagemDoEstado';
 
 export function EntrarPage() {
-  const densidade = useDensidade();
-  const { estado, encerrar, tentarDeNovo } = useSessao();
-  const destino = destinoDaNavegacao(useLocation().state);
-  const { indo, falhou, iniciar } = useInicioDaEntrada(destino);
-  const { chegouComConvite, limpandoAUrl } = useConviteDaUrl();
+  const { densidade, estado, encerrar, tentarDeNovo, destino, indo, falhou, iniciar, chegouComConvite, limpandoAUrl } =
+    useEntrada();
 
   if (limpandoAUrl || estado.tipo === 'verificando') {
     return (
