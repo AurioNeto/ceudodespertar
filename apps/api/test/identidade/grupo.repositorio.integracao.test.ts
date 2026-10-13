@@ -63,6 +63,61 @@ describe('RepositorioDeGrupoMikroOrm', () => {
     return linhas.map((linha) => linha.permissao);
   }
 
+  it('adicionar grava na trilha, na mesma transação, a criação com autor, nome e permissões', async () => {
+    const criado = Grupo.criar(
+      {
+        id: gerarUuidV7() as GrupoId,
+        codigoSistema: null,
+        nome: 'Apoio',
+        descricao: 'Equipe de apoio',
+        protegido: false,
+        permissoes: ['financeiro.lancamento.ler', 'financeiro.conta.ler'],
+      },
+      AUTOR,
+      new Date(),
+    );
+    if (criado.tipo === 'erro') throw new Error(criado.erro.codigo);
+    const grupo = criado.valor;
+
+    await naInstituicaoA(() => ambiente.grupos.adicionar(grupo));
+    const trilha = await consultarNaInstituicao<{ operacao: string; autor_usuario_id: string; detalhes: unknown }>(
+      banco,
+      INSTITUICAO_A,
+      'select operacao, autor_usuario_id, detalhes from identidade.registro_de_auditoria where agregado_id = $1',
+      [grupo.id],
+    );
+
+    expect(trilha).toStrictEqual([
+      {
+        operacao: 'GRUPO_EDITADO',
+        autor_usuario_id: AUTOR,
+        detalhes: [
+          { rotulo: 'Ação', valor: 'CRIADO' },
+          { rotulo: 'Nome', valor: 'Apoio' },
+          { rotulo: 'Descrição', valor: 'Equipe de apoio' },
+          { rotulo: 'Permissões', valor: 'financeiro.conta.ler,financeiro.lancamento.ler' },
+        ],
+      },
+    ]);
+    expect(await eventosDoOutbox(banco, grupo.id)).toEqual(['GRUPO_EDITADO']);
+
+    const repetido = Grupo.criar(
+      { id: grupo.id, codigoSistema: null, nome: 'Outro', descricao: '', protegido: false, permissoes: [] },
+      AUTOR,
+      new Date(),
+    );
+    if (repetido.tipo === 'erro') throw new Error(repetido.erro.codigo);
+    await expect(naInstituicaoA(() => ambiente.grupos.adicionar(repetido.valor))).rejects.toThrow();
+    const trilhaDepoisDaFalha = await consultarNaInstituicao<{ total: number }>(
+      banco,
+      INSTITUICAO_A,
+      'select count(*)::int as total from identidade.registro_de_auditoria where agregado_id = $1',
+      [grupo.id],
+    );
+    expect(trilhaDepoisDaFalha).toStrictEqual([{ total: 1 }]);
+    expect(await eventosDoOutbox(banco, grupo.id)).toEqual(['GRUPO_EDITADO']);
+  });
+
   it('adiciona o grupo e o reconstitui idêntico, com permissões, ativo e versão', async () => {
     const grupo = novoGrupo(['financeiro.lancamento.ler', 'financeiro.conta.ler']);
 
@@ -90,7 +145,7 @@ describe('RepositorioDeGrupoMikroOrm', () => {
       descricao: 'Só consulta',
       protegido: true,
       permissoes: [],
-    });
+    }, AUTOR, new Date());
     if (criado.tipo === 'erro') throw new Error(criado.erro.codigo);
 
     await naInstituicaoA(() => ambiente.grupos.adicionar(criado.valor));

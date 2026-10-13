@@ -194,8 +194,9 @@ export function novoGrupoNomeado(nome: string, permissoes: readonly Permissao[])
     descricao: 'Grupo de teste',
     protegido: false,
     permissoes,
-  });
+  }, AUTOR, new Date());
   if (resultado.tipo === 'erro') throw new Error(resultado.erro.codigo);
+  resultado.valor.retirarEventos();
   return resultado.valor;
 }
 

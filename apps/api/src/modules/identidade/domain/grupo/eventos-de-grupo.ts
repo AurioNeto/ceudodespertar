@@ -15,6 +15,15 @@ export type DadosDeAlteracaoDePermissao = {
   readonly codigoSistema: CodigoGrupo | null;
 };
 
+export type DadosDeCriacao = {
+  readonly acao: 'CRIADO';
+  readonly nome: string;
+  readonly descricao: string;
+  readonly permissoes: readonly Permissao[];
+  readonly autorId: UsuarioId;
+  readonly codigoSistema: CodigoGrupo | null;
+};
+
 export type DadosDeExclusao = {
   readonly acao: 'EXCLUIDO';
   readonly autorId: UsuarioId;
@@ -33,6 +42,7 @@ export type DadosDeRenomeacao = {
 
 export type PermissaoConcedida = EventoDeDominio<DadosDeAlteracaoDePermissao>;
 export type PermissaoRevogada = EventoDeDominio<DadosDeAlteracaoDePermissao>;
+export type GrupoCriado = EventoDeDominio<DadosDeCriacao>;
 export type GrupoExcluido = EventoDeDominio<DadosDeExclusao>;
 export type GrupoRenomeado = EventoDeDominio<DadosDeRenomeacao>;
 
@@ -61,6 +71,10 @@ export function permissaoRevogada(
   dados: Omit<DadosDeAlteracaoDePermissao, 'acao'>,
 ): PermissaoRevogada {
   return criarEvento(TIPO_GRUPO_EDITADO, grupoId, ocorridoEm, { ...dados, acao: 'REVOGADA' });
+}
+
+export function grupoCriado(grupoId: GrupoId, ocorridoEm: Date, dados: Omit<DadosDeCriacao, 'acao'>): GrupoCriado {
+  return criarEvento(TIPO_GRUPO_EDITADO, grupoId, ocorridoEm, { ...dados, acao: 'CRIADO' });
 }
 
 export function grupoExcluido(

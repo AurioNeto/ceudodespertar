@@ -49,8 +49,9 @@ function grupoDaCasa(): Grupo {
     descricao: 'Equipe de apoio',
     permissoes: ['estoque.saldo.ler'],
     protegido: false,
-  });
+  }, AUTOR, INSTANTE);
   if (!ehOk(resultado)) throw new Error('fixture inválida');
+  resultado.valor.retirarEventos();
   return resultado.valor;
 }
 
@@ -210,6 +211,32 @@ describe('mapearEventoParaAuditoria', () => {
     ]);
   });
 
+  it('GRUPO_EDITADO de criação registra ação, nome, descrição e permissões', () => {
+    const resultado = Grupo.criar(
+      {
+        id: GRUPO_ID,
+        codigoSistema: null,
+        nome: 'Apoio',
+        descricao: 'Equipe de apoio',
+        permissoes: ['estoque.saldo.ler', 'estoque.movimento.registrar'],
+        protegido: false,
+      },
+      AUTOR,
+      INSTANTE,
+    );
+    if (!ehOk(resultado)) throw new Error('fixture inválida');
+
+    const entrada = mapearEventoParaAuditoria(unico(resultado.valor.retirarEventos()));
+
+    expect(entrada?.operacao).toBe('GRUPO_EDITADO');
+    expect(entrada?.detalhes).toStrictEqual([
+      { rotulo: ROTULOS_DE_AUDITORIA.acao, valor: 'CRIADO' },
+      { rotulo: ROTULOS_DE_AUDITORIA.nome, valor: 'Apoio' },
+      { rotulo: ROTULOS_DE_AUDITORIA.descricao, valor: 'Equipe de apoio' },
+      { rotulo: ROTULOS_DE_AUDITORIA.permissoes, valor: 'estoque.movimento.registrar,estoque.saldo.ler' },
+    ]);
+  });
+
   it('GRUPO_EDITADO em grupo de sistema registra o código do grupo', () => {
     const resultado = Grupo.criar({
       id: GRUPO_ID,
@@ -218,8 +245,9 @@ describe('mapearEventoParaAuditoria', () => {
       descricao: 'Consulta',
       permissoes: ['estoque.saldo.ler'],
       protegido: true,
-    });
+    }, AUTOR, INSTANTE);
     if (!ehOk(resultado)) throw new Error('fixture inválida');
+    resultado.valor.retirarEventos();
     resultado.valor.concederPermissao('estoque.movimento.registrar', AUTOR, INSTANTE);
 
     const entrada = mapearEventoParaAuditoria(unico(resultado.valor.retirarEventos()));
