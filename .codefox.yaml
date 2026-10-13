@@ -175,6 +175,8 @@ output:
     <no máximo 1–2 notas, apenas se relevante>
 
 learnings:
+  - date: "2026-10-13"
+    note: "project-flow/ é o mapa do plano e pode citar os IDs do plano local (Fxx, Ixx, Wxx); o check sem-ids-de-plano não se aplica a ele."
   - date: "2026-09-27"
     note: "Regra de negócio mora só no backend; docs/sql/*.sql é documentação do desenho, não a fonte do banco (issue #11). Não sugerir gatilho/CHECK de regra."
   - date: "2026-10-06"

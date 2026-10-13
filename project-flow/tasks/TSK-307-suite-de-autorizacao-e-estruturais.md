@@ -54,7 +54,7 @@ O aceite do B0 exige T23–T26 e T28–T30 verdes; os demais casos são escritos
 4. T28b.
 5. T28a no web.
 
-A ordem é 1, 3, 2, 4, 5. O desenho está no scratchpad da sessão (`tsk307-desenho.md`).
+A ordem é 1, 3, 2, 4, 5. O desenho está no scratchpad da sessão (`tsk307-desenho.md`), um arquivo local que não está no repositório; as decisões acima são a fonte.
 
 ## Critérios de aceite
 
