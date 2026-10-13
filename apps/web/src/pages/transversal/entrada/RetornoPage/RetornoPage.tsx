@@ -1,14 +1,10 @@
-import { useNavigate } from 'react-router-dom';
-import { Button, Portao, SkeletonList, useDensidade } from '@/ds';
-import { ROTAS_PUBLICAS } from '@/app/rotas';
+import { Button, Portao, SkeletonList } from '@/ds';
 import { MensagemDeEntradaNaTela } from '../components/MensagemDeEntradaNaTela';
 import { MENSAGEM_DE_ERRO_NO_RETORNO } from './constantes';
 import { useConclusaoDoRetorno } from './hooks/useConclusaoDoRetorno';
 
 export function RetornoPage() {
-  const densidade = useDensidade();
-  const navigate = useNavigate();
-  const situacao = useConclusaoDoRetorno();
+  const { densidade, situacao, voltarParaAEntrada } = useConclusaoDoRetorno();
 
   if (situacao === 'falhou') {
     return (
@@ -19,7 +15,7 @@ export function RetornoPage() {
             iconName="log-in"
             density={densidade}
             fullWidth
-            onClick={() => navigate(ROTAS_PUBLICAS.entrar, { replace: true })}
+            onClick={voltarParaAEntrada}
           >
             Voltar para a entrada
           </Button>

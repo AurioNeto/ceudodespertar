@@ -1,4 +1,4 @@
-import { BotaoDeIcone, type Density } from '@/ds';
+import { BotaoDeIcone, type Density, vidroLeve } from '@/ds';
 
 export interface PaginacaoProps {
   pagina: number;
@@ -17,12 +17,14 @@ const botao = {
   cursor: 'pointer',
   border: '1px solid var(--color-line)',
   background: 'var(--bg-card)',
+  ...vidroLeve,
   color: 'var(--text-secondary)',
 } as const;
 
 const botaoCampo = {
   border: '1px solid var(--color-line)',
   background: 'var(--bg-card)',
+  ...vidroLeve,
   color: 'var(--text-secondary)',
   borderRadius: 'var(--leaf-xs)',
 } as const;

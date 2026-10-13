@@ -1,5 +1,5 @@
 import type { Fatura } from '@cdd/contracts';
-import { AmountDisplay, StatusBadge } from '@/ds';
+import { AmountDisplay, StatusBadge, fundoComVidro } from '@/ds';
 import { competenciaPorExtenso, pluralizar } from '@/pages/utils/formato';
 import { ROTULO, TOM } from '../../constantes';
 import { totalDaFatura } from '../../utils/fatura';
@@ -18,7 +18,7 @@ export function LinhaDaFatura({ fatura, ativa, onAbrir }: LinhaDaFaturaProps) {
       aria-current={ativa ? 'true' : undefined}
       style={{
         textAlign: 'left',
-        background: ativa ? 'var(--color-royal-soft)' : 'var(--bg-card)',
+        ...fundoComVidro(ativa ? 'var(--color-royal-soft)' : 'var(--bg-card)'),
         border: `1px solid ${ativa ? 'var(--color-royal-border)' : 'var(--color-line)'}`,
         borderRadius: 'var(--leaf-sm)',
         padding: '11px 13px',

@@ -1,4 +1,4 @@
-import { Button, Icon, SuggestionChip, type Density } from '@/ds';
+import { Button, Icon, SuggestionChip, type Density, fundoComVidro } from '@/ds';
 import type { FormularioDeLancamento } from '../../tipos';
 
 export interface SugestoesDoCupomProps {
@@ -21,7 +21,7 @@ export function SugestoesDoCupom({
   return (
     <div
       style={{
-        background: campo ? 'transparent' : 'var(--color-suggest-soft)',
+        ...fundoComVidro(campo ? 'transparent' : 'var(--color-suggest-soft)'),
         border: campo ? 0 : '1px dashed var(--color-suggest-border)',
         borderRadius: 'var(--leaf-lg)',
         padding: campo ? 0 : 16,

@@ -43,12 +43,3 @@ textarea { resize: vertical; }
 @supports (not (-webkit-appearance: -apple-pay-button)) or (contain-intrinsic-size: 1px) {
   ::placeholder { color: color-mix(in oklab, currentcolor 50%, transparent); }
 }
-
-[style*="background: var(--bg-card);"],
-[style*="background: var(--bg-glass);"],
-[style*="background: var(--bg-rail);"],
-[style*="background: var(--color-royal-soft);"],
-[style*="background: var(--color-suggest-soft);"] {
-  backdrop-filter: var(--glass-leve);
-  -webkit-backdrop-filter: var(--glass-leve);
-}

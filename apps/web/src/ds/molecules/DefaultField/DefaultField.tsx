@@ -1,7 +1,7 @@
 import type { CSSProperties, ReactNode } from 'react';
 import { Icon } from '../../atoms/Icon';
 import type { Density } from '../../fundacao/densidade';
-import { rotuloVersalete } from '../../fundacao/estilos';
+import { rotuloVersalete, vidroLeve } from '../../fundacao/estilos';
 
 export interface DefaultFieldProps {
   label: string;
@@ -26,6 +26,7 @@ export function DefaultField({ label, value, origin, onEdit, density = 'field', 
         textAlign: 'left',
         minHeight: density === 'field' ? 'var(--target-field)' : 'var(--target-office)',
         background: 'var(--bg-card)',
+        ...vidroLeve,
         border: 'var(--border-hairline)',
         borderRadius: 'var(--leaf-sm)',
         padding: '9px 13px',

@@ -1,3 +1,5 @@
+export { criarAtivacaoDeConvite, PARAMETRO_DO_CONVITE } from './ativacaoDeConvite';
+export type { AtivacaoDeConvite } from './ativacaoDeConvite';
 export { CAMINHO_DA_ENTRADA, CAMINHO_DE_RETORNO } from './caminhosOidc';
 export { criarClienteDeConsultas, JANELA_DE_FRESCOR_EM_MS } from './clienteDeConsultas';
 export { criarClienteHttp } from './clienteHttp';

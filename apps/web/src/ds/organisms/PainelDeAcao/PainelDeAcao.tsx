@@ -4,6 +4,7 @@ import { createPortal } from 'react-dom';
 import type { Density } from '../../fundacao/densidade';
 import { Icon } from '../../atoms/Icon';
 import { DIALOGO_POR_VARIANTE, FUNDO_POR_VARIANTE } from './constantes';
+import { vidroLeve } from '../../fundacao/estilos';
 
 export type VarianteDoPainel = 'folha' | 'lateral' | 'central';
 
@@ -150,6 +151,7 @@ function PainelAberto({
           display: 'flex',
           flexDirection: 'column',
           background: 'var(--bg-card)',
+          ...vidroLeve,
           outline: 'none',
           ...DIALOGO_POR_VARIANTE[variante],
         }}

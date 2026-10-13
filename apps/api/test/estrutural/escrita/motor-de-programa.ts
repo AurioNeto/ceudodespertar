@@ -14,20 +14,43 @@ function lerOpcoes(caminhoDoTsconfig: string): ts.ParsedCommandLine {
   if (lido.error) {
     throw new Error(ts.flattenDiagnosticMessageText(lido.error.messageText, '\n'));
   }
-  return ts.parseJsonConfigFileContent(lido.config, ts.sys, dirname(caminhoDoTsconfig));
+  return ts.parseJsonConfigFileContent(lido.config, ts.sys, dirname(caminhoDoTsconfig), undefined, caminhoDoTsconfig);
 }
 
 export function arquivosDoTsconfig(caminhoDoTsconfig: string): readonly string[] {
   return lerOpcoes(caminhoDoTsconfig).fileNames;
 }
 
+function hostComArquivosVirtuais(
+  opcoes: ts.CompilerOptions,
+  arquivosVirtuais: ReadonlyMap<string, string>,
+): ts.CompilerHost {
+  const host = ts.createCompilerHost(opcoes);
+  return {
+    ...host,
+    fileExists: (caminho) => arquivosVirtuais.has(caminho) || host.fileExists(caminho),
+    readFile: (caminho) => arquivosVirtuais.get(caminho) ?? host.readFile(caminho),
+    getSourceFile: (caminho, versao, ...resto) => {
+      const conteudo = arquivosVirtuais.get(caminho);
+      return conteudo === undefined
+        ? host.getSourceFile(caminho, versao, ...resto)
+        : ts.createSourceFile(caminho, conteudo, versao, true);
+    },
+  };
+}
+
 export function abrirPrograma(
   caminhoDoTsconfig: string,
   arquivosRaiz: readonly string[],
   aceitaParaAnalise: (caminho: string) => boolean,
+  arquivosVirtuais: ReadonlyMap<string, string> = new Map(),
 ): ProgramaAnalisavel {
   const configuracao = lerOpcoes(caminhoDoTsconfig);
-  const program = ts.createProgram({ rootNames: [...arquivosRaiz], options: configuracao.options });
+  const program = ts.createProgram({
+    rootNames: [...arquivosRaiz, ...arquivosVirtuais.keys()],
+    options: configuracao.options,
+    host: hostComArquivosVirtuais(configuracao.options, arquivosVirtuais),
+  });
   const arquivos = program.getSourceFiles().filter((arquivo) => aceitaParaAnalise(arquivo.fileName));
   return { program, checker: program.getTypeChecker(), arquivos };
 }
@@ -58,6 +81,19 @@ export function simboloResolvido(checker: ts.TypeChecker, no: ts.Node): ts.Symbo
     return checker.getAliasedSymbol(simbolo);
   }
   return simbolo;
+}
+
+export function simboloDoUso(checker: ts.TypeChecker, identificador: ts.Identifier): ts.Symbol | undefined {
+  const pai = identificador.parent;
+  const ehNomeAbreviadoDeDesestruturacao =
+    ts.isBindingElement(pai) &&
+    pai.name === identificador &&
+    pai.propertyName === undefined &&
+    ts.isObjectBindingPattern(pai.parent);
+  if (ehNomeAbreviadoDeDesestruturacao) {
+    return checker.getTypeAtLocation(pai.parent).getProperty(identificador.text);
+  }
+  return simboloResolvido(checker, identificador);
 }
 
 export function declaradoEm(simbolo: ts.Symbol, padraoDoCaminho: RegExp): boolean {

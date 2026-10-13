@@ -1,3 +1,4 @@
+import { vidroLeve } from '@/ds';
 export interface BotaoNovoProps {
   rotulo: string;
   onClick: () => void;
@@ -16,6 +17,7 @@ export function BotaoNovo({ rotulo, onClick }: BotaoNovoProps) {
         cursor: 'pointer',
         border: '1px dashed var(--border-field)',
         background: 'var(--bg-card)',
+        ...vidroLeve,
         color: 'var(--color-royal-deep)',
       }}
     >

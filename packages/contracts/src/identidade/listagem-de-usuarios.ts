@@ -1,22 +1,20 @@
 import { z } from 'zod';
+import { textoSemCaractereNulo, uuidEmMinusculas } from '../entrada.js';
 import type { DataHora, GrupoId, UsuarioId } from '../kernel.js';
 import type { GrupoResumido, SituacaoUsuario } from './tipos.js';
 
 export const LIMITE_PADRAO_DA_LISTAGEM_DE_USUARIOS = 50;
 export const LIMITE_MAXIMO_DA_LISTAGEM_DE_USUARIOS = 100;
 const TAMANHO_MAXIMO_DO_CURSOR = 512;
-const TAMANHO_MAXIMO_DA_BUSCA = 200;
+export const TAMANHO_MAXIMO_DA_BUSCA = 200;
 
 export const SITUACOES_DE_USUARIO = ['ATIVO', 'CONVITE_PENDENTE', 'SUSPENSO', 'REVOGADO'] as const satisfies readonly SituacaoUsuario[];
 
 export const FiltroDeUsuarios = z.object({
   situacao: z.enum(SITUACOES_DE_USUARIO).optional(),
-  grupoId: z
-    .uuid()
-    .transform((valor) => valor as GrupoId)
-    .optional(),
-  busca: z.string().trim().min(1).max(TAMANHO_MAXIMO_DA_BUSCA).optional(),
-  depois: z.string().min(1).max(TAMANHO_MAXIMO_DO_CURSOR).optional(),
+  grupoId: uuidEmMinusculas<GrupoId>().optional(),
+  busca: textoSemCaractereNulo().trim().min(1).max(TAMANHO_MAXIMO_DA_BUSCA).optional(),
+  depois: textoSemCaractereNulo().min(1).max(TAMANHO_MAXIMO_DO_CURSOR).optional(),
   limite: z.coerce
     .number()
     .int()

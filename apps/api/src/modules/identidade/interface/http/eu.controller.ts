@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import { Body, Controller, Get, Header, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { AtivarConvite as PedidoDeAtivacao } from '@cdd/contracts';
 import type { Eu, UsuarioAtivado } from '@cdd/contracts';
 import { ContextoAtual, IdentidadeAtual } from '../../../../shared/infrastructure/autenticacao/requisicao-autenticada.js';
@@ -22,6 +22,7 @@ export class EuController {
   @ApenasUsuarioAtivo()
   @ModoDeTransacao('leitura-que-grava')
   @Get()
+  @Header('Cache-Control', 'no-store')
   obter(@ContextoAtual() acesso: ContextoDeAcesso): Promise<Eu> {
     return this.obterEu.executar(acesso);
   }

@@ -1,4 +1,4 @@
-import { Button, Cartao, Icon, Rotulo, type Density } from '@/ds';
+import { Button, Cartao, Icon, Rotulo, type Density, fundoComVidro } from '@/ds';
 import { TEXTO_DA_DECLARACAO, VERSAO_VIGENTE, type CadastroEncontrado } from '../../mocks/inscricaoPublica';
 import { Passos } from '../Passos';
 import { PortaDeRefazer } from './components/PortaDeRefazer';
@@ -66,7 +66,7 @@ export function Declaracao({
           padding: campo ? '15px 16px' : '17px 19px',
           borderRadius: 'var(--leaf-sm)',
           border: `1px solid ${declarado ? 'var(--color-royal)' : 'var(--border-field)'}`,
-          background: declarado ? 'var(--color-royal-soft)' : 'var(--bg-card)',
+          ...fundoComVidro(declarado ? 'var(--color-royal-soft)' : 'var(--bg-card)'),
           cursor: 'pointer',
         }}
       >

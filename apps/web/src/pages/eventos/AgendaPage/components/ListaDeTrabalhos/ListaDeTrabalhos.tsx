@@ -1,4 +1,4 @@
-import { StatusBadge } from '@/ds';
+import { StatusBadge, vidroLeve } from '@/ds';
 import { CORES_POR_TIPO } from '../../constantes';
 import type { Trabalho } from '../../tipos';
 import { TOM_DA_SITUACAO } from './constantes';
@@ -27,6 +27,7 @@ export function ListaDeTrabalhos({ trabalhos, onAbrir }: ListaDeTrabalhosProps) 
             borderLeft: `3px solid ${CORES_POR_TIPO[t.tipo].cheia}`,
             borderRadius: 'var(--leaf-sm)',
             background: 'var(--bg-card)',
+            ...vidroLeve,
             cursor: 'pointer',
             textAlign: 'left',
           }}

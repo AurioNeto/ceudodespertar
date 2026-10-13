@@ -1,4 +1,4 @@
-import { Icon, Rotulo, StatusBadge } from '@/ds';
+import { Icon, Rotulo, StatusBadge, vidroLeve } from '@/ds';
 import type { PrestacaoGerada } from '../../mocks/prestacao';
 
 export interface HistoricoDePrestacoesProps {
@@ -14,6 +14,7 @@ export function HistoricoDePrestacoes({ historico }: HistoricoDePrestacoesProps)
           key={h.id}
           style={{
             background: 'var(--bg-card)',
+            ...vidroLeve,
             border: 'var(--border-hairline)',
             borderRadius: 'var(--leaf-sm)',
             padding: '12px 15px',

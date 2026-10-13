@@ -2,7 +2,7 @@ import ts from 'typescript';
 import { linhaDe, percorrer } from '../escrita/motor-de-programa.js';
 import type { ProgramaAnalisavel } from '../escrita/motor-de-programa.js';
 
-export type FormaDaOcorrencia = 'comparacao' | 'case' | 'colecao';
+export type FormaDaOcorrencia = 'comparacao' | 'case' | 'colecao' | 'estado';
 
 export interface Ocorrencia {
   readonly arquivo: string;
@@ -13,6 +13,7 @@ export interface Ocorrencia {
 export interface PoliticaDeNomeDeGrupo {
   readonly proibidos: ReadonlySet<string>;
   readonly ehExcluido: (caminhoRelativo: string) => boolean;
+  readonly argumentoDoEstadoInicial?: ReadonlyMap<string, number>;
 }
 
 export interface RelatorioDeNomeDeGrupo {
@@ -142,17 +143,52 @@ function pertencimentoComGrupo(checker: ts.TypeChecker, no: ts.CallExpression, p
   return argumentoLiteralDeGrupo || colecaoDeGrupo(checker, no.expression.expression, proibidos);
 }
 
+function nomeDoGancho(chamada: ts.CallExpression): string | undefined {
+  const alvo = semParenteses(chamada.expression);
+  if (ts.isIdentifier(alvo)) return alvo.text;
+  return ts.isPropertyAccessExpression(alvo) ? alvo.name.text : undefined;
+}
+
+function corpoDoInicializadorPreguicoso(no: ts.Expression): ts.Expression {
+  const interno = semEnvoltorios(no);
+  if (!ts.isArrowFunction(interno) || ts.isBlock(interno.body)) return interno;
+  return interno.body;
+}
+
+function valorComGrupo(checker: ts.TypeChecker, no: ts.Expression, proibidos: ReadonlySet<string>): boolean {
+  const valor = corpoDoInicializadorPreguicoso(no);
+  if (ehLiteralProibido(semEnvoltorios(valor), proibidos) || literalDeColecaoComGrupo(valor, proibidos)) return true;
+  const inicializador = inicializadorConstDe(checker, valor);
+  return (
+    inicializador !== undefined &&
+    (ehLiteralProibido(semEnvoltorios(inicializador), proibidos) || literalDeColecaoComGrupo(inicializador, proibidos))
+  );
+}
+
+function estadoComGrupo(
+  checker: ts.TypeChecker,
+  no: ts.CallExpression,
+  politica: PoliticaDeNomeDeGrupo,
+): boolean {
+  const nome = nomeDoGancho(no);
+  const posicao = nome === undefined ? undefined : politica.argumentoDoEstadoInicial?.get(nome);
+  const inicial = posicao === undefined ? undefined : no.arguments[posicao];
+  return inicial !== undefined && valorComGrupo(checker, inicial, politica.proibidos);
+}
+
 function formaDe(
   checker: ts.TypeChecker,
   no: ts.Node,
-  proibidos: ReadonlySet<string>,
+  politica: PoliticaDeNomeDeGrupo,
 ): FormaDaOcorrencia | undefined {
+  const { proibidos } = politica;
   if (ts.isBinaryExpression(no) && OPERADORES_DE_IGUALDADE.has(no.operatorToken.kind)) {
     return comparacaoComGrupo(checker, no, proibidos) ? 'comparacao' : undefined;
   }
   if (ts.isCaseClause(no)) return casoComGrupo(checker, no, proibidos) ? 'case' : undefined;
-  if (ts.isCallExpression(no)) return pertencimentoComGrupo(checker, no, proibidos) ? 'colecao' : undefined;
-  return undefined;
+  if (!ts.isCallExpression(no)) return undefined;
+  if (pertencimentoComGrupo(checker, no, proibidos)) return 'colecao';
+  return estadoComGrupo(checker, no, politica) ? 'estado' : undefined;
 }
 
 export function detectarNomeDeGrupo(
@@ -167,7 +203,7 @@ export function detectarNomeDeGrupo(
   const ocorrencias = varridos.flatMap((arquivo) => {
     const achadas: Ocorrencia[] = [];
     percorrer(arquivo, (no) => {
-      const forma = formaDe(programa.checker, no, politica.proibidos);
+      const forma = formaDe(programa.checker, no, politica);
       if (forma !== undefined) {
         achadas.push({ arquivo: arquivo.fileName.slice(prefixo.length), linha: linhaDe(arquivo, no), forma });
       }

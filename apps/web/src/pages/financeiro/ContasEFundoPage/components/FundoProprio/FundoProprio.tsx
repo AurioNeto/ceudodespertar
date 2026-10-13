@@ -1,4 +1,4 @@
-import { AmountDisplay, Rotulo, type Density } from '@/ds';
+import { AmountDisplay, Rotulo, type Density, vidroLeve } from '@/ds';
 import type { Reserva } from '../../tipos';
 import { ColunaDoFundo } from './components/ColunaDoFundo';
 
@@ -25,6 +25,7 @@ export function FundoProprio({ fundoProprio, comprometido, livre, reservas, dens
       <div
         style={{
           background: 'var(--bg-card)',
+          ...vidroLeve,
           border: 'var(--border-hairline)',
           borderRadius: 'var(--leaf-lg)',
           padding: '18px 20px',

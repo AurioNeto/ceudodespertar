@@ -1,4 +1,5 @@
-import type { CodigoDeErro, GrupoId, OperacaoAuditada, PessoaId, SituacaoUsuario, UsuarioId } from '@cdd/contracts';
+import type { CodigoDeErro, GrupoId, PessoaId, SituacaoUsuario, UsuarioId } from '@cdd/contracts';
+import type { TipoDeEventoDaIdentidade } from '../eventos-da-identidade.js';
 import { erroDeDominio, type ErroDeDominio } from '../../../../shared/kernel/erro-de-dominio.js';
 import { gerarUuidV7 } from '../../../../shared/kernel/ids.js';
 import { RaizDeAgregado } from '../../../../shared/kernel/raiz-de-agregado.js';
@@ -279,7 +280,7 @@ export class Usuario extends RaizDeAgregado<UsuarioId> {
     for (const grupoId of grupos) this._atribuicoesPendentes.push({ grupoId, por, em });
   }
 
-  private registrarOperacao(operacao: OperacaoAuditada, ocorridoEm: Date, dados: Record<string, unknown>): void {
+  private registrarOperacao(operacao: TipoDeEventoDaIdentidade, ocorridoEm: Date, dados: Record<string, unknown>): void {
     this.registrarEvento({
       eventoId: gerarUuidV7(),
       tipo: operacao,

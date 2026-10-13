@@ -1,4 +1,4 @@
-import { Icon } from '@/ds';
+import { Icon, vidroLeve } from '@/ds';
 
 export const TEXTO_DA_FAIXA_DE_DEMONSTRACAO =
   'Dados de demonstração. Esta tela ainda não está ligada ao sistema: o que aparece aqui é exemplo e nada é gravado.';
@@ -13,6 +13,7 @@ export function FaixaDeDemonstracao() {
         gap: 8,
         padding: '6px 20px',
         background: 'var(--color-royal-soft)',
+        ...vidroLeve,
         borderBottom: '1px solid var(--color-royal)',
         color: 'var(--color-royal-deep)',
         font: 'var(--text-small)',

@@ -1,4 +1,4 @@
-import { DefaultField, Interruptor } from '@/ds';
+import { DefaultField, Interruptor, vidroLeve } from '@/ds';
 import type { FormularioDeLancamento } from '../../../../tipos';
 
 export interface ReembolsoProps {
@@ -15,6 +15,7 @@ export function Reembolso({ formulario: f }: ReembolsoProps) {
             alignItems: 'center',
             gap: 14,
             background: 'var(--bg-card)',
+            ...vidroLeve,
             border: 'var(--border-hairline)',
             borderRadius: 'var(--leaf-lg)',
             padding: '12px 14px',

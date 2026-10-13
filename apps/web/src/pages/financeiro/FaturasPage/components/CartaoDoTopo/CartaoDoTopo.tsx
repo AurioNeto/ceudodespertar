@@ -1,5 +1,5 @@
 import type { Conta } from '@cdd/contracts';
-import { AmountDisplay, Icon } from '@/ds';
+import { AmountDisplay, Icon, vidroLeve } from '@/ds';
 
 export interface CartaoDoTopoProps {
   cartao: Conta;
@@ -17,6 +17,7 @@ export function CartaoDoTopo({ cartao, divida, ativo, onEscolher }: CartaoDoTopo
       style={{
         textAlign: 'left',
         background: 'var(--bg-card)',
+        ...vidroLeve,
         border: `1px solid ${ativo ? 'var(--color-royal-border)' : 'var(--color-line)'}`,
         borderLeft: `var(--edge-state) solid ${ativo ? 'var(--color-royal)' : 'transparent'}`,
         borderRadius: 'var(--leaf-md)',

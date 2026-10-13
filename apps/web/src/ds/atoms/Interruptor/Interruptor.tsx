@@ -1,3 +1,4 @@
+import { vidroLeve } from '../../fundacao/estilos';
 export function Interruptor({
   ligado,
   onAlternar,
@@ -33,6 +34,7 @@ export function Interruptor({
           height: 24,
           borderRadius: 'var(--leaf-seal)',
           background: 'var(--bg-card)',
+          ...vidroLeve,
           boxShadow: 'var(--shadow-raised)',
           display: 'block',
         }}

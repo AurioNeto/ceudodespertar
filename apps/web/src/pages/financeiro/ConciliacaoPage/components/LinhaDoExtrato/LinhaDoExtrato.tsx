@@ -1,5 +1,5 @@
 import type { LinhaExtrato } from '@cdd/contracts';
-import { AmountDisplay, Button, Select } from '@/ds';
+import { AmountDisplay, Button, Select, vidroLeve } from '@/ds';
 import { formatarData } from '@/pages/utils/formato';
 import { motivosDeIgnorar } from '../../mocks/conciliacao';
 
@@ -27,6 +27,7 @@ export function LinhaDoExtrato({
     <div
       style={{
         background: 'var(--bg-card)',
+        ...vidroLeve,
         border: 'var(--border-hairline)',
         borderLeft: 'var(--edge-state) solid var(--color-attention)',
         borderRadius: 'var(--leaf-sm)',

@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react';
 import { defaultClientConditions, defineConfig } from 'vite';
 
 const ORIGEM_DA_API = 'http://localhost:3000';
+const CABECALHOS_DE_SEGURANCA = { 'Referrer-Policy': 'no-referrer' };
 
 export default defineConfig({
   envDir: fileURLToPath(new URL('../..', import.meta.url)),
@@ -21,7 +22,11 @@ export default defineConfig({
       },
     },
   },
+  preview: {
+    headers: CABECALHOS_DE_SEGURANCA,
+  },
   server: {
+    headers: CABECALHOS_DE_SEGURANCA,
     proxy: {
       '/api': ORIGEM_DA_API,
     },

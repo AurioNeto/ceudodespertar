@@ -1,4 +1,4 @@
-import { Rotulo } from '@/ds';
+import { Rotulo, vidroLeve } from '@/ds';
 import type { EntradaDoHistorico } from '../../utils/historicoDoLancamento';
 
 export interface HistoricoDoLancamentoProps {
@@ -10,6 +10,7 @@ export function HistoricoDoLancamento({ historico }: HistoricoDoLancamentoProps)
     <div
       style={{
         background: 'var(--bg-card)',
+        ...vidroLeve,
         border: 'var(--border-hairline)',
         borderRadius: 'var(--leaf-lg)',
         padding: '14px 16px',

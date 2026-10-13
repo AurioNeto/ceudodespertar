@@ -1,4 +1,4 @@
-import { AmountDisplay, Rotulo, type Density } from '@/ds';
+import { AmountDisplay, Rotulo, type Density, vidroLeve } from '@/ds';
 import type { Comparacao } from '../../tipos';
 import { corDoDelta, textoDoDelta } from '../../utils/delta';
 import type { kpisDoRelatorio } from '../../utils/recorte';
@@ -25,6 +25,7 @@ export function CartoesDeKpi({ kpis, comparar, densidade }: CartoesDeKpiProps) {
           key={k.label}
           style={{
             background: 'var(--bg-card)',
+            ...vidroLeve,
             border: 'var(--border-hairline)',
             borderRadius: 'var(--leaf-lg)',
             padding: campo ? '11px 12px' : '13px 15px',

@@ -1,9 +1,10 @@
 import type { CodigoGrupo, GrupoId, Permissao, UsuarioId } from '@cdd/contracts';
 import type { EventoDeDominio } from '../../../../shared/kernel/evento-de-dominio.js';
 import { gerarUuidV7 } from '../../../../shared/kernel/ids.js';
+import type { TipoDeEventoDaIdentidade } from '../eventos-da-identidade.js';
 
 const AGREGADO_GRUPO = 'Grupo';
-const TIPO_GRUPO_EDITADO = 'GRUPO_EDITADO';
+const TIPO_GRUPO_EDITADO: TipoDeEventoDaIdentidade = 'GRUPO_EDITADO';
 
 export type AcaoSobrePermissao = 'CONCEDIDA' | 'REVOGADA';
 

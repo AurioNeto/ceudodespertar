@@ -3,6 +3,7 @@ import { rotuloDoMovimento, valorTabular } from '../../constantes';
 import type { LoteDeDaime, MovimentoDeDaime } from '../../mocks/ayahuasca';
 import { corDoMovimento } from '../../utils/corDoMovimento';
 import { litros } from '../../utils/litros';
+import { vidroLeve } from '@/ds';
 
 export interface AbaDeMovimentosProps {
   movimentos: readonly MovimentoDeDaime[];
@@ -16,6 +17,7 @@ export function AbaDeMovimentos({ movimentos, lotes, densidade }: AbaDeMovimento
     <div
       style={{
         background: 'var(--bg-card)',
+        ...vidroLeve,
         border: 'var(--border-hairline)',
         borderRadius: 'var(--leaf-lg)',
         overflow: 'hidden',

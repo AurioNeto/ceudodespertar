@@ -1,3 +1,4 @@
+import { fundoComVidro } from '@/ds';
 export interface ChipProps {
   ativo: boolean;
   onClick: () => void;
@@ -17,7 +18,7 @@ export function Chip({ ativo, onClick, children }: ChipProps) {
         borderRadius: 'var(--leaf-xs)',
         cursor: 'pointer',
         border: `1px solid ${ativo ? 'var(--color-royal-border)' : 'var(--color-line)'}`,
-        background: ativo ? 'var(--color-royal-soft)' : 'var(--bg-card)',
+        ...fundoComVidro(ativo ? 'var(--color-royal-soft)' : 'var(--bg-card)'),
         color: ativo ? 'var(--color-royal-deep)' : 'var(--text-secondary)',
       }}
     >

@@ -1,5 +1,5 @@
 import type { CategoriaId } from '@cdd/contracts';
-import { Button, StatusBadge, Select, Rotulo, Td, Th, type Density } from '@/ds';
+import { Button, StatusBadge, Select, Rotulo, Td, Th, type Density, vidroLeve } from '@/ds';
 import { pluralizar } from '@/pages/utils/formato';
 import { REGIME_ROTULO, SEM_LINHA_ESCOLHIDA } from '../../constantes';
 import { LINHAS_POR_NATUREZA, type CategoriaDoPlano } from '../../mocks/parametros';
@@ -33,6 +33,7 @@ export function TabelaDeCategorias({
           border: 'var(--border-hairline)',
           borderRadius: 'var(--leaf-lg)',
           background: 'var(--bg-card)',
+          ...vidroLeve,
           overflowX: 'auto',
         }}
       >

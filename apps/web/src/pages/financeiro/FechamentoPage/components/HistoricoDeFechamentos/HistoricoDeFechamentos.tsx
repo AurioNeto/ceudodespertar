@@ -1,4 +1,4 @@
-import { AmountDisplay, Rotulo, StatusBadge } from '@/ds';
+import { AmountDisplay, Rotulo, StatusBadge, vidroLeve } from '@/ds';
 
 export interface HistoricoDeFechamentosProps {
   historico: readonly { periodo: string; meta: string; resultado: number }[];
@@ -20,6 +20,7 @@ export function HistoricoDeFechamentos({ historico }: HistoricoDeFechamentosProp
             border: 'var(--border-hairline)',
             borderRadius: 'var(--leaf-sm)',
             background: 'var(--bg-card)',
+            ...vidroLeve,
           }}
         >
           <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>

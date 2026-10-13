@@ -1,6 +1,6 @@
 # TSK-305: Adaptador do Keycloak: convite por e-mail, ativação e suspensão
 
-- **Estado:** 🚧 API concluída (PRs 1 a 6 e 8 mesclados em #51, #52, #65, #74, #76, #79 e #80); PR 7 (front /entrar) pendente na issue #77
+- **Estado:** 🚧 API concluída (PRs 1 a 6 e 8 mesclados em #51, #52, #65, #74, #76, #79 e #80); PR 7 (front) em duas partes da issue #77: parte 1, a rota /entrar, mesclada em #200; parte 2, o reenvio do convite com o 429 em Acessos, em #202; falta o aceite real no Keycloak local
 - **Peça do plano:** I10
 - **Responsável sugerido:** escudo + limpio (crivo)
 - **Depende de:** [TSK-304](TSK-304-gestao-de-usuarios-e-grupos.md), [TSK-002](TSK-002-mesclar-identidade-guarda-front-tema.md)
@@ -41,6 +41,7 @@ O convite e a definição de senha usam o Keycloak, com o tema do #29. A conta d
 14. **Ativação (10/10):** a violação de `usuario_subject_id_key` vira `SUJEITO_JA_VINCULADO` no repositório, sem migração; o contrato usa `{ convite }`; não exige `emailVerified` agora (confirmar no aceite real se o link de senha já marca o e-mail como verificado). Sem limite de tentativas na ativação por enquanto.
 15. **Suspensão no Keycloak (10/10):** a liberação direta da reativação relê a situação no banco antes de reabilitar a conta; evento sem instituição continua lançando erro; reativar usuário já ativo continua liberando.
 16. **Pendências obrigatórias (10/10):** alerta de evento esgotado no outbox antes de produção (observabilidade); o aceite real confere que reabilitar a conta no Keycloak 26 não apaga nome, sobrenome nem atributos.
+17. **Reenvio na tela Acessos (12/10):** o painel do usuário com convite pendente ganha o botão "Reenviar convite", que antes não existia no front; o 429 mostra quanto falta esperar.
 
 **Divisão em PRs:**
 1. `@SemIdempotencia`.
@@ -64,4 +65,4 @@ O desenho está no scratchpad da sessão (`tsk305-desenho.md`).
 
 - https://github.com/AurioNeto/ceudodespertar/pull/29
 
-_Atualizado em 12/10/2026._
+_Atualizado em 13/10/2026 (front /entrar mesclado em #200; reenvio com o 429 em #202)._

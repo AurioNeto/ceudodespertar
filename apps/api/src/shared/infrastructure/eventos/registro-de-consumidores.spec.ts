@@ -2,10 +2,12 @@ import 'reflect-metadata';
 import { Injectable, Scope } from '@nestjs/common';
 import { DiscoveryService, MetadataScanner } from '@nestjs/core';
 import { describe, expect, it } from 'vitest';
+import { EventosSemConsumidor } from './eventos-sem-consumidor.decorator.js';
 import { ReageA } from './reage-a.decorator.js';
 import {
   ErroDeConsumidorComEscopoNaoEstatico,
   ErroDeConsumidorDuplicado,
+  ErroDeTipoSemConsumidorComConsumidor,
   RegistroDeConsumidores,
 } from './registro-de-consumidores.js';
 import type { WrapperDeProvider } from './registro-de-consumidores.js';
@@ -120,5 +122,38 @@ describe('RegistroDeConsumidores', () => {
 
     expect(() => registro.onModuleInit()).not.toThrow();
     expect(registro.consumidoresPara('qualquer.tipo')).toEqual([]);
+  });
+
+  it('dispensa consumidor só para os tipos declarados em @EventosSemConsumidor', () => {
+    @Injectable()
+    @EventosSemConsumidor('teste.SoRegistro', 'teste.OutroSoRegistro')
+    class Declaracao {}
+    const registro = new RegistroDeConsumidores(
+      descobertaFalsa([wrapperEstatico(Declaracao, new Declaracao())]),
+      new MetadataScanner(),
+    );
+
+    registro.onModuleInit();
+
+    expect(registro.dispensaConsumidor('teste.SoRegistro')).toBe(true);
+    expect(registro.dispensaConsumidor('teste.OutroSoRegistro')).toBe(true);
+    expect(registro.dispensaConsumidor('teste.NaoDeclarado')).toBe(false);
+  });
+
+  it('lança ErroDeTipoSemConsumidorComConsumidor quando um tipo declarado sem consumidor tem @ReageA', () => {
+    @Injectable()
+    @EventosSemConsumidor('teste.Contraditorio')
+    class Declaracao {}
+    @Injectable()
+    class Consumidor {
+      @ReageA('teste.Contraditorio', 'Consumidor')
+      async reagir(): Promise<void> {}
+    }
+    const registro = new RegistroDeConsumidores(
+      descobertaFalsa([wrapperEstatico(Consumidor, new Consumidor()), wrapperEstatico(Declaracao, new Declaracao())]),
+      new MetadataScanner(),
+    );
+
+    expect(() => registro.onModuleInit()).toThrow(ErroDeTipoSemConsumidorComConsumidor);
   });
 });

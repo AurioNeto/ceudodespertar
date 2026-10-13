@@ -3,7 +3,7 @@ import type { Trabalho } from '../../tipos';
 import { hoje } from '@/pages/mocks/relogio';
 import { DIAS_DA_SEMANA } from './constantes';
 import { celulasDoMes } from './utils/celulasDoMes';
-import { rotuloVersalete } from '@/ds';
+import { rotuloVersalete, vidroLeve } from '@/ds';
 
 export interface CalendarioMensalProps {
   ano: number;
@@ -21,6 +21,7 @@ export function CalendarioMensal({ ano, mes, trabalhos, onAbrir }: CalendarioMen
     <div
       style={{
         background: 'var(--bg-card)',
+        ...vidroLeve,
         border: 'var(--border-hairline)',
         borderRadius: 'var(--leaf-lg)',
         overflow: 'hidden',

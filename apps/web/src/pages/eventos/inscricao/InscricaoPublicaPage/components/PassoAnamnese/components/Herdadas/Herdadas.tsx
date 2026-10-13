@@ -1,7 +1,7 @@
-import { useState } from 'react';
 import { Cartao, Icon, type Density } from '@/ds';
 import { pluralizar } from '@/pages/utils/formato';
 import type { CadastroEncontrado } from '../../../../mocks/inscricaoPublica';
+import { useHerdadas } from './hooks/useHerdadas';
 
 export interface HerdadasProps {
   cadastro: CadastroEncontrado;
@@ -10,12 +10,12 @@ export interface HerdadasProps {
 
 export function Herdadas({ cadastro, densidade }: HerdadasProps) {
   const campo = densidade === 'field';
-  const [aberto, setAberto] = useState(false);
+  const { aberto, alternar } = useHerdadas();
   return (
     <Cartao campo={campo} style={{ gap: 10 }}>
       <button
         type="button"
-        onClick={() => setAberto((a) => !a)}
+        onClick={alternar}
         style={{ display: 'flex', alignItems: 'center', gap: 9, cursor: 'pointer', textAlign: 'left' }}
       >
         <Icon name={aberto ? 'chevron-down' : 'chevron-right'} size={17} color="var(--text-meta)" />

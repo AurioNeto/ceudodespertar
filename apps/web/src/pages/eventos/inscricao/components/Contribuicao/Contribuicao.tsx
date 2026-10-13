@@ -1,5 +1,5 @@
 import type { NivelDeContribuicao } from '@cdd/contracts';
-import { AmountDisplay, Cartao, Rotulo, StatusBadge, TextField, type Density } from '@/ds';
+import { AmountDisplay, Cartao, Rotulo, StatusBadge, TextField, type Density, fundoComVidro } from '@/ds';
 import { formatarDinheiro } from '@/pages/utils/formato';
 import type { EventoParaInscricao } from '../../mocks/eventos';
 import { contribuicaoDigitada } from '../../utils/valorDaInscricao';
@@ -80,7 +80,7 @@ export function Contribuicao({
                 padding: '13px 15px',
                 borderRadius: 'var(--leaf-sm)',
                 border: `1px solid ${marcado ? 'var(--color-royal)' : 'var(--border-field)'}`,
-                background: marcado ? 'var(--color-royal-soft)' : 'var(--bg-card)',
+                ...fundoComVidro(marcado ? 'var(--color-royal-soft)' : 'var(--bg-card)'),
                 cursor: 'pointer',
                 display: 'flex',
                 flexDirection: 'column',
