@@ -1,6 +1,6 @@
 # TSK-307: Suíte de autorização (Doc 3 §11) e testes estruturais T28/T30
 
-- **Estado:** ✅ T28a e T28b do web entregues (API: #53, #66, #75 e #78; web: T28a no #199 e T28b com o estado da tela no PR que fecha a #77; minúsculas fora do conjunto, como na api, por decisão do dono em 13/10)
+- **Estado:** ✅ Concluída (13/10/2026): T28a e T28b do web entregues (API: #53, #66, #75 e #78; web: T28a no #199 e T28b com o estado da tela no #207; minúsculas fora do conjunto, como na api, por decisão do dono em 13/10)
 - **Peça do plano:** I12
 - **Responsável sugerido:** testudo
 - **Depende de:** [TSK-304](TSK-304-gestao-de-usuarios-e-grupos.md)
@@ -54,7 +54,7 @@ O aceite do B0 exige T23–T26 e T28–T30 verdes; os demais casos são escritos
 4. T28b.
 5. T28a no web.
 
-A ordem é 1, 3, 2, 4, 5. O desenho está no scratchpad da sessão (`tsk307-desenho.md`).
+A ordem é 1, 3, 2, 4, 5. O desenho está no scratchpad da sessão (`tsk307-desenho.md`), um arquivo local que não está no repositório; as decisões acima são a fonte.
 
 ## Critérios de aceite
 

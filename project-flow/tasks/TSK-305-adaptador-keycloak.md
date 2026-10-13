@@ -53,7 +53,7 @@ O convite e a definição de senha usam o Keycloak, com o tema do #29. A conta d
 7. Front: `/entrar`.
 8. Aceite real.
 
-O desenho está no scratchpad da sessão (`tsk305-desenho.md`).
+O desenho está no scratchpad da sessão (`tsk305-desenho.md`), um arquivo local que não está no repositório; as decisões acima são a fonte.
 
 ## Critérios de aceite
 
