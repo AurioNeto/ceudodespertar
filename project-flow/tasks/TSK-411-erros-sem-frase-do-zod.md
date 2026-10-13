@@ -1,6 +1,6 @@
 # TSK-411: Erros: `CORPO_INVALIDO` sem frases do Zod
 
-- **Estado:** 📌 Backlog técnico
+- **Estado:** ✅ Em PR: `detalhes` passa a ser `{ problemas: [{ caminho, regra }], total }`, com regra em código estável (`obrigatorio`, `tipo`, `minimo`, `maximo`, `formato`, `valor`, `multiplo`, `campo_desconhecido` ou o `params.regra` do refine). O front não lê `detalhes` de `CORPO_INVALIDO` (só `retryAfterSegundos` do 429), então não muda
 - **Responsável sugerido:** limpio
 
 ## Contexto
@@ -19,4 +19,4 @@ O pipe de validação devolve em `detalhes` as mensagens do Zod, em inglês. O D
 
 - https://github.com/AurioNeto/ceudodespertar/pull/22#discussion_r4187819275
 
-_Atualizado em 07/10/2026._
+_Atualizado em 13/10/2026._

@@ -10,6 +10,6 @@
     "sourceMap": true
   },
   "include": ["src"],
-  "exclude": ["**/*.spec.ts"],
+  "exclude": ["**/*.spec.ts", "**/*.fake.ts"],
   "references": [{ "path": "../../packages/contracts" }]
 }

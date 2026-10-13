@@ -200,7 +200,7 @@ describe('ConsultarAuditoria', () => {
 
     await expect(tentativa).rejects.toBeInstanceOf(ErroDeDominioException);
     await expect(tentativa).rejects.toMatchObject({
-      erroDeDominio: { codigo: 'CORPO_INVALIDO', detalhes: { problemas: [{ caminho: 'depois' }] } },
+      erroDeDominio: { codigo: 'CORPO_INVALIDO', detalhes: { problemas: [{ caminho: 'depois', regra: 'formato' }], total: 1 } },
     });
     expect(trilha.gravadas).toEqual([]);
     expect(leitor.consultas).toEqual([]);
