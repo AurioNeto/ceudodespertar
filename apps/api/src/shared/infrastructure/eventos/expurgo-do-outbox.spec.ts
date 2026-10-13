@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { MockInstance } from 'vitest';
 import { ContextoDaRequisicao } from '../contexto-da-requisicao.js';
 import type { ContextoDaTransacao, ModoDeTransacao, UnidadeDeTrabalho } from '../banco/unidade-de-trabalho.js';
-import { listarIdsDasInstituicoes } from '../idempotencia/chave-de-idempotencia.repositorio.js';
+import { listarIdsDasInstituicoes } from '../banco/instituicoes.js';
 import { apagarLoteDeDespachados, TAMANHO_DO_LOTE_DO_EXPURGO } from './expurgo-do-outbox.repositorio.js';
 import {
   ExpurgoDoOutbox,
@@ -18,7 +18,7 @@ import {
 } from './expurgo-do-outbox.js';
 import type { ModoDoProcesso } from './modo-do-processo.js';
 
-vi.mock('../idempotencia/chave-de-idempotencia.repositorio.js', () => ({
+vi.mock('../banco/instituicoes.js', () => ({
   listarIdsDasInstituicoes: vi.fn(),
 }));
 
