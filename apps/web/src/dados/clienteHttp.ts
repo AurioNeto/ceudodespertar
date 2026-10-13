@@ -1,3 +1,4 @@
+import { ehAcessoRecusado } from './avisoDeAcessoRecusado';
 import type { FonteDeCredencial, ResultadoDaRenovacao } from './credencial';
 import { ErroDaApi, ErroDeRede, codigoDeFallback, erroDaResposta } from './erros';
 
@@ -23,6 +24,7 @@ export interface DependenciasDoClienteHttp {
   readonly fetch?: typeof globalThis.fetch;
   readonly base?: string;
   readonly gerarChave?: () => string;
+  readonly aoAcessoRecusado?: () => void;
 }
 
 interface RespostaLida {
@@ -48,6 +50,11 @@ export function criarClienteHttp(dependencias: DependenciasDoClienteHttp): Clien
     (dependencias.fetch ?? globalThis.fetch)(entrada, init);
 
   let renovacaoEmAndamento: Promise<ResultadoDaRenovacao> | null = null;
+
+  function avisarSeRecusado(erro: ErroDaApi): ErroDaApi {
+    if (ehAcessoRecusado(erro)) dependencias.aoAcessoRecusado?.();
+    return erro;
+  }
 
   function renovarCompartilhando(): Promise<ResultadoDaRenovacao> {
     if (renovacaoEmAndamento) return renovacaoEmAndamento;
@@ -108,7 +115,7 @@ export function criarClienteHttp(dependencias: DependenciasDoClienteHttp): Clien
     if (primeira.ok) return lerSucesso<Saida>(primeira);
 
     const erro = erroDaResposta(primeira.status, primeira.texto);
-    if (!erro.ehFalhaDeAutenticacao) throw erro;
+    if (!erro.ehFalhaDeAutenticacao) throw avisarSeRecusado(erro);
 
     const tokenJaMudou = (await credencial.tokenAtual()) !== primeira.tokenUsado;
     if (!tokenJaMudou) {
@@ -119,7 +126,7 @@ export function criarClienteHttp(dependencias: DependenciasDoClienteHttp): Clien
 
     const segunda = await enviarUmaVez(opcoes, chaveDeIdempotencia);
     if (segunda.ok) return lerSucesso<Saida>(segunda);
-    throw erroDaResposta(segunda.status, segunda.texto);
+    throw avisarSeRecusado(erroDaResposta(segunda.status, segunda.texto));
   }
 
   return { requisitar };

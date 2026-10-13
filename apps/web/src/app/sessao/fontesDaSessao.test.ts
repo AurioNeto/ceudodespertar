@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
+import { criarAvisoDeAcessoRecusado } from '@/dados';
 import type { AtivacaoDeConvite, ClienteHttp, CredencialOidc, ServicoDeEntrada } from '@/dados';
 import { erroDaApi } from '@/testes/fabricas';
 import { criarFontesReais } from './fontesDaSessao';
@@ -16,13 +17,15 @@ function montar(ativarSeHouver: () => Promise<void>) {
       await ativarSeHouver();
     }),
   };
+  const avisoDeAcessoRecusado = criarAvisoDeAcessoRecusado();
   const fontes = criarFontesReais({
     clienteHttp: { requisitar } as unknown as ClienteHttp,
     credencial: { aoEncerrar: vi.fn() } as unknown as CredencialOidc,
     servicoDeEntrada: {} as ServicoDeEntrada,
     ativacaoDeConvite,
+    avisoDeAcessoRecusado,
   });
-  return { fontes, chamadas, ativacaoDeConvite };
+  return { fontes, chamadas, ativacaoDeConvite, avisoDeAcessoRecusado };
 }
 
 describe('fontes reais da sessão', () => {
@@ -48,5 +51,19 @@ describe('fontes reais da sessão', () => {
     fontes.guardarConvite('token-do-convite');
 
     expect(ativacaoDeConvite.guardar).toHaveBeenCalledWith('token-do-convite');
+  });
+});
+
+describe('aviso de acesso recusado', () => {
+  it('a sessão ouve o aviso que o cliente HTTP dispara', () => {
+    const { fontes, avisoDeAcessoRecusado } = montar(() => Promise.resolve());
+    const ouvinte = vi.fn();
+
+    const deixarDeOuvir = fontes.aoAcessoRecusado(ouvinte);
+    avisoDeAcessoRecusado.avisar();
+    deixarDeOuvir();
+    avisoDeAcessoRecusado.avisar();
+
+    expect(ouvinte).toHaveBeenCalledTimes(1);
   });
 });

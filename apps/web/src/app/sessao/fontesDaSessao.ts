@@ -1,5 +1,5 @@
 import type { Eu } from '@cdd/contracts';
-import type { AtivacaoDeConvite, ClienteHttp, CredencialOidc, ServicoDeEntrada } from '@/dados';
+import type { AtivacaoDeConvite, AvisoDeAcessoRecusado, ClienteHttp, CredencialOidc, ServicoDeEntrada } from '@/dados';
 import { carregarDemonstracao } from '@/app/demonstracao';
 import type { SessaoProviderProps } from './SessaoProvider';
 
@@ -10,6 +10,7 @@ interface InstanciasDaSessao {
   readonly credencial: CredencialOidc;
   readonly servicoDeEntrada: ServicoDeEntrada;
   readonly ativacaoDeConvite: AtivacaoDeConvite;
+  readonly avisoDeAcessoRecusado: AvisoDeAcessoRecusado;
 }
 
 export function criarFontesReais({
@@ -17,10 +18,12 @@ export function criarFontesReais({
   credencial,
   servicoDeEntrada,
   ativacaoDeConvite,
+  avisoDeAcessoRecusado,
 }: InstanciasDaSessao): FontesDaSessao {
   return {
     entrada: servicoDeEntrada,
     aoEncerrar: credencial.aoEncerrar,
+    aoAcessoRecusado: avisoDeAcessoRecusado.aoRecusar,
     guardarConvite: ativacaoDeConvite.guardar,
     async buscarEu(sinal) {
       await ativacaoDeConvite.ativarSeHouver();
@@ -42,6 +45,7 @@ export async function escolherFontesDaSessao(fontesReais: FontesDaSessao): Promi
   return {
     entrada: demonstracao.criarEntradaDeDemonstracao(),
     aoEncerrar: () => () => undefined,
+    aoAcessoRecusado: () => () => undefined,
     guardarConvite: () => undefined,
     buscarEu: demonstracao.buscarEuDeDemonstracao,
   };

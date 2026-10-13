@@ -65,6 +65,7 @@ export interface CenarioDeSessao {
   readonly entrada: EntradaFalsa;
   readonly buscarEu: (sinal: AbortSignal) => Promise<Eu>;
   readonly aviso?: AvisoDeEncerramentoFalso;
+  readonly recusa?: AvisoDeEncerramentoFalso;
   readonly guardarConvite?: (convite: string) => void;
 }
 
@@ -105,6 +106,7 @@ export async function montarComSessao(cenario: CenarioDeSessao, arvore: ReactEle
         <SessaoProvider
           entrada={cenario.entrada}
           aoEncerrar={aviso.aoEncerrar}
+          aoAcessoRecusado={(cenario.recusa ?? criarAvisoDeEncerramentoFalso()).aoEncerrar}
           buscarEu={cenario.buscarEu}
           guardarConvite={cenario.guardarConvite ?? (() => undefined)}
         >

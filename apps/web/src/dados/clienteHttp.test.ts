@@ -394,3 +394,49 @@ describe('política de 401', () => {
     expect(fetchFalso).toHaveBeenCalledTimes(1);
   });
 });
+
+describe('aviso de acesso recusado', () => {
+  function montarComAviso(...respostas: Array<Response | Error>) {
+    const aoAcessoRecusado = vi.fn();
+    const cliente = criarClienteHttp({
+      credencial: criarFonteDeCredencialFalsa(),
+      fetch: criarFetchFalso(...respostas),
+      aoAcessoRecusado,
+    });
+    return { cliente, aoAcessoRecusado };
+  }
+
+  it.each(['USUARIO_SUSPENSO', 'USUARIO_REVOGADO'] as const)('401 %s avisa a sessão e repassa o erro', async (codigo) => {
+    const { cliente, aoAcessoRecusado } = montarComAviso(respostaDeErro(401, codigo));
+
+    const erro = await capturar(cliente.requisitar({ metodo: 'GET', caminho: '/lancamentos' }));
+
+    expect(erro).toBeInstanceOf(ErroDaApi);
+    expect((erro as ErroDaApi).codigo).toBe(codigo);
+    expect(aoAcessoRecusado).toHaveBeenCalledTimes(1);
+  });
+
+  it.each([
+    [403, 'SEM_PERMISSAO'],
+    [409, 'USUARIO_SUSPENSO'],
+    [401, 'USUARIO_CONVITE_PENDENTE'],
+    [503, 'SERVICO_INDISPONIVEL'],
+  ] as const)('%i %s não avisa', async (status, codigo) => {
+    const { cliente, aoAcessoRecusado } = montarComAviso(respostaDeErro(status, codigo));
+
+    await capturar(cliente.requisitar({ metodo: 'GET', caminho: '/lancamentos' }));
+
+    expect(aoAcessoRecusado).not.toHaveBeenCalled();
+  });
+
+  it('avisa quando a recusa chega depois de renovar o token', async () => {
+    const { cliente, aoAcessoRecusado } = montarComAviso(
+      respostaDeErro(401, 'NAO_AUTENTICADO'),
+      respostaDeErro(401, 'USUARIO_REVOGADO'),
+    );
+
+    await capturar(cliente.requisitar({ metodo: 'POST', caminho: '/lancamentos' }));
+
+    expect(aoAcessoRecusado).toHaveBeenCalledTimes(1);
+  });
+});
