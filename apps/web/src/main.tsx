@@ -5,14 +5,14 @@ import { RouterProvider } from 'react-router-dom';
 import { router } from './app/router';
 import { criarFontesReais, escolherFontesDaSessao, SessaoProvider } from './app/sessao';
 import { criarClienteDeConsultas } from './dados';
-import { clienteHttp, credencial, servicoDeEntrada } from './dados/instancias';
+import { ativacaoDeConvite, clienteHttp, credencial, servicoDeEntrada } from './dados/instancias';
 import { ClienteHttpProvider } from './app/providers';
 import { ClimaProvider } from './ds';
 import './styles/global.css';
 
 const clienteDeConsultas = criarClienteDeConsultas();
 
-const fontesReais = criarFontesReais({ clienteHttp, credencial, servicoDeEntrada });
+const fontesReais = criarFontesReais({ clienteHttp, credencial, servicoDeEntrada, ativacaoDeConvite });
 
 const container = document.getElementById('root');
 if (!container) throw new Error('#root não encontrado');

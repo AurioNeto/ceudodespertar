@@ -1,6 +1,6 @@
 # TSK-307: Suíte de autorização (Doc 3 §11) e testes estruturais T28/T30
 
-- **Estado:** 🚧 Em implementação (API completa: #53, #66, #75 e #78; T28a e T28b do web pendentes na issue #77; a refatoração do front que os segurava terminou no #172)
+- **Estado:** 🚧 Em implementação (API completa: #53, #66, #75 e #78; T28a do web em PR, lendo `apps/web/src` na suíte da api; T28b do web pendente na issue #77)
 - **Peça do plano:** I12
 - **Responsável sugerido:** testudo
 - **Depende de:** [TSK-304](TSK-304-gestao-de-usuarios-e-grupos.md)

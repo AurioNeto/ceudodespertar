@@ -6,6 +6,7 @@ import {
   linhaDe,
   nomeDoRecipiente,
   percorrer,
+  simboloDoUso,
   simboloResolvido,
 } from './motor-de-programa.js';
 import type { ProgramaAnalisavel } from './motor-de-programa.js';
@@ -313,19 +314,6 @@ function nomeDoMembro(chamada: ts.CallExpression): ts.Identifier | undefined {
   const alvo = chamada.expression;
   if (ts.isPropertyAccessExpression(alvo) && ts.isIdentifier(alvo.name)) return alvo.name;
   return ts.isIdentifier(alvo) ? alvo : undefined;
-}
-
-function simboloDoUso(checker: ts.TypeChecker, identificador: ts.Identifier): ts.Symbol | undefined {
-  const pai = identificador.parent;
-  const ehNomeAbreviadoDeDesestruturacao =
-    ts.isBindingElement(pai) &&
-    pai.name === identificador &&
-    pai.propertyName === undefined &&
-    ts.isObjectBindingPattern(pai.parent);
-  if (ehNomeAbreviadoDeDesestruturacao) {
-    return checker.getTypeAtLocation(pai.parent).getProperty(identificador.text);
-  }
-  return simboloResolvido(checker, identificador);
 }
 
 function ehEsquerdaDeMembroDeDados(checker: ts.TypeChecker, identificador: ts.Identifier): boolean {

@@ -1,12 +1,13 @@
 import { z } from 'zod';
+import { textoSemCaractereNulo, uuidEmMinusculas } from '../entrada.js';
 import type { GrupoId } from '../kernel.js';
 
 const MAXIMO_DE_GRUPOS_POR_USUARIO = 100;
 
-const grupoIdSchema = z.uuid().transform((valor) => valor as GrupoId);
+const grupoIdSchema = uuidEmMinusculas<GrupoId>();
 
 export const ConvidarUsuario = z.object({
-  nome: z.string().trim().min(1).max(200),
+  nome: textoSemCaractereNulo().trim().min(1).max(200),
   email: z.string().trim().toLowerCase().max(320).pipe(z.email()),
 });
 
@@ -23,7 +24,7 @@ export const AlterarGruposDoUsuario = z.object({
 
 export type AlterarGruposDoUsuario = z.infer<typeof AlterarGruposDoUsuario>;
 
-const motivoSchema = z.string().trim().min(1).max(500);
+const motivoSchema = textoSemCaractereNulo().trim().min(1).max(500);
 
 export const DesativarUsuario = z.object({
   motivo: motivoSchema,

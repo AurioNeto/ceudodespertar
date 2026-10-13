@@ -17,6 +17,7 @@ export interface Sessao {
   pode(permissao: Permissao): boolean;
   entrar(destino: string): Promise<void>;
   concluirEntrada(urlDeRetorno: string): Promise<string>;
+  receberConvite(convite: string): void;
   encerrar(): void;
   tentarDeNovo(): void;
 }
@@ -25,12 +26,13 @@ export interface SessaoProviderProps {
   readonly entrada: ServicoDeEntrada;
   readonly aoEncerrar: (ouvinte: () => void) => () => void;
   readonly buscarEu: (sinal: AbortSignal) => Promise<Eu>;
+  readonly guardarConvite: (convite: string) => void;
   readonly children: ReactNode;
 }
 
 const Contexto = createContext<Sessao | null>(null);
 
-export function SessaoProvider({ entrada, aoEncerrar, buscarEu, children }: SessaoProviderProps) {
+export function SessaoProvider({ entrada, aoEncerrar, buscarEu, guardarConvite, children }: SessaoProviderProps) {
   const clienteDeConsultas = useQueryClient();
   const [temUsuario, setTemUsuario] = useExisteUsuarioOidc(entrada);
 
@@ -70,6 +72,14 @@ export function SessaoProvider({ entrada, aoEncerrar, buscarEu, children }: Sess
     [entrada, clienteDeConsultas, setTemUsuario],
   );
 
+  const receberConvite = useCallback(
+    (convite: string) => {
+      guardarConvite(convite);
+      if (temUsuario) void clienteDeConsultas.resetQueries({ queryKey: CHAVE_DO_EU });
+    },
+    [guardarConvite, temUsuario, clienteDeConsultas],
+  );
+
   const encerrar = useCallback(() => {
     void entrada
       .sair()
@@ -89,8 +99,8 @@ export function SessaoProvider({ entrada, aoEncerrar, buscarEu, children }: Sess
   const usuario = useMemo(() => (eu ? usuarioDaSessao(eu) : null), [eu]);
 
   const valor = useMemo<Sessao>(
-    () => ({ estado, usuario, pode, entrar, concluirEntrada, encerrar, tentarDeNovo }),
-    [estado, usuario, pode, entrar, concluirEntrada, encerrar, tentarDeNovo],
+    () => ({ estado, usuario, pode, entrar, concluirEntrada, receberConvite, encerrar, tentarDeNovo }),
+    [estado, usuario, pode, entrar, concluirEntrada, receberConvite, encerrar, tentarDeNovo],
   );
 
   return <Contexto.Provider value={valor}>{children}</Contexto.Provider>;

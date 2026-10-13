@@ -1,3 +1,4 @@
+import { textoSemCaractereNulo } from '@cdd/contracts';
 import { z } from 'zod';
 
 export interface PosicaoDaListagem {
@@ -13,7 +14,7 @@ export class ErroDeCursorDeUsuariosInvalido extends Error {
 }
 
 const CursorDecodificado = z.object({
-  chaveDeNome: z.string(),
+  chaveDeNome: textoSemCaractereNulo(),
   id: z.uuid(),
 });
 
