@@ -120,8 +120,9 @@ export function novoGrupo(permissoes: readonly string[] = ['financeiro.lancament
     descricao: 'Grupo de teste',
     protegido: false,
     permissoes,
-  });
+  }, AUTOR, AGORA);
   if (resultado.tipo === 'erro') throw new Error(resultado.erro.codigo);
+  resultado.valor.retirarEventos();
   return resultado.valor;
 }
 

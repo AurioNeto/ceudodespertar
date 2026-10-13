@@ -1,7 +1,7 @@
 import type { CodigoGrupo, GrupoId, UsuarioId } from '@cdd/contracts';
 import { describe, expect, it } from 'vitest';
 import { ehErr, ehOk, type Result } from '../../../../shared/kernel/result.js';
-import { Grupo } from './grupo.js';
+import { ErroDeGrupoDeSistemaDesprotegido, Grupo } from './grupo.js';
 
 const GRUPO_ID = 'grupo-1' as GrupoId;
 const AUTOR = 'usuario-1' as UsuarioId;
@@ -14,16 +14,21 @@ interface Opcoes {
   readonly protegido?: boolean;
 }
 
+function codigoPadrao(opcoes: Opcoes): CodigoGrupo | null {
+  return opcoes.protegido === false ? null : 'LEITURA';
+}
+
 function criarGrupo(opcoes: Opcoes = {}): Grupo {
   const resultado = Grupo.criar({
     id: GRUPO_ID,
-    codigoSistema: opcoes.codigoSistema === undefined ? 'LEITURA' : opcoes.codigoSistema,
+    codigoSistema: opcoes.codigoSistema === undefined ? codigoPadrao(opcoes) : opcoes.codigoSistema,
     nome: 'Leitura',
     descricao: 'Consulta painéis',
     permissoes: opcoes.permissoes ?? ['estoque.saldo.ler'],
     protegido: opcoes.protegido ?? true,
-  });
+  }, AUTOR, INSTANTE);
   if (!ehOk(resultado)) throw new Error('fixture inválida');
+  resultado.valor.retirarEventos();
   return resultado.valor;
 }
 
@@ -45,8 +50,67 @@ describe('Grupo.criar', () => {
     expect(grupo.versao).toBe(1);
   });
 
-  it('não registra evento ao nascer', () => {
-    expect(criarGrupo().retirarEventos()).toStrictEqual([]);
+  it('registra GRUPO_EDITADO com ação CRIADO ao nascer, com nome, descrição, permissões e autor', () => {
+    const resultado = Grupo.criar(
+      {
+        id: GRUPO_ID,
+        codigoSistema: null,
+        nome: 'Apoio',
+        descricao: 'Equipe de apoio',
+        permissoes: ['estoque.saldo.ler', 'estoque.movimento.registrar'],
+        protegido: false,
+      },
+      AUTOR,
+      INSTANTE,
+    );
+    if (!ehOk(resultado)) throw new Error('fixture inválida');
+
+    const eventos = resultado.valor.retirarEventos();
+
+    expect(eventos).toHaveLength(1);
+    expect(eventos[0]).toMatchObject({
+      tipo: 'GRUPO_EDITADO',
+      ocorridoEm: INSTANTE,
+      agregadoTipo: 'Grupo',
+      agregadoId: GRUPO_ID,
+      dados: {
+        acao: 'CRIADO',
+        nome: 'Apoio',
+        descricao: 'Equipe de apoio',
+        permissoes: ['estoque.movimento.registrar', 'estoque.saldo.ler'],
+        autorId: AUTOR,
+        codigoSistema: null,
+      },
+    });
+  });
+
+  it('não registra evento ao reconstituir', () => {
+    const grupo = Grupo.reconstituir({
+      id: GRUPO_ID,
+      codigoSistema: null,
+      nome: 'Apoio',
+      descricao: '',
+      permissoes: [],
+      protegido: false,
+      ativo: true,
+      versao: 3,
+    });
+
+    expect(grupo.retirarEventos()).toStrictEqual([]);
+  });
+
+  it('G2: grupo de sistema desprotegido é recusado ao criar e ao reconstituir', () => {
+    const dados = { id: GRUPO_ID, codigoSistema: 'LEITURA' as const, nome: 'Leitura', descricao: '', protegido: false };
+
+    expect(() => Grupo.criar({ ...dados, permissoes: [] }, AUTOR, INSTANTE)).toThrow(ErroDeGrupoDeSistemaDesprotegido);
+    expect(() => Grupo.reconstituir({ ...dados, permissoes: [], ativo: true, versao: 1 })).toThrow(
+      ErroDeGrupoDeSistemaDesprotegido,
+    );
+  });
+
+  it('grupo da casa pode ser protegido ou não', () => {
+    expect(criarGrupo({ codigoSistema: null, protegido: true }).protegido).toBe(true);
+    expect(criarGrupo({ codigoSistema: null, protegido: false }).protegido).toBe(false);
   });
 
   it('G4: recusa permissão fora do catálogo', () => {
@@ -57,7 +121,7 @@ describe('Grupo.criar', () => {
       descricao: '',
       permissoes: ['estoque.saldo.ler', PERMISSAO_INVENTADA],
       protegido: false,
-    });
+    }, AUTOR, INSTANTE);
 
     expect(codigoDoErro(resultado)).toBe('PERMISSAO_INEXISTENTE');
   });

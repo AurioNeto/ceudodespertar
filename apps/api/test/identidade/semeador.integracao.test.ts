@@ -127,7 +127,7 @@ describe('SemeadorDeGruposDeSistema', () => {
       descricao: 'Criado pela casa',
       protegido: false,
       permissoes: ['financeiro.lancamento.ler'],
-    });
+    }, AUTOR, new Date());
     if (resultado.tipo === 'erro') throw new Error(resultado.erro.codigo);
     await comContexto(INSTITUICAO_A, () => ambiente.grupos.adicionar(resultado.valor));
 

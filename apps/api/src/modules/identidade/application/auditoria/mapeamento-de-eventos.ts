@@ -79,6 +79,12 @@ function detalhesEspecificosDaAcao(acao: string, dados: Dados): DetalhesDoEvento
           anterior: textoDe(dados, 'descricaoAnterior'),
         },
       ];
+    case 'CRIADO':
+      return [
+        { rotulo: ROTULOS_DE_AUDITORIA.nome, valor: textoDe(dados, 'nome') },
+        { rotulo: ROTULOS_DE_AUDITORIA.descricao, valor: textoDe(dados, 'descricao') },
+        { rotulo: ROTULOS_DE_AUDITORIA.permissoes, valor: idsDe(dados, 'permissoes').join(',') },
+      ];
     case 'EXCLUIDO':
       return [];
     default:

@@ -3,7 +3,7 @@ import { erroDeDominio, type ErroDeDominio } from '../../../../shared/kernel/err
 import { RaizDeAgregado } from '../../../../shared/kernel/raiz-de-agregado.js';
 import { err, ok, type Result } from '../../../../shared/kernel/result.js';
 import { ehPermissaoDoCatalogo } from '../permissao/catalogo-de-permissoes.js';
-import { grupoExcluido, grupoRenomeado, permissaoConcedida, permissaoRevogada } from './eventos-de-grupo.js';
+import { grupoCriado, grupoExcluido, grupoRenomeado, permissaoConcedida, permissaoRevogada } from './eventos-de-grupo.js';
 
 export interface DadosDeGrupo {
   readonly id: GrupoId;
@@ -23,6 +23,13 @@ export interface DadosParaReconstituirGrupo extends DadosDeGrupo {
   readonly versao: number;
 }
 
+export class ErroDeGrupoDeSistemaDesprotegido extends Error {
+  constructor(codigoSistema: CodigoGrupo) {
+    super(`grupo de sistema ${codigoSistema} tem que ser protegido`);
+    this.name = 'ErroDeGrupoDeSistemaDesprotegido';
+  }
+}
+
 export class Grupo extends RaizDeAgregado<GrupoId> {
   readonly #codigoSistema: CodigoGrupo | null;
   readonly #protegido: boolean;
@@ -33,6 +40,9 @@ export class Grupo extends RaizDeAgregado<GrupoId> {
 
   private constructor(dados: DadosParaReconstituirGrupo) {
     super(dados.id, dados.versao);
+    if (dados.codigoSistema !== null && !dados.protegido) {
+      throw new ErroDeGrupoDeSistemaDesprotegido(dados.codigoSistema);
+    }
     this.#codigoSistema = dados.codigoSistema;
     this.#protegido = dados.protegido;
     this.#permissoes = new Set(dados.permissoes);
@@ -41,12 +51,20 @@ export class Grupo extends RaizDeAgregado<GrupoId> {
     this.#ativo = dados.ativo;
   }
 
-  static criar(dados: DadosParaCriarGrupo): Result<Grupo, ErroDeDominio> {
+  static criar(dados: DadosParaCriarGrupo, autorId: UsuarioId, em: Date): Result<Grupo, ErroDeDominio> {
     const inexistente = dados.permissoes.find((permissao) => !ehPermissaoDoCatalogo(permissao));
     if (inexistente !== undefined) return err(permissaoInexistente(inexistente));
-    return ok(
-      new Grupo({ ...dados, permissoes: dados.permissoes as readonly Permissao[], ativo: true, versao: 1 }),
+    const grupo = new Grupo({ ...dados, permissoes: dados.permissoes as readonly Permissao[], ativo: true, versao: 1 });
+    grupo.registrarEvento(
+      grupoCriado(grupo.id, em, {
+        nome: grupo.nome,
+        descricao: grupo.descricao,
+        permissoes: grupo.permissoes,
+        autorId,
+        codigoSistema: grupo.codigoSistema,
+      }),
     );
+    return ok(grupo);
   }
 
   static reconstituir(dados: DadosParaReconstituirGrupo): Grupo {

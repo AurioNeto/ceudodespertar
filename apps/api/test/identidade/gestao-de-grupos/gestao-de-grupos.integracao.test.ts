@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import type { GrupoId } from '@cdd/contracts';
+import type { GrupoId, UsuarioId } from '@cdd/contracts';
 import { Logger } from '@nestjs/common';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { Grupo } from '../../../src/modules/identidade/domain/grupo/grupo.js';
@@ -25,6 +25,8 @@ import {
 } from '../gestao-de-usuarios/apoio-http.js';
 import type { RespostaDeEscrita } from '../gestao-de-usuarios/apoio-http.js';
 import { estadoDoGrupo, rotaDaPermissaoDoGrupo, rotaDoGrupo, ROTA_GRUPOS, trilhaDoGrupo } from './apoio-http.js';
+
+const AUTOR_DA_CRIACAO = '0198a3c0-0000-7000-8000-00000000c1a0' as UsuarioId;
 
 const ADMIN = 'sub-admin';
 const MEMBRO = 'sub-membro';
@@ -352,7 +354,7 @@ describe('gestão de grupos pela API (Doc 3 §11, Doc 7 §25)', () => {
         descricao: 'Grupo de sistema',
         protegido: true,
         permissoes: [PERMISSAO_DA_LEITURA],
-      });
+      }, AUTOR_DA_CRIACAO, new Date());
       if (protegido.tipo === 'erro') throw new Error(protegido.erro.codigo);
       const administracao = novoGrupoNomeado('Administração', PERMISSOES_DA_ADMINISTRACAO);
       await semearUsuarios(
