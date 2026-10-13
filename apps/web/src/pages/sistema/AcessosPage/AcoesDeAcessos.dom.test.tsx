@@ -28,6 +28,7 @@ import type { RoteiroDoCliente } from './apoioDeTeste';
 import { AVISO_DE_VERSAO_DESATUALIZADA } from './constantes';
 import { AVISO_LGPD_DO_MOTIVO } from './components/AbaDeUsuarios';
 import { CONVITE_REGISTRADO } from './components/PainelDeConvite';
+import { MENSAGEM_DE_REENVIO_RECENTE_SEM_ESPERA } from './utils/mensagemDeErro';
 
 interface Adiado<T> {
   readonly promessa: Promise<T>;
@@ -225,6 +226,8 @@ describe('Acessos: convidar', () => {
 const USUARIO_ATIVO = usuarioListado();
 const USUARIO_SUSPENSO = usuarioListado({ situacao: 'SUSPENSO', versao: 3 });
 
+const CONVIDADO_PENDENTE = usuarioListado({ id: 'u-2' as UsuarioId, nome: 'João', situacao: 'CONVITE_PENDENTE', versao: 4 });
+
 const gatilhoDe = (tela: TelaMontada, nome = 'Maria das Graças'): HTMLButtonElement => {
   const gatilho = tela.container.querySelector<HTMLButtonElement>(`button[aria-label="Gerenciar acesso de ${nome}"]`);
   if (!gatilho) throw new Error('gatilho não encontrado');
@@ -308,13 +311,13 @@ describe('Acessos: gerenciar usuário', () => {
     expect(await oferecidas(usuarioListado({ situacao: 'CONVITE_PENDENTE' }))).toEqual([false, false]);
   });
 
-  it('nunca oferece Revogar nem Reenviar convite', async () => {
-    const { tela } = await montar({ usuarios: () => pagina([USUARIO_ATIVO, usuarioListado({ id: 'u-2' as UsuarioId, nome: 'João', situacao: 'CONVITE_PENDENTE' })]) });
+  it('nunca oferece Revogar e só oferece Reenviar convite a quem tem convite pendente', async () => {
+    const { tela } = await montar({ usuarios: () => pagina([USUARIO_ATIVO, CONVIDADO_PENDENTE]) });
+    await abrirPeloGatilho(gatilhoDe(tela));
+    expect(textoDoPainel()).not.toMatch(/reenviar convite/i);
     await abrirPeloGatilho(gatilhoDe(tela, 'João'));
-    for (const texto of [tela.texto(), textoDoPainel()]) {
-      expect(texto).not.toMatch(/revogar/i);
-      expect(texto).not.toMatch(/reenviar convite/i);
-    }
+    for (const texto of [tela.texto(), textoDoPainel()]) expect(texto).not.toMatch(/revogar/i);
+    expect(textoDoPainel()).toContain('Reenviar convite');
   });
 
   it('suspender mostra o aviso LGPD exato ligado ao campo, conta até 500 e envia o motivo aparado', async () => {
@@ -932,5 +935,85 @@ describe('Acessos: depois do sucesso', () => {
     const { tela } = await montar({ comando: () => new ErroDaApi({ status: 403, codigo: 'SEM_PERMISSAO' }) });
     await suspenderMaria(tela);
     expect(painelAberto()?.querySelector('[role="alert"]')?.textContent).toBe('Você não tem mais permissão para esta ação.');
+  });
+});
+
+describe('Acessos: reenviar convite', () => {
+  async function reenviarDoJoao(comando: RoteiroDoCliente['comando']) {
+    const montagem = await montar({ usuarios: () => pagina([CONVIDADO_PENDENTE]), comando });
+    await abrirPeloGatilho(gatilhoDe(montagem.tela, 'João'));
+    await clicarNoPainel('Reenviar convite');
+    return montagem;
+  }
+
+  it('envia o reenvio com a versão do usuário e confirma sem fechar o painel', async () => {
+    const { cliente } = await reenviarDoJoao(() => ({ versao: 5 }));
+
+    const [chamada] = cliente.chamadasDeComando();
+    expect(chamada).toMatchObject({ metodo: 'POST', caminho: '/identidade/usuarios/u-2/convite/reenviar', versao: 4 });
+    expect(chamada?.chaveDeIdempotencia).toEqual(expect.any(String));
+    expect(painelAberto()).not.toBeNull();
+    expect(textoDoPainel()).toContain('Convite reenviado');
+  });
+
+  it('o segundo reenvio usa a versão nova devolvida pelo primeiro', async () => {
+    let versao = 4;
+    const { cliente } = await reenviarDoJoao(() => ({ versao: ++versao }));
+
+    await clicarNoPainel('Reenviar convite');
+
+    const [primeira, segunda] = cliente.chamadasDeComando();
+    expect([primeira?.versao, segunda?.versao]).toEqual([4, 5]);
+    expect(segunda?.chaveDeIdempotencia).not.toBe(primeira?.chaveDeIdempotencia);
+  });
+
+  it('depois de um 429, o novo reenvio repete a mesma chave de idempotência', async () => {
+    let tentativas = 0;
+    const { cliente } = await reenviarDoJoao(() => {
+      tentativas += 1;
+      if (tentativas === 1) throw new ErroDaApi({ status: 429, codigo: 'CONVITE_REENVIADO_RECENTEMENTE', esperaEmSegundos: 30 });
+      return { versao: 5 };
+    });
+
+    await clicarNoPainel('Reenviar convite');
+
+    const [primeira, segunda] = cliente.chamadasDeComando();
+    expect(segunda?.chaveDeIdempotencia).toBe(primeira?.chaveDeIdempotencia);
+    expect(textoDoPainel()).toContain('Convite reenviado');
+  });
+
+  it('um 429 depois de um reenvio com sucesso troca a confirmação pela espera', async () => {
+    let tentativas = 0;
+    await reenviarDoJoao(() => {
+      tentativas += 1;
+      if (tentativas === 1) return { versao: 5 };
+      throw new ErroDaApi({ status: 429, codigo: 'CONVITE_REENVIADO_RECENTEMENTE', esperaEmSegundos: 55 });
+    });
+
+    await clicarNoPainel('Reenviar convite');
+
+    expect(textoDoPainel()).toContain('Aguarde 55 segundos para reenviar.');
+    expect(textoDoPainel()).not.toContain('Convite reenviado.');
+  });
+
+  it.each([
+    [42, 'Aguarde 42 segundos para reenviar.'],
+    [1, 'Aguarde 1 segundo para reenviar.'],
+    [90, 'Aguarde 2 minutos para reenviar.'],
+  ])('429 com espera de %i s diz quanto falta esperar', async (esperaEmSegundos, trecho) => {
+    await reenviarDoJoao(() => {
+      throw new ErroDaApi({ status: 429, codigo: 'CONVITE_REENVIADO_RECENTEMENTE', esperaEmSegundos });
+    });
+
+    expect(textoDoPainel()).toContain(trecho);
+    expect(textoDoPainel()).not.toContain('Convite reenviado.');
+  });
+
+  it('429 sem espera conhecida pede para aguardar um pouco', async () => {
+    await reenviarDoJoao(() => {
+      throw new ErroDaApi({ status: 429, codigo: 'CONVITE_REENVIADO_RECENTEMENTE' });
+    });
+
+    expect(textoDoPainel()).toContain(MENSAGEM_DE_REENVIO_RECENTE_SEM_ESPERA);
   });
 });

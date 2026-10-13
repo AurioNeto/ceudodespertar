@@ -1,6 +1,6 @@
 # TSK-307: Suíte de autorização (Doc 3 §11) e testes estruturais T28/T30
 
-- **Estado:** 🚧 Em implementação (API completa: #53, #66, #75 e #78; T28a do web em PR, lendo `apps/web/src` na suíte da api; T28b do web pendente na issue #77)
+- **Estado:** ✅ T28a e T28b do web entregues (API: #53, #66, #75 e #78; web: T28a no #199 e T28b com o estado da tela no PR que fecha a #77; minúsculas fora do conjunto, como na api, por decisão do dono em 13/10)
 - **Peça do plano:** I12
 - **Responsável sugerido:** testudo
 - **Depende de:** [TSK-304](TSK-304-gestao-de-usuarios-e-grupos.md)
@@ -43,6 +43,8 @@ O aceite do B0 exige T23–T26 e T28–T30 verdes; os demais casos são escritos
 - O catálogo não tem o campo `coberturaExistente`.
 - T28a: savepoint/release/rollback to em toda a persistência; begin/commit/rollback/prepare só em `banco/` ou com exceção por arquivo com motivo nomeado; `transaction`/`startTransaction` só em `banco/`; `getInstance`/`getHttpServer` são violação por si sós; tipos de express/fastify fora enquanto não forem dependência direta.
 
+**Decisão do T28b do web (13/10):** o conjunto proibido é o mesmo da api (códigos e nomes de exibição); grafias em minúsculas (`'tesouraria'`, `'leitura'`) ficam como limite declarado, porque são palavras comuns no web.
+
 **Decisões do T28b (10/10):** só na API por ora (web na issue #77); variável tipada como código de grupo dentro de `string[]` comum não é acusada; lista de grupos em constante, no mesmo arquivo ou importada, é acusada; formas indiretas (objeto de configuração, campo estático, cópia em outra constante, espalhamento) ficam como limite conhecido.
 
 **Divisão em PRs, todos só de teste exceto a decisão 7:**
@@ -59,4 +61,4 @@ A ordem é 1, 3, 2, 4, 5. O desenho está no scratchpad da sessão (`tsk307-dese
 - Violação plantada é pega
 - Subir `ETAPA_ATUAL` obriga a escrever os casos da etapa
 
-_Atualizado em 12/10/2026._
+_Atualizado em 13/10/2026._

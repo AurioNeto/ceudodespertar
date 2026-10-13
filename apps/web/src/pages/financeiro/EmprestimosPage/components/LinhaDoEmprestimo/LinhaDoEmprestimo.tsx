@@ -1,5 +1,5 @@
 import type { Emprestimo } from '@cdd/contracts';
-import { AmountDisplay, BarraDeProporcao, Icon, StatusBadge } from '@/ds';
+import { AmountDisplay, BarraDeProporcao, Icon, StatusBadge, fundoComVidro } from '@/ds';
 import { DIRECAO } from '../../constantes';
 import { devolvido, saldoDevedor } from '../../utils/saldo';
 
@@ -20,7 +20,7 @@ export function LinhaDoEmprestimo({ emprestimo, ativo, onAbrir }: LinhaDoEmprest
       aria-current={ativo ? 'true' : undefined}
       style={{
         textAlign: 'left',
-        background: ativo ? 'var(--color-royal-soft)' : 'var(--bg-card)',
+        ...fundoComVidro(ativo ? 'var(--color-royal-soft)' : 'var(--bg-card)'),
         border: `1px solid ${ativo ? 'var(--color-royal-border)' : 'var(--color-line)'}`,
         borderRadius: 'var(--leaf-sm)',
         padding: '12px 14px',

@@ -1,5 +1,5 @@
 import type { SugestaoDeCasamento } from '@cdd/contracts';
-import { Button, Icon, StatusBadge } from '@/ds';
+import { Button, Icon, StatusBadge, vidroLeve } from '@/ds';
 import { formatarData } from '@/pages/utils/formato';
 import { Lado } from './components/Lado';
 
@@ -15,6 +15,7 @@ export function Sugestao({ sugestao, onCasar, onRecusar }: SugestaoProps) {
     <div
       style={{
         background: 'var(--color-suggest-soft)',
+        ...vidroLeve,
         border: '1px solid var(--color-suggest-border)',
         borderRadius: 'var(--leaf-md)',
         padding: '13px 15px',

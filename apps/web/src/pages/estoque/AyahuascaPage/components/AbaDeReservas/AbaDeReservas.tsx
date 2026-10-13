@@ -1,4 +1,4 @@
-import { Button, StatusBadge } from '@/ds';
+import { Button, StatusBadge, vidroLeve } from '@/ds';
 import type { ReservaDeTrabalho } from '../../mocks/ayahuasca';
 import { litros } from '../../utils/litros';
 
@@ -27,6 +27,7 @@ export function AbaDeReservas({ reservas, reservado, onAlternar }: AbaDeReservas
             borderLeft: `3px solid ${reservado[r.id] ? 'var(--color-confirmed)' : 'var(--color-line-strong)'}`,
             borderRadius: 'var(--leaf-sm)',
             background: 'var(--bg-card)',
+            ...vidroLeve,
           }}
         >
           <span style={{ flex: '1 1 200px', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>

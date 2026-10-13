@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { Icon } from '../../atoms/Icon';
+import { fundoComVidro } from '../../fundacao/estilos';
 import { TONS_DO_AVISO } from './constantes';
 
 export type TomDoAviso = keyof typeof TONS_DO_AVISO;
@@ -33,7 +34,7 @@ export function Aviso({
       id={id}
       role={role}
       style={{
-        background: t.fundo,
+        ...fundoComVidro(t.fundo),
         border: `1px solid ${t.borda}`,
         borderRadius: 'var(--leaf-md)',
         padding: '12px 15px',

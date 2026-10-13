@@ -3,6 +3,7 @@ import { VistaEmBarras } from './components/VistaEmBarras';
 import { VistaEmRosca } from './components/VistaEmRosca';
 import type { FatiaDaQuebra } from './tipos';
 import { fatiasDaQuebra } from './utils/fatias';
+import { vidroLeve, fundoComVidro } from '@/ds';
 
 export interface PainelDeQuebraProps {
   titulo: string;
@@ -26,6 +27,7 @@ export function PainelDeQuebra({ titulo, itens, onAbrir, campo = false }: Painel
     <div
       style={{
         background: 'var(--bg-card)',
+        ...vidroLeve,
         border: 'var(--border-hairline)',
         borderRadius: 'var(--leaf-lg)',
         padding: campo ? '14px' : '16px 18px',
@@ -50,7 +52,7 @@ export function PainelDeQuebra({ titulo, itens, onAbrir, campo = false }: Painel
                 borderRadius: 'var(--leaf-sm)',
                 cursor: 'pointer',
                 border: `1px solid ${vista === v ? 'var(--color-royal-border)' : 'var(--color-line)'}`,
-                background: vista === v ? 'var(--color-royal-soft)' : 'var(--bg-card)',
+                ...fundoComVidro(vista === v ? 'var(--color-royal-soft)' : 'var(--bg-card)'),
                 color: vista === v ? 'var(--color-royal-deep)' : 'var(--text-secondary)',
               }}
             >

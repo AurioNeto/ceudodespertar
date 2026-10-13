@@ -1,4 +1,4 @@
-import { StatusBadge, type Density } from '@/ds';
+import { StatusBadge, type Density, vidroLeve } from '@/ds';
 import { SITUACAO } from '../../constantes';
 import type { LoteDeDaime } from '../../mocks/ayahuasca';
 import { litros } from '../../utils/litros';
@@ -41,6 +41,7 @@ export function AbaDeLotes({ lotes, densidade, onAbrir }: AbaDeLotesProps) {
               borderLeft: `3px solid ${cor}`,
               borderRadius: 'var(--leaf-md)',
               background: 'var(--bg-card)',
+              ...vidroLeve,
               cursor: 'pointer',
               height: '100%',
               textAlign: 'left',

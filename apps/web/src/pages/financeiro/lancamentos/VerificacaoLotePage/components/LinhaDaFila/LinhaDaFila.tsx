@@ -1,5 +1,5 @@
 import type { ItemNaFila } from '@cdd/contracts';
-import { AmountDisplay, Button, Icon, StatusBadge, type IconName } from '@/ds';
+import { AmountDisplay, Button, Icon, StatusBadge, type IconName, fundoComVidro } from '@/ds';
 import type { Density } from '@/ds';
 import { formatarData } from '@/pages/utils/formato';
 import { CONFIANCA, ORIGENS } from '../../constantes';
@@ -30,7 +30,7 @@ export function LinhaDaFila({ item, densidade, selecionado, onSelecionar, onAbri
         alignItems: 'center',
         gap: 12,
         flexWrap: campo ? 'wrap' : 'nowrap',
-        background: selecionado ? 'var(--color-royal-soft)' : 'var(--bg-card)',
+        ...fundoComVidro(selecionado ? 'var(--color-royal-soft)' : 'var(--bg-card)'),
         border: `1px solid ${selecionado ? 'var(--color-royal-border)' : 'var(--color-line)'}`,
         borderRadius: 'var(--leaf-sm)',
         padding: '11px 14px',

@@ -1,4 +1,4 @@
-import { Icon } from '@/ds';
+import { Icon, vidroLeve } from '@/ds';
 
 /** Q3 do Doc 4 §14.2, ainda sem resposta — e a resposta muda quem pode mexer. */
 export function QuestaoAberta() {
@@ -6,6 +6,7 @@ export function QuestaoAberta() {
     <div
       style={{
         background: 'var(--color-suggest-soft)',
+        ...vidroLeve,
         border: '1px solid var(--color-suggest-border)',
         borderRadius: 'var(--leaf-md)',
         padding: '13px 16px',

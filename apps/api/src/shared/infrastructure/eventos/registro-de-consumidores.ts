@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import type { OnModuleInit } from '@nestjs/common';
 import { DiscoveryService, MetadataScanner } from '@nestjs/core';
 import type { EventoDeDominio } from '../../kernel/evento-de-dominio.js';
+import { lerEventosSemConsumidor } from './eventos-sem-consumidor.decorator.js';
 import { lerMetadadosReageA } from './reage-a.decorator.js';
 
 export type WrapperDeProvider = ReturnType<DiscoveryService['getProviders']>[number];
@@ -31,6 +32,16 @@ export class ErroDeConsumidorDuplicado extends Error {
   }
 }
 
+export class ErroDeTipoSemConsumidorComConsumidor extends Error {
+  constructor(tipo: string) {
+    super(
+      `o tipo "${tipo}" foi declarado em @EventosSemConsumidor mas tem consumidor com @ReageA — ` +
+        'tire o tipo da declaração para que o despachante exija a entrega',
+    );
+    this.name = 'ErroDeTipoSemConsumidorComConsumidor';
+  }
+}
+
 function metodosDecoradosComReageA(prototipo: object, scanner: MetadataScanner): string[] {
   return scanner
     .getAllMethodNames(prototipo)
@@ -41,6 +52,7 @@ function metodosDecoradosComReageA(prototipo: object, scanner: MetadataScanner):
 export class RegistroDeConsumidores implements OnModuleInit {
   private readonly consumidoresPorTipo = new Map<string, ConsumidorRegistrado[]>();
   private readonly identidadesRegistradas = new Set<string>();
+  private readonly tiposSemConsumidor = new Set<string>();
 
   constructor(
     private readonly descoberta: DiscoveryService,
@@ -55,9 +67,27 @@ export class RegistroDeConsumidores implements OnModuleInit {
     return this.consumidoresPorTipo.get(tipo) ?? [];
   }
 
+  dispensaConsumidor(tipo: string): boolean {
+    return this.tiposSemConsumidor.has(tipo);
+  }
+
   private descobrir(): void {
     for (const wrapper of this.descoberta.getProviders()) {
+      this.descobrirTiposSemConsumidor(wrapper);
       this.descobrirNoWrapper(wrapper);
+    }
+    const contraditorio = [...this.tiposSemConsumidor].find((tipo) => this.consumidoresPorTipo.has(tipo));
+    if (contraditorio !== undefined) {
+      throw new ErroDeTipoSemConsumidorComConsumidor(contraditorio);
+    }
+  }
+
+  private descobrirTiposSemConsumidor(wrapper: WrapperDeProvider): void {
+    if (typeof wrapper.metatype !== 'function') {
+      return;
+    }
+    for (const tipo of lerEventosSemConsumidor(wrapper.metatype)) {
+      this.tiposSemConsumidor.add(tipo);
     }
   }
 

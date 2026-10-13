@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatarUltimoErro } from './formatador-de-erro.js';
+import { ErroDeEventoSemConsumidor, descreverFalhaDeInfraestrutura, formatarUltimoErro } from './formatador-de-erro.js';
 
 const MENSAGEM_GENERICA = 'o consumidor falhou ao processar o evento';
 
@@ -74,4 +74,61 @@ describe('formatarUltimoErro', () => {
 
     expect(formatarUltimoErro(new NomeGigante()).length).toBeLessThan(200);
   });
+});
+
+describe('formatarUltimoErro de evento sem consumidor', () => {
+  it('não diz que o consumidor falhou: diz que não há consumidor registrado', () => {
+    expect(formatarUltimoErro(new ErroDeEventoSemConsumidor('teste.Tipo'))).toBe(
+      'ErroDeEventoSemConsumidor - nenhum consumidor registrado para o tipo neste processo',
+    );
+  });
+});
+
+describe('descreverFalhaDeInfraestrutura', () => {
+  it('traz a classe, o SQLSTATE e a constraint sem a mensagem genérica do consumidor', () => {
+    const erro = Object.assign(new Error('x'), { code: '40001', constraint: 'outbox_pkey' });
+
+    expect(descreverFalhaDeInfraestrutura(erro)).toBe('Error: 40001 constraint=outbox_pkey');
+  });
+
+  it('mantém o código de erro de sistema do Node, como ECONNREFUSED', () => {
+    const erro = Object.assign(new Error('connect ECONNREFUSED 10.0.0.1:5432'), { code: 'ECONNREFUSED' });
+
+    expect(descreverFalhaDeInfraestrutura(erro)).toBe('Error: ECONNREFUSED');
+  });
+
+  it('segue a cadeia de causas até três elos', () => {
+    class ErroDoOrm extends Error {}
+    class ErroDoPool extends Error {}
+    const raiz = Object.assign(new Error('raiz'), { code: 'ETIMEDOUT' });
+    const meio = new ErroDoPool('pool', { cause: raiz });
+    const topo = new ErroDoOrm('orm', { cause: meio });
+    const alemDoLimite = new TypeError('fora', { cause: topo });
+
+    expect(descreverFalhaDeInfraestrutura(topo)).toBe('ErroDoOrm <- ErroDoPool <- Error: ETIMEDOUT');
+    expect(descreverFalhaDeInfraestrutura(alemDoLimite)).toBe('TypeError <- ErroDoOrm <- ErroDoPool');
+  });
+
+  it('nunca traz mensagem nem detail do driver, em nenhum elo da cadeia', () => {
+    const doDriver = Object.assign(new Error('invalid input syntax for type uuid: "fulana@exemplo.com"'), {
+      code: '22P02',
+      detail: 'Key (email)=(fulana@exemplo.com) already exists.',
+    });
+    const embrulhado = new Error('falha para 123.456.789-00', { cause: doDriver });
+
+    const descricao = descreverFalhaDeInfraestrutura(embrulhado);
+
+    expect(descricao).toBe('Error <- Error: 22P02');
+    expect(descricao).not.toContain('fulana');
+    expect(descricao).not.toContain('123.456');
+  });
+
+  it.each(['fulana@exemplo.com', 'Email fulana@x', 'EMAIL FULANA', `E${'X'.repeat(40)}`, 'econnrefused'])(
+    'descarta o code %j, que não é SQLSTATE nem código de sistema',
+    (code) => {
+      const erro = Object.assign(new Error('x'), { code });
+
+      expect(descreverFalhaDeInfraestrutura(erro)).toBe('Error');
+    },
+  );
 });

@@ -1,5 +1,5 @@
 import type { Leito } from '@cdd/contracts';
-import type { Density } from '@/ds';
+import { fundoComVidro, type Density } from '@/ds';
 import { conflitoDeAgenda, hospedes, liberadoPorCancelamento, type eventoDoMapa } from '../../../../../../mocks/leitos';
 import { ESTILO_DO_OCUPANTE } from './constantes';
 
@@ -80,7 +80,7 @@ export function Celula({
                 ? 'var(--color-royal)'
                 : 'var(--color-line-strong)'
         }`,
-        background:
+        ...fundoComVidro(
           ocupantes.length > 0
             ? 'var(--color-royal-soft)'
             : selecionada
@@ -88,6 +88,7 @@ export function Celula({
               : conflita
                 ? 'var(--color-pending-soft)'
                 : 'var(--bg-card-solid)',
+        ),
         minHeight: campo ? 52 : 48,
         padding: 4,
         display: 'flex',

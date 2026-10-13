@@ -1,5 +1,5 @@
 import type { UsuarioListado } from '@cdd/contracts';
-import { Button, StatusBadge, useDensidade, Avatar } from '@/ds';
+import { Button, StatusBadge, useDensidade, Avatar, vidroLeve } from '@/ds';
 import { formatarDataHora } from '@/lib/formato';
 import { SITUACAO_DE_USUARIO } from '../../situacaoDeUsuario';
 
@@ -26,6 +26,7 @@ export function LinhaDeUsuario({ usuario, aoGerenciar }: LinhaDeUsuarioProps) {
         border: 'var(--border-hairline)',
         borderRadius: 'var(--leaf-sm)',
         background: 'var(--bg-card)',
+        ...vidroLeve,
       }}
     >
       <Avatar nome={usuario.nome} />

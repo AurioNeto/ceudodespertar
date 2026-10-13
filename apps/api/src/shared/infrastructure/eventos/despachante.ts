@@ -11,13 +11,16 @@ import {
 import { calcularProximaTentativa } from './backoff.js';
 import { MODO_DO_PROCESSO } from './modo-do-processo.js';
 import type { ModoDoProcesso } from './modo-do-processo.js';
-import { formatarUltimoErro } from './formatador-de-erro.js';
+import { ErroDeEventoSemConsumidor, descreverFalhaDeInfraestrutura, formatarUltimoErro } from './formatador-de-erro.js';
 import type { ConsumidorRegistrado } from './registro-de-consumidores.js';
 import { RegistroDeConsumidores } from './registro-de-consumidores.js';
 import { SinalizadorDeEventos } from './sinalizador-de-eventos.js';
 import { TETO_DE_TENTATIVAS } from './teto-de-tentativas.js';
 
 export const TIMEOUT_DO_CONSUMIDOR_EM_MS = Symbol('TIMEOUT_DO_CONSUMIDOR_EM_MS');
+export const MENSAGEM_DE_FALHA_DE_INFRAESTRUTURA_NO_CICLO = 'outbox: falha de infraestrutura no ciclo do despachante';
+export const MENSAGEM_DE_CICLO_RECUPERADO = 'outbox: ciclo do despachante voltou a funcionar';
+export const MENSAGEM_DE_EVENTO_SEM_CONSUMIDOR = 'outbox: evento sem consumidor registrado neste processo';
 export const TIMEOUT_PADRAO_DO_CONSUMIDOR_EM_MS = 30_000;
 const TAMANHO_MAXIMO_DO_CICLO = 100;
 const INTERVALO_DE_POLLING_EM_MS = 1000;
@@ -162,7 +165,7 @@ export class Despachante implements OnModuleInit, OnModuleDestroy {
       return;
     }
     this.cicloFalhando = false;
-    this.logger.log('ciclo do despachante voltou a funcionar');
+    this.logger.log(MENSAGEM_DE_CICLO_RECUPERADO);
   }
 
   private aoFalharCiclo(motivo: unknown): void {
@@ -170,7 +173,7 @@ export class Despachante implements OnModuleInit, OnModuleDestroy {
       return;
     }
     this.cicloFalhando = true;
-    this.logger.error(`falha no ciclo do despachante: ${formatarUltimoErro(paraErro(motivo))}`);
+    this.logger.error({ causa: descreverFalhaDeInfraestrutura(paraErro(motivo)) }, MENSAGEM_DE_FALHA_DE_INFRAESTRUTURA_NO_CICLO);
   }
 
   private async processarProximoEvento(): Promise<boolean> {
@@ -242,9 +245,18 @@ export class Despachante implements OnModuleInit, OnModuleDestroy {
     evento: EventoDeDominio,
     tentativasAntesDesteCiclo: number,
   ): Promise<Error | undefined> {
+    const consumidores = this.registro.consumidoresPara(evento.tipo);
+    if (consumidores.length === 0 && !this.registro.dispensaConsumidor(evento.tipo)) {
+      this.logger.warn(
+        { evento: evento.eventoId, tipo: evento.tipo, tentativas: tentativasAntesDesteCiclo + 1 },
+        MENSAGEM_DE_EVENTO_SEM_CONSUMIDOR,
+      );
+      return new ErroDeEventoSemConsumidor(evento.tipo);
+    }
+
     let primeiroErro: Error | undefined;
 
-    for (const consumidor of this.registro.consumidoresPara(evento.tipo)) {
+    for (const consumidor of consumidores) {
       // eslint-disable-next-line no-await-in-loop -- consumidores da mesma conexão rodam um savepoint por vez
       if (await this.jaProcessado(contexto, consumidor.consumidor, evento.eventoId)) {
         continue;

@@ -2,6 +2,7 @@ import type { CSSProperties } from 'react';
 import { BotaoDeIcone } from '../../atoms/BotaoDeIcone';
 import { Icon } from '../../atoms/Icon';
 import type { Density } from '../../fundacao/densidade';
+import { vidroLeve } from '../../fundacao/estilos';
 
 export interface AttachmentCaptureProps {
   label: string;
@@ -34,6 +35,7 @@ export function AttachmentCapture({
           alignItems: 'center',
           gap: 12,
           background: 'var(--color-royal-soft)',
+          ...vidroLeve,
           border: '1px solid var(--color-royal-border)',
           borderRadius: 'var(--leaf-sm)',
           padding: '10px 10px 10px 14px',

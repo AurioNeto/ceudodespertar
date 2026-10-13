@@ -1,4 +1,4 @@
-import { Button, Icon, Interruptor } from '@/ds';
+import { Button, Icon, Interruptor, fundoComVidro } from '@/ds';
 import type { Trabalho } from '../../../../tipos';
 import { Bloco } from '../Bloco';
 import { MESES_CURTOS, ORIGENS_DE_MARCACAO } from './constantes';
@@ -41,7 +41,7 @@ export function ListaDePreparo({
                 padding: '10px 12px',
                 border: 'var(--border-hairline)',
                 borderRadius: 'var(--leaf-sm)',
-                background: feita ? 'var(--color-confirmed-soft)' : 'var(--bg-card)',
+                ...fundoComVidro(feita ? 'var(--color-confirmed-soft)' : 'var(--bg-card)'),
                 cursor: onAlternarTarefa ? 'pointer' : 'default',
               }}
             >

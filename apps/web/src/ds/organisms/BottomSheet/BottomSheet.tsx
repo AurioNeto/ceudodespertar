@@ -1,7 +1,7 @@
 import type { CSSProperties } from 'react';
 import { Icon } from '../../atoms/Icon';
 import type { SheetOption } from '../../fundacao/opcao';
-import { rotuloVersalete } from '../../fundacao/estilos';
+import { rotuloVersalete, vidroLeve, fundoComVidro } from '../../fundacao/estilos';
 
 export interface BottomSheetProps {
   open?: boolean;
@@ -44,6 +44,7 @@ export function BottomSheet({
         style={{
           width: '100%',
           background: 'var(--bg-card)',
+          ...vidroLeve,
           borderRadius: 'var(--leaf-xl-espelhada)',
           boxShadow: 'var(--shadow-sheet)',
           padding: '8px 0 14px',
@@ -81,7 +82,7 @@ export function BottomSheet({
                 textAlign: 'left',
                 minHeight: 'var(--target-field)',
                 padding: '0 20px',
-                background: on ? 'var(--color-royal-soft)' : 'transparent',
+                ...fundoComVidro(on ? 'var(--color-royal-soft)' : 'transparent'),
                 borderTop: 'var(--border-hairline)',
               }}
             >

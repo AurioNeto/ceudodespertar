@@ -1,5 +1,5 @@
 import type { Conta } from '@cdd/contracts';
-import { AmountDisplay, Rotulo } from '@/ds';
+import { AmountDisplay, Rotulo, vidroLeve } from '@/ds';
 
 export interface SaldosDoFechamentoProps {
   contasAtivas: readonly Conta[];
@@ -11,6 +11,7 @@ export function SaldosDoFechamento({ contasAtivas, totalSaldos }: SaldosDoFecham
     <div
       style={{
         background: 'var(--bg-card)',
+        ...vidroLeve,
         border: 'var(--border-hairline)',
         borderRadius: 'var(--leaf-lg)',
         padding: '16px 18px',

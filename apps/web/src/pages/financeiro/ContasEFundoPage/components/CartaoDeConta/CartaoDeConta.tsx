@@ -1,5 +1,5 @@
 import type { Conta, DataLocal } from '@cdd/contracts';
-import { AmountDisplay, Icon, StatusBadge } from '@/ds';
+import { AmountDisplay, Icon, StatusBadge, vidroLeve } from '@/ds';
 import { formatarDiaMes } from '@/pages/utils/formato';
 import { iconeDaConta, textoDaConciliacao, tomDaConciliacao } from '../../utils/conta';
 
@@ -14,6 +14,7 @@ export function CartaoDeConta({ conta, ultimaConciliacao }: CartaoDeContaProps) 
     <div
       style={{
         background: 'var(--bg-card)',
+        ...vidroLeve,
         border: 'var(--border-hairline)',
         borderLeft: `3px solid ${conta.conciliacao === 'PENDENTE' ? 'var(--color-pending)' : 'var(--color-confirmed)'}`,
         borderRadius: 'var(--leaf-md)',

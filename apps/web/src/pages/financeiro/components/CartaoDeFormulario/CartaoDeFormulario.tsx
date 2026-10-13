@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import type { Density } from '@/ds';
+import { vidroLeve } from '@/ds';
 
 export interface CartaoDeFormularioProps {
   titulo: string;
@@ -12,6 +13,7 @@ export function CartaoDeFormulario({ titulo, densidade, children }: CartaoDeForm
     <div
       style={{
         background: 'var(--bg-card)',
+        ...vidroLeve,
         border: '1px solid var(--color-royal-border)',
         borderLeft: 'var(--edge-state) solid var(--color-royal)',
         borderRadius: 'var(--leaf-md)',

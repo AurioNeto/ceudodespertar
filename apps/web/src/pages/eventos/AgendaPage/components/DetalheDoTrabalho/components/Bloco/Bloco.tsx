@@ -1,8 +1,10 @@
+import { vidroLeve } from '@/ds';
 export function Bloco({ titulo, nota, children }: { titulo: string; nota?: string; children: React.ReactNode }) {
   return (
     <div
       style={{
         background: 'var(--bg-card)',
+        ...vidroLeve,
         border: 'var(--border-hairline)',
         borderRadius: 'var(--leaf-lg)',
         padding: '16px 18px',
