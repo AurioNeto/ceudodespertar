@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, inject, it, vi } from 'vitest'
 import { criarAplicacao } from '../../src/composicao/aplicacao.js';
 import { NOME_DA_CONEXAO_DA_PRONTIDAO } from '../../src/shared/infrastructure/banco/pool-da-prontidao.js';
 import { TETO_DE_TENTATIVAS } from '../../src/shared/infrastructure/eventos/teto-de-tentativas.js';
+import { ExpurgoDoOutbox } from '../../src/shared/infrastructure/eventos/expurgo-do-outbox.js';
 import { ExpurgoDeChavesDeIdempotencia } from '../../src/shared/infrastructure/idempotencia/expurgo-de-chaves-de-idempotencia.js';
 import { VerificadorDeProntidao } from '../../src/shared/infrastructure/saude/verificador-de-prontidao.js';
 import { criarBancoDeTeste, derrubarBancoDeTeste } from '../integracao/banco-de-teste.js';
@@ -47,6 +48,7 @@ async function gravarEvento(banco: BancoDeTeste, evento: EventoDoOutbox): Promis
 function silenciarTrabalhosEmSegundoPlano(): void {
   vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval'] });
   vi.spyOn(ExpurgoDeChavesDeIdempotencia.prototype, 'expurgar').mockResolvedValue(undefined);
+  vi.spyOn(ExpurgoDoOutbox.prototype, 'expurgar').mockResolvedValue(undefined);
 }
 
 afterEach(() => {
