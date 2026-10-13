@@ -1,9 +1,10 @@
 import { z } from 'zod';
+import { uuidEmMinusculas } from '../entrada.js';
 import type { GrupoId, UsuarioId } from '../kernel.js';
 import type { SituacaoUsuario } from './tipos.js';
 
 export const ParametrosDoUsuario = z.object({
-  id: z.uuid().transform((valor) => valor as UsuarioId),
+  id: uuidEmMinusculas<UsuarioId>(),
 });
 
 export type ParametrosDoUsuario = z.infer<typeof ParametrosDoUsuario>;
