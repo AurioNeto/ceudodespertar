@@ -1,4 +1,5 @@
-import { BotaoDeIcone, Button, Leitura, Rotulo, StatusBadge, type Density } from '@/ds';
+import { createPortal } from 'react-dom';
+import { BotaoDeIcone, Button, Leitura, Rotulo, StatusBadge, type Density, vidroLeve } from '@/ds';
 import { rotuloDoMovimento, SITUACAO, valorTabular } from '../../constantes';
 import type { LoteDeDaime, MovimentoDeDaime } from '../../mocks/ayahuasca';
 import { corDoMovimento } from '../../utils/corDoMovimento';
@@ -14,7 +15,7 @@ export interface FichaDoLoteProps {
 
 export function FichaDoLote({ lote, movimentos, densidade, onFechar, onQuarentena }: FichaDoLoteProps) {
   const campo = densidade === 'field';
-  return (
+  return createPortal(
     <div
       onClick={onFechar}
       style={{
@@ -52,6 +53,7 @@ export function FichaDoLote({ lote, movimentos, densidade, onFechar, onQuarenten
         <div
           style={{
             background: 'var(--bg-card)',
+            ...vidroLeve,
             border: 'var(--border-hairline)',
             borderRadius: 'var(--leaf-lg)',
             padding: '14px 16px',
@@ -73,6 +75,7 @@ export function FichaDoLote({ lote, movimentos, densidade, onFechar, onQuarenten
         <div
           style={{
             background: 'var(--bg-card)',
+            ...vidroLeve,
             border: 'var(--border-hairline)',
             borderRadius: 'var(--leaf-lg)',
             padding: '14px 16px',
@@ -104,6 +107,7 @@ export function FichaDoLote({ lote, movimentos, densidade, onFechar, onQuarenten
           {lote.situacao === 'quarentena' ? 'Tirar da quarentena' : 'Pôr em quarentena'}
         </Button>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

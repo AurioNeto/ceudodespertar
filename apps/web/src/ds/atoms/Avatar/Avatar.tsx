@@ -1,4 +1,5 @@
 import { iniciais } from '@/lib/formato';
+import { vidroLeve } from '../../fundacao/estilos';
 
 export function Avatar({ nome }: { nome: string }) {
   return (
@@ -10,6 +11,7 @@ export function Avatar({ nome }: { nome: string }) {
         flex: '0 0 auto',
         borderRadius: 'var(--leaf-seal)',
         background: 'var(--color-royal-soft)',
+        ...vidroLeve,
         color: 'var(--color-royal-deep)',
         display: 'grid',
         placeItems: 'center',

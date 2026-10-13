@@ -2,6 +2,7 @@ import type { CSSProperties, ReactNode } from 'react';
 import { BotaoDeIcone } from '../../atoms/BotaoDeIcone';
 import { Icon } from '../../atoms/Icon';
 import type { Density } from '../../fundacao/densidade';
+import { vidroLeve } from '../../fundacao/estilos';
 
 export interface SuggestionChipProps {
   children: ReactNode;
@@ -22,6 +23,7 @@ export function SuggestionChip({ children, onAccept, onDismiss, density = 'field
         alignItems: 'center',
         gap: 8,
         background: 'var(--color-suggest-soft)',
+        ...vidroLeve,
         border: '1px dashed var(--color-suggest-border)',
         color: 'var(--color-suggest)',
         borderRadius: 'var(--leaf-xs)',

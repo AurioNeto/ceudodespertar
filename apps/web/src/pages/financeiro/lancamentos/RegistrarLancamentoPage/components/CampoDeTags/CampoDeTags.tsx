@@ -1,5 +1,5 @@
 import type { SheetOption } from '@/ds';
-import { BotaoDeIcone, RotuloDeCampo } from '@/ds';
+import { BotaoDeIcone, RotuloDeCampo, vidroLeve } from '@/ds';
 
 export interface CampoDeTagsProps {
   label: string;
@@ -29,6 +29,7 @@ export function CampoDeTags({
           minHeight: 'var(--target-office)',
           border: '1px solid var(--border-field)',
           background: 'var(--bg-card)',
+          ...vidroLeve,
           borderRadius: 'var(--leaf-sm)',
           padding: '8px 10px',
           display: 'flex',
@@ -45,6 +46,7 @@ export function CampoDeTags({
               alignItems: 'center',
               gap: 6,
               background: 'var(--color-royal-soft)',
+              ...vidroLeve,
               border: '1px solid var(--color-royal-border)',
               color: 'var(--color-royal-deep)',
               borderRadius: 'var(--leaf-xs)',
@@ -79,6 +81,7 @@ export function CampoDeTags({
               style={{
                 border: '1px dashed var(--border-field)',
                 background: 'var(--bg-card)',
+                ...vidroLeve,
                 color: 'var(--text-secondary)',
                 borderRadius: 'var(--leaf-xs)',
                 padding: '5px 12px',

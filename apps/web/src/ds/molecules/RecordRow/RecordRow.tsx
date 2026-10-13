@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { CSSProperties, ReactNode } from 'react';
 import { AmountDisplay, type NaturezaVisual } from '../../atoms/AmountDisplay';
 import type { Density } from '../../fundacao/densidade';
+import { vidroLeve } from '../../fundacao/estilos';
 
 export type RecordStatus = 'pending' | 'confirmed' | 'reversed';
 
@@ -53,8 +54,7 @@ export function RecordRow({
         width: '100%',
         textAlign: 'left',
         background: selected ? 'var(--color-royal-soft)' : 'var(--bg-glass)',
-        backdropFilter: selected ? undefined : 'var(--glass)',
-        WebkitBackdropFilter: selected ? undefined : 'var(--glass)',
+        ...(selected ? vidroLeve : { backdropFilter: 'var(--glass)', WebkitBackdropFilter: 'var(--glass)' }),
         border: `1px solid ${selected ? 'var(--color-royal-border)' : 'var(--color-line)'}`,
         borderRadius: 'var(--leaf-sm)',
         padding: density === 'field' ? '13px 15px 13px 17px' : '11px 14px 11px 16px',

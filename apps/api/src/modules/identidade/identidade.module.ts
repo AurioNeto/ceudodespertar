@@ -70,6 +70,7 @@ import { GravadorDeTrilha } from './infrastructure/auditoria/gravador-de-trilha.
 import { LeitorDeAuditoriaKysely } from './infrastructure/auditoria/leitor-de-auditoria.kysely.js';
 import { CacheDeContextoDeAcesso } from './infrastructure/acesso/cache-de-contexto-de-acesso.js';
 import { InvalidadorDoCacheDeAcesso } from './infrastructure/acesso/invalidador-do-cache-de-acesso.js';
+import { EventosDaIdentidadeSemConsumidor } from './infrastructure/eventos/eventos-da-identidade-sem-consumidor.js';
 import { LeitorDoSujeitoDoUsuarioKysely } from './infrastructure/acesso/leitor-do-sujeito-do-usuario.kysely.js';
 import { SincronizadorDoAcessoNoProvedor } from './infrastructure/acesso/sincronizador-do-acesso-no-provedor.js';
 import { LeitorDoEuKysely } from './infrastructure/acesso/leitor-do-eu.kysely.js';
@@ -151,6 +152,7 @@ import { GestaoDeUsuariosController } from './interface/http/gestao-de-usuarios.
     SemeaduraDeDemonstracao,
     ObterEu,
     InvalidadorDoCacheDeAcesso,
+    EventosDaIdentidadeSemConsumidor,
     ResolvedorDeContextoDeAcessoDaIdentidade,
   ],
   exports: [ResolvedorDeContextoDeAcessoDaIdentidade, SemeadorDeGruposDeSistema, BootstrapDaIdentidade, SemeaduraDeDemonstracao, EnviadorDeConvite],

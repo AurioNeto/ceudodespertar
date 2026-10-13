@@ -1,4 +1,4 @@
-import { Icon, StatusBadge, TextField, type Density } from '@/ds';
+import { Icon, StatusBadge, TextField, type Density, vidroLeve } from '@/ds';
 import { ANAMNESE_ROTULO, TOM_DA_ANAMNESE } from '../../constantes';
 import { diretorio, type PessoaDoDiretorio } from '../../mocks/inscricao';
 import { Bloco } from '../Bloco';
@@ -37,6 +37,7 @@ export function BuscaDePessoa({ busca, onBusca, onEscolher, densidade }: BuscaDe
               border: 'var(--border-hairline)',
               borderRadius: 'var(--leaf-sm)',
               background: 'var(--bg-card)',
+              ...vidroLeve,
               padding: campo ? '13px 14px' : '12px 15px',
               cursor: 'pointer',
               display: 'flex',

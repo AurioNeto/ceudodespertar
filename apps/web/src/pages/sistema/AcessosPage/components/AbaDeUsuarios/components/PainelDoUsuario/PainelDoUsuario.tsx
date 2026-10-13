@@ -7,7 +7,7 @@ import { useComandosDeAcessos } from '../../../../comandos';
 import { ErroDoPainel } from '../../../ErroDoPainel';
 import { SeletorDeGrupos } from '../../../SeletorDeGrupos';
 import { SITUACAO_DE_USUARIO } from '../../situacaoDeUsuario';
-import { MOTIVO_OBRIGATORIO } from './constantes';
+import { CONVITE_REENVIADO, MOTIVO_OBRIGATORIO } from './constantes';
 import { useAcaoNoUsuario } from '../../../../hooks/useAcaoNoUsuario';
 import { useFocoNoPrimeiroCampoInvalido } from '../../../../hooks/useFocoNoPrimeiroCampoInvalido';
 
@@ -21,7 +21,7 @@ export interface PainelDoUsuarioProps {
 }
 
 type AcaoDeSituacao = 'suspender' | 'reativar';
-type AcaoDoPainel = 'grupos' | AcaoDeSituacao;
+type AcaoDoPainel = 'grupos' | 'reenviar' | AcaoDeSituacao;
 
 const acaoDeSituacaoDisponivel = (usuario: UsuarioListado): AcaoDeSituacao | null => {
   if (usuario.situacao === 'ATIVO') return 'suspender';
@@ -53,6 +53,7 @@ function PainelDoUsuarioAberto({
   const [grupos, setGrupos] = useState<readonly GrupoId[]>(() => idsDosGrupos(usuario));
   const [motivo, setMotivo] = useState('');
   const [erroDeMotivo, setErroDeMotivo] = useState<string | undefined>();
+  const [conviteReenviado, setConviteReenviado] = useState(false);
   const { raiz, focarPrimeiroCampoInvalido } = useFocoNoPrimeiroCampoInvalido<HTMLDivElement>();
 
   const { enviando, acaoEmCurso, erro, aviso, enviar } = useAcaoNoUsuario<AcaoDoPainel>({
@@ -67,6 +68,7 @@ function PainelDoUsuarioAberto({
   });
 
   const revogado = usuario.situacao === 'REVOGADO';
+  const convitePendente = usuario.situacao === 'CONVITE_PENDENTE';
   const acaoDeSituacao = acaoDeSituacaoDisponivel(usuario);
   const situacao = SITUACAO_DE_USUARIO[usuario.situacao];
 
@@ -76,6 +78,19 @@ function PainelDoUsuarioAberto({
       () => comandos.definirGrupos({ usuarioId: usuario.id, versao: usuario.versao, grupos }),
       aoFechar,
     );
+
+  const reenviarConvite = () => {
+    setConviteReenviado(false);
+    const reenvio = { usuarioId: usuario.id, versao: usuario.versao };
+    void enviar(
+      'reenviar',
+      () => comandos.reenviarConvite(reenvio, { chaveDeIdempotencia: chavePara({ acao: 'reenviar', ...reenvio }) }),
+      ({ versao }) => {
+        aoAtualizarUsuario({ ...usuario, versao });
+        setConviteReenviado(true);
+      },
+    );
+  };
 
   const mudarSituacao = (acao: AcaoDeSituacao) => {
     const motivoLimpo = motivo.trim();
@@ -136,6 +151,20 @@ function PainelDoUsuarioAberto({
                 onClick={() => mudarSituacao(acaoDeSituacao)}
               >
                 {acaoEmCurso === acaoDeSituacao ? 'Enviando…' : acaoDeSituacao === 'suspender' ? 'Suspender acesso' : 'Reativar acesso'}
+              </Button>
+            </div>
+          </>
+        ) : null}
+        {convitePendente ? (
+          <>
+            {conviteReenviado && !erro ? (
+              <Aviso tom="confirmado" role="status">
+                {CONVITE_REENVIADO}
+              </Aviso>
+            ) : null}
+            <div>
+              <Button variant="ghost" density={densidade} aria-disabled={enviando} onClick={reenviarConvite}>
+                {acaoEmCurso === 'reenviar' ? 'Reenviando…' : 'Reenviar convite'}
               </Button>
             </div>
           </>

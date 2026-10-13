@@ -1,5 +1,5 @@
 import type { LancamentoAConciliar } from '@cdd/contracts';
-import { AmountDisplay } from '@/ds';
+import { AmountDisplay, vidroLeve } from '@/ds';
 import { formatarData } from '@/pages/utils/formato';
 
 export interface LancamentoSozinhoProps {
@@ -11,6 +11,7 @@ export function LancamentoSozinho({ lancamento }: LancamentoSozinhoProps) {
     <div
       style={{
         background: 'var(--bg-card)',
+        ...vidroLeve,
         border: 'var(--border-hairline)',
         borderLeft: 'var(--edge-state) solid var(--color-pending)',
         borderRadius: 'var(--leaf-sm)',

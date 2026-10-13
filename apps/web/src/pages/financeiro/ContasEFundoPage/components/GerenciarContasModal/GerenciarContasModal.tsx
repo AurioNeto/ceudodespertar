@@ -1,5 +1,5 @@
 import type { Conta, ContaId, Fundo, FundoId } from '@cdd/contracts';
-import { Icon, PainelDeAcao } from '@/ds';
+import { Icon, PainelDeAcao, fundoComVidro } from '@/ds';
 import { iconeDaConta } from '../../utils/conta';
 import { corDaReserva } from '../../utils/reservas';
 import { BotaoNovo } from './components/BotaoNovo';
@@ -66,7 +66,7 @@ export function GerenciarContasModal({
                   borderRadius: 'var(--leaf-sm)',
                   cursor: 'pointer',
                   border: `1px solid ${aba === a ? 'var(--color-royal-border)' : 'var(--color-line)'}`,
-                  background: aba === a ? 'var(--color-royal-soft)' : 'var(--bg-card)',
+                  ...fundoComVidro(aba === a ? 'var(--color-royal-soft)' : 'var(--bg-card)'),
                   color: aba === a ? 'var(--color-royal-deep)' : 'var(--text-secondary)',
                 }}
               >

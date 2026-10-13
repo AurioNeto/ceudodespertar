@@ -3,6 +3,7 @@ import { Icon } from '../../../../atoms/Icon';
 import type { Density } from '../../../../fundacao/densidade';
 import type { NavLink } from '../../navegacao';
 import { SeloDeContagem } from '../SeloDeContagem';
+import { fundoComVidro } from '../../../../fundacao/estilos';
 
 export function NavItem({
   item,
@@ -33,7 +34,7 @@ export function NavItem({
         padding: '0 10px',
         borderRadius: 'var(--leaf-sm)',
         color: active ? 'var(--color-royal-deep)' : 'var(--text-primary)',
-        background: active ? 'var(--bg-card)' : hot ? 'var(--bg-hover)' : 'transparent',
+        ...fundoComVidro(active ? 'var(--bg-card)' : hot ? 'var(--bg-hover)' : 'transparent'),
         boxShadow: active ? 'var(--ring-card)' : 'none',
         font: active ? '600 13.5px var(--font-body)' : '400 13.5px var(--font-body)',
         position: 'relative',

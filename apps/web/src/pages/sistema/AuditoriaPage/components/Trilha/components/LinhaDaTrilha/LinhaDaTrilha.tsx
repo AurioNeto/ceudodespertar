@@ -1,5 +1,5 @@
 import type { RegistroDeAuditoria } from '@cdd/contracts';
-import { Icon, StatusBadge, type Density } from '@/ds';
+import { Icon, StatusBadge, type Density, fundoComVidro, vidroLeve } from '@/ds';
 import { EXIGE_REGISTRO_EXTRA, FEICAO } from '../../constantes';
 import { hora } from '../../../../utils/instante';
 
@@ -31,6 +31,7 @@ export function LinhaDaTrilha({ registro: r, densidade }: LinhaDaTrilhaProps) {
     <div
       style={{
         background: 'var(--bg-card)',
+        ...vidroLeve,
         border: 'var(--border-hairline)',
         borderLeft: feicao.tom === 'neutro' ? undefined : `var(--edge-state) solid ${cor}`,
         borderRadius: 'var(--leaf-sm)',
@@ -47,7 +48,7 @@ export function LinhaDaTrilha({ registro: r, densidade }: LinhaDaTrilhaProps) {
           height: 32,
           flexShrink: 0,
           borderRadius: 'var(--leaf-seal)',
-          background: fundo,
+          ...fundoComVidro(fundo),
           display: 'grid',
           placeItems: 'center',
         }}

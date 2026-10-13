@@ -1,4 +1,4 @@
-import { Button, Rotulo, Select, type Density } from '@/ds';
+import { Button, Rotulo, Select, type Density, vidroLeve } from '@/ds';
 import { ChipDeFiltro } from '@/pages/financeiro/lancamentos/components/ChipDeFiltro';
 import { CHIPS_TIPO, OPCOES_GRUPO, OPCOES_PERIODO, OPCOES_STATUS, OPCOES_TIPO } from '../../constantes';
 
@@ -29,6 +29,7 @@ export function FiltrosDoLivro({ filtros, densidade, onFiltrar, onLimpar }: Filt
     <div
       style={{
         background: 'var(--bg-card)',
+        ...vidroLeve,
         border: 'var(--border-hairline)',
         borderRadius: 'var(--leaf-lg)',
         padding: 16,

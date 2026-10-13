@@ -1,4 +1,4 @@
-import { Icon, type Density } from '@/ds';
+import { Icon, type Density, fundoComVidro } from '@/ds';
 
 interface RespostaDaPergunta {
   pergunta: string;
@@ -53,7 +53,7 @@ export function OpcaoMarcavel({
         textAlign: 'left',
         borderRadius: 'var(--leaf-sm)',
         border: `1px solid ${marcada ? 'var(--color-royal)' : 'var(--border-field)'}`,
-        background: marcada ? 'var(--color-royal-soft)' : 'var(--bg-card)',
+        ...fundoComVidro(marcada ? 'var(--color-royal-soft)' : 'var(--bg-card)'),
         cursor: 'pointer',
         display: 'flex',
         alignItems: 'center',

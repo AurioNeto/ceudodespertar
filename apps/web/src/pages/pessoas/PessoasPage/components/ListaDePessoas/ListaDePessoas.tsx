@@ -1,4 +1,4 @@
-import { Avatar, Icon, StatusBadge } from '@/ds';
+import { Avatar, Icon, StatusBadge, fundoComVidro } from '@/ds';
 import { SeloDaAnamnese } from '@/pages/components/SeloDaAnamnese';
 import type { AcessoAoSistema, PessoaDaCasa } from '../../mocks/pessoas';
 
@@ -24,7 +24,7 @@ export function ListaDePessoas({ pessoas, acessos, onAbrir }: ListaDePessoasProp
             padding: '11px 14px',
             border: 'var(--border-hairline)',
             borderRadius: 'var(--leaf-sm)',
-            background: p.ativa ? 'var(--bg-card)' : 'var(--bg-sunken)',
+            ...fundoComVidro(p.ativa ? 'var(--bg-card)' : 'var(--bg-sunken)'),
             opacity: p.ativa ? 1 : 0.75,
             cursor: 'pointer',
             textAlign: 'left',

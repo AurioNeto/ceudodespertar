@@ -1,4 +1,4 @@
-import { AmountDisplay, rotuloVersalete, type Density } from '@/ds';
+import { AmountDisplay, rotuloVersalete, type Density, vidroLeve } from '@/ds';
 import { formatarBRL } from '@/pages/utils/formato';
 import type { DadosDaPrestacao, NivelDeDetalhe } from '../../mocks/prestacao';
 import { Linha } from './components/Linha';
@@ -61,6 +61,7 @@ export function Documento({ dados, nivel, unidadeRotulo, densidade, totalReceita
       <div
         style={{
           background: 'var(--bg-card)',
+          ...vidroLeve,
           border: '1px solid var(--color-line-gold)',
           borderRadius: 'var(--leaf-lg)',
           padding: campo ? '14px 16px' : '16px 20px',

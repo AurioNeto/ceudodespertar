@@ -1,63 +1,29 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import type { RefObject } from 'react';
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
-import type { GrupoId, SituacaoUsuario, UsuarioId, UsuarioListado } from '@cdd/contracts';
-import { Button, EmptyState, InfraError, SkeletonList, varianteDoPainel, useDensidade } from '@/ds';
-import { useValorComAtraso } from './hooks/useValorComAtraso';
-import { useConsultasDeAcessos } from '../../consultas';
+import { Button, EmptyState, InfraError, SkeletonList, varianteDoPainel } from '@/ds';
 import { temFiltroAplicado } from './utils/temFiltroAplicado';
 import { focarTitulo } from '../../utils/focarTitulo';
 import { FiltrosDeUsuarios } from './components/FiltrosDeUsuarios';
 import { LinhaDeUsuario } from './components/LinhaDeUsuario';
 import { PainelDoUsuario } from './components/PainelDoUsuario';
-import { ATRASO_DA_BUSCA_EM_MS } from './constantes';
-import { semRepetidos } from './utils/semRepetidos';
-
-interface OpcoesDoFocoDaLinhaGerenciada {
-  readonly painelAberto: boolean;
-  readonly ultimoUsuarioGerenciado: RefObject<UsuarioId | null>;
-  readonly itens: readonly UsuarioListado[];
-}
-
-function useDevolverFocoAoTituloQuandoLinhaGerenciadaSome({
-  painelAberto,
-  ultimoUsuarioGerenciado,
-  itens,
-}: OpcoesDoFocoDaLinhaGerenciada) {
-  useEffect(() => {
-    const id = ultimoUsuarioGerenciado.current;
-    if (painelAberto || id === null) return;
-    if (itens.some((usuario) => usuario.id === id)) return;
-    ultimoUsuarioGerenciado.current = null;
-    if (document.activeElement === document.body) focarTitulo()?.focus();
-  }, [painelAberto, ultimoUsuarioGerenciado, itens]);
-}
+import { useAbaDeUsuarios } from './hooks/useAbaDeUsuarios';
 
 export function AbaDeUsuarios() {
-  const densidade = useDensidade();
-  const [usuarioEmEdicao, setUsuarioEmEdicao] = useState<UsuarioListado | null>(null);
-  const ultimoUsuarioGerenciado = useRef<UsuarioId | null>(null);
-  const consultas = useConsultasDeAcessos();
-  const [buscaDigitada, setBuscaDigitada] = useState('');
-  const [situacao, setSituacao] = useState<SituacaoUsuario | null>(null);
-  const [grupoId, setGrupoId] = useState<GrupoId | null>(null);
-  const busca = useValorComAtraso(buscaDigitada, ATRASO_DA_BUSCA_EM_MS);
-  const filtro = useMemo(() => ({ situacao, grupoId, busca }), [situacao, grupoId, busca]);
-
-  const grupos = useQuery(consultas.grupos());
-  const usuarios = useInfiniteQuery(consultas.usuarios(filtro));
-  const itens = useMemo(() => semRepetidos(usuarios.data?.pages.flatMap((pagina) => pagina.itens) ?? []), [usuarios.data]);
-
-  const gerenciar = (usuario: UsuarioListado) => {
-    ultimoUsuarioGerenciado.current = usuario.id;
-    setUsuarioEmEdicao(usuario);
-  };
-
-  useDevolverFocoAoTituloQuandoLinhaGerenciadaSome({
-    painelAberto: usuarioEmEdicao !== null,
-    ultimoUsuarioGerenciado,
+  const {
+    densidade,
+    usuarioEmEdicao,
+    setUsuarioEmEdicao,
+    buscaDigitada,
+    setBuscaDigitada,
+    situacao,
+    setSituacao,
+    grupoId,
+    setGrupoId,
+    filtro,
+    grupos,
+    usuarios,
     itens,
-  });
+    gerenciar,
+    fecharPainel,
+  } = useAbaDeUsuarios();
 
   return (
     <>
@@ -117,7 +83,7 @@ export function AbaDeUsuarios() {
         usuario={usuarioEmEdicao}
         variante={varianteDoPainel(densidade)}
         densidade={densidade}
-        aoFechar={() => setUsuarioEmEdicao(null)}
+        aoFechar={fecharPainel}
         aoAtualizarUsuario={setUsuarioEmEdicao}
         focoDeReserva={focarTitulo}
       />

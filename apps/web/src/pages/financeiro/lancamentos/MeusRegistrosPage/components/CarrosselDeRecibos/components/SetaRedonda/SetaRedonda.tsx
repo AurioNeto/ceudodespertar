@@ -1,4 +1,4 @@
-import { BotaoDeIcone } from '@/ds';
+import { BotaoDeIcone, vidroLeve } from '@/ds';
 
 export interface SetaRedondaProps {
   rotulo: string;
@@ -16,6 +16,7 @@ export function SetaRedonda({ rotulo, onClick }: SetaRedondaProps) {
         flex: '0 0 auto',
         border: '1px solid var(--color-line-strong)',
         background: 'var(--bg-card)',
+        ...vidroLeve,
         borderRadius: 'var(--leaf-seal)',
         color: 'var(--text-primary)',
       }}

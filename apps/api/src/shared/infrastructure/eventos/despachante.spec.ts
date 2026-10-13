@@ -1,11 +1,7 @@
 import { Logger } from '@nestjs/common';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { UnidadeDeTrabalho } from '../banco/unidade-de-trabalho.js';
-import {
-  Despachante,
-  TIMEOUT_PADRAO_DO_CONSUMIDOR_EM_MS,
-  lerTimeoutDoConsumidorEmMs,
-} from './despachante.js';
+import { Despachante, MENSAGEM_DE_FALHA_DE_INFRAESTRUTURA_NO_CICLO, TIMEOUT_PADRAO_DO_CONSUMIDOR_EM_MS, lerTimeoutDoConsumidorEmMs } from './despachante.js';
 import type { RegistroDeConsumidores } from './registro-de-consumidores.js';
 import { SinalizadorDeEventos } from './sinalizador-de-eventos.js';
 
@@ -62,8 +58,12 @@ describe('Despachante · falha do ciclo acordado pelo sinal', () => {
     await vi.waitFor(() => expect(erros).toHaveBeenCalled());
     await despachante.onModuleDestroy();
 
-    const textoLogado = erros.mock.calls.map((chamada) => chamada.map(String).join(' ')).join('\n');
-    expect(textoLogado).toContain('23505');
+    const textoLogado = erros.mock.calls
+      .map((chamada) => chamada.map((parte) => (typeof parte === 'string' ? parte : JSON.stringify(parte))).join(' '))
+      .join('\n');
+    expect(textoLogado).toContain(MENSAGEM_DE_FALHA_DE_INFRAESTRUTURA_NO_CICLO);
+    expect(textoLogado).toContain('Error: 23505');
+    expect(textoLogado).not.toContain('o consumidor falhou');
     expect(textoLogado).not.toContain('fulana');
     expect(textoLogado).not.toContain('exemplo.com');
     expect(textoLogado).not.toContain('already exists');

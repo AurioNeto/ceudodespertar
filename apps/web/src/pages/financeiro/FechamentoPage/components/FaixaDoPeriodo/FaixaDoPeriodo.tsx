@@ -1,4 +1,4 @@
-import { Rotulo, type Density } from '@/ds';
+import { Rotulo, type Density, fundoComVidro } from '@/ds';
 import { formatarCompetencia, pluralizar } from '@/pages/utils/formato';
 import { competenciaAtual } from '@/pages/mocks/relogio';
 import type { ItemDoChecklist } from '../ItemDoChecklist';
@@ -24,7 +24,7 @@ export function FaixaDoPeriodo({ fechado, bloqueios, entradas, saidas, resultado
   return (
     <div
       style={{
-        background: fechado ? 'var(--bg-card)' : 'var(--bg-brand)',
+        ...fundoComVidro(fechado ? 'var(--bg-card)' : 'var(--bg-brand)'),
         border: `1px solid ${fechado ? 'var(--color-confirmed)' : 'var(--border-brand)'}`,
         borderRadius: 'var(--leaf-lg)',
         padding: campo ? '14px 16px' : '18px 20px',

@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import type { GrupoId, UsuarioId } from '@cdd/contracts';
+import { TAMANHO_MAXIMO_DA_BUSCA } from '@cdd/contracts';
 import { assentar, type TelaMontada } from '@/testes/sessaoDeTeste';
 import { ATRASO_DA_BUSCA_EM_MS } from './constantes';
 import {
@@ -220,7 +221,7 @@ describe('Acessos: aba Usuários', () => {
 
   it('o campo de busca limita o texto ao máximo aceito pelo contrato', async () => {
     const { tela } = await montar();
-    expect(campoPorRotulo<HTMLInputElement>(tela, 'Buscar').maxLength).toBe(200);
+    expect(campoPorRotulo<HTMLInputElement>(tela, 'Buscar').maxLength).toBe(TAMANHO_MAXIMO_DA_BUSCA);
   });
 
   it('item repetido entre páginas aparece uma vez, pela primeira ocorrência', async () => {

@@ -10,12 +10,12 @@
 2. **Desvios estruturais pequenos** (anexo do Doc 8, §14 "Pendências do mapeamento"):
    - componentes acima de 200 linhas: resta o `CartaoDeContratacao` (230). `Participacao` e `BlocoDePergunta` ficaram abaixo de 200 no #167;
    - `BlocoDePergunta` e `DetalheDoTrabalho` recebem `campo: boolean` em vez de `densidade`;
-   - estado fora de `hooks/`: `Cadastro` de Leitos, `Herdadas` e `AbaDeUsuarios`;
-   - `EntrarPage` e `RetornoPage` chamam mais de um hook.
+   - ✅ estado fora de `hooks/`: `Cadastro` de Leitos, `Herdadas` e `AbaDeUsuarios` (em revisão, 13/10);
+   - ✅ `EntrarPage` e `RetornoPage` chamam um hook só (em revisão, 13/10).
    - A conferência de 12/10 na `main` achou mais casos do mesmo tipo, que não estavam no anexo:
      - acima de 200 linhas no `ds`: `PendencyCard` (219) e `PainelDeAcao` (207);
      - `campo: boolean`: `Cartao`, `Portao`, `PainelDeRevisao`, `GraficoSerie` e `PainelDeQuebra`;
-     - `useState` fora de `hooks/`: `GraficoSerie`, `PainelDeFiltros`, `PainelDeQuebra`, `DescarteDoRascunho`, `PainelDoUsuario` e `PainelDeConvite`.
+     - `useState` fora de `hooks/`: `DescarteDoRascunho` e `PainelDeConvite` em revisão (13/10). Ficaram para depois, por colidirem com PRs abertos em 13/10: `PainelDoUsuario` (#202) e `GraficoSerie`, `PainelDeFiltros` e `PainelDeQuebra` (#206).
 3. **Consolidar os apoios de teste repetidos** entre telas (`usarDensidade`, `textosDasFolhas`, `campoRotulado` e outros).
 4. **Divergências de comportamento abertas** no Doc 8, seções 14.3 e 14.4: bugs e ajustes de tela sem decisão, inclusive as quebras de linha em campo que o R$ causou. As que dependem do dono estão na [TSK-018](TSK-018-decidir-perguntas-do-front.md).
 
@@ -25,4 +25,4 @@
 
 Nota (12/10/2026): a épica do redesign (TSK-601) vestiu os componentes e as telas sem mexer na estrutura, então os itens 2 a 4 continuam como estão; os desvios de `campo: boolean` em `Cartao` e `Portao` seguem.
 
-_Atualizado em 12/10/2026._
+_Atualizado em 13/10/2026._

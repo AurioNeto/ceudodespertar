@@ -1,5 +1,5 @@
 import type { DirecaoEmprestimo } from '@cdd/contracts';
-import { Button, Select, TextField, type Density } from '@/ds';
+import { Button, Select, TextField, type Density, vidroLeve } from '@/ds';
 import { MENSAGEM_DE_DATA_VAZIA } from '@/pages/financeiro/constantes';
 import { formatarBRL } from '@/pages/utils/formato';
 import { contasDeEmprestimo } from '../../../../mocks/emprestimos';
@@ -43,6 +43,7 @@ export function FormularioDeDevolucao({
     <div
       style={{
         background: 'var(--bg-card)',
+        ...vidroLeve,
         border: '1px solid var(--color-royal-border)',
         borderLeft: 'var(--edge-state) solid var(--color-royal)',
         borderRadius: 'var(--leaf-md)',
