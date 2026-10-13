@@ -30,6 +30,7 @@ interface RespostaLida {
   readonly status: number;
   readonly ok: boolean;
   readonly texto: string;
+  readonly retryAfter: string | null;
 }
 
 function ehAbortamento(erro: unknown): boolean {
@@ -84,7 +85,13 @@ export function criarClienteHttp(dependencias: DependenciasDoClienteHttp): Clien
         signal: opcoes.sinal ?? null,
       });
       const texto = await resposta.text();
-      return { tokenUsado: token, status: resposta.status, ok: resposta.ok, texto };
+      return {
+        tokenUsado: token,
+        status: resposta.status,
+        ok: resposta.ok,
+        texto,
+        retryAfter: resposta.headers.get('Retry-After'),
+      };
     } catch (erro) {
       if (ehAbortamento(erro)) throw erro;
       throw new ErroDeRede(erro);
@@ -107,7 +114,7 @@ export function criarClienteHttp(dependencias: DependenciasDoClienteHttp): Clien
     const primeira = await enviarUmaVez(opcoes, chaveDeIdempotencia);
     if (primeira.ok) return lerSucesso<Saida>(primeira);
 
-    const erro = erroDaResposta(primeira.status, primeira.texto);
+    const erro = erroDaResposta(primeira.status, primeira.texto, primeira.retryAfter);
     if (!erro.ehFalhaDeAutenticacao) throw erro;
 
     const tokenJaMudou = (await credencial.tokenAtual()) !== primeira.tokenUsado;
@@ -119,7 +126,7 @@ export function criarClienteHttp(dependencias: DependenciasDoClienteHttp): Clien
 
     const segunda = await enviarUmaVez(opcoes, chaveDeIdempotencia);
     if (segunda.ok) return lerSucesso<Saida>(segunda);
-    throw erroDaResposta(segunda.status, segunda.texto);
+    throw erroDaResposta(segunda.status, segunda.texto, segunda.retryAfter);
   }
 
   return { requisitar };

@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import type {
+  ConviteReenviado,
   GrupoId,
   GruposDoUsuarioDefinidos,
   PedidoDeConvite,
@@ -23,6 +24,11 @@ export interface DefinicaoDeGrupos {
   readonly grupos: readonly GrupoId[];
 }
 
+export interface ReenvioDeConvite {
+  readonly usuarioId: UsuarioId;
+  readonly versao: number;
+}
+
 const caminhoDoUsuario = (usuarioId: UsuarioId, acao: string) =>
   `/identidade/usuarios/${encodeURIComponent(usuarioId)}/${acao}`;
 
@@ -44,6 +50,11 @@ export function criarComandosDeAcessos(cliente: ClienteHttp) {
       metodo: 'POST',
       caminho: ({ usuarioId }) => caminhoDoUsuario(usuarioId, 'reativar'),
       corpo: ({ motivo }) => ({ motivo }),
+      versao: ({ versao }) => versao,
+    }),
+    reenviarConvite: comando<ReenvioDeConvite, ConviteReenviado>({
+      metodo: 'POST',
+      caminho: ({ usuarioId }) => caminhoDoUsuario(usuarioId, 'convite/reenviar'),
       versao: ({ versao }) => versao,
     }),
     definirGrupos: comando<DefinicaoDeGrupos, GruposDoUsuarioDefinidos>({

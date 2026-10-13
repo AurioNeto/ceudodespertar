@@ -9,6 +9,23 @@ export const MENSAGEM_DE_REDE_DE_ACESSOS =
 export const MENSAGEM_DE_INDISPONIBILIDADE_DE_ACESSOS =
   'O serviço está indisponível no momento. Tente de novo em instantes; o que você digitou foi mantido.';
 
+export const MENSAGEM_DE_REENVIO_RECENTE_SEM_ESPERA =
+  'O convite acabou de ser enviado. Aguarde um pouco antes de reenviar.';
+
+const SEGUNDOS_POR_MINUTO = 60;
+
+const plural = (quantidade: number, singular: string) => `${quantidade} ${singular}${quantidade === 1 ? '' : 's'}`;
+
+function duracaoDaEspera(segundos: number): string {
+  if (segundos < SEGUNDOS_POR_MINUTO) return plural(segundos, 'segundo');
+  return plural(Math.ceil(segundos / SEGUNDOS_POR_MINUTO), 'minuto');
+}
+
+export function mensagemDeReenvioRecente(esperaEmSegundos: number | null): string {
+  if (!esperaEmSegundos) return MENSAGEM_DE_REENVIO_RECENTE_SEM_ESPERA;
+  return `O convite acabou de ser enviado. Aguarde ${duracaoDaEspera(esperaEmSegundos)} para reenviar.`;
+}
+
 const MENSAGENS_POR_CODIGO: Partial<Record<CodigoDeErro, string>> = {
   ULTIMO_ADMINISTRADOR:
     'Este é o último administrador ativo. Mantenha ao menos uma pessoa com acesso de administração antes de continuar.',
@@ -22,6 +39,7 @@ const MENSAGENS_POR_CODIGO: Partial<Record<CodigoDeErro, string>> = {
 
 export function mensagemDeErro(erro: unknown): string {
   if (erro instanceof ErroDaApi) {
+    if (erro.codigo === 'CONVITE_REENVIADO_RECENTEMENTE') return mensagemDeReenvioRecente(erro.esperaEmSegundos);
     const mensagem = MENSAGENS_POR_CODIGO[erro.codigo];
     if (mensagem) return mensagem;
     return erro.ehIndisponibilidadeTemporaria

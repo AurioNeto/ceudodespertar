@@ -1,10 +1,9 @@
 import type { GrupoDaGestao, GrupoId, SituacaoUsuario } from '@cdd/contracts';
-import { SITUACOES_DE_USUARIO } from '@cdd/contracts';
+import { SITUACOES_DE_USUARIO, TAMANHO_MAXIMO_DA_BUSCA } from '@cdd/contracts';
 import { TextField, Select } from '@/ds';
 import { SITUACAO_DE_USUARIO } from '../../situacaoDeUsuario';
 
 const TODAS = '';
-const TAMANHO_MAXIMO_DA_BUSCA = 200;
 
 export interface FiltrosDeUsuariosProps {
   readonly busca: string;
