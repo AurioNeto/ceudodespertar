@@ -22,6 +22,10 @@ Achados do #29. O tema de login foi refeito na Força da Mata (#180 e #197, na `
 - https://github.com/AurioNeto/ceudodespertar/pull/29#discussion_r4187822019
 - https://github.com/AurioNeto/ceudodespertar/pull/29#discussion_r4187822143
 
+## Decisões do dono
+
+- **Assunto do e-mail de convite (13/10):** "Sistema de Gestão CDD" (`executeActionsSubject`). O assunto da redefinição de senha não muda.
+
 ## Conferência ao vivo (12/10)
 
 Num Keycloak 26.4.7 isolado, com o tema da branch:
@@ -32,4 +36,4 @@ Num Keycloak 26.4.7 isolado, com o tema da branch:
 
 `passwordPolicies` chega ao tema como bean, não como mapa: `notEmail` e `notUsername` são booleanos sempre presentes, e o `msg()` do Keycloak repassa os argumentos como texto, então o plural usa duas chaves em vez de `choice`.
 
-_Atualizado em 12/10/2026._
+_Atualizado em 13/10/2026 (assunto do e-mail de convite decidido pelo dono)._
