@@ -1,4 +1,4 @@
-import { BotaoDeIcone, Icon } from '@/ds';
+import { BotaoDeIcone, Icon, fundoComVidro } from '@/ds';
 import { useCarrossel } from '@/pages/hooks/useCarrossel';
 import { ESTILO_DA_SETA, PAINEIS } from './constantes';
 import { GraficoResultado } from './components/GraficoResultado';
@@ -44,7 +44,7 @@ export function CarrosselDeCerimonias() {
                 borderRadius: 'var(--leaf-sm)',
                 cursor: 'pointer',
                 border: `1px solid ${i === slide ? 'var(--color-royal-border)' : 'transparent'}`,
-                background: i === slide ? 'var(--color-royal-soft)' : 'transparent',
+                ...fundoComVidro(i === slide ? 'var(--color-royal-soft)' : 'transparent'),
                 color: i === slide ? 'var(--color-royal-deep)' : 'var(--text-secondary)',
               }}
             >

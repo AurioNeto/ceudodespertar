@@ -1,4 +1,4 @@
-import { StatusBadge } from '@/ds';
+import { StatusBadge, fundoComVidro } from '@/ds';
 import { pluralizar } from '@/pages/utils/formato';
 import { TOM_DA_SITUACAO } from '../../constantes';
 import type { VersaoDoFormulario } from '../../mocks/anamnese';
@@ -25,7 +25,7 @@ export function ListaDeVersoes({ versoes, selecionadaId, onSelecionar }: ListaDe
               gap: 5,
               padding: '11px 13px',
               border: `1px solid ${on ? 'var(--color-royal-border)' : 'var(--color-line)'}`,
-              background: on ? 'var(--color-royal-soft)' : 'var(--bg-card)',
+              ...fundoComVidro(on ? 'var(--color-royal-soft)' : 'var(--bg-card)'),
               borderRadius: 'var(--leaf-sm)',
               cursor: 'pointer',
               textAlign: 'left',

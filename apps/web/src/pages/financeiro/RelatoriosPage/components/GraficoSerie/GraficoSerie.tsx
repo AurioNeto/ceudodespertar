@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { reais } from '@cdd/contracts';
-import { rotuloVersalete } from '@/ds';
+import { rotuloVersalete, vidroLeve } from '@/ds';
 import { formatarBRL } from '@/pages/utils/formato';
 import { ItemDaLegenda } from './components/ItemDaLegenda';
 import { pontosDaLinha } from './utils/pontosDaLinha';
@@ -34,6 +34,7 @@ export function GraficoSerie({ serie, acumulados, escala, rotuloPeriodo, campo =
     <div
       style={{
         background: 'var(--bg-card)',
+        ...vidroLeve,
         border: 'var(--border-hairline)',
         borderRadius: 'var(--leaf-lg)',
         padding: campo ? '14px 14px' : '16px 18px',

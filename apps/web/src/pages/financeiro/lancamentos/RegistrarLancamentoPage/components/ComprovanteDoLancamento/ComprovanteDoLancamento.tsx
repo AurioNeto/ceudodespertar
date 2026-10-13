@@ -1,4 +1,4 @@
-import { AttachmentCapture, rotuloVersalete, type Density } from '@/ds';
+import { AttachmentCapture, rotuloVersalete, type Density, vidroLeve } from '@/ds';
 import { TEXTOS_DO_ANEXO } from './constantes';
 
 export interface ComprovanteDoLancamentoProps {
@@ -14,6 +14,7 @@ export function ComprovanteDoLancamento({ anexo, densidade, onAlterarAnexo }: Co
     <div
       style={{
         background: 'var(--bg-card)',
+        ...vidroLeve,
         border: 'var(--border-hairline)',
         borderRadius: 'var(--leaf-lg)',
         padding: campo ? 0 : 16,

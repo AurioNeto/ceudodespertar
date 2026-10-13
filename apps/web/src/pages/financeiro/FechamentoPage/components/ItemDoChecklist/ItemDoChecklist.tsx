@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { Button, Icon, StatusBadge, type BadgeTone, type Density, type IconName } from '@/ds';
+import { Button, Icon, StatusBadge, type BadgeTone, type Density, type IconName, vidroLeve } from '@/ds';
 import { ROTAS, type RotaId } from '@/app/rotas';
 
 export interface ItemDoChecklist {
@@ -43,6 +43,7 @@ export function ItemDoChecklist({ item: i, densidade }: ItemDoChecklistProps) {
         borderLeft: `3px solid ${cor}`,
         borderRadius: 'var(--leaf-sm)',
         background: 'var(--bg-card)',
+        ...vidroLeve,
       }}
     >
       <Icon name={icone} size={18} color={cor} />

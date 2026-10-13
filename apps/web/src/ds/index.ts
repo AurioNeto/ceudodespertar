@@ -54,7 +54,7 @@ export { RecordRow } from './molecules/RecordRow';
 export type { RecordStatus } from './molecules/RecordRow';
 export { RegimeVocabulary, useTermo } from './providers/RegimeVocabulary';
 export { Rotulo } from './atoms/Rotulo';
-export { rotuloVersalete } from './fundacao/estilos';
+export { fundoComVidro, rotuloVersalete, vidroLeve } from './fundacao/estilos';
 export { RotuloDeCampo } from './atoms/RotuloDeCampo';
 export { ScreenHeader } from './molecules/ScreenHeader';
 export { Select } from './molecules/Select';

@@ -1,3 +1,4 @@
+import { vidroLeve } from '@/ds';
 export interface AcoesDoFormularioProps {
   rotuloSalvar: string;
   onCancelar: () => void;
@@ -18,6 +19,7 @@ export function AcoesDoFormulario({ rotuloSalvar, onCancelar, onSalvar }: AcoesD
           cursor: 'pointer',
           border: '1px solid var(--color-line)',
           background: 'var(--bg-card)',
+          ...vidroLeve,
           color: 'var(--text-secondary)',
         }}
       >
@@ -34,6 +36,7 @@ export function AcoesDoFormulario({ rotuloSalvar, onCancelar, onSalvar }: AcoesD
           cursor: 'pointer',
           border: '1px solid var(--color-royal-border)',
           background: 'var(--color-royal-soft)',
+          ...vidroLeve,
           color: 'var(--color-royal-deep)',
         }}
       >

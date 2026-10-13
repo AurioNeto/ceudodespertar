@@ -1,4 +1,4 @@
-import { Aviso, CorpoDaTela, EmptyState, ScreenHeader, useDensidade } from '@/ds';
+import { Aviso, CorpoDaTela, EmptyState, ScreenHeader, useDensidade, vidroLeve } from '@/ds';
 import { PainelDeRevisao } from './components/PainelDeRevisao';
 import { BarraDeSelecao } from './components/BarraDeSelecao';
 import { FiltrosDeOrigem } from './components/FiltrosDeOrigem';
@@ -70,6 +70,7 @@ export function VerificacaoLotePage() {
                 cursor: fila.deAltaConfianca.length ? 'pointer' : 'not-allowed',
                 border: '1px solid var(--color-confirmed)',
                 background: 'var(--bg-card)',
+                ...vidroLeve,
                 color: 'var(--color-confirmed)',
                 opacity: fila.deAltaConfianca.length ? 1 : 0.5,
               }}

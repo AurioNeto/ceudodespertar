@@ -3,7 +3,7 @@ import type { CSSProperties } from 'react';
 import { Button } from '../../atoms/Button';
 import { Icon } from '../../atoms/Icon';
 import { TextField } from '../../molecules/TextField';
-import { rotuloVersalete } from '../../fundacao/estilos';
+import { rotuloVersalete, vidroLeve } from '../../fundacao/estilos';
 
 export interface PendencyTexts {
   openHeading: string;
@@ -111,6 +111,7 @@ function AnswerBlock({ label, answer }: AnswerBlockProps) {
       style={{
         marginTop: 12,
         background: 'var(--bg-card)',
+        ...vidroLeve,
         border: 'var(--border-hairline)',
         borderRadius: 'var(--leaf-sm)',
         padding: '10px 12px',

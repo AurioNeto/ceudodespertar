@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Button, Icon, Select, type Density } from '@/ds';
+import { Button, Icon, Select, type Density, vidroLeve } from '@/ds';
 import type { useRelatorio } from '../../hooks/useRelatorio';
 import { CATEGORIAS_DE_ENTRADA, CATEGORIAS_DE_SAIDA, CERIMONIAS, CONTAS, GRUPOS } from '../../mocks/relatorios';
 import type { Comparacao, Filtros } from '../../tipos';
@@ -22,6 +22,7 @@ export function PainelDeFiltros({ relatorio: r, resumoDoRecorte, densidade }: Pa
     <div
       style={{
         background: 'var(--bg-card)',
+        ...vidroLeve,
         border: 'var(--border-hairline)',
         borderRadius: 'var(--leaf-lg)',
         padding: campo ? '12px 14px' : '14px 18px',

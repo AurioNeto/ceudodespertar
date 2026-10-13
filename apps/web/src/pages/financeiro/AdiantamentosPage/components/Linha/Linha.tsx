@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import type { Adiantamento } from '@cdd/contracts';
-import { AmountDisplay, StatusBadge, type Density } from '@/ds';
+import { AmountDisplay, StatusBadge, type Density, vidroLeve } from '@/ds';
 import { formatarData } from '@/pages/utils/formato';
 import { ROTULO, TOM } from './constantes';
 
@@ -18,6 +18,7 @@ export function Linha({ adiantamento, densidade, idade, children }: LinhaProps) 
     <div
       style={{
         background: 'var(--bg-card)',
+        ...vidroLeve,
         border: 'var(--border-hairline)',
         borderLeft: `var(--edge-state) solid ${
           a.status === 'AGUARDANDO_AUTORIZACAO'

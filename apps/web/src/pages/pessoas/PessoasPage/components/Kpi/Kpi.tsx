@@ -1,4 +1,4 @@
-import { Rotulo } from '@/ds';
+import { Rotulo, vidroLeve } from '@/ds';
 
 export interface KpiProps {
   rotulo: string;
@@ -12,6 +12,7 @@ export function Kpi({ rotulo, valor, nota, cor = 'var(--color-royal-deep)' }: Kp
     <div
       style={{
         background: 'var(--bg-card)',
+        ...vidroLeve,
         border: 'var(--border-hairline)',
         borderRadius: 'var(--leaf-lg)',
         padding: '12px 14px',

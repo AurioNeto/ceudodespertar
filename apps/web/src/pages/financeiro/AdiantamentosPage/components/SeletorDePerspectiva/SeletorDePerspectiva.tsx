@@ -1,4 +1,4 @@
-import { Rotulo, type Density } from '@/ds';
+import { Rotulo, type Density, fundoComVidro } from '@/ds';
 import { perspectivas, type Perspectiva } from '../../mocks/adiantamentos';
 
 export interface SeletorDePerspectivaProps {
@@ -44,7 +44,7 @@ export function SeletorDePerspectiva({ atual, onTrocar, densidade }: SeletorDePe
                 borderRadius: 'var(--leaf-sm)',
                 cursor: 'pointer',
                 border: `1px solid ${on ? 'var(--color-royal-border)' : 'var(--color-line)'}`,
-                background: on ? 'var(--color-royal-soft)' : 'var(--bg-card)',
+                ...fundoComVidro(on ? 'var(--color-royal-soft)' : 'var(--bg-card)'),
                 color: on ? 'var(--color-royal-deep)' : 'var(--text-secondary)',
                 font: on ? 'var(--text-body-strong)' : 'var(--text-body)',
                 textAlign: 'left',
