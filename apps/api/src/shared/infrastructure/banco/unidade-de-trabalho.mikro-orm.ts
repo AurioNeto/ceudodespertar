@@ -1,4 +1,3 @@
-import { AsyncLocalStorage } from 'node:async_hooks';
 import { Injectable, Logger } from '@nestjs/common';
 import { IsolationLevel, MikroORM } from '@mikro-orm/postgresql';
 import type { EntityManager, TransactionOptions } from '@mikro-orm/postgresql';
@@ -7,6 +6,7 @@ import { ContextoDaRequisicao } from '../contexto-da-requisicao.js';
 import { UnidadeDeTrabalho } from './unidade-de-trabalho.js';
 import type { ContextoDaTransacao, ModoDeTransacao } from './unidade-de-trabalho.js';
 import type { DB } from './banco-cdd.gerado.js';
+import { transacaoAtiva } from './transacao-ativa.js';
 
 export const VARIAVEL_DE_SESSAO_DA_INSTITUICAO = 'app.instituicao_id';
 
@@ -33,22 +33,11 @@ export class ErroDeModoDeTransacaoIncompativel extends Error {
   }
 }
 
-interface TransacaoAtiva {
-  readonly modo: ModoDeTransacao;
-  readonly contexto: ContextoDaTransacao;
-}
-
 class DesfazerPorResultadoDeErro<T> extends Error {
   constructor(readonly resultado: T) {
     super('transação desfeita por Result de erro');
     this.name = 'DesfazerPorResultadoDeErro';
   }
-}
-
-const transacaoAtiva = new AsyncLocalStorage<TransacaoAtiva>();
-
-export function foraDaTransacaoAtiva<T>(fn: () => T): T {
-  return transacaoAtiva.exit(fn);
 }
 
 @Injectable()
@@ -93,17 +82,17 @@ export class UnidadeDeTrabalhoMikroOrm extends UnidadeDeTrabalho {
       if (ehGravavel(modo)) {
         await emDaTransacao.execute('set transaction read write');
       }
-      if (instituicaoId !== undefined) {
-        await emDaTransacao.execute('select set_config(?, ?, true)', [
-          VARIAVEL_DE_SESSAO_DA_INSTITUICAO,
-          instituicaoId,
-        ]);
-      }
       const contexto: ContextoDaTransacao = {
         em: emDaTransacao,
         kysely: emDaTransacao.getKysely<DB>(),
         aoConfirmar: (gancho) => ganchosDeConfirmacao.push(gancho),
+        vincularInstituicao: async (instituicao) => {
+          await emDaTransacao.execute('select set_config(?, ?, true)', [VARIAVEL_DE_SESSAO_DA_INSTITUICAO, instituicao]);
+        },
       };
+      if (instituicaoId !== undefined) {
+        await contexto.vincularInstituicao(instituicaoId);
+      }
       const valor = await transacaoAtiva.run({ modo, contexto }, () => fn(contexto));
       if (ehResultadoDeErro(valor)) {
         throw new DesfazerPorResultadoDeErro(valor);

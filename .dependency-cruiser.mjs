@@ -45,6 +45,19 @@ export default {
       to: { path: CAMINHO_DO_ORM },
     },
     {
+      name: 'adaptador-da-uow-so-no-banco',
+      severity: 'error',
+      comment:
+        'O adaptador MikroORM da UnidadeDeTrabalho só é importado pela infraestrutura de banco ' +
+        'compartilhada, que o registra no BancoModule. O resto usa a porta (unidade-de-trabalho.ts), ' +
+        'o vínculo de instituição do ContextoDaTransacao e transacao-ativa.ts.',
+      from: {
+        path: '(?:^|/)apps/api/src/',
+        pathNot: ['(?:^|/)apps/api/src/shared/infrastructure/banco/'],
+      },
+      to: { path: '(?:^|/)apps/api/src/shared/infrastructure/banco/unidade-de-trabalho\\.mikro-orm\\.ts$' },
+    },
+    {
       name: 'dominio-sem-camadas-externas',
       severity: 'error',
       comment:

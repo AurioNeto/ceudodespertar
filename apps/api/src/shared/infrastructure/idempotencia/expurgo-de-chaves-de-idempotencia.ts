@@ -3,8 +3,9 @@ import { Injectable, Logger } from '@nestjs/common';
 import type { OnApplicationBootstrap, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { ContextoDaRequisicao } from '../contexto-da-requisicao.js';
 import { UnidadeDeTrabalho } from '../banco/unidade-de-trabalho.js';
-import { foraDaTransacaoAtiva } from '../banco/unidade-de-trabalho.mikro-orm.js';
-import { apagarChavesVencidas, listarIdsDasInstituicoes } from './chave-de-idempotencia.repositorio.js';
+import { foraDaTransacaoAtiva } from '../banco/transacao-ativa.js';
+import { listarIdsDasInstituicoes } from '../banco/instituicoes.js';
+import { apagarChavesVencidas } from './chave-de-idempotencia.repositorio.js';
 
 export const MENSAGEM_DE_CHAVES_EXPURGADAS = 'idempotência: chaves vencidas expurgadas';
 export const MENSAGEM_DE_FALHA_AO_LISTAR_INSTITUICOES = 'idempotência: falha ao listar instituições para o expurgo';

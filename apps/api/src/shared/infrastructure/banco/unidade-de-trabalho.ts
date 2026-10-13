@@ -7,6 +7,7 @@ export interface ContextoDaTransacao {
   readonly em: EntityManager;
   readonly kysely: Kysely<DB>;
   aoConfirmar(gancho: () => void): void;
+  vincularInstituicao(instituicaoId: string): Promise<void>;
 }
 
 export abstract class UnidadeDeTrabalho {

@@ -129,6 +129,7 @@ export interface SharedInstituicao {
 export interface SharedOutbox {
   agregado_id: string;
   agregado_tipo: string;
+  alertado_em: Timestamp | null;
   evento_id: string;
   id: Generated<number>;
   instituicao_id: string;

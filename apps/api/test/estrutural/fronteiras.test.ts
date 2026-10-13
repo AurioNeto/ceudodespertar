@@ -52,6 +52,7 @@ const CASOS_POSITIVOS = [
   ['dominio-sem-camadas-externas', 'fixtures/dominio-sem-camadas-externas/kernel-pasta-nova'],
   ['orm-so-na-infraestrutura-de-banco', 'fixtures/orm-so-na-infraestrutura-de-banco/application'],
   ['orm-so-na-infraestrutura-de-banco', 'fixtures/orm-so-na-infraestrutura-de-banco/tipo'],
+  ['adaptador-da-uow-so-no-banco', 'fixtures/adaptador-da-uow-so-no-banco'],
   ['modulo-so-por-public-api', 'fixtures/modulo-so-por-public-api/valor'],
   ['modulo-so-por-public-api', 'fixtures/modulo-so-por-public-api/tipo'],
   ['cli-da-identidade-nao-importa-o-migrador', 'fixtures/cli-da-identidade-nao-importa-o-migrador'],
@@ -63,6 +64,7 @@ const CASOS_NEGATIVOS = [
   'fixtures-negativas/orm-so-na-infraestrutura-de-banco/shared-infrastructure-banco',
   'fixtures-negativas/orm-so-na-infraestrutura-de-banco/banco',
   'fixtures-negativas/orm-so-na-infraestrutura-de-banco/modulo-infrastructure',
+  'fixtures-negativas/adaptador-da-uow-so-no-banco',
   'fixtures-negativas/modulo-so-por-public-api/public-api-de-outro-modulo',
   'fixtures-negativas/modulo-so-por-public-api/mesmo-modulo',
 ] as const;

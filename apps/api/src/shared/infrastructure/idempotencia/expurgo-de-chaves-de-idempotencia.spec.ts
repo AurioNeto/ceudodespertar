@@ -3,7 +3,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { MockInstance } from 'vitest';
 import { ContextoDaRequisicao } from '../contexto-da-requisicao.js';
 import type { ContextoDaTransacao, ModoDeTransacao, UnidadeDeTrabalho } from '../banco/unidade-de-trabalho.js';
-import { apagarChavesVencidas, listarIdsDasInstituicoes } from './chave-de-idempotencia.repositorio.js';
+import { listarIdsDasInstituicoes } from '../banco/instituicoes.js';
+import { apagarChavesVencidas } from './chave-de-idempotencia.repositorio.js';
 import {
   ExpurgoDeChavesDeIdempotencia,
   INTERVALO_DO_EXPURGO_EM_MS,
@@ -14,6 +15,9 @@ import {
 
 vi.mock('./chave-de-idempotencia.repositorio.js', () => ({
   apagarChavesVencidas: vi.fn(),
+}));
+
+vi.mock('../banco/instituicoes.js', () => ({
   listarIdsDasInstituicoes: vi.fn(),
 }));
 

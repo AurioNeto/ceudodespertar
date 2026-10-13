@@ -4,10 +4,7 @@ import type { EventoDeDominio } from '../../kernel/evento-de-dominio.js';
 import { ContextoDaRequisicao } from '../contexto-da-requisicao.js';
 import { UnidadeDeTrabalho } from '../banco/unidade-de-trabalho.js';
 import type { ContextoDaTransacao } from '../banco/unidade-de-trabalho.js';
-import {
-  VARIAVEL_DE_SESSAO_DA_INSTITUICAO,
-  foraDaTransacaoAtiva,
-} from '../banco/unidade-de-trabalho.mikro-orm.js';
+import { foraDaTransacaoAtiva } from '../banco/transacao-ativa.js';
 import { calcularProximaTentativa } from './backoff.js';
 import { MODO_DO_PROCESSO } from './modo-do-processo.js';
 import type { ModoDoProcesso } from './modo-do-processo.js';
@@ -196,7 +193,7 @@ export class Despachante implements OnModuleInit, OnModuleDestroy {
       return false;
     }
 
-    await this.restabelecerContextoDaInstituicao(contexto, linha.instituicaoId);
+    await contexto.vincularInstituicao(linha.instituicaoId);
     const evento = paraEventoDeDominio(linha);
     const erro = await this.entregarComAbortoIdentificado(contexto, linha, evento);
     if (erro === undefined) {
@@ -228,16 +225,6 @@ export class Despachante implements OnModuleInit, OnModuleDestroy {
   private async selecionarProximoEvento(contexto: ContextoDaTransacao): Promise<LinhaDoOutbox | undefined> {
     const linhas = await contexto.em.execute<LinhaDoOutbox[]>(CONSULTA_DO_PROXIMO_EVENTO);
     return linhas[0];
-  }
-
-  private async restabelecerContextoDaInstituicao(
-    contexto: ContextoDaTransacao,
-    instituicaoId: string,
-  ): Promise<void> {
-    await contexto.em.execute('select set_config(?, ?, true)', [
-      VARIAVEL_DE_SESSAO_DA_INSTITUICAO,
-      instituicaoId,
-    ]);
   }
 
   private async entregarAosConsumidores(
@@ -356,7 +343,7 @@ export class Despachante implements OnModuleInit, OnModuleDestroy {
     erro: Error,
   ): Promise<void> {
     const registrado = await contexto.em.execute<{ tentativas: number }[]>(
-      'update shared.outbox set tentativas = tentativas + 1, ultimo_erro = ? where id = ? and publicado_em is null returning tentativas',
+      'update shared.outbox set tentativas = tentativas + 1, ultimo_erro = ?, alertado_em = null where id = ? and publicado_em is null returning tentativas',
       [formatarUltimoErro(erro), linha.id],
     );
     const tentativas = registrado[0]?.tentativas;

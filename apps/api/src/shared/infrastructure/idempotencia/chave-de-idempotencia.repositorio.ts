@@ -175,11 +175,6 @@ export async function apagarChavesVencidas(kysely: Kysely<DB>, instituicaoId: st
   return Number(resultado.numDeletedRows);
 }
 
-export async function listarIdsDasInstituicoes(kysely: Kysely<DB>): Promise<string[]> {
-  const linhas = await kysely.selectFrom('shared.instituicao').select('id').execute();
-  return linhas.map((linha) => linha.id);
-}
-
 export async function gravarResposta(
   kysely: Kysely<DB>,
   instituicaoId: string,

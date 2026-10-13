@@ -38,6 +38,10 @@ export const ARQUIVOS_QUE_PODEM_AJUSTAR_A_SESSAO = exigirMotivos({
   'shared/infrastructure/eventos/despachante.ts': 'ajusta-a-sessao-da-transacao-do-evento',
 });
 
+export const ARQUIVOS_QUE_VINCULAM_INSTITUICAO = exigirMotivos({
+  'shared/infrastructure/eventos/despachante.ts': 'entrega-cada-evento-no-contexto-da-instituicao',
+});
+
 export const ARQUIVOS_QUE_ENCERRAM_TRANSACAO_EM_SQL_CRU = exigirMotivos({
   'shared/infrastructure/eventos/despachante.ts': 'encerra-a-transacao-e-bloqueia-escrita-avulsa',
 });
