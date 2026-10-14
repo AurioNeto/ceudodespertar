@@ -14,7 +14,7 @@
    - ✅ `EntrarPage` e `RetornoPage` chamam um hook só (em revisão, 13/10).
    - A conferência de 12/10 na `main` achou mais casos do mesmo tipo, que não estavam no anexo:
      - acima de 200 linhas no `ds`: `PendencyCard` (219) e `PainelDeAcao` (207);
-     - ✅ `campo: boolean`: `Cartao`, `Portao`, `PainelDeRevisao`, `GraficoSerie` e `PainelDeQuebra` (em revisão, 14/10: os três primeiros neste PR, com `Cartao` e `Portao` em `density`, como o resto do `ds`; `GraficoSerie` e `PainelDeQuebra` no #221);
+     - ✅ `campo: boolean`: `Cartao`, `Portao`, `PainelDeRevisao`, `GraficoSerie` e `PainelDeQuebra` (em revisão, 14/10: os três primeiros no #222, com `Cartao` e `Portao` em `density`, como o resto do `ds`; `GraficoSerie` e `PainelDeQuebra` no #221);
      - `useState` fora de `hooks/`: `DescarteDoRascunho` e `PainelDeConvite` em revisão (13/10). ✅ `PainelDoUsuario`, `GraficoSerie`, `PainelDeFiltros` e `PainelDeQuebra`, que tinham ficado para depois por colidirem com o #202 e o #206, em revisão no #221 (14/10).
 3. **Consolidar os apoios de teste repetidos** entre telas (`usarDensidade`, `textosDasFolhas`, `campoRotulado` e outros).
 4. **Divergências de comportamento abertas** no Doc 8, seções 14.3 e 14.4: bugs e ajustes de tela sem decisão, inclusive as quebras de linha em campo que o R$ causou. As que dependem do dono estão na [TSK-018](TSK-018-decidir-perguntas-do-front.md).
