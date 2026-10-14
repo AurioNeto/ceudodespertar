@@ -59,7 +59,7 @@ describe('formatarBRL', () => {
   });
 
   it('valor negativo põe o sinal depois do símbolo da moeda', () => {
-    expect(formatarBRL(-250)).toBe('R$ -2,50');
+    expect(formatarBRL(-250)).toBe('\u2212\u00a0R$ 2,50');
   });
 });
 

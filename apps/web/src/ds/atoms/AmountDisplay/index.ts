@@ -1,2 +1,2 @@
 export { AmountDisplay } from './AmountDisplay';
-export type { AmountSize, NaturezaVisual } from './AmountDisplay';
+export type { AmountSize, NaturezaVisual, SinalDoValor } from './AmountDisplay';

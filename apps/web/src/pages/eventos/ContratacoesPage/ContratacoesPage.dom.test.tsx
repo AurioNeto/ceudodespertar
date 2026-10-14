@@ -276,7 +276,7 @@ describe('ContratacoesPage: resultado do evento', () => {
     const { container } = await montar(<ContratacoesPage />);
 
     const resultado = todos<HTMLElement>(cartaoDaContratacao(container, LUZ_DO_NORTE), '[data-numeric]').find(
-      (valor) => valor.textContent === 'R$-180,00',
+      (valor) => valor.textContent === '\u2212\u00a0R$180,00',
     )!;
     expect(resultado.style.color).toBe('var(--color-attention)');
   });

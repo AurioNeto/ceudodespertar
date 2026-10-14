@@ -4,8 +4,8 @@ import { desmontarTudo, elemento, montar } from '@/testes/montagem';
 
 afterEach(desmontarTudo);
 
-const SINAL_DE_MENOS = '− ';
-const SINAL_DE_MAIS = '+ ';
+const SINAL_DE_MENOS = '\u2212\u00a0';
+const SINAL_DE_MAIS = '+\u00a0';
 
 const valorDe = (container: HTMLElement) => elemento<HTMLSpanElement>(container, ':scope > span > span:last-child');
 const raizDe = (container: HTMLElement) => elemento<HTMLSpanElement>(container, ':scope > span');
@@ -31,14 +31,14 @@ const VALOR_FORMATADO: readonly [number, string][] = [
   [1234567.89, '1.234.567,89'],
   [10.999, '11,00'],
   [10.994, '10,99'],
-  [-50, '-50,00'],
+  [-50, '50,00'],
 ];
 
 describe('AmountDisplay — sinal e cor pela natureza', () => {
-  it.each(SINAL_E_COR_POR_NATUREZA)('natureza %s — sinal "%s" antes do valor', async (natureza, sinal) => {
+  it.each(SINAL_E_COR_POR_NATUREZA)('natureza %s — sinal "%s" antes do R$', async (natureza, sinal) => {
     const { container } = await montar(<AmountDisplay value={1234.5} nature={natureza} />);
 
-    expect(valorDe(container).textContent).toBe(`${sinal}1.234,50`);
+    expect(container.textContent).toBe(`${sinal}R$1.234,50`);
   });
 
   it.each(SINAL_E_COR_POR_NATUREZA)('natureza %s — colore o valor', async (natureza, _sinal, cor) => {
@@ -57,13 +57,13 @@ describe('AmountDisplay — sinal e cor pela natureza', () => {
   it('despesa com valor negativo — soma o sinal de despesa ao hífen do número', async () => {
     const { container } = await montar(<AmountDisplay value={-50} nature="despesa" />);
 
-    expect(valorDe(container).textContent).toBe(`${SINAL_DE_MENOS}-50,00`);
+    expect(container.textContent).toBe(`${SINAL_DE_MENOS}R$-50,00`);
   });
 
   it('receita com valor zero — mostra o sinal de mais', async () => {
     const { container } = await montar(<AmountDisplay value={0} nature="receita" />);
 
-    expect(valorDe(container).textContent).toBe(`${SINAL_DE_MAIS}0,00`);
+    expect(container.textContent).toBe(`${SINAL_DE_MAIS}R$0,00`);
   });
 });
 
@@ -88,10 +88,34 @@ describe('AmountDisplay — moeda', () => {
     expect(container.textContent).toBe('10,00');
   });
 
-  it('com sinal e moeda — o R$ vem antes do sinal', async () => {
+  it('com sinal e moeda — o sinal vem antes do R$', async () => {
     const { container } = await montar(<AmountDisplay value={10} nature="despesa" />);
 
-    expect(container.textContent).toBe(`R$${SINAL_DE_MENOS}10,00`);
+    expect(container.textContent).toBe(`${SINAL_DE_MENOS}R$10,00`);
+  });
+});
+
+describe('AmountDisplay — sinal do valor sem natureza', () => {
+  it('valor negativo — sinal de menos antes do R$ e o número sem hífen', async () => {
+    const { container } = await montar(<AmountDisplay value={-110} />);
+
+    expect(container.textContent).toBe(`${SINAL_DE_MENOS}R$110,00`);
+  });
+
+  it.each([
+    [187.4, `${SINAL_DE_MAIS}R$187,40`],
+    [-187.4, `${SINAL_DE_MENOS}R$187,40`],
+    [0, 'R$0,00'],
+  ])('sinal sempre, valor %s — aparece como %s', async (valor, esperado) => {
+    const { container } = await montar(<AmountDisplay value={valor} sinal="sempre" />);
+
+    expect(container.textContent).toBe(esperado);
+  });
+
+  it('sem sinal sempre, valor positivo — sem sinal', async () => {
+    const { container } = await montar(<AmountDisplay value={187.4} />);
+
+    expect(container.textContent).toBe('R$187,40');
   });
 });
 

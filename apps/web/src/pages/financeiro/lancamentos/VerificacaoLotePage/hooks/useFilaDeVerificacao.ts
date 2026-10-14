@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import type { ItemNaFila, LancamentoId } from '@cdd/contracts';
 import { filaDeVerificacaoInicial } from '@/mocks/verificacao';
-import type { FiltroOrigem } from '../constantes';
+import { MOTIVO_DO_PERIODO_FECHADO_NA_REVISAO, type FiltroOrigem } from '../constantes';
 import { avisoDaAltaConfiancaAprovada, avisoDosSelecionadosAprovados } from '../utils/avisosDaAprovacao';
 import { emPeriodoFechado } from '../utils/periodoFechado';
 
@@ -53,6 +53,10 @@ export function useFilaDeVerificacao() {
   const fecharRevisao = () => setEmRevisao(null);
 
   const aprovarRevisado = (corrigido: ItemNaFila) => {
+    if (emPeriodoFechado(corrigido)) {
+      setMensagem(MOTIVO_DO_PERIODO_FECHADO_NA_REVISAO);
+      return;
+    }
     remover([corrigido.id]);
     setEmRevisao(null);
     setMensagem('Lançamento aprovado e consolidado.');

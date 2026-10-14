@@ -90,8 +90,12 @@ export function LinhaDaFila({ item, densidade, selecionado, onSelecionar, onAbri
           whiteSpace: 'nowrap',
         }}
       >
-        {item.tipo === 'ENTRADA' ? '+ ' : item.tipo === 'SAIDA' ? '− ' : ''}
-        <AmountDisplay value={item.valor / 100} size="sm" style={{ color: 'inherit' }} />
+        <AmountDisplay
+          value={(item.tipo === 'SAIDA' ? -item.valor : item.valor) / 100}
+          sinal={item.tipo === 'ENTRADA' ? 'sempre' : 'negativo'}
+          size="sm"
+          style={{ color: 'inherit' }}
+        />
       </span>
       <Button variant="ghost" onClick={onAbrir}>
         Revisar

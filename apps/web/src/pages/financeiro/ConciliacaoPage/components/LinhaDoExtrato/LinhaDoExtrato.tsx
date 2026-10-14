@@ -48,8 +48,7 @@ export function LinhaDoExtrato({
           data-numeric
           style={{ font: 'var(--text-amount)', color: credito ? 'var(--color-confirmed)' : 'var(--text-primary)' }}
         >
-          {credito ? '+ ' : '− '}
-          <AmountDisplay value={linha.valor / 100} size="sm" style={{ color: 'inherit' }} />
+          <AmountDisplay value={(credito ? linha.valor : -linha.valor) / 100} sinal="sempre" size="sm" style={{ color: 'inherit' }} />
         </span>
       </div>
 

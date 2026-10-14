@@ -13,8 +13,8 @@ export function usarDensidade(densidade: Densidade) {
   }));
 }
 
-export const SINAL_DE_SAIDA = '− ';
-export const SINAL_DE_ENTRADA = '+ ';
+export const SINAL_DE_SAIDA = '\u2212\u00a0';
+export const SINAL_DE_ENTRADA = '+\u00a0';
 
 export const campoComRotulo = (origem: ParentNode, rotulo: string): HTMLInputElement => {
   const etiqueta = todos<HTMLLabelElement>(origem, 'label').find((candidata) => candidata.textContent === rotulo);

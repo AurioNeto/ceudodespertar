@@ -22,3 +22,6 @@ export const FILTROS: readonly { valor: FiltroOrigem; label: string }[] = [
 ];
 
 export const COMPETENCIAS_FECHADAS: readonly Competencia[] = [competencia('2026-07')];
+
+export const MOTIVO_DO_PERIODO_FECHADO_NA_REVISAO =
+  'O período deste lançamento está fechado. Um administrador pode reabrir, e o motivo fica registrado.';

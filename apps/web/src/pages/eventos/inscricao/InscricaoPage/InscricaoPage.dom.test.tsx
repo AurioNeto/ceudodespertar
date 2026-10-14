@@ -1441,7 +1441,7 @@ describe('InscricaoPage: valor devido na tela', () => {
 
     await digitar(campoDoValor(container), '-50');
 
-    expect(valorEmReais(container, 'R$ -50,00')).toBeDefined();
+    expect(valorEmReais(container, '\u2212\u00a0R$ 50,00')).toBeDefined();
   });
 
   it('hospedagem paga com o campo de valor em branco — o total mostra R$ 90,00 + a combinar e a acomodação entra no resumo', async () => {

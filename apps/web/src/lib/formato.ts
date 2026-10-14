@@ -5,6 +5,9 @@ const BRL = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFr
 /** Valor em reais → "1.234,56". */
 export const formatarValor = (reais: number): string => BRL.format(reais);
 
+export const SINAL_NEGATIVO = '−\u00a0';
+export const SINAL_POSITIVO = '+\u00a0';
+
 /** `YYYY-MM-DD` → data local sem escorregar de fuso. */
 export function paraData(iso: string): Date {
   const [ano, mes, dia] = iso.split('-').map(Number);

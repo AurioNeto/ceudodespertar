@@ -113,7 +113,7 @@ describe('GraficoSerie: dica ao passar o mouse', () => {
 
     await passarMouseSobre(colunaDoMes(container, 1));
 
-    expect(textoDaDica(container)).toBe('jul/26entradas R$ 100,00saídas R$ 0,00acumulado R$ -50,00');
+    expect(textoDaDica(container)).toBe('jul/26entradas R$ 100,00saídas R$ 0,00acumulado \u2212\u00a0R$ 50,00');
   });
 
   it('mouse sobre a coluna — apaga as barras das outras colunas e mantém as dela', async () => {

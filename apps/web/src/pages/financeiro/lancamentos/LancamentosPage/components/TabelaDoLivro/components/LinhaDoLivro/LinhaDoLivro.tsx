@@ -66,8 +66,12 @@ export function LinhaDoLivro({ registro: r, selecionado, onAbrir }: LinhaDoLivro
           textDecoration: estornado ? 'line-through' : undefined,
         }}
       >
-        {r.tipo === 'ENTRADA' ? '+ ' : r.tipo === 'SAIDA' ? '− ' : ''}
-        <AmountDisplay value={r.valor / 100} size="sm" style={{ color: 'inherit', textDecoration: 'inherit' }} />
+        <AmountDisplay
+          value={(r.tipo === 'SAIDA' ? -r.valor : r.valor) / 100}
+          sinal={r.tipo === 'ENTRADA' ? 'sempre' : 'negativo'}
+          size="sm"
+          style={{ color: 'inherit', textDecoration: 'inherit' }}
+        />
       </span>
     </button>
   );

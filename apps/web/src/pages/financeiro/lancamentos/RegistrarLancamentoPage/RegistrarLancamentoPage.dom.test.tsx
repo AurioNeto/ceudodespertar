@@ -22,8 +22,8 @@ const SELETOR_DE_REMOVER_ANEXO = 'button[title="Remover comprovante"]';
 const REGISTRAR = 'Registrar e abrir outro';
 const MENSAGEM_DO_VALOR = 'Informe um valor maior que zero.';
 const HORA_FIXA = new Date('2026-09-02T15:07:00Z');
-const valorDeSaida = (valor: string) => `R$\u2212\u00a0${valor}`;
-const valorDeEntrada = (valor: string) => `R$+\u00a0${valor}`;
+const valorDeSaida = (valor: string) => `\u2212\u00a0R$${valor}`;
+const valorDeEntrada = (valor: string) => `+\u00a0R$${valor}`;
 const ROTULO_DO_BLOCO_PADRAO = 'Preenchido por padrão — toque para trocar';
 
 type Densidade = 'office' | 'field';
