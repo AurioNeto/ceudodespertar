@@ -1,6 +1,6 @@
 # TSK-414: Domínio de identidade: G3 e nits de grupos
 
-- **Estado:** ✅ Em PR: G3 com risco aceito e registrado, criação de grupo com trilha, invariante "grupo de sistema é protegido" no agregado; "ADMINISTRADOR inclui código novo" virou follow-up
+- **Estado:** ✅ Feito (#214): G3 com risco aceito e registrado, criação de grupo com trilha, grupo de sistema sempre protegido; "ADMINISTRADOR inclui código novo" virou follow-up
 - **Responsável sugerido:** limpio
 
 ## Contexto
@@ -24,4 +24,4 @@ Achados do #25 e do #26 que não foram corrigidos. O write skew da política do 
 - https://github.com/AurioNeto/ceudodespertar/pull/26#discussion_r4187820854
 - https://github.com/AurioNeto/ceudodespertar/pull/26#discussion_r4187821053
 
-_Atualizado em 13/10/2026._
+_Atualizado em 14/10/2026._
