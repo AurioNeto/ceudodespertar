@@ -1,4 +1,4 @@
-import type { Conta, Fatura } from '@cdd/contracts';
+import type { ContaComSaldo as Conta, Fatura } from '@cdd/contracts';
 import { Aviso, DomainError, StatusBadge, Cartao, Numero, Rotulo, type Density } from '@/ds';
 import { competenciaPorExtenso, formatarBRL, formatarData } from '@/pages/utils/formato';
 import { ROTULO, TOM } from '../../constantes';

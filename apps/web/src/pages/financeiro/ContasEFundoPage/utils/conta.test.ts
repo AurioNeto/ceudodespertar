@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { dataLocal, reais } from '@cdd/contracts';
-import type { Conta, ContaId } from '@cdd/contracts';
+import type { ContaComSaldo as Conta, ContaId } from '@cdd/contracts';
 import { ehCaixa, iconeDaConta, textoDaConciliacao, tomDaConciliacao } from './conta';
 
 const base: Conta = {

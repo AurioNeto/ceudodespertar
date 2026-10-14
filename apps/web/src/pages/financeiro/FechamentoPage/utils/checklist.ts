@@ -1,4 +1,4 @@
-import type { Conta, LancamentoNaLista } from '@cdd/contracts';
+import type { ContaComSaldo as Conta, LancamentoNaLista } from '@cdd/contracts';
 import { competenciaPorExtenso, pluralizar } from '@/pages/utils/formato';
 import type { ItemDoChecklist } from '../components/ItemDoChecklist';
 

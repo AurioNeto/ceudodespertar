@@ -1,6 +1,6 @@
 import { act } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Conta, ContaId, Fundo, FundoId } from '@cdd/contracts';
+import type { ContaComSaldo as Conta, ContaId, FundoComSaldo as Fundo, FundoId } from '@cdd/contracts';
 import { dataLocal, reais } from '@cdd/contracts';
 import { botaoComTexto, clicar, desmontarTudo, digitar, elemento, escolherOpcao, montar, todos } from '@/testes/montagem';
 import { GerenciarContasModal, type GerenciarContasModalProps } from './GerenciarContasModal';

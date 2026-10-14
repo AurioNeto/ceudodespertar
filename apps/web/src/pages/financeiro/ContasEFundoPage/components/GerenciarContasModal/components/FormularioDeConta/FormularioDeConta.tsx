@@ -1,4 +1,4 @@
-import type { Conta } from '@cdd/contracts';
+import type { ContaComSaldo as Conta } from '@cdd/contracts';
 import { Rotulo } from '@/ds';
 import { entrada } from '../../constantes';
 import { AcoesDoFormulario } from '../AcoesDoFormulario';

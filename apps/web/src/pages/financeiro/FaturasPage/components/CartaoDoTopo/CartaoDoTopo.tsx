@@ -1,4 +1,4 @@
-import type { Conta } from '@cdd/contracts';
+import type { ContaComSaldo as Conta } from '@cdd/contracts';
 import { AmountDisplay, Icon, vidroLeve } from '@/ds';
 
 export interface CartaoDoTopoProps {

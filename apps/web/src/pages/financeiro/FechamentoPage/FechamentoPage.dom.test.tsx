@@ -1,6 +1,6 @@
 import { act } from 'react';
 import { MemoryRouter, useLocation } from 'react-router-dom';
-import type { Conta, ItemNaFila, LancamentoNaLista } from '@cdd/contracts';
+import type { ContaComSaldo as Conta, ItemNaFila, LancamentoNaLista } from '@cdd/contracts';
 import { reais } from '@cdd/contracts';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { botaoComTexto, clicar, desmontarTudo, elemento, montar, todos } from '@/testes/montagem';

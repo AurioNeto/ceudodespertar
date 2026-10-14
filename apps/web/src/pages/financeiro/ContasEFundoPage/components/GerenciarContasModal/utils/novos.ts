@@ -1,4 +1,4 @@
-import type { Conta, ContaId, Fundo, FundoId } from '@cdd/contracts';
+import type { ContaComSaldo as Conta, ContaId, FundoComSaldo as Fundo, FundoId } from '@cdd/contracts';
 import { reais } from '@cdd/contracts';
 import { contas as contasIniciais } from '@/pages/mocks/contas';
 

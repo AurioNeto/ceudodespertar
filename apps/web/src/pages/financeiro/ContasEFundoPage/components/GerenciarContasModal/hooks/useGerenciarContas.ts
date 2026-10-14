@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { Conta, ContaId, Fundo, FundoId } from '@cdd/contracts';
+import type { ContaComSaldo as Conta, ContaId, FundoComSaldo as Fundo, FundoId } from '@cdd/contracts';
 import { formatarDinheiro } from '@/pages/utils/formato';
 import { contaVazia, fundoVazio } from '../utils/novos';
 import { disponivelParaReserva, lerReserva } from '../utils/reserva';

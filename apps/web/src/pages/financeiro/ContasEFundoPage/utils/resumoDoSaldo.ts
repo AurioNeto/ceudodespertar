@@ -1,4 +1,4 @@
-import type { Conta, Fundo } from '@cdd/contracts';
+import type { ContaComSaldo as Conta, FundoComSaldo as Fundo } from '@cdd/contracts';
 import type { Reserva } from '../tipos';
 import { ehCaixa } from './conta';
 import { corDaReserva } from './reservas';

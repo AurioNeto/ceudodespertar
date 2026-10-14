@@ -1,4 +1,4 @@
-import type { Conta, ContaId, PessoaId } from '@cdd/contracts';
+import type { ContaComSaldo as Conta, ContaId, PessoaId } from '@cdd/contracts';
 import { dataLocal, reais } from '@cdd/contracts';
 import { id } from '@/mocks/ids';
 

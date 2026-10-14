@@ -38,6 +38,15 @@ export interface Pessoa {
   readonly id: PessoaId;
   readonly tipo: TipoPessoa;
   readonly nome: string;
+  readonly documento: string | null;
+  readonly ativa: boolean;
+  readonly versao: number;
+}
+
+export interface FichaDaPessoa {
+  readonly id: PessoaId;
+  readonly tipo: TipoPessoa;
+  readonly nome: string;
   readonly apelido: string | null;
   readonly documento: string | null;
   readonly telefone: string | null;

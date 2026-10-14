@@ -371,7 +371,7 @@ Há três exceções desenhadas. O despachante do outbox: `shared.outbox` não t
 { "erro": "PERIODO_FECHADO", "detalhes": { "unidade": "CDD", "competencia": "2026-07" } }
 ```
 
-Os códigos vivem em `CODIGOS_DE_ERRO`, em `packages/contracts/src/erros.ts` — **49 códigos** ao fim do B0 —, e o status de cada um em `STATUS_POR_CODIGO` (`apps/api/src/shared/infrastructure/http/status-por-codigo.ts`), um `Record` tipado pelo catálogo: código sem status não compila. Eles vêm de três fontes, todas traduzidas para o mesmo formato:
+Os códigos vivem em `CODIGOS_DE_ERRO`, em `packages/contracts/src/erros.ts` — **49 códigos** ao fim do B0, **75** com os do contrato do financeiro na B1 —, e o status de cada um em `STATUS_POR_CODIGO` (`apps/api/src/shared/infrastructure/http/status-por-codigo.ts`), um `Record` tipado pelo catálogo: código sem status não compila. Eles vêm de três fontes, todas traduzidas para o mesmo formato:
 
 | Fonte | Exemplo | Como vira código |
 |---|---|---|
@@ -393,6 +393,17 @@ Os códigos vivem em `CODIGOS_DE_ERRO`, em `packages/contracts/src/erros.ts` —
 | Bootstrap e seed de demonstração (§7.4) — saem pelo CLI como código de saída, não por HTTP | `BOOTSTRAP_JA_EXECUTADO`, `INSTITUICAO_NAO_DEMO_EXISTENTE`, `SUJEITO_DO_DEV_DIVERGENTE`, `DEV_COM_CONVITE_PENDENTE` → 409; `EMAIL_DO_SUJEITO_DIVERGENTE` → 403; `SUJEITO_INEXISTENTE`, `DEV_NAO_ENCONTRADO_NO_PROVEDOR` → 404 |
 
 Os oito códigos do Financeiro e do Estoque já estão no catálogo (`CATEGORIA_OBRIGATORIA`, `ETIQUETAS_NAO_FECHAM`, `PERIODO_FECHADO`, `SALDO_INSUFICIENTE` → 422; as quatro guardas mínimas → 500), à espera das etapas que os produzem.
+
+Na B1, o contrato do financeiro (TSK-511) trouxe os códigos que o desenho do núcleo pede, cada um ligado a uma invariante:
+
+| Tema | Código → status |
+|---|---|
+| Cadastros | `CODIGO_DE_SISTEMA_JA_EXISTE` (U1), `IDENTIFICADOR_BANCARIO_JA_CADASTRADO` (CT4), `DOCUMENTO_JA_CADASTRADO` (PE2), `REGIME_COM_LANCAMENTO_NO_PERIODO` (U3), `CONTA_COM_SALDO` (CT3) → 409; `CADASTRO_INATIVO` (U4 e L4: unidade, categoria ou conta inativa), `CATEGORIA_FORA_DO_REGIME` (C3 e L4), `CATEGORIA_FORA_DO_FUNDO` (FD1) → 422 |
+| Lançamento | `LANCAMENTO_JA_CONFIRMADO` (L2: só `A_CONFERIR` se edita, descarta, confirma ou recebe pendência), `LANCAMENTO_NAO_CONFIRMADO` (só o confirmado se estorna), `LANCAMENTO_JA_ESTORNADO`, `PENDENCIA_JA_ABERTA` → 409; `LANCAMENTO_INCOMPLETO` (L7), `CAIXA_ANTES_DA_COMPETENCIA` (L6), `ORIGEM_NAO_EDITAVEL` (L8), `PENDENCIA_PARA_SI_MESMO` (L10: quem confere o próprio lançamento não abre pendência para si) → 422; `PENDENCIA_SO_DO_DESTINATARIO` (L11) → 403 |
+| Transferência | `TRANSFERENCIA_JA_CONFIRMADA`, `TRANSFERENCIA_NAO_CONFIRMADA`, `TRANSFERENCIA_JA_ESTORNADA` → 409; `REPASSE_NA_MESMA_UNIDADE` → 422; `CONFERENTE_E_O_AUTOR` (quem registrou não confirma a própria, §18.4) → 403 |
+| Período | `PERIODO_JA_FECHADO`, `PERIODO_NAO_FECHADO` → 409; `PERIODO_COM_PENDENCIAS` (P1), `PERIODO_ANTERIOR_ABERTO` (P4) → 422 |
+
+A forma do pedido — dinheiro inteiro positivo em centavos, até 10¹⁴ por valor (com 20 etiquetas no teto, a soma ainda é exata em `number`), data que existe no calendário, competência `AAAA-MM`, contraparte única, etiquetas sem categoria repetida, a referência que cada finalidade da transferência exige, contas diferentes, teto só na unidade comercial, titular só na conta pessoal, documento com 11 ou 14 dígitos — é recusada pelo Zod como `CORPO_INVALIDO`, com o código da regra em `detalhes`.
 
 O status HTTP de cada código vem do catálogo (`STATUS_POR_CODIGO`), nunca da exceção que o carrega. Uma `HttpException` cujo corpo traz um código do catálogo (`{ "erro": "USUARIO_SUSPENSO" }`) é traduzida por esse código, com a `correlacaoId` do filtro; status sem código no corpo cai no mapa genérico (400, 401, 403 e 404), e qualquer outro vira 500.
 
@@ -595,7 +606,7 @@ A soma é regra do agregado `Lancamento`: as etiquetas fazem parte dele, e ele r
 
 **Imutabilidade das etiquetas.** Uma integração cria o lançamento já `CONFIRMADO`, e a conferência pode ajustar etiquetas no mesmo ato em que confirma. Esta é uma das guardas mínimas que ficam no banco (§15, D4 do issue #11): a regra é *"etiquetas só mudam enquanto `A_CONFERIR`, ou dentro da transação que gravou o lançamento"* — a guarda do lançamento grava em `gravado_na_transacao` o id da transação que o inseriu ou confirmou, e a das etiquetas compara com a transação corrente. A coluna só é escrita pela guarda, e confirmado não muda mais; na transação seguinte, o id já é outro. Estornar não toca no original nem nas etiquetas dele (§18.3). (Uma marca por `set_config`, que era o desenho anterior, qualquer script da aplicação forjaria.)
 
-**Colunas que mudaram em relação ao contrato do front**, a refletir em `packages/contracts` em B1:
+**Colunas que mudaram em relação ao contrato do front**, refletidas em `packages/contracts` na B1 (TSK-511):
 
 | Contrato hoje | Esquema | Por quê |
 |---|---|---|

@@ -13,9 +13,11 @@ import type {
   EventoId,
   FaturaId,
   FundoId,
+  GrupoDeCustoId,
   ImportacaoId,
   LancamentoId,
   LinhaExtratoId,
+  PeriodoContabilId,
   PessoaId,
   TransferenciaId,
   UnidadeId,
@@ -29,7 +31,9 @@ export interface Unidade {
   readonly codigoSistema: string;
   readonly nome: string;
   readonly regime: RegimeDaUnidade;
+  readonly tetoAnual: Dinheiro | null;
   readonly ativa: boolean;
+  readonly versao: number;
 }
 
 export type Natureza = 'RECEITA' | 'DESPESA';
@@ -41,14 +45,20 @@ export interface Categoria {
   readonly nome: string;
   readonly natureza: Natureza;
   readonly tipo: TipoCategoria;
+  readonly regimesPermitidos: readonly RegimeDaUnidade[];
+  readonly unidadePadraoId: UnidadeId | null;
   readonly linhaRelatorio: string;
   readonly ativa: boolean;
+  readonly versao: number;
 }
 
 /** "Grupo" na interface: onde o gasto aconteceu (Lojinha, Dormitório, Chácara...). */
 export interface GrupoDeCusto {
+  readonly id: GrupoDeCustoId;
   readonly codigoSistema: string;
   readonly nome: string;
+  readonly ativo: boolean;
+  readonly versao: number;
 }
 
 export type TipoConta = 'CONTA_CORRENTE' | 'CARTAO_CREDITO' | 'DINHEIRO' | 'FUNDO';
@@ -62,13 +72,10 @@ export interface Conta {
   readonly tipo: TipoConta;
   readonly titularidade: Titularidade;
   readonly pessoaTitularId: PessoaId | null;
-  readonly responsavel: string;
-  readonly saldo: Dinheiro;
-  readonly ultimoMovimento: DataLocal | null;
-  readonly conciliacao: SituacaoConciliacao;
-  /** Aviso exibido em tooltip no cartão da conta. */
-  readonly alerta: string | null;
+  readonly identificadorBancario: string | null;
+  readonly unidadeId: UnidadeId | null;
   readonly ativa: boolean;
+  readonly versao: number;
 }
 
 /** Fundo com destinação vinculada — parte do saldo, não conta separada (Doc 2 §1.9). */
@@ -79,58 +86,105 @@ export interface Fundo {
   /** O destino combinado da reserva, como aparece na tela. */
   readonly nota: string;
   readonly contaVinculadaId: ContaId;
-  readonly valorReservado: Dinheiro;
   readonly meta: Dinheiro | null;
+  readonly categoriasPermitidas: readonly string[];
   readonly ativo: boolean;
+  readonly versao: number;
 }
 
 export type StatusLancamento = 'A_CONFERIR' | 'CONFIRMADO' | 'ESTORNADO';
 
-export type OrigemLancamento =
-  | 'MANUAL'
-  | 'IMPORTACAO_EXTRATO'
-  | 'REGISTRO_RAPIDO'
-  | 'COMPROVANTE_IA'
-  | 'MIGRACAO';
+export type StatusGravadoDoLancamento = Exclude<StatusLancamento, 'ESTORNADO'>;
+
+export const ORIGENS_DE_LANCAMENTO = [
+  'MANUAL',
+  'REGISTRO_RAPIDO',
+  'COMPROVANTE_IA',
+  'IMPORTACAO_EXTRATO',
+  'IMPORTACAO_TEXTO',
+  'INTEGRACAO_EVENTOS',
+  'INTEGRACAO_ESTOQUE',
+  'MIGRACAO',
+] as const;
+
+export type OrigemLancamento = (typeof ORIGENS_DE_LANCAMENTO)[number];
 
 export type TipoLancamento = 'ENTRADA' | 'SAIDA' | 'TRANSFERENCIA';
 
+export interface Etiqueta {
+  readonly categoriaId: CategoriaId;
+  readonly natureza: Natureza;
+  readonly valor: Dinheiro;
+}
+
+export type ConfirmadoPor =
+  | { readonly autorTipo: 'USUARIO'; readonly autorId: UsuarioId }
+  | { readonly autorTipo: 'SISTEMA'; readonly autorId: null };
+
 export interface Lancamento {
   readonly id: LancamentoId;
-  readonly unidadeId: UnidadeId;
-  readonly tipo: TipoLancamento;
   readonly natureza: Natureza;
-  /** Sempre positivo; o sinal vem de `tipo`/`natureza`. */
   readonly valor: Dinheiro;
   readonly motivo: string;
-  readonly categoriaIds: readonly CategoriaId[];
-  readonly grupo: string | null;
-  readonly contaId: ContaId;
-  readonly contaDestinoId: ContaId | null;
-  readonly contraparte: string | null;
+  readonly etiquetas: readonly Etiqueta[];
+  readonly unidadeId: UnidadeId | null;
+  readonly grupoDeCustoId: GrupoDeCustoId | null;
+  readonly contaId: ContaId | null;
+  readonly faturaId: FaturaId | null;
+  readonly pessoaId: PessoaId | null;
+  readonly contraparteTexto: string | null;
   readonly formaPagamento: string | null;
   readonly eventoId: EventoId | null;
-  readonly dataCompetencia: DataLocal;
-  readonly dataCaixa: DataLocal;
-  readonly competencia: Competencia;
-  readonly status: StatusLancamento;
-  readonly origem: OrigemLancamento;
-  readonly registradoPor: UsuarioId;
-  readonly registradoPorNome: string;
-  readonly registradoEm: DataHora;
-  readonly comprovante: Anexo | null;
+  readonly competencia: Competencia | null;
+  readonly dataCompetencia: DataLocal | null;
+  readonly dataCaixa: DataLocal | null;
   readonly reembolsoAId: PessoaId | null;
+  readonly comprovante: Anexo | null;
+  readonly status: StatusGravadoDoLancamento;
+  readonly origem: OrigemLancamento;
   readonly estornoDeId: LancamentoId | null;
+  readonly estornadoPorId: LancamentoId | null;
+  readonly registradoPor: UsuarioId;
+  readonly registradoEm: DataHora;
+  readonly confirmadoPor: ConfirmadoPor | null;
+  readonly confirmadoEm: DataHora | null;
+  readonly versao: number;
 }
+
+export const FINALIDADES_DE_TRANSFERENCIA = [
+  'MOVIMENTACAO_SIMPLES',
+  'APORTE_A_FUNDO',
+  'PAGAMENTO_DE_FATURA',
+  'RESSARCIMENTO_DE_ADIANTAMENTO',
+  'CONCESSAO_DE_EMPRESTIMO',
+  'DEVOLUCAO_DE_EMPRESTIMO',
+  'REPASSE_ENTRE_UNIDADES',
+] as const;
+
+export type FinalidadeTransferencia = (typeof FINALIDADES_DE_TRANSFERENCIA)[number];
 
 export interface Transferencia {
   readonly id: TransferenciaId;
-  readonly contaOrigemId: ContaId;
-  readonly contaDestinoId: ContaId;
+  readonly finalidade: FinalidadeTransferencia;
   readonly valor: Dinheiro;
   readonly data: DataLocal;
-  readonly descricao: string;
+  readonly contaOrigemId: ContaId | null;
+  readonly contaDestinoId: ContaId | null;
+  readonly unidadeId: UnidadeId;
+  readonly unidadeDestinoId: UnidadeId | null;
+  readonly fundoId: FundoId | null;
+  readonly faturaId: FaturaId | null;
+  readonly emprestimoId: EmprestimoId | null;
+  readonly adiantamentoId: AdiantamentoId | null;
+  readonly motivo: string;
+  readonly status: StatusGravadoDoLancamento;
+  readonly estornoDeId: TransferenciaId | null;
+  readonly estornadaPorId: TransferenciaId | null;
   readonly registradoPor: UsuarioId;
+  readonly registradoEm: DataHora;
+  readonly confirmadoPor: UsuarioId | null;
+  readonly confirmadoEm: DataHora | null;
+  readonly versao: number;
 }
 
 /** Item da fila de verificação em lote — o sistema propõe, o humano confirma. */
@@ -324,12 +378,21 @@ export interface ImportacaoDeExtrato {
   readonly linhasJaConhecidas: number;
 }
 
+export interface ReaberturaDePeriodo {
+  readonly motivo: string;
+  readonly reabertoPor: UsuarioId;
+  readonly reabertoEm: DataHora;
+  readonly hashAnterior: string;
+}
+
 export interface PeriodoContabil {
+  readonly id: PeriodoContabilId;
   readonly unidadeId: UnidadeId;
   readonly competencia: Competencia;
   readonly fechado: boolean;
-  readonly fechadoPor: string | null;
+  readonly fechadoPor: UsuarioId | null;
   readonly fechadoEm: DataHora | null;
-  readonly reaberturas: number;
   readonly hash: string | null;
+  readonly reaberturas: readonly ReaberturaDePeriodo[];
+  readonly versao: number;
 }
