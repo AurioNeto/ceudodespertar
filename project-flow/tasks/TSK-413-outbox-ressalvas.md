@@ -1,6 +1,6 @@
 # TSK-413: Outbox: evento sem consumidor, log do ciclo e vigia
 
-- **Estado:** 🚧 Evento sem consumidor e log do ciclo mesclados em #208; UoW, vigia e `listarIdsDasInstituicoes` compartilhado em revisão em #211; o filtro de métrica ou Sentry espera o deploy (TSK-012)
+- **Estado:** ✅ Feito (#208 e #211); o filtro de métrica ou Sentry espera o deploy (TSK-012)
 - **Responsável sugerido:** limpio + corvinus
 - **Depende de:** [TSK-313](TSK-313-ligar-borda-idempotencia-e-outbox-na-aplicacao.md)
 
@@ -32,4 +32,4 @@ Achados do #24 e ressalvas da vigia do #35.
 - https://github.com/AurioNeto/ceudodespertar/pull/24#discussion_r4187820143
 - https://github.com/AurioNeto/ceudodespertar/pull/35
 
-_Atualizado em 13/10/2026._
+_Atualizado em 14/10/2026._

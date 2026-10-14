@@ -1,6 +1,6 @@
 # TSK-602: Backlog técnico do redesign (pre-review da PR da épica e verificações pendentes)
 
-- **Estado:** 🚧 Itens 2 a 4 mesclados em #205; item 1 em revisão em #206
+- **Estado:** 🚧 Itens 1 a 4 e 7 feitos (#205, #206 e #203); itens 5, 6 e 8 são verificação do dono
 - **Responsável sugerido:** vitro (+ frontiteto no item 1)
 - **Depende de:** [TSK-601](TSK-601-epica-redesign-forca-da-mata.md)
 
