@@ -1,4 +1,7 @@
 import { randomUUID } from 'node:crypto';
+import { readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { Module } from '@nestjs/common';
 import type { CallHandler, ExecutionContext, INestApplicationContext } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
@@ -19,13 +22,23 @@ import {
 } from '../../src/shared/infrastructure/idempotencia/expurgo-de-chaves-de-idempotencia.js';
 import { IdempotenciaInterceptor } from '../../src/shared/infrastructure/idempotencia/idempotencia.interceptor.js';
 import {
-  apagarChavesVencidas,
-  consultaDeApagarChavesVencidas,
+  apagarLoteDeChavesVencidas,
+  consultaDeApagarLoteDeChavesVencidas,
   reivindicarChave,
+  TAMANHO_DO_LOTE_DO_EXPURGO,
 } from '../../src/shared/infrastructure/idempotencia/chave-de-idempotencia.repositorio.js';
 import type { DadosDaChaveDeIdempotencia } from '../../src/shared/infrastructure/idempotencia/chave-de-idempotencia.repositorio.js';
 import { calcularHashDoCorpo } from '../../src/shared/infrastructure/idempotencia/hash-do-corpo.js';
 import { comContexto, INSTITUICAO_A, INSTITUICAO_B, semearInstituicoes } from '../eventos/apoio.js';
+
+const PASTA_DA_MIGRACAO = join(
+  dirname(fileURLToPath(import.meta.url)),
+  '../../src/banco/migracoes/b0-007-idempotencia-expurgo',
+);
+const SQL_DE_APLICAR = readFileSync(join(PASTA_DA_MIGRACAO, 'expurgo.sql'), 'utf8');
+const SQL_DE_DESFAZER = readFileSync(join(PASTA_DA_MIGRACAO, 'desfazer.sql'), 'utf8');
+const DEFINICAO_DO_INDICE =
+  'CREATE INDEX chave_de_idempotencia_por_criacao ON shared.chave_de_idempotencia USING btree (instituicao_id, criada_em)';
 
 const VENCIDAS_POR_INSTITUICAO = 3;
 const RECENTES_POR_INSTITUICAO = 2;
@@ -156,7 +169,7 @@ describe('expurgo das chaves de idempotência vencidas contra o banco (Documento
       const vencidasB = await semearChaves(banco, INSTITUICAO_B, VENCIDAS_POR_INSTITUICAO, '25 hours');
 
       const apagadas = await comContexto(INSTITUICAO_A, () =>
-        unidade.transacao('escrita', ({ kysely }) => apagarChavesVencidas(kysely, INSTITUICAO_A)),
+        unidade.transacao('escrita', ({ kysely }) => apagarLoteDeChavesVencidas(kysely, INSTITUICAO_A)),
       );
 
       expect(apagadas).toBe(vencidasA.length);
@@ -169,7 +182,7 @@ describe('expurgo das chaves de idempotência vencidas contra o banco (Documento
       const vencidasB = await semearChaves(banco, INSTITUICAO_B, VENCIDAS_POR_INSTITUICAO, '25 hours');
 
       const apagadas = await comContexto(INSTITUICAO_A, () =>
-        unidade.transacao('escrita', ({ kysely }) => apagarChavesVencidas(kysely, INSTITUICAO_B)),
+        unidade.transacao('escrita', ({ kysely }) => apagarLoteDeChavesVencidas(kysely, INSTITUICAO_B)),
       );
 
       expect(apagadas).toBe(0);
@@ -182,12 +195,33 @@ describe('expurgo das chaves de idempotência vencidas contra o banco (Documento
       const vencidasB = await semearChaves(banco, INSTITUICAO_B, VENCIDAS_POR_INSTITUICAO, '25 hours');
 
       const apagadas = await ContextoDaRequisicao.foraDeQualquerContexto(() =>
-        unidade.transacao('escrita', ({ kysely }) => apagarChavesVencidas(kysely, INSTITUICAO_A)),
+        unidade.transacao('escrita', ({ kysely }) => apagarLoteDeChavesVencidas(kysely, INSTITUICAO_A)),
       );
 
       expect(apagadas).toBe(0);
       expect(await chavesGravadas(banco, INSTITUICAO_A)).toStrictEqual(ordenadas(vencidasA));
       expect(await chavesGravadas(banco, INSTITUICAO_B)).toStrictEqual(ordenadas(vencidasB));
+    });
+
+    it('um lote apaga no máximo o tamanho do lote, começando pelas chaves mais antigas', async () => {
+      const menosAntigas = await semearChaves(banco, INSTITUICAO_A, 5, '25 hours');
+      await semearChaves(banco, INSTITUICAO_A, TAMANHO_DO_LOTE_DO_EXPURGO, '72 hours');
+
+      const apagadas = await comContexto(INSTITUICAO_A, () =>
+        unidade.transacao('escrita', ({ kysely }) => apagarLoteDeChavesVencidas(kysely, INSTITUICAO_A)),
+      );
+
+      expect(apagadas).toBe(TAMANHO_DO_LOTE_DO_EXPURGO);
+      expect(await chavesGravadas(banco, INSTITUICAO_A)).toStrictEqual(ordenadas(menosAntigas));
+    });
+
+    it('a rodada encadeia lotes até esvaziar as vencidas e mantém as recentes', async () => {
+      await semearChaves(banco, INSTITUICAO_A, 2 * TAMANHO_DO_LOTE_DO_EXPURGO + 7, '25 hours');
+      const recentes = await semearChaves(banco, INSTITUICAO_A, RECENTES_POR_INSTITUICAO, '1 hour');
+
+      await new ExpurgoDeChavesDeIdempotencia(unidade).expurgar();
+
+      expect(await chavesGravadas(banco, INSTITUICAO_A)).toStrictEqual(ordenadas(recentes));
     });
 
     it('apaga pelo índice por criação, sem Seq Scan, com 100 mil chaves recentes acumuladas', async () => {
@@ -199,7 +233,7 @@ describe('expurgo das chaves de idempotência vencidas contra o banco (Documento
       await banco.owner.query('analyze shared.chave_de_idempotencia');
 
       const { sql, parameters } = await comContexto(INSTITUICAO_A, () =>
-        unidade.transacao('leitura', async ({ kysely }) => consultaDeApagarChavesVencidas(kysely, INSTITUICAO_A).compile()),
+        unidade.transacao('leitura', async ({ kysely }) => consultaDeApagarLoteDeChavesVencidas(kysely, INSTITUICAO_A).compile()),
       );
       await banco.app.query('begin');
       let plano: string;
@@ -292,7 +326,7 @@ describe('expurgo das chaves de idempotência vencidas contra o banco (Documento
           await em.execute('select 1 from shared.chave_de_idempotencia where chave = ? for update', [chave]);
           expurgoTemOLock();
           await expurgoPodeConfirmar;
-          return apagarChavesVencidas(kysely, INSTITUICAO_A);
+          return apagarLoteDeChavesVencidas(kysely, INSTITUICAO_A);
         }),
       );
       await lockObtido;
@@ -344,7 +378,7 @@ describe('expurgo das chaves de idempotência vencidas contra o banco (Documento
       );
       await jaReclamou;
       const expurgo = comContexto(INSTITUICAO_A, () =>
-        unidade.transacao('escrita', ({ kysely }) => apagarChavesVencidas(kysely, INSTITUICAO_A)),
+        unidade.transacao('escrita', ({ kysely }) => apagarLoteDeChavesVencidas(kysely, INSTITUICAO_A)),
       );
       await esperarBackendBloqueado();
       liberarReaproveitamento();
@@ -354,6 +388,27 @@ describe('expurgo das chaves de idempotência vencidas contra o banco (Documento
       expect(existente).toBeUndefined();
       expect(apagadas).toBe(0);
       expect(await chavesGravadas(banco, INSTITUICAO_A)).toStrictEqual([chave]);
+    });
+  });
+
+  describe('migração do índice', () => {
+    async function definicaoDoIndice(): Promise<string | null> {
+      const { rows } = await banco.owner.query<{ definicao: string | null }>(
+        `select pg_get_indexdef(to_regclass('shared.chave_de_idempotencia_por_criacao')) as definicao`,
+      );
+      return rows[0]?.definicao ?? null;
+    }
+
+    it('cria o índice exato, desfazer remove e reaplicar restaura', async () => {
+      expect(await definicaoDoIndice()).toBe(DEFINICAO_DO_INDICE);
+
+      await banco.owner.query(SQL_DE_DESFAZER);
+
+      expect(await definicaoDoIndice()).toBeNull();
+
+      await banco.owner.query(SQL_DE_APLICAR);
+
+      expect(await definicaoDoIndice()).toBe(DEFINICAO_DO_INDICE);
     });
   });
 });

@@ -7,6 +7,8 @@ const CODIGO_DE_VIOLACAO_DE_CHAVE_UNICA = '23505';
 const STATUS_HTTP_PLACEHOLDER = 0;
 const PONTO_DE_SALVAMENTO_DA_REIVINDICACAO = 'reivindicacao_de_chave_de_idempotencia';
 
+export const TAMANHO_DO_LOTE_DO_EXPURGO = 1_000;
+
 export interface DadosDaChaveDeIdempotencia {
   readonly instituicaoId: string;
   readonly usuarioId: string | undefined;
@@ -163,15 +165,24 @@ export async function reivindicarChave(
   return linha === undefined ? reivindicarChave(kysely, dados) : paraChaveExistente(linha);
 }
 
-export function consultaDeApagarChavesVencidas(kysely: Kysely<DB>, instituicaoId: string) {
+export function consultaDeApagarLoteDeChavesVencidas(kysely: Kysely<DB>, instituicaoId: string) {
   return kysely
     .deleteFrom('shared.chave_de_idempotencia')
     .where('instituicao_id', '=', instituicaoId)
-    .where(condicaoDeVencida());
+    .where(condicaoDeVencida())
+    .where('chave', 'in', (subconsulta) =>
+      subconsulta
+        .selectFrom('shared.chave_de_idempotencia')
+        .select('chave')
+        .where('instituicao_id', '=', instituicaoId)
+        .where(condicaoDeVencida())
+        .orderBy('criada_em')
+        .limit(TAMANHO_DO_LOTE_DO_EXPURGO),
+    );
 }
 
-export async function apagarChavesVencidas(kysely: Kysely<DB>, instituicaoId: string): Promise<number> {
-  const resultado = await consultaDeApagarChavesVencidas(kysely, instituicaoId).executeTakeFirst();
+export async function apagarLoteDeChavesVencidas(kysely: Kysely<DB>, instituicaoId: string): Promise<number> {
+  const resultado = await consultaDeApagarLoteDeChavesVencidas(kysely, instituicaoId).executeTakeFirst();
   return Number(resultado.numDeletedRows);
 }
 
