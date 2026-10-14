@@ -838,20 +838,20 @@ Os roteiros Playwright que verificaram as telas construídas (25 a 56 verificaç
 | # | Decisão | Recomendação | Bloqueia |
 |:--:|---|---|---|
 | 1 | **Fator de conferência no link público** (§7.3) | Data de nascimento depois do CPF conhecido; código por WhatsApp como evolução | B5 — e a tela `/i/:token` |
-| 2 | L3 revisto: natureza do lançamento é a do líquido; a etiqueta é que segue a categoria (§18.2) | Aceitar — é consequência direta da decisão 1 | B1 |
-| 3 | Estorno com a natureza do original e efeito negativo (§18.3) | Aceitar — é o que sustenta §2.5.1 | B1 |
+| 2 | L3 revisto: natureza do lançamento é a do líquido; a etiqueta é que segue a categoria (§18.2) | ✅ Aceita (dono, 14/10/2026) | B1 |
+| 3 | Estorno com a natureza do original e efeito negativo (§18.3) | ✅ Aceita (dono, 14/10/2026) | B1 |
 | 4 | `MATERIA_PRIMA` e `COLHEITA_PROPRIA` no Estoque (§20) | Aceitar | B6 |
 | 5 | Retenção do conteúdo de anamnese supersedida — o cabeçalho fica (§23) | 5 anos após supersedida | B4 |
 | 6 | Hospedagem do provedor: Fly.io, Railway ou VPS | Fly.io com Postgres gerenciado — backup e PITR do provedor, sem administrar servidor | B0 |
-| 7 | Transferência com o ciclo de conferência e estorno do lançamento, e imutável depois de confirmada (§18.4) | Aceitar — é a mesma trilha do lançamento | B1 |
+| 7 | Transferência com o ciclo de conferência e estorno do lançamento, e imutável depois de confirmada (§18.4) | ✅ Aceita (dono, 14/10/2026); a transferência entra no hash do período, e quem confirma usa a mesma permissão de conferir lançamento | B1 |
 | 8 | Anonimização apaga o conteúdo da anamnese e mantém o cabeçalho da resposta, porque o registro de acesso aponta para ele (§23) | Aceitar — é o que RA3 e a LGPD pedem juntos | B4 |
 
 ### 27.2 Herdadas do Documento 6, ainda abertas
 
 | # | Decisão | Onde bate no banco |
 |:--:|---|---|
-| Doc 6 §9.1 #3 | Regime da Chácara e dos Dormitórios | `unidade.regime` e `categoria.regimes_permitidos` do seed |
-| Doc 6 §9.1 #4 | A unidade ativa filtra tudo ou só pré-preenche? | Só API e front — o esquema serve às duas |
+| Doc 6 §9.1 #3 | Regime da Chácara e dos Dormitórios (provisória em 14/10: sem receita comercial) | `unidade.regime` e `categoria.regimes_permitidos` do seed |
+| Doc 6 §9.1 #4 | A unidade ativa filtra tudo ou só pré-preenche? (provisória em 14/10: só pré-preenche) | Só API e front — o esquema serve às duas |
 | Doc 6 §9.2 #15 | Colchonete: registrar sem cobrar, ou não registrar | `colchonete_gratis_e_sem_leito` — uma linha de `CHECK` |
 | Doc 6 §9.2 #14 | Devolução como estorno | §18.3 já implementa; rejeitar exige só regra de domínio |
 | Doc 6 §9.2 #6–#9, #11, #12 | Prazo de ressarcimento, validade da anamnese, equipe sem anamnese, cadastro de dormitório (Q3), consumo médio, custo por litro (Q4) | Parâmetros e read models; nenhuma exige tabela nova |

@@ -1,10 +1,10 @@
 # Project flow: mapa de tasks do CDD
 
-Estado do projeto em **14/10/2026**. Cada task tem um arquivo em [`tasks/`](tasks/) com o contexto, o que fazer, os critérios de aceite e as referências.
+Estado do projeto em **14/10/2026** (tarde). Cada task tem um arquivo em [`tasks/`](tasks/) com o contexto, o que fazer, os critérios de aceite e as referências.
 
 ## Onde estamos
 
-- **`main`** (ponta `b3af1408`, #220). Abertos: #221 e #222 (TSK-417).
+- **`main`** (ponta `4d1eae5b`, #225). Os PRs de 14/10 entraram todos (#221 a #226); a TSK-412 parte 2 está no back.
 - **Backend do B0 completo** (PRs de API entre #37 e #96, de 08 a 10/10):
   - identidade com `GET /eu`, auditoria, gestão de usuários e grupos;
   - adaptador do Keycloak (convite por e-mail, ativação, suspensão);
@@ -15,22 +15,21 @@ Estado do projeto em **14/10/2026**. Cada task tem um arquivo em [`tasks/`](task
 - **Código do B0 completo** (13/10): a issue #77 fechou com o `/entrar` e a ativação do convite (#200), o reenvio com a espera do 429 em Acessos (#202) e o T28a e o T28b do web (#199 e #207). O dono fez o aceite real do convite contra o Keycloak local em 14/10 (convite, senha, `/entrar`, ativação e `GET /eu`): **B0 concluído**.
 - **Front:** a refatoração estrutural do `apps/web` em atomic design terminou na `main` (PRs de web entre #56 e #172, de 09 a 11/10) e está registrada no Doc 8 §13. O que sobrou está na TSK-417 (backlog); as nove perguntas da TSK-018 foram decididas e implementadas (#216, #218 e #220).
 - **Redesign Força da Mata concluído** (12/10): a épica `refactor/epica-redesign` (25 PRs, #173 a #195 e #197) foi validada visualmente pelo dono e mesclada na `main` pelo #196. Registro na TSK-601; o que o pre-review deixou está na TSK-602 (técnico) e o que o guia propõe para depois está na TSK-603 (roadmap). A branch da épica pode ser apagada (TSK-004).
-- **Backlog mesclado em 13 e 14/10:** #201 (fecha a #47), #203 (tema do Keycloak, TSK-416), #204 (expurgo do outbox, fecha a #43), #205 e #206 (TSK-602, itens 1 a 4), #208 e #211 (TSK-413), #209 (TSK-408), #210 (TSK-417, estado em `hooks/`), #213 (TSK-411 e TSK-415), #214 (TSK-414), #215 (TSK-409), #216, #218 e #220 (TSK-018), #217 (este mapa) e #219 (TSK-412, parte 1).
+- **Backlog mesclado em 13 e 14/10:** #201 (fecha a #47), #203 (tema do Keycloak, TSK-416), #204 (expurgo do outbox, fecha a #43), #205 e #206 (TSK-602, itens 1 a 4), #208 e #211 (TSK-413), #209 (TSK-408), #210 (TSK-417, estado em `hooks/`), #213 (TSK-411 e TSK-415), #214 (TSK-414), #215 (TSK-409), #216, #218 e #220 (TSK-018), #217 (este mapa), #219 (TSK-412, parte 1), #221, #222 e #224 (TSK-417, item 2), #223 (este mapa), #225 (TSK-406) e #226 (teste intermitente do seed demo).
 - **Próximos passos:**
   - o resto do backlog técnico (grupos 4 e 7);
-  - as decisões antes da B1 (TSK-014 e Doc 6 §9);
-  - dividir a TSK-501 em tasks.
+  - **B1:** decisões tomadas pelo dono em 14/10 (TSK-014 e TSK-501) e etapa dividida nas TSK-511 a TSK-521; começa pelo contrato (TSK-511).
 
 ## Resumo
 
 | Grupo | Tasks | Abertas |
 |---|:-:|:-:|
 | 1. Processo e higiene | 8 | 3 |
-| 2. Decisões (usuário ou coordenação) | 8 | 3 |
+| 2. Decisões (usuário ou coordenação) | 8 | 2 |
 | 3. B0: caminho crítico | 13 | 0 |
 | 4. Backlog técnico das revisões | 17 | 5 |
 | 5. B0 concluído (fundação, mesclado até 07/10) | 24 | 0 |
-| 6. Roadmap: B1 a B6 e migração | 7 | 7 |
+| 6. Roadmap: B1 a B6 e migração | 7 + 11 da B1 | 18 |
 | 7. Redesign Força da Mata | 3 | 2 |
 
 ## Caminho crítico do B0
@@ -74,7 +73,7 @@ flowchart LR
 | [TSK-011](tasks/TSK-011-decidir-textos-de-recusa-e-contato.md) | Textos das telas de recusa e contato do administrador | 🧭 Decisão pendente (coordenação) | — | — | — |
 | [TSK-012](tasks/TSK-012-decidir-topologia-e-provedor-de-deploy.md) | Topologia e provedor de deploy (SPA e Keycloak no mesmo site) | 🧭 Decisão pendente | — | — | — |
 | [TSK-013](tasks/TSK-013-decidir-expurgo-de-idempotencia.md) | Expurgo das chaves de idempotência e retenção do corpo da resposta | ✅ Decidido e feito (#36, 07/10/2026) | — | — | TSK-001 |
-| [TSK-014](tasks/TSK-014-decisoes-do-plano-com-a-coordenacao.md) | Confirmar com a coordenação as decisões 1–8 do plano | 🧭 Decisão pendente | — | — | — |
+| [TSK-014](tasks/TSK-014-decisoes-do-plano-com-a-coordenacao.md) | Confirmar com a coordenação as decisões 1–8 do plano | ✅ Confirmada pelo dono (14/10/2026); a coordenação pode rever | — | — | — |
 | [TSK-015](tasks/TSK-015-decidir-email-no-evento-de-convite.md) | E-mail em `USUARIO_CONVIDADO` × trilha de auditoria (LGPD) | ✅ Decidido (implementa no TSK-303) | — | — | — |
 | [TSK-016](tasks/TSK-016-decidir-marca-apenas-usuario-ativo.md) | Registrar a exceção ao T24 (`@ApenasUsuarioAtivo` para `GET /eu`) | ✅ Feito (Doc 3 §14.5 no #96; teste no #53) | — | — | TSK-002 |
 | [TSK-017](tasks/TSK-017-decidir-rollback-do-result-de-erro.md) | Rollback quando o comando devolve `Result` de erro | ✅ Feito (#37, 08/10/2026) | — | — | — |
@@ -155,13 +154,29 @@ PRs de acompanhamento já mesclados: [#34](https://github.com/AurioNeto/ceudodes
 
 | Task | Título | Estado | Peça | PR | Depende de |
 |---|---|---|---|---|---|
-| [TSK-501](tasks/TSK-501-etapa-b1-financeiro-nucleo.md) | Etapa B1: financeiro núcleo | 🗺️ Roadmap | — | — | TSK-311 |
+| [TSK-501](tasks/TSK-501-etapa-b1-financeiro-nucleo.md) | Etapa B1: financeiro núcleo | 📋 Dividida (TSK-511 a TSK-521) | — | — | TSK-311 |
 | [TSK-502](tasks/TSK-502-etapa-b2-financeiro-resto.md) | Etapa B2: financeiro, o resto | 🗺️ Roadmap | — | — | TSK-311 |
 | [TSK-503](tasks/TSK-503-etapa-b3-importacao-conciliacao.md) | Etapa B3: importação e conciliação | 🗺️ Roadmap | — | — | TSK-311 |
 | [TSK-504](tasks/TSK-504-etapa-b4-pessoas-anamnese.md) | Etapa B4: pessoas e anamnese | 🗺️ Roadmap | — | — | TSK-311 |
 | [TSK-505](tasks/TSK-505-etapa-b5-eventos.md) | Etapa B5: eventos | 🗺️ Roadmap | — | — | TSK-311 |
 | [TSK-506](tasks/TSK-506-etapa-b6-estoque.md) | Etapa B6: estoque | 🗺️ Roadmap | — | — | TSK-311 |
 | [TSK-507](tasks/TSK-507-migracao-dos-dados.md) | Migração dos dados históricos | 🗺️ Roadmap | — | — | TSK-311 |
+
+### B1 dividida (14/10/2026)
+
+| Task | Título | Estado | Peça | PR | Depende de |
+|---|---|---|---|---|---|
+| [TSK-511](tasks/TSK-511-b1-contrato-do-financeiro.md) | Contrato do financeiro e da pessoa mínima | 🗺️ Planejada | — | — | TSK-501 |
+| [TSK-512](tasks/TSK-512-b1-pessoa-minima.md) | Pessoa mínima (módulo pessoas) | 🗺️ Planejada | — | — | TSK-511 |
+| [TSK-513](tasks/TSK-513-b1-cadastros-unidade-categoria.md) | Cadastros: Unidade, Grupo de custo e Categoria (com seed) | 🗺️ Planejada | — | — | TSK-511 |
+| [TSK-514](tasks/TSK-514-b1-cadastros-conta-fundo.md) | Cadastros: Conta e Fundo | 🗺️ Planejada | — | — | TSK-513 |
+| [TSK-515](tasks/TSK-515-b1-lancamento.md) | Lançamento: etiquetas, conferência e estorno | 🗺️ Planejada | — | — | TSK-512, TSK-514 |
+| [TSK-516](tasks/TSK-516-b1-transferencia.md) | Transferência com conferência e estorno | 🗺️ Planejada | — | — | TSK-515 |
+| [TSK-517](tasks/TSK-517-b1-periodo-contabil.md) | Período contábil: fechar e reabrir com hash e trava | 🗺️ Planejada | — | — | TSK-515, TSK-516 |
+| [TSK-518](tasks/TSK-518-b1-anexo-e-evento-minimo.md) | Comprovante (anexo no S3) e Evento mínimo | 🗺️ Planejada | — | — | TSK-511 |
+| [TSK-519](tasks/TSK-519-b1-read-models.md) | Read models do financeiro | 🗺️ Planejada | — | — | TSK-515, TSK-516, TSK-517 |
+| [TSK-520](tasks/TSK-520-b1-telas-do-financeiro.md) | Telas do financeiro contra a API | 🗺️ Planejada | — | — | TSK-511 (cada parte espera o seu endpoint) |
+| [TSK-521](tasks/TSK-521-b1-aceite.md) | Aceite da B1: casos T e marco do fechamento | 🗺️ Planejada | — | — | TSK-519, TSK-520 |
 
 
 ## 7. Redesign Força da Mata
