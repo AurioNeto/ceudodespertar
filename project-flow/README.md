@@ -18,7 +18,7 @@ Estado do projeto em **14/10/2026**. Cada task tem um arquivo em [`tasks/`](task
 - **Backlog mesclado em 13 e 14/10:** #201 (fecha a #47), #203 (tema do Keycloak, TSK-416), #204 (expurgo do outbox, fecha a #43), #205 e #206 (TSK-602, itens 1 a 4), #208 e #211 (TSK-413), #209 (TSK-408), #210 (TSK-417, estado em `hooks/`), #213 (TSK-411 e TSK-415), #214 (TSK-414), #215 (TSK-409) e #216 (TSK-018, financeiro).
 - **Próximos passos:**
   - o resto do backlog técnico (grupos 4 e 7);
-  - a TSK-018 no front: eventos e inscrição (itens 4 a 8) e litros (item 9);
+  - a TSK-018 no front: data digitada, eventos e inscrição (itens 4 a 8) e litros (item 9);
   - as decisões antes da B1 (TSK-014 e Doc 6 §9);
   - dividir a TSK-501 em tasks.
 
