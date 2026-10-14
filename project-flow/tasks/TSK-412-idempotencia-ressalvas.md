@@ -1,6 +1,6 @@
 # TSK-412: Idempotência: ressalvas da revisão e do expurgo
 
-- **Estado:** 🚧 Parte 1 (expurgo) feita no #219; as lacunas de teste do replay, do cursor da auditoria e do filtro do `gravarResposta` ficam para a parte 2
+- **Estado:** 🔍 Em revisão: parte 1 (expurgo) no #219; parte 2 (lacunas de teste e cursor da auditoria) neste PR
 - **Responsável sugerido:** limpio + radix
 - **Depende de:** [TSK-313](TSK-313-ligar-borda-idempotencia-e-outbox-na-aplicacao.md)
 
@@ -18,10 +18,18 @@ Itens que ficaram dos PRs #23, #24 e #36.
   - ✅ Teste de up/down da b0-007: aplicar, desfazer e reaplicar, conferindo a definição exata do índice.
   - ✅ (aceito) `CREATE INDEX` sem `CONCURRENTLY`. O migrador é transacional com `allOrNothing`, então `CONCURRENTLY` não roda nele (mesma decisão do #204 para a b0-012). A b0-007 já está aplicada; para uma tabela grande num ambiente novo, o caminho é uma janela de manutenção ou suporte do migrador a migração não transacional.
   - (risco aceito, apontado no crivo) A condição de vencida repetida no `DELETE` externo, que garante o recheck da linha reaproveitada, leva o planejador a ler todas as vencidas da instituição a cada lote: com 100 mil vencidas acumuladas, cada lote custou ~19 ms (Seq Scan) e a rodada ~0,9 s. Cada lote continua curto, mas o custo cresce com o acúmulo, e o teste "sem Seq Scan" só cobre poucas vencidas. Rever se o acúmulo real passar dessa ordem.
-- O filtro `instituicao_id` de `gravarResposta` não tem teste próprio (mutante provavelmente equivalente por causa da RLS).
-- O replay concorrente numa rota com `@RespostaSemCorpoNoReplay` não foi testado em execução.
-- O cursor da auditoria usa precisão de milissegundos. Um gravador futuro que dependa do `now()` do banco (microssegundos) faria a paginação pular linhas.
-- O replay sai do jsonb com as chaves reordenadas, e os testes comparam o texto bruto. Também há um teste sem asserção ("passa direto quando o método não é POST").
+- ✅ O filtro `instituicao_id` de `gravarResposta` não tinha teste próprio. O mutante **não** é equivalente: com o contexto de A e o id de B, a RLS deixa o `UPDATE` sem filtro gravar na linha de A. O teste novo semeia a mesma chave nas duas casas, grava com essa combinação e confere que nenhuma das linhas muda. Sem o filtro, ele reprova.
+- ✅ O replay concorrente numa rota com `@RespostaSemCorpoNoReplay` não tinha sido testado em execução. Agora há um teste por HTTP real, com barreira explícita no handler e sem sleep:
+  - o primeiro POST entra e fica parado;
+  - o segundo fica bloqueado na linha da chave (o teste espera ver o backend bloqueado no `pg_stat_activity`);
+  - a barreira é liberada;
+  - o handler roda uma vez e grava um efeito só;
+  - o primeiro responde com corpo, e o segundo com o mesmo status e `Location`, sem corpo.
+- ✅ O cursor da auditoria usava precisão de milissegundos. Um gravador que dependa do `now()` do banco (microssegundos) fazia a paginação pular linhas, e o teste novo provou isso: quatro linhas com o mesmo milissegundo, paginadas de 1 em 1 e de 2 em 2, perdiam linhas. A correção:
+  - o leitor devolve a posição exata de cada linha (`em` em microssegundos e `id`), e o cursor carrega essa posição;
+  - o `em` exibido continua em milissegundos;
+  - cursores antigos, em milissegundos, continuam válidos.
+- ✅ O replay sai do jsonb com as chaves reordenadas, e os testes comparavam o texto bruto. Agora comparam por estrutura (status, `Location` e o corpo lido como JSON). O teste "passa direto quando o método não é POST" ganhou asserção sobre o valor que passa direto.
 
 ## Critérios de aceite
 

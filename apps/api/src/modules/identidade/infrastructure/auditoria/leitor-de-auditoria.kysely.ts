@@ -4,9 +4,10 @@ import type { DetalheDeAuditoria, OperacaoAuditada, RegistroAuditoriaId, Registr
 import { sql } from 'kysely';
 import type { ContextoDaTransacao } from '../../../../shared/infrastructure/banco/unidade-de-trabalho.js';
 import { LeitorDeAuditoria } from '../../application/auditoria/leitor-de-auditoria.js';
-import type { ConsultaDaTrilha } from '../../application/auditoria/leitor-de-auditoria.js';
+import type { ConsultaDaTrilha, RegistroNaTrilha } from '../../application/auditoria/leitor-de-auditoria.js';
 
 const FORMATO_DO_INSTANTE = 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"';
+const FORMATO_DO_INSTANTE_EXATO = 'YYYY-MM-DD"T"HH24:MI:SS.US"Z"';
 const AUTOR_SISTEMA = { nome: 'Sistema', grupo: 'Automação' };
 const AUTOR_LINK_PUBLICO = { nome: 'Link público', grupo: 'Público' };
 const AUTOR_DESCONHECIDO = 'Usuário desconhecido';
@@ -15,6 +16,7 @@ const ALVO_POR_AGREGADO_SEM_NOME: Record<string, string> = { Auditoria: 'Trilha 
 interface LinhaDaTrilha {
   readonly id: string;
   readonly em: string;
+  readonly em_exato: string;
   readonly autor_tipo: string;
   readonly autor_usuario_id: string | null;
   readonly operacao: string;
@@ -53,7 +55,7 @@ function paraRegistro(linha: LinhaDaTrilha): RegistroDeAuditoria {
 
 @Injectable()
 export class LeitorDeAuditoriaKysely extends LeitorDeAuditoria {
-  async ler({ kysely }: ContextoDaTransacao, consulta: ConsultaDaTrilha): Promise<RegistroDeAuditoria[]> {
+  async ler({ kysely }: ContextoDaTransacao, consulta: ConsultaDaTrilha): Promise<RegistroNaTrilha[]> {
     let consultaSql = kysely
       .selectFrom('identidade.registro_de_auditoria as r')
       .leftJoin('identidade.usuario as autor', 'autor.id', 'r.autor_usuario_id')
@@ -66,6 +68,7 @@ export class LeitorDeAuditoriaKysely extends LeitorDeAuditoria {
       .select([
         'r.id',
         sql<string>`to_char(${sql.ref('r.em')} at time zone 'UTC', ${FORMATO_DO_INSTANTE})`.as('em'),
+        sql<string>`to_char(${sql.ref('r.em')} at time zone 'UTC', ${FORMATO_DO_INSTANTE_EXATO})`.as('em_exato'),
         'r.autor_tipo',
         'r.autor_usuario_id',
         'r.operacao',
@@ -86,10 +89,10 @@ export class LeitorDeAuditoriaKysely extends LeitorDeAuditoria {
     if (consulta.operacao !== undefined) consultaSql = consultaSql.where('r.operacao', '=', consulta.operacao);
     if (consulta.depois !== null) {
       consultaSql = consultaSql.where(
-        sql<boolean>`(${sql.ref('r.em')}, ${sql.ref('r.id')}) < (${consulta.depois.em}, ${consulta.depois.id}::uuid)`,
+        sql<boolean>`(${sql.ref('r.em')}, ${sql.ref('r.id')}) < (${consulta.depois.em}::timestamptz, ${consulta.depois.id}::uuid)`,
       );
     }
     const linhas = await consultaSql.orderBy('r.em', 'desc').orderBy('r.id', 'desc').limit(consulta.limite).execute();
-    return linhas.map(paraRegistro);
+    return linhas.map((linha) => ({ registro: paraRegistro(linha), posicao: { em: linha.em_exato, id: linha.id } }));
   }
 }

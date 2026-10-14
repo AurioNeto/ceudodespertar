@@ -77,9 +77,11 @@ describe('IdempotenciaInterceptor · casos em que a idempotência não se aplica
     const interceptor = new IdempotenciaInterceptor(new UnidadeDeTrabalhoQueNuncaDeveSerChamada());
     const proximo: CallHandler = { handle: () => of('resposta') };
 
-    await ContextoDaRequisicao.executar({ correlacaoId: 'c1', instituicaoId: 'inst-a' }, () =>
+    const observavel = await ContextoDaRequisicao.executar({ correlacaoId: 'c1', instituicaoId: 'inst-a' }, () =>
       interceptor.intercept(contextoDeExecucao(requisicaoFake({ metodo: 'GET', chave: 'k1' })), proximo),
     );
+
+    expect(await firstValueFrom(observavel)).toBe('resposta');
   });
 });
 

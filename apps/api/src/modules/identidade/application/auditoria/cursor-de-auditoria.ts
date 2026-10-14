@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 export interface PosicaoDaTrilha {
-  readonly em: Date;
+  readonly em: string;
   readonly id: string;
 }
 
@@ -18,13 +18,13 @@ const CursorDecodificado = z.object({
 });
 
 export function codificarCursor(posicao: PosicaoDaTrilha): string {
-  return Buffer.from(JSON.stringify({ em: posicao.em.toISOString(), id: posicao.id })).toString('base64url');
+  return Buffer.from(JSON.stringify({ em: posicao.em, id: posicao.id })).toString('base64url');
 }
 
 export function decodificarCursor(cursor: string): PosicaoDaTrilha {
   const resultado = CursorDecodificado.safeParse(lerJson(cursor));
   if (!resultado.success) throw new ErroDeCursorInvalido();
-  return { em: new Date(resultado.data.em), id: resultado.data.id };
+  return { em: resultado.data.em, id: resultado.data.id };
 }
 
 function lerJson(cursor: string): unknown {

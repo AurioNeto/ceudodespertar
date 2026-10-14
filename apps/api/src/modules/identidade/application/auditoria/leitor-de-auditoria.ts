@@ -10,6 +10,11 @@ export interface ConsultaDaTrilha {
   readonly limite: number;
 }
 
+export interface RegistroNaTrilha {
+  readonly registro: RegistroDeAuditoria;
+  readonly posicao: PosicaoDaTrilha;
+}
+
 export abstract class LeitorDeAuditoria {
-  abstract ler(contexto: ContextoDaTransacao, consulta: ConsultaDaTrilha): Promise<RegistroDeAuditoria[]>;
+  abstract ler(contexto: ContextoDaTransacao, consulta: ConsultaDaTrilha): Promise<RegistroNaTrilha[]>;
 }
