@@ -5,8 +5,8 @@ import { clicar, desmontarTudo, elemento, montar, passarMouseSobre, tirarMouseDe
 
 afterEach(desmontarTudo);
 
-const SINAL_DE_MENOS = '− ';
-const SINAL_DE_MAIS = '+ ';
+const SINAL_DE_MENOS = '\u2212\u00a0';
+const SINAL_DE_MAIS = '+\u00a0';
 
 const linhaDe = (container: HTMLElement) => elemento<HTMLButtonElement>(container, ':scope > button');
 const barraDeEstado = (container: HTMLElement) => elemento<HTMLSpanElement>(container, ':scope > button > span:first-child');
@@ -27,13 +27,13 @@ describe('RecordRow — conteúdo', () => {
   it('descrição e valor — mostra o texto e o valor em reais, como despesa por padrão', async () => {
     const { container } = await montar(<RecordRow description="Mercado" amount={120} />);
 
-    expect(container.textContent).toBe(`MercadoR$${SINAL_DE_MENOS}120,00`);
+    expect(container.textContent).toBe(`Mercado${SINAL_DE_MENOS}R$120,00`);
   });
 
   it('nature receita — o valor leva sinal de mais', async () => {
     const { container } = await montar(<RecordRow description="Oferta" amount={50} nature="receita" />);
 
-    expect(valorDe(container).textContent).toBe(`R$${SINAL_DE_MAIS}50,00`);
+    expect(valorDe(container).textContent).toBe(`${SINAL_DE_MAIS}R$50,00`);
   });
 
   it('nature neutral — o valor vai sem sinal', async () => {
@@ -51,13 +51,13 @@ describe('RecordRow — conteúdo', () => {
   it('com meta — mostra a linha de apoio depois da descrição e do valor', async () => {
     const { container } = await montar(<RecordRow description="Mercado" amount={120} meta="12/03 · Caixa" />);
 
-    expect(container.textContent).toBe(`MercadoR$${SINAL_DE_MENOS}120,00` + '12/03 · Caixa');
+    expect(container.textContent).toBe(`Mercado${SINAL_DE_MENOS}R$120,00` + '12/03 · Caixa');
   });
 
   it.each([['string vazia', ''], ['zero', 0], ['nulo', null]])('meta %s — não desenha a linha de apoio', async (_nome, meta) => {
     const { container } = await montar(<RecordRow description="Mercado" amount={120} meta={meta} />);
 
-    expect(container.textContent).toBe(`MercadoR$${SINAL_DE_MENOS}120,00`);
+    expect(container.textContent).toBe(`Mercado${SINAL_DE_MENOS}R$120,00`);
   });
 
   it('com badges — mostra os selos depois do valor', async () => {
@@ -65,7 +65,7 @@ describe('RecordRow — conteúdo', () => {
       <RecordRow description="Mercado" amount={120} badges={<b>A conferir</b>} />,
     );
 
-    expect(container.textContent).toBe(`MercadoR$${SINAL_DE_MENOS}120,00` + 'A conferir');
+    expect(container.textContent).toBe(`Mercado${SINAL_DE_MENOS}R$120,00` + 'A conferir');
   });
 
   it.each([['string vazia', ''], ['zero', 0], ['falso', false], ['nulo', null]])('badges %s — não desenha o contêiner de selos', async (_nome, badges) => {
@@ -82,7 +82,7 @@ describe('RecordRow — conteúdo', () => {
     );
 
     expect(linhaDe(container).lastElementChild?.textContent).toBe('extra');
-    expect(container.textContent).toBe(`MercadoR$${SINAL_DE_MENOS}120,00metaseloextra`);
+    expect(container.textContent).toBe(`Mercado${SINAL_DE_MENOS}R$120,00metaseloextra`);
   });
 });
 

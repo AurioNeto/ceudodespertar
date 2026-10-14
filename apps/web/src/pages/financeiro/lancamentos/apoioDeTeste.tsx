@@ -13,8 +13,8 @@ export function usarDensidade(densidade: Densidade) {
   }));
 }
 
-export const valorDeSaida = (valor: string) => `R$− ${valor}`;
-export const valorDeEntrada = (valor: string) => `R$+ ${valor}`;
+export const valorDeSaida = (valor: string) => `\u2212\u00a0R$${valor}`;
+export const valorDeEntrada = (valor: string) => `+\u00a0R$${valor}`;
 export const valorDeTransferencia = (valor: string) => `R$${valor}`;
 
 export const campoRotulado = <T extends HTMLElement>(container: HTMLElement, rotulo: string): T => {

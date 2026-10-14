@@ -61,7 +61,7 @@ export function MovimentoDoMes() {
             <span style={{ font: 'var(--text-body)', color: 'var(--text-secondary)' }}>resultado</span>
           </div>
           <div style={{ ...numeroGrande, color: 'var(--color-royal-deep)' }}>
-            + <AmountDisplay value={movimentoDoMes.resultado / 100} size="lg" style={{ color: 'inherit' }} />
+            <AmountDisplay value={movimentoDoMes.resultado / 100} sinal="sempre" size="lg" style={{ color: 'inherit' }} />
           </div>
           <div style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>
             + {formatarBRL(movimentoDoMes.resultadoAnterior)} no mês anterior — o mês fecha melhor se nada

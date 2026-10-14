@@ -19,7 +19,7 @@ vi.mock('@/pages/financeiro/PrestacaoDeContasPage/mocks/prestacao', async (impor
   };
 });
 
-const MENOS = '− ';
+const MENOS = '\u2212\u00a0';
 const COR_CONFIRMADA = 'var(--color-confirmed)';
 const COR_DE_ATENCAO = 'var(--color-attention)';
 
@@ -216,7 +216,7 @@ describe('PrestacaoDeContasPage: documento de agosto de 2026, nível resumo', ()
   it('resultado do período — é receitas menos despesas, com sinal de mais e em verde', async () => {
     const { container } = await montar(<PrestacaoDeContasPage />);
 
-    expect(resultadoDoPeriodo(container)).toEqual({ texto: '+ R$14.362,40', cor: COR_CONFIRMADA });
+    expect(resultadoDoPeriodo(container)).toEqual({ texto: '+\u00a0R$14.362,40', cor: COR_CONFIRMADA });
   });
 
   it('movimentação patrimonial — explica que não entra no resultado e lista as três linhas', async () => {
@@ -260,7 +260,7 @@ describe('PrestacaoDeContasPage: documento de agosto de 2026, nível resumo', ()
     const { container } = await montar(<PrestacaoDeContasPage />);
 
     expect(linhasDaSecao(container, 'Resultado por cerimônia')).toEqual([
-      'Cerimônia de Agosto · 15/08/2026contribuições R$ 12.480,00 · custos R$ 7.310,20+ R$5.169,80',
+      'Cerimônia de Agosto · 15/08/2026contribuições R$ 12.480,00 · custos R$ 7.310,20+\u00a0R$5.169,80',
     ]);
   });
 
@@ -317,7 +317,7 @@ describe('PrestacaoDeContasPage: nível detalhado mostra os nomes que o resumo e
     await clicar(botaoComTexto(container, 'Detalhado · uso interno'));
 
     expect(linhasDaSecao(container, 'Receitas').at(-1)).toBe('Total de receitasR$62.480,00');
-    expect(resultadoDoPeriodo(container).texto).toBe('+ R$14.362,40');
+    expect(resultadoDoPeriodo(container).texto).toBe('+\u00a0R$14.362,40');
     expect(documento(container).textContent).toContain('nível detalhado');
   });
 
@@ -343,7 +343,7 @@ describe('PrestacaoDeContasPage: troca de período e de unidade', () => {
     expect(elemento(documento(container), 'h2').textContent).toBe('julho de 2026');
     expect(linhasDaSecao(container, 'Receitas').at(-1)).toBe('Total de receitasR$54.130,00');
     expect(linhasDaSecao(container, 'Despesas').at(-1)).toBe('Total de despesasR$51.870,20');
-    expect(resultadoDoPeriodo(container).texto).toBe('+ R$2.259,80');
+    expect(resultadoDoPeriodo(container).texto).toBe('+\u00a0R$2.259,80');
     expect(linhasDaSecao(container, 'Saldos por conta').at(-1)).toBe('Saldo consolidado ao fimR$69.955,50');
   });
 

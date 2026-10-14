@@ -6,8 +6,8 @@ import { atributosComTexto } from '../../apoioDeTeste';
 afterEach(desmontarTudo);
 
 const TITULO = 'Título do consumidor';
-const SINAL_DE_MENOS = '− ';
-const SINAL_DE_MAIS = '+ ';
+const SINAL_DE_MENOS = '\u2212\u00a0';
+const SINAL_DE_MAIS = '+\u00a0';
 
 const raizDe = (container: HTMLElement) => elemento<HTMLDivElement>(container, ':scope > div');
 const reguaDe = (container: HTMLElement) => elemento<HTMLDivElement>(container, ':scope > div > div:first-child');
@@ -56,13 +56,13 @@ describe('Receipt — título e valor', () => {
   it('amount — mostra o valor em reais formatado', async () => {
     const { container } = await montar(<Receipt title={TITULO} amount={1234.5} />);
 
-    expect(valorDe(container).textContent).toBe(`R$${SINAL_DE_MAIS}1.234,50`);
+    expect(valorDe(container).textContent).toBe(`${SINAL_DE_MAIS}R$1.234,50`);
   });
 
   it('amount zero — o zero aparece', async () => {
     const { container } = await montar(<Receipt title={TITULO} amount={0} />);
 
-    expect(valorDe(container).textContent).toBe(`R$${SINAL_DE_MAIS}0,00`);
+    expect(valorDe(container).textContent).toBe(`${SINAL_DE_MAIS}R$0,00`);
   });
 
   it('amount nulo — não mostra valor', async () => {
@@ -82,13 +82,13 @@ describe('Receipt — tom', () => {
   it('sem tom — usa entrada', async () => {
     const { container } = await montar(<Receipt title={TITULO} amount={10} />);
 
-    expect(valorDe(container).textContent).toBe(`R$${SINAL_DE_MAIS}10,00`);
+    expect(valorDe(container).textContent).toBe(`${SINAL_DE_MAIS}R$10,00`);
   });
 
   it.each(SINAL_E_COR_POR_TOM)('tom %s — sinal "%s" e cor do valor', async (tom, sinal, corDoValor) => {
     const { container } = await montar(<Receipt title={TITULO} amount={10} tone={tom} />);
 
-    expect(valorDe(container).textContent).toBe(`R$${sinal}10,00`);
+    expect(valorDe(container).textContent).toBe(`${sinal}R$10,00`);
     expect(valorDe(container).style.color).toBe(corDoValor);
   });
 

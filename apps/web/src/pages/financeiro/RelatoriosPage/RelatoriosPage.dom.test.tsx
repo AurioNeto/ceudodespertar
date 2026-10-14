@@ -8,7 +8,7 @@ const COR_DE_ATENCAO = 'var(--color-attention)';
 const COR_DE_MARCA = 'var(--color-royal-deep)';
 const COR_PRIMARIA = 'var(--text-primary)';
 const COR_META = 'var(--text-meta)';
-const MENOS = '− ';
+const MENOS = '\u2212\u00a0';
 
 function fixarDensidade(campo: boolean) {
   vi.stubGlobal('matchMedia', (consulta: string) => ({
@@ -219,7 +219,7 @@ describe('RelatoriosPage: indicadores do mês de agosto de 2026 contra o períod
     await escolherOpcao(seletorDe(container, 'Tipo'), 'saida');
 
     expect(cartaoDoKpi(container, 'Entradas')).toMatchObject({ valor: 'R$0,00', delta: 'sem base de comparação', corDoDelta: COR_META });
-    expect(cartaoDoKpi(container, 'Resultado')).toMatchObject({ valor: 'R$-4.159,06', corDoValor: COR_DE_ATENCAO, delta: '+10% vs período anterior' });
+    expect(cartaoDoKpi(container, 'Resultado')).toMatchObject({ valor: '\u2212\u00a0R$4.159,06', corDoValor: COR_DE_ATENCAO, delta: '+10% vs período anterior' });
     expect(cartaoDoKpi(container, 'Transferências')).toMatchObject({ valor: 'R$0,00', delta: '0 movimentos entre contas' });
   });
 
@@ -576,7 +576,7 @@ describe('RelatoriosPage: movimento por conta', () => {
   it('escritório — mostra o cabeçalho da tabela e, por conta, entradas, saídas, resultado e exportar', async () => {
     const { container } = await montar(<RelatoriosPage />);
 
-    expect(linhaDaConta(container, 'Cora PJ').textContent).toBe('Cora PJR$2.586,84R$2.615,38R$-28,54exportar');
+    expect(linhaDaConta(container, 'Cora PJ').textContent).toBe('Cora PJR$2.586,84R$2.615,38\u2212\u00a0R$28,54exportar');
     expect(linhaDaConta(container, 'Espécie').textContent).toBe('EspécieR$2.161,06R$0,00R$2.161,06exportar');
     expect(cartaoComTitulo(container, 'Movimento por conta').textContent).toContain('ContaEntradasSaídasResultado');
   });
@@ -593,7 +593,7 @@ describe('RelatoriosPage: movimento por conta', () => {
     const { container } = await montar(<RelatoriosPage />);
 
     const resultado = todos<HTMLSpanElement>(linhaDaConta(container, 'Nubank Paty'), '[data-numeric]')[2];
-    expect([resultado?.textContent, resultado?.style.color]).toEqual(['R$-1.543,68', COR_DE_ATENCAO]);
+    expect([resultado?.textContent, resultado?.style.color]).toEqual(['\u2212\u00a0R$1.543,68', COR_DE_ATENCAO]);
   });
 
   it('escritório — exportar da conta avisa o extrato exportado do período', async () => {
@@ -609,7 +609,7 @@ describe('RelatoriosPage: movimento por conta', () => {
 
     const { container } = await montar(<RelatoriosPage />);
 
-    expect(linhaDaConta(container, 'Cora PJ').textContent).toBe('Cora PJR$-28,54');
+    expect(linhaDaConta(container, 'Cora PJ').textContent).toBe('Cora PJ\u2212\u00a0R$28,54');
     expect(cartaoComTitulo(container, 'Movimento por conta').textContent).not.toContain('ContaEntradas');
     expect(botoesComTexto(container, 'exportar')).toHaveLength(0);
   });
@@ -751,7 +751,7 @@ describe('RelatoriosPage: gaveta com os lançamentos de um recorte', () => {
       `10/08lenha para o feitioCozinha · Cora PJ${MENOS}R$538,55`,
       `24/08lenha para o feitioDormitório · Cora PJ${MENOS}R$1.122,97`,
       `23/08reforma do telhadoCDD · Cora PJ${MENOS}R$953,86`,
-      '04/08venda de velasCozinha · Cora PJ+ R$2.586,84',
+      '04/08venda de velasCozinha · Cora PJ+\u00a0R$2.586,84',
     ]);
   });
 
@@ -764,7 +764,7 @@ describe('RelatoriosPage: gaveta com os lançamentos de um recorte', () => {
       { texto: `${MENOS}R$538,55`, cor: COR_PRIMARIA },
       { texto: `${MENOS}R$1.122,97`, cor: COR_PRIMARIA },
       { texto: `${MENOS}R$953,86`, cor: COR_PRIMARIA },
-      { texto: '+ R$2.586,84', cor: COR_CONFIRMADA },
+      { texto: '+\u00a0R$2.586,84', cor: COR_CONFIRMADA },
     ]);
   });
 
@@ -781,8 +781,8 @@ describe('RelatoriosPage: gaveta com os lançamentos de um recorte', () => {
 
     await clicar(botaoDeConta(container, 'Cora PJ'));
 
-    expect(cabecalhoDaGaveta(container)[2]).toBe('4 lançamentos · R$ -28,54 · ago/26');
-    expect(linhaDaConta(container, 'Cora PJ').textContent).toContain('R$-28,54');
+    expect(cabecalhoDaGaveta(container)[2]).toBe('4 lançamentos · \u2212\u00a0R$ 28,54 · ago/26');
+    expect(linhaDaConta(container, 'Cora PJ').textContent).toContain('\u2212\u00a0R$28,54');
   });
 
   it('conta com transferência — a linha repete a conta e o valor sai sem sinal', async () => {

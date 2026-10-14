@@ -36,8 +36,7 @@ export function HistoricoDeFechamentos({ historico }: HistoricoDeFechamentosProp
               color: h.resultado >= 0 ? 'var(--color-confirmed)' : 'var(--color-attention)',
             }}
           >
-            {h.resultado >= 0 ? '+ ' : '− '}
-            <AmountDisplay value={Math.abs(h.resultado) / 100} size="sm" style={{ color: 'inherit' }} />
+            <AmountDisplay value={h.resultado / 100} sinal="sempre" size="sm" style={{ color: 'inherit' }} />
           </span>
         </div>
       ))}

@@ -67,8 +67,12 @@ export function GavetaDeRecorte({
                   color: l.tipo === 'entrada' ? 'var(--color-confirmed)' : 'var(--text-primary)',
                 }}
               >
-                {l.tipo === 'entrada' ? '+ ' : l.tipo === 'saida' ? '− ' : ''}
-                <AmountDisplay value={l.valor} size="sm" style={{ color: 'inherit' }} />
+                <AmountDisplay
+                  value={l.tipo === 'saida' ? -l.valor : l.valor}
+                  sinal={l.tipo === 'entrada' ? 'sempre' : 'negativo'}
+                  size="sm"
+                  style={{ color: 'inherit' }}
+                />
               </span>
             </div>
           ))}

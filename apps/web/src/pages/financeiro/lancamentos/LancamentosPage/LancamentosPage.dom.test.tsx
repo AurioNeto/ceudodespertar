@@ -38,8 +38,8 @@ vi.mock('@/pages/financeiro/mocks/lancamentos', async (importarOriginal) => {
 
 const BUSCA = 'Buscar por motivo, fornecedor ou quem lançou';
 
-const SAIDA = '− ';
-const ENTRADA = '+ ';
+const SAIDA = '\u2212\u00a0';
+const ENTRADA = '+\u00a0';
 
 beforeEach(() => {
   livro.transformar = (lista) => lista;
@@ -286,12 +286,12 @@ describe('LancamentosPage: totais do recorte, com o estorno', () => {
 
   it.each([
     { nome: 'todo o histórico', filtro: ['Período', 'todos'], esperado: ['R$5.545,00', 'R$4.268,35', 'R$1.276,65', '3 de 17'] },
-    { nome: 'julho', filtro: ['Período', '2026-07'], esperado: ['R$1.120,00', 'R$1.230,00', 'R$-110,00', '0 de 3'] },
+    { nome: 'julho', filtro: ['Período', '2026-07'], esperado: ['R$1.120,00', 'R$1.230,00', '\u2212\u00a0R$110,00', '0 de 3'] },
     { nome: 'só entradas', filtro: ['Tipo', 'ENTRADA'], esperado: ['R$4.425,00', 'R$0,00', 'R$4.425,00', '0 de 4'] },
-    { nome: 'só saídas', filtro: ['Tipo', 'SAIDA'], esperado: ['R$0,00', 'R$3.038,35', 'R$-3.038,35', '2 de 8'] },
+    { nome: 'só saídas', filtro: ['Tipo', 'SAIDA'], esperado: ['R$0,00', 'R$3.038,35', '\u2212\u00a0R$3.038,35', '2 de 8'] },
     { nome: 'só transferências', filtro: ['Tipo', 'TRANSFERENCIA'], esperado: ['R$0,00', 'R$0,00', 'R$0,00', '1 de 2'] },
     { nome: 'grupo Dormitório', filtro: ['Grupo', 'Dormitório'], esperado: ['R$3.200,00', 'R$1.245,00', 'R$1.955,00', '1 de 3'] },
-    { nome: 'situação a conferir', filtro: ['Situação', 'A_CONFERIR'], esperado: ['R$0,00', 'R$1.475,00', 'R$-1.475,00', '3 de 3'] },
+    { nome: 'situação a conferir', filtro: ['Situação', 'A_CONFERIR'], esperado: ['R$0,00', 'R$1.475,00', '\u2212\u00a0R$1.475,00', '3 de 3'] },
     { nome: 'situação consolidado', filtro: ['Situação', 'CONFIRMADO'], esperado: ['R$4.425,00', 'R$1.563,35', 'R$2.861,65', '0 de 10'] },
   ])('filtro $nome — os totais são $esperado', async ({ filtro, esperado }) => {
     const { container } = await montar(<LancamentosPage />);
@@ -477,7 +477,7 @@ describe('LancamentosPage: filtro de tipo em campo', () => {
   });
 
   it.each([
-    { botao: 'Saída', motivos: ['mercado cerimônia mãe divina', 'material de obra do dormitório', 'ração e vermífugo dos cavalos', 'gasolina para buscar mantimentos', 'garrafas e rótulos para o feitio', 'conta de luz da chácara', 'velas e incenso para o salão', 'frete das garrafas do feitio'], totais: ['R$0,00', 'R$3.038,35', 'R$-3.038,35'] },
+    { botao: 'Saída', motivos: ['mercado cerimônia mãe divina', 'material de obra do dormitório', 'ração e vermífugo dos cavalos', 'gasolina para buscar mantimentos', 'garrafas e rótulos para o feitio', 'conta de luz da chácara', 'velas e incenso para o salão', 'frete das garrafas do feitio'], totais: ['R$0,00', 'R$3.038,35', '\u2212\u00a0R$3.038,35'] },
     { botao: 'Entrada', motivos: ['contribuições da cerimônia de agosto', 'venda de camisetas na lojinha', 'doação de padrinho para o dormitório', 'hospedagem extra de dois participantes'], totais: ['R$4.425,00', 'R$0,00', 'R$4.425,00'] },
     { botao: 'Transf.', motivos: ['repasse do caixa da lojinha', 'reforço do caixa em espécie'], totais: ['R$0,00', 'R$0,00', 'R$0,00'] },
   ])('campo — o botão $botao filtra a lista e os totais, e fica marcado', async ({ botao, motivos, totais: esperados }) => {

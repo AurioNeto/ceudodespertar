@@ -50,7 +50,7 @@ const COR_CONFIRMADA = 'var(--color-confirmed)';
 const COR_DE_ATENCAO = 'var(--color-attention)';
 const COR_DO_SELO_CONFIRMADO = 'var(--tone-confirmed-fg)';
 const COR_DE_MARCA = 'var(--color-royal-deep)';
-const MENOS = '− ';
+const MENOS = '\u2212\u00a0';
 
 const TITULO_DA_FILA = 'Fila de verificação zerada';
 const TITULO_DA_CONCILIACAO = 'Contas conciliadas com o extrato';
@@ -511,7 +511,7 @@ describe('FechamentoPage: totais do mês, com e sem estorno', () => {
     };
     const { container } = await montarFechamento();
 
-    expect(resumoDoMes(container)).toEqual(['R$0,00', 'R$10,00', 'R$-10,00']);
+    expect(resumoDoMes(container)).toEqual(['R$0,00', 'R$10,00', '\u2212\u00a0R$10,00']);
   });
 
   it('saldo por conta — lista as contas ativas com o saldo e o total', async () => {
@@ -764,10 +764,10 @@ describe('FechamentoPage: meses anteriores', () => {
     const { container } = await montarFechamento();
 
     const texto = container.textContent ?? '';
-    expect(texto).toContain('Julho de 2026fechado por Aurio Neto em 03/08 · reaberto uma vezFechado+ R$4.180,22');
-    expect(texto).toContain('Junho de 2026fechado por Lucia Prado em 02/07Fechado+ R$2.905,10');
+    expect(texto).toContain('Julho de 2026fechado por Aurio Neto em 03/08 · reaberto uma vezFechado+\u00a0R$4.180,22');
+    expect(texto).toContain('Junho de 2026fechado por Lucia Prado em 02/07Fechado+\u00a0R$2.905,10');
     expect(texto).toContain(`Maio de 2026fechado por Aurio Neto em 04/06Fechado${MENOS}R$1.244,80`);
-    expect(texto).toContain('Abril de 2026fechado por Aurio Neto em 05/05Fechado+ R$6.512,45');
+    expect(texto).toContain('Abril de 2026fechado por Aurio Neto em 05/05Fechado+\u00a0R$6.512,45');
   });
 
   it('cada mês anterior leva o selo Fechado em verde', async () => {

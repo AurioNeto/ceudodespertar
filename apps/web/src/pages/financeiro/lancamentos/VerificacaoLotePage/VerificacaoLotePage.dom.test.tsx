@@ -2,6 +2,7 @@ import type { ItemNaFila } from '@cdd/contracts';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { botaoComTexto, clicar, desmontarTudo, digitar, elemento, montar, todos } from '@/testes/montagem';
 import { VerificacaoLotePage } from './VerificacaoLotePage';
+import { MOTIVO_DO_PERIODO_FECHADO_NA_REVISAO } from './constantes';
 import {
   SINAL_DE_ENTRADA,
   SINAL_DE_SAIDA,
@@ -775,6 +776,20 @@ describe('VerificacaoLotePage: revisão pelo painel', () => {
 
     expect(painelAberto(container)).toBe(true);
     expect(campoComRotulo(document.body, 'O que foi').value).toBe('diarista pós-cerimônia');
+  });
+
+  it('item de período fechado — Aprovar e consolidar fica bloqueado com o motivo, e o item continua na fila', async () => {
+    const { container } = await montar(<VerificacaoLotePage />);
+    await revisar(container, MOTIVO_DE_ALTA_CONFIANCA_EM_PERIODO_FECHADO);
+
+    const aprovar = botaoComTexto(container.ownerDocument.body, 'Aprovar e consolidar');
+    expect(aprovar.disabled).toBe(true);
+    expect(document.body.textContent).toContain(MOTIVO_DO_PERIODO_FECHADO_NA_REVISAO);
+
+    await clicar(aprovar);
+
+    expect(painelAberto(container)).toBe(true);
+    expect(motivosDaFila(container)).toContain(MOTIVO_DE_ALTA_CONFIANCA_EM_PERIODO_FECHADO);
   });
 
   it('aprovar no painel — o item sai da fila, o painel fecha e o aviso diz aprovado e consolidado', async () => {

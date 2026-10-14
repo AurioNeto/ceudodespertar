@@ -1,11 +1,12 @@
-import { formatarValor, paraData } from '@/lib/formato';
+import { SINAL_NEGATIVO, formatarValor, paraData } from '@/lib/formato';
 
 const INTEIRO = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 0 });
 const UM_DECIMAL = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
 
 export const formatarDinheiro = (centavos: number): string => formatarValor(centavos / 100);
 
-export const formatarBRL = (centavos: number): string => `R$ ${formatarDinheiro(centavos)}`;
+export const formatarBRL = (centavos: number): string =>
+  centavos < 0 ? `${SINAL_NEGATIVO}R$ ${formatarDinheiro(-centavos)}` : `R$ ${formatarDinheiro(centavos)}`;
 
 export const formatarInteiro = (n: number): string => INTEIRO.format(n);
 

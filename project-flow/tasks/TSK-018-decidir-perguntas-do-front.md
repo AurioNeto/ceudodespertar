@@ -24,9 +24,9 @@ As correções de comportamento (#140 a #145) e o R$ em todo valor (#147 a #152)
 
 ## Decisões do dono (13/10/2026)
 
-1. **Valor negativo:** `− R$ 110,00` em todas as telas, com a forma centralizada no `formatarBRL`.
-2. **Parcela negativa num valor somado:** vetada; cada parcela precisa ser positiva.
-3. **Período fechado:** o bloqueio vale também na aprovação individual ("Aprovar e consolidar").
+1. **Valor negativo:** `− R$ 110,00` em todas as telas, com a forma centralizada no `formatarBRL`. Em revisão (14/10).
+2. **Parcela negativa num valor somado:** vetada; cada parcela precisa ser positiva. Em revisão (14/10).
+3. **Período fechado:** o bloqueio vale também na aprovação individual ("Aprovar e consolidar"). Em revisão (14/10).
 4. **Data digitada:** aceita dia e mês sem zero (`5/9/2026`) e normaliza para `05/09/2026`.
 5. **Idade no link público:** medida no dia do evento.
 6. **Trocar de evento:** responsável e hospedagem também recomeçam.

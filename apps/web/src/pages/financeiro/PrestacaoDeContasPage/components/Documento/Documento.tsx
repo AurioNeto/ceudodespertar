@@ -79,8 +79,7 @@ export function Documento({ dados, nivel, unidadeRotulo, densidade, totalReceita
             color: resultado >= 0 ? 'var(--color-confirmed)' : 'var(--color-attention)',
           }}
         >
-          {resultado >= 0 ? '+ ' : '− '}
-          <AmountDisplay value={Math.abs(resultado) / 100} size="lg" style={{ color: 'inherit' }} />
+          <AmountDisplay value={resultado / 100} sinal="sempre" size="lg" style={{ color: 'inherit' }} />
         </span>
       </div>
 
@@ -151,8 +150,7 @@ export function Documento({ dados, nivel, unidadeRotulo, densidade, totalReceita
                   textAlign: 'right',
                 }}
               >
-                {r >= 0 ? '+ ' : '− '}
-                <AmountDisplay value={Math.abs(r) / 100} size="sm" style={{ color: 'inherit' }} />
+                <AmountDisplay value={r / 100} sinal="sempre" size="sm" style={{ color: 'inherit' }} />
               </span>
             </div>
           );

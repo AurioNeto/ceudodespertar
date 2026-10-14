@@ -17,7 +17,7 @@ vi.mock('@/pages/financeiro/ConciliacaoPage/mocks/conciliacao', async (importarO
   };
 });
 
-const MENOS = '− ';
+const MENOS = '\u2212\u00a0';
 
 const TITULO_DAS_LINHAS = 'Saiu dinheiro que ninguém registrou';
 const TITULO_DAS_SUGESTOES = 'Sugestões de casamento';
@@ -211,7 +211,7 @@ describe('ConciliacaoPage: coluna de linhas do banco sem lançamento', () => {
     expect(contagemDaColuna(container, TITULO_DAS_LINHAS)).toBe('5');
     expect(textosDaColuna(container, TITULO_DAS_LINHAS)).toEqual([
       `03/09TRANSF PIX MARIA S SANTOS${MENOS}R$1.480,00Registrar lançamentoIgnorar`,
-      '01/09TED RECEBIDA J R OLIVEIRA+ R$2.500,00Registrar lançamentoIgnorar',
+      '01/09TED RECEBIDA J R OLIVEIRA+\u00a0R$2.500,00Registrar lançamentoIgnorar',
       `06/09SUPERMERCADO BOM PRECO${MENOS}R$230,00Registrar lançamentoIgnorar`,
       `09/09TARIFA PACOTE SERVICOS${MENOS}R$45,00Registrar lançamentoIgnorar`,
       `12/09NETFLIX.COM${MENOS}R$89,90Registrar lançamentoIgnorar`,
@@ -460,7 +460,7 @@ describe('ConciliacaoPage: coluna de lançamentos sem linha no banco', () => {
     expect(contagemDaColuna(container, TITULO_DOS_LANCAMENTOS)).toBe('3');
     expect(textosDaColuna(container, TITULO_DOS_LANCAMENTOS)).toEqual([
       `28/08mercado cerimônia mãe divina${MENOS}R$187,40Cora PJ · Aurio Neto`,
-      '22/08venda de camisetas na lojinha+ R$285,00Cora PJ · Paty Munay',
+      '22/08venda de camisetas na lojinha+\u00a0R$285,00Cora PJ · Paty Munay',
       `05/09diesel do caminhão${MENOS}R$370,70Cora PJ · Chico Aguiar`,
     ]);
   });

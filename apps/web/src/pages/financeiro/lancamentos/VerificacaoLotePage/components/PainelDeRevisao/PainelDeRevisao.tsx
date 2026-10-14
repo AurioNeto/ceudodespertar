@@ -2,7 +2,8 @@ import type { ItemNaFila } from '@cdd/contracts';
 import { Button, Icon, PainelDeAcao, StatusBadge, type IconName } from '@/ds';
 import { ROTULO_DO_VALOR } from '@/pages/financeiro/lancamentos/constantes';
 import { formatarData } from '@/pages/utils/formato';
-import { CONFIANCA, ORIGENS } from '../../constantes';
+import { CONFIANCA, MOTIVO_DO_PERIODO_FECHADO_NA_REVISAO, ORIGENS } from '../../constantes';
+import { emPeriodoFechado } from '../../utils/periodoFechado';
 import { CampoDeTexto } from './components/CampoDeTexto';
 import { FormularioDeDevolucao } from './components/FormularioDeDevolucao';
 import { useRascunhoDeRevisao } from './hooks/useRascunhoDeRevisao';
@@ -22,6 +23,7 @@ export interface PainelDeRevisaoProps {
 export function PainelDeRevisao({ item, campo, onFechar, onAprovar, onDevolver }: PainelDeRevisaoProps) {
   const { rascunho, valorTexto, alterar, alterarValor, devolvendo, abrirDevolucao, cancelarDevolucao, motivo, escreverMotivo } =
     useRascunhoDeRevisao(item);
+  const fechado = emPeriodoFechado(item);
 
   const origem = ORIGENS[item.origem];
   const confianca = CONFIANCA[item.confianca];
@@ -117,7 +119,12 @@ export function PainelDeRevisao({ item, campo, onFechar, onAprovar, onDevolver }
         ) : null}
 
         <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-          <Button iconName="check" onClick={() => onAprovar(rascunho)}>
+          <Button
+            iconName="check"
+            disabled={fechado}
+            blockedReason={fechado ? MOTIVO_DO_PERIODO_FECHADO_NA_REVISAO : undefined}
+            onClick={() => onAprovar(rascunho)}
+          >
             Aprovar e consolidar
           </Button>
           {devolvendo ? null : (

@@ -1026,7 +1026,7 @@ describe('InscricaoPublicaPage: participação, valor e total', () => {
     { digitado: '0', total: 'R$ 0,00' },
     { digitado: '1.5', total: 'R$ 0,00' },
     { digitado: 'abc', total: 'R$ 0,00' },
-    { digitado: '-50', total: 'R$ -50,00' },
+    { digitado: '-50', total: '\u2212\u00a0R$ 50,00' },
   ])('valor "$digitado" — o total sai $total, sem voltar a A combinar', async ({ digitado, total }) => {
     const container = await chegarEmParticipacaoComoHelena();
 

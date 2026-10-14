@@ -1,5 +1,5 @@
 import type { TipoLancamento } from '@cdd/contracts';
-import { lerSoma } from '@/lib/numero';
+import { lerSoma, lerValorDigitado } from '@/lib/numero';
 import { competenciasFechadas, opcoesDeConta } from '../mocks/opcoes';
 import { rotuloDaOpcao } from './opcao';
 
@@ -21,6 +21,15 @@ export interface EstadoDoFormulario {
   pessoa: string;
 }
 
+export const MENSAGEM_DE_VALOR_ZERADO = 'Informe um valor maior que zero.';
+export const MENSAGEM_DE_PARCELA_NAO_POSITIVA = 'Cada parcela da soma precisa ser maior que zero.';
+
+const temParcelaNaoPositiva = (valor: string): boolean =>
+  valor
+    .split('+')
+    .map((parcela) => parcela.trim())
+    .some((parcela) => parcela !== '' && lerValorDigitado(parcela) <= 0);
+
 export function regrasDoLancamento(tipo: TipoLancamento, campos: EstadoDoFormulario, consolida: boolean) {
   const ehTransferencia = tipo === 'TRANSFERENCIA';
   const ehEntrada = tipo === 'ENTRADA';
@@ -35,8 +44,13 @@ export function regrasDoLancamento(tipo: TipoLancamento, campos: EstadoDoFormula
   const contaDestino = rotuloDaOpcao(opcoesDeConta, campos.contaDestino);
 
   const total = lerSoma(campos.valor);
-  const valorInvalido = total <= 0;
-  const erroDoValor = valorInvalido ? 'Informe um valor maior que zero.' : undefined;
+  const parcelaNaoPositiva = composto && temParcelaNaoPositiva(campos.valor);
+  const valorInvalido = total <= 0 || parcelaNaoPositiva;
+  const erroDoValor = parcelaNaoPositiva
+    ? MENSAGEM_DE_PARCELA_NAO_POSITIVA
+    : valorInvalido
+      ? MENSAGEM_DE_VALOR_ZERADO
+      : undefined;
 
   const compostoBloqueia = consolida && composto;
   const bloqueado = competenciaFechada || compostoBloqueia || mesmaConta || valorInvalido;

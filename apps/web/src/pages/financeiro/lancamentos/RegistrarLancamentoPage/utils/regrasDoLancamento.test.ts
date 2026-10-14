@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { INICIAL } from '../mocks/formularioInicial';
-import { regrasDoLancamento } from './regrasDoLancamento';
+import { MENSAGEM_DE_PARCELA_NAO_POSITIVA, regrasDoLancamento } from './regrasDoLancamento';
 
 describe('regrasDoLancamento', () => {
   it('saída com os campos iniciais — o valor vazio bloqueia, sem categoria e com reembolso', () => {
@@ -26,6 +26,19 @@ describe('regrasDoLancamento', () => {
     ['abc+10', 10],
   ])('valor %s soma %s', (valor, total) => {
     expect(regrasDoLancamento('SAIDA', { ...INICIAL, valor }, false).total).toBe(total);
+  });
+
+  it.each(['-50+60', '60+-50', '60+0', '60 + -10,50'])('valor somado %s — parcela que não é positiva bloqueia, mesmo com total positivo', (valor) => {
+    expect(regrasDoLancamento('SAIDA', { ...INICIAL, valor }, false)).toMatchObject({
+      valorInvalido: true,
+      bloqueado: true,
+      erroDoValor: MENSAGEM_DE_PARCELA_NAO_POSITIVA,
+      motivoBloqueio: MENSAGEM_DE_PARCELA_NAO_POSITIVA,
+    });
+  });
+
+  it.each(['50+60', '50+'])('valor somado %s — parcelas positivas, sem bloqueio pelo valor', (valor) => {
+    expect(regrasDoLancamento('SAIDA', { ...INICIAL, valor }, false)).toMatchObject({ valorInvalido: false, erroDoValor: undefined });
   });
 
   it('valor composto só bloqueia quem grava consolidado', () => {

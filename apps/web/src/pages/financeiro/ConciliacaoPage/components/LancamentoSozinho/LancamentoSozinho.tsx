@@ -35,8 +35,12 @@ export function LancamentoSozinho({ lancamento }: LancamentoSozinhoProps) {
             color: lancamento.natureza === 'RECEITA' ? 'var(--color-confirmed)' : 'var(--text-primary)',
           }}
         >
-          {lancamento.natureza === 'RECEITA' ? '+ ' : '− '}
-          <AmountDisplay value={lancamento.valor / 100} size="sm" style={{ color: 'inherit' }} />
+          <AmountDisplay
+            value={(lancamento.natureza === 'RECEITA' ? lancamento.valor : -lancamento.valor) / 100}
+            sinal="sempre"
+            size="sm"
+            style={{ color: 'inherit' }}
+          />
         </span>
       </div>
       <span style={{ font: 'var(--text-small)', color: 'var(--text-meta)' }}>
