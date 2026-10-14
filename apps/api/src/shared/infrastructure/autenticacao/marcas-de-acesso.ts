@@ -13,20 +13,37 @@ export type MarcaDeAcesso =
 type DecoratorDeMarca = (alvo: object, chave?: string | symbol, descritor?: PropertyDescriptor) => void;
 
 function marcar(marca: MarcaDeAcesso): DecoratorDeMarca {
-  return (alvo, _chave, descritor) => {
-    const portador: object = descritor?.value ?? alvo;
-    const existentes = lerMarcasProprias(portador);
-    Reflect.defineMetadata(CHAVE_DAS_MARCAS_DE_ACESSO, [...existentes, marca], portador);
+  return (alvo, chave) => {
+    const existentes = lerMarcas(alvo, chave);
+    if (chave === undefined) {
+      Reflect.defineMetadata(CHAVE_DAS_MARCAS_DE_ACESSO, [...existentes, marca], alvo);
+      return;
+    }
+    Reflect.defineMetadata(CHAVE_DAS_MARCAS_DE_ACESSO, [...existentes, marca], alvo, chave);
   };
 }
 
-export function lerMarcasProprias(portador: object): readonly MarcaDeAcesso[] {
-  return Reflect.getOwnMetadata(CHAVE_DAS_MARCAS_DE_ACESSO, portador) ?? [];
+function lerMarcas(alvo: object, chave?: string | symbol): readonly MarcaDeAcesso[] {
+  const marcas: unknown =
+    chave === undefined
+      ? Reflect.getOwnMetadata(CHAVE_DAS_MARCAS_DE_ACESSO, alvo)
+      : Reflect.getOwnMetadata(CHAVE_DAS_MARCAS_DE_ACESSO, alvo, chave);
+  return (marcas as readonly MarcaDeAcesso[] | undefined) ?? [];
 }
 
-export function marcaEfetivaDaRota(handler: object, classe: object): readonly MarcaDeAcesso[] {
-  const doMetodo = lerMarcasProprias(handler);
-  return doMetodo.length > 0 ? doMetodo : lerMarcasProprias(classe);
+function nomeProprioDoHandler(prototipo: object, handler: object): string | symbol | undefined {
+  return Reflect.ownKeys(prototipo).find(
+    (nome) => Object.getOwnPropertyDescriptor(prototipo, nome)?.value === handler,
+  );
+}
+
+export function marcaEfetivaDaRota(handler: object, classe: Function): readonly MarcaDeAcesso[] {
+  const prototipo: unknown = classe.prototype;
+  if (typeof prototipo !== 'object' || prototipo === null) return [];
+  const nome = nomeProprioDoHandler(prototipo, handler);
+  if (nome === undefined) return [];
+  const doMetodo = lerMarcas(prototipo, nome);
+  return doMetodo.length > 0 ? doMetodo : lerMarcas(classe);
 }
 
 function exigirPermissaoDoCatalogo(permissao: string): asserts permissao is Permissao {

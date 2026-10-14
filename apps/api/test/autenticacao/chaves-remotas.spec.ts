@@ -7,7 +7,7 @@ import {
 } from '../../src/shared/infrastructure/autenticacao/chaves-remotas.js';
 import type { OpcoesDasChavesRemotas } from '../../src/shared/infrastructure/autenticacao/chaves-remotas.js';
 import { VerificadorDeToken } from '../../src/shared/infrastructure/autenticacao/verificador-de-token.js';
-import { AUDIENCIA_DE_TESTE, criarChavesDeTeste, emitirToken, SUB_DE_TESTE } from './chaves-de-teste.js';
+import { AUDIENCIA_DE_TESTE, CLIENTES_AUTORIZADOS_DE_TESTE, criarChavesDeTeste, emitirToken, SUB_DE_TESTE } from './chaves-de-teste.js';
 import type { ChavesDeTeste } from './chaves-de-teste.js';
 import { ServidorDeJwks } from './servidor-de-jwks.js';
 
@@ -58,6 +58,7 @@ describe('chaves remotas com tolerância a falha do provedor', () => {
     return new VerificadorDeToken({
       emissor,
       audiencia: AUDIENCIA_DE_TESTE,
+      clientesAutorizados: CLIENTES_AUTORIZADOS_DE_TESTE,
       chaves: criarChavesRemotas(emissor, {
         validadeDoCacheEmMs: VALIDADE_DO_CACHE_EM_MS,
         limiteDeEsperaEmMs: LIMITE_DE_ESPERA_EM_MS,
@@ -139,6 +140,21 @@ describe('chaves remotas com tolerância a falha do provedor', () => {
       const erro: unknown = await verificador.verificar(forjado).catch((e: unknown) => e);
 
       expect(erro).toBeInstanceOf(errors.JWSSignatureVerificationFailed);
+    });
+
+    it('várias chaves compatíveis no JWKS velho continuam recusa de token durante a queda, também na pausa', async () => {
+      const segundaComOMesmoKid = { ...novas.jwk, kid: atuais.kid };
+      const verificador = await prepararVerificador({}, { keys: [atuais.jwk, segundaComOMesmoKid] });
+      const token = await tokenDe(atuais, servidor.emissor);
+      await expect(verificador.verificar(token)).rejects.toBeInstanceOf(errors.JWKSMultipleMatchingKeys);
+      servidor.modo = 'indisponivel';
+      await passarDaValidadeDoCache();
+
+      const naFalha: unknown = await verificador.verificar(token).catch((e: unknown) => e);
+      const naPausa: unknown = await verificador.verificar(token).catch((e: unknown) => e);
+
+      expect(naFalha).toBeInstanceOf(errors.JWKSMultipleMatchingKeys);
+      expect(naPausa).toBeInstanceOf(errors.JWKSMultipleMatchingKeys);
     });
 
     it('claims inválidas continuam sendo recusa de token durante a queda', async () => {

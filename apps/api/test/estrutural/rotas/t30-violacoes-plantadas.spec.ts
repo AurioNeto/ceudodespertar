@@ -176,6 +176,43 @@ class PublicoEmCaminhosDaClasseController {
   rota(): void {}
 }
 
+class BaseComPermissaoNoMetodo {
+  @RequerPermissao('financeiro.lancamento.registrar')
+  @Post('herdada')
+  rota(): void {}
+}
+
+@Controller('herdeiro-sem-marca')
+class HerdeiroSemMarcaController extends BaseComPermissaoNoMetodo {}
+
+class BasePublicaNoMetodo {
+  @Publico()
+  @Get('herdada')
+  rota(): void {}
+}
+
+@RequerPermissao('financeiro.lancamento.ler')
+@Controller('herdeiro-com-permissao-na-classe')
+class HerdeiroComPermissaoNaClasseController extends BasePublicaNoMetodo {}
+
+function SubstituirImplementacao(): MethodDecorator {
+  return (_alvo, _chave, descritor) => {
+    const original = descritor.value as (...argumentos: unknown[]) => unknown;
+    (descritor as PropertyDescriptor).value = function substituta(this: unknown, ...argumentos: unknown[]): unknown {
+      return original.apply(this, argumentos);
+    };
+  };
+}
+
+@Publico()
+@Controller('metodo-com-implementacao-substituida')
+class MetodoComImplementacaoSubstituidaController {
+  @Post()
+  @SubstituirImplementacao()
+  @RequerPermissao('financeiro.lancamento.registrar')
+  rota(): void {}
+}
+
 const PLANTADOS_COM_VIOLACAO: readonly Type[] = [
   SemMarcaController,
   DuasMarcasController,
@@ -195,12 +232,15 @@ const PLANTADOS_COM_VIOLACAO: readonly Type[] = [
   SaudeAdminController,
   UsuarioAtivoEmCaminhosDoMetodoController,
   PublicoEmCaminhosDaClasseController,
+  HerdeiroSemMarcaController,
+  HerdeiroComPermissaoNaClasseController,
 ];
 
 const PLANTADOS_SEM_VIOLACAO: readonly Type[] = [
   EscritaComPermissaoController,
   SaudeNaTabelaController,
   UsuarioAtivoNoEuController,
+  MetodoComImplementacaoSubstituidaController,
 ];
 
 const OPCOES: OpcoesDeVerificacao = {
@@ -237,6 +277,8 @@ describe('T30 — controllers plantados', () => {
         'marca-ausente-ou-duplicada | GET /api/v1/duas-marcas',
         'marca-ausente-ou-duplicada | PATCH /api/v1/patch-sem-marca',
         'marca-ausente-ou-duplicada | GET /api/v1/filho-sem-marca-propria/herdada',
+        'marca-ausente-ou-duplicada | POST /api/v1/herdeiro-sem-marca/herdada',
+        'marca-ausente-ou-duplicada | GET /api/v1/herdeiro-com-permissao-na-classe/herdada',
         'escrita-sem-permissao | POST /api/v1/identificado-em-post',
         'sem-permissao-fora-da-tabela | POST /api/v1/identificado-em-post',
         'escrita-sem-permissao | PUT /api/v1/publico-em-put',

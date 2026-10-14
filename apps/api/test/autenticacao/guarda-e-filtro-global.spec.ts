@@ -13,7 +13,7 @@ import { FiltroDeErrosModule } from '../../src/shared/infrastructure/http/filtro
 import { CABECALHO_DE_CORRELACAO, middlewareDeCorrelacao } from '../../src/shared/infrastructure/log/correlacao.js';
 import { SaudeController } from '../../src/shared/infrastructure/saude/saude.controller.js';
 import { VerificadorDeProntidao } from '../../src/shared/infrastructure/saude/verificador-de-prontidao.js';
-import { AUDIENCIA_DE_TESTE, criarChavesDeTeste, emitirToken } from './chaves-de-teste.js';
+import { AUDIENCIA_DE_TESTE, CLIENTES_AUTORIZADOS_DE_TESTE, criarChavesDeTeste, emitirToken } from './chaves-de-teste.js';
 import type { ChavesDeTeste } from './chaves-de-teste.js';
 import { pedir } from './cliente-http.js';
 import { ResolvedorDeContextoDeAcessoFake } from './resolvedor-de-contexto-de-acesso-fake.js';
@@ -37,7 +37,7 @@ class AmbienteDeTesteModule {
     return {
       module: AmbienteDeTesteModule,
       global: true,
-      providers: [{ provide: AMBIENTE, useValue: { OIDC_EMISSOR: emissor, OIDC_AUDIENCIA: AUDIENCIA_DE_TESTE } }],
+      providers: [{ provide: AMBIENTE, useValue: { OIDC_EMISSOR: emissor, OIDC_AUDIENCIA: AUDIENCIA_DE_TESTE, OIDC_CLIENTES_AUTORIZADOS: CLIENTES_AUTORIZADOS_DE_TESTE } }],
       exports: [AMBIENTE],
     };
   }

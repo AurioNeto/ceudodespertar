@@ -5,6 +5,8 @@ import { createLocalJWKSet, errors, exportJWK, generateKeyPair, jwtVerify } from
 import { beforeAll, describe, expect, it } from 'vitest';
 import {
   AUDIENCIA_DE_TESTE,
+  CLIENTE_DE_TESTE,
+  CLIENTES_AUTORIZADOS_DE_TESTE,
   CASOS_DE_TOKEN_INVALIDO,
   criarChavesDeTeste,
   EMISSOR_DE_TESTE,
@@ -25,6 +27,7 @@ describe('VerificadorDeToken', () => {
     verificador = new VerificadorDeToken({
       emissor: EMISSOR_DE_TESTE,
       audiencia: AUDIENCIA_DE_TESTE,
+      clientesAutorizados: CLIENTES_AUTORIZADOS_DE_TESTE,
       chaves: chaves.chaves,
     });
   });
@@ -37,6 +40,27 @@ describe('VerificadorDeToken', () => {
     expect(Object.keys(identidade).toSorted()).toEqual(['expiraEm', 'sub']);
     expect(identidade.sub).toBe(SUB_DE_TESTE);
   });
+
+  it('aceita token de qualquer cliente da lista de autorizados', async () => {
+    const comDoisClientes = new VerificadorDeToken({
+      emissor: EMISSOR_DE_TESTE,
+      audiencia: AUDIENCIA_DE_TESTE,
+      clientesAutorizados: [CLIENTE_DE_TESTE, 'cdd-teste'],
+      chaves: chaves.chaves,
+    });
+    const token = await emitirToken(chaves, { payload: { azp: 'cdd-teste' } });
+
+    await expect(comDoisClientes.verificar(token)).resolves.toMatchObject({ sub: SUB_DE_TESTE });
+  });
+
+  it.each([{ azp: 'cdd-teste' }, { azp: undefined }, { azp: ['cdd-web'] }])(
+    'recusa token cujo azp não é um cliente autorizado: %j',
+    async (payload) => {
+      const token = await emitirToken(chaves, { payload });
+
+      await expect(verificador.verificar(token)).rejects.toBeInstanceOf(ErroDeTokenInvalido);
+    },
+  );
 
   it('aceita aud em lista que contém a audiência', async () => {
     const token = await emitirToken(chaves, { payload: { aud: ['account', AUDIENCIA_DE_TESTE] } });
@@ -76,6 +100,7 @@ describe('VerificadorDeToken', () => {
     const verificadorSemAlg = new VerificadorDeToken({
       emissor: EMISSOR_DE_TESTE,
       audiencia: AUDIENCIA_DE_TESTE,
+      clientesAutorizados: CLIENTES_AUTORIZADOS_DE_TESTE,
       chaves: chavesSemAlg,
     });
 
@@ -117,6 +142,7 @@ describe('criarChavesRemotas', () => {
     const verificador = new VerificadorDeToken({
       emissor,
       audiencia: AUDIENCIA_DE_TESTE,
+      clientesAutorizados: CLIENTES_AUTORIZADOS_DE_TESTE,
       chaves: criarChavesRemotas(emissor),
     });
     const token = await emitirToken(chaves, { payload: { iss: emissor } });

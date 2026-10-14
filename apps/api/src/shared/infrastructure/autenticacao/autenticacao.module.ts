@@ -21,7 +21,12 @@ import { CHAVES_DE_VERIFICACAO, VerificadorDeToken } from './verificador-de-toke
       provide: VerificadorDeToken,
       inject: [AMBIENTE, CHAVES_DE_VERIFICACAO],
       useFactory: (ambiente: Ambiente, chaves: JWTVerifyGetKey) =>
-        new VerificadorDeToken({ emissor: ambiente.OIDC_EMISSOR, audiencia: ambiente.OIDC_AUDIENCIA, chaves }),
+        new VerificadorDeToken({
+          emissor: ambiente.OIDC_EMISSOR,
+          audiencia: ambiente.OIDC_AUDIENCIA,
+          clientesAutorizados: ambiente.OIDC_CLIENTES_AUTORIZADOS,
+          chaves,
+        }),
     },
     { provide: ResolvedorDeContextoDeAcesso, useClass: ResolvedorDeContextoDeAcessoVazio },
     { provide: APP_GUARD, useClass: GuardaDeAcesso },

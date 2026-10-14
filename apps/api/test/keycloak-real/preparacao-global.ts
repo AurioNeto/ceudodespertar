@@ -33,6 +33,7 @@ function ambienteDaApi(): NodeJS.ProcessEnv {
     BANCO_URL: `postgres://cdd_app:${process.env['CDD_APP_SENHA']}@localhost:${process.env['ACEITE_PORTA_POSTGRES']}/cdd`,
     OIDC_EMISSOR: `${urlDoKeycloak}/realms/cdd`,
     OIDC_AUDIENCIA: 'cdd-api',
+    OIDC_CLIENTES_AUTORIZADOS: 'cdd-web,cdd-teste',
     KEYCLOAK_URL_BASE: urlDoKeycloak,
     KEYCLOAK_REALM: 'cdd',
     KEYCLOAK_ADMIN_CLIENT_ID: 'cdd-api-admin',

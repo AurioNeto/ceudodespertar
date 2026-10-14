@@ -19,6 +19,7 @@ export class ErroDeTokenInvalido extends Error {
 export interface OpcoesDoVerificador {
   readonly emissor: string;
   readonly audiencia: string;
+  readonly clientesAutorizados: readonly string[];
   readonly chaves: JWTVerifyGetKey;
 }
 
@@ -35,6 +36,9 @@ export class VerificadorDeToken {
     });
     if (payload['typ'] !== TIPO_DO_ACCESS_TOKEN) {
       throw new ErroDeTokenInvalido('typ diferente de Bearer');
+    }
+    if (typeof payload['azp'] !== 'string' || !this.opcoes.clientesAutorizados.includes(payload['azp'])) {
+      throw new ErroDeTokenInvalido('azp fora dos clientes autorizados');
     }
     if (typeof payload.sub !== 'string' || payload.sub.length === 0 || typeof payload.exp !== 'number') {
       throw new ErroDeTokenInvalido('sub ou exp ausente');

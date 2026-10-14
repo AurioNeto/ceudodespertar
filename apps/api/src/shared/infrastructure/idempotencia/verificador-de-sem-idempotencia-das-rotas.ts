@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import type { OnModuleInit, Type } from '@nestjs/common';
 import { METHOD_METADATA } from '@nestjs/common/internal';
 import { DiscoveryService, MetadataScanner, Reflector } from '@nestjs/core';
-import { lerMarcasProprias } from '../autenticacao/marcas-de-acesso.js';
+import { marcaEfetivaDaRota } from '../autenticacao/marcas-de-acesso.js';
 import type { MarcaDeAcesso } from '../autenticacao/marcas-de-acesso.js';
 import { CHAVE_DE_SEM_IDEMPOTENCIA } from './sem-idempotencia.decorator.js';
 
@@ -50,8 +50,7 @@ export class VerificadorDeSemIdempotenciaDasRotas implements OnModuleInit {
   }
 
   private semInstituicao(handler: Function, controlador: Type): boolean {
-    const doMetodo = lerMarcasProprias(handler);
-    const marcas = doMetodo.length > 0 ? doMetodo : lerMarcasProprias(controlador);
+    const marcas = marcaEfetivaDaRota(handler, controlador);
     return marcas.length === 1 && MARCAS_SEM_INSTITUICAO.has(marcas[0]!.tipo);
   }
 }

@@ -6,6 +6,7 @@ import type { JWTVerifyGetKey } from 'jose';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AutenticacaoModule } from '../../src/shared/infrastructure/autenticacao/autenticacao.module.js';
 import { criarChavesRemotas } from '../../src/shared/infrastructure/autenticacao/chaves-remotas.js';
+import { JANELA_DO_ALERTA_DE_INDISPONIBILIDADE_EM_MS } from '../../src/shared/infrastructure/autenticacao/guarda-de-acesso.js';
 import { ResolvedorDeContextoDeAcesso } from '../../src/shared/infrastructure/autenticacao/contexto-de-acesso.js';
 import type { ContextoDeAcesso } from '../../src/shared/infrastructure/autenticacao/contexto-de-acesso.js';
 import type { IdentidadeAutenticada } from '../../src/shared/infrastructure/autenticacao/identidade-autenticada.js';
@@ -21,6 +22,7 @@ import { CHAVES_DE_VERIFICACAO } from '../../src/shared/infrastructure/autentica
 import { AMBIENTE } from '../../src/shared/infrastructure/configuracao/esquema-de-ambiente.js';
 import {
   AUDIENCIA_DE_TESTE,
+  CLIENTES_AUTORIZADOS_DE_TESTE,
   CASOS_DE_REQUISICAO_INVALIDA,
   CASOS_DE_TOKEN_INVALIDO,
   criarChavesDeTeste,
@@ -163,7 +165,7 @@ class AmbienteDeTesteModule {
     return {
       module: AmbienteDeTesteModule,
       global: true,
-      providers: [{ provide: AMBIENTE, useValue: { OIDC_EMISSOR: emissor, OIDC_AUDIENCIA: AUDIENCIA_DE_TESTE } }],
+      providers: [{ provide: AMBIENTE, useValue: { OIDC_EMISSOR: emissor, OIDC_AUDIENCIA: AUDIENCIA_DE_TESTE, OIDC_CLIENTES_AUTORIZADOS: CLIENTES_AUTORIZADOS_DE_TESTE } }],
       exports: [AMBIENTE],
     };
   }
@@ -291,13 +293,13 @@ describe('guarda de acesso', () => {
       expect((await pedir('/classe-identificada/herda', await bearer(chaves))).status).toBe(200);
     });
 
-    it('controller filho sem marca própria não herda a marca da classe pai e responde 500', async () => {
+    it('controller filho sem marca própria não herda a marca da classe nem dos métodos do pai e responde 500', async () => {
       fake.concederPermissoes();
       const credencial = await bearer(chaves);
 
       expect((await pedir('/filho-sem-marca-propria/herda', credencial)).status).toBe(500);
-      expect((await pedir('/filho-sem-marca-propria/metodo-publico', credencial)).status).toBe(200);
-      expect((await pedir('/filho-sem-marca-propria/metodo-exige', credencial)).status).toBe(403);
+      expect((await pedir('/filho-sem-marca-propria/metodo-publico', credencial)).status).toBe(500);
+      expect((await pedir('/filho-sem-marca-propria/metodo-exige', credencial)).status).toBe(500);
     });
 
     it('marca do método com permissão substitui a da classe identificada', async () => {
@@ -682,6 +684,27 @@ describe('indisponibilidade do provedor de identidade', () => {
     expect(logs.linhas('error')).toEqual(['Provedor de identidade indisponível: ERR_JOSE_GENERIC']);
     expect(logs.linhas('warn')).toEqual([]);
     expect(fake.identidadesResolvidas).toHaveLength(0);
+  });
+
+  it('na queda, só o primeiro 503 de cada janela gera log de erro; os demais viram warn', async () => {
+    const logs = capturarLogs();
+    servidor.modo = 'indisponivel';
+    const inicio = performance.now();
+    const relogio = vi.spyOn(performance, 'now').mockReturnValue(inicio);
+
+    expect((await pedirAutenticado('/identificado')).status).toBe(503);
+    expect((await pedirAutenticado('/identificado')).status).toBe(503);
+    relogio.mockReturnValue(inicio + JANELA_DO_ALERTA_DE_INDISPONIBILIDADE_EM_MS - 1);
+    expect((await pedirAutenticado('/identificado')).status).toBe(503);
+
+    expect(logs.linhas('error')).toHaveLength(1);
+    expect(logs.linhas('warn')).toHaveLength(2);
+    expect(logs.linhas('warn').every((linha) => linha.startsWith('Provedor de identidade indisponível: '))).toBe(true);
+
+    relogio.mockReturnValue(inicio + JANELA_DO_ALERTA_DE_INDISPONIBILIDADE_EM_MS);
+    expect((await pedirAutenticado('/identificado')).status).toBe(503);
+
+    expect(logs.linhas('error')).toHaveLength(2);
   });
 
   it('provedor recusando conexão e pendurado também resultam em 503', async () => {
