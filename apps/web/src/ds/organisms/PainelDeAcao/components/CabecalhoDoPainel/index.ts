@@ -1,0 +1,1 @@
+export { CabecalhoDoPainel } from './CabecalhoDoPainel';

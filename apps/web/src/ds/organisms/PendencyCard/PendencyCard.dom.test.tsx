@@ -2,7 +2,8 @@ import { act } from 'react';
 import type { ReactElement } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { botaoComTexto, clicar, desmontarTudo, elemento, folhaComTexto, montar, todos } from '@/testes/montagem';
-import { PendencyCard, type AddresseeTexts, type PendencyCardProps, type PendencyTexts, type ReviewerTexts } from './PendencyCard';
+import { PendencyCard } from './PendencyCard';
+import type { AddresseeTexts, PendencyCardProps, PendencyTexts, ReviewerTexts } from './tipos';
 
 afterEach(desmontarTudo);
 

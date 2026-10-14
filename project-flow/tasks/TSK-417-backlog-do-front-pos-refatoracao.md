@@ -8,12 +8,12 @@
 
 1. ✅ **Remover o Tailwind.** Entregue no #173 e na `main` desde o #196 (épica do redesign, 12/10/2026). O reset dos elementos que as telas usam foi para o fim do `ds/fundacao/tokens/base.css`, e o plugin, o `@theme` e as dependências saíram. Sem captura de telas; a validação visual é do dono (Doc 8 §15, "O que fazer com o Tailwind?").
 2. **Desvios estruturais pequenos** (anexo do Doc 8, §14 "Pendências do mapeamento"):
-   - componentes acima de 200 linhas: resta o `CartaoDeContratacao` (230). `Participacao` e `BlocoDePergunta` ficaram abaixo de 200 no #167;
+   - ✅ componentes acima de 200 linhas: o `CartaoDeContratacao` (230) foi dividido e ficou com 177 (em revisão, 14/10). `Participacao` e `BlocoDePergunta` ficaram abaixo de 200 no #167;
    - ✅ `BlocoDePergunta` e `DetalheDoTrabalho` recebem `campo: boolean` em vez de `densidade` (em revisão, 14/10);
    - ✅ estado fora de `hooks/`: `Cadastro` de Leitos, `Herdadas` e `AbaDeUsuarios` (em revisão, 13/10);
    - ✅ `EntrarPage` e `RetornoPage` chamam um hook só (em revisão, 13/10).
    - A conferência de 12/10 na `main` achou mais casos do mesmo tipo, que não estavam no anexo:
-     - acima de 200 linhas no `ds`: `PendencyCard` (219) e `PainelDeAcao` (207);
+     - ✅ acima de 200 linhas no `ds`: `PendencyCard` (216) e `PainelDeAcao` (211) foram divididos e ficaram com 53 e 173 (em revisão, 14/10). Os componentes extraídos não ganharam teste próprio (decisão do dono: sem teste novo em refatoração); o `estrutura:web` passa de 241 para 249 avisos de "unidade sem teste";
      - ✅ `campo: boolean`: `Cartao`, `Portao`, `PainelDeRevisao`, `GraficoSerie` e `PainelDeQuebra` (em revisão, 14/10: os três primeiros no #222, com `Cartao` e `Portao` em `density`, como o resto do `ds`; `GraficoSerie` e `PainelDeQuebra` no #221);
      - `useState` fora de `hooks/`: `DescarteDoRascunho` e `PainelDeConvite` em revisão (13/10). ✅ `PainelDoUsuario`, `GraficoSerie`, `PainelDeFiltros` e `PainelDeQuebra`, que tinham ficado para depois por colidirem com o #202 e o #206, em revisão no #221 (14/10).
 3. **Consolidar os apoios de teste repetidos** entre telas (`usarDensidade`, `textosDasFolhas`, `campoRotulado` e outros).

@@ -5,4 +5,4 @@ export type {
   PendencyRole,
   PendencyTexts,
   ReviewerTexts,
-} from './PendencyCard';
+} from './tipos';
