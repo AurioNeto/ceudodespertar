@@ -350,7 +350,7 @@ Há três exceções desenhadas. O despachante do outbox: `shared.outbox` não t
 - DRE, fluxo de caixa, resultado por cerimônia e por grupo de custo são **read models do backend** — consultas Kysely sobre as tabelas (§18.6 documenta o SQL histórico como referência de cálculo). Com ~600 lançamentos por ano, nenhuma materialização se paga.
 - A prestação de contas é um PDF gerado por Chromium headless a partir de uma página HTML interna, com os mesmos componentes do relatório na tela. O arquivo vai ao bucket; `financeiro.prestacao_de_contas` guarda período, nível, autor, **hash SHA-256** do PDF e é só-inserção. A assembleia pode conferir que o documento que recebeu é o que o sistema gerou.
 - Nível `RESUMO` suprime identidade de pessoa física (Doc 1 §6); `DETALHADO` exige `financeiro.prestacao_contas.detalhada`.
-- O fechamento grava o hash do conjunto de lançamentos da competência (P2) — ordenados por id, serializados de forma canônica — e a reabertura guarda o hash anterior. Mudou o mês depois de prestado, a divergência aparece. O hash é calculado pelo domínio.
+- O fechamento grava o hash do conjunto de lançamentos e transferências da competência (P2) — ordenados por id, serializados de forma canônica — e a reabertura guarda o hash anterior. Mudou o mês depois de prestado, a divergência aparece. O hash é calculado pelo domínio.
 
 ## 12. API: convenções e catálogo de erros
 
@@ -606,6 +606,8 @@ A soma é regra do agregado `Lancamento`: as etiquetas fazem parte dele, e ele r
 | `OrigemLancamento` com 5 valores | 8 valores: união do front e do Doc 2 | Decisão 11 |
 | — | `confirmadoPor`, `confirmadoEm`, `versao` | Trilha e concorrência |
 
+Lançamento que nasce confirmado por integração ou migração tem o sistema (autor `SISTEMA`) como `confirmadoPor`, com a origem registrada (dono, 14/10/2026). No lançamento, quem registrou pode confirmar o próprio; a segregação é só da transferência (§18.4).
+
 ### 18.3 Estorno — a convenção que sustenta §2.5.1
 
 O estorno é um lançamento novo com `estorno_de_id`, **a mesma natureza e as mesmas etiquetas do original**, e efeito com sinal invertido. O original **não muda**: continua `CONFIRMADO` e contando, e os dois se anulam. "Estornado" é derivado — existe um lançamento com `estorno_de_id` apontando para ele (a coluna é `UNIQUE`: um estorno por lançamento) —, não um status gravado no original (D1 do issue #11).
@@ -618,13 +620,13 @@ Estorno em competência fechada: nenhuma escrita no original, nem de status nem 
 
 `transferencia` é o agregado das sete finalidades do Doc 2 §1.4. Cada finalidade carrega a referência que a justifica, por `CHECK` nomeado de forma do dado (D3 do issue #11): aporte tem fundo (FD3), pagamento tem fatura (F3), concessão e devolução têm empréstimo (E1), ressarcimento tem adiantamento (A4). Que o repasse seja entre duas unidades diferentes é invariante do agregado. **Conta nula de um dos lados** significa dinheiro que entra ou sai do sistema — só admitido para empréstimo, porque a contraparte não tem conta cadastrada.
 
-**Uma adição ao Doc 2: o ciclo da transferência.** O Doc 2 §1.4 desenha `Transferencia` sem estado. O esquema dá a ela o ciclo do lançamento — `A_CONFERIR` → `CONFIRMADO`, com `estorno_de_id` para o estorno (estornada é derivado, como no lançamento) —, porque a transferência importada do extrato ou registrada às pressas também passa pela conferência. Com o ciclo vem a regra de L2: confirmada, a transferência não muda nem some, e a correção é por estorno; `A_CONFERIR` ainda se edita e se descarta. No banco fica só a imutabilidade simples da confirmada (`guarda_transferencia`, §15); quem conferiu (obrigatório ao confirmar), a competência pela data e o estorno são do agregado.
+**Uma adição ao Doc 2: o ciclo da transferência.** O Doc 2 §1.4 desenha `Transferencia` sem estado. O esquema dá a ela o ciclo do lançamento — `A_CONFERIR` → `CONFIRMADO`, com `estorno_de_id` para o estorno (estornada é derivado, como no lançamento) —, porque a transferência importada do extrato ou registrada às pressas também passa pela conferência. Com o ciclo vem a regra de L2: confirmada, a transferência não muda nem some, e a correção é por estorno; `A_CONFERIR` ainda se edita e se descarta. No banco fica só a imutabilidade simples da confirmada (`guarda_transferencia`, §15); quem conferiu (obrigatório ao confirmar, e nunca quem registrou: a segregação é só da transferência, decisão do dono de 14/10/2026), a competência pela data e o estorno são do agregado.
 
 A fatura agrupa as compras no cartão (`lancamento.fatura_id`) e é paga por transferência — nunca por uma segunda despesa, o que resolve os ~R$ 3,5 mil de dupla contagem que a migração achou (Doc 1 §7.2). O adiantamento guarda **quem era a pessoa** que autorizou (`autorizado_por_pessoa`), não só o usuário: A1 é sobre vínculo, e o vínculo é da pessoa.
 
 ### 18.5 Período, extrato, prestação
 
-`periodo_contabil` é por unidade e competência, com hash no fechamento (P2); `reabertura_de_periodo` é só-inserção e guarda o hash anterior (P3). No banco fica a imutabilidade simples do período (D4 do issue #11): unidade e competência nunca mudam, e o fechado não muda nem some — o único `UPDATE` admitido num fechado é reabrir. O resto é do agregado `PeriodoContabil`: a reabertura exige motivo de pelo menos dez caracteres e o registro com o hash corrente gravado na mesma transação (uma reabertura antiga não serve para reabrir de novo); o hash é calculado pelo domínio, na ordem canônica dos lançamentos; P1 (zero `A_CONFERIR` na competência) e P4 (anterior fechada) são verificados pelo comando de fechamento. Para a corrida entre fechar e gravar, o repositório toma uma trava consultiva (`advisory lock`) por período: exclusiva ao fechar, compartilhada em quem grava lançamento ou transferência na competência — ninguém grava entre a conferência de P1, o hash e o fechamento. A trava só serve em `READ COMMITTED` (em `REPEATABLE READ`, quem esperou leria o período como estava antes); a borda transacional abre as escritas nesse nível (§5), e um teste prova isso.
+`periodo_contabil` é por unidade e competência, com hash no fechamento (P2); `reabertura_de_periodo` é só-inserção e guarda o hash anterior (P3). No banco fica a imutabilidade simples do período (D4 do issue #11): unidade e competência nunca mudam, e o fechado não muda nem some — o único `UPDATE` admitido num fechado é reabrir. O resto é do agregado `PeriodoContabil`: a reabertura exige motivo de pelo menos dez caracteres e o registro com o hash corrente gravado na mesma transação (uma reabertura antiga não serve para reabrir de novo); o hash é calculado pelo domínio, na ordem canônica dos lançamentos e das transferências da competência (a transferência entra no hash, dono, 14/10/2026); P1 (zero `A_CONFERIR` na competência, entre lançamentos e transferências) e P4 (anterior fechada) são verificados pelo comando de fechamento. Para a corrida entre fechar e gravar, o repositório toma uma trava consultiva (`advisory lock`) por período: exclusiva ao fechar, compartilhada em quem grava lançamento ou transferência na competência — ninguém grava entre a conferência de P1, o hash e o fechamento. A trava só serve em `READ COMMITTED` (em `REPEATABLE READ`, quem esperou leria o período como estava antes); a borda transacional abre as escritas nesse nível (§5), e um teste prova isso.
 
 `importacao_de_extrato` guarda o arquivo (anexo), período e contagens; `linha_extrato` tem `UNIQUE (conta, FITID)` (I1) — reimportar é seguro por construção — e concilia com **um** lançamento **ou** **uma** transferência (I2), nunca os dois.
 
@@ -707,7 +709,7 @@ A regra geral (issue #11): **toda regra de negócio mora no domínio**. O banco 
 | Etiquetas fecham no valor, com sinal; confirmado tem categoria (Decisão 1) | agregado `Lancamento` | B1 |
 | Confirmado completo (L7), caixa depois da competência (L6), pendência nunca para quem registrou (L10) | agregado `Lancamento` | B1 |
 | Estorno: o original não muda; "estornado" é derivado de `estorno_de_id` | agregados `Lancamento` e `Transferencia`, read models | B1 |
-| Transferência confirmada diz quem conferiu; repasse entre unidades diferentes; competência pela data | agregado `Transferencia` | B1 |
+| Transferência confirmada diz quem conferiu, que não é quem registrou; repasse entre unidades diferentes; competência pela data | agregado `Transferencia` | B1 |
 | Saldo de lote nunca negativo, mesmo com saídas simultâneas; perda e ajuste justificados | agregado `Lote` + repositório com `SELECT … FOR UPDATE` no lote | B6 |
 | Custo por litro congelado na conclusão do feitio; litros estimados | agregados `Feitio` e `EstimativaDeConsumo` | B6 |
 | Item de resposta herdado ou com motivo | agregado `RespostaDeAnamnese` | B4 |
@@ -843,7 +845,7 @@ Os roteiros Playwright que verificaram as telas construídas (25 a 56 verificaç
 | 4 | `MATERIA_PRIMA` e `COLHEITA_PROPRIA` no Estoque (§20) | Aceitar | B6 |
 | 5 | Retenção do conteúdo de anamnese supersedida — o cabeçalho fica (§23) | 5 anos após supersedida | B4 |
 | 6 | Hospedagem do provedor: Fly.io, Railway ou VPS | Fly.io com Postgres gerenciado — backup e PITR do provedor, sem administrar servidor | B0 |
-| 7 | Transferência com o ciclo de conferência e estorno do lançamento, e imutável depois de confirmada (§18.4) | ✅ Aceita (dono, 14/10/2026); a transferência entra no hash do período, e quem confirma usa a mesma permissão de conferir lançamento | B1 |
+| 7 | Transferência com o ciclo de conferência e estorno do lançamento, e imutável depois de confirmada (§18.4) | ✅ Aceita (dono, 14/10/2026); a transferência entra no hash do período, e quem confirma usa a mesma permissão de conferir lançamento, mas não pode ser quem registrou (segregação só da transferência; no lançamento, quem registrou pode confirmar) | B1 |
 | 8 | Anonimização apaga o conteúdo da anamnese e mantém o cabeçalho da resposta, porque o registro de acesso aponta para ele (§23) | Aceitar — é o que RA3 e a LGPD pedem juntos | B4 |
 
 ### 27.2 Herdadas do Documento 6, ainda abertas

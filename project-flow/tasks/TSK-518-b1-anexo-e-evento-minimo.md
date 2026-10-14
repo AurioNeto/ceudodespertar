@@ -12,7 +12,7 @@ Duas dependências laterais da B1: o comprovante do lançamento (o `shared.anexo
 
 Dois PRs:
 1. **Anexo:** `shared.anexo` e a porta de armazenamento (SeaweedFS local, compatível com S3), com upload por URL assinada ou pelo servidor (decidir no desenho), tipo e tamanho validados, e o vínculo com o lançamento.
-2. **Evento mínimo:** tabela e resumo do evento, sem comandos de inscrição (isso é B5), só o necessário para lançamento e transferência apontarem para um evento.
+2. **Evento mínimo:** tabela e resumo do evento, sem comandos de inscrição (isso é B5), só o necessário para o lançamento apontar para um evento (a transferência não tem `evento_id`) e para o resultado por cerimônia (TSK-519) ler o resumo do evento.
 
 ## Critérios de aceite
 

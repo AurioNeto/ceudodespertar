@@ -2,7 +2,7 @@
 
 - **Estado:** 🗺️ Planejada (B1)
 - **Responsável sugerido:** back (limpio + radix)
-- **Depende de:** [TSK-515](TSK-515-b1-lancamento.md), [TSK-516](TSK-516-b1-transferencia.md), [TSK-517](TSK-517-b1-periodo-contabil.md)
+- **Depende de:** [TSK-515](TSK-515-b1-lancamento.md), [TSK-516](TSK-516-b1-transferencia.md), [TSK-517](TSK-517-b1-periodo-contabil.md), [TSK-518](TSK-518-b1-anexo-e-evento-minimo.md) (parte 2, Evento mínimo, para o resultado por cerimônia)
 
 ## Contexto
 

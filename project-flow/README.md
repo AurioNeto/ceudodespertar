@@ -174,9 +174,9 @@ PRs de acompanhamento já mesclados: [#34](https://github.com/AurioNeto/ceudodes
 | [TSK-516](tasks/TSK-516-b1-transferencia.md) | Transferência com conferência e estorno | 🗺️ Planejada | — | — | TSK-515 |
 | [TSK-517](tasks/TSK-517-b1-periodo-contabil.md) | Período contábil: fechar e reabrir com hash e trava | 🗺️ Planejada | — | — | TSK-515, TSK-516 |
 | [TSK-518](tasks/TSK-518-b1-anexo-e-evento-minimo.md) | Comprovante (anexo no S3) e Evento mínimo | 🗺️ Planejada | — | — | TSK-511 |
-| [TSK-519](tasks/TSK-519-b1-read-models.md) | Read models do financeiro | 🗺️ Planejada | — | — | TSK-515, TSK-516, TSK-517 |
+| [TSK-519](tasks/TSK-519-b1-read-models.md) | Read models do financeiro | 🗺️ Planejada | — | — | TSK-515, TSK-516, TSK-517, TSK-518 |
 | [TSK-520](tasks/TSK-520-b1-telas-do-financeiro.md) | Telas do financeiro contra a API | 🗺️ Planejada | — | — | TSK-511 (cada parte espera o seu endpoint) |
-| [TSK-521](tasks/TSK-521-b1-aceite.md) | Aceite da B1: casos T e marco do fechamento | 🗺️ Planejada | — | — | TSK-519, TSK-520 |
+| [TSK-521](tasks/TSK-521-b1-aceite.md) | Aceite da B1: casos T e marco do fechamento | 🗺️ Planejada | — | — | TSK-519, TSK-520, TSK-507 |
 
 
 ## 7. Redesign Força da Mata

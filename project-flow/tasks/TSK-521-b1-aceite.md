@@ -2,7 +2,7 @@
 
 - **Estado:** 🗺️ Planejada (B1)
 - **Responsável sugerido:** back (testudo) + dono
-- **Depende de:** [TSK-519](TSK-519-b1-read-models.md), [TSK-520](TSK-520-b1-telas-do-financeiro.md)
+- **Depende de:** [TSK-519](TSK-519-b1-read-models.md), [TSK-520](TSK-520-b1-telas-do-financeiro.md); o marco, da carga M1 ([TSK-507](TSK-507-migracao-dos-dados.md))
 
 ## Contexto
 

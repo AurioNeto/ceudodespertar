@@ -12,9 +12,10 @@ O coração da B1. Decisões do dono (14/10): natureza do lançamento é a do l�
 
 Dividir em três PRs:
 1. **Agregado e banco:** `Lancamento` com etiquetas (soma com sinal fecha no líquido; `ETIQUETAS_NAO_FECHAM`, `CATEGORIA_OBRIGATORIA`), L1–L11 como testes de domínio com o nome da regra; migration com a imutabilidade simples do confirmado e a guarda das etiquetas por `gravado_na_transacao` (Doc 7 §18.2 e §15).
-2. **Comandos e HTTP:** registrar (rápido, `A_CONFERIR` sem etiqueta), editar e descartar `A_CONFERIR`, confirmar (com etiquetas no mesmo ato), estornar (lançamento novo com `estorno_de_id`, na competência corrente, motivo obrigatório). Quem registrou não confirma o próprio, se o Doc 2 assim pedir.
+2. **Comandos e HTTP:** registrar (rápido, `A_CONFERIR` sem etiqueta), editar e descartar `A_CONFERIR`, confirmar (com etiquetas no mesmo ato), estornar (lançamento novo com `estorno_de_id`, na competência corrente, motivo obrigatório). Quem registrou **pode** confirmar o próprio lançamento (decisão do dono, 14/10): o Doc 2 não pede a segregação (L10 e L11 só tratam da pendência), e numa casa pequena a tesouraria registra e confere. A segregação vale só na transferência (TSK-516).
 3. **Pendência:** abrir e responder a conversa do lançamento.
 - Todo comando grava na competência só se o período estiver aberto (a trava do período vem na TSK-517; aqui, a verificação pelo domínio).
+- `evento_id` nasce aqui como referência por id, sem FK: nenhuma FK cruza schema (Doc 7 §5). Por isso a TSK-515 não espera a TSK-518; quem precisa do evento existir é o resultado por cerimônia (TSK-519).
 
 ## Critérios de aceite
 
