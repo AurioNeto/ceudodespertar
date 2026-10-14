@@ -6,15 +6,17 @@ import type { ContextoDaTransacao, ModoDeTransacao, UnidadeDeTrabalho } from '..
 import { listarIdsDasInstituicoes } from '../banco/instituicoes.js';
 import { apagarLoteDeDespachados, TAMANHO_DO_LOTE_DO_EXPURGO } from './expurgo-do-outbox.repositorio.js';
 import {
+  LOTES_POR_INSTITUICAO_POR_RODADA,
+  RODADAS_COM_FALHA_ATE_O_ALERTA,
+} from '../banco/expurgo-em-lotes-por-instituicao.js';
+import {
   ExpurgoDoOutbox,
   INTERVALO_DO_EXPURGO_EM_MS,
-  LOTES_POR_INSTITUICAO_POR_RODADA,
   MENSAGEM_DE_DESPACHADOS_EXPURGADOS,
   MENSAGEM_DE_EXPURGO_FALHANDO,
   MENSAGEM_DE_EXPURGO_RECUPERADO,
   MENSAGEM_DE_FALHA_AO_LISTAR_INSTITUICOES,
   MENSAGEM_DE_FALHA_NO_EXPURGO,
-  RODADAS_COM_FALHA_ATE_O_ALERTA,
 } from './expurgo-do-outbox.js';
 import type { ModoDoProcesso } from './modo-do-processo.js';
 

@@ -4,17 +4,24 @@ import type { MockInstance } from 'vitest';
 import { ContextoDaRequisicao } from '../contexto-da-requisicao.js';
 import type { ContextoDaTransacao, ModoDeTransacao, UnidadeDeTrabalho } from '../banco/unidade-de-trabalho.js';
 import { listarIdsDasInstituicoes } from '../banco/instituicoes.js';
-import { apagarChavesVencidas } from './chave-de-idempotencia.repositorio.js';
+import {
+  LOTES_POR_INSTITUICAO_POR_RODADA,
+  RODADAS_COM_FALHA_ATE_O_ALERTA,
+} from '../banco/expurgo-em-lotes-por-instituicao.js';
+import { apagarLoteDeChavesVencidas, TAMANHO_DO_LOTE_DO_EXPURGO } from './chave-de-idempotencia.repositorio.js';
 import {
   ExpurgoDeChavesDeIdempotencia,
   INTERVALO_DO_EXPURGO_EM_MS,
   MENSAGEM_DE_CHAVES_EXPURGADAS,
+  MENSAGEM_DE_EXPURGO_FALHANDO,
+  MENSAGEM_DE_EXPURGO_RECUPERADO,
   MENSAGEM_DE_FALHA_AO_LISTAR_INSTITUICOES,
   MENSAGEM_DE_FALHA_NO_EXPURGO,
 } from './expurgo-de-chaves-de-idempotencia.js';
 
 vi.mock('./chave-de-idempotencia.repositorio.js', () => ({
-  apagarChavesVencidas: vi.fn(),
+  apagarLoteDeChavesVencidas: vi.fn(),
+  TAMANHO_DO_LOTE_DO_EXPURGO: 1_000,
 }));
 
 vi.mock('../banco/instituicoes.js', () => ({
@@ -40,14 +47,16 @@ function unidadeQueRegistra(chamadas: ChamadaDeTransacao[]): UnidadeDeTrabalho {
 describe('ExpurgoDeChavesDeIdempotencia', () => {
   let avisos: MockInstance;
   let informacoes: MockInstance;
+  let erros: MockInstance;
   let chamadas: ChamadaDeTransacao[];
   let expurgo: ExpurgoDeChavesDeIdempotencia;
 
   beforeEach(() => {
     avisos = vi.spyOn(Logger.prototype, 'warn').mockImplementation(() => undefined);
     informacoes = vi.spyOn(Logger.prototype, 'log').mockImplementation(() => undefined);
+    erros = vi.spyOn(Logger.prototype, 'error').mockImplementation(() => undefined);
     vi.mocked(listarIdsDasInstituicoes).mockReset();
-    vi.mocked(apagarChavesVencidas).mockReset();
+    vi.mocked(apagarLoteDeChavesVencidas).mockReset();
     chamadas = [];
     expurgo = new ExpurgoDeChavesDeIdempotencia(unidadeQueRegistra(chamadas));
   });
@@ -57,9 +66,9 @@ describe('ExpurgoDeChavesDeIdempotencia', () => {
     vi.restoreAllMocks();
   });
 
-  it('abre uma transação de escrita por instituição, com o contexto daquela instituição', async () => {
+  it('abre uma transação de escrita por lote, com o contexto da instituição do lote', async () => {
     vi.mocked(listarIdsDasInstituicoes).mockResolvedValue(['inst-a', 'inst-b']);
-    vi.mocked(apagarChavesVencidas).mockResolvedValue(0);
+    vi.mocked(apagarLoteDeChavesVencidas).mockResolvedValue(0);
 
     await expurgo.expurgar();
 
@@ -72,11 +81,11 @@ describe('ExpurgoDeChavesDeIdempotencia', () => {
 
   it('passa explicitamente o id de cada instituição ao apagar', async () => {
     vi.mocked(listarIdsDasInstituicoes).mockResolvedValue(['inst-a', 'inst-b']);
-    vi.mocked(apagarChavesVencidas).mockResolvedValue(0);
+    vi.mocked(apagarLoteDeChavesVencidas).mockResolvedValue(0);
 
     await expurgo.expurgar();
 
-    expect(vi.mocked(apagarChavesVencidas).mock.calls.map(([, instituicaoId]) => instituicaoId)).toStrictEqual([
+    expect(vi.mocked(apagarLoteDeChavesVencidas).mock.calls.map(([, instituicaoId]) => instituicaoId)).toStrictEqual([
       'inst-a',
       'inst-b',
     ]);
@@ -84,17 +93,17 @@ describe('ExpurgoDeChavesDeIdempotencia', () => {
 
   it('loga info com o total apagado e as instituições afetadas quando apaga algo', async () => {
     vi.mocked(listarIdsDasInstituicoes).mockResolvedValue(['inst-a', 'inst-b', 'inst-c']);
-    vi.mocked(apagarChavesVencidas).mockResolvedValueOnce(2).mockResolvedValueOnce(0).mockResolvedValueOnce(5);
+    vi.mocked(apagarLoteDeChavesVencidas).mockResolvedValueOnce(2).mockResolvedValueOnce(0).mockResolvedValueOnce(5);
 
     await expurgo.expurgar();
 
     expect(informacoes).toHaveBeenCalledTimes(1);
-    expect(informacoes).toHaveBeenCalledWith({ apagadas: 7, instituicoes: 2 }, MENSAGEM_DE_CHAVES_EXPURGADAS);
+    expect(informacoes).toHaveBeenCalledWith({ apagados: 7, instituicoes: 2 }, MENSAGEM_DE_CHAVES_EXPURGADAS);
   });
 
   it('não loga nada quando não há o que apagar', async () => {
     vi.mocked(listarIdsDasInstituicoes).mockResolvedValue(['inst-a']);
-    vi.mocked(apagarChavesVencidas).mockResolvedValue(0);
+    vi.mocked(apagarLoteDeChavesVencidas).mockResolvedValue(0);
 
     await expurgo.expurgar();
 
@@ -104,7 +113,7 @@ describe('ExpurgoDeChavesDeIdempotencia', () => {
 
   it('uma instituição que falha gera warn só com o nome do erro e não impede as demais', async () => {
     vi.mocked(listarIdsDasInstituicoes).mockResolvedValue(['inst-a', 'inst-b']);
-    vi.mocked(apagarChavesVencidas)
+    vi.mocked(apagarLoteDeChavesVencidas)
       .mockRejectedValueOnce(new ErroDoDriver('detalhe sensível do driver'))
       .mockResolvedValueOnce(4);
 
@@ -113,7 +122,7 @@ describe('ExpurgoDeChavesDeIdempotencia', () => {
     expect(avisos).toHaveBeenCalledTimes(1);
     expect(avisos).toHaveBeenCalledWith({ erro: 'ErroDoDriver', instituicaoId: 'inst-a' }, MENSAGEM_DE_FALHA_NO_EXPURGO);
     expect(JSON.stringify(avisos.mock.calls)).not.toContain('detalhe sensível');
-    expect(informacoes).toHaveBeenCalledWith({ apagadas: 4, instituicoes: 1 }, MENSAGEM_DE_CHAVES_EXPURGADAS);
+    expect(informacoes).toHaveBeenCalledWith({ apagados: 4, instituicoes: 1 }, MENSAGEM_DE_CHAVES_EXPURGADAS);
   });
 
   it('falha ao listar as instituições gera warn e não tenta expurgar', async () => {
@@ -122,7 +131,84 @@ describe('ExpurgoDeChavesDeIdempotencia', () => {
     await expect(expurgo.expurgar()).resolves.toBeUndefined();
 
     expect(avisos).toHaveBeenCalledWith({ erro: 'ErroDoDriver' }, MENSAGEM_DE_FALHA_AO_LISTAR_INSTITUICOES);
-    expect(apagarChavesVencidas).not.toHaveBeenCalled();
+    expect(apagarLoteDeChavesVencidas).not.toHaveBeenCalled();
+  });
+
+  it('encadeia lotes cheios e para no primeiro lote incompleto', async () => {
+    vi.mocked(listarIdsDasInstituicoes).mockResolvedValue(['inst-a']);
+    vi.mocked(apagarLoteDeChavesVencidas)
+      .mockResolvedValueOnce(TAMANHO_DO_LOTE_DO_EXPURGO)
+      .mockResolvedValueOnce(TAMANHO_DO_LOTE_DO_EXPURGO)
+      .mockResolvedValueOnce(7);
+
+    await expurgo.expurgar();
+
+    expect(apagarLoteDeChavesVencidas).toHaveBeenCalledTimes(3);
+    expect(chamadas.filter(({ modo }) => modo === 'escrita')).toHaveLength(3);
+    expect(informacoes).toHaveBeenCalledWith(
+      { apagados: 2 * TAMANHO_DO_LOTE_DO_EXPURGO + 7, instituicoes: 1 },
+      MENSAGEM_DE_CHAVES_EXPURGADAS,
+    );
+  });
+
+  it('não passa do teto de lotes por instituição numa rodada e segue para a próxima instituição', async () => {
+    vi.mocked(listarIdsDasInstituicoes).mockResolvedValue(['inst-a', 'inst-b']);
+    vi.mocked(apagarLoteDeChavesVencidas).mockImplementation((_kysely, instituicaoId) =>
+      Promise.resolve(instituicaoId === 'inst-a' ? TAMANHO_DO_LOTE_DO_EXPURGO : 0),
+    );
+
+    await expurgo.expurgar();
+
+    const porInstituicao = vi.mocked(apagarLoteDeChavesVencidas).mock.calls.map(([, instituicaoId]) => instituicaoId);
+    expect(porInstituicao.filter((id) => id === 'inst-a')).toHaveLength(LOTES_POR_INSTITUICAO_POR_RODADA);
+    expect(porInstituicao.filter((id) => id === 'inst-b')).toHaveLength(1);
+  });
+
+  describe('alerta de falha recorrente', () => {
+    async function rodadasComFalha(quantidade: number): Promise<void> {
+      vi.mocked(listarIdsDasInstituicoes).mockResolvedValue(['inst-a']);
+      vi.mocked(apagarLoteDeChavesVencidas).mockRejectedValue(new ErroDoDriver('caiu'));
+      for (let rodada = 0; rodada < quantidade; rodada += 1) {
+        // eslint-disable-next-line no-await-in-loop -- rodadas em sequência, como no temporizador
+        await expurgo.expurgar();
+      }
+    }
+
+    it('rodadas com falha abaixo do limite só geram warn', async () => {
+      await rodadasComFalha(RODADAS_COM_FALHA_ATE_O_ALERTA - 1);
+
+      expect(erros).not.toHaveBeenCalled();
+    });
+
+    it('ao atingir o limite de rodadas seguidas com falha loga error uma única vez', async () => {
+      await rodadasComFalha(RODADAS_COM_FALHA_ATE_O_ALERTA + 2);
+
+      expect(erros).toHaveBeenCalledTimes(1);
+      expect(erros).toHaveBeenCalledWith({ rodadasComFalha: RODADAS_COM_FALHA_ATE_O_ALERTA }, MENSAGEM_DE_EXPURGO_FALHANDO);
+    });
+
+    it('depois do alerta, a primeira rodada sem falha loga a recuperação', async () => {
+      await rodadasComFalha(RODADAS_COM_FALHA_ATE_O_ALERTA);
+      vi.mocked(apagarLoteDeChavesVencidas).mockResolvedValue(0);
+
+      await expurgo.expurgar();
+
+      expect(informacoes).toHaveBeenCalledWith(
+        { rodadasComFalha: RODADAS_COM_FALHA_ATE_O_ALERTA },
+        MENSAGEM_DE_EXPURGO_RECUPERADO,
+      );
+    });
+
+    it('falha inesperada na rodada agendada também conta para o alerta', async () => {
+      vi.spyOn(expurgo, 'expurgar').mockRejectedValue(new ErroDoDriver('falha inesperada'));
+
+      for (let rodada = 0; rodada < RODADAS_COM_FALHA_ATE_O_ALERTA; rodada += 1) {
+        expurgo.onApplicationBootstrap();
+      }
+      await expurgo.onModuleDestroy();
+
+      expect(erros).toHaveBeenCalledWith({ rodadasComFalha: RODADAS_COM_FALHA_ATE_O_ALERTA }, MENSAGEM_DE_EXPURGO_FALHANDO);
+    });
   });
 
   it('agenda o expurgo a cada intervalo e para ao destruir o módulo', async () => {
