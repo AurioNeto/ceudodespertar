@@ -7,6 +7,7 @@ import { UnidadeDeTrabalho } from './unidade-de-trabalho.js';
 import type { ContextoDaTransacao, ModoDeTransacao } from './unidade-de-trabalho.js';
 import type { DB } from './banco-cdd.gerado.js';
 import { transacaoAtiva } from './transacao-ativa.js';
+import type { EstadoDaTransacao, TransacaoAtiva } from './transacao-ativa.js';
 
 export const VARIAVEL_DE_SESSAO_DA_INSTITUICAO = 'app.instituicao_id';
 
@@ -33,6 +34,38 @@ export class ErroDeModoDeTransacaoIncompativel extends Error {
   }
 }
 
+export class ErroDeTransacaoEncerrada extends Error {
+  constructor() {
+    super(
+      'transação pedida dentro de uma transação que já terminou — um callback solto (timer, promessa sem await) ' +
+        'herdou o contexto dela; agende-o com foraDaTransacaoAtiva ou use aoConfirmar',
+    );
+    this.name = 'ErroDeTransacaoEncerrada';
+  }
+}
+
+export class ErroDeInstituicaoDivergenteNaTransacao extends Error {
+  constructor() {
+    super(
+      'transação pedida com uma instituição no contexto diferente da instituição vinculada à transação aberta — ' +
+        'o reuso misturaria as instituições; rode o trabalho fora da transação ativa',
+    );
+    this.name = 'ErroDeInstituicaoDivergenteNaTransacao';
+  }
+}
+
+function conferirReuso(ativa: TransacaoAtiva, modo: ModoDeTransacao): void {
+  if (!ativa.estado.aberta) {
+    throw new ErroDeTransacaoEncerrada();
+  }
+  if (ContextoDaRequisicao.atual()?.instituicaoId !== ativa.estado.instituicaoId) {
+    throw new ErroDeInstituicaoDivergenteNaTransacao();
+  }
+  if (ehGravavel(modo) && !ehGravavel(ativa.modo)) {
+    throw new ErroDeModoDeTransacaoIncompativel(ativa.modo, modo);
+  }
+}
+
 class DesfazerPorResultadoDeErro<T> extends Error {
   constructor(readonly resultado: T) {
     super('transação desfeita por Result de erro');
@@ -51,9 +84,7 @@ export class UnidadeDeTrabalhoMikroOrm extends UnidadeDeTrabalho {
   async transacao<T>(modo: ModoDeTransacao, fn: (contexto: ContextoDaTransacao) => Promise<T>): Promise<T> {
     const ativa = transacaoAtiva.getStore();
     if (ativa !== undefined) {
-      if (ehGravavel(modo) && !ehGravavel(ativa.modo)) {
-        throw new ErroDeModoDeTransacaoIncompativel(ativa.modo, modo);
-      }
+      conferirReuso(ativa, modo);
       return fn(ativa.contexto);
     }
 
@@ -82,18 +113,25 @@ export class UnidadeDeTrabalhoMikroOrm extends UnidadeDeTrabalho {
       if (ehGravavel(modo)) {
         await emDaTransacao.execute('set transaction read write');
       }
+      const estado: EstadoDaTransacao = { aberta: true, instituicaoId: undefined };
       const contexto: ContextoDaTransacao = {
         em: emDaTransacao,
         kysely: emDaTransacao.getKysely<DB>(),
         aoConfirmar: (gancho) => ganchosDeConfirmacao.push(gancho),
         vincularInstituicao: async (instituicao) => {
           await emDaTransacao.execute('select set_config(?, ?, true)', [VARIAVEL_DE_SESSAO_DA_INSTITUICAO, instituicao]);
+          estado.instituicaoId = instituicao;
         },
       };
       if (instituicaoId !== undefined) {
         await contexto.vincularInstituicao(instituicaoId);
       }
-      const valor = await transacaoAtiva.run({ modo, contexto }, () => fn(contexto));
+      let valor: T;
+      try {
+        valor = await transacaoAtiva.run({ modo, contexto, estado }, () => fn(contexto));
+      } finally {
+        estado.aberta = false;
+      }
       if (ehResultadoDeErro(valor)) {
         throw new DesfazerPorResultadoDeErro(valor);
       }

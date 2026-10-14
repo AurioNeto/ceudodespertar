@@ -8,7 +8,12 @@ import { err, ok } from '../../src/shared/kernel/result.js';
 import { RepositorioDoOutboxPostgres } from '../../src/shared/infrastructure/eventos/repositorio-do-outbox.postgres.js';
 import { SinalizadorDeEventos } from '../../src/shared/infrastructure/eventos/sinalizador-de-eventos.js';
 import { UnidadeDeTrabalho } from '../../src/shared/infrastructure/banco/unidade-de-trabalho.js';
-import { UnidadeDeTrabalhoMikroOrm } from '../../src/shared/infrastructure/banco/unidade-de-trabalho.mikro-orm.js';
+import {
+  ErroDeInstituicaoDivergenteNaTransacao,
+  ErroDeTransacaoEncerrada,
+  UnidadeDeTrabalhoMikroOrm,
+} from '../../src/shared/infrastructure/banco/unidade-de-trabalho.mikro-orm.js';
+import { foraDaTransacaoAtiva } from '../../src/shared/infrastructure/banco/transacao-ativa.js';
 import { abrirOrmDeTeste } from './orm-de-teste.js';
 import type { OrmDeTeste } from './orm-de-teste.js';
 
@@ -259,6 +264,140 @@ describe('UnidadeDeTrabalho · borda transacional (Documento 7 §5, §8, §22)',
       ]);
 
       expect(resultado).toStrictEqual([{ um: 1 }]);
+    });
+
+    async function chavesDe(instituicaoId: string, chave: string): Promise<number> {
+      const linhas = await comContexto(instituicaoId, () =>
+        unidade.transacao('leitura', ({ em }) =>
+          em.execute<{ chave: string }[]>('select chave from shared.chave_de_idempotencia where chave = ?', [chave]),
+        ),
+      );
+      return linhas.length;
+    }
+
+    function gravarChave(instituicaoId: string, chave: string): Promise<unknown> {
+      return unidade.transacao('escrita', ({ em }) =>
+        em.execute(
+          "insert into shared.chave_de_idempotencia (instituicao_id, chave, rota, status_http, resposta) values (?, ?, '/x', 200, '{}'::jsonb)",
+          [instituicaoId, chave],
+        ),
+      );
+    }
+
+    it('callback solto com o contexto de B dentro da escrita aberta de A falha alto e não grava nada', async () => {
+      const chave = randomUUID();
+      let tentativaDeB: Promise<unknown> = Promise.resolve();
+
+      await comContexto(INSTITUICAO_A, () =>
+        unidade.transacao('escrita', async () => {
+          await new Promise<void>((liberar) => {
+            setTimeout(() => {
+              tentativaDeB = comContexto(INSTITUICAO_B, () => gravarChave(INSTITUICAO_B, chave));
+              void tentativaDeB.catch(() => undefined).finally(liberar);
+            }, 0);
+          });
+        }),
+      );
+
+      await expect(tentativaDeB).rejects.toThrow(ErroDeInstituicaoDivergenteNaTransacao);
+      expect(await chavesDe(INSTITUICAO_A, chave)).toBe(0);
+      expect(await chavesDe(INSTITUICAO_B, chave)).toBe(0);
+    });
+
+    it('callback solto que roda depois do commit de A falha alto em vez de usar a transação encerrada', async () => {
+      const chave = randomUUID();
+      let tentativaTardia: Promise<unknown> = Promise.resolve();
+      let liberarTentativa: () => void = () => undefined;
+      const tentativaFeita = new Promise<void>((resolver) => {
+        liberarTentativa = resolver;
+      });
+      let podeTentar: () => void = () => undefined;
+      const commitFeito = new Promise<void>((resolver) => {
+        podeTentar = resolver;
+      });
+
+      await comContexto(INSTITUICAO_A, () =>
+        unidade.transacao('escrita', async () => {
+          void commitFeito.then(() => {
+            tentativaTardia = gravarChave(INSTITUICAO_A, chave);
+            void tentativaTardia.catch(() => undefined).finally(liberarTentativa);
+          });
+        }),
+      );
+      podeTentar();
+      await tentativaFeita;
+
+      await expect(tentativaTardia).rejects.toThrow(ErroDeTransacaoEncerrada);
+      expect(await chavesDe(INSTITUICAO_A, chave)).toBe(0);
+    });
+
+    it('callback solto de outra instituição depois do commit de A recebe a causa real: transação encerrada', async () => {
+      const chave = randomUUID();
+      let tentativaTardia: Promise<unknown> = Promise.resolve();
+      let liberarTentativa: () => void = () => undefined;
+      const tentativaFeita = new Promise<void>((resolver) => {
+        liberarTentativa = resolver;
+      });
+      let podeTentar: () => void = () => undefined;
+      const commitFeito = new Promise<void>((resolver) => {
+        podeTentar = resolver;
+      });
+
+      await comContexto(INSTITUICAO_A, () =>
+        unidade.transacao('escrita', async () => {
+          void commitFeito.then(() => {
+            tentativaTardia = comContexto(INSTITUICAO_B, () => gravarChave(INSTITUICAO_B, chave));
+            void tentativaTardia.catch(() => undefined).finally(liberarTentativa);
+          });
+        }),
+      );
+      podeTentar();
+      await tentativaFeita;
+
+      await expect(tentativaTardia).rejects.toThrow(ErroDeTransacaoEncerrada);
+      expect(await chavesDe(INSTITUICAO_B, chave)).toBe(0);
+    });
+
+    it('callback agendado com foraDaTransacaoAtiva abre a própria transação e grava, mesmo depois do commit', async () => {
+      const chave = randomUUID();
+      let tentativa: Promise<unknown> = Promise.resolve();
+
+      await comContexto(INSTITUICAO_B, () =>
+        unidade.transacao('escrita', async () => {
+          tentativa = new Promise((resolver) => {
+            setTimeout(() => resolver(foraDaTransacaoAtiva(() => gravarChave(INSTITUICAO_B, chave))), 0);
+          });
+        }),
+      );
+
+      await tentativa;
+      expect(await chavesDe(INSTITUICAO_B, chave)).toBe(1);
+    });
+
+    it('reusa a transação quando a instituição vinculada depois da abertura é a do contexto, como no despachante', async () => {
+      const chave = randomUUID();
+
+      await unidade.transacao('escrita', async (contexto) => {
+        await contexto.vincularInstituicao(INSTITUICAO_B);
+        await comContexto(INSTITUICAO_B, () =>
+          unidade.transacao('escrita', async ({ em }) => {
+            expect(em).toBe(contexto.em);
+            await gravarChave(INSTITUICAO_B, chave);
+          }),
+        );
+      });
+
+      expect(await chavesDe(INSTITUICAO_B, chave)).toBe(1);
+    });
+
+    it('reuso sem contexto dentro de uma transação de A é recusado', async () => {
+      await expect(
+        comContexto(INSTITUICAO_A, () =>
+          unidade.transacao('escrita', () =>
+            ContextoDaRequisicao.foraDeQualquerContexto(() => unidade.transacao('leitura', ({ em }) => em.execute('select 1'))),
+          ),
+        ),
+      ).rejects.toThrow(ErroDeInstituicaoDivergenteNaTransacao);
     });
 
     it('escrita pedida dentro de uma leitura já aberta lança, sem travar', async () => {

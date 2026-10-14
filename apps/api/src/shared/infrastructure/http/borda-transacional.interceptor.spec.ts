@@ -351,9 +351,10 @@ describe('BordaTransacionalInterceptor', () => {
     };
 
     const observavel = await interceptor.intercept(contextoDeExecucaoQualquer(), proximo);
-    await firstValueFrom(observavel);
+    const valor = await firstValueFrom(observavel);
 
-    expect(uow.eventos.indexOf('emitiu-segundo-valor')).toBeLessThan(uow.eventos.indexOf('commit'));
+    expect(valor).toBe(2);
+    expect(uow.eventos).toStrictEqual(['begin:leitura', 'emitiu-segundo-valor', 'commit']);
   });
   it('reusa o correlacaoId já publicado pela correlação da requisição', async () => {
     const interceptor = new BordaTransacionalInterceptor(
