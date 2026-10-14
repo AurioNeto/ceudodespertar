@@ -1188,6 +1188,29 @@ describe('AyahuascaPage: modal de saída', () => {
     expect(painelDoModal(container).textContent).toContain('Informe quantos litros vão sair.');
   });
 
+  it('litros com três casas decimais — recusa sem arredondar, com a mensagem, e bloqueia Salvar', async () => {
+    const container = await montarAyahuasca();
+    await abrirSaida(container);
+
+    await digitar(campo(container, 'Litros'), '0,255');
+
+    expect(painelDoModal(container).textContent).toContain('Use no máximo duas casas decimais nos litros (ex.: 0,25).');
+    expect(botaoComTexto(painelDoModal(container), 'Salvar').disabled).toBe(true);
+  });
+
+  it.each([{ digitado: '3' }, { digitado: '0,5' }, { digitado: '0,25' }])(
+    'litros $digitado, com até duas casas decimais — aceita e libera Salvar',
+    async ({ digitado }) => {
+      const container = await montarAyahuasca();
+      await abrirSaida(container);
+
+      await digitar(campo(container, 'Litros'), digitado);
+
+      expect(painelDoModal(container).textContent).not.toContain('casas decimais');
+      expect(botaoComTexto(painelDoModal(container), 'Salvar').disabled).toBe(false);
+    },
+  );
+
   it('litros acima do saldo — diz quanto o lote tem e bloqueia Salvar', async () => {
     const container = await montarAyahuasca();
     await abrirSaida(container);

@@ -32,7 +32,7 @@ As correções de comportamento (#140 a #145) e o R$ em todo valor (#147 a #152)
 6. **Trocar de evento:** responsável e hospedagem também recomeçam.
 7. **Autorização do responsável:** olha a modalidade, conforme o Doc 2 (AR3).
 8. **"Copiado" do link:** recomeça ao trocar de pessoa e ao salvar.
-9. **Litros com 3 casas ou mais:** recusados com mensagem, sem arredondar.
+9. **Litros com 3 casas ou mais:** recusados com mensagem, sem arredondar. Em revisão (14/10).
 
 ## O que precisa ser feito
 
