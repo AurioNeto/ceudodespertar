@@ -21,12 +21,13 @@ export function useContratacoes() {
   const faturamentoNoAno = munay.faturamentoNoAno + recebidoNaSessao(lista, contratacoesIniciais);
 
   const receber = (c: ContratacaoNaTela) => {
-    if (!dataDoRecebimento.exigirValida()) return;
+    const recebidoEm = dataDoRecebimento.exigirValida();
+    if (!recebidoEm) return;
     const nomeDaConta = contas.find((x) => (x.id as string) === conta)?.nome ?? '';
     setLista((l) =>
       l.map((x) =>
         x.eventoId === c.eventoId
-          ? { ...x, recebidoEm: dataDoRecebimento.data, lancamentoReceitaId: `lanc-${String(Date.now()).slice(-4)}` }
+          ? { ...x, recebidoEm, lancamentoReceitaId: `lanc-${String(Date.now()).slice(-4)}` }
           : x,
       ),
     );

@@ -1,4 +1,4 @@
-const FORMATO_DD_MM_AAAA = /^(\d{2})\/(\d{2})\/(\d{4})$/;
+const FORMATO_D_M_AAAA = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/;
 const PRIMEIRO_ANO_ACEITO = 1900;
 
 export interface DataDigitada {
@@ -8,7 +8,7 @@ export interface DataDigitada {
 }
 
 export function lerDataDigitada(texto: string): DataDigitada | null {
-  const achado = FORMATO_DD_MM_AAAA.exec(texto.trim());
+  const achado = FORMATO_D_M_AAAA.exec(texto.trim());
   if (!achado) return null;
   const dia = Number(achado[1]);
   const mes = Number(achado[2]);
@@ -20,3 +20,7 @@ export function lerDataDigitada(texto: string): DataDigitada | null {
     conferida.getUTCFullYear() === ano && conferida.getUTCMonth() === mes - 1 && conferida.getUTCDate() === dia;
   return existe ? { dia, mes, ano } : null;
 }
+
+const doisDigitos = (n: number) => String(n).padStart(2, '0');
+
+export const formatarDataDigitada = ({ dia, mes, ano }: DataDigitada) => `${doisDigitos(dia)}/${doisDigitos(mes)}/${ano}`;

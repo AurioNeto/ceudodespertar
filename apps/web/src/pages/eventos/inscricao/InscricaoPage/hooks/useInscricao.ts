@@ -69,6 +69,7 @@ export function useInscricao() {
     setEmergencia(p.contatoEmergencia ?? '');
     setRestricoes(p.restricoes ?? '');
     setRecado(null);
+    setLinkCopiado(false);
   };
 
   const trocarTipo = (t: TipoParticipacao) => {
@@ -101,6 +102,7 @@ export function useInscricao() {
         eventoId: evento.id,
         pessoa,
         tipo,
+        modalidade,
         responsavel,
         anamneseExigida,
         primeiraVez,
@@ -118,6 +120,7 @@ export function useInscricao() {
       evento.id,
       pessoa,
       tipo,
+      modalidade,
       responsavel,
       anamneseExigida,
       primeiraVez,
@@ -138,6 +141,7 @@ export function useInscricao() {
         : `Inscrição de ${pessoa.nome} salva como pendente. Ela aparece na lista do trabalho com ${pluralizar(pendencias.length, 'pendência')} — e nada se perde por salvar assim.`,
     );
     setPessoa(null);
+    setLinkCopiado(false);
   };
 
   const fecharRecado = () => setRecado(null);
@@ -146,7 +150,9 @@ export function useInscricao() {
     if (v === eventoId) return;
     setEventoId(v);
     if (pessoa) recomecarComoParticipa(pessoa);
+    setResponsavel('');
     recomecarContribuicaoEDiarias();
+    setHospedagem('SEM_HOSPEDAGEM');
     setRefeicoes([]);
     setLeitoAlocado(false);
     setRecado(null);
@@ -155,7 +161,10 @@ export function useInscricao() {
 
   const copiarLink = () => setLinkCopiado(true);
 
-  const trocarPessoa = () => setPessoa(null);
+  const trocarPessoa = () => {
+    setPessoa(null);
+    setLinkCopiado(false);
+  };
 
   const alternarConsagra = () => setConsagra((c) => !c);
 

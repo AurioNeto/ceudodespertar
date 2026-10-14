@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { MENSAGEM_DE_DATA_INVALIDA } from '../constantes';
-import { lerDataDigitada } from '../utils/lerDataDigitada';
+import { formatarDataDigitada, lerDataDigitada } from '../utils/lerDataDigitada';
 
 export function useDataDeCaixa(hoje: string, idDoCampo: string) {
   const [data, setData] = useState(hoje);
   const [tentouConfirmar, setTentouConfirmar] = useState(false);
 
-  const dataValida = lerDataDigitada(data) !== null;
-  const erro = tentouConfirmar && !dataValida ? MENSAGEM_DE_DATA_INVALIDA : undefined;
+  const lida = lerDataDigitada(data);
+  const erro = tentouConfirmar && lida === null ? MENSAGEM_DE_DATA_INVALIDA : undefined;
 
   const recomecar = () => {
     setData(hoje);
@@ -15,10 +15,10 @@ export function useDataDeCaixa(hoje: string, idDoCampo: string) {
   };
 
   const exigirValida = () => {
-    if (dataValida) return true;
+    if (lida) return formatarDataDigitada(lida);
     setTentouConfirmar(true);
     document.getElementById(idDoCampo)?.focus();
-    return false;
+    return null;
   };
 
   return { data, setData, erro, recomecar, exigirValida };

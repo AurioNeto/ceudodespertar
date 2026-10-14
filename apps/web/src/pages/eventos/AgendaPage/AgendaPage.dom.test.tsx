@@ -628,6 +628,15 @@ describe('AgendaPage: nova cerimônia', () => {
     expect(nomesPorDiaNoCalendario(container)).toEqual({ '10': ['Cerimônia de novembro'] });
   });
 
+  it('data com dia e mês sem zero — 5/11/2026 é aceita e a cerimônia cai em 05/11', async () => {
+    const { container } = await montar(<AgendaPage />);
+
+    await preencherEEnviarNovaCerimonia(container, { nome: 'Cerimônia sem zero', data: '5/11/2026' });
+
+    expect(mesNaTela(container)).toBe('novembro de 2026');
+    expect(nomesPorDiaNoCalendario(container)).toEqual({ '5': ['Cerimônia sem zero'] });
+  });
+
   it('data de 31/02 — o formulário recusa com a mensagem no campo e nenhuma cerimônia é criada', async () => {
     const { container } = await montar(<AgendaPage />);
 

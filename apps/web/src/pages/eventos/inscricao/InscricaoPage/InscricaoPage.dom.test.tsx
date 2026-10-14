@@ -324,15 +324,22 @@ describe('InscricaoPage: ficha da pessoa escolhida', () => {
     expect(existeRecado(container)).toBe(false);
   });
 
-  it('link da cerimônia copiado, pessoa escolhida, trocada e outra escolhida — o link continua Copiado', async () => {
+  it('link da cerimônia copiado e pessoa escolhida — o link volta a Copiar', async () => {
     const container = await abrir();
     await clicar(botaoComTexto(container, 'Copiar'));
+
     await clicar(botaoDaPessoa(container, 'Helena Duarte'));
+
+    expect(linkEstaCopiado(container)).toBe(false);
+  });
+
+  it('link da cerimônia copiado com uma pessoa e pessoa trocada — o link volta a Copiar', async () => {
+    const container = await abrirComPessoa('Helena Duarte');
+    await clicar(botaoComTexto(container, 'Copiar'));
+
     await clicar(botaoComTexto(container, 'Trocar'));
 
-    await clicar(botaoDaPessoa(container, 'Marina Tavares'));
-
-    expect(linkEstaCopiado(container)).toBe(true);
+    expect(linkEstaCopiado(container)).toBe(false);
   });
 
   it.each([
@@ -747,16 +754,38 @@ describe('InscricaoPage: criança estelar', () => {
 
   it('autorização do responsável na Jornada — a da Lua Cheia não vale: a autorização é por evento e a pendência de autorização abre', async () => {
     const container = await abrirComPessoa('Antônio Duarte');
-    await escolherOpcao(campoRotulado<HTMLSelectElement>(container, 'Responsável neste trabalho'), 'Helena Duarte');
-
     await trocarEvento(container, JORNADA);
+
+    await escolherOpcao(campoRotulado<HTMLSelectElement>(container, 'Responsável neste trabalho'), 'Helena Duarte');
 
     expect(pendenciasMostradas(container)).toEqual([['Sem autorização vigente para este trabalho', 'IN2']]);
     expect(textoDe(container)).toContain(
-      'A autorização é por evento — não existe autorizar para o ano. É colhida na chegada, com o responsável presente.',
+      'A autorização é por evento e por modalidade — não existe autorizar para o ano. É colhida na chegada, com o responsável presente.',
     );
+  });
 
-    await trocarEvento(container, LUA_CHEIA);
+  it('responsável escolhido e evento trocado — o responsável recomeça e a pendência volta a ser a de falta de responsável', async () => {
+    const container = await abrirComPessoa('Antônio Duarte');
+    await escolherResponsavel(container, 'Helena Duarte');
+
+    await trocarEvento(container, JORNADA);
+
+    expect(seletorDeResponsavel(container).value).toBe('');
+    expect(pendenciasMostradas(container)).toEqual([['Falta o responsável', 'IN2']]);
+  });
+
+  it('autorização da Lua Cheia sob supervisão e modalidade Participa do ritual — não vale: a autorização é por modalidade e a pendência de autorização abre', async () => {
+    const container = await abrirComPessoa('Antônio Duarte');
+    await escolherResponsavel(container, 'Helena Duarte');
+
+    await clicar(botaoComTexto(container, 'Participa do ritual'));
+
+    expect(pendenciasMostradas(container)).toEqual([
+      ['Sem autorização vigente para este trabalho', 'IN2'],
+      ['Anamnese pendente', 'IN5'],
+    ]);
+
+    await clicar(botaoComTexto(container, 'Permanece sob supervisão'));
 
     expect(pendenciasMostradas(container)).toEqual(SEM_PENDENCIA);
   });
@@ -779,7 +808,7 @@ describe('InscricaoPage: criança estelar', () => {
 
     expect(marcado(botaoComTexto(container, 'Participa do ritual'))).toBe(true);
     expect(interruptor(container, 'Consagra neste trabalho').getAttribute('aria-checked')).toBe('true');
-    expect(pendenciasMostradas(container)).toEqual([['Anamnese pendente', 'IN5']]);
+    expect(pendenciasMostradas(container)).toContainEqual(['Anamnese pendente', 'IN5']);
   });
 
   it('modalidade Permanece sob supervisão — desliga a consagração e a anamnese não se aplica', async () => {
@@ -813,7 +842,7 @@ describe('InscricaoPage: criança estelar', () => {
     expect(interruptor(container, 'Consagra neste trabalho').getAttribute('aria-checked')).toBe('true');
     expect(marcado(botaoComTexto(container, 'Participa do ritual'))).toBe(true);
     expect(seletorDeResponsavel(container).value).toBe('Helena Duarte');
-    expect(pendenciasMostradas(container)).toEqual([['Anamnese pendente', 'IN5']]);
+    expect(pendenciasMostradas(container)).toContainEqual(['Anamnese pendente', 'IN5']);
   });
 
   it('criança estelar — a explicação da modalidade diz que ela decide a consagração', async () => {
@@ -1139,12 +1168,17 @@ describe('InscricaoPage: hospedagem e leito', () => {
     expect(textoDe(container)).toContain('R$ 50,00 de acomodação, à parte da contribuição.');
   });
 
-  it('diárias escolhidas e evento trocado — a Jornada volta a 1 diária e ao custo de uma diária de acomodação', async () => {
+  it('diárias escolhidas e evento trocado — a hospedagem recomeça e, com o Beliche de novo, a Jornada volta a 1 diária', async () => {
     const container = await abrirComPessoa('Helena Duarte');
     await escolherHospedagem(container, 'Beliche no dormitório');
     await escolherDiarias(container, '3');
 
     await trocarEvento(container, JORNADA);
+
+    expect(marcado(opcaoEmLinha(container, 'Não vai dormir na casa'))).toBe(true);
+    expect(textoDe(container)).not.toContain('de acomodação, à parte da contribuição.');
+
+    await escolherHospedagem(container, 'Beliche no dormitório');
 
     expect(seletorDeDiarias(container).value).toBe('1');
     expect(textoDe(container)).toContain('R$ 50,00 de acomodação, à parte da contribuição.');
@@ -1190,15 +1224,19 @@ describe('InscricaoPage: hospedagem e leito', () => {
     expect(pendenciasMostradas(container)).toEqual([['Leito não alocado', 'IN9']]);
   });
 
-  it('leito alocado e evento trocado — a pendência IN9 volta e a hospedagem escolhida fica', async () => {
+  it('leito alocado e evento trocado — a hospedagem recomeça e, com o Beliche de novo, a pendência IN9 volta', async () => {
     const container = await abrirComPessoa('Helena Duarte');
     await escolherHospedagem(container, 'Beliche no dormitório');
     await clicar(botaoComTexto(container, 'Alocar um leito'));
 
     await trocarEvento(container, JORNADA);
 
+    expect(marcado(opcaoEmLinha(container, 'Não vai dormir na casa'))).toBe(true);
+    expect(pendenciasMostradas(container)).toEqual(SEM_PENDENCIA);
+
+    await escolherHospedagem(container, 'Beliche no dormitório');
+
     expect(pendenciasMostradas(container)).toEqual([['Leito não alocado', 'IN9']]);
-    expect(marcado(opcaoEmLinha(container, 'Beliche no dormitório'))).toBe(true);
   });
 });
 
@@ -1656,13 +1694,13 @@ describe('InscricaoPage: confirmar e salvar como pendente', () => {
     expect(existeRecado(container)).toBe(false);
   });
 
-  it('link copiado e inscrição salva como pendente — o link continua Copiado', async () => {
+  it('link copiado e inscrição salva como pendente — o link volta a Copiar', async () => {
     const container = await abrirComPessoa('Helena Duarte');
     await clicar(botaoComTexto(container, 'Copiar'));
 
     await clicar(botaoComTexto(container, 'Salvar como pendente'));
 
-    expect(linkEstaCopiado(container)).toBe(true);
+    expect(linkEstaCopiado(container)).toBe(false);
   });
 
   it('Jornada, beliche e três diárias, inscrição salva como pendente — a Jornada fica marcada e a próxima pessoa abre o beliche em 1 diária', async () => {

@@ -1,8 +1,13 @@
-import type { EventoId, PessoaId, StatusAcolhimento, StatusAnamnese } from '@cdd/contracts';
+import type { EventoId, ModalidadeCrianca, PessoaId, StatusAcolhimento, StatusAnamnese } from '@cdd/contracts';
 import { id } from '@/mocks/ids';
 import { eventos } from '../../mocks/eventos';
 
 /* ── Diretório, do jeito que a busca da tela devolve ─────────────────────── */
+
+export interface AutorizacaoVigente {
+  readonly eventoId: EventoId;
+  readonly modalidade: ModalidadeCrianca;
+}
 
 export interface PessoaDoDiretorio {
   readonly id: PessoaId;
@@ -19,7 +24,7 @@ export interface PessoaDoDiretorio {
   readonly restricoes: string | null;
   /** Quem pode figurar como responsável de uma criança estelar. */
   readonly responsavelDe: readonly string[];
-  readonly eventosComAutorizacaoVigente: readonly EventoId[];
+  readonly autorizacoesVigentes: readonly AutorizacaoVigente[];
 }
 
 const LUA_CHEIA = eventos[0]!.id;
@@ -39,7 +44,7 @@ export const diretorio: readonly PessoaDoDiretorio[] = [
     contatoEmergencia: 'Paulo Duarte · (11) 99000-8877',
     restricoes: 'Não come carne vermelha',
     responsavelDe: ['Antônio Duarte'],
-    eventosComAutorizacaoVigente: [LUA_CHEIA],
+    autorizacoesVigentes: [{ eventoId: LUA_CHEIA, modalidade: 'PERMANECE_SOB_SUPERVISAO' }],
   },
   {
     id: id<PessoaId>('p-5'),
@@ -55,7 +60,7 @@ export const diretorio: readonly PessoaDoDiretorio[] = [
     contatoEmergencia: 'Luiz Tavares · (21) 98800-4411',
     restricoes: null,
     responsavelDe: [],
-    eventosComAutorizacaoVigente: [],
+    autorizacoesVigentes: [],
   },
   {
     id: id<PessoaId>('p-4'),
@@ -71,7 +76,7 @@ export const diretorio: readonly PessoaDoDiretorio[] = [
     contatoEmergencia: 'Silvia Pires · (11) 99933-1200',
     restricoes: null,
     responsavelDe: [],
-    eventosComAutorizacaoVigente: [],
+    autorizacoesVigentes: [],
   },
   {
     id: id<PessoaId>('p-6'),
@@ -87,7 +92,7 @@ export const diretorio: readonly PessoaDoDiretorio[] = [
     contatoEmergencia: 'Neide Bittencourt · (11) 98811-0099',
     restricoes: 'Evitar jejum prolongado',
     responsavelDe: [],
-    eventosComAutorizacaoVigente: [],
+    autorizacoesVigentes: [],
   },
   {
     id: id<PessoaId>('p-antonio'),
@@ -103,7 +108,7 @@ export const diretorio: readonly PessoaDoDiretorio[] = [
     contatoEmergencia: 'Helena Duarte · (11) 98444-2210',
     restricoes: 'Alergia a amendoim',
     responsavelDe: [],
-    eventosComAutorizacaoVigente: [],
+    autorizacoesVigentes: [],
   },
   {
     id: id<PessoaId>('p-bruna'),
@@ -119,6 +124,6 @@ export const diretorio: readonly PessoaDoDiretorio[] = [
     contatoEmergencia: 'Tais Camargo · (19) 99888-1122',
     restricoes: 'Vegetariana',
     responsavelDe: [],
-    eventosComAutorizacaoVigente: [],
+    autorizacoesVigentes: [],
   },
 ];
