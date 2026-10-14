@@ -1,0 +1,1 @@
+export { ResultadoDoEvento } from './ResultadoDoEvento';

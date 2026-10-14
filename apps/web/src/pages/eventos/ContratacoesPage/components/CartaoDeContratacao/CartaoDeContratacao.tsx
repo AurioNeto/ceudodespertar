@@ -1,10 +1,13 @@
-import { AmountDisplay, Button, Cartao, Icon, Leitura, Rotulo, StatusBadge, type Density } from '@/ds';
+import { AmountDisplay, Button, Cartao, Icon, Leitura, StatusBadge, type Density } from '@/ds';
 import { PainelDeContaEData } from '@/pages/eventos/components/PainelDeContaEData';
 import { formatarBRL, pluralizar } from '@/pages/utils/formato';
 import { ID_DO_CAMPO_DA_DATA_DO_RECEBIMENTO } from '../../constantes';
 import type { ContratacaoNaTela } from '../../mocks/contratacoes';
 import { Devolucao } from './components/Devolucao';
 import { Lado } from './components/Lado';
+import { ListaDeCaches } from './components/ListaDeCaches';
+import { OutrosCustos } from './components/OutrosCustos';
+import { ResultadoDoEvento } from './components/ResultadoDoEvento';
 import { FORMA_EXPLICACAO, FORMA_ROTULO, STATUS_ROTULO, TOM } from './constantes';
 import { resultadoDaContratacao } from './utils/resultadoDaContratacao';
 
@@ -103,76 +106,20 @@ export function CartaoDeContratacao({
                 : `${pluralizar(c.caches.filter((m) => m.pago).length, 'cachê pago', 'cachês pagos')} de ${c.caches.length}`
             }
           >
-            {c.caches.length > 0 ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 5, marginTop: 2 }}>
-                {c.caches.map((m) => (
-                  <div key={m.nome} style={{ display: 'flex', gap: 8, alignItems: 'baseline', flexWrap: 'wrap' }}>
-                    <Icon
-                      name={m.pago ? 'circle-check' : 'circle-alert'}
-                      size={13}
-                      color={m.pago ? 'var(--color-confirmed)' : 'var(--text-meta)'}
-                    />
-                    <span style={{ font: 'var(--text-small)', color: 'var(--text-primary)', flex: 1, minWidth: 110 }}>
-                      {m.nome}
-                    </span>
-                    <span style={{ font: 'var(--text-small)', color: 'var(--text-meta)' }}>{m.funcao}</span>
-                    <AmountDisplay
-                      value={m.valor / 100}
-                      size="sm"
-                      style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}
-                    />
-                  </div>
-                ))}
-              </div>
-            ) : null}
+            {c.caches.length > 0 ? <ListaDeCaches caches={c.caches} /> : null}
           </Lado>
         </div>
       )}
 
-      {c.custos.length > 0 ? (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-          <Rotulo>Outros custos do evento</Rotulo>
-          {c.custos.map((x) => (
-            <div key={x.descricao} style={{ display: 'flex', gap: 10, alignItems: 'baseline' }}>
-              <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)', flex: 1 }}>
-                {x.descricao}
-              </span>
-              <AmountDisplay
-                value={x.valor / 100}
-                size="sm"
-                style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}
-              />
-            </div>
-          ))}
-          <span style={{ font: 'var(--text-small)', color: 'var(--text-meta)' }}>
-            Apurados por evento, como em qualquer trabalho da casa.
-          </span>
-        </div>
-      ) : null}
+      {c.custos.length > 0 ? <OutrosCustos custos={c.custos} /> : null}
 
       {cancelada ? null : (
-        <div
-          style={{
-            background: 'var(--bg-sunken)',
-            borderRadius: 'var(--leaf-sm)',
-            padding: '11px 14px',
-            display: 'flex',
-            flexWrap: 'wrap',
-            gap: '5px 12px',
-            alignItems: 'baseline',
-          }}
-        >
-          <Rotulo>Resultado do evento</Rotulo>
-          <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)', flex: 1, minWidth: 200 }}>
-            {formatarBRL(c.valorAcordado)} − {formatarBRL(totalCaches)} de cachês − {formatarBRL(totalCustos)} de
-            custos
-          </span>
-          <AmountDisplay
-            value={resultado / 100}
-            size="sm"
-            style={{ color: resultado >= 0 ? 'var(--color-confirmed)' : 'var(--color-attention)' }}
-          />
-        </div>
+        <ResultadoDoEvento
+          valorAcordado={c.valorAcordado}
+          totalCaches={totalCaches}
+          totalCustos={totalCustos}
+          resultado={resultado}
+        />
       )}
 
       {c.devolucaoDevida ? <Devolucao c={c} /> : null}

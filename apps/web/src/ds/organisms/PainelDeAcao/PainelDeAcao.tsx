@@ -2,7 +2,7 @@ import { useEffect, useId, useRef } from 'react';
 import type { KeyboardEvent, ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import type { Density } from '../../fundacao/densidade';
-import { Icon } from '../../atoms/Icon';
+import { CabecalhoDoPainel } from './components/CabecalhoDoPainel';
 import { DIALOGO_POR_VARIANTE, FUNDO_POR_VARIANTE } from './constantes';
 import { vidroLeve } from '../../fundacao/estilos';
 
@@ -21,7 +21,6 @@ export interface PainelDeAcaoProps {
 const SELETOR_DE_FOCAVEL =
   'a[href], button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex="-1"])';
 const SELETOR_DE_CAMPO = 'input:not(:disabled), select:not(:disabled), textarea:not(:disabled)';
-const ALVO_MINIMO_DE_TOQUE = 44;
 
 const focaveisDe = (raiz: HTMLElement): HTMLElement[] =>
   Array.from(raiz.querySelectorAll<HTMLElement>(SELETOR_DE_FOCAVEL));
@@ -156,51 +155,14 @@ function PainelAberto({
           ...DIALOGO_POR_VARIANTE[variante],
         }}
       >
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'flex-start',
-            gap: 'var(--space-3)',
-            padding: 'var(--space-5) var(--space-5) var(--space-3)',
-          }}
-        >
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <h2
-              id={idDoTitulo}
-              ref={tituloRef}
-              tabIndex={-1}
-              style={{ margin: 0, font: 'var(--text-title)', color: 'var(--text-title)' }}
-            >
-              {titulo}
-            </h2>
-            {descricao ? (
-              <p
-                id={idDaDescricao}
-                style={{ margin: 'var(--space-1) 0 0', font: 'var(--text-small)', color: 'var(--text-secondary)' }}
-              >
-                {descricao}
-              </p>
-            ) : null}
-          </div>
-          <button
-            type="button"
-            aria-label="Fechar"
-            onClick={aoFechar}
-            style={{
-              display: 'grid',
-              placeItems: 'center',
-              minWidth: ALVO_MINIMO_DE_TOQUE,
-              minHeight: ALVO_MINIMO_DE_TOQUE,
-              marginTop: 'calc(var(--space-2) * -1)',
-              marginRight: 'calc(var(--space-2) * -1)',
-              background: 'transparent',
-              color: 'var(--text-secondary)',
-              borderRadius: 'var(--leaf-sm)',
-            }}
-          >
-            <Icon name="x" size={20} />
-          </button>
-        </div>
+        <CabecalhoDoPainel
+          titulo={titulo}
+          descricao={descricao}
+          idDoTitulo={idDoTitulo}
+          idDaDescricao={idDaDescricao}
+          refDoTitulo={tituloRef}
+          aoFechar={aoFechar}
+        />
 
         <div ref={corpo} style={{ flex: 1, overflow: 'auto', padding: '0 var(--space-5) var(--space-4)' }}>
           {children}
