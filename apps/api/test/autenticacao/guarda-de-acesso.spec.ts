@@ -689,22 +689,20 @@ describe('indisponibilidade do provedor de identidade', () => {
   it('na queda, só o primeiro 503 de cada janela gera log de erro; os demais viram warn', async () => {
     const logs = capturarLogs();
     servidor.modo = 'indisponivel';
-    const inicio = performance.now();
+    const inicio = 1_000_000;
     const relogio = vi.spyOn(performance, 'now').mockReturnValue(inicio);
+    const pedirNoInstante = async (instante: number): Promise<{ error: number; warn: number }> => {
+      relogio.mockReturnValue(instante);
+      expect((await pedirAutenticado('/identificado')).status).toBe(503);
+      return { error: logs.linhas('error').length, warn: logs.linhas('warn').length };
+    };
 
-    expect((await pedirAutenticado('/identificado')).status).toBe(503);
-    expect((await pedirAutenticado('/identificado')).status).toBe(503);
-    relogio.mockReturnValue(inicio + JANELA_DO_ALERTA_DE_INDISPONIBILIDADE_EM_MS - 1);
-    expect((await pedirAutenticado('/identificado')).status).toBe(503);
+    expect(await pedirNoInstante(inicio)).toEqual({ error: 1, warn: 0 });
+    expect(await pedirNoInstante(inicio)).toEqual({ error: 1, warn: 1 });
+    expect(await pedirNoInstante(inicio + JANELA_DO_ALERTA_DE_INDISPONIBILIDADE_EM_MS - 1)).toEqual({ error: 1, warn: 2 });
+    expect(await pedirNoInstante(inicio + JANELA_DO_ALERTA_DE_INDISPONIBILIDADE_EM_MS)).toEqual({ error: 2, warn: 2 });
 
-    expect(logs.linhas('error')).toHaveLength(1);
-    expect(logs.linhas('warn')).toHaveLength(2);
-    expect(logs.linhas('warn').every((linha) => linha.startsWith('Provedor de identidade indisponível: '))).toBe(true);
-
-    relogio.mockReturnValue(inicio + JANELA_DO_ALERTA_DE_INDISPONIBILIDADE_EM_MS);
-    expect((await pedirAutenticado('/identificado')).status).toBe(503);
-
-    expect(logs.linhas('error')).toHaveLength(2);
+    expect([...logs.linhas('error'), ...logs.linhas('warn')].every((linha) => linha.startsWith('Provedor de identidade indisponível: '))).toBe(true);
   });
 
   it('provedor recusando conexão e pendurado também resultam em 503', async () => {
