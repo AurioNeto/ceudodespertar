@@ -153,7 +153,7 @@ describe('GraficoSerie: densidade', () => {
   });
 
   it('campo — barras de 9px e área de 132px', async () => {
-    const { container } = await montar(<GraficoSerie {...PROPS_BASE} campo />);
+    const { container } = await montar(<GraficoSerie {...PROPS_BASE} densidade="field" />);
 
     expect(barrasDaCor(container, COR_DA_ENTRADA).map((b) => b.style.width)).toEqual(['9px', '9px']);
     expect(colunaDoMes(container, 0).parentElement?.style.height).toBe('132px');
