@@ -64,7 +64,7 @@ export function RelatoriosPage() {
           acumulados={r.acumulados}
           escala={r.escala}
           rotuloPeriodo={r.rotuloPeriodo}
-          campo={campo}
+          densidade={densidade}
         />
 
         <div
@@ -77,13 +77,13 @@ export function RelatoriosPage() {
           <PainelDeQuebra
             titulo="Saídas por grupo"
             itens={r.porGrupo}
-            campo={campo}
+            densidade={densidade}
             onAbrir={(nome) => tela.abrirDrill({ rotulo: 'Saídas do grupo', campo: 'grupo', valor: nome, tipo: 'saida' })}
           />
           <PainelDeQuebra
             titulo="Saídas por categoria"
             itens={r.porCategoria}
-            campo={campo}
+            densidade={densidade}
             onAbrir={(nome) =>
               tela.abrirDrill({ rotulo: 'Saídas da categoria', campo: 'categoria', valor: nome, tipo: 'saida' })
             }

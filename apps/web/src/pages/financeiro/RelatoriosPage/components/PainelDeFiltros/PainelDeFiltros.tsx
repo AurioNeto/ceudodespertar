@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Button, Icon, Select, type Density, vidroLeve } from '@/ds';
 import type { useRelatorio } from '../../hooks/useRelatorio';
 import { CATEGORIAS_DE_ENTRADA, CATEGORIAS_DE_SAIDA, CERIMONIAS, CONTAS, GRUPOS } from '../../mocks/relatorios';
@@ -6,6 +5,7 @@ import type { Comparacao, Filtros } from '../../tipos';
 import { CampoDeMes } from './components/CampoDeMes';
 import { Chip } from './components/Chip';
 import { PERIODOS } from './constantes';
+import { usePainelDeFiltros } from './hooks/usePainelDeFiltros';
 import { comOpcaoTodos } from './utils/comOpcaoTodos';
 
 export interface PainelDeFiltrosProps {
@@ -16,7 +16,7 @@ export interface PainelDeFiltrosProps {
 
 export function PainelDeFiltros({ relatorio: r, resumoDoRecorte, densidade }: PainelDeFiltrosProps) {
   const campo = densidade === 'field';
-  const [filtrosAbertos, setFiltrosAbertos] = useState(!campo);
+  const { filtrosAbertos, alternarFiltros } = usePainelDeFiltros(!campo);
 
   return (
     <div
@@ -34,7 +34,7 @@ export function PainelDeFiltros({ relatorio: r, resumoDoRecorte, densidade }: Pa
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
         <button
           type="button"
-          onClick={() => setFiltrosAbertos((a) => !a)}
+          onClick={alternarFiltros}
           aria-expanded={filtrosAbertos}
           style={{
             display: 'flex',

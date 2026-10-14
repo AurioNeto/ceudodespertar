@@ -1,8 +1,8 @@
-import { useState } from 'react';
 import { reais } from '@cdd/contracts';
-import { rotuloVersalete, vidroLeve } from '@/ds';
+import { rotuloVersalete, vidroLeve, type Density } from '@/ds';
 import { formatarBRL } from '@/pages/utils/formato';
 import { ItemDaLegenda } from './components/ItemDaLegenda';
+import { useGraficoSerie } from './hooks/useGraficoSerie';
 import { pontosDaLinha } from './utils/pontosDaLinha';
 
 export interface PontoDaSerie {
@@ -16,15 +16,16 @@ export interface GraficoSerieProps {
   acumulados: readonly number[];
   escala: number;
   rotuloPeriodo: string;
-  campo?: boolean;
+  densidade?: Density;
 }
 
 /**
  * Bipolar: entradas acima da linha do zero, saídas abaixo, e o acumulado
  * sobreposto na mesma escala e no mesmo zero.
  */
-export function GraficoSerie({ serie, acumulados, escala, rotuloPeriodo, campo = false }: GraficoSerieProps) {
-  const [hover, setHover] = useState<number | null>(null);
+export function GraficoSerie({ serie, acumulados, escala, rotuloPeriodo, densidade = 'office' }: GraficoSerieProps) {
+  const campo = densidade === 'field';
+  const { hover, setHover } = useGraficoSerie();
 
   const linhaDoAcumulado = pontosDaLinha(acumulados, serie.length, escala);
 

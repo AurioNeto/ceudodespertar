@@ -17,7 +17,7 @@ const CIRCUNFERENCIA = '376.99';
 
 async function montarPainel(itens = ITENS, campo = false) {
   const aoAbrir = vi.fn();
-  const montado = await montar(<PainelDeQuebra titulo="Saídas por grupo" itens={itens} onAbrir={aoAbrir} campo={campo} />);
+  const montado = await montar(<PainelDeQuebra titulo="Saídas por grupo" itens={itens} onAbrir={aoAbrir} densidade={campo ? 'field' : 'office'} />);
   return { ...montado, aoAbrir };
 }
 

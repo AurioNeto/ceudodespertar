@@ -1,21 +1,20 @@
-import { useState } from 'react';
 import { VistaEmBarras } from './components/VistaEmBarras';
 import { VistaEmRosca } from './components/VistaEmRosca';
+import { usePainelDeQuebra } from './hooks/usePainelDeQuebra';
 import type { FatiaDaQuebra } from './tipos';
 import { fatiasDaQuebra } from './utils/fatias';
-import { vidroLeve, fundoComVidro } from '@/ds';
+import { vidroLeve, fundoComVidro, type Density } from '@/ds';
 
 export interface PainelDeQuebraProps {
   titulo: string;
   itens: readonly FatiaDaQuebra[];
   onAbrir: (nome: string) => void;
-  campo?: boolean;
+  densidade?: Density;
 }
 
 /** Barras ou rosca, com a mesma cor por item nos dois modos. */
-export function PainelDeQuebra({ titulo, itens, onAbrir, campo = false }: PainelDeQuebraProps) {
-  const [vista, setVista] = useState<'barras' | 'rosca'>('barras');
-  const [hover, setHover] = useState<number | null>(null);
+export function PainelDeQuebra({ titulo, itens, onAbrir, densidade = 'office' }: PainelDeQuebraProps) {
+  const { vista, setVista, hover, setHover } = usePainelDeQuebra();
 
   const total = itens.reduce((a, i) => a + i.valor, 0);
   const maior = Math.max(1, ...itens.map((i) => i.valor));
@@ -30,7 +29,7 @@ export function PainelDeQuebra({ titulo, itens, onAbrir, campo = false }: Painel
         ...vidroLeve,
         border: 'var(--border-hairline)',
         borderRadius: 'var(--leaf-lg)',
-        padding: campo ? '14px' : '16px 18px',
+        padding: densidade === 'field' ? '14px' : '16px 18px',
         display: 'flex',
         flexDirection: 'column',
         gap: 12,
@@ -69,7 +68,7 @@ export function PainelDeQuebra({ titulo, itens, onAbrir, campo = false }: Painel
           fatias={fatias}
           emFoco={emFoco}
           total={total}
-          densidade={campo ? 'field' : 'office'}
+          densidade={densidade}
           onAbrir={onAbrir}
           onHover={setHover}
         />
