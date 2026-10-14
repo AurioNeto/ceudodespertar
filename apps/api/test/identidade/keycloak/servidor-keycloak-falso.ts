@@ -19,7 +19,9 @@ export interface RespostaFalsa {
   readonly atrasoEmMs?: number;
 }
 
-export type Roteiro = RespostaFalsa | ((requisicao: RequisicaoRecebida, indice: number) => RespostaFalsa);
+export type Roteiro =
+  | RespostaFalsa
+  | ((requisicao: RequisicaoRecebida, indice: number) => RespostaFalsa | Promise<RespostaFalsa>);
 
 export const CAMINHO_DO_TOKEN = '/realms/cdd/protocol/openid-connect/token';
 export const CAMINHO_DOS_USUARIOS = '/admin/realms/cdd/users';
@@ -52,11 +54,11 @@ export class ServidorKeycloakFalso {
     this.servidor = createServer((requisicao, resposta) => {
       const partes: Buffer[] = [];
       requisicao.on('data', (parte: Buffer) => partes.push(parte));
-      requisicao.on('end', () => {
+      requisicao.on('end', async () => {
         const recebida = this.registrar(requisicao, Buffer.concat(partes).toString('utf8'));
         const roteiro = this.roteiros.get(`${recebida.metodo} ${recebida.caminho}`);
         const indice = this.chamadasA(recebida.metodo, recebida.caminho).length - 1;
-        const falsa = roteiro === undefined ? { status: 418 } : typeof roteiro === 'function' ? roteiro(recebida, indice) : roteiro;
+        const falsa = roteiro === undefined ? { status: 418 } : typeof roteiro === 'function' ? await roteiro(recebida, indice) : roteiro;
         setTimeout(() => {
           if (resposta.destroyed) return;
           resposta.writeHead(falsa.status, { 'content-type': 'application/json', ...falsa.cabecalhos });
