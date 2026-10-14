@@ -1,14 +1,15 @@
 import type { CSSProperties, ReactNode } from 'react';
+import type { Density } from '../../fundacao/densidade';
 
 export function Cartao({
   children,
-  campo = false,
+  density = 'office',
   style,
   as: Elemento = 'div',
   'aria-label': rotuloAcessivel,
 }: {
   children: ReactNode;
-  campo?: boolean;
+  density?: Density;
   style?: CSSProperties;
   as?: 'div' | 'article';
   'aria-label'?: string;
@@ -22,7 +23,7 @@ export function Cartao({
         WebkitBackdropFilter: 'var(--glass)',
         border: 'var(--border-hairline)',
         borderRadius: 'var(--leaf-lg)',
-        padding: campo ? '15px 16px' : '18px 20px',
+        padding: density === 'field' ? '15px 16px' : '18px 20px',
         display: 'flex',
         flexDirection: 'column',
         gap: 14,

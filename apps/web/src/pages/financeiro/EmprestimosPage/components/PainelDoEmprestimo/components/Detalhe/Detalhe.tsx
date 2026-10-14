@@ -15,7 +15,7 @@ export function Detalhe({ emprestimo, densidade }: DetalheProps) {
   const saldo = saldoDevedor(emprestimo);
 
   return (
-    <Cartao campo={campo}>
+    <Cartao density={densidade}>
       <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', gap: '6px 12px' }}>
         <span style={{ font: 'var(--text-title-sm)', color: 'var(--text-title)' }}>{emprestimo.contraparteNome}</span>
         <StatusBadge tone={emprestimo.direcao === 'CONCEDIDO' ? 'royal' : 'pending'}>{d.rotulo}</StatusBadge>

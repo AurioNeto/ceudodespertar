@@ -7,10 +7,9 @@ export interface FaltaramSemPedirProps {
 }
 
 export function FaltaramSemPedir({ densidade }: FaltaramSemPedirProps) {
-  const campo = densidade === 'field';
   const total = faltaramSemPedir.reduce((s, x) => s + x.valor, 0);
   return (
-    <Cartao campo={campo} style={{ gap: 10 }}>
+    <Cartao density={densidade} style={{ gap: 10 }}>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px 10px', alignItems: 'baseline' }}>
         <Rotulo>Faltaram e não pediram</Rotulo>
         <span style={{ font: 'var(--text-small)', color: 'var(--text-meta)' }}>

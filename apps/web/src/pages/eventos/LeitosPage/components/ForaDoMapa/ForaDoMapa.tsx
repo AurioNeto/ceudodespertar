@@ -6,9 +6,8 @@ export interface ForaDoMapaProps {
 }
 
 export function ForaDoMapa({ densidade }: ForaDoMapaProps) {
-  const campo = densidade === 'field';
   return (
-    <Cartao campo={campo} style={{ gap: 10 }}>
+    <Cartao density={densidade} style={{ gap: 10 }}>
       <Rotulo>Dormem na casa e não ocupam leito</Rotulo>
       <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)', maxWidth: '76ch' }}>
         Estão aqui porque a operação precisa contá-los — café da manhã, espaço no salão, quem está na chácara à noite

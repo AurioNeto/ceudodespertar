@@ -36,7 +36,7 @@ export function Declaracao({
       }
     >
       {cadastro ? (
-        <Cartao campo={campo} style={{ gap: 7 }}>
+        <Cartao density={densidade} style={{ gap: 7 }}>
           <Rotulo>O que a casa tem de você</Rotulo>
           <span style={{ font: 'var(--text-body)', color: 'var(--text-primary)' }}>
             {refeita

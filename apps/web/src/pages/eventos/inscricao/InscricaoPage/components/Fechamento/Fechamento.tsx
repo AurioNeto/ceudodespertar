@@ -35,7 +35,7 @@ export function Fechamento({
     (custoHospedagem > 0 ? ` · ${formatarBRL(custoHospedagem)} de acomodação` : '') +
     (custoRefeicoes > 0 ? ` · ${formatarBRL(custoRefeicoes)} de alimentação` : '');
   return (
-    <Cartao campo={campo} style={{ gap: 13 }}>
+    <Cartao density={densidade} style={{ gap: 13 }}>
       {isentoSemCusto ? (
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 10 }}>
           <span style={{ font: 'var(--text-amount-lg)', color: 'var(--color-royal-deep)' }}>Isento</span>

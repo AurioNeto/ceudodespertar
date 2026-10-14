@@ -42,7 +42,7 @@ export function CartaoDeContratacao({
   const cancelada = c.status === 'CANCELADA';
 
   return (
-    <Cartao campo={campo} style={{ gap: 14, opacity: cancelada ? 0.9 : 1 }}>
+    <Cartao density={densidade} style={{ gap: 14, opacity: cancelada ? 0.9 : 1 }}>
       <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', gap: '6px 11px' }}>
         <span style={{ font: 'var(--text-title-sm)', color: 'var(--text-title)' }}>{c.contratante}</span>
         <StatusBadge tone={TOM[c.status]}>{STATUS_ROTULO[c.status]}</StatusBadge>

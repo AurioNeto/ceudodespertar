@@ -18,7 +18,7 @@ export function Identificacao({ densidade, cpf, erro, onCpf, onSeguir }: Identif
       titulo="Vamos começar pelo seu CPF"
       recado="Se você já veio aqui antes, a casa te reconhece e pergunta bem menos. Se é a primeira vez, o cadastro é rápido e serve para sempre."
     >
-      <Cartao campo={campo} style={{ gap: 13 }}>
+      <Cartao density={densidade} style={{ gap: 13 }}>
         <TextField
           label="CPF"
           placeholder="000.000.000-00"
@@ -36,7 +36,7 @@ export function Identificacao({ densidade, cpf, erro, onCpf, onSeguir }: Identif
         </Button>
       </Cartao>
 
-      <Cartao campo={campo} style={{ gap: 9 }}>
+      <Cartao density={densidade} style={{ gap: 9 }}>
         <Rotulo>Protótipo — CPFs que funcionam aqui</Rotulo>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
           {CPFS_DE_EXEMPLO.map((x) => (

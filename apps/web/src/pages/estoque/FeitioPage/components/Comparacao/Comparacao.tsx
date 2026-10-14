@@ -12,7 +12,6 @@ export interface ComparacaoProps {
 }
 
 export function Comparacao({ feitio: f, concluido, total, densidade }: ComparacaoProps) {
-  const campo = densidade === 'field';
   const porLitro = concluido ? custoPorLitro(total, f.litrosProduzidos) : null;
   const externo = aquisicaoExterna.custoPorLitro;
   const economia = porLitro !== null ? (externo - porLitro) * (f.litrosProduzidos ?? 0) : null;
@@ -20,7 +19,7 @@ export function Comparacao({ feitio: f, concluido, total, densidade }: Comparaca
   const comparativo = saiuMaisCaro ? 'mais caro' : 'mais barato';
 
   return (
-    <Cartao campo={campo} style={{ gap: 12 }}>
+    <Cartao density={densidade} style={{ gap: 12 }}>
       <Rotulo>Fazer ou comprar</Rotulo>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>

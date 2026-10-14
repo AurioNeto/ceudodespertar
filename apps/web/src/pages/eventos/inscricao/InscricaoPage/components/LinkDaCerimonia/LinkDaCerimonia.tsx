@@ -17,7 +17,7 @@ export interface LinkDaCerimoniaProps {
 export function LinkDaCerimonia({ link, densidade, copiado, onCopiar }: LinkDaCerimoniaProps) {
   const campo = densidade === 'field';
   return (
-    <Cartao campo={campo} style={{ gap: 10 }}>
+    <Cartao density={densidade} style={{ gap: 10 }}>
       <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px 12px' }}>
         <Icon name="link" size={17} color="var(--color-ink-brand)" />
         <Rotulo>Link de inscrição desta cerimônia</Rotulo>

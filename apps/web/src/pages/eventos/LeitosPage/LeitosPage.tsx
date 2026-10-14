@@ -76,7 +76,7 @@ export function LeitosPage() {
           <>
             <AvisoDeConflito />
 
-            <Cartao campo={campo}>
+            <Cartao density={densidade}>
               <div
                 style={{
                   display: 'grid',

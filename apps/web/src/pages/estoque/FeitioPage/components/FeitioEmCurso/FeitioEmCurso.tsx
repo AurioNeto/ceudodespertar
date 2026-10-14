@@ -21,12 +21,11 @@ export function FeitioEmCurso({
   confirmado,
   total,
 }: FeitioEmCursoProps) {
-  const campo = densidade === 'field';
   const totalMateria = custoDaMateriaPrima(f);
   const totalCustos = custoDosLancamentos(f);
 
   return (
-    <Cartao campo={campo} style={{ gap: 15 }}>
+    <Cartao density={densidade} style={{ gap: 15 }}>
       <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', gap: '6px 11px' }}>
         <span style={{ font: 'var(--text-title-sm)', color: 'var(--text-title)' }}>{f.nome}</span>
         <StatusBadge tone={concluido ? 'confirmed' : 'royal'}>

@@ -9,10 +9,9 @@ export interface SemLeitoProps {
 }
 
 export function SemLeito({ lista, densidade }: SemLeitoProps) {
-  const campo = densidade === 'field';
   if (lista.length === 0) {
     return (
-      <Cartao campo={campo} style={{ gap: 8 }}>
+      <Cartao density={densidade} style={{ gap: 8 }}>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
           <Icon name="circle-check" size={19} color="var(--color-confirmed)" />
           <span style={{ font: 'var(--text-title-sm)', color: 'var(--text-title)' }}>Todo mundo com leito</span>
@@ -25,7 +24,7 @@ export function SemLeito({ lista, densidade }: SemLeitoProps) {
   }
 
   return (
-    <Cartao campo={campo} style={{ gap: 10 }}>
+    <Cartao density={densidade} style={{ gap: 10 }}>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px 10px', alignItems: 'baseline' }}>
         <Rotulo>Ainda sem leito</Rotulo>
         <span style={{ font: 'var(--text-small)', color: 'var(--color-pending)' }}>

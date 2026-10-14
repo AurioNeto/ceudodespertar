@@ -9,10 +9,9 @@ export interface HerdadasProps {
 }
 
 export function Herdadas({ cadastro, densidade }: HerdadasProps) {
-  const campo = densidade === 'field';
   const { aberto, alternar } = useHerdadas();
   return (
-    <Cartao campo={campo} style={{ gap: 10 }}>
+    <Cartao density={densidade} style={{ gap: 10 }}>
       <button
         type="button"
         onClick={alternar}

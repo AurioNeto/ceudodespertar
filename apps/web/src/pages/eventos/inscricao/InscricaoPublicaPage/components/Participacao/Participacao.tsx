@@ -51,7 +51,7 @@ export function Participacao(props: ParticipacaoProps) {
         densidade={props.densidade}
       />
 
-      <Cartao campo={campo} style={{ gap: 11 }}>
+      <Cartao density={props.densidade} style={{ gap: 11 }}>
         <Rotulo>Onde você vai dormir</Rotulo>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
           {eventoDoLink.hospedagens.map((h) => (
@@ -74,7 +74,7 @@ export function Participacao(props: ParticipacaoProps) {
         ) : null}
       </Cartao>
 
-      <Cartao campo={campo} style={{ gap: 11 }}>
+      <Cartao density={props.densidade} style={{ gap: 11 }}>
         <Rotulo>Para a casa cuidar de você</Rotulo>
         <TextField
           label="Contato de emergência"
@@ -99,7 +99,7 @@ export function Participacao(props: ParticipacaoProps) {
         )}
       </Cartao>
 
-      <Cartao campo={campo} style={{ gap: 12 }}>
+      <Cartao density={props.densidade} style={{ gap: 12 }}>
         {props.semValor && props.total === 0 ? (
           <span style={{ font: 'var(--text-amount-lg)', color: 'var(--text-secondary)' }}>A combinar</span>
         ) : (

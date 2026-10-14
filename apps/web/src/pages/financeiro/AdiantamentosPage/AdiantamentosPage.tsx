@@ -30,7 +30,7 @@ export function AdiantamentosPage() {
       <CorpoDaTela densidade={densidade} larguraMaxima={1080}>
         <SeletorDePerspectiva atual={tela.quem} onTrocar={tela.trocarPerspectiva} densidade={densidade} />
 
-        <Cartao campo={campo}>
+        <Cartao density={densidade}>
           <div
             style={{
               display: 'grid',

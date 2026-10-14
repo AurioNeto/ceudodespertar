@@ -41,7 +41,7 @@ export function FeitioPage() {
 
         <PorQueApurar />
 
-        <Cartao campo={campo}>
+        <Cartao density={densidade}>
           <div
             style={{
               display: 'grid',

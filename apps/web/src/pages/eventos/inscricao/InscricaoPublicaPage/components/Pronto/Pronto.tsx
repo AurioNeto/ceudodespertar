@@ -14,13 +14,12 @@ export interface ProntoProps {
 }
 
 export function Pronto({ densidade, nome, primeiraVez, pontos, total, semValor }: ProntoProps) {
-  const campo = densidade === 'field';
   return (
     <Passos
       titulo="Inscrição enviada"
       recado={`Está tudo com a casa, ${nome.trim().split(/\s+/)[0]}. A recepção confirma a sua vaga pelo WhatsApp.`}
     >
-      <Cartao campo={campo} style={{ gap: 11 }}>
+      <Cartao density={densidade} style={{ gap: 11 }}>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
           <Icon name="circle-check" size={22} color="var(--color-confirmed)" />
           <span style={{ font: 'var(--text-title-sm)', color: 'var(--text-title)' }}>
@@ -37,7 +36,7 @@ export function Pronto({ densidade, nome, primeiraVez, pontos, total, semValor }
       </Cartao>
 
       {primeiraVez ? (
-        <Cartao campo={campo} style={{ gap: 8 }}>
+        <Cartao density={densidade} style={{ gap: 8 }}>
           <Rotulo>Antes do trabalho</Rotulo>
           <span style={{ font: 'var(--text-body)', color: 'var(--text-primary)' }}>
             Como é a sua primeira vez, alguém da casa vai te chamar para uma conversa.
@@ -49,7 +48,7 @@ export function Pronto({ densidade, nome, primeiraVez, pontos, total, semValor }
       ) : null}
 
       {pontos.length > 0 ? (
-        <Cartao campo={campo} style={{ gap: 8 }}>
+        <Cartao density={densidade} style={{ gap: 8 }}>
           <Rotulo>O que você declarou e a casa vai ler com atenção</Rotulo>
           <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>{pontos.join(' · ')}.</span>
           <span style={{ font: 'var(--text-small)', color: 'var(--text-meta)' }}>

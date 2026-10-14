@@ -5,9 +5,8 @@ export interface ComoEntraNoResultadoProps {
 }
 
 export function ComoEntraNoResultado({ densidade }: ComoEntraNoResultadoProps) {
-  const campo = densidade === 'field';
   return (
-    <Cartao campo={campo} style={{ gap: 10 }}>
+    <Cartao density={densidade} style={{ gap: 10 }}>
       <Rotulo>Devolver é uma saída do evento</Rotulo>
       <span style={{ font: 'var(--text-body)', color: 'var(--text-secondary)', maxWidth: '78ch' }}>
         Quando a casa devolve uma contribuição, o dinheiro sai da conta. Por isso a devolução entra como{' '}

@@ -50,7 +50,7 @@ export function ContratacoesPage() {
 
         <DeQuemEIsso />
 
-        <Cartao campo={campo}>
+        <Cartao density={densidade}>
           <div
             style={{
               display: 'grid',

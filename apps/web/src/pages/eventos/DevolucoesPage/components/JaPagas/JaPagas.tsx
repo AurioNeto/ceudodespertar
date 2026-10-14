@@ -7,9 +7,8 @@ export interface JaPagasProps {
 }
 
 export function JaPagas({ lista, densidade }: JaPagasProps) {
-  const campo = densidade === 'field';
   return (
-    <Cartao campo={campo} style={{ gap: 10 }}>
+    <Cartao density={densidade} style={{ gap: 10 }}>
       <Rotulo>Já devolvidas</Rotulo>
       <ListaDividida itens={lista} chave={(x) => x.id}>
         {(x) => (

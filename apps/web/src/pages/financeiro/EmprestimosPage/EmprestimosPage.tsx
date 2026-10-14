@@ -24,7 +24,7 @@ export function EmprestimosPage() {
       />
 
       <CorpoDaTela densidade={densidade} larguraMaxima={1180}>
-        <Cartao campo={campo}>
+        <Cartao density={densidade}>
           <div
             style={{
               display: 'grid',

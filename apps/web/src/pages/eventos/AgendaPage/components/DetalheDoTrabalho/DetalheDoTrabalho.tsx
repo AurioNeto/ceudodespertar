@@ -1,5 +1,5 @@
 import { reais } from '@cdd/contracts';
-import { Icon, Numero, Rotulo } from '@/ds';
+import { Icon, Numero, Rotulo, type Density } from '@/ds';
 import { formatarBRL } from '@/pages/utils/formato';
 import { participantesDe } from '../../mocks/agenda';
 import type { Trabalho } from '../../tipos';
@@ -14,7 +14,7 @@ export interface DetalheDoTrabalhoProps {
   trabalho: Trabalho;
   feitos: Readonly<Record<string, boolean>>;
   webhookAtivo: boolean;
-  campo: boolean;
+  densidade: Density;
   onVoltar: () => void;
   onAlternarTarefa?: (indice: number) => void;
   onAlternarWebhook?: () => void;
@@ -28,7 +28,7 @@ export function DetalheDoTrabalho({
   trabalho: ev,
   feitos,
   webhookAtivo,
-  campo,
+  densidade,
   onVoltar,
   onAlternarTarefa,
   onAlternarWebhook,
@@ -37,6 +37,7 @@ export function DetalheDoTrabalho({
   onCancelar,
   onAviso,
 }: DetalheDoTrabalhoProps) {
+  const campo = densidade === 'field';
   const participantes = participantesDe(ev);
   const { confirmados, emEspera, visitantes, semAnamnese, vencidas, emDia, comAtencao } =
     resumoDosParticipantes(participantes);

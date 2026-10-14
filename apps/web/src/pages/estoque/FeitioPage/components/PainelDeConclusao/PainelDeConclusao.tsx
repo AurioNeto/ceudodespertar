@@ -32,7 +32,7 @@ export function PainelDeConclusao({
   const porLitro = litrosNum > 0 ? total / litrosNum : null;
 
   return (
-    <Cartao campo={campo} style={{ gap: 13 }}>
+    <Cartao density={densidade} style={{ gap: 13 }}>
       <Rotulo>Quanto saiu da panela</Rotulo>
 
       <div style={{ display: 'grid', gridTemplateColumns: campo ? '1fr' : 'repeat(3, 1fr)', gap: 12 }}>

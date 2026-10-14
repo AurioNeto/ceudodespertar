@@ -50,7 +50,7 @@ export function AgendaPage() {
             trabalho={tela.emDetalhe}
             feitos={tela.feitos}
             webhookAtivo={tela.webhookAtivo}
-            campo={campo}
+            densidade={densidade}
             onVoltar={tela.voltar}
             onAlternarTarefa={editaEvento ? tela.alternarTarefa : undefined}
             onAlternarWebhook={editaEvento ? tela.alternarWebhook : undefined}

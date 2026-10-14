@@ -8,9 +8,8 @@ export interface BlocoProps {
 }
 
 export function Bloco({ titulo, densidade, children }: BlocoProps) {
-  const campo = densidade === 'field';
   return (
-    <Cartao campo={campo} style={{ gap: 12 }}>
+    <Cartao density={densidade} style={{ gap: 12 }}>
       <Rotulo>{titulo}</Rotulo>
       {children}
     </Cartao>

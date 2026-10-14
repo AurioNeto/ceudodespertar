@@ -104,7 +104,7 @@ export function VerificacaoLotePage() {
       {fila.emRevisao ? (
         <PainelDeRevisao
           item={fila.emRevisao}
-          campo={campo}
+          densidade={densidade}
           onFechar={fila.fecharRevisao}
           onAprovar={fila.aprovarRevisado}
           onDevolver={fila.devolverEmRevisao}

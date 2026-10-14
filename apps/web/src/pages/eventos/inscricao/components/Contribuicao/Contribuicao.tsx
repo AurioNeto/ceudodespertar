@@ -29,7 +29,7 @@ export function Contribuicao({
   const campo = densidade === 'field';
   if (isento) {
     return (
-      <Cartao campo={campo} style={{ gap: 9 }}>
+      <Cartao density={densidade} style={{ gap: 9 }}>
         <Rotulo>Contribuição</Rotulo>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <StatusBadge tone="neutral">Isento</StatusBadge>
@@ -52,7 +52,7 @@ export function Contribuicao({
   const prospero = evento.contribuicoes[2]!.valor;
 
   return (
-    <Cartao campo={campo} style={{ gap: 12 }}>
+    <Cartao density={densidade} style={{ gap: 12 }}>
       <Rotulo>{textos.titulo}</Rotulo>
       <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)', maxWidth: textos.larguraDoRecado }}>
         {textos.recado.inicio}

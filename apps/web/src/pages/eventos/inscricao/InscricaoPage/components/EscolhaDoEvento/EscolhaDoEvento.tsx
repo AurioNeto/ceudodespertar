@@ -11,7 +11,7 @@ export function EscolhaDoEvento({ eventoId, onTrocar, densidade }: EscolhaDoEven
   const campo = densidade === 'field';
   const evento = eventos.find((e) => (e.id as string) === eventoId)!;
   return (
-    <Cartao campo={campo} style={{ gap: 11 }}>
+    <Cartao density={densidade} style={{ gap: 11 }}>
       <SeletorDeTipo
         opcoes={eventos.map((e) => ({ valor: e.id as string, label: e.abreviacao }))}
         valor={eventoId}
