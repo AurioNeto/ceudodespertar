@@ -488,8 +488,8 @@ Parser OFX/CSV, `ImportacaoDeExtrato`, `LinhaExtrato` com idempotência por `FIT
 |:--:|---|---|---|
 | 1 | Categoria por lançamento | Tesouraria | ✅ resolvida — §2.5 #1, com valor por etiqueta |
 | 2 | "Grupo" e `Unidade` | Tesouraria | ✅ resolvida — §2.5 #2, os dois permanecem |
-| 3 | Regime da Chácara e dos Dormitórios | Coordenação | ⏳ aberta — Doc 1 §10.3 #1 |
-| 4 | A unidade ativa filtra tudo ou só pré-preenche formulários? | Tesouraria | ⏳ aberta — Doc 4 §14.2, Q5 |
+| 3 | Regime da Chácara e dos Dormitórios | Coordenação | ✅ provisória (dono, 14/10/2026) — semeadas sem receita comercial até a coordenação responder; trocar é só seed |
+| 4 | A unidade ativa filtra tudo ou só pré-preenche formulários? | Tesouraria | ✅ provisória (dono, 14/10/2026) — só pré-preenche; nas listas, filtro de unidade visível e removível; a confirmação do lançamento mostra a unidade |
 | 5 | Telas por grupo de acesso | Você | ✅ resolvida — §2.2, autorização por bloco |
 
 ### 9.2 Bloqueiam etapas posteriores

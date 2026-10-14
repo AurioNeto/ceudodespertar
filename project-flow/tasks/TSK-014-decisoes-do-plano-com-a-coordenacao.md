@@ -1,6 +1,6 @@
 # TSK-014: Confirmar com a coordenação as decisões 1–8 do plano
 
-- **Estado:** 🧭 Decisão pendente
+- **Estado:** ✅ Confirmada pelo dono (14/10/2026), sem ajuste; a coordenação pode rever qualquer item
 - **Responsável sugerido:** usuário + coordenação
 
 ## Contexto
@@ -18,6 +18,10 @@ O plano seguiu com recomendações que ainda precisam de confirmação da coorde
 7. Separar o marco técnico (B2) do operacional (pós-deploy).
 8. Anonimização na etapa B5.
 
+## Decisão do dono (14/10/2026)
+
+Os oito itens ficam como estão. O item 4 (MFA) ainda não está ligado no realm e entra antes do deploy (TSK-012). Os itens 3 e 6 entram na B1: a Pessoa mínima na TSK-512 e o Evento mínimo na TSK-518.
+
 ## Critérios de aceite
 
 - Cada item confirmado ou ajustado e registrado no Doc 6
@@ -26,4 +30,4 @@ O plano seguiu com recomendações que ainda precisam de confirmação da coorde
 
 - Plano: "Decisões pendentes"
 
-_Atualizado em 07/10/2026._
+_Atualizado em 14/10/2026._
