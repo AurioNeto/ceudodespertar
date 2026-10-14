@@ -3,6 +3,8 @@ import type { CryptoKey, JSONWebKeySet, JWK, JWTVerifyGetKey } from 'jose';
 
 export const EMISSOR_DE_TESTE = 'https://idp.teste.local/realms/cdd';
 export const AUDIENCIA_DE_TESTE = 'cdd-api';
+export const CLIENTE_DE_TESTE = 'cdd-web';
+export const CLIENTES_AUTORIZADOS_DE_TESTE: readonly string[] = [CLIENTE_DE_TESTE];
 export const KID_CONHECIDO = 'chave-1';
 export const SUB_DE_TESTE = '7f3c2c8e-6c1f-4e0b-9a5e-1d2f3a4b5c6d';
 
@@ -43,6 +45,7 @@ export function payloadValido(agora = Math.floor(Date.now() / 1000)): Record<str
   return {
     iss: EMISSOR_DE_TESTE,
     aud: AUDIENCIA_DE_TESTE,
+    azp: CLIENTE_DE_TESTE,
     sub: SUB_DE_TESTE,
     typ: 'Bearer',
     iat: agora,
@@ -108,6 +111,8 @@ export const CASOS_DE_TOKEN_INVALIDO: readonly CasoDeTokenInvalido[] = [
   },
   { nome: 'aud errado', emitir: (chaves) => emitirToken(chaves, { payload: { aud: 'cdd-web' } }) },
   { nome: 'aud ausente', emitir: (chaves) => emitirToken(chaves, { payload: { aud: undefined } }) },
+  { nome: 'azp de outro cliente', emitir: (chaves) => emitirToken(chaves, { payload: { azp: 'cdd-teste' } }) },
+  { nome: 'azp ausente', emitir: (chaves) => emitirToken(chaves, { payload: { azp: undefined } }) },
   {
     nome: 'ID token (typ ID)',
     emitir: (chaves) => emitirToken(chaves, { payload: { typ: 'ID' } }),

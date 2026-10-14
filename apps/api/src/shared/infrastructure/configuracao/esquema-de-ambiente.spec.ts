@@ -24,6 +24,7 @@ describe('analisarAmbiente', () => {
       LOG_NIVEL: 'info',
       TZ: 'America/Sao_Paulo',
       ...OIDC_VALIDO,
+      OIDC_CLIENTES_AUTORIZADOS: ['cdd-web'],
     });
   });
 
@@ -36,6 +37,7 @@ describe('analisarAmbiente', () => {
       LOG_NIVEL: 'info',
       TZ: 'UTC',
       ...OIDC_VALIDO,
+      OIDC_CLIENTES_AUTORIZADOS: ['cdd-web'],
     });
   });
 
@@ -145,5 +147,19 @@ describe('analisarAmbiente', () => {
 
   it('aceita OIDC_AUDIENCIA sem espaços em branco', () => {
     expect(analisarAmbiente({ ...OIDC_VALIDO, OIDC_AUDIENCIA: 'cdd-api' }).OIDC_AUDIENCIA).toBe('cdd-api');
+  });
+
+  it('OIDC_CLIENTES_AUTORIZADOS ausente aceita só o cdd-web', () => {
+    expect(analisarAmbiente(OIDC_VALIDO).OIDC_CLIENTES_AUTORIZADOS).toEqual(['cdd-web']);
+  });
+
+  it('lê OIDC_CLIENTES_AUTORIZADOS como lista separada por vírgula', () => {
+    expect(
+      analisarAmbiente({ ...OIDC_VALIDO, OIDC_CLIENTES_AUTORIZADOS: 'cdd-web, cdd-teste' }).OIDC_CLIENTES_AUTORIZADOS,
+    ).toEqual(['cdd-web', 'cdd-teste']);
+  });
+
+  it.each(['', ',', 'cdd-web,', 'cdd web', 'cdd-web,,cdd-teste'])('recusa OIDC_CLIENTES_AUTORIZADOS %j', (clientes) => {
+    expect(() => analisarAmbiente({ ...OIDC_VALIDO, OIDC_CLIENTES_AUTORIZADOS: clientes })).toThrow(ErroDeAmbienteInvalido);
   });
 });

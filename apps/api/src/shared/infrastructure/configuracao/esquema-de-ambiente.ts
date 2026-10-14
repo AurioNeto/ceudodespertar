@@ -21,6 +21,18 @@ const identificadorSemEspacos = z.string().regex(/^[A-Za-z0-9._-]+$/, {
   message: 'deve conter só letras, dígitos, ponto, hífen ou sublinhado',
 });
 
+const CLIENTES_AUTORIZADOS_PADRAO = 'cdd-web';
+
+const listaDeClientesOidc = z
+  .string()
+  .default(CLIENTES_AUTORIZADOS_PADRAO)
+  .transform((valor) => valor.split(',').map((cliente) => cliente.trim()))
+  .pipe(
+    z
+      .array(identificadorSemEspacos)
+      .min(1, { message: 'deve listar ao menos um cliente' }),
+  );
+
 const audienciaOidc = z.string().regex(/^\S+$/, { message: 'deve ser um texto sem espaços em branco' });
 
 function ehUrlSeguraAceita(valor: string): boolean {
@@ -43,6 +55,7 @@ export const EsquemaDeAmbiente = z.object({
   CDD_AMBIENTE: z.string().optional(),
   OIDC_EMISSOR: urlSegura,
   OIDC_AUDIENCIA: audienciaOidc,
+  OIDC_CLIENTES_AUTORIZADOS: listaDeClientesOidc,
   KEYCLOAK_URL_BASE: urlSegura,
   KEYCLOAK_REALM: identificadorSemEspacos,
   KEYCLOAK_ADMIN_CLIENT_ID: identificadorSemEspacos,

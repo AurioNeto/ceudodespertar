@@ -21,11 +21,14 @@ const FORMATO_DO_CABECALHO = /^Bearer ([A-Za-z0-9\-._~+/]+=*)$/i;
 const FORMATO_DO_MOTIVO = /^[A-Za-z0-9_]{1,64}$/;
 const MOTIVO_DESCONHECIDO = 'ERRO_DESCONHECIDO';
 
+export const JANELA_DO_ALERTA_DE_INDISPONIBILIDADE_EM_MS = 60_000;
+
 type MarcaDePermissao = Extract<MarcaDeAcesso, { tipo: 'permissao' | 'alguma-permissao' }>;
 
 @Injectable()
 export class GuardaDeAcesso implements CanActivate {
   private readonly log = new Logger(GuardaDeAcesso.name);
+  private ultimoAlertaDeIndisponibilidadeEm: number | undefined;
 
   constructor(
     private readonly verificador: VerificadorDeToken,
@@ -79,12 +82,24 @@ export class GuardaDeAcesso implements CanActivate {
       return await this.verificador.verificar(token);
     } catch (erro) {
       if (erro instanceof ErroDeChavesIndisponiveis) {
-        this.log.error(`Provedor de identidade indisponível: ${descreverMotivo(erro.causa)}`);
+        this.registrarIndisponibilidade(erro.causa);
         throw provedorDeIdentidadeIndisponivel();
       }
       this.log.warn(`Token recusado: ${descreverMotivo(erro)}`);
       throw this.nao401(resposta);
     }
+  }
+
+  private registrarIndisponibilidade(causa: unknown): void {
+    const mensagem = `Provedor de identidade indisponível: ${descreverMotivo(causa)}`;
+    const agora = performance.now();
+    const ultimo = this.ultimoAlertaDeIndisponibilidadeEm;
+    if (ultimo !== undefined && agora - ultimo < JANELA_DO_ALERTA_DE_INDISPONIBILIDADE_EM_MS) {
+      this.log.warn(mensagem);
+      return;
+    }
+    this.ultimoAlertaDeIndisponibilidadeEm = agora;
+    this.log.error(mensagem);
   }
 
   private nao401(resposta: RespostaHttp, codigo?: Parameters<typeof naoAutenticado>[0]): HttpException {

@@ -33,7 +33,7 @@ import { middlewareDeCorrelacao } from '../../../src/shared/infrastructure/log/c
 import { Relogio } from '../../../src/shared/infrastructure/relogio.js';
 import { gerarUuidV7 } from '../../../src/shared/kernel/ids.js';
 import { AMBIENTE_DO_KEYCLOAK_DE_TESTE } from '../../ambiente-de-teste.js';
-import { AUDIENCIA_DE_TESTE, criarChavesDeTeste, emitirToken } from '../../autenticacao/chaves-de-teste.js';
+import { AUDIENCIA_DE_TESTE, CLIENTES_AUTORIZADOS_DE_TESTE, criarChavesDeTeste, emitirToken } from '../../autenticacao/chaves-de-teste.js';
 import type { ChavesDeTeste } from '../../autenticacao/chaves-de-teste.js';
 import { pedir } from '../../autenticacao/cliente-http.js';
 import type { OpcoesDaRequisicao } from '../../autenticacao/cliente-http.js';
@@ -83,7 +83,7 @@ class AmbienteDeTesteModule {
       providers: [
         {
           provide: AMBIENTE,
-          useValue: { OIDC_EMISSOR: emissor, OIDC_AUDIENCIA: AUDIENCIA_DE_TESTE, ...AMBIENTE_DO_KEYCLOAK_DE_TESTE },
+          useValue: { OIDC_EMISSOR: emissor, OIDC_AUDIENCIA: AUDIENCIA_DE_TESTE, OIDC_CLIENTES_AUTORIZADOS: CLIENTES_AUTORIZADOS_DE_TESTE, ...AMBIENTE_DO_KEYCLOAK_DE_TESTE },
         },
       ],
       exports: [AMBIENTE],

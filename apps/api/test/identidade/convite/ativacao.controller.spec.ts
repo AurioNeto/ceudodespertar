@@ -26,7 +26,7 @@ import { erroDeDominio, ErroDeDominioException } from '../../../src/shared/kerne
 import type { ErroDeDominio } from '../../../src/shared/kernel/erro-de-dominio.js';
 import { err, ok } from '../../../src/shared/kernel/result.js';
 import type { Result } from '../../../src/shared/kernel/result.js';
-import { AUDIENCIA_DE_TESTE, criarChavesDeTeste, emitirToken } from '../../autenticacao/chaves-de-teste.js';
+import { AUDIENCIA_DE_TESTE, CLIENTES_AUTORIZADOS_DE_TESTE, criarChavesDeTeste, emitirToken } from '../../autenticacao/chaves-de-teste.js';
 import type { ChavesDeTeste } from '../../autenticacao/chaves-de-teste.js';
 import { pedir } from '../../autenticacao/cliente-http.js';
 import { ResolvedorDeContextoDeAcessoFake } from '../../autenticacao/resolvedor-de-contexto-de-acesso-fake.js';
@@ -61,7 +61,7 @@ class AmbienteDeTesteModule {
     return {
       module: AmbienteDeTesteModule,
       global: true,
-      providers: [{ provide: AMBIENTE, useValue: { OIDC_EMISSOR: emissor, OIDC_AUDIENCIA: AUDIENCIA_DE_TESTE } }],
+      providers: [{ provide: AMBIENTE, useValue: { OIDC_EMISSOR: emissor, OIDC_AUDIENCIA: AUDIENCIA_DE_TESTE, OIDC_CLIENTES_AUTORIZADOS: CLIENTES_AUTORIZADOS_DE_TESTE } }],
       exports: [AMBIENTE],
     };
   }
