@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import type { Conta, ContaId, Fatura, FaturaId } from '@cdd/contracts';
+import type { ContaComSaldo as Conta, ContaId, Fatura, FaturaId } from '@cdd/contracts';
 import { dataLocal } from '@cdd/contracts';
 import { hoje } from '@/pages/mocks/relogio';
 import { cartoes, contasPagadoras, faturas as faturasIniciais } from '../mocks/faturas';

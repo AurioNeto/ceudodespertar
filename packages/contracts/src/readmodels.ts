@@ -3,9 +3,12 @@
  * um modelo de leitura, com os rótulos já resolvidos, em vez de montar o
  * agregado. É este o contrato que o front-end consome.
  */
-import type { Competencia, DataLocal, Dinheiro, EventoId, LancamentoId } from './kernel.js';
+import type { Competencia, ContaId, DataLocal, Dinheiro, EventoId, FundoId, LancamentoId, PessoaId } from './kernel.js';
 import type {
   Confianca,
+  SituacaoConciliacao,
+  TipoConta,
+  Titularidade,
   OrigemCaptura,
   OrigemLancamento,
   StatusLancamento,
@@ -57,4 +60,31 @@ export interface ItemNaFila {
   /** Quem mandou o comprovante ou fez o registro rápido; nulo no extrato. */
   readonly remetente: string | null;
   readonly anexo: string | null;
+}
+
+export interface ContaComSaldo {
+  readonly id: ContaId;
+  readonly nome: string;
+  readonly descricao: string;
+  readonly tipo: TipoConta;
+  readonly titularidade: Titularidade;
+  readonly pessoaTitularId: PessoaId | null;
+  readonly responsavel: string;
+  readonly saldo: Dinheiro;
+  readonly ultimoMovimento: DataLocal | null;
+  readonly conciliacao: SituacaoConciliacao;
+  /** Aviso exibido em tooltip no cartão da conta. */
+  readonly alerta: string | null;
+  readonly ativa: boolean;
+}
+
+export interface FundoComSaldo {
+  readonly id: FundoId;
+  readonly codigoSistema: string;
+  readonly nome: string;
+  readonly nota: string;
+  readonly contaVinculadaId: ContaId;
+  readonly valorReservado: Dinheiro;
+  readonly meta: Dinheiro | null;
+  readonly ativo: boolean;
 }

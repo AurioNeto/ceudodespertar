@@ -1,4 +1,4 @@
-import type { Dinheiro, Fundo, FundoId } from '@cdd/contracts';
+import type { Dinheiro, FundoComSaldo as Fundo, FundoId } from '@cdd/contracts';
 import { reais } from '@cdd/contracts';
 import { lerValorDigitado } from '@/lib/numero';
 import { formatarBRL } from '@/pages/utils/formato';

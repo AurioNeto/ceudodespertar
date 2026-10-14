@@ -1,4 +1,4 @@
-import type { Conta, DataLocal } from '@cdd/contracts';
+import type { ContaComSaldo as Conta, DataLocal } from '@cdd/contracts';
 import type { BadgeTone, IconName } from '@/ds';
 import { formatarDiaMes } from '@/pages/utils/formato';
 

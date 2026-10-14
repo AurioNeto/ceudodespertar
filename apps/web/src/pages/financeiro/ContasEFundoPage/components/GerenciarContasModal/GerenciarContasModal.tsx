@@ -1,4 +1,4 @@
-import type { Conta, ContaId, Fundo, FundoId } from '@cdd/contracts';
+import type { ContaComSaldo as Conta, ContaId, FundoComSaldo as Fundo, FundoId } from '@cdd/contracts';
 import { Icon, PainelDeAcao, fundoComVidro } from '@/ds';
 import { iconeDaConta } from '../../utils/conta';
 import { corDaReserva } from '../../utils/reservas';

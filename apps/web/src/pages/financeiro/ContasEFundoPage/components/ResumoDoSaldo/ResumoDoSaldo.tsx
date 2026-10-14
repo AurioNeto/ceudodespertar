@@ -1,4 +1,4 @@
-import type { Conta, DataLocal } from '@cdd/contracts';
+import type { ContaComSaldo as Conta, DataLocal } from '@cdd/contracts';
 import { AmountDisplay, Rotulo, type Density } from '@/ds';
 import { pluralizar } from '@/pages/utils/formato';
 import { ehCaixa, textoDaUltimaConciliacao } from '../../utils/conta';

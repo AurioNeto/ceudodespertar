@@ -1,4 +1,4 @@
-import type { Fundo } from '@cdd/contracts';
+import type { FundoComSaldo as Fundo } from '@cdd/contracts';
 import { Rotulo } from '@/ds';
 import { AcoesDoFormulario } from '../AcoesDoFormulario';
 import { CampoDoModal } from '../CampoDoModal';
