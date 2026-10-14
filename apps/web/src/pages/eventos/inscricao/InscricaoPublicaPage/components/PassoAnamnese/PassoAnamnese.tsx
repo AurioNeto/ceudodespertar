@@ -74,7 +74,7 @@ export function PassoAnamnese({
           total={pendentes.length}
           pendente={x}
           valor={valores[x.pergunta.id as string] ?? ''}
-          campo={campo}
+          densidade={densidade}
           onResponder={(v) => onResponder(x.pergunta.id as string, v)}
         />
       ))}

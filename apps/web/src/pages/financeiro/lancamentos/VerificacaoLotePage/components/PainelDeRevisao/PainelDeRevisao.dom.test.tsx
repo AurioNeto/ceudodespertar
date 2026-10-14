@@ -62,7 +62,7 @@ function montarPainel(item: ItemNaFila, campo = false) {
   const onAprovar = vi.fn();
   const onDevolver = vi.fn();
   const montagem = montar(
-    <PainelDeRevisao item={item} campo={campo} onFechar={onFechar} onAprovar={onAprovar} onDevolver={onDevolver} />,
+    <PainelDeRevisao item={item} densidade={campo ? 'field' : 'office'} onFechar={onFechar} onAprovar={onAprovar} onDevolver={onDevolver} />,
   ).then((montado) => ({ ...montado, container: document.body }));
   return { montagem, onFechar, onAprovar, onDevolver };
 }

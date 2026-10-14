@@ -38,7 +38,7 @@ describe('Cartao', () => {
   });
 
   it('usa o respiro menor em campo', async () => {
-    const tela = await montar(<Cartao campo>conteúdo</Cartao>);
+    const tela = await montar(<Cartao density="field">conteúdo</Cartao>);
 
     expect(elemento(tela.container, 'div').style.padding).toBe('15px 16px');
   });

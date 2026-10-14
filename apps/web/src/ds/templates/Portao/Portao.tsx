@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { FlowerOfLife } from '../../atoms/FlowerOfLife';
 import { Marca } from '../../atoms/Marca';
+import type { Density } from '../../fundacao/densidade';
 import { useDensidade } from '../../fundacao/useDensidade';
 
 export interface PortaoProps {
@@ -10,7 +11,8 @@ export interface PortaoProps {
 }
 
 export function Portao({ titulo, descricao, children }: PortaoProps) {
-  const campo = useDensidade() === 'field';
+  const density = useDensidade();
+  const campo = density === 'field';
 
   return (
     <div
@@ -22,7 +24,7 @@ export function Portao({ titulo, descricao, children }: PortaoProps) {
         background: 'var(--sky)',
       }}
     >
-      <LadoDaMarca campo={campo} />
+      <LadoDaMarca density={density} />
 
       <div
         style={{
@@ -55,7 +57,8 @@ export function Portao({ titulo, descricao, children }: PortaoProps) {
   );
 }
 
-function LadoDaMarca({ campo }: { campo: boolean }) {
+function LadoDaMarca({ density }: { density: Density }) {
+  const campo = density === 'field';
   const marca = (
     <Marca
       linhas={campo ? ['Céu do Despertar'] : ['Céu do', 'Despertar']}

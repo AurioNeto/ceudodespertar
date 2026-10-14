@@ -9,10 +9,9 @@ export interface EstadoDaAnamneseProps {
 }
 
 export function EstadoDaAnamnese({ pessoa, exigida, densidade }: EstadoDaAnamneseProps) {
-  const campo = densidade === 'field';
   const emDia = pessoa.anamnese === 'OK';
   return (
-    <Cartao campo={campo} style={{ gap: 9 }}>
+    <Cartao density={densidade} style={{ gap: 9 }}>
       <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '6px 10px' }}>
         <Rotulo>Anamnese</Rotulo>
         <StatusBadge tone={exigida ? TOM_DA_ANAMNESE[pessoa.anamnese]! : 'neutral'}>

@@ -10,7 +10,7 @@ export interface PessoaEscolhidaProps {
 export function PessoaEscolhida({ pessoa, densidade, onTrocar }: PessoaEscolhidaProps) {
   const campo = densidade === 'field';
   return (
-    <Cartao campo={campo} style={{ gap: 8 }}>
+    <Cartao density={densidade} style={{ gap: 8 }}>
       <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '6px 11px' }}>
         <Icon name="user-round" size={18} color="var(--color-ink-brand)" />
         <span style={{ font: 'var(--text-title-sm)', color: 'var(--text-title)' }}>{pessoa.nome}</span>

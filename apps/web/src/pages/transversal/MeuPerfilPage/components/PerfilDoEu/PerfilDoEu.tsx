@@ -13,7 +13,7 @@ export function PerfilDoEu({ eu, densidade, aoSair }: PerfilDoEuProps) {
 
   return (
     <>
-      <Cartao campo={campo}>
+      <Cartao density={densidade}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
           <Avatar nome={eu.usuario.nome} />
           <div style={{ flex: 1, minWidth: 0 }}>
@@ -39,7 +39,7 @@ export function PerfilDoEu({ eu, densidade, aoSair }: PerfilDoEuProps) {
         </div>
       </Cartao>
 
-      <Cartao campo={campo}>
+      <Cartao density={densidade}>
         <span style={{ font: 'var(--text-body-strong)', color: 'var(--text-primary)' }}>Minhas permissões</span>
         <PermissoesPorModulo
           codigos={eu.permissoes}
@@ -49,7 +49,7 @@ export function PerfilDoEu({ eu, densidade, aoSair }: PerfilDoEuProps) {
         />
       </Cartao>
 
-      <Cartao campo={campo}>
+      <Cartao density={densidade}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
           <span style={{ flex: 1, minWidth: 200, display: 'flex', flexDirection: 'column', gap: 2 }}>
             <span style={{ font: 'var(--text-body-strong)', color: 'var(--text-primary)' }}>Sair da conta</span>

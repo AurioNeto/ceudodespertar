@@ -10,11 +10,10 @@ export interface TetoProps {
 }
 
 export function Teto({ faturamentoNoAno, aReceber, densidade }: TetoProps) {
-  const campo = densidade === 'field';
   const { atual, projetado } = tetoDoMei({ ...munay, faturamentoNoAno }, aReceber);
 
   return (
-    <Cartao campo={campo} style={{ gap: 10 }}>
+    <Cartao density={densidade} style={{ gap: 10 }}>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px 12px', alignItems: 'baseline' }}>
         <Rotulo>Faturamento contra o teto do MEI</Rotulo>
         <span data-numeric style={{ font: 'var(--text-small)', color: 'var(--text-meta)' }}>

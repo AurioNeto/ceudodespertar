@@ -8,7 +8,7 @@ export interface DoisLadosDaMesmaPalavraProps {
 export function DoisLadosDaMesmaPalavra({ densidade }: DoisLadosDaMesmaPalavraProps) {
   const campo = densidade === 'field';
   return (
-    <Cartao campo={campo} style={{ gap: 11 }}>
+    <Cartao density={densidade} style={{ gap: 11 }}>
       <Rotulo>Por que cachê são duas categorias e não uma</Rotulo>
       <div style={{ display: 'grid', gridTemplateColumns: campo ? '1fr' : '1fr 1fr', gap: campo ? 11 : 16 }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>

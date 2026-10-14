@@ -2,11 +2,10 @@ import { Button, Cartao, type Density } from '@/ds';
 import { parametrosDaCasa } from '../../mocks/parametros';
 
 export function ParametrosDaCasa({ densidade }: { densidade: Density }) {
-  const campo = densidade === 'field';
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
       {parametrosDaCasa.map((p) => (
-        <Cartao key={p.chave} campo={campo} style={{ gap: 9 }}>
+        <Cartao key={p.chave} density={densidade} style={{ gap: 9 }}>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'baseline' }}>
             <span style={{ flex: 1, minWidth: 200, font: 'var(--text-body-strong)', color: 'var(--text-primary)' }}>
               {p.rotulo}

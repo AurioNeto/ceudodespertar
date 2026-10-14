@@ -46,7 +46,7 @@ export function DetalheDaFatura({
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14, minWidth: 0 }}>
-      <Cartao campo={campo}>
+      <Cartao density={densidade}>
         <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', gap: '6px 14px' }}>
           <span style={{ font: 'var(--text-title-sm)', color: 'var(--text-title)' }}>
             {cartao.nome} · {competenciaPorExtenso(fatura.competencia)}

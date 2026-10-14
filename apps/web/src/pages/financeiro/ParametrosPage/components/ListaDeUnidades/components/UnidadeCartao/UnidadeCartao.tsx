@@ -4,12 +4,11 @@ import { REGIME_ROTULO } from '../../../../constantes';
 import type { UnidadeDoPlano } from '../../../../mocks/parametros';
 
 export function UnidadeCartao({ unidade: u, densidade }: { unidade: UnidadeDoPlano; densidade: Density }) {
-  const campo = densidade === 'field';
   const semRegime = u.regime === null;
   const proporcao = u.tetoFaturamentoAnual && u.faturamentoNoAno ? u.faturamentoNoAno / u.tetoFaturamentoAnual : null;
 
   return (
-    <Cartao campo={campo} style={{ gap: 11 }}>
+    <Cartao density={densidade} style={{ gap: 11 }}>
       <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '6px 11px' }}>
         <span style={{ font: 'var(--text-title-sm)', color: 'var(--text-title)' }}>{u.nome}</span>
         <code style={{ font: 'var(--text-code)' }}>{u.codigoSistema}</code>

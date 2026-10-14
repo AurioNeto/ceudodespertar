@@ -8,10 +8,9 @@ export interface AnterioresProps {
 }
 
 export function Anteriores({ densidade }: AnterioresProps) {
-  const campo = densidade === 'field';
 
   return (
-    <Cartao campo={campo} style={{ gap: 11 }}>
+    <Cartao density={densidade} style={{ gap: 11 }}>
       <Rotulo>Feitios anteriores</Rotulo>
       <ListaDividida itens={anteriores} chave={(f) => f.id}>
         {(f) => {

@@ -18,12 +18,12 @@ const novasChamadas = () => ({
   onAviso: vi.fn(),
 });
 
-type EntradasDoDetalhe = Partial<Pick<DetalheDoTrabalhoProps, 'trabalho' | 'feitos' | 'webhookAtivo' | 'campo'>>;
+type EntradasDoDetalhe = Partial<Pick<DetalheDoTrabalhoProps, 'trabalho' | 'feitos' | 'webhookAtivo' | 'densidade'>>;
 
 const montarDetalhe = async (entradas: EntradasDoDetalhe = {}) => {
   const props = novasChamadas();
   const montado = await montar(
-    <DetalheDoTrabalho trabalho={umTrabalho()} feitos={{}} webhookAtivo={true} campo={false} {...entradas} {...props} />,
+    <DetalheDoTrabalho trabalho={umTrabalho()} feitos={{}} webhookAtivo={true} densidade="office" {...entradas} {...props} />,
   );
   return { ...montado, props };
 };
@@ -513,7 +513,7 @@ describe('DetalheDoTrabalho: densidade', () => {
     { campo: false, colunas: 'repeat(auto-fit,minmax(150px,1fr))', espacamento: '18px' },
     { campo: true, colunas: 'repeat(2,minmax(0,1fr))', espacamento: '14px' },
   ])('campo=$campo — grade de números $colunas e espaço entre blocos $espacamento', async ({ campo, colunas, espacamento }) => {
-    const { container } = await montarDetalhe({ campo });
+    const { container } = await montarDetalhe({ densidade: campo ? 'field' : 'office' });
 
     const raiz = container.firstElementChild as HTMLElement;
     const grade = elemento<HTMLDivElement>(container, 'div[style*="grid-template-columns"]');

@@ -36,7 +36,7 @@ export function Grade({
       {dormitorios
         .filter((d) => d.ativo)
         .map((d) => (
-          <Cartao key={d.id} campo={campo} style={{ gap: 11 }}>
+          <Cartao key={d.id} density={densidade} style={{ gap: 11 }}>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px 10px', alignItems: 'baseline' }}>
               <span style={{ font: 'var(--text-title-sm)', color: 'var(--text-title)' }}>{d.nome}</span>
               <span style={{ font: 'var(--text-small)', color: 'var(--text-meta)' }}>

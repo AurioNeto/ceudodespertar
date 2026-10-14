@@ -51,7 +51,7 @@ export function DevolucoesPage() {
 
         <Espelho />
 
-        <Cartao campo={campo}>
+        <Cartao density={densidade}>
           <div
             style={{
               display: 'grid',
@@ -71,7 +71,7 @@ export function DevolucoesPage() {
         </Cartao>
 
         {tela.fila.length === 0 ? (
-          <Cartao campo={campo} style={{ gap: 8 }}>
+          <Cartao density={densidade} style={{ gap: 8 }}>
             <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
               <Icon name="circle-check" size={19} color="var(--color-confirmed)" />
               <span style={{ font: 'var(--text-title-sm)', color: 'var(--text-title)' }}>Ninguém esperando</span>

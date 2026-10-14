@@ -43,7 +43,7 @@ export function CartaoDeDevolucao({
   const faltaMotivo = d.competenciaFechada && !motivo.trim();
 
   return (
-    <Cartao campo={campo} style={{ gap: 13 }}>
+    <Cartao density={densidade} style={{ gap: 13 }}>
       <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', gap: '6px 11px' }}>
         <span style={{ font: 'var(--text-title-sm)', color: 'var(--text-title)' }}>{d.nome}</span>
         {d.aContratante ? <StatusBadge tone="royal">Contratante</StatusBadge> : null}

@@ -1,5 +1,5 @@
 import type { Pergunta, PerguntaPendente } from '@cdd/contracts';
-import { Icon, StatusBadge, Cartao, rotuloVersalete } from '@/ds';
+import { Icon, StatusBadge, Cartao, rotuloVersalete, type Density } from '@/ds';
 import { TextField } from '@/ds';
 import { OpcaoMarcavel } from '../../../../../components/OpcaoMarcavel';
 import { disparaAlerta } from '../../../../utils/regraDeAlerta';
@@ -13,12 +13,12 @@ import { disparaAlerta } from '../../../../utils/regraDeAlerta';
 export function Resposta({
   pergunta: p,
   valor,
-  campo,
+  densidade,
   onResponder,
 }: {
   pergunta: Pergunta;
   valor: string;
-  campo: boolean;
+  densidade: Density;
   onResponder: (valor: string) => void;
 }) {
   if (p.tipo === 'BOOLEANO') {
@@ -30,7 +30,7 @@ export function Resposta({
             rotulo={o}
             pergunta={p.texto}
             marcada={valor === o}
-            densidade={campo ? 'field' : 'office'}
+            densidade={densidade}
             onEscolher={() => onResponder(o)}
           />
         ))}
@@ -47,7 +47,7 @@ export function Resposta({
             rotulo={o}
             pergunta={p.texto}
             marcada={valor === o}
-            densidade={campo ? 'field' : 'office'}
+            densidade={densidade}
             onEscolher={() => onResponder(o)}
           />
         ))}
@@ -73,7 +73,7 @@ export function Resposta({
             pergunta={p.texto}
             marcada={marcadas.includes(o)}
             multipla
-            densidade={campo ? 'field' : 'office'}
+            densidade={densidade}
             onEscolher={() => alternar(o)}
           />
         ))}
@@ -84,7 +84,7 @@ export function Resposta({
   return (
     <TextField
       multiline={p.codigo !== 'CONTATO_EMERGENCIA'}
-      density={campo ? 'field' : 'office'}
+      density={densidade}
       value={valor}
       placeholder={p.codigo === 'CONTATO_EMERGENCIA' ? 'Nome e telefone de quem a casa liga' : 'Escreva com as suas palavras'}
       onChange={(e) => onResponder(e.target.value)}
@@ -110,21 +110,21 @@ export function BlocoDePergunta({
   total,
   pendente,
   valor,
-  campo,
+  densidade,
   onResponder,
 }: {
   numero: number;
   total: number;
   pendente: PerguntaPendente;
   valor: string;
-  campo: boolean;
+  densidade: Density;
   onResponder: (valor: string) => void;
 }) {
   const p = pendente.pergunta;
   const alerta = disparaAlerta(p, valor);
 
   return (
-    <Cartao campo={campo} style={{ gap: 12 }}>
+    <Cartao density={densidade} style={{ gap: 12 }}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px 9px', alignItems: 'center' }}>
           <span data-numeric style={{ font: 'var(--text-code)', color: 'var(--text-meta)' }}>
@@ -151,12 +151,12 @@ export function BlocoDePergunta({
           <MotivoDaPergunta pendente={pendente} />
         </div>
 
-        <span style={{ font: campo ? 'var(--text-body-strong)' : 'var(--text-title-sm)', color: 'var(--text-title)' }}>
+        <span style={{ font: densidade === 'field' ? 'var(--text-body-strong)' : 'var(--text-title-sm)', color: 'var(--text-title)' }}>
           {p.texto}
         </span>
       </div>
 
-      <Resposta pergunta={p} valor={valor} campo={campo} onResponder={onResponder} />
+      <Resposta pergunta={p} valor={valor} densidade={densidade} onResponder={onResponder} />
 
       {alerta ? (
         <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>

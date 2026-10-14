@@ -15,7 +15,7 @@ export function Acesso({ densidade }: AcessoProps) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: campo ? 13 : 16, minWidth: 0 }}>
       <ContrapesoDaGovernanca />
 
-      <Cartao campo={campo}>
+      <Cartao density={densidade}>
         <div
           style={{
             display: 'grid',

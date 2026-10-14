@@ -1,5 +1,5 @@
 import type { ItemNaFila } from '@cdd/contracts';
-import { Button, Icon, PainelDeAcao, StatusBadge, type IconName } from '@/ds';
+import { Button, Icon, PainelDeAcao, StatusBadge, type Density, type IconName } from '@/ds';
 import { ROTULO_DO_VALOR } from '@/pages/financeiro/lancamentos/constantes';
 import { formatarData } from '@/pages/utils/formato';
 import { CONFIANCA, MOTIVO_DO_PERIODO_FECHADO_NA_REVISAO, ORIGENS } from '../../constantes';
@@ -10,7 +10,7 @@ import { useRascunhoDeRevisao } from './hooks/useRascunhoDeRevisao';
 
 export interface PainelDeRevisaoProps {
   item: ItemNaFila;
-  campo: boolean;
+  densidade: Density;
   onFechar: () => void;
   onAprovar: (corrigido: ItemNaFila) => void;
   onDevolver: (motivo: string) => void;
@@ -20,7 +20,7 @@ export interface PainelDeRevisaoProps {
  * Corrigir antes de aprovar. Devolver não apaga: volta a quem enviou com o
  * motivo, que é o que o remetente vê.
  */
-export function PainelDeRevisao({ item, campo, onFechar, onAprovar, onDevolver }: PainelDeRevisaoProps) {
+export function PainelDeRevisao({ item, densidade, onFechar, onAprovar, onDevolver }: PainelDeRevisaoProps) {
   const { rascunho, valorTexto, alterar, alterarValor, devolvendo, abrirDevolucao, cancelarDevolucao, motivo, escreverMotivo } =
     useRascunhoDeRevisao(item);
   const fechado = emPeriodoFechado(item);
@@ -31,7 +31,7 @@ export function PainelDeRevisao({ item, campo, onFechar, onAprovar, onDevolver }
   const ehEntrada = item.tipo === 'ENTRADA';
 
   return (
-    <PainelDeAcao aberto titulo="Revisar lançamento" variante={campo ? 'folha' : 'lateral'} aoFechar={onFechar}>
+    <PainelDeAcao aberto titulo="Revisar lançamento" variante={densidade === 'field' ? 'folha' : 'lateral'} aoFechar={onFechar}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
         <div>
           <StatusBadge tone={confianca.tone}>{confianca.texto}</StatusBadge>

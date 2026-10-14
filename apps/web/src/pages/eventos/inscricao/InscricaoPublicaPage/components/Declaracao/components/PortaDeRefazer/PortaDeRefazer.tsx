@@ -16,7 +16,7 @@ export interface PortaDeRefazerProps {
 export function PortaDeRefazer({ densidade, onRefazer }: PortaDeRefazerProps) {
   const campo = densidade === 'field';
   return (
-    <Cartao campo={campo} style={{ gap: 9 }}>
+    <Cartao density={densidade} style={{ gap: 9 }}>
       <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
         <Icon name="rotate-ccw" size={17} color="var(--color-ink-brand)" style={{ marginTop: 2 }} />
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4, minWidth: 0 }}>

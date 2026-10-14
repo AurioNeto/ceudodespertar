@@ -12,12 +12,11 @@ export interface GrupoDeAcessosProps {
 }
 
 export function GrupoDeAcessos({ grupo, agrupamento, densidade }: GrupoDeAcessosProps) {
-  const campo = densidade === 'field';
   const emRajada = agrupamento === 'leitor' ? rajada(grupo.registros) : null;
   const semContexto = grupo.registros.filter((r) => r.contexto === null).length;
 
   return (
-    <Cartao campo={campo} style={{ gap: 12 }}>
+    <Cartao density={densidade} style={{ gap: 12 }}>
       <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '6px 11px' }}>
         <Icon
           name={agrupamento === 'leitor' ? 'user-round' : 'clipboard-list'}

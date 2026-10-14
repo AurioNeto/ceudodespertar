@@ -8,7 +8,7 @@ export function EscolhaDoClima({ densidade }: EscolhaDoClimaProps) {
   const { clima, definirClima } = useClima();
 
   return (
-    <Cartao campo={densidade === 'field'}>
+    <Cartao density={densidade}>
       <div>
         <div style={{ font: 'var(--text-body-strong)', color: 'var(--text-primary)' }}>Aparência</div>
         <div style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>
