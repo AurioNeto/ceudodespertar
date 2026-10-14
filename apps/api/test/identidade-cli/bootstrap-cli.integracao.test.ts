@@ -17,7 +17,6 @@ const EMAIL = 'administradora@casa.org';
 const SUJEITO = '7f1c0d2e-3a4b-4c5d-8e6f-a1b2c3d4e5f6';
 const ID_NO_KEYCLOAK = '9a8b7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d';
 const CAMINHO_DO_ENVIO = `${CAMINHO_DOS_USUARIOS}/${ID_NO_KEYCLOAK}/execute-actions-email`;
-const ATRASO_DA_OBSERVACAO_EM_MS = 400;
 const INTERVALO_DO_DESPACHANTE_EM_MS = 1_000;
 const PRAZO_DA_COMPILACAO_EM_MS = 180_000;
 const ARGUMENTOS_DO_CONVITE = [
@@ -69,12 +68,13 @@ describe('CLI identidade:bootstrap de ponta a ponta contra Postgres real', () =>
     observacoes = [];
     keycloak = new ServidorKeycloakFalso();
     urlDoKeycloak = comoLocalhost(await keycloak.iniciar());
-    keycloak.definir('POST', CAMINHO_DOS_USUARIOS, () => {
-      observacoes.push(observarOEstado());
+    keycloak.definir('POST', CAMINHO_DOS_USUARIOS, async () => {
+      const observacao = observarOEstado();
+      observacoes.push(observacao);
+      await observacao;
       return {
         status: 201,
         cabecalhos: { location: `${urlDoKeycloak}${CAMINHO_DOS_USUARIOS}/${ID_NO_KEYCLOAK}` },
-        atrasoEmMs: ATRASO_DA_OBSERVACAO_EM_MS,
       };
     });
     keycloak.definir('PUT', CAMINHO_DO_ENVIO, { status: 204 });

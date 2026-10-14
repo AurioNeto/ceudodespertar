@@ -62,8 +62,10 @@ describe('CLI identidade:seed-demo de ponta a ponta contra Postgres real', () =>
     subDoDevNoProvedor = SUB_DO_DEV;
     keycloak = new ServidorKeycloakFalso();
     urlDoKeycloak = comoLocalhost(await keycloak.iniciar());
-    keycloak.definir('GET', CAMINHO_DOS_USUARIOS, () => {
-      observacoes.push(observarOEstado());
+    keycloak.definir('GET', CAMINHO_DOS_USUARIOS, async () => {
+      const observacao = observarOEstado();
+      observacoes.push(observacao);
+      await observacao;
       return { status: 200, corpo: [{ id: subDoDevNoProvedor, username: USERNAME_DO_DEV }] };
     });
   });
