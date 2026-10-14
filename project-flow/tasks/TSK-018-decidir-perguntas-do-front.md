@@ -1,6 +1,6 @@
 # TSK-018: Perguntas do front deixadas pelas correções de comportamento
 
-- **Estado:** ✅ Decidido (dono, 13/10/2026); financeiro no #216; itens 4 a 9 pendentes no front
+- **Estado:** ✅ Feito: financeiro no #216, eventos e inscrição no #218, litros no #220 (14/10/2026)
 - **Responsável sugerido:** vitro (cada resposta vira um PR pequeno na tela)
 - **Depende de:** nada; nenhuma pergunta bloqueia a refatoração do front
 
@@ -27,19 +27,19 @@ As correções de comportamento (#140 a #145) e o R$ em todo valor (#147 a #152)
 1. **Valor negativo:** `− R$ 110,00` em todas as telas, com a forma centralizada no `formatarBRL`. Feito no #216 (14/10).
 2. **Parcela negativa num valor somado:** vetada; cada parcela precisa ser positiva. Feito no #216 (14/10).
 3. **Período fechado:** o bloqueio vale também na aprovação individual ("Aprovar e consolidar"). Feito no #216 (14/10).
-4. **Data digitada:** aceita dia e mês sem zero (`5/9/2026`) e normaliza para `05/09/2026`.
-5. **Idade no link público:** medida no dia do evento.
-6. **Trocar de evento:** responsável e hospedagem também recomeçam.
-7. **Autorização do responsável:** olha a modalidade, conforme o Doc 2 (AR3).
-8. **"Copiado" do link:** recomeça ao trocar de pessoa e ao salvar.
-9. **Litros com 3 casas ou mais:** recusados com mensagem, sem arredondar. Em revisão (14/10).
+4. **Data digitada:** aceita dia e mês sem zero (`5/9/2026`) e normaliza para `05/09/2026`. Feito no #218 (14/10).
+5. **Idade no link público:** medida no dia do evento. Feito no #218 (14/10).
+6. **Trocar de evento:** responsável e hospedagem também recomeçam. Feito no #218 (14/10).
+7. **Autorização do responsável:** olha a modalidade, conforme o Doc 2 (AR3). Feito no #218 (14/10).
+8. **"Copiado" do link:** recomeça ao trocar de pessoa e ao salvar. Feito no #218 (14/10).
+9. **Litros com 3 casas ou mais:** recusados com mensagem, sem arredondar. Feito no #220 (14/10).
 
 ## O que precisa ser feito
 
 - Cada decisão vira um PR pequeno do front, na tela da coluna "Tela".
 - Quando o PR de cada decisão entrar, a linha correspondente do Doc 8 deixa de ser "Pergunta ao dono" na seção 14.3 (ou na 14.4, a do sinal negativo) e passa à seção 15 como decisão.
 - Decisões 1 a 3: feitas no #216 (14/10), já na seção 15 do Doc 8 e fora das seções 14.3 e 14.4.
-- Decisões 4 a 9: pendentes; seguem como "Pergunta ao dono" na seção 14.3 do Doc 8.
+- Decisões 4 a 8: feitas no #218 e decisão 9 no #220 (14/10), já na seção 15 do Doc 8 e fora da seção 14.3.
 
 ## Critérios de aceite
 

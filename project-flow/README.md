@@ -4,7 +4,7 @@ Estado do projeto em **14/10/2026**. Cada task tem um arquivo em [`tasks/`](task
 
 ## Onde estamos
 
-- **`main`** (ponta `366fb69b`, #216), sem PR aberto fora desta rodada.
+- **`main`** (ponta `b3af1408`, #220). Abertos: #221 e #222 (TSK-417).
 - **Backend do B0 completo** (PRs de API entre #37 e #96, de 08 a 10/10):
   - identidade com `GET /eu`, auditoria, gestão de usuários e grupos;
   - adaptador do Keycloak (convite por e-mail, ativação, suspensão);
@@ -13,12 +13,11 @@ Estado do projeto em **14/10/2026**. Cada task tem um arquivo em [`tasks/`](task
   - job e2e na CI com Keycloak e Mailpit reais;
   - documentação de encerramento nos Docs 3, 6 e 7, mais três runbooks.
 - **Código do B0 completo** (13/10): a issue #77 fechou com o `/entrar` e a ativação do convite (#200), o reenvio com a espera do 429 em Acessos (#202) e o T28a e o T28b do web (#199 e #207). O dono fez o aceite real do convite contra o Keycloak local em 14/10 (convite, senha, `/entrar`, ativação e `GET /eu`): **B0 concluído**.
-- **Front:** a refatoração estrutural do `apps/web` em atomic design terminou na `main` (PRs de web entre #56 e #172, de 09 a 11/10) e está registrada no Doc 8 §13. O que sobrou está na TSK-417 (backlog) e na TSK-018 (perguntas ao dono).
+- **Front:** a refatoração estrutural do `apps/web` em atomic design terminou na `main` (PRs de web entre #56 e #172, de 09 a 11/10) e está registrada no Doc 8 §13. O que sobrou está na TSK-417 (backlog); as nove perguntas da TSK-018 foram decididas e implementadas (#216, #218 e #220).
 - **Redesign Força da Mata concluído** (12/10): a épica `refactor/epica-redesign` (25 PRs, #173 a #195 e #197) foi validada visualmente pelo dono e mesclada na `main` pelo #196. Registro na TSK-601; o que o pre-review deixou está na TSK-602 (técnico) e o que o guia propõe para depois está na TSK-603 (roadmap). A branch da épica pode ser apagada (TSK-004).
-- **Backlog mesclado em 13 e 14/10:** #201 (fecha a #47), #203 (tema do Keycloak, TSK-416), #204 (expurgo do outbox, fecha a #43), #205 e #206 (TSK-602, itens 1 a 4), #208 e #211 (TSK-413), #209 (TSK-408), #210 (TSK-417, estado em `hooks/`), #213 (TSK-411 e TSK-415), #214 (TSK-414), #215 (TSK-409) e #216 (TSK-018, financeiro).
+- **Backlog mesclado em 13 e 14/10:** #201 (fecha a #47), #203 (tema do Keycloak, TSK-416), #204 (expurgo do outbox, fecha a #43), #205 e #206 (TSK-602, itens 1 a 4), #208 e #211 (TSK-413), #209 (TSK-408), #210 (TSK-417, estado em `hooks/`), #213 (TSK-411 e TSK-415), #214 (TSK-414), #215 (TSK-409), #216, #218 e #220 (TSK-018), #217 (este mapa) e #219 (TSK-412, parte 1).
 - **Próximos passos:**
   - o resto do backlog técnico (grupos 4 e 7);
-  - a TSK-018 no front: data digitada, eventos e inscrição (itens 4 a 8) e litros (item 9);
   - as decisões antes da B1 (TSK-014 e Doc 6 §9);
   - dividir a TSK-501 em tasks.
 
@@ -79,7 +78,7 @@ flowchart LR
 | [TSK-015](tasks/TSK-015-decidir-email-no-evento-de-convite.md) | E-mail em `USUARIO_CONVIDADO` × trilha de auditoria (LGPD) | ✅ Decidido (implementa no TSK-303) | — | — | — |
 | [TSK-016](tasks/TSK-016-decidir-marca-apenas-usuario-ativo.md) | Registrar a exceção ao T24 (`@ApenasUsuarioAtivo` para `GET /eu`) | ✅ Feito (Doc 3 §14.5 no #96; teste no #53) | — | — | TSK-002 |
 | [TSK-017](tasks/TSK-017-decidir-rollback-do-result-de-erro.md) | Rollback quando o comando devolve `Result` de erro | ✅ Feito (#37, 08/10/2026) | — | — | — |
-| [TSK-018](tasks/TSK-018-decidir-perguntas-do-front.md) | Nove perguntas do front deixadas pelas correções de comportamento | ✅ Decidido (13/10); financeiro no #216, eventos e litros no front | — | #216 | — |
+| [TSK-018](tasks/TSK-018-decidir-perguntas-do-front.md) | Nove perguntas do front deixadas pelas correções de comportamento | ✅ Feito (#216, #218 e #220) | — | #216, #218, #220 | — |
 
 ## 3. B0: caminho crítico
 
@@ -114,7 +113,7 @@ flowchart LR
 | [TSK-409](tasks/TSK-409-uow-reuso-aninhado-e-teste-vazio.md) | UoW: reuso da transação aninhada e teste que não prova o `lastValueFrom` | ✅ Feito (#215) | — | #215 | — |
 | [TSK-410](tasks/TSK-410-kysely-fronteira-e-teste-de-tipo.md) | Kysely: tabelas de todos os módulos visíveis a qualquer módulo | 📌 Backlog técnico | — | — | — |
 | [TSK-411](tasks/TSK-411-erros-sem-frase-do-zod.md) | Erros: `CORPO_INVALIDO` sem frases do Zod | ✅ Feito (#213) | — | #213 | — |
-| [TSK-412](tasks/TSK-412-idempotencia-ressalvas.md) | Idempotência: ressalvas da revisão e do expurgo | 📌 Backlog técnico (o POST sem modo de transação foi resolvido no #40) | — | — | TSK-313 |
+| [TSK-412](tasks/TSK-412-idempotencia-ressalvas.md) | Idempotência: ressalvas da revisão e do expurgo | 🚧 Parte 1 (expurgo) feita no #219; parte 2 (lacunas de teste) no back | — | #219 | TSK-313 |
 | [TSK-413](tasks/TSK-413-outbox-ressalvas.md) | Outbox: evento sem consumidor, log do ciclo e vigia | ✅ Feito (#208, #211); o filtro de métrica ou Sentry depende da TSK-012 | — | #208, #211 | TSK-313 |
 | [TSK-414](tasks/TSK-414-dominio-identidade-ressalvas.md) | Domínio de identidade: G3 e nits de grupos | ✅ Feito (#214); G3 como risco aceito e o ADMINISTRADOR como follow-up | — | #214 | — |
 | [TSK-415](tasks/TSK-415-fakes-de-teste-fora-do-dist.md) | Fakes de teste em `src/` entram no build | ✅ Feito (#213) | — | #213 | — |
