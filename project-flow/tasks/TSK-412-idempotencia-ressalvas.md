@@ -1,6 +1,6 @@
 # TSK-412: Idempotência: ressalvas da revisão e do expurgo
 
-- **Estado:** 🔍 Parte 1 (expurgo) em revisão em #219; as lacunas de teste do replay, do cursor da auditoria e do filtro do `gravarResposta` ficam para a parte 2
+- **Estado:** 🚧 Parte 1 (expurgo) feita no #219; as lacunas de teste do replay, do cursor da auditoria e do filtro do `gravarResposta` ficam para a parte 2
 - **Responsável sugerido:** limpio + radix
 - **Depende de:** [TSK-313](TSK-313-ligar-borda-idempotencia-e-outbox-na-aplicacao.md)
 

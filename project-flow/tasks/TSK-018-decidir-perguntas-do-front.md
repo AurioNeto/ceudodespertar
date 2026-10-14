@@ -1,6 +1,6 @@
 # TSK-018: Perguntas do front deixadas pelas correções de comportamento
 
-- **Estado:** ✅ Decidido (dono, 13/10/2026); financeiro no #216; itens 4 a 9 pendentes no front
+- **Estado:** ✅ Feito: financeiro no #216, eventos e inscrição no #218, litros no #220 (14/10/2026)
 - **Responsável sugerido:** vitro (cada resposta vira um PR pequeno na tela)
 - **Depende de:** nada; nenhuma pergunta bloqueia a refatoração do front
 
