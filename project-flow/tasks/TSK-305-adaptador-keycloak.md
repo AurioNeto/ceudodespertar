@@ -1,6 +1,6 @@
 # TSK-305: Adaptador do Keycloak: convite por e-mail, ativação e suspensão
 
-- **Estado:** 🚧 API concluída (PRs 1 a 6 e 8 mesclados em #51, #52, #65, #74, #76, #79 e #80); PR 7 (front) em duas partes da issue #77: parte 1, a rota /entrar, mesclada em #200; parte 2, o reenvio do convite com o 429 em Acessos, em #202; falta o aceite real no Keycloak local
+- **Estado:** ✅ Concluída: API nos PRs #51, #52, #65, #74, #76, #79 e #80; front no #200 (`/entrar`) e no #202 (reenvio com o 429); aceite real do convite feito pelo dono no Keycloak local em 14/10/2026
 - **Peça do plano:** I10
 - **Responsável sugerido:** escudo + limpio (crivo)
 - **Depende de:** [TSK-304](TSK-304-gestao-de-usuarios-e-grupos.md), [TSK-002](TSK-002-mesclar-identidade-guarda-front-tema.md)

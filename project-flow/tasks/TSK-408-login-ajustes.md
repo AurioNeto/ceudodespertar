@@ -1,6 +1,6 @@
 # TSK-408: Login: refetch do `/eu`, recusa no meio da sessão e prazo do `.well-known`
 
-- **Estado:** 🔍 Em revisão (refetch do `/eu`, recusa no meio da sessão e prazo do OIDC); a revisão da classificação de erros continua aberta
+- **Estado:** ✅ Feito (#209): refetch do `/eu`, recusa no meio da sessão e prazo do OIDC; a revisão da classificação de erros fica para depois do uso real
 - **Responsável sugerido:** vitro
 - **Depende de:** [TSK-002](TSK-002-mesclar-identidade-guarda-front-tema.md)
 
@@ -33,4 +33,4 @@ A busca do `.well-known` na primeira renovação não tem prazo próprio na bibl
 - O cliente HTTP avisa a sessão quando qualquer chamada recebe 401 `USUARIO_SUSPENSO` ou `USUARIO_REVOGADO`. A sessão refaz o `/eu`, e a recusa leva à tela de entrada com a mensagem própria. A guarda contra laço só refaz quando o `/eu` está parado; um aviso que chega com o `/eu` em voo é descartado, e a recusa aparece no próximo 401.
 - `requestTimeoutInSeconds` (10 s) dá prazo a toda chamada da `oidc-client-ts` ao provedor, inclusive a busca do `.well-known`, o jwks e a troca do código; o refresh usa o prazo da renovação silenciosa (5 s).
 
-_Atualizado em 13/10/2026._
+_Atualizado em 14/10/2026._

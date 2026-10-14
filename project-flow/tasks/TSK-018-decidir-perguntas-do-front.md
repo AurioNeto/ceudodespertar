@@ -1,6 +1,6 @@
 # TSK-018: Perguntas do front deixadas pelas correções de comportamento
 
-- **Estado:** ✅ Decidido (dono, 13/10/2026); cada resposta vira um PR pequeno do front
+- **Estado:** ✅ Decidido (dono, 13/10/2026); financeiro no #216; itens 4 a 9 pendentes no front
 - **Responsável sugerido:** vitro (cada resposta vira um PR pequeno na tela)
 - **Depende de:** nada; nenhuma pergunta bloqueia a refatoração do front
 
@@ -24,9 +24,9 @@ As correções de comportamento (#140 a #145) e o R$ em todo valor (#147 a #152)
 
 ## Decisões do dono (13/10/2026)
 
-1. **Valor negativo:** `− R$ 110,00` em todas as telas, com a forma centralizada no `formatarBRL`. Em revisão (14/10).
-2. **Parcela negativa num valor somado:** vetada; cada parcela precisa ser positiva. Em revisão (14/10).
-3. **Período fechado:** o bloqueio vale também na aprovação individual ("Aprovar e consolidar"). Em revisão (14/10).
+1. **Valor negativo:** `− R$ 110,00` em todas as telas, com a forma centralizada no `formatarBRL`. Feito no #216 (14/10).
+2. **Parcela negativa num valor somado:** vetada; cada parcela precisa ser positiva. Feito no #216 (14/10).
+3. **Período fechado:** o bloqueio vale também na aprovação individual ("Aprovar e consolidar"). Feito no #216 (14/10).
 4. **Data digitada:** aceita dia e mês sem zero (`5/9/2026`) e normaliza para `05/09/2026`.
 5. **Idade no link público:** medida no dia do evento.
 6. **Trocar de evento:** responsável e hospedagem também recomeçam.
@@ -38,6 +38,8 @@ As correções de comportamento (#140 a #145) e o R$ em todo valor (#147 a #152)
 
 - Cada decisão vira um PR pequeno do front, na tela da coluna "Tela".
 - Quando o PR de cada decisão entrar, a linha correspondente do Doc 8 deixa de ser "Pergunta ao dono" na seção 14.3 (ou na 14.4, a do sinal negativo) e passa à seção 15 como decisão.
+- Decisões 1 a 3: feitas no #216 (14/10), já na seção 15 do Doc 8 e fora das seções 14.3 e 14.4.
+- Decisões 4 a 9: pendentes; seguem como "Pergunta ao dono" na seção 14.3 do Doc 8.
 
 ## Critérios de aceite
 
@@ -50,4 +52,4 @@ As correções de comportamento (#140 a #145) e o R$ em todo valor (#147 a #152)
 - https://github.com/AurioNeto/ceudodespertar/pull/146 (registro das correções e das perguntas)
 - https://github.com/AurioNeto/ceudodespertar/pull/153 (registro do R$ e do sinal negativo)
 
-_Atualizado em 13/10/2026._
+_Atualizado em 14/10/2026._

@@ -1,6 +1,6 @@
 # TSK-416: Tema do Keycloak: texto de senha, e-mail de ações e título
 
-- **Estado:** 🔍 Em revisão (texto da senha pela política, título sem marcação, e-mail de ações genérico e tema de e-mail na Força da Mata)
+- **Estado:** ✅ Feito (#203): texto da senha pela política, título sem marcação, e-mail de ações genérico, tema de e-mail na Força da Mata e assunto "Sistema de Gestão CDD"
 - **Responsável sugerido:** vitro
 
 ## Contexto
