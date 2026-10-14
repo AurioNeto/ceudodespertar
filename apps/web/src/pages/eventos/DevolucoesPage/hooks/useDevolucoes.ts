@@ -26,7 +26,8 @@ export function useDevolucoes() {
   const maisAntiga = fila.toSorted((a, b) => diasEsperando(b.solicitadaEm) - diasEsperando(a.solicitadaEm))[0];
 
   const pagar = (d: DevolucaoNaFila) => {
-    if (!dataDaSaida.exigirValida()) return;
+    const pagaEm = dataDaSaida.exigirValida();
+    if (!pagaEm) return;
     const nomeDaConta = contas.find((c) => (c.id as string) === conta)?.nome ?? '';
     const destino = competenciaDaSaida(d);
     setFila((lista) => lista.filter((x) => x.id !== d.id));
@@ -36,7 +37,7 @@ export function useDevolucoes() {
         nome: d.nome,
         evento: `${d.evento} · ${d.dataDoEvento.slice(0, 5)}`,
         valor: d.valor,
-        pagaEm: dataDaSaida.data,
+        pagaEm,
         conta: nomeDaConta,
         lancamentoDeSaida: `sai-${String(d.lancamentoOriginal).replace('lanc-', '')}`,
       },

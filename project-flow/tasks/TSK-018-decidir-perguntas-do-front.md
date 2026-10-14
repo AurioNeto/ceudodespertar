@@ -27,11 +27,11 @@ As correções de comportamento (#140 a #145) e o R$ em todo valor (#147 a #152)
 1. **Valor negativo:** `− R$ 110,00` em todas as telas, com a forma centralizada no `formatarBRL`. Em revisão (14/10).
 2. **Parcela negativa num valor somado:** vetada; cada parcela precisa ser positiva. Em revisão (14/10).
 3. **Período fechado:** o bloqueio vale também na aprovação individual ("Aprovar e consolidar"). Em revisão (14/10).
-4. **Data digitada:** aceita dia e mês sem zero (`5/9/2026`) e normaliza para `05/09/2026`.
-5. **Idade no link público:** medida no dia do evento.
-6. **Trocar de evento:** responsável e hospedagem também recomeçam.
-7. **Autorização do responsável:** olha a modalidade, conforme o Doc 2 (AR3).
-8. **"Copiado" do link:** recomeça ao trocar de pessoa e ao salvar.
+4. **Data digitada:** aceita dia e mês sem zero (`5/9/2026`) e normaliza para `05/09/2026`. Em revisão (14/10).
+5. **Idade no link público:** medida no dia do evento. Em revisão (14/10).
+6. **Trocar de evento:** responsável e hospedagem também recomeçam. Em revisão (14/10).
+7. **Autorização do responsável:** olha a modalidade, conforme o Doc 2 (AR3). Em revisão (14/10).
+8. **"Copiado" do link:** recomeça ao trocar de pessoa e ao salvar. Em revisão (14/10).
 9. **Litros com 3 casas ou mais:** recusados com mensagem, sem arredondar.
 
 ## O que precisa ser feito
@@ -50,4 +50,4 @@ As correções de comportamento (#140 a #145) e o R$ em todo valor (#147 a #152)
 - https://github.com/AurioNeto/ceudodespertar/pull/146 (registro das correções e das perguntas)
 - https://github.com/AurioNeto/ceudodespertar/pull/153 (registro do R$ e do sinal negativo)
 
-_Atualizado em 13/10/2026._
+_Atualizado em 14/10/2026._

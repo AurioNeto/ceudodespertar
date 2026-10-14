@@ -407,6 +407,16 @@ describe('ContratacoesPage: registrar recebimento', () => {
     expect(recadoDaTela(container)).toContain('entraram por Itaú Munay.');
   });
 
+  it('data do recebimento sem zero — 5/9/2026 é aceita e o cartão mostra 05/09/2026', async () => {
+    const { container } = await montar(<ContratacoesPage />);
+    await registrarRecebimento(container, ESTRELA_GUIA);
+    await digitar(campoDoRotulo(cartaoDaContratacao(container, ESTRELA_GUIA), 'Data do recebimento'), '5/9/2026');
+
+    await confirmarRecebimento(container, ESTRELA_GUIA);
+
+    expect(cartaoDaContratacao(container, ESTRELA_GUIA).textContent).toContain('Recebido em 05/09/2026');
+  });
+
   it('data do recebimento apagada — recusa com a mensagem no campo e o cartão segue como não recebido', async () => {
     const { container } = await montar(<ContratacoesPage />);
     await registrarRecebimento(container, ESTRELA_GUIA);

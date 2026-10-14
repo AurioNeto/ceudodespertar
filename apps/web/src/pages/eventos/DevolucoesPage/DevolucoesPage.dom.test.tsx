@@ -363,6 +363,16 @@ describe('DevolucoesPage: confirmar a devolução', () => {
     expect(recadoDaTela(container)).toBeNull();
   });
 
+  it('data da saída sem zero — 5/9/2026 é aceita e a devolução paga mostra 05/09/2026', async () => {
+    const { container } = await montar(<DevolucoesPage />);
+    await abrirPainel(container, CARLOS, 'R$ 210,00');
+    await digitar(campoDoRotulo(cartaoDaFila(container, CARLOS), 'Data da saída'), '5/9/2026');
+
+    await confirmar(cartaoDaFila(container, CARLOS));
+
+    expect(jaDevolvidas(container)[0]).toContain('05/09/2026');
+  });
+
   it('devolução a contratante — a saída leva o número do lançamento original sem o prefixo lanc-', async () => {
     const { container } = await montar(<DevolucoesPage />);
     await abrirPainel(container, INSTITUTO, 'R$ 1.800,00');

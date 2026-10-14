@@ -1,11 +1,12 @@
-import type { ContribuicaoSugerida, EventoId, OpcaoDeHospedagem, OpcaoDeRefeicao } from '@cdd/contracts';
-import { reais } from '@cdd/contracts';
+import type { ContribuicaoSugerida, DataLocal, EventoId, OpcaoDeHospedagem, OpcaoDeRefeicao } from '@cdd/contracts';
+import { dataLocal, reais } from '@cdd/contracts';
 import { id } from '@/mocks/ids';
 
 export interface EventoParaInscricao {
   readonly id: EventoId;
   readonly nome: string;
   readonly data: string;
+  readonly primeiroDia: DataLocal;
   /** Rótulo curto do seletor — a data por extenso não cabe num botão. */
   readonly abreviacao: string;
   readonly local: string;
@@ -77,6 +78,7 @@ export const eventos: readonly EventoParaInscricao[] = [
     id: id<EventoId>('e-trabalho-1209'),
     nome: 'Trabalho de Lua Cheia',
     data: '12/09/2026',
+    primeiroDia: dataLocal('2026-09-12'),
     abreviacao: 'Lua Cheia · 12/09',
     local: 'Chácara · Ibiúna',
     capacidade: 60,
@@ -92,6 +94,7 @@ export const eventos: readonly EventoParaInscricao[] = [
     id: id<EventoId>('e-jornada-2410'),
     nome: 'Jornada de três dias',
     data: '24 a 26/10/2026',
+    primeiroDia: dataLocal('2026-10-24'),
     abreviacao: 'Jornada · 24–26/10',
     local: 'Chácara · Ibiúna',
     capacidade: 40,

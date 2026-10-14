@@ -1,4 +1,4 @@
-import type { EventoId, OpcaoDeHospedagem, TipoParticipacao } from '@cdd/contracts';
+import type { EventoId, ModalidadeCrianca, OpcaoDeHospedagem, TipoParticipacao } from '@cdd/contracts';
 import { pluralizar } from '@/pages/utils/formato';
 import { diretorio, type PessoaDoDiretorio } from '../mocks/inscricao';
 import type { Pendencia } from '../tipos';
@@ -7,6 +7,7 @@ export interface DadosDasPendencias {
   eventoId: EventoId;
   pessoa: PessoaDoDiretorio | null;
   tipo: TipoParticipacao;
+  modalidade: ModalidadeCrianca;
   responsavel: string;
   anamneseExigida: boolean;
   primeiraVez: boolean;
@@ -21,13 +22,14 @@ export interface DadosDasPendencias {
   aoAlocarLeito: () => void;
 }
 
-const autorizadaNoEvento = (pessoa: PessoaDoDiretorio | undefined, eventoId: EventoId): boolean =>
-  pessoa?.eventosComAutorizacaoVigente.includes(eventoId) ?? false;
+const autorizada = (pessoa: PessoaDoDiretorio | undefined, eventoId: EventoId, modalidade: ModalidadeCrianca): boolean =>
+  pessoa?.autorizacoesVigentes.some((a) => a.eventoId === eventoId && a.modalidade === modalidade) ?? false;
 
 export function pendenciasDaInscricao({
   eventoId,
   pessoa,
   tipo,
+  modalidade,
   responsavel,
   anamneseExigida,
   primeiraVez,
@@ -53,11 +55,11 @@ export function pendenciasDaInscricao({
         detalhe: 'Criança estelar não se inscreve sozinha: alguém responde por ela neste trabalho.',
         invariante: 'IN2',
       });
-    } else if (!autorizadaNoEvento(pessoa, eventoId) && !autorizadaNoEvento(registroDoResponsavel, eventoId)) {
+    } else if (!autorizada(pessoa, eventoId, modalidade) && !autorizada(registroDoResponsavel, eventoId, modalidade)) {
       lista.push({
         chave: 'autorizacao',
         titulo: 'Sem autorização vigente para este trabalho',
-        detalhe: 'A autorização é por evento — não existe autorizar para o ano. É colhida na chegada, com o responsável presente.',
+        detalhe: 'A autorização é por evento e por modalidade — não existe autorizar para o ano. É colhida na chegada, com o responsável presente.',
         invariante: 'IN2',
       });
     }

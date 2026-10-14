@@ -69,7 +69,7 @@ export function useInscricaoPublica() {
     !novo.telefone.trim() && 'telefone',
   ].filter((x): x is string => Boolean(x));
 
-  const erroNascimento = erroDoNascimento(novo.nascimento);
+  const erroNascimento = erroDoNascimento(novo.nascimento, eventoDoLink.primeiroDia);
 
   const faltandoNaAnamnese = pendentes.filter(
     (x) => x.pergunta.obrigatoria && !respondida(valores[x.pergunta.id as string]),
