@@ -10,6 +10,7 @@ import {
   sha256Hex,
 } from '../identidade/bootstrap/apoio-de-bootstrap.js';
 import { CAMINHO_DOS_USUARIOS, ServidorKeycloakFalso } from '../identidade/keycloak/servidor-keycloak-falso.js';
+import { consultarNaInstituicao } from '../identidade/apoio.js';
 import { comoLocalhost, compilarOCli, executarProcessoDoCli } from './apoio-do-cli.js';
 import type { ResultadoDoProcesso } from './apoio-do-cli.js';
 
@@ -36,6 +37,21 @@ interface ObservacaoNoEnvio {
   readonly conexoesDoCli: number;
   readonly conexoesComTransacaoAberta: number;
   readonly papeisConectados: readonly string[];
+}
+
+
+async function cadastrosDoFinanceiro(banco: BancoDeTeste): Promise<{ unidades: number; grupos: number; categorias: number }> {
+  const { rows } = await banco.owner.query<{ id: string }>('select id from shared.instituicao');
+  const [instituicao] = rows;
+  if (instituicao === undefined) return { unidades: 0, grupos: 0, categorias: 0 };
+  const [contagens] = await consultarNaInstituicao<{ unidades: number; grupos: number; categorias: number }>(
+    banco,
+    instituicao.id,
+    `select (select count(*) from financeiro.unidade)::int as unidades,
+            (select count(*) from financeiro.grupo_de_custo)::int as grupos,
+            (select count(*) from financeiro.categoria)::int as categorias`,
+  );
+  return contagens!;
 }
 
 describe('CLI identidade:bootstrap de ponta a ponta contra Postgres real', () => {
@@ -135,6 +151,7 @@ describe('CLI identidade:bootstrap de ponta a ponta contra Postgres real', () =>
     });
     expect(keycloak.chamadasA('POST', CAMINHO_DOS_USUARIOS)).toHaveLength(1);
     expect(keycloak.chamadasA('PUT', CAMINHO_DO_ENVIO)).toHaveLength(1);
+    expect(await cadastrosDoFinanceiro(banco)).toStrictEqual({ unidades: 6, grupos: 6, categorias: 14 });
     expect(observacao?.conexoesDoCli).toBeGreaterThan(0);
     expect(observacao).toMatchObject({ marcadores: 1, instituicoes: 1, conexoesComTransacaoAberta: 0 });
     expect(token).not.toBe('');

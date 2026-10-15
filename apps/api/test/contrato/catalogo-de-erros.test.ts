@@ -16,6 +16,9 @@ const RESTRICOES_QUE_O_DOMINIO_MAPEIA_NO_B0: readonly string[] = [
   'grupo_nome_unico',
   'convite_vigente_unico',
   'usuario_grupo_grupo_fk',
+  'unidade_codigo_unico',
+  'grupo_de_custo_codigo_unico',
+  'categoria_codigo_unico',
 ];
 
 const RESTRICOES_SEM_CODIGO_POR_SEREM_GUARDA_INTERNA_DO_BANCO: readonly string[] = [

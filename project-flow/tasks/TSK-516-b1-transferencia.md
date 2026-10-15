@@ -14,6 +14,10 @@ Decisões do dono (14/10): a transferência tem o ciclo do lançamento e fica im
 - Repasse entre duas unidades diferentes como invariante do agregado; competência pela data.
 - Migration com a imutabilidade simples da confirmada; comandos e HTTP.
 
+## Nota do #228
+
+- `Transferencia.confirmadoPor` no contrato aceita só `UsuarioId`, sem o autor `SISTEMA` que o lançamento tem. Se a migração (TSK-507) trouxer transferências já confirmadas, o contrato e a coluna precisam do tipo do autor, como na TSK-515.
+
 ## Critérios de aceite
 
 - Confirmada não muda nem some; correção só por estorno.

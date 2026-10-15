@@ -6,6 +6,7 @@ import { GeradorDeTokenDeConvite } from '../../../src/modules/identidade/applica
 import { LeitorDeGruposDaInstituicao } from '../../../src/modules/identidade/application/usuarios/leitor-de-grupos-da-instituicao.js';
 import { RepositorioDeUsuario } from '../../../src/modules/identidade/domain/usuario/usuario.repo.js';
 import { UnidadeDeTrabalho } from '../../../src/shared/infrastructure/banco/unidade-de-trabalho.js';
+import { SemeadoresDaInstituicao } from '../../../src/shared/infrastructure/semeadura/semeadores-da-instituicao.js';
 import { ehErr } from '../../../src/shared/kernel/result.js';
 import {
   COMANDO_POR_VINCULO,
@@ -36,6 +37,7 @@ function montar(conferidor: ConferidorQueResponde): BootstrapDaIdentidade {
     new UnidadeDeTrabalhoProibida(),
     new Proibido() as unknown as PersistenciaDoBootstrap,
     new Proibido() as unknown as SemeadorDeGrupos,
+    new Proibido() as unknown as SemeadoresDaInstituicao,
     new Proibido() as unknown as LeitorDeGruposDaInstituicao,
     new Proibido() as unknown as RepositorioDeUsuario,
     new Proibido() as unknown as GeradorDeTokenDeConvite,

@@ -8,7 +8,7 @@ import { GravadorDeTrilha } from '../auditoria/gravador-de-trilha.js';
 import { Grupo } from '../../domain/grupo/grupo.js';
 import { RepositorioDeGrupo } from '../../domain/grupo/grupo.repo.js';
 import { GrupoEntidade, GrupoPermissaoEntidade } from './entidades-de-grupo.js';
-import { instituicaoDoContexto } from './instituicao-do-contexto.js';
+import { instituicaoDoContexto } from '../../../../shared/infrastructure/instituicao-do-contexto.js';
 
 const NOME_DO_AGREGADO = 'Grupo';
 

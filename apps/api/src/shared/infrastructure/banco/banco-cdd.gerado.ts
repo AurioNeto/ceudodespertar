@@ -23,6 +23,40 @@ export type JsonValue = JsonArray | JsonObject | JsonPrimitive;
 
 export type Timestamp = ColumnType<Date, Date | string, Date | string>;
 
+export interface FinanceiroCategoria {
+  ativa: Generated<boolean>;
+  codigo_sistema: string;
+  id: Generated<string>;
+  instituicao_id: string;
+  linha_relatorio: string;
+  natureza: string;
+  nome: string;
+  regimes_permitidos: string[];
+  tipo: string;
+  unidade_padrao_id: string | null;
+  versao: Generated<number>;
+}
+
+export interface FinanceiroGrupoDeCusto {
+  ativo: Generated<boolean>;
+  codigo_sistema: string;
+  id: Generated<string>;
+  instituicao_id: string;
+  nome: string;
+  versao: Generated<number>;
+}
+
+export interface FinanceiroUnidade {
+  ativa: Generated<boolean>;
+  codigo_sistema: string;
+  id: Generated<string>;
+  instituicao_id: string;
+  nome: string;
+  regime: string;
+  teto_anual: number | null;
+  versao: Generated<number>;
+}
+
 export interface IdentidadeBootstrapExecutado {
   admin_usuario_id: string;
   criado_em: Timestamp;
@@ -143,6 +177,9 @@ export interface SharedOutbox {
 }
 
 export interface DB {
+  "financeiro.categoria": FinanceiroCategoria;
+  "financeiro.grupo_de_custo": FinanceiroGrupoDeCusto;
+  "financeiro.unidade": FinanceiroUnidade;
   "identidade.bootstrap_executado": IdentidadeBootstrapExecutado;
   "identidade.convite": IdentidadeConvite;
   "identidade.grupo": IdentidadeGrupo;

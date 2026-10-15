@@ -754,6 +754,7 @@ A regra do último administrador é uma dessas travas: toda alteração que pode
   | `b0-011-bootstrap` | O marcador `identidade.bootstrap_executado`, sem `instituicao_id` (§8) |
   | `b0-012-outbox-expurgo` | Índice parcial `outbox_despachados_por_instituicao (instituicao_id, publicado_em) WHERE publicado_em IS NOT NULL`, que serve o expurgo dos despachados (§9) |
   | `b0-013-outbox-alertado-em` | Coluna `alertado_em` em `shared.outbox`, a marca da vigia de que o esgotado já entrou num alerta (§9) |
+  | `b1-001-cadastros-do-financeiro` | Schema `financeiro` e as tabelas `unidade`, `grupo_de_custo` e `categoria` (§18.1), com RLS forçada, as únicas por `codigo_sistema` nomeadas (`→ CODIGO_DE_SISTEMA_JA_EXISTE`) e só as guardas de forma. O seed por instituição (unidades, grupos de custo e plano de categorias) roda onde a instituição nasce — bootstrap e seed de demonstração —, pelo ponto de extensão `SemeadoresDaInstituicao`, na mesma transação do seed de grupos |
 
 - **Verificação de garantias em CI** (§26): `apps/api/test/banco/garantias/` prova, contra o banco migrado, o que o §15 diz que o banco garante — isolamento, resolvedores, só-inserção, `TRUNCATE`, imutabilidade simples e as restrições de forma. Cresce por etapa, com as tabelas. As regras de negócio têm os seus testes no domínio.
 - **Duas funções que toda migration chama, no fim, depois de criar suas tabelas** — ambas idempotentes, então uma migration de etapa posterior pode chamá-las de novo sobre o esquema inteiro sem duplicar nem falhar:

@@ -1,4 +1,4 @@
--- verificacoes: 22
+-- verificacoes: 26
 -- B0 · privilégios EXATOS de cdd_app (Documento 7 §15): nem a mais, nem a
 -- menos, tabela por tabela e função por função. Roda como dono, porque lê a
 -- ACL de cdd_app (o dono não precisa dos privilégios dele para consultá-los).
@@ -56,6 +56,18 @@ SELECT verif.confere('privilégios · identidade.bootstrap_executado é só SELE
   verif.privilegios_de_tabela('cdd_app', 'identidade.bootstrap_executado'),
   ARRAY['INSERT','SELECT']);
 
+SELECT verif.confere('privilégios · financeiro.unidade é SELECT, INSERT, UPDATE, DELETE',
+  verif.privilegios_de_tabela('cdd_app', 'financeiro.unidade'),
+  ARRAY['DELETE','INSERT','SELECT','UPDATE']);
+
+SELECT verif.confere('privilégios · financeiro.grupo_de_custo é SELECT, INSERT, UPDATE, DELETE',
+  verif.privilegios_de_tabela('cdd_app', 'financeiro.grupo_de_custo'),
+  ARRAY['DELETE','INSERT','SELECT','UPDATE']);
+
+SELECT verif.confere('privilégios · financeiro.categoria é SELECT, INSERT, UPDATE, DELETE',
+  verif.privilegios_de_tabela('cdd_app', 'financeiro.categoria'),
+  ARRAY['DELETE','INSERT','SELECT','UPDATE']);
+
 -- As três funções que só uma migration (ou o gatilho que instalam) chama:
 -- PUBLIC nunca ganha EXECUTE nelas.
 SELECT verif.confere('privilégios · PUBLIC sem EXECUTE em shared.aplicar_isolamento_por_instituicao',
@@ -86,6 +98,9 @@ SELECT verif.confere('privilégios · cdd_app sem CREATE no schema shared',
 
 SELECT verif.confere('privilégios · cdd_app sem CREATE no schema identidade',
   has_schema_privilege('cdd_app', 'identidade', 'CREATE'), false);
+
+SELECT verif.confere('privilégios · cdd_app sem CREATE no schema financeiro',
+  has_schema_privilege('cdd_app', 'financeiro', 'CREATE'), false);
 
 -- Varredura pelo catálogo, não só nos dois schemas do B0: um GRANT CREATE
 -- concedido em qualquer outro schema (ex.: public, que o Postgres cria por

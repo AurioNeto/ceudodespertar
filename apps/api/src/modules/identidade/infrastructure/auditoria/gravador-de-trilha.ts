@@ -8,7 +8,7 @@ import { gerarUuidV7 } from '../../../../shared/kernel/ids.js';
 import type { EntradaDeAuditoria } from '../../application/auditoria/entrada-de-auditoria.js';
 import { TrilhaDeAuditoria } from '../../application/auditoria/trilha-de-auditoria.js';
 import { mapearEventoParaAuditoria } from '../../application/auditoria/mapeamento-de-eventos.js';
-import { instituicaoDoContexto } from '../persistencia/instituicao-do-contexto.js';
+import { instituicaoDoContexto } from '../../../../shared/infrastructure/instituicao-do-contexto.js';
 
 type GruposPorAutor = ReadonlyMap<string, readonly string[]>;
 

@@ -3,6 +3,7 @@ import type { UsuarioId } from '@cdd/contracts';
 import { UnidadeDeTrabalho } from '../../../../shared/infrastructure/banco/unidade-de-trabalho.js';
 import { emContextoDaInstituicao } from '../../../../shared/infrastructure/contexto-da-instituicao.js';
 import { Relogio } from '../../../../shared/infrastructure/relogio.js';
+import { SemeadoresDaInstituicao } from '../../../../shared/infrastructure/semeadura/semeadores-da-instituicao.js';
 import { erroDeDominio } from '../../../../shared/kernel/erro-de-dominio.js';
 import type { ErroDeDominio } from '../../../../shared/kernel/erro-de-dominio.js';
 import { gerarUuidV7 } from '../../../../shared/kernel/ids.js';
@@ -55,6 +56,7 @@ export class BootstrapDaIdentidade {
     private readonly unidadeDeTrabalho: UnidadeDeTrabalho,
     private readonly persistencia: PersistenciaDoBootstrap,
     private readonly semeador: SemeadorDeGrupos,
+    private readonly semeadoresDaInstituicao: SemeadoresDaInstituicao,
     private readonly grupos: LeitorDeGruposDaInstituicao,
     private readonly usuarios: RepositorioDeUsuario,
     private readonly gerador: GeradorDeTokenDeConvite,
@@ -88,6 +90,7 @@ export class BootstrapDaIdentidade {
 
     await this.persistencia.criarInstituicao(instituicaoId, comando.instituicaoNome);
     await this.semeador.semear(instituicaoId);
+    await this.semeadoresDaInstituicao.semear(instituicaoId);
 
     const grupoAdministrador = await this.grupos.doSistema('ADMINISTRADOR');
     if (grupoAdministrador === undefined) {

@@ -6,13 +6,14 @@ import type { ICruiseResult } from 'dependency-cruiser';
 
 const DIRETORIO_DO_TESTE = dirname(fileURLToPath(import.meta.url));
 const RAIZ_DO_REPOSITORIO = join(DIRETORIO_DO_TESTE, '..', '..', '..', '..');
+const TAMANHO_MAXIMO_DA_SAIDA_EM_BYTES = 64 * 1024 * 1024;
 const BINARIO_DEPCRUISE = join(RAIZ_DO_REPOSITORIO, 'node_modules', '.bin', 'depcruise');
 
 function cruzar(caminhosRelativosARaiz: string[]): ICruiseResult {
   const resultado = spawnSync(
     BINARIO_DEPCRUISE,
     ['--config', '.dependency-cruiser.mjs', '--output-type', 'json', ...caminhosRelativosARaiz],
-    { cwd: RAIZ_DO_REPOSITORIO, encoding: 'utf8' },
+    { cwd: RAIZ_DO_REPOSITORIO, encoding: 'utf8', maxBuffer: TAMANHO_MAXIMO_DA_SAIDA_EM_BYTES },
   );
 
   if (resultado.error) {

@@ -1,12 +1,13 @@
 import { Module } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import { FinanceiroModule } from '../modules/financeiro/public-api.js';
 import { BootstrapDaIdentidade, EnviadorDeConvite, IdentidadeModule, SemeaduraDeDemonstracao } from '../modules/identidade/public-api.js';
 import { BancoModule } from '../shared/infrastructure/banco/banco.module.js';
 import { ConfiguracaoModule } from '../shared/infrastructure/configuracao/configuracao.module.js';
 import { EventosModule } from '../shared/infrastructure/eventos/eventos.module.js';
 import type { ContextoDoCli } from './executar-cli.js';
 
-@Module({ imports: [ConfiguracaoModule, BancoModule, EventosModule, IdentidadeModule] })
+@Module({ imports: [ConfiguracaoModule, BancoModule, EventosModule, IdentidadeModule, FinanceiroModule] })
 export class ModuloDoCliDaIdentidade {}
 
 export async function abrirContextoDoCli(): Promise<ContextoDoCli> {
