@@ -1,10 +1,12 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
+import { z } from 'zod';
 import type { OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import type { EventoDeDominio } from '../../kernel/evento-de-dominio.js';
 import { ContextoDaRequisicao } from '../contexto-da-requisicao.js';
 import { UnidadeDeTrabalho } from '../banco/unidade-de-trabalho.js';
 import type { ContextoDaTransacao } from '../banco/unidade-de-trabalho.js';
 import { foraDaTransacaoAtiva } from '../banco/transacao-ativa.js';
+import { ErroDeAmbienteInvalido } from '../configuracao/esquema-de-ambiente.js';
 import { calcularProximaTentativa } from './backoff.js';
 import { MODO_DO_PROCESSO } from './modo-do-processo.js';
 import type { ModoDoProcesso } from './modo-do-processo.js';
@@ -22,6 +24,8 @@ export const TIMEOUT_PADRAO_DO_CONSUMIDOR_EM_MS = 30_000;
 const TAMANHO_MAXIMO_DO_CICLO = 100;
 const INTERVALO_DE_POLLING_EM_MS = 1000;
 const FOLGA_DO_TIMEOUT_DA_APLICACAO_EM_MS = 250;
+const MAIOR_ATRASO_DO_SETTIMEOUT_EM_MS = 2_147_483_647;
+export const TIMEOUT_MAXIMO_DO_CONSUMIDOR_EM_MS = MAIOR_ATRASO_DO_SETTIMEOUT_EM_MS - FOLGA_DO_TIMEOUT_DA_APLICACAO_EM_MS;
 const SAVEPOINT_DO_CONSUMIDOR = 'evento_consumidor';
 const ENCERRAR_TRANSACAO_E_BLOQUEAR_ESCRITA_AVULSA = 'rollback; set default_transaction_read_only = on';
 
@@ -58,10 +62,23 @@ interface LinhaDoOutbox {
   readonly tentativas: number;
 }
 
+const EsquemaDoTimeoutDoConsumidor = z.object({
+  TIMEOUT_DO_CONSUMIDOR_EM_MS: z.coerce
+    .number()
+    .int()
+    .min(1)
+    .max(TIMEOUT_MAXIMO_DO_CONSUMIDOR_EM_MS)
+    .default(TIMEOUT_PADRAO_DO_CONSUMIDOR_EM_MS),
+});
+
 export function lerTimeoutDoConsumidorEmMs(ambiente: NodeJS.ProcessEnv = process.env): number {
-  const bruto = ambiente.TIMEOUT_DO_CONSUMIDOR_EM_MS;
-  const valor = bruto !== undefined ? Number(bruto) : Number.NaN;
-  return Number.isFinite(valor) && valor > 0 ? valor : TIMEOUT_PADRAO_DO_CONSUMIDOR_EM_MS;
+  const resultado = EsquemaDoTimeoutDoConsumidor.safeParse(ambiente);
+  if (!resultado.success) {
+    throw new ErroDeAmbienteInvalido([
+      `TIMEOUT_DO_CONSUMIDOR_EM_MS: deve ser um inteiro de 1 a ${TIMEOUT_MAXIMO_DO_CONSUMIDOR_EM_MS} milissegundos`,
+    ]);
+  }
+  return resultado.data.TIMEOUT_DO_CONSUMIDOR_EM_MS;
 }
 
 export class ErroDeTimeoutDoConsumidor extends Error {
@@ -275,8 +292,7 @@ export class Despachante implements OnModuleInit, OnModuleDestroy {
       await contexto.em.execute("select set_config('statement_timeout', ?, true)", [
         String(this.timeoutDoConsumidorEmMs),
       ]);
-      await this.executarComTimeout(consumidor, evento);
-      await contexto.em.flush();
+      await this.executarComTimeout(contexto, consumidor, evento);
       await contexto.em.execute('set local statement_timeout to default');
       await this.marcarComoProcessado(contexto, consumidor.consumidor, evento.eventoId);
       await contexto.em.execute(`release savepoint ${SAVEPOINT_DO_CONSUMIDOR}`);
@@ -293,7 +309,11 @@ export class Despachante implements OnModuleInit, OnModuleDestroy {
     }
   }
 
-  private async executarComTimeout(consumidor: ConsumidorRegistrado, evento: EventoDeDominio): Promise<void> {
+  private async executarComTimeout(
+    contexto: ContextoDaTransacao,
+    consumidor: ConsumidorRegistrado,
+    evento: EventoDeDominio,
+  ): Promise<void> {
     let temporizadorDoTimeout: NodeJS.Timeout;
     const estouroDoTimeout = new Promise<never>((_resolver, rejeitar) => {
       temporizadorDoTimeout = setTimeout(() => {
@@ -302,10 +322,19 @@ export class Despachante implements OnModuleInit, OnModuleDestroy {
     });
 
     try {
-      await Promise.race([consumidor.reagir(evento), estouroDoTimeout]);
+      await Promise.race([this.reagirEGravar(contexto, consumidor, evento), estouroDoTimeout]);
     } finally {
       clearTimeout(temporizadorDoTimeout!);
     }
+  }
+
+  private async reagirEGravar(
+    contexto: ContextoDaTransacao,
+    consumidor: ConsumidorRegistrado,
+    evento: EventoDeDominio,
+  ): Promise<void> {
+    await consumidor.reagir(evento);
+    await contexto.em.flush();
   }
 
   private async jaProcessado(

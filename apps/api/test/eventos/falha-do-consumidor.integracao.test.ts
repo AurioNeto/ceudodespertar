@@ -10,6 +10,7 @@ import { Despachante } from '../../src/shared/infrastructure/eventos/despachante
 import { ReageA } from '../../src/shared/infrastructure/eventos/reage-a.decorator.js';
 import {
   INSTITUICAO_A,
+  comContexto,
   criarEvento,
   encerrarContextoDeEventos,
   gravarEvento,
@@ -382,6 +383,23 @@ describe('Despachante · falha do consumidor', () => {
       expect(await contarEfeitos(banco, 'efeito-preso')).toBe(1);
       expect(await contarEfeitos(banco, 'efeito-vizinho-do-preso')).toBe(1);
       expect((await linhaDoOutbox(banco, evento.eventoId))?.publicado_em).not.toBeNull();
+    });
+
+    it('a conexão abortada volta ao pool só-leitura por padrão, e a unidade de trabalho continua escrevendo nela', async () => {
+      app = await subirContextoDeEventos(banco, [ConsumidorPresoForaDoBanco, ConsumidorVizinhoDoPreso], 1);
+      await gravarEvento(app, criarEvento({ tipo: 'teste.EventoPresoEmJs' }));
+      await app.get(Despachante).executarCiclo();
+      const unidade = app.get(UnidadeDeTrabalho);
+
+      const sessao = await unidade.transacao('leitura', ({ em }) =>
+        em.execute<{ padrao: string }[]>("select current_setting('default_transaction_read_only') as padrao"),
+      );
+      await comContexto(INSTITUICAO_A, () =>
+        unidade.transacao('escrita', ({ em }) => em.execute(INSERIR_EFEITO, [INSTITUICAO_A, 'efeito-na-conexao-reaproveitada'])),
+      );
+
+      expect(sessao[0]?.padrao).toBe('on');
+      expect(await contarEfeitos(banco, 'efeito-na-conexao-reaproveitada')).toBe(1);
     });
 
     it('o ciclo termina logo depois do timeout do banco, sem esperar uma folga grande do timer em JS', async () => {

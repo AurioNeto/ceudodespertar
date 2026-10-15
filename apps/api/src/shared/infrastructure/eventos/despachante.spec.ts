@@ -1,7 +1,14 @@
 import { Logger } from '@nestjs/common';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { UnidadeDeTrabalho } from '../banco/unidade-de-trabalho.js';
-import { Despachante, MENSAGEM_DE_FALHA_DE_INFRAESTRUTURA_NO_CICLO, TIMEOUT_PADRAO_DO_CONSUMIDOR_EM_MS, lerTimeoutDoConsumidorEmMs } from './despachante.js';
+import { ErroDeAmbienteInvalido } from '../configuracao/esquema-de-ambiente.js';
+import {
+  Despachante,
+  MENSAGEM_DE_FALHA_DE_INFRAESTRUTURA_NO_CICLO,
+  TIMEOUT_MAXIMO_DO_CONSUMIDOR_EM_MS,
+  TIMEOUT_PADRAO_DO_CONSUMIDOR_EM_MS,
+  lerTimeoutDoConsumidorEmMs,
+} from './despachante.js';
 import type { RegistroDeConsumidores } from './registro-de-consumidores.js';
 import { SinalizadorDeEventos } from './sinalizador-de-eventos.js';
 
@@ -10,23 +17,24 @@ describe('lerTimeoutDoConsumidorEmMs', () => {
     expect(lerTimeoutDoConsumidorEmMs({})).toBe(TIMEOUT_PADRAO_DO_CONSUMIDOR_EM_MS);
   });
 
-  it('usa o padrão quando a variável de ambiente não é um número válido', () => {
-    expect(lerTimeoutDoConsumidorEmMs({ TIMEOUT_DO_CONSUMIDOR_EM_MS: 'abc' })).toBe(
-      TIMEOUT_PADRAO_DO_CONSUMIDOR_EM_MS,
-    );
-  });
-
-  it('usa o padrão quando a variável de ambiente é zero ou negativa', () => {
-    expect(lerTimeoutDoConsumidorEmMs({ TIMEOUT_DO_CONSUMIDOR_EM_MS: '0' })).toBe(
-      TIMEOUT_PADRAO_DO_CONSUMIDOR_EM_MS,
-    );
-    expect(lerTimeoutDoConsumidorEmMs({ TIMEOUT_DO_CONSUMIDOR_EM_MS: '-5' })).toBe(
-      TIMEOUT_PADRAO_DO_CONSUMIDOR_EM_MS,
-    );
-  });
-
-  it('usa o valor configurado quando é um número válido e positivo', () => {
+  it('usa o valor configurado quando é um inteiro positivo dentro do limite', () => {
     expect(lerTimeoutDoConsumidorEmMs({ TIMEOUT_DO_CONSUMIDOR_EM_MS: '50' })).toBe(50);
+    expect(lerTimeoutDoConsumidorEmMs({ TIMEOUT_DO_CONSUMIDOR_EM_MS: String(TIMEOUT_MAXIMO_DO_CONSUMIDOR_EM_MS) })).toBe(
+      TIMEOUT_MAXIMO_DO_CONSUMIDOR_EM_MS,
+    );
+  });
+
+  it.each(['abc', '', '0', '-5', '1.5', '1e3x', String(TIMEOUT_MAXIMO_DO_CONSUMIDOR_EM_MS + 1)])(
+    'recusa a partida com %j em vez de cair no padrão em silêncio',
+    (valor) => {
+      expect(() => lerTimeoutDoConsumidorEmMs({ TIMEOUT_DO_CONSUMIDOR_EM_MS: valor })).toThrow(ErroDeAmbienteInvalido);
+    },
+  );
+
+  it('a mensagem diz o nome da variável e o intervalo aceito, sem ecoar o valor recebido', () => {
+    expect(() => lerTimeoutDoConsumidorEmMs({ TIMEOUT_DO_CONSUMIDOR_EM_MS: 'segredo-123' })).toThrow(
+      /^Ambiente inválido:\nTIMEOUT_DO_CONSUMIDOR_EM_MS: deve ser um inteiro de 1 a \d+ milissegundos$/,
+    );
   });
 });
 
