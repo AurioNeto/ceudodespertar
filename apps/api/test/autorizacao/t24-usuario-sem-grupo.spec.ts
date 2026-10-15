@@ -8,8 +8,14 @@ import { subirAplicacaoEDescobrirRotas } from '../estrutural/rotas/aplicacao-rea
 import type { AplicacaoDescoberta } from '../estrutural/rotas/aplicacao-real.js';
 import type { Descoberta, Rota } from '../estrutural/rotas/descobrir-rotas.js';
 
-const PISO_DE_ROTAS_COM_PERMISSAO = 12;
-const ROTAS_ESPERADAS_NA_VARREDURA = ['GET /api/v1/identidade/grupos', 'PUT /api/v1/identidade/grupos/:id/permissoes/:codigo', 'GET /api/v1/identidade/auditoria'];
+const PISO_DE_ROTAS_COM_PERMISSAO = 21;
+const ROTAS_ESPERADAS_NA_VARREDURA = [
+  'GET /api/v1/identidade/grupos',
+  'PUT /api/v1/identidade/grupos/:id/permissoes/:codigo',
+  'GET /api/v1/identidade/auditoria',
+  'GET /api/v1/financeiro/unidades',
+  'PUT /api/v1/financeiro/categorias/:id',
+];
 const MARCAS_SEM_PERMISSAO: ReadonlySet<string> = new Set(['publico', 'apenas-identificado', 'apenas-usuario-ativo']);
 
 interface Resultado {

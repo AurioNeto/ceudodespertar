@@ -1,7 +1,7 @@
 import type { AddressInfo } from 'node:net';
 import { randomUUID } from 'node:crypto';
 import { Controller, Get, Module } from '@nestjs/common';
-import type { DynamicModule, INestApplication } from '@nestjs/common';
+import type { DynamicModule, INestApplication, Type } from '@nestjs/common';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { Test } from '@nestjs/testing';
 import type { GrupoId, Permissao, UsuarioId } from '@cdd/contracts';
@@ -112,6 +112,7 @@ export interface SubstituicoesDeProvider {
 
 export interface AplicacaoDeAcesso {
   readonly app: INestApplication;
+  readonly origem: string;
   readonly relogio: RelogioManual;
   readonly usuarios: RepositorioDeUsuarioMikroOrm;
   readonly grupos: RepositorioDeGrupoMikroOrm;
@@ -123,6 +124,7 @@ export interface AplicacaoDeAcesso {
 export async function subirAplicacaoDeAcesso(
   banco: BancoDeTeste,
   substituicoes: readonly SubstituicoesDeProvider[] = [],
+  modulosAdicionais: readonly Type[] = [],
 ): Promise<AplicacaoDeAcesso> {
   const chaves: ChavesDeTeste = await criarChavesDeTeste();
   const servidor = new ServidorDeJwks(chaves.conjunto);
@@ -138,6 +140,7 @@ export async function subirAplicacaoDeAcesso(
       EventosModule,
       FiltroDeErrosModule,
       IdentidadeModule,
+      ...modulosAdicionais,
       AutenticacaoModule.comResolvedor(IdentidadeModule, ResolvedorDeContextoDeAcessoDaIdentidade),
       RotasDeTesteModule,
     ],
@@ -167,6 +170,7 @@ export async function subirAplicacaoDeAcesso(
 
   return {
     app,
+    origem,
     relogio,
     usuarios: new RepositorioDeUsuarioMikroOrm(unidade, outbox, trilha),
     grupos: new RepositorioDeGrupoMikroOrm(unidade, outbox, trilha),
