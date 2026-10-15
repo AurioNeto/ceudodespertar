@@ -17,6 +17,9 @@ import { INSTITUICAO_A, linhaDoOutbox, linhasDeEventoProcessado, semearInstituic
 
 const TIPO_DO_EVENTO = 'teste.EventoQueGravaPeloOrm';
 const TIMEOUT_DO_CONSUMIDOR_EM_MS = 200;
+const ESPERA_POR_INSERCAO_EM_MS = 150;
+const INSERCOES_DO_FLUSH_LENTO = 4;
+const FOLGA_DE_AGENDAMENTO_EM_MS = 1500;
 
 const EfeitoDoOrm = defineEntity({
   name: 'EfeitoDoOrm',
@@ -199,5 +202,71 @@ describe('Despachante · escrita pelo ORM dentro do savepoint do consumidor', ()
     expect(await chavesGravadas(banco)).toEqual(['efeito-do-vizinho']);
     expect(await linhasDeEventoProcessado(banco, eventoId)).toEqual(['ConsumidorVizinho.reagir']);
     expect((await linhaDoOutbox(banco, eventoId))?.tentativas).toBe(1);
+  });
+
+  describe('com um INSERT por statement no flush', () => {
+    let ormSemLote: MikroORM;
+
+    beforeEach(async () => {
+      await banco.owner.query(
+        `create function shared.inserir_devagar() returns trigger language plpgsql as $$
+         begin
+           perform pg_sleep(${ESPERA_POR_INSERCAO_EM_MS / 1000});
+           return new;
+         end $$`,
+      );
+      await banco.owner.query(
+        'create trigger inserir_devagar before insert on shared.efeito_do_orm for each row execute function shared.inserir_devagar()',
+      );
+      ormSemLote = await MikroORM.init({
+        ...construirOpcoesDoOrm({ BANCO_URL: urlDoAppPara(banco), BANCO_POOL_MAXIMO: '2' }),
+        entities: [EfeitoDoOrm],
+        batchSize: 1,
+      });
+    });
+
+    afterEach(async () => {
+      await ormSemLote.close(true);
+    });
+
+    it('a soma dos statements do flush também cabe no limite: cada INSERT abaixo do statement_timeout, juntos acima do temporizador', async () => {
+      const unidadeSemLote = new UnidadeDeTrabalhoMikroOrm(ormSemLote);
+      const registro = {
+        consumidoresPara: (tipo: string) =>
+          tipo === TIPO_DO_EVENTO
+            ? [
+                {
+                  consumidor: 'ConsumidorDeFlushLento.reagir',
+                  reagir: () =>
+                    unidadeSemLote.transacao('escrita', async ({ em }) => {
+                      for (let indice = 0; indice < INSERCOES_DO_FLUSH_LENTO; indice += 1) {
+                        em.persist(em.create(EfeitoDoOrm, { id: randomUUID(), chave: `flush-lento-${indice}` }));
+                      }
+                    }),
+                },
+              ]
+            : [],
+      } as unknown as RegistroDeConsumidores;
+      const despachante = new Despachante(
+        unidadeSemLote,
+        registro,
+        new SinalizadorDeEventos(),
+        TIMEOUT_DO_CONSUMIDOR_EM_MS,
+        'api',
+      );
+      const eventoId = await gravarEventoNoOutbox();
+
+      const inicio = performance.now();
+      await despachante.executarCiclo();
+
+      expect(performance.now() - inicio).toBeLessThan(TIMEOUT_DO_CONSUMIDOR_EM_MS + FOLGA_DE_AGENDAMENTO_EM_MS);
+      expect(INSERCOES_DO_FLUSH_LENTO * ESPERA_POR_INSERCAO_EM_MS).toBeGreaterThan(TIMEOUT_DO_CONSUMIDOR_EM_MS * 2);
+      const linha = await linhaDoOutbox(banco, eventoId);
+      expect(linha?.publicado_em).toBeNull();
+      expect(linha?.tentativas).toBe(1);
+      expect(linha?.ultimo_erro).toContain('ErroDeTimeoutDoConsumidor');
+      expect(await chavesGravadas(banco)).toEqual([]);
+      expect(await linhasDeEventoProcessado(banco, eventoId)).toEqual([]);
+    });
   });
 });
