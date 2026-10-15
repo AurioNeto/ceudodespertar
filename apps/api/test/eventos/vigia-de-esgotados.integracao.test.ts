@@ -58,6 +58,7 @@ describe('vigia de eventos esgotados contra o banco (Documento 7 §13, runbook "
   let app: INestApplicationContext;
 
   beforeEach(async () => {
+    vi.stubEnv('CDD_PROCESSO', 'cli');
     banco = await criarBancoDeTeste();
     await semearInstituicoes(banco);
     app = await subirContextoDeEventos(banco);
@@ -67,6 +68,7 @@ describe('vigia de eventos esgotados contra o banco (Documento 7 §13, runbook "
     vi.restoreAllMocks();
     await encerrarContextoDeEventos(app);
     await derrubarBancoDeTeste(banco);
+    vi.unstubAllEnvs();
   });
 
   async function eventosDe(quantidade: number, ocorridoHa: string): Promise<string[]> {
