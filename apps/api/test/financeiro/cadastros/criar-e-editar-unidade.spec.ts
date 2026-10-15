@@ -3,12 +3,26 @@ import { CriarUnidade } from '../../../src/modules/financeiro/application/cadast
 import { EditarUnidade } from '../../../src/modules/financeiro/application/cadastros/editar-unidade.js';
 import { ehErr, ehOk } from '../../../src/shared/kernel/result.js';
 import { UnidadeDeTrabalhoFalsa } from '../../identidade/gestao-de-usuarios/dubles.js';
-import { RepositorioDeUnidadeEmMemoria, UNIDADE_COMERCIAL, UNIDADE_CONTRIBUICAO, unidadeEm, VERSAO_DO_CADASTRO } from './dubles.js';
+import type { Categoria } from '../../../src/modules/financeiro/domain/categoria/categoria.js';
+import {
+  categoriaEm,
+  RepositorioDeCategoriaEmMemoria,
+  RepositorioDeUnidadeEmMemoria,
+  UNIDADE_COMERCIAL,
+  UNIDADE_CONTRIBUICAO,
+  unidadeEm,
+  VERSAO_DO_CADASTRO,
+} from './dubles.js';
 
-function montar(existentes = [unidadeEm()]) {
+function montar(existentes = [unidadeEm()], categorias: readonly Categoria[] = []) {
   const repositorio = new RepositorioDeUnidadeEmMemoria(existentes);
   const unidade = new UnidadeDeTrabalhoFalsa();
-  return { repositorio, unidade, criar: new CriarUnidade(unidade, repositorio), editar: new EditarUnidade(unidade, repositorio) };
+  return {
+    repositorio,
+    unidade,
+    criar: new CriarUnidade(unidade, repositorio),
+    editar: new EditarUnidade(unidade, repositorio, new RepositorioDeCategoriaEmMemoria(categorias)),
+  };
 }
 
 const edicao = (sobrescritas = {}) => ({
@@ -94,5 +108,34 @@ describe('EditarUnidade', () => {
 
     expect(ehErr(resultado) && resultado.erro.codigo).toBe('CORPO_INVALIDO');
     expect(repositorio.salvos).toEqual([]);
+  });
+
+  it('troca de regime que deixa fora do regime uma categoria com esta unidade padrão devolve CATEGORIA_FORA_DO_REGIME e não salva', async () => {
+    const categoria = categoriaEm({ regimesPermitidos: ['CONTRIBUICAO'], unidadePadraoId: UNIDADE_CONTRIBUICAO });
+    const { repositorio, editar } = montar([unidadeEm()], [categoria]);
+
+    const resultado = await editar.executar(edicao({ regime: 'COMERCIAL' }));
+
+    expect(ehErr(resultado) && resultado.erro.codigo).toBe('CATEGORIA_FORA_DO_REGIME');
+    expect(repositorio.salvos).toEqual([]);
+  });
+
+  it('troca de regime aceita quando as categorias com esta unidade padrão permitem o regime novo', async () => {
+    const categoria = categoriaEm({ regimesPermitidos: ['CONTRIBUICAO', 'COMERCIAL'], unidadePadraoId: UNIDADE_CONTRIBUICAO });
+    const { repositorio, editar } = montar([unidadeEm()], [categoria]);
+
+    const resultado = await editar.executar(edicao({ regime: 'COMERCIAL' }));
+
+    expect(ehOk(resultado) && resultado.valor.regime).toBe('COMERCIAL');
+    expect(repositorio.salvos).toHaveLength(1);
+  });
+
+  it('categoria de outra unidade padrão não impede a troca de regime', async () => {
+    const categoria = categoriaEm({ regimesPermitidos: ['CONTRIBUICAO'], unidadePadraoId: UNIDADE_COMERCIAL });
+    const { editar } = montar([unidadeEm()], [categoria]);
+
+    const resultado = await editar.executar(edicao({ regime: 'COMERCIAL' }));
+
+    expect(ehOk(resultado)).toBe(true);
   });
 });

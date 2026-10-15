@@ -56,6 +56,13 @@ export class RepositorioDeCategoriaKysely extends RepositorioDeCategoria {
     });
   }
 
+  comUnidadePadrao(unidadeId: UnidadeId): Promise<readonly Categoria[]> {
+    return this.unidadeDeTrabalho.transacao('leitura', async ({ kysely }) => {
+      const linhas = await kysely.selectFrom('financeiro.categoria').selectAll().where('unidade_padrao_id', '=', unidadeId).execute();
+      return linhas.map(reconstituir);
+    });
+  }
+
   async adicionar(categoria: Categoria): Promise<void> {
     const instituicaoId = instituicaoDoContexto();
     await this.unidadeDeTrabalho.transacao('escrita', async ({ kysely }) => {

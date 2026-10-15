@@ -323,6 +323,21 @@ describe('cadastros do financeiro pela API (Doc 7 §12, §18.1)', () => {
       expect([resposta.status, resposta.corpo['erro']]).toEqual([400, 'CORPO_INVALIDO']);
     });
 
+    it('unidade — troca de regime que deixa fora do regime uma categoria com ela como padrão — responde 422 CATEGORIA_FORA_DO_REGIME e não altera', async () => {
+      const cdd = await unidadeDeA('CDD');
+      const criada = await emA(GERENTE, ROTA_CATEGORIAS, { metodo: 'POST', corpo: novaCategoria({ unidadePadraoId: cdd }) });
+      expect(criada.status).toBe(201);
+
+      const resposta = await emA(GERENTE, `${ROTA_UNIDADES}/${cdd}`, {
+        metodo: 'PUT',
+        versao: 1,
+        corpo: { nome: 'CDD', regime: 'COMERCIAL', ativa: true },
+      });
+
+      expect([resposta.status, resposta.corpo['erro']]).toEqual([422, 'CATEGORIA_FORA_DO_REGIME']);
+      expect(await linhaDoCadastro(banco, INSTITUICAO_A, 'unidade', cdd)).toMatchObject({ regime: 'CONTRIBUICAO', versao: 1 });
+    });
+
     it('grupo de custo — versão certa — renomeia e inativa subindo a versão', async () => {
       const cozinha = await grupoDeA('COZINHA');
 

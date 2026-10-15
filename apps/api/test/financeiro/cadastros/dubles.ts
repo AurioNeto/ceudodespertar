@@ -152,6 +152,10 @@ export class RepositorioDeCategoriaEmMemoria extends RepositorioDeCategoria {
     return Promise.resolve(this.existentes);
   }
 
+  comUnidadePadrao(unidadeId: UnidadeId): Promise<readonly Categoria[]> {
+    return Promise.resolve(this.existentes.filter((existente) => existente.unidadePadraoId === unidadeId));
+  }
+
   adicionar(agregado: Categoria): Promise<void> {
     this.adicionados.push(agregado);
     return Promise.resolve();
