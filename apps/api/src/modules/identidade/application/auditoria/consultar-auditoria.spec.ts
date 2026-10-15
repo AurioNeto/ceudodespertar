@@ -9,7 +9,7 @@ import { ConsultarAuditoria } from './consultar-auditoria.js';
 import { codificarCursor } from './cursor-de-auditoria.js';
 import type { EntradaDeAuditoria } from './entrada-de-auditoria.js';
 import { LeitorDeAuditoria } from './leitor-de-auditoria.js';
-import type { ConsultaDaTrilha } from './leitor-de-auditoria.js';
+import type { ConsultaDaTrilha, RegistroNaTrilha } from './leitor-de-auditoria.js';
 import { ROTULOS_DE_AUDITORIA } from './rotulos-de-auditoria.js';
 import { TrilhaDeAuditoria } from './trilha-de-auditoria.js';
 
@@ -65,10 +65,10 @@ class LeitorFalso extends LeitorDeAuditoria {
     super();
   }
 
-  ler(_contexto: ContextoDaTransacao, consulta: ConsultaDaTrilha): Promise<RegistroDeAuditoria[]> {
+  ler(_contexto: ContextoDaTransacao, consulta: ConsultaDaTrilha): Promise<RegistroNaTrilha[]> {
     this.diario.passos.push('leu');
     this.consultas.push(consulta);
-    return Promise.resolve([...this.registros]);
+    return Promise.resolve(this.registros.map((registro) => ({ registro, posicao: posicaoExata(registro) })));
   }
 }
 
@@ -86,6 +86,10 @@ function registro(n: number): RegistroDeAuditoria {
     detalhes: [],
     sensivel: false,
   };
+}
+
+function posicaoExata(registro: RegistroDeAuditoria): { em: string; id: string } {
+  return { em: registro.em.replace('Z', '456Z'), id: registro.id };
 }
 
 function montar(registros: readonly RegistroDeAuditoria[] = []) {
@@ -127,7 +131,7 @@ describe('ConsultarAuditoria', () => {
 
   it('leva o filtro usado como detalhe e nunca o cursor nem o limite', async () => {
     const { consultar, trilha } = montar();
-    const depois = codificarCursor({ em: AGORA, id: '0195c3a0-0000-7000-8000-000000000009' });
+    const depois = codificarCursor({ em: AGORA.toISOString(), id: '0195c3a0-0000-7000-8000-000000000009' });
 
     await consultar.executar(ACESSO, {
       de: '2026-03-01T00:00:00.000Z',
@@ -146,7 +150,7 @@ describe('ConsultarAuditoria', () => {
 
   it('repassa ao leitor período, operação, posição do cursor e um item a mais que o limite', async () => {
     const { consultar, leitor } = montar();
-    const posicao = { em: new Date('2026-03-04T12:00:00.000Z'), id: '0195c3a0-0000-7000-8000-000000000009' };
+    const posicao = { em: '2026-03-04T12:00:00.000456Z', id: '0195c3a0-0000-7000-8000-000000000009' };
 
     await consultar.executar(ACESSO, {
       de: '2026-03-01T00:00:00.000Z',
@@ -175,13 +179,13 @@ describe('ConsultarAuditoria', () => {
     expect(leitor.consultas).toStrictEqual([{ depois: null, limite: LIMITE + 1 }]);
   });
 
-  it('com mais registros que o limite devolve a página cheia e o cursor do último item', async () => {
+  it('com mais registros que o limite devolve a página cheia e o cursor com a posição exata do último item', async () => {
     const { consultar } = montar([registro(1), registro(2), registro(3)]);
 
     const pagina = await consultar.executar(ACESSO, { limite: LIMITE });
 
     expect(pagina.itens.map(({ id }) => id)).toEqual([registro(1).id, registro(2).id]);
-    expect(pagina.proxima).toBe(codificarCursor({ em: new Date(registro(2).em), id: registro(2).id }));
+    expect(pagina.proxima).toBe(codificarCursor(posicaoExata(registro(2))));
   });
 
   it('com registros até o limite não devolve cursor', async () => {

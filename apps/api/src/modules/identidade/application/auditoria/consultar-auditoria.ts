@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import type { DetalheDeAuditoria, FiltroDeAuditoria, PaginaDeAuditoria, RegistroDeAuditoria } from '@cdd/contracts';
+import type { DetalheDeAuditoria, FiltroDeAuditoria, PaginaDeAuditoria } from '@cdd/contracts';
 import { UnidadeDeTrabalho } from '../../../../shared/infrastructure/banco/unidade-de-trabalho.js';
 import { Relogio } from '../../../../shared/infrastructure/relogio.js';
 import { erroDeDominio, ErroDeDominioException } from '../../../../shared/kernel/erro-de-dominio.js';
@@ -9,6 +9,7 @@ import { codificarCursor, decodificarCursor, ErroDeCursorInvalido } from './curs
 import type { PosicaoDaTrilha } from './cursor-de-auditoria.js';
 import type { EntradaDeAuditoria } from './entrada-de-auditoria.js';
 import { LeitorDeAuditoria } from './leitor-de-auditoria.js';
+import type { RegistroNaTrilha } from './leitor-de-auditoria.js';
 import { ROTULOS_DE_AUDITORIA } from './rotulos-de-auditoria.js';
 import { TrilhaDeAuditoria } from './trilha-de-auditoria.js';
 
@@ -36,13 +37,13 @@ function posicaoDoCursor(cursor: string | undefined): PosicaoDaTrilha | null {
   }
 }
 
-function paginar(registros: readonly RegistroDeAuditoria[], limite: number): PaginaDeAuditoria {
-  const itens = registros.slice(0, limite);
-  const ultimo = itens.at(-1);
-  const haMais = registros.length > limite && ultimo !== undefined;
+function paginar(lidos: readonly RegistroNaTrilha[], limite: number): PaginaDeAuditoria {
+  const pagina = lidos.slice(0, limite);
+  const ultimo = pagina.at(-1);
+  const haMais = lidos.length > limite && ultimo !== undefined;
   return {
-    itens,
-    proxima: haMais ? codificarCursor({ em: new Date(ultimo.em), id: ultimo.id }) : null,
+    itens: pagina.map(({ registro }) => registro),
+    proxima: haMais ? codificarCursor(ultimo.posicao) : null,
   };
 }
 

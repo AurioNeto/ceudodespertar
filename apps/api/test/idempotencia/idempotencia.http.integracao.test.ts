@@ -57,6 +57,27 @@ let enderecoBase: string;
 let unidade: UnidadeDeTrabalhoMikroOrm;
 let chamadasDoHandler = 0;
 
+interface BarreiraDoHandler {
+  readonly entrou: Promise<void>;
+  readonly liberada: Promise<void>;
+  sinalizarEntrada(): void;
+  liberar(): void;
+}
+
+function criarBarreiraDoHandler(): BarreiraDoHandler {
+  let sinalizarEntrada: () => void = () => undefined;
+  let liberar: () => void = () => undefined;
+  const entrou = new Promise<void>((resolver) => {
+    sinalizarEntrada = resolver;
+  });
+  const liberada = new Promise<void>((resolver) => {
+    liberar = resolver;
+  });
+  return { entrou, liberada, sinalizarEntrada, liberar };
+}
+
+let barreiraDoHandler: BarreiraDoHandler | undefined;
+
 async function registrarEfeito(): Promise<void> {
   await unidade.transacao('escrita', ({ em }) =>
     em.execute(
@@ -103,6 +124,18 @@ class ControladorDeProva {
   @RespostaSemCorpoNoReplay()
   async sensivel(@Body() _corpo: unknown, @Res({ passthrough: true }) resposta: RespostaExpressPassthrough) {
     chamadasDoHandler += 1;
+    await registrarEfeito();
+    resposta.status(STATUS_CRIADO);
+    resposta.setHeader('Location', `/pessoas/${chamadasDoHandler}`);
+    return { chamada: chamadasDoHandler, cpf: CPF_DEVOLVIDO };
+  }
+
+  @Post('sensivel-com-barreira')
+  @RespostaSemCorpoNoReplay()
+  async sensivelComBarreira(@Res({ passthrough: true }) resposta: RespostaExpressPassthrough) {
+    chamadasDoHandler += 1;
+    barreiraDoHandler?.sinalizarEntrada();
+    await barreiraDoHandler?.liberada;
     await registrarEfeito();
     resposta.status(STATUS_CRIADO);
     resposta.setHeader('Location', `/pessoas/${chamadasDoHandler}`);
@@ -164,6 +197,14 @@ async function postar(caminho: string, chave: string | undefined, corpo: unknown
     body: JSON.stringify(corpo),
   });
   return { status: resposta.status, corpo: await resposta.text(), location: resposta.headers.get('location') };
+}
+
+function estrutura(resposta: RespostaHttp): { status: number; location: string | null; corpo: unknown } {
+  return {
+    status: resposta.status,
+    location: resposta.location,
+    corpo: resposta.corpo === '' ? '' : (JSON.parse(resposta.corpo) as unknown),
+  };
 }
 
 function esperarErroDeChaveReutilizada(resposta: RespostaHttp): void {
@@ -287,7 +328,7 @@ describe('IdempotenciaInterceptor sobre HTTP real, com borda e idempotência reg
 
       expect(primeira.status).toBe(STATUS_ACEITO);
       expect(primeira.location).toBe('/recursos/1');
-      expect(segunda).toStrictEqual(primeira);
+      expect(estrutura(segunda)).toStrictEqual(estrutura(primeira));
       expect(chamadasDoHandler).toBe(1);
       expect(await contar('shared.outbox')).toBe(efeitosAntes + 1);
     });
@@ -356,6 +397,35 @@ describe('IdempotenciaInterceptor sobre HTTP real, com borda e idempotência reg
       expect(chamadasDoHandler).toBe(1);
     });
 
+    it('replay concorrente: o segundo POST espera a primeira transação e responde sem corpo, com o handler rodando uma vez', async () => {
+      const chave = randomUUID();
+      const efeitosAntes = await contar('shared.outbox');
+      barreiraDoHandler = criarBarreiraDoHandler();
+      const barreira = barreiraDoHandler;
+      let respostas: [RespostaHttp, RespostaHttp];
+      try {
+        const primeiraEmCurso = postar('/sensivel-com-barreira', chave);
+        await barreira.entrou;
+        const segundaEmCurso = postar('/sensivel-com-barreira', chave);
+        await esperarBackendsBloqueados(1);
+        barreira.liberar();
+        respostas = await Promise.all([primeiraEmCurso, segundaEmCurso]);
+      } finally {
+        barreira.liberar();
+        barreiraDoHandler = undefined;
+      }
+
+      const [primeira, segunda] = respostas;
+      expect(estrutura(primeira)).toStrictEqual({
+        status: STATUS_CRIADO,
+        location: '/pessoas/1',
+        corpo: { chamada: 1, cpf: CPF_DEVOLVIDO },
+      });
+      expect(estrutura(segunda)).toStrictEqual({ status: STATUS_CRIADO, location: '/pessoas/1', corpo: '' });
+      expect(chamadasDoHandler).toBe(1);
+      expect(await contar('shared.outbox')).toBe(efeitosAntes + 1);
+    });
+
     it('reusar a chave com corpo diferente continua dando 422', async () => {
       const chave = randomUUID();
 
@@ -371,7 +441,7 @@ describe('IdempotenciaInterceptor sobre HTTP real, com borda e idempotência reg
       const primeira = await postar('/passthrough', chave);
       const replay = await postar('/passthrough', chave);
 
-      expect(replay).toStrictEqual(primeira);
+      expect(estrutura(replay)).toStrictEqual(estrutura(primeira));
       expect(JSON.parse(replay.corpo)).toStrictEqual({ chamada: 1 });
       expect(await respostaGravada(chave)).toStrictEqual({ corpo: { chamada: 1 }, location: '/recursos/1' });
     });
@@ -404,7 +474,7 @@ describe('IdempotenciaInterceptor sobre HTTP real, com borda e idempotência reg
 
       expect(primeira.status).toBe(STATUS_CRIADO);
       expect(JSON.parse(primeira.corpo)).toStrictEqual({ chamada: 1 });
-      expect(replay).toStrictEqual(primeira);
+      expect(estrutura(replay)).toStrictEqual(estrutura(primeira));
       expect(chamadasDoHandler).toBe(1);
       expect(await contar('shared.outbox')).toBe(efeitosAntes + 1);
     });
@@ -444,7 +514,7 @@ describe('IdempotenciaInterceptor sobre HTTP real, com borda e idempotência reg
       const [primeira, segunda] = respostas as [RespostaHttp, RespostaHttp];
       expect(chamadasDoHandler).toBe(1);
       expect(await contar('shared.outbox')).toBe(efeitosAntes + 1);
-      expect(segunda).toStrictEqual(primeira);
+      expect(estrutura(segunda)).toStrictEqual(estrutura(primeira));
       expect(JSON.parse(primeira.corpo)).toStrictEqual({ chamada: 1 });
     });
   });
@@ -464,7 +534,7 @@ describe('IdempotenciaInterceptor sobre HTTP real, com borda e idempotência reg
     it('as mesmas chaves em ordem diferente dão replay', async () => {
       const [primeira, segunda] = await repetirComQuery('?a=1&b=2', '?b=2&a=1');
 
-      expect(segunda).toStrictEqual(primeira);
+      expect(estrutura(segunda)).toStrictEqual(estrutura(primeira));
       expect(chamadasDoHandler).toBe(1);
     });
 

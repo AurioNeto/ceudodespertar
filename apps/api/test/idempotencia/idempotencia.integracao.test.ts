@@ -13,7 +13,11 @@ import {
 } from '../../src/shared/infrastructure/banco/unidade-de-trabalho.mikro-orm.js';
 import { IdempotenciaInterceptor } from '../../src/shared/infrastructure/idempotencia/idempotencia.interceptor.js';
 import { calcularHashDoCorpo } from '../../src/shared/infrastructure/idempotencia/hash-do-corpo.js';
-import { reclamarChaveVencida } from '../../src/shared/infrastructure/idempotencia/chave-de-idempotencia.repositorio.js';
+import {
+  gravarResposta,
+  reclamarChaveVencida,
+  reivindicarChave,
+} from '../../src/shared/infrastructure/idempotencia/chave-de-idempotencia.repositorio.js';
 import type { DadosDaChaveDeIdempotencia } from '../../src/shared/infrastructure/idempotencia/chave-de-idempotencia.repositorio.js';
 import { abrirOrmDeTeste } from '../unidade-de-trabalho/orm-de-teste.js';
 import type { OrmDeTeste } from '../unidade-de-trabalho/orm-de-teste.js';
@@ -391,6 +395,30 @@ describe('IdempotenciaInterceptor · Idempotency-Key (Documento 7 §12)', () => 
 
     expect(linhaX.resposta.corpo).toStrictEqual({ quem: 'x' });
     expect(linhaY.resposta.corpo).toStrictEqual({ quem: 'y' });
+  });
+
+  it('gravarResposta filtra a instituição explicitamente: com o contexto de A e o id de B, não grava em nenhuma das duas', async () => {
+    const chave = randomUUID();
+    for (const instituicaoId of [INSTITUICAO_A, INSTITUICAO_B]) {
+      const dados: DadosDaChaveDeIdempotencia = {
+        instituicaoId,
+        usuarioId: USUARIO_A,
+        chave,
+        rota: 'POST /doacoes',
+        corpoHash: HASH_DO_CORPO_PADRAO,
+      };
+      // eslint-disable-next-line no-await-in-loop -- uma reivindicação por instituição, cada uma no seu contexto
+      await comIdentidade(instituicaoId, () => unidade.transacao('escrita', ({ kysely }) => reivindicarChave(kysely, dados)));
+    }
+    const antes = await Promise.all([selecionarLinha(INSTITUICAO_A, chave), selecionarLinha(INSTITUICAO_B, chave)]);
+
+    await comIdentidade(INSTITUICAO_A, () =>
+      unidade.transacao('escrita', ({ kysely }) =>
+        gravarResposta(kysely, INSTITUICAO_B, chave, HttpStatus.CREATED, { gravado: true }, null),
+      ),
+    );
+
+    expect(await Promise.all([selecionarLinha(INSTITUICAO_A, chave), selecionarLinha(INSTITUICAO_B, chave)])).toStrictEqual(antes);
   });
 
   it('grava o usuario_id de quem reivindicou a chave', async () => {
