@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { APP_INTERCEPTOR } from '@nestjs/core';
+import { FinanceiroModule } from '../modules/financeiro/public-api.js';
 import { IdentidadeModule, ResolvedorDeContextoDeAcessoDaIdentidade } from '../modules/identidade/public-api.js';
 import { AutenticacaoModule } from '../shared/infrastructure/autenticacao/autenticacao.module.js';
 import { BancoModule } from '../shared/infrastructure/banco/banco.module.js';
@@ -24,6 +25,7 @@ import { SaudeModule } from '../shared/infrastructure/saude/saude.module.js';
     SaudeModule,
     FiltroDeErrosModule,
     IdentidadeModule,
+    FinanceiroModule,
     AutenticacaoModule.comResolvedor(IdentidadeModule, ResolvedorDeContextoDeAcessoDaIdentidade),
   ],
   providers: [

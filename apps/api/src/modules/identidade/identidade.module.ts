@@ -4,6 +4,7 @@ import type { Ambiente } from '../../shared/infrastructure/configuracao/esquema-
 import { BancoModule } from '../../shared/infrastructure/banco/banco.module.js';
 import { EventosModule } from '../../shared/infrastructure/eventos/eventos.module.js';
 import { Relogio, RelogioDoSistema } from '../../shared/infrastructure/relogio.js';
+import { SemeaduraModule } from '../../shared/infrastructure/semeadura/semeadura.module.js';
 import { ConsultarAuditoria } from './application/auditoria/consultar-auditoria.js';
 import { LeitorDeAuditoria } from './application/auditoria/leitor-de-auditoria.js';
 import { TrilhaDeAuditoria } from './application/auditoria/trilha-de-auditoria.js';
@@ -86,7 +87,7 @@ import { GestaoDeGruposController } from './interface/http/gestao-de-grupos.cont
 import { GestaoDeUsuariosController } from './interface/http/gestao-de-usuarios.controller.js';
 
 @Module({
-  imports: [BancoModule, EventosModule],
+  imports: [BancoModule, EventosModule, SemeaduraModule],
   controllers: [EuController, AuditoriaController, GestaoDeUsuariosController, GestaoDeGruposController],
   providers: [
     { provide: Relogio, useClass: RelogioDoSistema },

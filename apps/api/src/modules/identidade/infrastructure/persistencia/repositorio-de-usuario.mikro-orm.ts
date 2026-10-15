@@ -13,7 +13,7 @@ import { Usuario } from '../../domain/usuario/usuario.js';
 import type { AtribuicaoDeGrupo } from '../../domain/usuario/usuario.js';
 import { RepositorioDeUsuario } from '../../domain/usuario/usuario.repo.js';
 import { ConviteEntidade, UsuarioEntidade, UsuarioGrupoEntidade } from './entidades-de-usuario.js';
-import { instituicaoDoContexto } from './instituicao-do-contexto.js';
+import { instituicaoDoContexto } from '../../../../shared/infrastructure/instituicao-do-contexto.js';
 
 const NOME_DO_AGREGADO = 'Usuario';
 const CODIFICACAO_DO_HASH = 'hex';

@@ -1,4 +1,4 @@
-import { ContextoDaRequisicao } from '../../../../shared/infrastructure/contexto-da-requisicao.js';
+import { ContextoDaRequisicao } from './contexto-da-requisicao.js';
 
 export class ErroDeInstituicaoAusenteNaPersistencia extends Error {
   constructor() {

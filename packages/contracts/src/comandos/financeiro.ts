@@ -54,7 +54,7 @@ function semRepeticao<T>(itens: readonly T[]): boolean {
 const SEM_DUPLICADOS = { message: 'não pode conter itens duplicados', params: { regra: 'sem_duplicados' } };
 
 export const ParametrosDoCadastro = z.object({
-  id: z.uuid().transform((valor) => valor.toLowerCase()),
+  id: uuidEmMinusculas(),
 });
 
 export type ParametrosDoCadastro = z.infer<typeof ParametrosDoCadastro>;
@@ -92,7 +92,6 @@ export type EditarGrupoDeCusto = z.infer<typeof EditarGrupoDeCusto>;
 
 const dadosDaCategoria = z.object({
   nome,
-  tipo: z.enum(TIPOS_DE_CATEGORIA),
   regimesPermitidos: z.array(z.enum(REGIMES)).min(1).refine(semRepeticao, SEM_DUPLICADOS),
   unidadePadraoId: opcional(uuidEmMinusculas<UnidadeId>()),
   linhaRelatorio: nome,
@@ -101,6 +100,7 @@ const dadosDaCategoria = z.object({
 export const CriarCategoria = dadosDaCategoria.extend({
   codigoSistema: codigoDeSistema,
   natureza: z.enum(NATUREZAS),
+  tipo: z.enum(TIPOS_DE_CATEGORIA),
 });
 
 export type CriarCategoria = z.infer<typeof CriarCategoria>;

@@ -34,7 +34,7 @@ SELECT verif.confere('pg_constraint · toda FK entre tabelas com instituicao_id 
 -- é composta — uma FK apagada some do pg_constraint e passa batida): fixa o
 -- conjunto EXATO das FKs compostas do B0, um par (tabela filha → tabela mãe)
 -- por linha.
-SELECT verif.confere('pg_constraint · o conjunto exato de FKs compostas com instituicao_id é o esperado do B0',
+SELECT verif.confere('pg_constraint · o conjunto exato de FKs compostas com instituicao_id é o esperado do B0 e do B1',
   (SELECT array_agg(con.conrelid::regclass::text || ' → ' || con.confrelid::regclass::text
                      ORDER BY con.conrelid::regclass::text, con.confrelid::regclass::text)
      FROM pg_constraint con
@@ -45,6 +45,7 @@ SELECT verif.confere('pg_constraint · o conjunto exato de FKs compostas com ins
       AND EXISTS (SELECT 1 FROM pg_attribute a WHERE a.attrelid = con.conrelid  AND a.attname = 'instituicao_id' AND NOT a.attisdropped)
       AND EXISTS (SELECT 1 FROM pg_attribute a WHERE a.attrelid = con.confrelid AND a.attname = 'instituicao_id' AND NOT a.attisdropped)),
   ARRAY[
+    'financeiro.categoria → financeiro.unidade',
     'identidade.convite → identidade.usuario',
     'identidade.grupo_permissao → identidade.grupo',
     'identidade.usuario_grupo → identidade.grupo',

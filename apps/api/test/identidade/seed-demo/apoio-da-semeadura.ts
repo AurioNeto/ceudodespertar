@@ -9,6 +9,7 @@ import { GeradorDeTokenDeConviteNode } from '../../../src/modules/identidade/inf
 import { PersistenciaDaDemonstracaoKysely } from '../../../src/modules/identidade/infrastructure/seed-demo/persistencia-da-demonstracao.kysely.js';
 import { LeitorDeGruposDaInstituicaoKysely } from '../../../src/modules/identidade/infrastructure/usuarios/leitor-de-grupos-da-instituicao.kysely.js';
 import { RelogioDoSistema } from '../../../src/shared/infrastructure/relogio.js';
+import { SemeadoresDaInstituicao } from '../../../src/shared/infrastructure/semeadura/semeadores-da-instituicao.js';
 import type { BancoDeTeste } from '../../integracao/banco-de-teste.js';
 import type { AmbienteDaIdentidade } from '../apoio.js';
 
@@ -28,6 +29,7 @@ export class LocalizadorQueResponde extends LocalizadorDeSujeito {
 }
 
 export interface PecasDaSemeadura {
+  readonly semeadoresDaInstituicao?: SemeadoresDaInstituicao;
   readonly localizador?: LocalizadorDeSujeito;
   readonly usuarios?: RepositorioDeUsuario;
   readonly demonstracao?: PersistenciaDaDemonstracao;
@@ -81,6 +83,7 @@ export function montarSemeadura(ambiente: AmbienteDaIdentidade, pecas: PecasDaSe
     new PersistenciaDoBootstrapKysely(ambiente.unidadeDeTrabalho),
     pecas.demonstracao ?? new PersistenciaDaDemonstracaoKysely(ambiente.unidadeDeTrabalho),
     ambiente.semeador,
+    pecas.semeadoresDaInstituicao ?? new SemeadoresDaInstituicao(),
     new LeitorDeGruposDaInstituicaoKysely(ambiente.unidadeDeTrabalho),
     pecas.usuarios ?? ambiente.usuarios,
     new GeradorDeTokenDeConviteNode(),

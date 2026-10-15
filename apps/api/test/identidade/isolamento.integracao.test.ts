@@ -5,7 +5,7 @@ import { criarBancoDeTeste, derrubarBancoDeTeste } from '../integracao/banco-de-
 import type { BancoDeTeste } from '../integracao/banco-de-teste.js';
 import { comContexto, INSTITUICAO_A, INSTITUICAO_B, semearInstituicoes } from '../eventos/apoio.js';
 import { gerarUuidV7 } from '../../src/shared/kernel/ids.js';
-import { ErroDeInstituicaoAusenteNaPersistencia } from '../../src/modules/identidade/infrastructure/persistencia/instituicao-do-contexto.js';
+import { ErroDeInstituicaoAusenteNaPersistencia } from '../../src/shared/infrastructure/instituicao-do-contexto.js';
 import {
   abrirAmbienteDaIdentidade,
   AUTOR,

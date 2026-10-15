@@ -9,6 +9,7 @@ import {
   CriarUnidade,
   MAXIMO_DE_DINHEIRO_EM_CENTAVOS,
   EditarUnidade,
+  ParametrosDoCadastro,
   ParametrosDoPeriodo,
   ReabrirPeriodo,
   RegistrarLancamento,
@@ -198,4 +199,9 @@ test('competência é AAAA-MM com mês válido', () => {
 test('reabertura de período exige motivo de pelo menos dez caracteres', () => {
   assert.equal(ReabrirPeriodo.safeParse({ motivo: '   curto   ' }).success, false);
   assert.equal(ReabrirPeriodo.safeParse({ motivo: 'Nota fiscal chegou atrasada' }).success, true);
+});
+
+test('identificador do cadastro na rota é um UUID e sai em minúsculas', () => {
+  assert.equal(ParametrosDoCadastro.parse({ id: UUID_A.toUpperCase() }).id, UUID_A);
+  assert.equal(ParametrosDoCadastro.safeParse({ id: 'nao-e-uuid' }).success, false);
 });

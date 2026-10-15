@@ -12,6 +12,7 @@ import { MigracaoB0010ResolverConvite } from './b0-010-resolver-convite/migracao
 import { MigracaoB0011Bootstrap } from './b0-011-bootstrap/migracao.js';
 import { MigracaoB0012OutboxExpurgo } from './b0-012-outbox-expurgo/migracao.js';
 import { MigracaoB0013OutboxAlertadoEm } from './b0-013-outbox-alertado-em/migracao.js';
+import { MigracaoB1001CadastrosDoFinanceiro } from './b1-001-cadastros-do-financeiro/migracao.js';
 
 export const MIGRACOES_DO_CDD = [
   { name: 'b0-000-esquemas', class: MigracaoB0000Esquemas },
@@ -28,4 +29,5 @@ export const MIGRACOES_DO_CDD = [
   { name: 'b0-011-bootstrap', class: MigracaoB0011Bootstrap },
   { name: 'b0-012-outbox-expurgo', class: MigracaoB0012OutboxExpurgo },
   { name: 'b0-013-outbox-alertado-em', class: MigracaoB0013OutboxAlertadoEm },
+  { name: 'b1-001-cadastros-do-financeiro', class: MigracaoB1001CadastrosDoFinanceiro },
 ];

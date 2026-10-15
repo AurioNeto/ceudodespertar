@@ -12,6 +12,7 @@ import {
   permitirLeituraSemContextoAoDono,
 } from '../identidade/bootstrap/apoio-de-bootstrap.js';
 import { CAMINHO_DOS_USUARIOS, ServidorKeycloakFalso } from '../identidade/keycloak/servidor-keycloak-falso.js';
+import { consultarNaInstituicao } from '../identidade/apoio.js';
 import { fotoDoBanco, OUTRO_SUB_DO_DEV, SUB_DO_DEV } from '../identidade/seed-demo/apoio-da-semeadura.js';
 import { criarBancoDeTeste, derrubarBancoDeTeste } from '../integracao/banco-de-teste.js';
 import type { BancoDeTeste } from '../integracao/banco-de-teste.js';
@@ -28,6 +29,21 @@ const SEED = ['seed-demo'];
 interface ObservacaoNaBusca {
   readonly conexoesComTransacaoAberta: number;
   readonly instituicoes: number;
+}
+
+
+async function cadastrosDoFinanceiro(banco: BancoDeTeste): Promise<{ unidades: number; grupos: number; categorias: number }> {
+  const { rows } = await banco.owner.query<{ id: string }>('select id from shared.instituicao');
+  const [instituicao] = rows;
+  if (instituicao === undefined) return { unidades: 0, grupos: 0, categorias: 0 };
+  const [contagens] = await consultarNaInstituicao<{ unidades: number; grupos: number; categorias: number }>(
+    banco,
+    instituicao.id,
+    `select (select count(*) from financeiro.unidade)::int as unidades,
+            (select count(*) from financeiro.grupo_de_custo)::int as grupos,
+            (select count(*) from financeiro.categoria)::int as categorias`,
+  );
+  return contagens!;
 }
 
 describe('CLI identidade:seed-demo de ponta a ponta contra Postgres real', () => {
@@ -114,6 +130,7 @@ describe('CLI identidade:seed-demo de ponta a ponta contra Postgres real', () =>
     expect(await contagensDoBanco(banco)).toMatchObject({ instituicoes: 1, grupos: 6, usuarios: TOTAL_DE_USUARIOS, marcador: 0 });
     expect(observacoes).toHaveLength(1);
     expect(observacao).toEqual({ conexoesComTransacaoAberta: 0, instituicoes: 0 });
+    expect(await cadastrosDoFinanceiro(banco)).toStrictEqual({ unidades: 6, grupos: 6, categorias: 14 });
     for (const sub of await subsDoBanco()) expect(saidaCompleta(resultado)).not.toContain(sub);
     expect(saidaCompleta(resultado)).not.toContain(SUB_DO_DEV);
   });

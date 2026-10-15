@@ -6,4 +6,7 @@ export const RESTRICAO_PARA_CODIGO: Readonly<Record<string, CodigoDeErro>> = {
   grupo_nome_unico: 'GRUPO_JA_EXISTE',
   convite_vigente_unico: 'CONVITE_JA_PENDENTE',
   usuario_grupo_grupo_fk: 'GRUPO_INEXISTENTE',
+  unidade_codigo_unico: 'CODIGO_DE_SISTEMA_JA_EXISTE',
+  grupo_de_custo_codigo_unico: 'CODIGO_DE_SISTEMA_JA_EXISTE',
+  categoria_codigo_unico: 'CODIGO_DE_SISTEMA_JA_EXISTE',
 };

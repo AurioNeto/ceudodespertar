@@ -3,6 +3,7 @@ import type { CodigoGrupo, GrupoId, UsuarioId } from '@cdd/contracts';
 import { UnidadeDeTrabalho } from '../../../../shared/infrastructure/banco/unidade-de-trabalho.js';
 import { emContextoDaInstituicao } from '../../../../shared/infrastructure/contexto-da-instituicao.js';
 import { Relogio } from '../../../../shared/infrastructure/relogio.js';
+import { SemeadoresDaInstituicao } from '../../../../shared/infrastructure/semeadura/semeadores-da-instituicao.js';
 import { erroDeDominio } from '../../../../shared/kernel/erro-de-dominio.js';
 import type { ErroDeDominio } from '../../../../shared/kernel/erro-de-dominio.js';
 import { gerarUuidV7 } from '../../../../shared/kernel/ids.js';
@@ -60,6 +61,7 @@ export class SemeaduraDeDemonstracao {
     private readonly bootstrap: PersistenciaDoBootstrap,
     private readonly demonstracao: PersistenciaDaDemonstracao,
     private readonly semeador: SemeadorDeGrupos,
+    private readonly semeadoresDaInstituicao: SemeadoresDaInstituicao,
     private readonly grupos: LeitorDeGruposDaInstituicao,
     private readonly usuarios: RepositorioDeUsuario,
     private readonly gerador: GeradorDeTokenDeConvite,
@@ -105,6 +107,7 @@ export class SemeaduraDeDemonstracao {
       await this.bootstrap.criarInstituicao(ID_DA_INSTITUICAO_DE_DEMONSTRACAO, NOME_DA_INSTITUICAO_DE_DEMONSTRACAO);
     }
     await this.semeador.semear(ID_DA_INSTITUICAO_DE_DEMONSTRACAO);
+    await this.semeadoresDaInstituicao.semear(ID_DA_INSTITUICAO_DE_DEMONSTRACAO);
     const idsDosGrupos = await this.idsDosGruposDeSistema();
     if (idsDosGrupos.tipo === 'erro') return idsDosGrupos;
 
