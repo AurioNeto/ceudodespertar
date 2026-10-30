@@ -14,6 +14,7 @@ import { MigracaoB0012OutboxExpurgo } from './b0-012-outbox-expurgo/migracao.js'
 import { MigracaoB0013OutboxAlertadoEm } from './b0-013-outbox-alertado-em/migracao.js';
 import { MigracaoB1001CadastrosDoFinanceiro } from './b1-001-cadastros-do-financeiro/migracao.js';
 import { MigracaoB1002ContaEFundo } from './b1-002-conta-e-fundo/migracao.js';
+import { MigracaoB1003PessoaMinima } from './b1-003-pessoa-minima/migracao.js';
 
 export const MIGRACOES_DO_CDD = [
   { name: 'b0-000-esquemas', class: MigracaoB0000Esquemas },
@@ -32,4 +33,5 @@ export const MIGRACOES_DO_CDD = [
   { name: 'b0-013-outbox-alertado-em', class: MigracaoB0013OutboxAlertadoEm },
   { name: 'b1-001-cadastros-do-financeiro', class: MigracaoB1001CadastrosDoFinanceiro },
   { name: 'b1-002-conta-e-fundo', class: MigracaoB1002ContaEFundo },
+  { name: 'b1-003-pessoa-minima', class: MigracaoB1003PessoaMinima },
 ];

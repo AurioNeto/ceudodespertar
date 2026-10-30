@@ -1,6 +1,6 @@
 -- verificacoes: 12
 -- T23 (Doc 3 §11.4, Documento 7 §15/§22): toda tabela com `instituicao_id`
--- em `shared` e `identidade` tem RLS habilitada e FORÇADA, e a política
+-- em todos os schemas da aplicação tem RLS habilitada e FORÇADA, e a política
 -- `isolamento_por_instituicao` com a expressão certa — exceto `shared.outbox`,
 -- a única exceção documentada no B0. Roda como dono, porque lê o catálogo.
 
@@ -22,12 +22,12 @@ SELECT verif.confere('T23 · shared.outbox é a única tabela com instituicao_id
 -- e ficasse fora da varredura, ou uma tabela do B0 que o caso simplesmente
 -- não citasse, passaria batida.
 
--- Evita vácuo silencioso: a varredura tem que achar as doze tabelas com
+-- Evita vácuo silencioso: a varredura tem que achar as treze tabelas com
 -- `instituicao_id` (usuario, grupo, grupo_permissao, usuario_grupo, convite,
 -- registro_de_auditoria, shared.chave_de_idempotencia e, no financeiro,
--- unidade, grupo_de_custo, categoria, conta e fundo) — não zero.
+-- unidade, grupo_de_custo, categoria, conta e fundo; mais pessoas.pessoa) — não zero.
 SELECT verif.confere('T23 · a varredura de tabelas-alvo não está vazia',
-  (SELECT count(*) FROM verif.tabelas_com_instituicao_id()), 12::bigint);
+  (SELECT count(*) FROM verif.tabelas_com_instituicao_id()), 13::bigint);
 
 -- Cada tabela-alvo tem a política isolamento_por_instituicao com a expressão
 -- certa no USING, o comando certo (ALL) e os papéis certos (PUBLIC — sem TO,

@@ -39,7 +39,9 @@ pnpm typecheck
   unidades, grupos de custo e categorias têm persistência, seed e endpoints.
   Contas e fundos têm migração, agregados e repositórios (#235); a parte B da
   TSK-514 está implementada localmente, com comandos, endpoints e consultas
-  de cadastro sem saldo, aguardando revisão e merge.
+  de cadastro sem saldo, aguardando revisão e merge. A TSK-512 está implementada
+  na branch empilhada `codex/tsk-512-pessoa-minima`: cadastro mínimo de pessoas
+  com busca e paginação, além da validação do titular de contas pessoais.
 - **Telas demonstrativas:** financeiro, pessoas/anamnese, eventos e estoque
   ainda usam fixtures. A integração das telas financeiras é a TSK-520;
   o restante do backend segue as etapas B2–B6.

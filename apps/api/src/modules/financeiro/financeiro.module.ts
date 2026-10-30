@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { BancoModule } from '../../shared/infrastructure/banco/banco.module.js';
 import { SemeaduraModule } from '../../shared/infrastructure/semeadura/semeadura.module.js';
+import { PessoasModule } from '../pessoas/public-api.js';
 import { ConsultarCadastros } from './application/cadastros/consultar-cadastros.js';
 import { CriarCategoria } from './application/cadastros/criar-categoria.js';
 import { CriarConta } from './application/cadastros/criar-conta.js';
@@ -31,7 +32,7 @@ import { RepositorioDeUnidadeKysely } from './infrastructure/persistencia/reposi
 import { SemeadorDeCadastrosDaCasa } from './infrastructure/persistencia/semeador-de-cadastros-da-casa.js';
 
 @Module({
-  imports: [BancoModule, SemeaduraModule],
+  imports: [BancoModule, SemeaduraModule, PessoasModule],
   controllers: [UnidadesController, GruposDeCustoController, CategoriasController, ContasController, FundosController],
   providers: [
     ConsultarCadastros,
