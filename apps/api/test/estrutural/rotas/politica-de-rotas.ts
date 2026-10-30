@@ -10,4 +10,16 @@ export const ROTAS_SEM_PERMISSAO: OpcoesDeVerificacao['rotasSemPermissao'] = [
   { marca: 'publico', metodo: 'GET', caminho: '/saude/pronta' },
 ];
 
-export const PISO_DE_ROTAS = 15;
+export const ROTAS_DOS_CADASTROS_DO_FINANCEIRO: readonly string[] = [
+  'GET /api/v1/financeiro/unidades',
+  'POST /api/v1/financeiro/unidades',
+  'PUT /api/v1/financeiro/unidades/:id',
+  'GET /api/v1/financeiro/grupos-de-custo',
+  'POST /api/v1/financeiro/grupos-de-custo',
+  'PUT /api/v1/financeiro/grupos-de-custo/:id',
+  'GET /api/v1/financeiro/categorias',
+  'POST /api/v1/financeiro/categorias',
+  'PUT /api/v1/financeiro/categorias/:id',
+];
+
+export const PISO_DE_ROTAS = 24;
