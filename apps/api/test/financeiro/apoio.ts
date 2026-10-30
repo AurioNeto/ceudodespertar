@@ -1,5 +1,7 @@
 import type { MikroORM } from '@mikro-orm/postgresql';
 import { RepositorioDeCategoriaKysely } from '../../src/modules/financeiro/infrastructure/persistencia/repositorio-de-categoria.kysely.js';
+import { RepositorioDeContaKysely } from '../../src/modules/financeiro/infrastructure/persistencia/repositorio-de-conta.kysely.js';
+import { RepositorioDeFundoKysely } from '../../src/modules/financeiro/infrastructure/persistencia/repositorio-de-fundo.kysely.js';
 import { RepositorioDeGrupoDeCustoKysely } from '../../src/modules/financeiro/infrastructure/persistencia/repositorio-de-grupo-de-custo.kysely.js';
 import { RepositorioDeUnidadeKysely } from '../../src/modules/financeiro/infrastructure/persistencia/repositorio-de-unidade.kysely.js';
 import { SemeadorDeCadastrosDaCasa } from '../../src/modules/financeiro/infrastructure/persistencia/semeador-de-cadastros-da-casa.js';
@@ -13,6 +15,8 @@ export interface AmbienteDoFinanceiro {
   readonly unidades: RepositorioDeUnidadeKysely;
   readonly grupos: RepositorioDeGrupoDeCustoKysely;
   readonly categorias: RepositorioDeCategoriaKysely;
+  readonly contas: RepositorioDeContaKysely;
+  readonly fundos: RepositorioDeFundoKysely;
   readonly semeador: SemeadorDeCadastrosDaCasa;
   readonly semeadores: SemeadoresDaInstituicao;
 }
@@ -28,6 +32,8 @@ export async function abrirAmbienteDoFinanceiro(banco: BancoDeTeste): Promise<Am
     unidades: new RepositorioDeUnidadeKysely(unidadeDeTrabalho),
     grupos: new RepositorioDeGrupoDeCustoKysely(unidadeDeTrabalho),
     categorias: new RepositorioDeCategoriaKysely(unidadeDeTrabalho),
+    contas: new RepositorioDeContaKysely(unidadeDeTrabalho),
+    fundos: new RepositorioDeFundoKysely(unidadeDeTrabalho),
     semeador,
     semeadores,
   };

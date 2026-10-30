@@ -46,6 +46,8 @@ SELECT verif.confere('pg_constraint · o conjunto exato de FKs compostas com ins
       AND EXISTS (SELECT 1 FROM pg_attribute a WHERE a.attrelid = con.confrelid AND a.attname = 'instituicao_id' AND NOT a.attisdropped)),
   ARRAY[
     'financeiro.categoria → financeiro.unidade',
+    'financeiro.conta → financeiro.unidade',
+    'financeiro.fundo → financeiro.conta',
     'identidade.convite → identidade.usuario',
     'identidade.grupo_permissao → identidade.grupo',
     'identidade.usuario_grupo → identidade.grupo',

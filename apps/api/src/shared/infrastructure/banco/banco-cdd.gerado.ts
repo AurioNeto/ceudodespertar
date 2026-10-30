@@ -37,6 +37,33 @@ export interface FinanceiroCategoria {
   versao: Generated<number>;
 }
 
+export interface FinanceiroConta {
+  ativa: Generated<boolean>;
+  descricao: Generated<string>;
+  id: Generated<string>;
+  identificador_bancario: string | null;
+  instituicao_id: string;
+  nome: string;
+  pessoa_titular_id: string | null;
+  tipo: string;
+  titularidade: string;
+  unidade_id: string | null;
+  versao: Generated<number>;
+}
+
+export interface FinanceiroFundo {
+  ativo: Generated<boolean>;
+  categorias_permitidas: Generated<string[]>;
+  codigo_sistema: string;
+  conta_vinculada_id: string;
+  id: Generated<string>;
+  instituicao_id: string;
+  meta: number | null;
+  nome: string;
+  nota: Generated<string>;
+  versao: Generated<number>;
+}
+
 export interface FinanceiroGrupoDeCusto {
   ativo: Generated<boolean>;
   codigo_sistema: string;
@@ -178,6 +205,8 @@ export interface SharedOutbox {
 
 export interface DB {
   "financeiro.categoria": FinanceiroCategoria;
+  "financeiro.conta": FinanceiroConta;
+  "financeiro.fundo": FinanceiroFundo;
   "financeiro.grupo_de_custo": FinanceiroGrupoDeCusto;
   "financeiro.unidade": FinanceiroUnidade;
   "identidade.bootstrap_executado": IdentidadeBootstrapExecutado;

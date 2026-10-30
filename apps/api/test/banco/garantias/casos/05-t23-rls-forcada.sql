@@ -22,12 +22,12 @@ SELECT verif.confere('T23 · shared.outbox é a única tabela com instituicao_id
 -- e ficasse fora da varredura, ou uma tabela do B0 que o caso simplesmente
 -- não citasse, passaria batida.
 
--- Evita vácuo silencioso: a varredura tem que achar as dez tabelas com
+-- Evita vácuo silencioso: a varredura tem que achar as doze tabelas com
 -- `instituicao_id` (usuario, grupo, grupo_permissao, usuario_grupo, convite,
 -- registro_de_auditoria, shared.chave_de_idempotencia e, no financeiro,
--- unidade, grupo_de_custo e categoria) — não zero.
+-- unidade, grupo_de_custo, categoria, conta e fundo) — não zero.
 SELECT verif.confere('T23 · a varredura de tabelas-alvo não está vazia',
-  (SELECT count(*) FROM verif.tabelas_com_instituicao_id()), 10::bigint);
+  (SELECT count(*) FROM verif.tabelas_com_instituicao_id()), 12::bigint);
 
 -- Cada tabela-alvo tem a política isolamento_por_instituicao com a expressão
 -- certa no USING, o comando certo (ALL) e os papéis certos (PUBLIC — sem TO,
