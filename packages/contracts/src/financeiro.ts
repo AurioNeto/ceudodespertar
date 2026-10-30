@@ -61,6 +61,18 @@ export interface GrupoDeCusto {
   readonly versao: number;
 }
 
+export interface UnidadesDaCasa {
+  readonly itens: readonly Unidade[];
+}
+
+export interface CategoriasDaCasa {
+  readonly itens: readonly Categoria[];
+}
+
+export interface GruposDeCustoDaCasa {
+  readonly itens: readonly GrupoDeCusto[];
+}
+
 export type TipoConta = 'CONTA_CORRENTE' | 'CARTAO_CREDITO' | 'DINHEIRO' | 'FUNDO';
 export type Titularidade = 'INSTITUCIONAL' | 'PESSOAL_DE_TERCEIRO';
 export type SituacaoConciliacao = 'CONCILIADA' | 'PENDENTE' | 'NAO_APLICAVEL';
