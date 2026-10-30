@@ -164,6 +164,28 @@ export interface IdentidadeUsuarioGrupo {
   usuario_id: string;
 }
 
+export interface PessoasPessoa {
+  anonimizada_em: Timestamp | null;
+  apelido: string | null;
+  ativa: Generated<boolean>;
+  cadastrada_por_link: Generated<boolean>;
+  cidade: string | null;
+  contato_emergencia_nome: string | null;
+  contato_emergencia_tel: string | null;
+  criada_em: Generated<Timestamp>;
+  documento: string | null;
+  email: string | null;
+  foto_anexo_id: string | null;
+  id: Generated<string>;
+  instituicao_id: string;
+  nascimento: string | null;
+  nome: string;
+  relacao_com_a_casa: string | null;
+  telefone: string | null;
+  tipo: string;
+  versao: Generated<number>;
+}
+
 export interface SharedChaveDeIdempotencia {
   chave: string;
   corpo_hash: string | null;
@@ -217,6 +239,7 @@ export interface DB {
   "identidade.registro_de_auditoria": IdentidadeRegistroDeAuditoria;
   "identidade.usuario": IdentidadeUsuario;
   "identidade.usuario_grupo": IdentidadeUsuarioGrupo;
+  "pessoas.pessoa": PessoasPessoa;
   "shared.chave_de_idempotencia": SharedChaveDeIdempotencia;
   "shared.evento_processado": SharedEventoProcessado;
   "shared.instituicao": SharedInstituicao;

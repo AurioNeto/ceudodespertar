@@ -5,7 +5,8 @@ import type { Pessoa, TipoPessoa } from '../pessoas.js';
 
 const TAMANHO_MAXIMO_DO_NOME = 200;
 const TAMANHO_MAXIMO_DA_BUSCA = 200;
-const TAMANHO_MAXIMO_DO_CURSOR = 512;
+// A posição carrega um nome de até 200 caracteres em JSON/base64url, inclusive Unicode.
+const TAMANHO_MAXIMO_DO_CURSOR = 2048;
 export const LIMITE_PADRAO_DA_LISTAGEM_DE_PESSOAS = 50;
 export const LIMITE_MAXIMO_DA_LISTAGEM_DE_PESSOAS = 100;
 

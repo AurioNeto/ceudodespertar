@@ -40,7 +40,7 @@ Conta é onde o dinheiro está (saldo lê lançamentos e transferências); fundo
   - listas devolvem `{ itens }` com os cadastros e suas versões, incluindo inativos, sem saldo;
   - edição exige `If-Match`; criação devolve `201` com `Location` e usa a idempotência da infraestrutura.
 - **Pendências por ordem das peças:**
-  - a existência da pessoa titular na casa entra com a TSK-512 (o schema `pessoas` ainda não existe, e `pessoa_titular_id` é só um uuid);
+  - a existência e a situação ativa da pessoa titular na casa são conferidas pela porta pública de Pessoas na branch da TSK-512; `pessoa_titular_id` continua sem FK entre schemas;
   - CT2 (despesa em conta pessoal exige adiantamento) e CT3 (conta com saldo não se inativa) dependem de lançamento e saldo (TSK-515 e TSK-519);
   - FD2 (saldo do fundo nunca negativo) e FD3 (aporte é transferência) ficam para a TSK-516 e a TSK-519.
   - O saldo de verdade e os read models `ContaComSaldo` e `FundoComSaldo` são da TSK-519.
