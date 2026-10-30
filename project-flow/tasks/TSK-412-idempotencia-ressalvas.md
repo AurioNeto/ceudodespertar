@@ -1,6 +1,6 @@
 # TSK-412: Idempotência: ressalvas da revisão e do expurgo
 
-- **Estado:** 🔍 Em revisão: parte 1 (expurgo) no #219; parte 2 (lacunas de teste e cursor da auditoria) neste PR
+- **Estado:** ✅ Feito: parte 1 (expurgo em lotes) no #219; parte 2 (lacunas de teste e cursor da auditoria em microssegundos) no #229
 - **Responsável sugerido:** limpio + radix
 - **Depende de:** [TSK-313](TSK-313-ligar-borda-idempotencia-e-outbox-na-aplicacao.md)
 
@@ -40,4 +40,4 @@ Itens que ficaram dos PRs #23, #24 e #36.
 - https://github.com/AurioNeto/ceudodespertar/pull/23#discussion_r4187819660
 - https://github.com/AurioNeto/ceudodespertar/pull/36
 
-_Atualizado em 14/10/2026._
+_Atualizado em 30/10/2026._

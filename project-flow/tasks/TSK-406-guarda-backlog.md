@@ -1,6 +1,6 @@
 # TSK-406: Guarda de acesso: pendências menores
 
-- **Estado:** 📌 Backlog técnico
+- **Estado:** ✅ Feito (#225)
 - **Responsável sugerido:** escudo
 - **Depende de:** [TSK-002](TSK-002-mesclar-identidade-guarda-front-tema.md)
 
@@ -29,4 +29,4 @@ Itens que o crivo da guarda deixou para o backlog.
 
 - https://github.com/AurioNeto/ceudodespertar/pull/27
 
-_Atualizado em 14/10/2026._
+_Atualizado em 30/10/2026._

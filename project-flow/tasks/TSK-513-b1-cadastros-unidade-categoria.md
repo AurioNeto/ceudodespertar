@@ -1,6 +1,6 @@
 # TSK-513: Cadastros: Unidade, Grupo de custo e Categoria (com seed)
 
-- **Estado:** 🗺️ Planejada (B1)
+- **Estado:** ✅ Feito: parte A (migration, agregados e seed) no #231; parte B (comandos e HTTP) no #232
 - **Responsável sugerido:** back (limpio + radix)
 - **Depende de:** [TSK-511](TSK-511-b1-contrato-do-financeiro.md)
 
@@ -56,4 +56,8 @@ Base de tudo no financeiro. Decisão do dono (14/10): a Chácara e os Dormitóri
 
 - Doc 7 §18.1; Doc 1 §10.3
 
-_Atualizado em 15/10/2026._
+## Risco aceito
+
+- Editar a unidade (troca de regime) e editar uma categoria que a aponta como padrão, ao mesmo tempo, podem passar pela regra C3, porque cada uma lê antes do commit da outra. Aceito pelo revisor no #232: só a tesouraria edita cadastros, e são seis usuários.
+
+_Atualizado em 30/10/2026._

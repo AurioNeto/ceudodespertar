@@ -1,10 +1,10 @@
 # Project flow: mapa de tasks do CDD
 
-Estado do projeto em **14/10/2026** (tarde). Cada task tem um arquivo em [`tasks/`](tasks/) com o contexto, o que fazer, os critérios de aceite e as referências.
+Estado do projeto em **30/10/2026**. Cada task tem um arquivo em [`tasks/`](tasks/) com o contexto, o que fazer, os critérios de aceite e as referências.
 
 ## Onde estamos
 
-- **`main`** (ponta `4d1eae5b`, #225). Os PRs de 14/10 entraram todos (#221 a #226); a TSK-412 parte 2 está no back.
+- **`main`** (ponta `1e44f051`, #232). Nenhum PR aberto; a TSK-514 parte A está em andamento no back. Entre 15 e 29/10 o projeto ficou parado.
 - **Backend do B0 completo** (PRs de API entre #37 e #96, de 08 a 10/10):
   - identidade com `GET /eu`, auditoria, gestão de usuários e grupos;
   - adaptador do Keycloak (convite por e-mail, ativação, suspensão);
@@ -16,9 +16,10 @@ Estado do projeto em **14/10/2026** (tarde). Cada task tem um arquivo em [`tasks
 - **Front:** a refatoração estrutural do `apps/web` em atomic design terminou na `main` (PRs de web entre #56 e #172, de 09 a 11/10) e está registrada no Doc 8 §13. O que sobrou está na TSK-417 (backlog); as nove perguntas da TSK-018 foram decididas e implementadas (#216, #218 e #220).
 - **Redesign Força da Mata concluído** (12/10): a épica `refactor/epica-redesign` (25 PRs, #173 a #195 e #197) foi validada visualmente pelo dono e mesclada na `main` pelo #196. Registro na TSK-601; o que o pre-review deixou está na TSK-602 (técnico) e o que o guia propõe para depois está na TSK-603 (roadmap). A branch da épica pode ser apagada (TSK-004).
 - **Backlog mesclado em 13 e 14/10:** #201 (fecha a #47), #203 (tema do Keycloak, TSK-416), #204 (expurgo do outbox, fecha a #43), #205 e #206 (TSK-602, itens 1 a 4), #208 e #211 (TSK-413), #209 (TSK-408), #210 (TSK-417, estado em `hooks/`), #213 (TSK-411 e TSK-415), #214 (TSK-414), #215 (TSK-409), #216, #218 e #220 (TSK-018), #217 (este mapa), #219 (TSK-412, parte 1), #221, #222 e #224 (TSK-417, item 2), #223 (este mapa), #225 (TSK-406) e #226 (teste intermitente do seed demo).
+- **B1 e backlog mesclados de 14 a 30/10:** #227 (decisões e divisão da B1), #228 (TSK-511, contrato), #229 (TSK-412, parte 2), #230 (TSK-403), #231 e #232 (TSK-513, cadastros com HTTP) e #233 (teste intermitente da vigia de esgotados).
 - **Próximos passos:**
-  - o resto do backlog técnico (grupos 4 e 7);
-  - **B1:** decisões tomadas pelo dono em 14/10 (TSK-014 e TSK-501) e etapa dividida nas TSK-511 a TSK-521; começa pelo contrato (TSK-511).
+  - **B1:** TSK-514 (conta e fundo), depois TSK-512 (pessoa mínima) e TSK-515 (lançamento); o front começa a TSK-520 pelas telas de unidades, grupos de custo e categorias, que já têm API;
+  - o resto do backlog técnico: TSK-410 e os itens 3 e 4 da TSK-417.
 
 ## Resumo
 
@@ -27,9 +28,9 @@ Estado do projeto em **14/10/2026** (tarde). Cada task tem um arquivo em [`tasks
 | 1. Processo e higiene | 8 | 3 |
 | 2. Decisões (usuário ou coordenação) | 8 | 2 |
 | 3. B0: caminho crítico | 13 | 0 |
-| 4. Backlog técnico das revisões | 17 | 5 |
+| 4. Backlog técnico das revisões | 17 | 2 |
 | 5. B0 concluído (fundação, mesclado até 07/10) | 24 | 0 |
-| 6. Roadmap: B1 a B6 e migração | 7 + 11 da B1 | 18 |
+| 6. Roadmap: B1 a B6 e migração | 7 + 11 da B1 | 16 |
 | 7. Redesign Força da Mata | 3 | 2 |
 
 ## Caminho crítico do B0
@@ -103,21 +104,21 @@ flowchart LR
 |---|---|---|---|---|---|
 | [TSK-401](tasks/TSK-401-outbox-evento-esgotado.md) | Outbox: evento esgotado trava o agregado | ✅ Feito (#35, 07/10/2026) | — | — | TSK-001 |
 | [TSK-402](tasks/TSK-402-contexto-da-transacao-sem-fork.md) | Estreitar `ContextoDaTransacao` (sem `fork`/`transactional`) | ✅ Feito (teste estrutural do T28a, #66) | — | — | TSK-001 |
-| [TSK-403](tasks/TSK-403-outbox-flush-timeout-e-pool.md) | Outbox: flush fora do timer, timeout fora da config e conexão read-only | 📌 Backlog técnico (aceito para o B0) | — | — | TSK-001 |
+| [TSK-403](tasks/TSK-403-outbox-flush-timeout-e-pool.md) | Outbox: flush fora do timer, timeout fora da config e conexão read-only | ✅ Feito (#230): flush dentro do limite e timeout validado na partida | — | #230 | TSK-001 |
 | [TSK-404](tasks/TSK-404-grupo-renomear-com-evento.md) | Grupo: `renomear` com autor e evento | ✅ Feito (#25, `fb7261d`) | — | — | TSK-002 |
 | [TSK-405](tasks/TSK-405-idempotencia-deteccao-de-res.md) | Idempotência: detecção de `@Res` robusta | ✅ Feito (#23, `ad4169c`) | — | — | TSK-001 |
-| [TSK-406](tasks/TSK-406-guarda-backlog.md) | Guarda de acesso: pendências menores | 📌 Backlog técnico | — | — | TSK-002 |
+| [TSK-406](tasks/TSK-406-guarda-backlog.md) | Guarda de acesso: pendências menores | ✅ Feito (#225): log da queda limitado, `azp` por lista configurável e marca de acesso sem herança | — | #225 | TSK-002 |
 | [TSK-407](tasks/TSK-407-front-dados-ajustes.md) | Front: ajustes da camada de dados e do lint | ✅ Feito (#51 e #76, #127 e #129, #136) | — | — | TSK-002 |
 | [TSK-408](tasks/TSK-408-login-ajustes.md) | Login: refetch do `/eu`, recusa no meio da sessão e prazo do `.well-known` | ✅ Feito (#209); a revisão da classificação de erros fica para depois do uso real | — | #209 | TSK-002 |
 | [TSK-409](tasks/TSK-409-uow-reuso-aninhado-e-teste-vazio.md) | UoW: reuso da transação aninhada e teste que não prova o `lastValueFrom` | ✅ Feito (#215) | — | #215 | — |
 | [TSK-410](tasks/TSK-410-kysely-fronteira-e-teste-de-tipo.md) | Kysely: tabelas de todos os módulos visíveis a qualquer módulo | 📌 Backlog técnico | — | — | — |
 | [TSK-411](tasks/TSK-411-erros-sem-frase-do-zod.md) | Erros: `CORPO_INVALIDO` sem frases do Zod | ✅ Feito (#213) | — | #213 | — |
-| [TSK-412](tasks/TSK-412-idempotencia-ressalvas.md) | Idempotência: ressalvas da revisão e do expurgo | 🚧 Parte 1 (expurgo) feita no #219; parte 2 (lacunas de teste) no back | — | #219 | TSK-313 |
+| [TSK-412](tasks/TSK-412-idempotencia-ressalvas.md) | Idempotência: ressalvas da revisão e do expurgo | ✅ Feito (#219 e #229) | — | #219, #229 | TSK-313 |
 | [TSK-413](tasks/TSK-413-outbox-ressalvas.md) | Outbox: evento sem consumidor, log do ciclo e vigia | ✅ Feito (#208, #211); o filtro de métrica ou Sentry depende da TSK-012 | — | #208, #211 | TSK-313 |
 | [TSK-414](tasks/TSK-414-dominio-identidade-ressalvas.md) | Domínio de identidade: G3 e nits de grupos | ✅ Feito (#214); G3 como risco aceito e o ADMINISTRADOR como follow-up | — | #214 | — |
 | [TSK-415](tasks/TSK-415-fakes-de-teste-fora-do-dist.md) | Fakes de teste em `src/` entram no build | ✅ Feito (#213) | — | #213 | — |
 | [TSK-416](tasks/TSK-416-tema-keycloak-ressalvas.md) | Tema do Keycloak: texto de senha, e-mail de ações e título | ✅ Feito (#203), com o item 7 da TSK-602 e o assunto "Sistema de Gestão CDD" | — | #203 | — |
-| [TSK-417](tasks/TSK-417-backlog-do-front-pos-refatoracao.md) | Backlog do front depois da refatoração (desvios, apoios de teste, divergências; Tailwind saiu no #173/#196) | 🚧 Parcial: estado em `hooks/` no #210; o resto segue no backlog | — | #210 | — |
+| [TSK-417](tasks/TSK-417-backlog-do-front-pos-refatoracao.md) | Backlog do front depois da refatoração (desvios, apoios de teste, divergências; Tailwind saiu no #173/#196) | 🚧 Item 2 feito (#210, #221, #222 e #224); itens 3 e 4 em aberto | — | #210, #221, #222, #224 | — |
 
 ## 5. B0 concluído (mesclado na `main`)
 
@@ -166,10 +167,10 @@ PRs de acompanhamento já mesclados: [#34](https://github.com/AurioNeto/ceudodes
 
 | Task | Título | Estado | Peça | PR | Depende de |
 |---|---|---|---|---|---|
-| [TSK-511](tasks/TSK-511-b1-contrato-do-financeiro.md) | Contrato do financeiro e da pessoa mínima | 🗺️ Planejada | — | — | TSK-501 |
+| [TSK-511](tasks/TSK-511-b1-contrato-do-financeiro.md) | Contrato do financeiro e da pessoa mínima | ✅ Feito (#228) | — | #228 | TSK-501 |
 | [TSK-512](tasks/TSK-512-b1-pessoa-minima.md) | Pessoa mínima (módulo pessoas) | 🗺️ Planejada | — | — | TSK-511 |
-| [TSK-513](tasks/TSK-513-b1-cadastros-unidade-categoria.md) | Cadastros: Unidade, Grupo de custo e Categoria (com seed) | 🗺️ Planejada | — | — | TSK-511 |
-| [TSK-514](tasks/TSK-514-b1-cadastros-conta-fundo.md) | Cadastros: Conta e Fundo | 🗺️ Planejada | — | — | TSK-513 |
+| [TSK-513](tasks/TSK-513-b1-cadastros-unidade-categoria.md) | Cadastros: Unidade, Grupo de custo e Categoria (com seed) | ✅ Feito (#231 e #232) | — | #231, #232 | TSK-511 |
+| [TSK-514](tasks/TSK-514-b1-cadastros-conta-fundo.md) | Cadastros: Conta e Fundo | 🚧 Parte A em andamento no back | — | — | TSK-513 |
 | [TSK-515](tasks/TSK-515-b1-lancamento.md) | Lançamento: etiquetas, conferência e estorno | 🗺️ Planejada | — | — | TSK-512, TSK-514 |
 | [TSK-516](tasks/TSK-516-b1-transferencia.md) | Transferência com conferência e estorno | 🗺️ Planejada | — | — | TSK-515 |
 | [TSK-517](tasks/TSK-517-b1-periodo-contabil.md) | Período contábil: fechar e reabrir com hash e trava | 🗺️ Planejada | — | — | TSK-515, TSK-516 |

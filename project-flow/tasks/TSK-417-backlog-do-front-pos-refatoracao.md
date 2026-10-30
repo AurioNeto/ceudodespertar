@@ -1,6 +1,6 @@
 # TSK-417: Backlog do front depois da refatoração
 
-- **Estado:** 📌 Backlog técnico
+- **Estado:** 🚧 Item 2 feito (#210, #221, #222 e #224); itens 3 (apoios de teste) e 4 (divergências do Doc 8 §14) em aberto
 - **Responsável sugerido:** vitro
 - **Depende de:** fim da refatoração do apps/web (Limpeza)
 
@@ -25,4 +25,4 @@
 
 Nota (12/10/2026): a épica do redesign (TSK-601) vestiu os componentes e as telas sem mexer na estrutura, então os itens 2 a 4 continuam como estão; os desvios de `campo: boolean` em `Cartao` e `Portao` seguem.
 
-_Atualizado em 14/10/2026._
+_Atualizado em 30/10/2026._
