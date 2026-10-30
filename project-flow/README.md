@@ -4,7 +4,7 @@ Estado do projeto em **30/10/2026**. Cada task tem um arquivo em [`tasks/`](task
 
 ## Onde estamos
 
-- **`main`** (ponta `1e44f051`, #232). Nenhum PR aberto; a TSK-514 parte A está em andamento no back. Entre 15 e 29/10 o projeto ficou parado.
+- **Base de código conferida na `main`:** `ba7b87b0`, merge #235 (parte A da TSK-514: migração, agregados e repositórios de conta e fundo). A parte B, com comandos, HTTP e consultas de cadastro, está pendente. Entre 15 e 29/10 o projeto ficou parado.
 - **Backend do B0 completo** (PRs de API entre #37 e #96, de 08 a 10/10):
   - identidade com `GET /eu`, auditoria, gestão de usuários e grupos;
   - adaptador do Keycloak (convite por e-mail, ativação, suspensão);
@@ -16,9 +16,9 @@ Estado do projeto em **30/10/2026**. Cada task tem um arquivo em [`tasks/`](task
 - **Front:** a refatoração estrutural do `apps/web` em atomic design terminou na `main` (PRs de web entre #56 e #172, de 09 a 11/10) e está registrada no Doc 8 §13. O que sobrou está na TSK-417 (backlog); as nove perguntas da TSK-018 foram decididas e implementadas (#216, #218 e #220).
 - **Redesign Força da Mata concluído** (12/10): a épica `refactor/epica-redesign` (25 PRs, #173 a #195 e #197) foi validada visualmente pelo dono e mesclada na `main` pelo #196. Registro na TSK-601; o que o pre-review deixou está na TSK-602 (técnico) e o que o guia propõe para depois está na TSK-603 (roadmap). A branch da épica pode ser apagada (TSK-004).
 - **Backlog mesclado em 13 e 14/10:** #201 (fecha a #47), #203 (tema do Keycloak, TSK-416), #204 (expurgo do outbox, fecha a #43), #205 e #206 (TSK-602, itens 1 a 4), #208 e #211 (TSK-413), #209 (TSK-408), #210 (TSK-417, estado em `hooks/`), #213 (TSK-411 e TSK-415), #214 (TSK-414), #215 (TSK-409), #216, #218 e #220 (TSK-018), #217 (este mapa), #219 (TSK-412, parte 1), #221, #222 e #224 (TSK-417, item 2), #223 (este mapa), #225 (TSK-406) e #226 (teste intermitente do seed demo).
-- **B1 e backlog mesclados de 14 a 30/10:** #227 (decisões e divisão da B1), #228 (TSK-511, contrato), #229 (TSK-412, parte 2), #230 (TSK-403), #231 e #232 (TSK-513, cadastros com HTTP) e #233 (teste intermitente da vigia de esgotados).
+- **B1 e backlog mesclados de 14 a 30/10:** #227 (decisões e divisão da B1), #228 (TSK-511, contrato), #229 (TSK-412, parte 2), #230 (TSK-403), #231 e #232 (TSK-513, cadastros com HTTP), #233 (teste intermitente da vigia de esgotados), #234 (este mapa) e #235 (TSK-514, parte A).
 - **Próximos passos:**
-  - **B1:** TSK-514 (conta e fundo), depois TSK-512 (pessoa mínima) e TSK-515 (lançamento); o front começa a TSK-520 pelas telas de unidades, grupos de custo e categorias, que já têm API;
+  - **B1:** TSK-514 parte B (comandos, HTTP e consultas de conta e fundo), depois TSK-512 (pessoa mínima) e TSK-515 (lançamento); o front começa a TSK-520 pelas telas de unidades, grupos de custo e categorias, que já têm API;
   - o resto do backlog técnico: TSK-410 e os itens 3 e 4 da TSK-417.
 
 ## Resumo
@@ -170,7 +170,7 @@ PRs de acompanhamento já mesclados: [#34](https://github.com/AurioNeto/ceudodes
 | [TSK-511](tasks/TSK-511-b1-contrato-do-financeiro.md) | Contrato do financeiro e da pessoa mínima | ✅ Feito (#228) | — | #228 | TSK-501 |
 | [TSK-512](tasks/TSK-512-b1-pessoa-minima.md) | Pessoa mínima (módulo pessoas) | 🗺️ Planejada | — | — | TSK-511 |
 | [TSK-513](tasks/TSK-513-b1-cadastros-unidade-categoria.md) | Cadastros: Unidade, Grupo de custo e Categoria (com seed) | ✅ Feito (#231 e #232) | — | #231, #232 | TSK-511 |
-| [TSK-514](tasks/TSK-514-b1-cadastros-conta-fundo.md) | Cadastros: Conta e Fundo | 🚧 Parte A em andamento no back | — | — | TSK-513 |
+| [TSK-514](tasks/TSK-514-b1-cadastros-conta-fundo.md) | Cadastros: Conta e Fundo | 🚧 Parte A mesclada (#235); parte B pendente | — | #235 | TSK-513 |
 | [TSK-515](tasks/TSK-515-b1-lancamento.md) | Lançamento: etiquetas, conferência e estorno | 🗺️ Planejada | — | — | TSK-512, TSK-514 |
 | [TSK-516](tasks/TSK-516-b1-transferencia.md) | Transferência com conferência e estorno | 🗺️ Planejada | — | — | TSK-515 |
 | [TSK-517](tasks/TSK-517-b1-periodo-contabil.md) | Período contábil: fechar e reabrir com hash e trava | 🗺️ Planejada | — | — | TSK-515, TSK-516 |
