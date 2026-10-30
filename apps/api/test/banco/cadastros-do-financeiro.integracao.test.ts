@@ -11,6 +11,10 @@ const PASTA_DA_MIGRACAO = join(
 );
 const SQL_DE_APLICAR = readFileSync(join(PASTA_DA_MIGRACAO, 'cadastros-do-financeiro.sql'), 'utf8');
 const SQL_DE_DESFAZER = readFileSync(join(PASTA_DA_MIGRACAO, 'desfazer.sql'), 'utf8');
+const SQL_DE_DESFAZER_CONTA_E_FUNDO = readFileSync(
+  join(PASTA_DA_MIGRACAO, '../b1-002-conta-e-fundo/desfazer.sql'),
+  'utf8',
+);
 
 describe('migration dos cadastros do financeiro', () => {
   let banco: BancoDeTeste;
@@ -35,15 +39,14 @@ describe('migration dos cadastros do financeiro', () => {
     };
   }
 
-  it('sobe com as três tabelas e RLS forçada em todas', async () => {
-    expect(await objetosDoSchema()).toEqual({
-      schema: true,
-      tabelas: ['categoria', 'grupo_de_custo', 'unidade'],
-      comRlsForcada: ['categoria', 'grupo_de_custo', 'unidade'],
-    });
+  it('sobe com os três cadastros e RLS forçada em todas as tabelas do schema', async () => {
+    const todas = ['categoria', 'conta', 'fundo', 'grupo_de_custo', 'unidade'];
+
+    expect(await objetosDoSchema()).toEqual({ schema: true, tabelas: todas, comRlsForcada: todas });
   });
 
   it('desfazer remove o schema inteiro e reaplicar o restaura, de novo com RLS forçada', async () => {
+    await banco.owner.query(SQL_DE_DESFAZER_CONTA_E_FUNDO);
     await banco.owner.query(SQL_DE_DESFAZER);
 
     expect(await objetosDoSchema()).toEqual({ schema: false, tabelas: [], comRlsForcada: [] });
@@ -58,6 +61,7 @@ describe('migration dos cadastros do financeiro', () => {
   });
 
   it('desfazer não toca as tabelas das migrations anteriores', async () => {
+    await banco.owner.query(SQL_DE_DESFAZER_CONTA_E_FUNDO);
     await banco.owner.query(SQL_DE_DESFAZER);
 
     const { rows } = await banco.owner.query("select to_regclass('identidade.grupo') is not null as existe");

@@ -9,4 +9,6 @@ export const RESTRICAO_PARA_CODIGO: Readonly<Record<string, CodigoDeErro>> = {
   unidade_codigo_unico: 'CODIGO_DE_SISTEMA_JA_EXISTE',
   grupo_de_custo_codigo_unico: 'CODIGO_DE_SISTEMA_JA_EXISTE',
   categoria_codigo_unico: 'CODIGO_DE_SISTEMA_JA_EXISTE',
+  fundo_codigo_unico: 'CODIGO_DE_SISTEMA_JA_EXISTE',
+  conta_identificador_unico: 'IDENTIFICADOR_BANCARIO_JA_CADASTRADO',
 };

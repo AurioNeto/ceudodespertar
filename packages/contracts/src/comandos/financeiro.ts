@@ -136,6 +136,7 @@ export type EditarConta = z.infer<typeof EditarConta>;
 
 const dadosDoFundo = z.object({
   nome,
+  contaVinculadaId: uuidEmMinusculas<ContaId>(),
   nota: textoSemCaractereNulo().trim().max(TAMANHO_MAXIMO_DA_DESCRICAO).default(''),
   meta: opcional(dinheiroPositivo()),
   categoriasPermitidas: z.array(codigoDeSistema).max(MAXIMO_DE_CATEGORIAS_DO_FUNDO).refine(semRepeticao, SEM_DUPLICADOS),
@@ -143,7 +144,6 @@ const dadosDoFundo = z.object({
 
 export const CriarFundo = dadosDoFundo.extend({
   codigoSistema: codigoDeSistema,
-  contaVinculadaId: uuidEmMinusculas<ContaId>(),
 });
 
 export type CriarFundo = z.infer<typeof CriarFundo>;

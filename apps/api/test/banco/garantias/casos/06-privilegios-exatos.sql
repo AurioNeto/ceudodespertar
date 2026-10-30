@@ -1,4 +1,4 @@
--- verificacoes: 26
+-- verificacoes: 28
 -- B0 · privilégios EXATOS de cdd_app (Documento 7 §15): nem a mais, nem a
 -- menos, tabela por tabela e função por função. Roda como dono, porque lê a
 -- ACL de cdd_app (o dono não precisa dos privilégios dele para consultá-los).
@@ -66,6 +66,14 @@ SELECT verif.confere('privilégios · financeiro.grupo_de_custo é SELECT, INSER
 
 SELECT verif.confere('privilégios · financeiro.categoria é SELECT, INSERT, UPDATE, DELETE',
   verif.privilegios_de_tabela('cdd_app', 'financeiro.categoria'),
+  ARRAY['DELETE','INSERT','SELECT','UPDATE']);
+
+SELECT verif.confere('privilégios · financeiro.conta é SELECT, INSERT, UPDATE, DELETE',
+  verif.privilegios_de_tabela('cdd_app', 'financeiro.conta'),
+  ARRAY['DELETE','INSERT','SELECT','UPDATE']);
+
+SELECT verif.confere('privilégios · financeiro.fundo é SELECT, INSERT, UPDATE, DELETE',
+  verif.privilegios_de_tabela('cdd_app', 'financeiro.fundo'),
   ARRAY['DELETE','INSERT','SELECT','UPDATE']);
 
 -- As três funções que só uma migration (ou o gatilho que instalam) chama:
