@@ -1,6 +1,6 @@
 # TSK-403: Outbox: flush fora do timer, timeout fora da config e conexão read-only
 
-- **Estado:** 🔍 Em revisão
+- **Estado:** ✅ Feito (#230): o flush corre dentro do limite de duração; `TIMEOUT_DO_CONSUMIDOR_EM_MS` validado na partida; o reset de `read_only` não foi preciso (o pool só serve a unidade de trabalho)
 - **Responsável sugerido:** limpio
 - **Depende de:** [TSK-001](TSK-001-mesclar-pilha-da-fundacao.md)
 
@@ -36,4 +36,4 @@ O flush do consumidor respeita o `statement_timeout` por statement, mas não na 
 - https://github.com/AurioNeto/ceudodespertar/pull/24#discussion_r4188586190
 - https://github.com/AurioNeto/ceudodespertar/pull/24#discussion_r4188585921
 
-_Atualizado em 15/10/2026._
+_Atualizado em 30/10/2026._

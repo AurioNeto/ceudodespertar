@@ -1,6 +1,6 @@
 # TSK-511: Contrato do financeiro e da pessoa mínima
 
-- **Estado:** 🔍 Em revisão (B1)
+- **Estado:** ✅ Feito (#228)
 - **Responsável sugerido:** back (limpio)
 - **Depende de:** nada
 
@@ -64,4 +64,4 @@ Primeira peça da B1 (molde P1). O front e a API passam a falar a mesma língua 
 - Doc 7 §18 e §12; Doc 6 §5 (o que muda em `packages/contracts`)
 - Doc 2 v2.2 (`project/uploads/CDD - System/`), invariantes L1–L11
 
-_Atualizado em 14/10/2026._
+_Atualizado em 30/10/2026._
