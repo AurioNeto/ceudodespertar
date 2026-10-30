@@ -37,8 +37,9 @@ pnpm typecheck
   usa mocks.
 - **B1 em construção:** contratos financeiros e da pessoa mínima entregues;
   unidades, grupos de custo e categorias têm persistência, seed e endpoints.
-  Contas e fundos têm migração, agregados e repositórios (#235); comandos,
-  endpoints e consultas de cadastro são a próxima parte da TSK-514.
+  Contas e fundos têm migração, agregados e repositórios (#235); a parte B da
+  TSK-514 está implementada localmente, com comandos, endpoints e consultas
+  de cadastro sem saldo, aguardando revisão e merge.
 - **Telas demonstrativas:** financeiro, pessoas/anamnese, eventos e estoque
   ainda usam fixtures. A integração das telas financeiras é a TSK-520;
   o restante do backend segue as etapas B2–B6.

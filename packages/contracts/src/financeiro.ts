@@ -104,6 +104,16 @@ export interface Fundo {
   readonly versao: number;
 }
 
+/** Cadastro sem saldo; os saldos entram nos read models financeiros. */
+export interface ContasDaCasa {
+  readonly itens: readonly Conta[];
+}
+
+/** Cadastro sem saldo; os saldos entram nos read models financeiros. */
+export interface FundosDaCasa {
+  readonly itens: readonly Fundo[];
+}
+
 export type StatusLancamento = 'A_CONFERIR' | 'CONFIRMADO' | 'ESTORNADO';
 
 export type StatusGravadoDoLancamento = Exclude<StatusLancamento, 'ESTORNADO'>;
