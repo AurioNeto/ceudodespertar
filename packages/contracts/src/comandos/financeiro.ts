@@ -20,6 +20,7 @@ import type {
   GrupoDeCustoId,
   LancamentoId,
   PessoaId,
+  PendenciaId,
   TransferenciaId,
   UnidadeId,
 } from '../kernel.js';
@@ -218,6 +219,9 @@ export type ResponderPendencia = z.infer<typeof ResponderPendencia>;
 export const ParametrosDoLancamento = z.object({ id: uuidEmMinusculas<LancamentoId>() });
 
 export type ParametrosDoLancamento = z.infer<typeof ParametrosDoLancamento>;
+
+export const ParametrosDaPendencia = ParametrosDoLancamento.extend({ pendenciaId: uuidEmMinusculas<PendenciaId>() });
+export type ParametrosDaPendencia = z.infer<typeof ParametrosDaPendencia>;
 
 type ReferenciaDaFinalidade = 'fundoId' | 'faturaId' | 'emprestimoId' | 'adiantamentoId' | 'unidadeDestinoId';
 

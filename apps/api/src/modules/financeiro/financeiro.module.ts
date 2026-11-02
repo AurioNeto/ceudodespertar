@@ -1,3 +1,5 @@
+import { ConversasDeLancamento } from './application/lancamentos/conversas-de-lancamento.js';
+import { PendenciasController } from './interface/http/pendencias.controller.js';
 import { Relogio, RelogioDoSistema } from '../../shared/infrastructure/relogio.js';
 import { OperacoesDeLancamento } from './application/lancamentos/operacoes-de-lancamento.js';
 import { ResolverDadosDoLancamento } from './application/lancamentos/resolver-dados-do-lancamento.js';
@@ -43,10 +45,11 @@ import { SemeadorDeCadastrosDaCasa } from './infrastructure/persistencia/semeado
 
 @Module({
   imports: [BancoModule, SemeaduraModule, PessoasModule, EventosModule],
-  controllers: [LancamentosController, UnidadesController, GruposDeCustoController, CategoriasController, ContasController, FundosController],
+  controllers: [PendenciasController, LancamentosController, UnidadesController, GruposDeCustoController, CategoriasController, ContasController, FundosController],
   providers: [
     ConsultarCadastros,
     OperacoesDeLancamento,
+    ConversasDeLancamento,
     ResolverDadosDoLancamento,
     { provide: SituacaoDoPeriodo, useClass: PeriodosSemFechamento },
     { provide: Relogio, useClass: RelogioDoSistema },
