@@ -1,6 +1,6 @@
 # TSK-515: Lançamento: etiquetas, conferência e estorno
 
-- **Estado:** 🗺️ Planejada (B1)
+- **Estado:** 🚧 Parte A implementada na branch `codex/tsk-515-a-agregado-banco`; partes B e C em implementação
 - **Responsável sugerido:** back (limpio + radix; crivo obrigatório: dinheiro)
 - **Depende de:** [TSK-512](TSK-512-b1-pessoa-minima.md), [TSK-514](TSK-514-b1-cadastros-conta-fundo.md)
 
@@ -28,3 +28,9 @@ Dividir em três PRs:
 - Doc 7 §18.2, §18.3, §15 e §21; issue #11 (D1, D4)
 
 _Atualizado em 14/10/2026._
+
+## Implementação (02/11/2026)
+
+- Parte A: agregado com snapshots isolados e eventos sem conteúdo livre; registro incompleto, confirmação, estorno corrente e conversa modelados; migração `b1-004-lancamento` com RLS, trava otimista, outbox e guardas de imutabilidade do confirmado e das etiquetas por transação. Reversão testada; sem backfill, só tabelas novas.
+- A unicidade de estorno e de pendência aberta é verificada na aplicação. Não há índice único de negócio nas tabelas novas. SQL manual e cargas que não usam os comandos ficam fora dessa regra; uma corrida entre estornos simultâneos pode produzir duplicatas. A leitura de estornos detecta mais de um e emite o alarme `ESTORNOS_DUPLICADOS` para intervenção. A versão do agregado protege edições e conversas simultâneas que passam pelo repositório.
+- Decisões atuais do Doc 7 prevalecem sobre L3 e L9 históricos: natureza por etiqueta; estorno na competência corrente sem tocar no original. A soma e as regras de política ficam no domínio, sem gatilhos de negócio.

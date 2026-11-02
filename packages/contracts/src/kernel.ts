@@ -19,6 +19,7 @@ export type AdiantamentoId = Brand<string, 'AdiantamentoId'>;
 export type ImportacaoId = Brand<string, 'ImportacaoId'>;
 export type LinhaExtratoId = Brand<string, 'LinhaExtratoId'>;
 export type DevolucaoEmprestimoId = Brand<string, 'DevolucaoEmprestimoId'>;
+export type PendenciaId = Brand<string, 'PendenciaId'>;
 export type LancamentoId = Brand<string, 'LancamentoId'>;
 export type TransferenciaId = Brand<string, 'TransferenciaId'>;
 export type EventoId = Brand<string, 'EventoId'>;

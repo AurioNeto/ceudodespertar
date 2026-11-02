@@ -1,3 +1,7 @@
+import { EventosDoFinanceiroSemConsumidor } from './infrastructure/eventos-do-financeiro-sem-consumidor.js';
+import { EventosModule } from '../../shared/infrastructure/eventos/eventos.module.js';
+import { RepositorioDeLancamento } from './domain/lancamento/lancamento.repo.js';
+import { RepositorioDeLancamentoKysely } from './infrastructure/persistencia/repositorio-de-lancamento.kysely.js';
 import { Module } from '@nestjs/common';
 import { BancoModule } from '../../shared/infrastructure/banco/banco.module.js';
 import { SemeaduraModule } from '../../shared/infrastructure/semeadura/semeadura.module.js';
@@ -32,10 +36,12 @@ import { RepositorioDeUnidadeKysely } from './infrastructure/persistencia/reposi
 import { SemeadorDeCadastrosDaCasa } from './infrastructure/persistencia/semeador-de-cadastros-da-casa.js';
 
 @Module({
-  imports: [BancoModule, SemeaduraModule, PessoasModule],
+  imports: [BancoModule, SemeaduraModule, PessoasModule, EventosModule],
   controllers: [UnidadesController, GruposDeCustoController, CategoriasController, ContasController, FundosController],
   providers: [
     ConsultarCadastros,
+    EventosDoFinanceiroSemConsumidor,
+    { provide: RepositorioDeLancamento, useClass: RepositorioDeLancamentoKysely },
     CriarUnidade,
     EditarUnidade,
     CriarGrupoDeCusto,
