@@ -407,6 +407,12 @@ export interface ReaberturaDePeriodo {
   readonly hashAnterior: string;
 }
 
+export interface IntegridadeDoPeriodo {
+  readonly hashGravado: string | null;
+  readonly hashAtual: string;
+  readonly integro: boolean | null;
+}
+
 export interface PeriodoContabil {
   readonly id: PeriodoContabilId;
   readonly unidadeId: UnidadeId;

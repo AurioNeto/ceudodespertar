@@ -1,3 +1,7 @@
+import { PeriodosController } from './interface/http/periodos.controller.js';
+import { OperacoesDePeriodo } from './application/periodos/operacoes-de-periodo.js';
+import { RepositorioDePeriodo } from './domain/periodo/periodo-contabil.repo.js';
+import { RepositorioDePeriodoKysely } from './infrastructure/persistencia/repositorio-de-periodo.kysely.js';
 import { TransferenciasController } from './interface/http/transferencias.controller.js';
 import { OperacoesDeTransferencia } from './application/transferencias/operacoes-de-transferencia.js';
 import { ResolverDadosDaTransferencia } from './application/transferencias/resolver-dados-da-transferencia.js';
@@ -9,7 +13,7 @@ import { Relogio, RelogioDoSistema } from '../../shared/infrastructure/relogio.j
 import { OperacoesDeLancamento } from './application/lancamentos/operacoes-de-lancamento.js';
 import { ResolverDadosDoLancamento } from './application/lancamentos/resolver-dados-do-lancamento.js';
 import { SituacaoDoPeriodo } from './application/lancamentos/situacao-do-periodo.js';
-import { PeriodosSemFechamento } from './infrastructure/periodos-sem-fechamento.js';
+import { SituacaoDoPeriodoKysely } from './infrastructure/periodos/situacao-do-periodo.kysely.js';
 import { LancamentosController } from './interface/http/lancamentos.controller.js';
 import { EventosDoFinanceiroSemConsumidor } from './infrastructure/eventos-do-financeiro-sem-consumidor.js';
 import { EventosModule } from '../../shared/infrastructure/eventos/eventos.module.js';
@@ -50,16 +54,18 @@ import { SemeadorDeCadastrosDaCasa } from './infrastructure/persistencia/semeado
 
 @Module({
   imports: [BancoModule, SemeaduraModule, PessoasModule, EventosModule],
-  controllers: [TransferenciasController, PendenciasController, LancamentosController, UnidadesController, GruposDeCustoController, CategoriasController, ContasController, FundosController],
+  controllers: [PeriodosController, TransferenciasController, PendenciasController, LancamentosController, UnidadesController, GruposDeCustoController, CategoriasController, ContasController, FundosController],
   providers: [
     ConsultarCadastros,
+    OperacoesDePeriodo,
+    { provide: RepositorioDePeriodo, useClass: RepositorioDePeriodoKysely },
     OperacoesDeTransferencia,
     ResolverDadosDaTransferencia,
     { provide: RepositorioDeTransferencia, useClass: RepositorioDeTransferenciaKysely },
     OperacoesDeLancamento,
     ConversasDeLancamento,
     ResolverDadosDoLancamento,
-    { provide: SituacaoDoPeriodo, useClass: PeriodosSemFechamento },
+    { provide: SituacaoDoPeriodo, useClass: SituacaoDoPeriodoKysely },
     { provide: Relogio, useClass: RelogioDoSistema },
     EventosDoFinanceiroSemConsumidor,
     { provide: RepositorioDeLancamento, useClass: RepositorioDeLancamentoKysely },

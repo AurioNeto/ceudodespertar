@@ -125,6 +125,29 @@ export interface FinanceiroPendencia {
   texto: string;
 }
 
+export interface FinanceiroPeriodoContabil {
+  competencia: string;
+  fechado: Generated<boolean>;
+  fechado_em: Timestamp | null;
+  fechado_por: string | null;
+  hash_sha256: string | null;
+  id: string;
+  instituicao_id: string;
+  unidade_id: string;
+  versao: Generated<number>;
+}
+
+export interface FinanceiroReaberturaDePeriodo {
+  hash_anterior: string;
+  id: string;
+  instituicao_id: string;
+  motivo: string;
+  periodo_id: string;
+  reaberto_em: Timestamp;
+  reaberto_por: string;
+  versao_do_periodo: number;
+}
+
 export interface FinanceiroTransferencia {
   adiantamento_id: string | null;
   confirmado_em: Timestamp | null;
@@ -309,6 +332,8 @@ export interface DB {
   "financeiro.lancamento": FinanceiroLancamento;
   "financeiro.lancamento_categoria": FinanceiroLancamentoCategoria;
   "financeiro.pendencia": FinanceiroPendencia;
+  "financeiro.periodo_contabil": FinanceiroPeriodoContabil;
+  "financeiro.reabertura_de_periodo": FinanceiroReaberturaDePeriodo;
   "financeiro.transferencia": FinanceiroTransferencia;
   "financeiro.unidade": FinanceiroUnidade;
   "identidade.bootstrap_executado": IdentidadeBootstrapExecutado;

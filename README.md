@@ -45,8 +45,10 @@ pnpm typecheck
   está implementada em três branches empilhadas: registro, conferência, estorno
   e conversa de pendências pela API. A TSK-516 está implementada em
   `codex/tsk-516-transferencias`, com transferência, conferência segregada e estorno
-  sujeito à conferência. Fechamento de períodos e relatórios seguem
-  nas tarefas próprias; detalhes e limites estão no `project-flow`.
+  sujeito à conferência. A TSK-517 está implementada em
+  `codex/tsk-517-periodos-contabeis`: fechamento, reabertura, hash e bloqueio de
+  escritas em períodos fechados. Comprovantes, relatórios e integração das telas
+  seguem nas tarefas próprias; detalhes e limites estão no `project-flow`.
 - **Telas demonstrativas:** financeiro, pessoas/anamnese, eventos e estoque
   ainda usam fixtures. A integração das telas financeiras é a TSK-520;
   o restante do backend segue as etapas B2–B6.
