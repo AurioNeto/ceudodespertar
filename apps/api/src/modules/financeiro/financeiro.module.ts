@@ -1,3 +1,9 @@
+import { Relogio, RelogioDoSistema } from '../../shared/infrastructure/relogio.js';
+import { OperacoesDeLancamento } from './application/lancamentos/operacoes-de-lancamento.js';
+import { ResolverDadosDoLancamento } from './application/lancamentos/resolver-dados-do-lancamento.js';
+import { SituacaoDoPeriodo } from './application/lancamentos/situacao-do-periodo.js';
+import { PeriodosSemFechamento } from './infrastructure/periodos-sem-fechamento.js';
+import { LancamentosController } from './interface/http/lancamentos.controller.js';
 import { EventosDoFinanceiroSemConsumidor } from './infrastructure/eventos-do-financeiro-sem-consumidor.js';
 import { EventosModule } from '../../shared/infrastructure/eventos/eventos.module.js';
 import { RepositorioDeLancamento } from './domain/lancamento/lancamento.repo.js';
@@ -37,9 +43,13 @@ import { SemeadorDeCadastrosDaCasa } from './infrastructure/persistencia/semeado
 
 @Module({
   imports: [BancoModule, SemeaduraModule, PessoasModule, EventosModule],
-  controllers: [UnidadesController, GruposDeCustoController, CategoriasController, ContasController, FundosController],
+  controllers: [LancamentosController, UnidadesController, GruposDeCustoController, CategoriasController, ContasController, FundosController],
   providers: [
     ConsultarCadastros,
+    OperacoesDeLancamento,
+    ResolverDadosDoLancamento,
+    { provide: SituacaoDoPeriodo, useClass: PeriodosSemFechamento },
+    { provide: Relogio, useClass: RelogioDoSistema },
     EventosDoFinanceiroSemConsumidor,
     { provide: RepositorioDeLancamento, useClass: RepositorioDeLancamentoKysely },
     CriarUnidade,

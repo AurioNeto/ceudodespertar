@@ -1,6 +1,6 @@
 # TSK-515: Lançamento: etiquetas, conferência e estorno
 
-- **Estado:** 🚧 Parte A implementada na branch `codex/tsk-515-a-agregado-banco`; partes B e C em implementação
+- **Estado:** 🚧 Parte A implementada na branch `codex/tsk-515-a-agregado-banco`; parte B implementada na branch `codex/tsk-515-b-comandos-http`; parte C em implementação
 - **Responsável sugerido:** back (limpio + radix; crivo obrigatório: dinheiro)
 - **Depende de:** [TSK-512](TSK-512-b1-pessoa-minima.md), [TSK-514](TSK-514-b1-cadastros-conta-fundo.md)
 
@@ -34,3 +34,8 @@ _Atualizado em 14/10/2026._
 - Parte A: agregado com snapshots isolados e eventos sem conteúdo livre; registro incompleto, confirmação, estorno corrente e conversa modelados; migração `b1-004-lancamento` com RLS, trava otimista, outbox e guardas de imutabilidade do confirmado e das etiquetas por transação. Reversão testada; sem backfill, só tabelas novas.
 - A unicidade de estorno e de pendência aberta é verificada na aplicação. Não há índice único de negócio nas tabelas novas. SQL manual e cargas que não usam os comandos ficam fora dessa regra; uma corrida entre estornos simultâneos pode produzir duplicatas. A leitura de estornos detecta mais de um e emite o alarme `ESTORNOS_DUPLICADOS` para intervenção. A versão do agregado protege edições e conversas simultâneas que passam pelo repositório.
 - Decisões atuais do Doc 7 prevalecem sobre L3 e L9 históricos: natureza por etiqueta; estorno na competência corrente sem tocar no original. A soma e as regras de política ficam no domínio, sem gatilhos de negócio.
+
+- Parte B: comandos e endpoints de registrar, consultar por id (todos ou próprios), editar, confirmar, descartar e estornar. Natureza da etiqueta é resolvida pela categoria, com validação de regime, situação e instituição; fundos restringem saídas. Versões, idempotência sem guardar corpo e datas no fuso de São Paulo foram testadas. Consulta de listagens e relatórios é da TSK-519.
+- Até a TSK-517 não há períodos fechados persistidos: `SituacaoDoPeriodo` recebe `PeriodosSemFechamento`, e os testes substituem a porta para provar as recusas em período fechado. A trava concorrente entre fechamento e escrita será ligada na TSK-517. Na edição verificam-se origem e destino; no estorno só a competência corrente, preservando o mês original.
+- Faturas e comprovantes não verificáveis nesta etapa são recusados; suas referências serão liberadas com a B2 e a TSK-518. Despesa em conta pessoal não se confirma até existir o adiantamento da B2 (CT2), sem impedir o registro preliminar.
+- Validação da parte B: 32 testes HTTP e 100% de cobertura de branches dos casos de uso; parte A: 40 testes de domínio e 100% de branches. Integração do repositório e guardas: cinco testes, mais a suíte de garantias do banco. Crivo conferiu autorização antes da versão para registros alheios, preservação do original no estorno, reversão da migração e limites desta etapa; nenhuma correção bloqueante pendente.
