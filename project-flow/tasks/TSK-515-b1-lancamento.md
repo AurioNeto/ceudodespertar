@@ -79,6 +79,8 @@ Com `Idempotency-Key`, o primeiro POST devolve o corpo normalmente; o replay dev
 
 ## Evidências finais
 
+- Suíte completa da API: 2.222 testes passando e 30 `todo`; integração completa: 732 testes passando; contratos: 64 testes passando. Typecheck da API e do web, lint, fronteiras, build de contracts/API e conferência do codegen passaram.
+
 - Domínio: 40 testes, 100% de branches.
 - Integração direcionada: 47 testes, 100% de branches nos novos casos de uso, endpoints e adaptadores (incluindo repositório e porta de período).
 - Migração: ida/volta, RLS, imutabilidade do confirmado e das etiquetas, tentativa de forjar o carimbo, isolamento, versão otimista, cadastro confirmado por SISTEMA e detecção de duplicação por escrita externa verificados.
