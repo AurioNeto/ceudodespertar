@@ -25,6 +25,11 @@ const RESTRICOES_SEM_CODIGO_POR_SEREM_GUARDA_INTERNA_DO_BANCO: readonly string[]
   'convite_nao_usado_e_revogado',
   'autor_coerente',
   'registro_de_auditoria_operacao_check',
+  'fd3_aporte_tem_fundo',
+  'f3_pagamento_tem_fatura',
+  'e1_emprestimo_tem_emprestimo',
+  'a4_ressarcimento_tem_adiantamento',
+  't_repasse_tem_destino',
 ];
 
 function arquivosSqlDeMigracaoRecursivos(diretorio: string): string[] {
