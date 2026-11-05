@@ -10,10 +10,10 @@ export function pedir(
   cabecalhos: Record<string, string> = {},
   { metodo = 'GET', corpo }: Pick<OpcoesDaRequisicao, 'metodo' | 'corpo'> = {},
 ): Promise<Response> {
-  const comCorpo = corpo === undefined ? {} : { 'content-type': 'application/json' };
+  const comCorpo = corpo === undefined || corpo instanceof FormData ? {} : { 'content-type': 'application/json' };
   return fetch(`${origem}${caminho}`, {
     method: metodo,
     headers: { ...comCorpo, ...cabecalhos, connection: 'close' },
-    ...(corpo === undefined ? {} : { body: JSON.stringify(corpo) }),
+    ...(corpo === undefined ? {} : { body: corpo instanceof FormData ? corpo : JSON.stringify(corpo) }),
   });
 }
