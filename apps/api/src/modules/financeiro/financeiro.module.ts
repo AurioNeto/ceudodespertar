@@ -1,3 +1,6 @@
+import { EventosMinimosModule } from '../eventos/public-api.js';
+import { EventosMinimosController } from './interface/http/eventos-minimos.controller.js';
+import { OperacoesDeEventoMinimo } from './application/cadastros/operacoes-de-evento-minimo.js';
 import { ComprovantesController } from './interface/http/comprovantes.controller.js';
 import { ComprovantesDeLancamento } from './application/comprovantes/comprovantes-de-lancamento.js';
 import { RepositorioDeComprovantes } from './application/comprovantes/repositorio-de-comprovantes.js';
@@ -59,10 +62,11 @@ import { RepositorioDeUnidadeKysely } from './infrastructure/persistencia/reposi
 import { SemeadorDeCadastrosDaCasa } from './infrastructure/persistencia/semeador-de-cadastros-da-casa.js';
 
 @Module({
-  imports: [BancoModule, SemeaduraModule, PessoasModule, EventosModule],
-  controllers: [ComprovantesController, PeriodosController, TransferenciasController, PendenciasController, LancamentosController, UnidadesController, GruposDeCustoController, CategoriasController, ContasController, FundosController],
+  imports: [BancoModule, SemeaduraModule, PessoasModule, EventosModule, EventosMinimosModule],
+  controllers: [EventosMinimosController, ComprovantesController, PeriodosController, TransferenciasController, PendenciasController, LancamentosController, UnidadesController, GruposDeCustoController, CategoriasController, ContasController, FundosController],
   providers: [
     ConsultarCadastros,
+    OperacoesDeEventoMinimo,
     ComprovantesDeLancamento,
     { provide: RepositorioDeComprovantes, useClass: RepositorioDeComprovantesKysely },
     { provide: ArmazenamentoDeArquivos, useClass: ArmazenamentoS3 },

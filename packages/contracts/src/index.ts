@@ -10,3 +10,5 @@ export * from './comandos/identidade.js';
 export * from './comandos/financeiro.js';
 export * from './comandos/pessoas.js';
 export * from './entrada.js';
+
+export * from './comandos/eventos.js';

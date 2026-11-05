@@ -78,6 +78,10 @@ describe('Comprovantes de lançamento pela API', () => {
     expect((await enviar(CASA_B)).status).toBe(404);
     expect((await enviar(OUTRO)).status).toBe(404);
     expect((await enviar(AUTOR, 2)).status).toBe(409);
+    expect((await ambiente.app.pedirComo(AUTOR, `${rota}/comprovante`, {
+      metodo: 'PUT', cabecalhos: { 'if-match': '1' },
+    })).status).toBe(400);
+    expect((await enviar(AUTOR, 1, '')).status).toBe(400);
     expect((await enviar(AUTOR, 1, '<html>')).status).toBe(400);
     expect((await enviar(AUTOR, 1, PDF, 'text/html')).status).toBe(400);
     expect((await enviar(AUTOR, 1, PDF.padEnd(10 * 1024 * 1024 + 2, 'x'))).status).toBe(413);
