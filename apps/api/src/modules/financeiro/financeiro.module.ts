@@ -1,3 +1,9 @@
+import { ConsultasFinanceirasController } from './interface/http/consultas-financeiras.controller.js';
+import { ConsultasDeCaixa, ConsultasDeResultado, ListasFinanceiras } from './application/consultas/consultas-financeiras.js';
+import { ResultadoFinanceiroDaCerimonia } from './application/consultas/resultado-financeiro-da-cerimonia.js';
+import { ConsultasDeCaixaKysely } from './infrastructure/consultas/consultas-de-caixa.kysely.js';
+import { ConsultasDeResultadoKysely } from './infrastructure/consultas/consultas-de-resultado.kysely.js';
+import { ListasFinanceirasKysely } from './infrastructure/consultas/consultas-de-listas.kysely.js';
 import { EventosMinimosModule } from '../eventos/public-api.js';
 import { EventosMinimosController } from './interface/http/eventos-minimos.controller.js';
 import { OperacoesDeEventoMinimo } from './application/cadastros/operacoes-de-evento-minimo.js';
@@ -63,9 +69,14 @@ import { SemeadorDeCadastrosDaCasa } from './infrastructure/persistencia/semeado
 
 @Module({
   imports: [BancoModule, SemeaduraModule, PessoasModule, EventosModule, EventosMinimosModule],
-  controllers: [EventosMinimosController, ComprovantesController, PeriodosController, TransferenciasController, PendenciasController, LancamentosController, UnidadesController, GruposDeCustoController, CategoriasController, ContasController, FundosController],
+  controllers: [ConsultasFinanceirasController, EventosMinimosController, ComprovantesController, PeriodosController, TransferenciasController, PendenciasController, LancamentosController, UnidadesController, GruposDeCustoController, CategoriasController, ContasController, FundosController],
+  exports: [ResultadoFinanceiroDaCerimonia],
   providers: [
     ConsultarCadastros,
+    ResultadoFinanceiroDaCerimonia,
+    { provide: ConsultasDeCaixa, useClass: ConsultasDeCaixaKysely },
+    { provide: ConsultasDeResultado, useClass: ConsultasDeResultadoKysely },
+    { provide: ListasFinanceiras, useClass: ListasFinanceirasKysely },
     OperacoesDeEventoMinimo,
     ComprovantesDeLancamento,
     { provide: RepositorioDeComprovantes, useClass: RepositorioDeComprovantesKysely },

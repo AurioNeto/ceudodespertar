@@ -657,9 +657,11 @@ Read models do backend, em Kysely sobre as tabelas. O esquema de referência gua
 
 Resultado por cerimônia e por grupo de custo são o mesmo efeito por categoria filtrado por `evento_id` e `grupo_de_custo_id`, publicado pelo Financeiro como porta de leitura para o painel do evento. A RLS vale igual: o read model roda na transação da requisição, com o contexto da instituição.
 
+A TSK-519 implementa essas leituras com consultas Kysely na borda transacional. O livro e a fila incluem transferências. Meus registros filtra o autor autenticado no SQL e devolve uma projeção sem conta, categoria ou agregados. A DRE e os resultados por grupo e cerimônia aplicam o sinal do estorno à etiqueta. O fluxo usa data de caixa e considera os repasses por ponta quando há filtro de unidade. Os endpoints e permissões estão na [TSK-519](../project-flow/tasks/TSK-519-b1-read-models.md).
+
 ## 19. `eventos`
 
-A TSK-518 cria `eventos.evento` com unidade, nome, tipo e intervalo de datas. O financeiro expõe o cadastro mínimo em `/api/v1/financeiro/eventos` e valida o vínculo do lançamento pela porta pública `EventosMinimos`. A TSK-519 usará o resumo no resultado por cerimônia. O desenho abaixo descreve a evolução da B5.
+A TSK-518 cria `eventos.evento` com unidade, nome, tipo e intervalo de datas. O financeiro expõe o cadastro mínimo em `/api/v1/financeiro/eventos` e valida o vínculo do lançamento pela porta pública `EventosMinimos`. A TSK-519 usa o resumo no detalhe do resultado por cerimônia. O desenho abaixo descreve a evolução da B5.
 
 ```mermaid
 erDiagram
