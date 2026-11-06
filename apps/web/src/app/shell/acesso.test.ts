@@ -24,7 +24,7 @@ describe('podeVerTela', () => {
 describe('filtrarNavPorAcesso', () => {
   const nav = construirNav(0);
 
-  it('grupo REGISTRO vê só Painel, Registrar e Meus registros, sem seções vazias', () => {
+  it('grupo REGISTRO vê Painel, Registrar, Meus registros e Parâmetros', () => {
     const pode = comAs(
       'financeiro.lancamento.registrar',
       'financeiro.lancamento.ler_proprios',
@@ -35,6 +35,8 @@ describe('filtrarNavPorAcesso', () => {
       'Painel',
       'Registrar lançamento',
       'Meus registros',
+      '# Financeiro',
+      'Parâmetros',
     ]);
   });
 

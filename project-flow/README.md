@@ -22,8 +22,9 @@ Estado do projeto em **05/11/2026**. Cada task tem um arquivo em [`tasks/`](task
 - **TSK-517 implementada em 02/11:** `codex/tsk-517-periodos-contabeis`, sobre a TSK-516. Fechar/reabrir por unidade e competência, hash de lançamentos/etiquetas/transferências, consulta de integridade e travas compartilhadas/exclusivas estão implementados e testados localmente.
 - **TSK-518 implementada em 05/11:** comprovantes privados em `codex/tsk-518-a-comprovantes` e evento mínimo em `codex/tsk-518-b-evento-minimo`, empilhados sobre a TSK-517.
 - **TSK-519 implementada em 05/11:** `codex/tsk-519-consultas-financeiras`, sobre a TSK-518 B. Listas, saldos e relatórios financeiros com filtros explícitos, permissões por bloco e isolamento por instituição.
+- **TSK-520 parte 1 implementada em 06/11:** `codex/tsk-520-a-cadastros-web`, sobre a TSK-519. Parâmetros, Contas e Fundos e Pessoas usam a API. As partes 2 a 6 seguem pendentes.
 - **Próximos passos:**
-  - Revisar e mesclar a pilha da B1, da TSK-514 parte B até a TSK-519. A TSK-520 liga as telas do financeiro à API.
+  - Revisar e mesclar a pilha da B1, da TSK-514 parte B até a TSK-520 parte 1. A parte 2 liga o registro de lançamentos, os registros próprios e a fila à API.
   - o resto do backlog técnico: TSK-410 e os itens 3 e 4 da TSK-417.
 
 ## Resumo
@@ -181,7 +182,7 @@ PRs de acompanhamento já mesclados: [#34](https://github.com/AurioNeto/ceudodes
 | [TSK-517](tasks/TSK-517-b1-periodo-contabil.md) | Período contábil: fechar e reabrir com hash e trava | 🚧 Implementada em branch empilhada, aguardando revisão | — | — | TSK-515, TSK-516 |
 | [TSK-518](tasks/TSK-518-b1-anexo-e-evento-minimo.md) | Comprovante (anexo no S3) e Evento mínimo | 🚧 Implementada em duas branches empilhadas, aguardando revisão | — | — | TSK-511 |
 | [TSK-519](tasks/TSK-519-b1-read-models.md) | Read models do financeiro | 🚧 Implementada em branch empilhada, aguardando revisão | — | — | TSK-515, TSK-516, TSK-517, TSK-518 |
-| [TSK-520](tasks/TSK-520-b1-telas-do-financeiro.md) | Telas do financeiro contra a API | 🗺️ Planejada | — | — | TSK-511 (cada parte espera o seu endpoint) |
+| [TSK-520](tasks/TSK-520-b1-telas-do-financeiro.md) | Telas do financeiro contra a API | 🛠️ Em andamento (parte 1 local) | — | — | TSK-511 (cada parte espera o seu endpoint) |
 | [TSK-521](tasks/TSK-521-b1-aceite.md) | Aceite da B1: casos T e marco do fechamento | 🗺️ Planejada | — | — | TSK-519, TSK-520, TSK-507 |
 
 

@@ -1,1 +1,0 @@
-export { Kpi } from './Kpi';

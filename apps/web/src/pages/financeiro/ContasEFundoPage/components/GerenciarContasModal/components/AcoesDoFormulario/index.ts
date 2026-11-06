@@ -1,1 +1,0 @@
-export { AcoesDoFormulario } from './AcoesDoFormulario';
