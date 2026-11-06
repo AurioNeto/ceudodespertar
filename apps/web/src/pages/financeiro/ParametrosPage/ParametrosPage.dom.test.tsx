@@ -17,6 +17,7 @@ it('reutiliza a chave ao reenviar o mesmo cadastro depois de uma falha', async (
     await tela.clicar('Grupos de custo');
     await tela.clicar('Adicionar grupo de custo');
     const painel = elemento(document, '[role="dialog"]');
+    expect(painel.textContent).not.toContain('Situação');
     const [nome, codigo] = painel.querySelectorAll('input');
     if (!nome || !codigo) throw new Error('Campos esperados no cadastro');
     await digitar(nome, 'Eventos');

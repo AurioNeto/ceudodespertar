@@ -11,7 +11,7 @@ const permissoes = {
 const nome = { nome: 'nome', rotulo: 'Nome' };
 const codigo = { nome: 'codigoSistema', rotulo: 'Código de sistema', soNaCriacao: true, exibir: true };
 const situacoes = [{ value: 'true', label: 'Ativo' }, { value: 'false', label: 'Inativo' }];
-const ativa = { nome: 'ativa', rotulo: 'Situação', formato: 'booleano', inicial: 'true', opcoes: situacoes } as const;
+const ativa = { nome: 'ativa', rotulo: 'Situação', formato: 'booleano', soNaEdicao: true, opcoes: situacoes } as const;
 
 export const unidades: DefinicaoDoCadastro = {
   ...permissoes, caminho: '/financeiro/unidades', singular: 'unidade', criar: CriarUnidade, editar: EditarUnidade,
