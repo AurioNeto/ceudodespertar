@@ -488,7 +488,7 @@ O domínio aplica todas as regras de negócio. O banco garante só estrutura, is
 | Estimativa não mexe em saldo | tabela sem ligação com movimento | EC1 |
 | Valor fora da lista ou fora da faixa | `NOT NULL`, tipos, `CHECK`s de enumeração e de sanidade (`status IN (…)`, `> 0`) | — |
 
-Unicidade fica no banco mesmo quando codifica regra: sob concorrência, o domínio sozinho não a garante.
+A implementação da TSK-515 (02/11/2026) segue a diretriz atual: unicidade de negócio fica na aplicação. Estorno existente e pendência aberta são conferidos antes de gravar; não há índices únicos de negócio novos. SQL manual/cargas fora da aplicação não são cobertos; a corrida entre estornos simultâneos é um limite documentado e a consulta detecta duplicatas com o alarme `ESTORNOS_DUPLICADOS`. Os índices de unicidade de negócio nas tabelas anteriores são legados e não foram alterados nesta task.
 
 **O que o banco deliberadamente não garante** — transição de estado, cálculo, permissão, consulta a outro módulo, data corrente, concorrência de regra — está em §21, com o agregado responsável.
 
@@ -621,7 +621,7 @@ Lançamento que nasce confirmado por integração ou migração tem o sistema (a
 
 ### 18.3 Estorno — a convenção que sustenta §2.5.1
 
-O estorno é um lançamento novo com `estorno_de_id`, **a mesma natureza e as mesmas etiquetas do original**, e efeito com sinal invertido. O original **não muda**: continua `CONFIRMADO` e contando, e os dois se anulam. "Estornado" é derivado — existe um lançamento com `estorno_de_id` apontando para ele (a coluna é `UNIQUE`: um estorno por lançamento) —, não um status gravado no original (D1 do issue #11).
+O estorno é um lançamento novo com `estorno_de_id`, **a mesma natureza e as mesmas etiquetas do original**, e efeito com sinal invertido. O original **não muda**: continua `CONFIRMADO` e contando, e os dois se anulam. "Estornado" é derivado — existe um lançamento com `estorno_de_id` apontando para ele (a aplicação recusa um segundo estorno, sem `UNIQUE` nessa coluna) —, não um status gravado no original (D1 do issue #11).
 
 É essa convenção que faz a devolução de contribuição (Doc 6 §2.5.1) derrubar a receita em vez de inflar a despesa — e ela vale para qualquer estorno, não só devolução. A verificação do desenho (`cdd-07-verificacao.sql`) reproduz o caso, e em B1 ele vira teste do read model da DRE: receita de 210, estornada; a DRE de setembro mostra contribuição líquida de 100 (os 100 da Aline), e a despesa continua sendo só o que a casa gastou — flores, ervas e a padaria —, **sem** os 210.
 

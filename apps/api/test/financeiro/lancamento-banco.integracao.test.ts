@@ -1,6 +1,7 @@
+import { Logger } from '@nestjs/common';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { DadosDoLancamento, Etiqueta, LancamentoId, UsuarioId } from '@cdd/contracts';
 import type { AplicacaoDeAcesso } from '../identidade/acesso/ambiente-http.js';
 import type { BancoDeTeste } from '../integracao/banco-de-teste.js';
@@ -86,4 +87,29 @@ describe('lançamento — persistência e guardas mínimas', () => {
     await banco.owner.query(readFileSync(resolve(PASTA, 'lancamento.sql'), 'utf8'));
     expect((await banco.owner.query("select relforcerowsecurity from pg_class where oid = 'financeiro.lancamento'::regclass")).rows).toEqual([{ relforcerowsecurity: true }]);
   });
+  it('alarme identifica estornos duplicados que não passaram pela aplicação', async () => {
+    await gravarNaInstituicao(banco, INSTITUICAO_A, "insert into financeiro.lancamento (id, instituicao_id, status, origem, natureza, valor, motivo, estorno_de_id, registrado_por, registrado_em, gravado_na_transacao) select gen_random_uuid(), $1, 'CONFIRMADO', 'MANUAL', 'DESPESA', 2000, 'Carga externa', $2, $3, now(), pg_current_xact_id() from generate_series(1,2)", [INSTITUICAO_A, ID, AUTOR]);
+    const log = vi.spyOn(Logger.prototype, 'error').mockImplementation(() => undefined);
+    expect(await emA(() => repo.estornoDe(ID))).toBeDefined();
+    expect(log).toHaveBeenCalledWith({ alarme: 'ESTORNOS_DUPLICADOS', lancamentoId: ID, instituicaoId: INSTITUICAO_A });
+    log.mockRestore();
+  });
+  it('exclusão com versão antiga falha e preserva o registro', async () => {
+    const antigo = (await emA(() => repo.porId(ID)))!;
+    expect(await emA(() => repo.salvar(l))).toBe(2);
+    await expect(emA(() => repo.excluir(antigo))).rejects.toThrow();
+    expect(await emA(() => repo.porId(ID))).toBeDefined();
+  });
+  it('integração pode nascer confirmada por SISTEMA e gravar etiquetas na mesma transação', async () => {
+    const unidadeId = await idDoCadastro(banco, INSTITUICAO_A, 'unidade', 'CDD');
+    const contaId = '0198a3c0-0000-7000-8000-0000000000dd';
+    const novoId = '0198a3c0-0000-7000-8000-0000000000ee' as LancamentoId;
+    await gravarNaInstituicao(banco, INSTITUICAO_A, "insert into financeiro.conta (id, instituicao_id, tipo, titularidade, nome) values ($1, $2, 'DINHEIRO', 'INSTITUCIONAL', 'Caixa')", [contaId, INSTITUICAO_A]);
+    const novo = obter(Lancamento.registrar(novoId, { ...dados, unidadeId, contaId, dataCompetencia: '2026-11-01' } as unknown as DadosDoLancamento,
+      [{ categoriaId: categoria, natureza: 'DESPESA', valor: 2000 } as Etiqueta], AUTOR, EM, true, 'MIGRACAO'));
+    obter(novo.confirmar({ autorTipo: 'SISTEMA', autorId: null }, EM, true));
+    await emA(() => repo.adicionar(novo));
+    expect((await emA(() => repo.porId(novoId)))?.estado).toMatchObject({ status: 'CONFIRMADO', confirmadoPor: { autorTipo: 'SISTEMA', autorId: null }, origem: 'MIGRACAO' });
+  });
+
 });
