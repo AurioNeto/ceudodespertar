@@ -119,14 +119,15 @@ describe('acesso por permissão no Layout', () => {
   const itensDoMenu = (tela: TelaMontada) =>
     Array.from(tela.container.querySelectorAll('nav button')).map((b) => b.textContent ?? '');
 
-  it('o grupo REGISTRO vê só Painel, Registrar lançamento e Meus registros no menu', async () => {
+  it('o grupo REGISTRO também vê Parâmetros no menu', async () => {
     const tela = await montarLayoutEm(ROTAS.painel, TELAS, REGISTRO);
     const texto = itensDoMenu(tela).join('|');
     expect(texto).toContain('Painel');
     expect(texto).toContain('Registrar lançamento');
     expect(texto).toContain('Meus registros');
+    expect(texto).toContain('Parâmetros');
     expect(texto).not.toContain('Verificação de lote');
-    for (const secao of ['Financeiro', 'Cerimônias', 'Pessoas', 'Sistema']) {
+    for (const secao of ['Cerimônias', 'Pessoas', 'Sistema']) {
       expect(tela.container.querySelector('aside nav')?.textContent).not.toContain(secao);
     }
   });

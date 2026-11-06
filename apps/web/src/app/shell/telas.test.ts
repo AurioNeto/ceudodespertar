@@ -25,7 +25,7 @@ const ACESSO_APROVADO: Record<RotaId, readonly Permissao[]> = {
   prestacao: ['financeiro.prestacao_contas.gerar'],
   devolucoes: ['eventos.devolucao.efetivar'],
   conciliacao: ['financeiro.conciliacao.executar'],
-  parametros: ['financeiro.plano_contas.gerenciar', 'sistema.parametro.gerenciar'],
+  parametros: ['financeiro.plano_contas.ler'],
   agenda: ['eventos.evento.editar', 'eventos.inscricao.ler'],
   inscricao: ['eventos.inscricao.ler'],
   leitos: ['eventos.operacao.ler'],

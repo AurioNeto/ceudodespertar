@@ -25,7 +25,7 @@ export const TELAS: RegistroDeTelas = {
   conciliacao: { fonte: 'mock', acesso: ['financeiro.conciliacao.executar'] },
   devolucoes: { fonte: 'mock', acesso: ['eventos.devolucao.efetivar'] },
   prestacao: { fonte: 'mock', acesso: ['financeiro.prestacao_contas.gerar'] },
-  parametros: { fonte: 'mock', acesso: ['financeiro.plano_contas.gerenciar', 'sistema.parametro.gerenciar'] },
+  parametros: { fonte: 'api', acesso: ['financeiro.plano_contas.ler'] },
   agenda: { fonte: 'mock', acesso: ['eventos.evento.editar', 'eventos.inscricao.ler'] },
   inscricao: { fonte: 'mock', acesso: ['eventos.inscricao.ler'] },
   leitos: { fonte: 'mock', acesso: ['eventos.operacao.ler'] },
