@@ -2,7 +2,8 @@ import { useState } from 'react';
 import type { RegistroProprioNaConsulta, StatusLancamento } from '@cdd/contracts';
 import { useSessao } from '@/app/sessao';
 import { Aviso, Button, CorpoDaTela, EmptyState, ScreenHeader, StatusBadge, useDensidade } from '@/ds';
-import { formatarBRL, formatarData } from '@/pages/utils/formato';
+import { formatarDataHora } from '@/lib/formato';
+import { formatarBRL } from '@/pages/utils/formato';
 import { useListaFinanceira } from '../api';
 import { AnexarComprovante } from '../components/AnexarComprovante';
 
@@ -28,7 +29,7 @@ export function MeusRegistrosPage() {
         {consulta.data?.itens.map(item => (
           <article key={item.id} style={{ borderBottom: 'var(--border-hairline)', paddingBlock: 8 }}>
             <strong>{item.motivo}</strong>
-            <p>{item.tipo === 'ENTRADA' ? 'Entrada' : 'Saída'} · {formatarBRL(item.valor)} · {formatarData(item.registradoEm)}</p>
+            <p>{item.tipo === 'ENTRADA' ? 'Entrada' : 'Saída'} · {formatarBRL(item.valor)} · {formatarDataHora(item.registradoEm)}</p>
             <StatusBadge tone={item.status === 'CONFIRMADO' ? 'confirmed' : 'neutral'}>{estados[item.status]}</StatusBadge>
             {item.pendencia ? <p>Pendência: {item.pendencia.texto}</p> : null}
             {item.comprovanteId ? <p>Comprovante anexado</p> : null}
