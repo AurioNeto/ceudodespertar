@@ -80,7 +80,8 @@ export function criarClienteHttp(dependencias: DependenciasDoClienteHttp): Clien
     const token = await credencial.tokenAtual();
     const cabecalhos: Record<string, string> = { Accept: 'application/json' };
     if (token) cabecalhos['Authorization'] = `Bearer ${token}`;
-    if (opcoes.corpo !== undefined) cabecalhos['Content-Type'] = 'application/json';
+    const multipart = opcoes.corpo instanceof FormData ? opcoes.corpo : null;
+    if (opcoes.corpo !== undefined && !multipart) cabecalhos['Content-Type'] = 'application/json';
     if (chaveDeIdempotencia) cabecalhos['Idempotency-Key'] = chaveDeIdempotencia;
     if (opcoes.versao !== undefined) cabecalhos['If-Match'] = String(opcoes.versao);
 
@@ -88,7 +89,7 @@ export function criarClienteHttp(dependencias: DependenciasDoClienteHttp): Clien
       const resposta = await chamarFetch(unirCaminho(base, opcoes.caminho), {
         method: opcoes.metodo,
         headers: cabecalhos,
-        body: opcoes.corpo === undefined ? null : JSON.stringify(opcoes.corpo),
+        body: multipart ?? (opcoes.corpo === undefined ? null : JSON.stringify(opcoes.corpo)),
         signal: opcoes.sinal ?? null,
       });
       const texto = await resposta.text();
