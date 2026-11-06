@@ -1,6 +1,6 @@
 # TSK-520: Telas do financeiro contra a API
 
-- **Estado:** 🛠️ Em andamento (B1). Parte 1 implementada na pilha local
+- **Estado:** 🛠️ Em andamento (B1). Partes 1 e 2 implementadas na pilha local
 - **Responsável sugerido:** front (vitro; frontiteto se nascer tela ou pasta)
 - **Depende de:** [TSK-511](TSK-511-b1-contrato-do-financeiro.md)
 
@@ -29,7 +29,16 @@ Implementada em `codex/tsk-520-a-cadastros-web`, sobre `codex/tsk-519-consultas-
 - Pessoas cobre busca paginada e cadastro mínimo (tipo, nome e documento). Anamnese, gestão de acesso e parâmetros institucionais seguem seus próprios escopos.
 - As gravações respeitam as permissões da sessão. Edições enviam a versão lida em `If-Match`. Criações reutilizam a chave de idempotência ao reenviar os mesmos dados no formulário.
 
-As partes 2 a 6 seguem pendentes.
+## Parte 2 · Registro e conferência
+
+Implementada em `codex/tsk-520-b-registro-conferencia`, sobre `codex/tsk-520-a-cadastros-web`.
+
+- Registrar grava entradas e saídas como **A conferir**. O comprovante pode ser enviado depois da gravação ou em Meus registros enquanto o lançamento estiver editável.
+- Meus registros usa a paginação e as pendências devolvidas pela API. A fila lista as faltas informadas pelo servidor, permite revisar com permissão de leitura do detalhe e confirma individualmente com `If-Match`.
+- Quando há uma única unidade ativa, o formulário a sugere. A escolha pode ser alterada e não filtra a fila.
+- A fila mostra transferências pendentes, cujas ações entram na parte 4. A conversa da pendência e o estorno entram na parte 3.
+
+As partes 3 a 6 seguem pendentes.
 
 ## Critérios de aceite
 

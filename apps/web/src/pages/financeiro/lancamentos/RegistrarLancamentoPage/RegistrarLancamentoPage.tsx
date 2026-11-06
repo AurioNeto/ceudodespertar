@@ -1,172 +1,48 @@
-import {
-  ActionBar,
-  AmountInput,
-  BottomSheet,
-  Button,
-  CorpoDaTela,
-  PeriodLock,
-  Rotulo,
-  ScreenHeader,
-  TextField,
-  useDensidade,
-  SeletorDeTipo,
-} from '@/ds';
-import { useSessao } from '@/app/sessao';
-import { AvisosDoRegistro } from './components/AvisosDoRegistro';
-import { ClassificacaoEmCampo } from './components/ClassificacaoEmCampo';
-import { ClassificacaoNoEscritorio } from './components/ClassificacaoNoEscritorio';
-import { ComprovanteDoLancamento } from './components/ComprovanteDoLancamento';
-import { ReciboDoRegistro } from './components/ReciboDoRegistro';
-import { SugestoesDoCupom } from './components/SugestoesDoCupom';
-import { TEXTOS_DA_SOMA, TIPOS } from './constantes';
-import { useFormularioDeLancamento } from './hooks/useFormularioDeLancamento';
-import { usePickerDeOpcao } from './hooks/usePickerDeOpcao';
+import { useRef, useState } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import type { DadosDoLancamento, RegistroDeLancamento } from '@cdd/contracts';
+import { useClienteHttp } from '@/app/providers';
+import { Aviso, CorpoDaTela, ScreenHeader, useDensidade } from '@/ds';
+import { formatarBRL } from '@/pages/utils/formato';
+import { comandosDoLancamento, mensagemDeFalha } from '../api';
+import { AnexarComprovante } from '../components/AnexarComprovante';
+import { FormularioFinanceiro } from '../components/FormularioFinanceiro';
 
 export function RegistrarLancamentoPage() {
   const densidade = useDensidade();
-  const { pode } = useSessao();
-  const consolida = pode('financeiro.lancamento.confirmar');
-  const f = useFormularioDeLancamento(consolida);
-  const { pickerAberto, valorDoPicker, escolherNoPicker } = usePickerDeOpcao(f);
-  const campo = densidade === 'field';
+  const cliente = useQueryClient();
+  const { registrar } = comandosDoLancamento(useClienteHttp());
+  const tentativa = useRef<{ corpo: string; chave: string } | null>(null);
+  const [numero, setNumero] = useState(0);
+  const [recibo, setRecibo] = useState<RegistroDeLancamento | undefined>();
+  const mutacao = useMutation({
+    mutationFn: (dados: DadosDoLancamento) => {
+      const corpo = JSON.stringify(dados);
+      if (tentativa.current?.corpo !== corpo) tentativa.current = { corpo, chave: crypto.randomUUID() };
+      return registrar(dados, { chaveDeIdempotencia: tentativa.current.chave });
+    },
+    onSuccess: registro => {
+      tentativa.current = null;
+      setRecibo(registro);
+      setNumero(atual => atual + 1);
+      void cliente.invalidateQueries({ queryKey: ['lancamentos'] });
+    },
+  });
 
   return (
-    <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', minHeight: '100%' }}>
-      <ScreenHeader
-        title="Registrar lançamento"
-        subtitle={
-          campo
-            ? undefined
-            : consolida
-              ? `Tesouraria lança já consolidado · competência ${f.campos.competencia} · CDD`
-              : `Grava como a conferir · competência ${f.campos.competencia} · CDD`
-        }
-        density={densidade}
-      />
-
-      <div style={{ flex: 1 }}>
-        <CorpoDaTela densidade={densidade} larguraMaxima={860} espaco="compacto">
-          {f.recibo ? (
-            <ReciboDoRegistro recibo={f.recibo} consolida={consolida} densidade={densidade} />
-          ) : null}
-
-          {f.competenciaFechada ? (
-            <PeriodLock
-              title={`Período ${campo ? '07/2026' : '07/2026 · CDD'} está fechado`}
-              reason={
-                campo
-                  ? 'O gasto é de julho e julho foi fechado em 05/08. Lance em 08/2026 explicando na descrição.'
-                  : 'A data do gasto cai em julho, e julho foi fechado em 05/08 por Marcia Zubek. Lançar em período fechado mudaria um relatório que já foi assinado.'
-              }
-              reopenDeniedNote="Reabrir exige um administrador, e o motivo fica registrado de forma permanente."
-            />
-          ) : null}
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {campo ? null : <Rotulo>Tipo de lançamento</Rotulo>}
-            <SeletorDeTipo opcoes={TIPOS} valor={f.tipo} onEscolher={f.trocarTipo} densidade={densidade} />
-            {campo ? null : (
-              <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>{f.notaTipo}</span>
-            )}
+    <>
+      <ScreenHeader title="Registrar lançamento" subtitle="Entradas e saídas ficam a conferir" density={densidade} />
+      <CorpoDaTela densidade={densidade} larguraMaxima={860}>
+        {mutacao.isSuccess ? <Aviso tom="informacao"><span role="status">Lançamento registrado. Status: A conferir.</span></Aviso> : null}
+        {recibo ? (
+          <div style={{ display: 'grid', gap: 8 }}>
+            <strong>{recibo.motivo} · {formatarBRL(recibo.valor)}</strong>
+            <AnexarComprovante key={recibo.id} id={recibo.id} versao={recibo.versao} />
           </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            <AmountInput
-              label={f.labelValor}
-              {...TEXTOS_DA_SOMA}
-              value={f.campos.valor}
-              onChange={(v) => f.alterar('valor', v)}
-              hint="Escreva como você fala. Soma vale: 65+70."
-            />
-            {f.erroDoValor ? (
-              <span style={{ font: 'var(--text-small)', color: 'var(--color-attention)' }}>{f.erroDoValor}</span>
-            ) : null}
-          </div>
-
-          <TextField
-            label={f.labelDescricao}
-            density={densidade}
-            value={f.campos.descricao}
-            onChange={(e) => f.alterar('descricao', e.target.value)}
-            placeholder={f.placeholderDescricao}
-          />
-
-          {campo ? null : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 14 }}>
-              <TextField
-                label={f.labelData}
-                value={f.campos.data}
-                onChange={(e) => f.alterar('data', e.target.value)}
-                error={f.competenciaFechada ? 'Cai em julho, período fechado.' : undefined}
-              />
-              {f.temContraparte ? (
-                <TextField
-                  label={f.labelContraparte}
-                  value={f.campos.contraparte}
-                  onChange={(e) => f.alterar('contraparte', e.target.value)}
-                  placeholder={f.placeholderContraparte}
-                />
-              ) : null}
-            </div>
-          )}
-
-          <ComprovanteDoLancamento
-            anexo={f.campos.anexo}
-            densidade={densidade}
-            onAlterarAnexo={(anexo) => f.alterar('anexo', anexo)}
-          />
-
-          {f.sugestoesPendentes.length ? (
-            <SugestoesDoCupom
-              sugestoes={f.sugestoesPendentes}
-              densidade={densidade}
-              onAceitar={f.aceitarSugestao}
-              onDescartar={f.descartarSugestao}
-              onAceitarTodas={f.aceitarTodas}
-            />
-          ) : null}
-
-          <div style={{ height: 1, background: 'var(--border-subtle)', margin: '2px 0' }} />
-
-          {campo ? <ClassificacaoEmCampo formulario={f} /> : <ClassificacaoNoEscritorio formulario={f} />}
-
-          <AvisosDoRegistro
-            consolida={consolida}
-            temRecibo={f.recibo !== null}
-            composto={f.composto}
-            densidade={densidade}
-          />
-        </CorpoDaTela>
-      </div>
-
-      <ActionBar note={f.notaBarra}>
-        <Button
-          density={densidade}
-          fullWidth={campo}
-          iconName="check"
-          disabled={f.bloqueado}
-          blockedReason={f.motivoBloqueio}
-          onClick={f.registrar}
-        >
-          Registrar e abrir outro
-        </Button>
-        {campo ? null : (
-          <Button variant="quiet" onClick={f.limpar}>
-            Limpar campos
-          </Button>
-        )}
-      </ActionBar>
-
-      {pickerAberto ? (
-        <BottomSheet
-          open
-          title={pickerAberto.titulo}
-          options={pickerAberto.opcoes}
-          value={valorDoPicker}
-          onSelect={escolherNoPicker}
-          onClose={f.fecharPicker}
-        />
-      ) : null}
-    </div>
+        ) : null}
+        {mutacao.isError ? <Aviso tom="pendente"><span role="alert">{mensagemDeFalha(mutacao.error)}</span></Aviso> : null}
+        <FormularioFinanceiro key={numero} ocupado={mutacao.isPending} enviar={dados => mutacao.mutate(dados)} />
+      </CorpoDaTela>
+    </>
   );
 }
