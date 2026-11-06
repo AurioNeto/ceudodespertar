@@ -23,7 +23,7 @@ export async function criarAplicacao(modulo: Type = AppModule): Promise<INestApp
   const ambiente = app.get<Ambiente>(AMBIENTE);
   app.enableCors({
     origin: ambiente.ORIGENS_CORS.length > 0 ? ambiente.ORIGENS_CORS : false,
-    exposedHeaders: [CABECALHO_DE_CORRELACAO, CABECALHO_RETRY_AFTER],
+    exposedHeaders: [CABECALHO_DE_CORRELACAO, CABECALHO_RETRY_AFTER, 'Location'],
   });
   return app;
 }

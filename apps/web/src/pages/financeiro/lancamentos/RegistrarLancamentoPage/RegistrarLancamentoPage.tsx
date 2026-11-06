@@ -1,10 +1,10 @@
 import { useRef, useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import type { DadosDoLancamento, RegistroDeLancamento } from '@cdd/contracts';
+import type { DadosDoLancamento } from '@cdd/contracts';
 import { useClienteHttp } from '@/app/providers';
 import { Aviso, CorpoDaTela, ScreenHeader, useDensidade } from '@/ds';
 import { formatarBRL } from '@/pages/utils/formato';
-import { comandosDoLancamento, mensagemDeFalha } from '../api';
+import { comandosDoLancamento, mensagemDeFalha, type ReciboDoLancamento } from '../api';
 import { AnexarComprovante } from '../components/AnexarComprovante';
 import { FormularioFinanceiro } from '../components/FormularioFinanceiro';
 
@@ -14,12 +14,12 @@ export function RegistrarLancamentoPage() {
   const { registrar } = comandosDoLancamento(useClienteHttp());
   const tentativa = useRef<{ corpo: string; chave: string } | null>(null);
   const [numero, setNumero] = useState(0);
-  const [recibo, setRecibo] = useState<RegistroDeLancamento | undefined>();
+  const [recibo, setRecibo] = useState<ReciboDoLancamento | undefined>();
   const mutacao = useMutation({
     mutationFn: (dados: DadosDoLancamento) => {
       const corpo = JSON.stringify(dados);
       if (tentativa.current?.corpo !== corpo) tentativa.current = { corpo, chave: crypto.randomUUID() };
-      return registrar(dados, { chaveDeIdempotencia: tentativa.current.chave });
+      return registrar(dados, tentativa.current.chave);
     },
     onSuccess: registro => {
       tentativa.current = null;
