@@ -1,11 +1,11 @@
 import type { NavEntry } from '@/ds';
 
-export const construirNav = (lotePendente: number): readonly NavEntry[] => [
+export const construirNav = (): readonly NavEntry[] => [
   { id: 'painel', label: 'Painel', icon: 'layout-dashboard' },
   { id: 'registrar', label: 'Registrar lançamento', icon: 'circle-plus' },
   { id: 'meus', label: 'Meus registros', icon: 'receipt-text' },
   { section: 'Financeiro' },
-  { id: 'lote', label: 'Verificação de lote', icon: 'sparkles', count: lotePendente },
+  { id: 'lote', label: 'Verificação de lote', icon: 'sparkles' },
   { id: 'lancamentos', label: 'Lançamentos', icon: 'list' },
   { id: 'contas', label: 'Contas e fundo', icon: 'landmark' },
   { id: 'faturas', label: 'Faturas de cartão', icon: 'credit-card' },
