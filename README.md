@@ -43,7 +43,9 @@ pnpm typecheck
   na branch empilhada `codex/tsk-512-pessoa-minima`: cadastro mínimo de pessoas
   com busca e paginação, além da validação do titular de contas pessoais. A TSK-515
   está implementada em três branches empilhadas: registro, conferência, estorno
-  e conversa de pendências pela API. Fechamento de períodos e relatórios seguem
+  e conversa de pendências pela API. A TSK-516 está implementada em
+  `codex/tsk-516-transferencias`, com transferência, conferência segregada e estorno
+  sujeito à conferência. Fechamento de períodos e relatórios seguem
   nas tarefas próprias; detalhes e limites estão no `project-flow`.
 - **Telas demonstrativas:** financeiro, pessoas/anamnese, eventos e estoque
   ainda usam fixtures. A integração das telas financeiras é a TSK-520;

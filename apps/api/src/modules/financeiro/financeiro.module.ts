@@ -1,3 +1,8 @@
+import { TransferenciasController } from './interface/http/transferencias.controller.js';
+import { OperacoesDeTransferencia } from './application/transferencias/operacoes-de-transferencia.js';
+import { ResolverDadosDaTransferencia } from './application/transferencias/resolver-dados-da-transferencia.js';
+import { RepositorioDeTransferencia } from './domain/transferencia/transferencia.repo.js';
+import { RepositorioDeTransferenciaKysely } from './infrastructure/persistencia/repositorio-de-transferencia.kysely.js';
 import { ConversasDeLancamento } from './application/lancamentos/conversas-de-lancamento.js';
 import { PendenciasController } from './interface/http/pendencias.controller.js';
 import { Relogio, RelogioDoSistema } from '../../shared/infrastructure/relogio.js';
@@ -45,9 +50,12 @@ import { SemeadorDeCadastrosDaCasa } from './infrastructure/persistencia/semeado
 
 @Module({
   imports: [BancoModule, SemeaduraModule, PessoasModule, EventosModule],
-  controllers: [PendenciasController, LancamentosController, UnidadesController, GruposDeCustoController, CategoriasController, ContasController, FundosController],
+  controllers: [TransferenciasController, PendenciasController, LancamentosController, UnidadesController, GruposDeCustoController, CategoriasController, ContasController, FundosController],
   providers: [
     ConsultarCadastros,
+    OperacoesDeTransferencia,
+    ResolverDadosDaTransferencia,
+    { provide: RepositorioDeTransferencia, useClass: RepositorioDeTransferenciaKysely },
     OperacoesDeLancamento,
     ConversasDeLancamento,
     ResolverDadosDoLancamento,

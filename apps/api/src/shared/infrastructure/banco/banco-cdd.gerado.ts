@@ -125,6 +125,30 @@ export interface FinanceiroPendencia {
   texto: string;
 }
 
+export interface FinanceiroTransferencia {
+  adiantamento_id: string | null;
+  confirmado_em: Timestamp | null;
+  confirmado_por: string | null;
+  conta_destino_id: string | null;
+  conta_origem_id: string | null;
+  data: string;
+  emprestimo_id: string | null;
+  estorno_de_id: string | null;
+  fatura_id: string | null;
+  finalidade: string;
+  fundo_id: string | null;
+  id: string;
+  instituicao_id: string;
+  motivo: string;
+  registrado_em: Timestamp;
+  registrado_por: string;
+  status: string;
+  unidade_destino_id: string | null;
+  unidade_id: string;
+  valor: number;
+  versao: Generated<number>;
+}
+
 export interface FinanceiroUnidade {
   ativa: Generated<boolean>;
   codigo_sistema: string;
@@ -285,6 +309,7 @@ export interface DB {
   "financeiro.lancamento": FinanceiroLancamento;
   "financeiro.lancamento_categoria": FinanceiroLancamentoCategoria;
   "financeiro.pendencia": FinanceiroPendencia;
+  "financeiro.transferencia": FinanceiroTransferencia;
   "financeiro.unidade": FinanceiroUnidade;
   "identidade.bootstrap_executado": IdentidadeBootstrapExecutado;
   "identidade.convite": IdentidadeConvite;

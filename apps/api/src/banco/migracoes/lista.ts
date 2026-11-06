@@ -18,6 +18,8 @@ import { MigracaoB1003PessoaMinima } from './b1-003-pessoa-minima/migracao.js';
 
 import { MigracaoB1004Lancamento } from './b1-004-lancamento/migracao.js';
 
+import { MigracaoB1005Transferencia } from './b1-005-transferencia/migracao.js';
+
 export const MIGRACOES_DO_CDD = [
   { name: 'b0-000-esquemas', class: MigracaoB0000Esquemas },
   { name: 'b0-001-shared', class: MigracaoB0001Shared },
@@ -37,4 +39,5 @@ export const MIGRACOES_DO_CDD = [
   { name: 'b1-002-conta-e-fundo', class: MigracaoB1002ContaEFundo },
   { name: 'b1-003-pessoa-minima', class: MigracaoB1003PessoaMinima },
   { name: 'b1-004-lancamento', class: MigracaoB1004Lancamento },
+  { name: 'b1-005-transferencia', class: MigracaoB1005Transferencia },
 ];

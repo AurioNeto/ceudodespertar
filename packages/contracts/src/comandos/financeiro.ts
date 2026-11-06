@@ -296,6 +296,9 @@ export const EditarTransferencia = RegistrarTransferencia;
 
 export type EditarTransferencia = RegistrarTransferencia;
 
+export const ConfirmarTransferencia = z.object({});
+export type ConfirmarTransferencia = z.infer<typeof ConfirmarTransferencia>;
+
 export const EstornarTransferencia = z.object({ motivo });
 
 export type EstornarTransferencia = z.infer<typeof EstornarTransferencia>;
