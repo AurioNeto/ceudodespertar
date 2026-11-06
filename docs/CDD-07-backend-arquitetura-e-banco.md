@@ -342,7 +342,7 @@ Há três exceções desenhadas. O despachante do outbox: `shared.outbox` não t
 - Chave no bucket: `{instituicao}/{modulo}/{uuid}` — nunca o nome original, que vai para `shared.anexo.nome_original`.
 - **Upload de comprovante B1 pela API** com limite de 10 MiB e validação de tipo declarado e assinatura inicial (PDF, JPEG, PNG). A API grava o SHA-256 e vincula o anexo ao lançamento pendente, com controle de versão.
 - **Leitura só por URL assinada de 5 min**, gerada depois da verificação de permissão do recurso dono do anexo. Não há URL pública nunca.
-- Tipos aceitos: imagem, PDF, OFX/CSV. Limite de 10 MB. Anexo marcado `sensivel` (documento de autorização de responsável) só é servido a quem tem a permissão do bloco correspondente, e a leitura entra no registro de acesso.
+- A importação futura define as regras de OFX/CSV. Para documentos de autorização de responsável, o desenho prevê a marca `sensivel`, permissão do bloco correspondente e registro de acesso.
 - A rotina diária de coleta de órfãos continua prevista. Na B1, a substituição do vínculo e falhas entre a gravação no S3 e o commit do banco podem deixar arquivos órfãos.
 
 ## 11. Relatórios e prestação de contas
@@ -507,7 +507,7 @@ erDiagram
 | Tabela | Papel | Pontos de desenho |
 |---|---|---|
 | `shared.instituicao` | A casa | Sem RLS, como o catálogo de permissões, o outbox e `shared.evento_processado` — as quatro únicas tabelas sem RLS |
-| `shared.anexo` | Metadado de arquivo | `sha256`, `sensivel`; a chave do bucket é única global. Ator de quem enviou por `enviado_por_tipo` (`USUARIO`\|`SISTEMA`\|`LINK_PUBLICO`) + `enviado_por` nulo fora de `USUARIO` (`enviado_coerente`) — o despachante e o link público também sobem anexo sem login |
+| `shared.anexo` | Metadado de arquivo | RLS forçada, `sha256` e `sensivel`. A aplicação deriva a chave do bucket do UUID primário. O ator usa `enviado_por_tipo` (`USUARIO`\|`SISTEMA`\|`LINK_PUBLICO`) e `enviado_por` nulo fora de `USUARIO`. O comprovante B1 é enviado por usuário autenticado. |
 | `shared.outbox` | Eventos a despachar | Sem RLS (§8); `proxima_tentativa_em` para o backoff; índice parcial em pendentes sob o teto de tentativas (§9) |
 | `shared.evento_processado` | Idempotência do consumidor | PK `(consumidor, evento_id)` |
 | `shared.chave_de_idempotencia` | Idempotência do HTTP | PK `(instituicao, chave)`, expira em 24 h |
@@ -658,6 +658,8 @@ Read models do backend, em Kysely sobre as tabelas. O esquema de referência gua
 Resultado por cerimônia e por grupo de custo são o mesmo efeito por categoria filtrado por `evento_id` e `grupo_de_custo_id`, publicado pelo Financeiro como porta de leitura para o painel do evento. A RLS vale igual: o read model roda na transação da requisição, com o contexto da instituição.
 
 ## 19. `eventos`
+
+A TSK-518 cria `eventos.evento` com unidade, nome, tipo e intervalo de datas. O financeiro expõe o cadastro mínimo em `/api/v1/financeiro/eventos` e valida o vínculo do lançamento pela porta pública `EventosMinimos`. A TSK-519 usará o resumo no resultado por cerimônia. O desenho abaixo descreve a evolução da B5.
 
 ```mermaid
 erDiagram

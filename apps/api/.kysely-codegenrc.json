@@ -1,7 +1,7 @@
 {
   "dialect": "postgres",
   "outFile": "src/shared/infrastructure/banco/banco-cdd.gerado.ts",
-  "includePattern": "{shared,identidade,financeiro,pessoas}.*",
+  "includePattern": "{shared,identidade,financeiro,pessoas,eventos}.*",
   "dateParser": "string",
   "numericParser": "string",
   "typeMapping": {
