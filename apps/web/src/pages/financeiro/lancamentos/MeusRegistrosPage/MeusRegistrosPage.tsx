@@ -1,52 +1,48 @@
-import { CorpoDaTela, ScreenHeader, useDensidade, SeletorDeTipo } from '@/ds';
-import { CarrosselDeRecibos } from './components/CarrosselDeRecibos';
-import { ListaSimplificada } from './components/ListaSimplificada';
-import { useMeusRegistros } from './hooks/useMeusRegistros';
+import { useState } from 'react';
+import type { RegistroProprioNaConsulta, StatusLancamento } from '@cdd/contracts';
+import { useSessao } from '@/app/sessao';
+import { Aviso, Button, CorpoDaTela, EmptyState, ScreenHeader, StatusBadge, useDensidade } from '@/ds';
+import { formatarBRL, formatarData } from '@/pages/utils/formato';
+import { useListaFinanceira } from '../api';
+import { AnexarComprovante } from '../components/AnexarComprovante';
+
+const estados: Record<StatusLancamento, string> = {
+  A_CONFERIR: 'A conferir', CONFIRMADO: 'Confirmado', ESTORNADO: 'Estornado',
+};
 
 export function MeusRegistrosPage() {
   const densidade = useDensidade();
-  const campo = densidade === 'field';
-  const meus = useMeusRegistros();
+  const { pode } = useSessao();
+  const [pagina, setPagina] = useState(1);
+  const consulta = useListaFinanceira<RegistroProprioNaConsulta>('meus-registros', pagina);
 
   return (
     <>
-      <ScreenHeader
-        title="Meus registros"
-        subtitle={campo ? undefined : 'O que você lançou nos últimos 30 dias · CDD'}
-        density={densidade}
-      />
-
+      <ScreenHeader title="Meus registros" subtitle="Acompanhe os lançamentos que você registrou" density={densidade} />
       <CorpoDaTela densidade={densidade} larguraMaxima={1000}>
-        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 12 }}>
-          <SeletorDeTipo
-            opcoes={[
-              { valor: 'lista', label: 'Lista simplificada' },
-              { valor: 'carrossel', label: 'Visão completa' },
-            ]}
-            valor={meus.visao}
-            onEscolher={meus.escolherVisao}
-            densidade={densidade}
-          />
+        {consulta.isPending ? <p role="status">Carregando registros…</p> : null}
+        {consulta.isError ? <Aviso tom="pendente">Não foi possível carregar os registros.
+          <Button variant="quiet" onClick={() => void consulta.refetch()}>Tentar novamente</Button>
+        </Aviso> : null}
+        {consulta.data?.itens.length === 0 ? <EmptyState title="Nenhum registro nesta página" /> : null}
+        {consulta.data?.itens.map(item => (
+          <article key={item.id} style={{ borderBottom: 'var(--border-hairline)', paddingBlock: 8 }}>
+            <strong>{item.motivo}</strong>
+            <p>{item.tipo === 'ENTRADA' ? 'Entrada' : 'Saída'} · {formatarBRL(item.valor)} · {formatarData(item.registradoEm)}</p>
+            <StatusBadge tone={item.status === 'CONFIRMADO' ? 'confirmed' : 'neutral'}>{estados[item.status]}</StatusBadge>
+            {item.pendencia ? <p>Pendência: {item.pendencia.texto}</p> : null}
+            {item.comprovanteId ? <p>Comprovante anexado</p> : null}
+            {!item.comprovanteId && item.status === 'A_CONFERIR' && pode('financeiro.lancamento.registrar') ? (
+              <details><summary>Adicionar comprovante</summary>
+                <AnexarComprovante id={item.id} versao={item.versao} />
+              </details>
+            ) : null}
+          </article>
+        ))}
+        <div style={{ display: 'flex', gap: 8 }}>
+          {pagina > 1 ? <Button variant="quiet" onClick={() => setPagina(pagina - 1)}>Página anterior</Button> : null}
+          {consulta.data?.proximaPagina ? <Button variant="quiet" onClick={() => setPagina(consulta.data.proximaPagina ?? pagina)}>Próxima página</Button> : null}
         </div>
-
-        {meus.visao === 'lista' ? (
-          <ListaSimplificada
-            registros={meus.daPagina}
-            pagina={meus.pagina}
-            totalPaginas={meus.totalPaginas}
-            densidade={densidade}
-            onAbrir={meus.abrirNoCartao}
-            onAnterior={meus.paginaAnterior}
-            onProxima={meus.proximaPagina}
-          />
-        ) : (
-          <CarrosselDeRecibos
-            registros={meus.registros}
-            indice={meus.indice}
-            densidade={densidade}
-            onIrPara={meus.irPara}
-          />
-        )}
       </CorpoDaTela>
     </>
   );
