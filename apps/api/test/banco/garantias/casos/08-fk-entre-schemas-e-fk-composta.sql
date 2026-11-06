@@ -55,6 +55,8 @@ SELECT verif.confere('pg_constraint · o conjunto exato de FKs compostas com ins
     'financeiro.lancamento_categoria → financeiro.categoria',
     'financeiro.lancamento_categoria → financeiro.lancamento',
     'financeiro.pendencia → financeiro.lancamento',
+    'financeiro.periodo_contabil → financeiro.unidade',
+    'financeiro.reabertura_de_periodo → financeiro.periodo_contabil',
     'financeiro.transferencia → financeiro.conta',
     'financeiro.transferencia → financeiro.conta',
     'financeiro.transferencia → financeiro.fundo',

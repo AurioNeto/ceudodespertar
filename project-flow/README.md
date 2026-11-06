@@ -19,8 +19,9 @@ Estado do projeto em **02/11/2026**. Cada task tem um arquivo em [`tasks/`](task
 - **B1 e backlog mesclados de 14 a 30/10:** #227 (decisões e divisão da B1), #228 (TSK-511, contrato), #229 (TSK-412, parte 2), #230 (TSK-403), #231 e #232 (TSK-513, cadastros com HTTP), #233 (teste intermitente da vigia de esgotados), #234 (este mapa) e #235 (TSK-514, parte A).
 - **TSK-515 implementada em 02/11:** agregado e banco em `codex/tsk-515-a-agregado-banco`, comandos em `codex/tsk-515-b-comandos-http` e conversa em `codex/tsk-515-c-pendencias`, todos empilhados sobre a pessoa mínima. Inclui estorno corrente e guardas de histórico; períodos fechados/travas entram na TSK-517, anexos na TSK-518 e listagens/relatórios na TSK-519.
 - **TSK-516 implementada em 02/11:** `codex/tsk-516-transferencias`, sobre `codex/tsk-515-c-pendencias`, com três finalidades da B1, conferência segregada e estorno também sujeito à conferência. Banco, comandos e HTTP entregues localmente, aguardando revisão.
+- **TSK-517 implementada em 02/11:** `codex/tsk-517-periodos-contabeis`, sobre a TSK-516. Fechar/reabrir por unidade e competência, hash de lançamentos/etiquetas/transferências, consulta de integridade e travas compartilhadas/exclusivas estão implementados e testados localmente.
 - **Próximos passos:**
-  - **B1:** revisar e mesclar a TSK-514 parte B (comandos, HTTP e consultas de conta e fundo), revisar e mesclar também a TSK-512 (pessoa mínima, empilhada sobre a parte B), revisar a TSK-515 (três branches empilhadas entregues) revisar a TSK-516 (transferência) e seguir para a TSK-517 (períodos, hash e travas); o front começa a TSK-520 pelas telas de unidades, grupos de custo e categorias, que já têm API;
+  - **B1:** revisar e mesclar a TSK-514 parte B (comandos, HTTP e consultas de conta e fundo), revisar e mesclar também a TSK-512 (pessoa mínima, empilhada sobre a parte B), revisar a TSK-515 (três branches empilhadas entregues), a TSK-516 (transferência) e a TSK-517 (períodos, hash e travas), e seguir para a TSK-518 (comprovantes e evento mínimo); o front começa a TSK-520 pelas telas de unidades, grupos de custo e categorias, que já têm API;
   - o resto do backlog técnico: TSK-410 e os itens 3 e 4 da TSK-417.
 
 ## Resumo
@@ -175,7 +176,7 @@ PRs de acompanhamento já mesclados: [#34](https://github.com/AurioNeto/ceudodes
 | [TSK-514](tasks/TSK-514-b1-cadastros-conta-fundo.md) | Cadastros: Conta e Fundo | 🚧 Parte A mesclada (#235); parte B implementada localmente, aguardando revisão | — | #235 | TSK-513 |
 | [TSK-515](tasks/TSK-515-b1-lancamento.md) | Lançamento: etiquetas, conferência e estorno | 🚧 Partes A/B/C em branches empilhadas, aguardando revisão | — | — | TSK-512, TSK-514 |
 | [TSK-516](tasks/TSK-516-b1-transferencia.md) | Transferência com conferência e estorno | 🚧 Implementada em branch empilhada, aguardando revisão | — | — | TSK-515 |
-| [TSK-517](tasks/TSK-517-b1-periodo-contabil.md) | Período contábil: fechar e reabrir com hash e trava | 🗺️ Planejada | — | — | TSK-515, TSK-516 |
+| [TSK-517](tasks/TSK-517-b1-periodo-contabil.md) | Período contábil: fechar e reabrir com hash e trava | 🚧 Implementada em branch empilhada, aguardando revisão | — | — | TSK-515, TSK-516 |
 | [TSK-518](tasks/TSK-518-b1-anexo-e-evento-minimo.md) | Comprovante (anexo no S3) e Evento mínimo | 🗺️ Planejada | — | — | TSK-511 |
 | [TSK-519](tasks/TSK-519-b1-read-models.md) | Read models do financeiro | 🗺️ Planejada | — | — | TSK-515, TSK-516, TSK-517, TSK-518 |
 | [TSK-520](tasks/TSK-520-b1-telas-do-financeiro.md) | Telas do financeiro contra a API | 🗺️ Planejada | — | — | TSK-511 (cada parte espera o seu endpoint) |

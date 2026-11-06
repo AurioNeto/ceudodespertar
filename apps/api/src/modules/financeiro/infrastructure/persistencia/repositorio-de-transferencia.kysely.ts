@@ -1,3 +1,4 @@
+import { protegerEscrita, periodosDaTransferencia } from '../periodos/proteger-escrita-no-periodo.js';
 import { Injectable, Logger } from '@nestjs/common';
 import { OptimisticLockError } from '@mikro-orm/core';
 import type { StatusGravadoDoLancamento, TransferenciaId } from '@cdd/contracts';
@@ -54,6 +55,7 @@ export class RepositorioDeTransferenciaKysely extends RepositorioDeTransferencia
 
   adicionar(t: Transferencia): Promise<void> {
     return this.unidade.transacao('escrita', async (ctx) => {
+      await protegerEscrita(ctx, periodosDaTransferencia(t.estado));
       await ctx.kysely.insertInto('financeiro.transferencia').values({ id: t.id, instituicao_id: instituicaoDoContexto(), ...this.colunas(t), versao: t.versao }).execute();
       await this.outbox.gravar(ctx, t.retirarEventos());
     });
@@ -61,6 +63,8 @@ export class RepositorioDeTransferenciaKysely extends RepositorioDeTransferencia
 
   salvar(t: Transferencia): Promise<number> {
     return this.unidade.transacao('escrita', async (ctx) => {
+      const anterior = await this.porId(t.id);
+      await protegerEscrita(ctx, [...periodosDaTransferencia(t.estado), ...(anterior === undefined ? [] : periodosDaTransferencia(anterior.estado))]);
       const resultado = await ctx.kysely.updateTable('financeiro.transferencia').set({ ...this.colunas(t), versao: t.versao + 1 })
         .where('id', '=', t.id).where('versao', '=', t.versao).where('status', '=', 'A_CONFERIR').executeTakeFirst();
       exigirLinhaAtualizada(resultado, 'Transferencia');
@@ -71,6 +75,7 @@ export class RepositorioDeTransferenciaKysely extends RepositorioDeTransferencia
 
   excluir(t: Transferencia): Promise<void> {
     return this.unidade.transacao('escrita', async (ctx) => {
+      await protegerEscrita(ctx, periodosDaTransferencia(t.estado));
       const resultado = await ctx.kysely.deleteFrom('financeiro.transferencia').where('id', '=', t.id).where('versao', '=', t.versao).where('status', '=', 'A_CONFERIR').executeTakeFirst();
       if (resultado.numDeletedRows === 0n) throw OptimisticLockError.lockFailed('Transferencia');
       await this.outbox.gravar(ctx, t.retirarEventos());
