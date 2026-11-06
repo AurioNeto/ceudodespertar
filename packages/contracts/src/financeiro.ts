@@ -418,3 +418,18 @@ export interface PeriodoContabil {
   readonly reaberturas: readonly ReaberturaDePeriodo[];
   readonly versao: number;
 }
+
+export interface PendenciaDoLancamento {
+  readonly id: import('./kernel.js').PendenciaId;
+  readonly texto: string;
+  readonly abertaPor: UsuarioId;
+  readonly destinatario: UsuarioId;
+  readonly abertaEm: DataHora;
+  readonly resposta: string | null;
+  readonly resolvidaEm: DataHora | null;
+}
+
+export interface RegistroDeLancamento extends Omit<Lancamento, 'comprovante'> {
+  readonly comprovanteId: import('./kernel.js').AnexoId | null;
+  readonly pendencias: readonly PendenciaDoLancamento[];
+}

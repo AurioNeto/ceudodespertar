@@ -6,6 +6,7 @@ import { criarBancoDeTeste, derrubarBancoDeTeste } from '../integracao/banco-de-
 import type { BancoDeTeste } from '../integracao/banco-de-teste.js';
 
 const PASTA_DA_MIGRACAO = join(dirname(fileURLToPath(import.meta.url)), '../../src/banco/migracoes/b1-002-conta-e-fundo');
+const SQL_DE_DESFAZER_LANCAMENTO = readFileSync(join(PASTA_DA_MIGRACAO, '../b1-004-lancamento/desfazer.sql'), 'utf8');
 const SQL_DE_APLICAR = readFileSync(join(PASTA_DA_MIGRACAO, 'conta-e-fundo.sql'), 'utf8');
 const SQL_DE_DESFAZER = readFileSync(join(PASTA_DA_MIGRACAO, 'desfazer.sql'), 'utf8');
 
@@ -17,6 +18,7 @@ describe('migration de conta e fundo', () => {
 
   beforeEach(async () => {
     banco = await criarBancoDeTeste();
+    await banco.owner.query(SQL_DE_DESFAZER_LANCAMENTO);
   });
 
   afterEach(async () => {

@@ -73,6 +73,58 @@ export interface FinanceiroGrupoDeCusto {
   versao: Generated<number>;
 }
 
+export interface FinanceiroLancamento {
+  competencia: string | null;
+  comprovante_id: string | null;
+  confirmado_autor_tipo: string | null;
+  confirmado_em: Timestamp | null;
+  confirmado_por: string | null;
+  conta_id: string | null;
+  contraparte_texto: string | null;
+  data_caixa: string | null;
+  data_competencia: string | null;
+  estorno_de_id: string | null;
+  evento_id: string | null;
+  fatura_id: string | null;
+  forma_pagamento: string | null;
+  gravado_na_transacao: string;
+  grupo_de_custo_id: string | null;
+  id: string;
+  instituicao_id: string;
+  motivo: string;
+  natureza: string;
+  origem: string;
+  pessoa_id: string | null;
+  reembolso_a_id: string | null;
+  registrado_em: Timestamp;
+  registrado_por: string;
+  status: string;
+  unidade_id: string | null;
+  valor: number;
+  versao: Generated<number>;
+}
+
+export interface FinanceiroLancamentoCategoria {
+  categoria_id: string;
+  id: Generated<string>;
+  instituicao_id: string;
+  lancamento_id: string;
+  natureza: string;
+  valor: number;
+}
+
+export interface FinanceiroPendencia {
+  aberta_em: Timestamp;
+  aberta_por: string;
+  destinatario: string;
+  id: string;
+  instituicao_id: string;
+  lancamento_id: string;
+  resolvida_em: Timestamp | null;
+  resposta: string | null;
+  texto: string;
+}
+
 export interface FinanceiroUnidade {
   ativa: Generated<boolean>;
   codigo_sistema: string;
@@ -230,6 +282,9 @@ export interface DB {
   "financeiro.conta": FinanceiroConta;
   "financeiro.fundo": FinanceiroFundo;
   "financeiro.grupo_de_custo": FinanceiroGrupoDeCusto;
+  "financeiro.lancamento": FinanceiroLancamento;
+  "financeiro.lancamento_categoria": FinanceiroLancamentoCategoria;
+  "financeiro.pendencia": FinanceiroPendencia;
   "financeiro.unidade": FinanceiroUnidade;
   "identidade.bootstrap_executado": IdentidadeBootstrapExecutado;
   "identidade.convite": IdentidadeConvite;
