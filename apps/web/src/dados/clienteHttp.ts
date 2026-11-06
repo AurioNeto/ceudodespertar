@@ -13,6 +13,7 @@ export interface OpcoesDeRequisicao {
   readonly versao?: number | string;
   readonly chaveDeIdempotencia?: string;
   readonly sinal?: AbortSignal;
+  readonly aoReceberLocalizacao?: (localizacao: string) => void;
 }
 
 export interface ClienteHttp {
@@ -33,6 +34,7 @@ interface RespostaLida {
   readonly ok: boolean;
   readonly texto: string;
   readonly retryAfter: string | null;
+  readonly localizacao: string | null;
 }
 
 function ehAbortamento(erro: unknown): boolean {
@@ -80,7 +82,8 @@ export function criarClienteHttp(dependencias: DependenciasDoClienteHttp): Clien
     const token = await credencial.tokenAtual();
     const cabecalhos: Record<string, string> = { Accept: 'application/json' };
     if (token) cabecalhos['Authorization'] = `Bearer ${token}`;
-    if (opcoes.corpo !== undefined) cabecalhos['Content-Type'] = 'application/json';
+    const multipart = opcoes.corpo instanceof FormData ? opcoes.corpo : null;
+    if (opcoes.corpo !== undefined && !multipart) cabecalhos['Content-Type'] = 'application/json';
     if (chaveDeIdempotencia) cabecalhos['Idempotency-Key'] = chaveDeIdempotencia;
     if (opcoes.versao !== undefined) cabecalhos['If-Match'] = String(opcoes.versao);
 
@@ -88,7 +91,7 @@ export function criarClienteHttp(dependencias: DependenciasDoClienteHttp): Clien
       const resposta = await chamarFetch(unirCaminho(base, opcoes.caminho), {
         method: opcoes.metodo,
         headers: cabecalhos,
-        body: opcoes.corpo === undefined ? null : JSON.stringify(opcoes.corpo),
+        body: multipart ?? (opcoes.corpo === undefined ? null : JSON.stringify(opcoes.corpo)),
         signal: opcoes.sinal ?? null,
       });
       const texto = await resposta.text();
@@ -98,6 +101,7 @@ export function criarClienteHttp(dependencias: DependenciasDoClienteHttp): Clien
         ok: resposta.ok,
         texto,
         retryAfter: resposta.headers.get('Retry-After'),
+        localizacao: resposta.headers.get('Location'),
       };
     } catch (erro) {
       if (ehAbortamento(erro)) throw erro;
@@ -105,7 +109,8 @@ export function criarClienteHttp(dependencias: DependenciasDoClienteHttp): Clien
     }
   }
 
-  function lerSucesso<Saida>(resposta: RespostaLida): Saida {
+  function lerSucesso<Saida>(resposta: RespostaLida, opcoes: OpcoesDeRequisicao): Saida {
+    if (resposta.localizacao !== null) opcoes.aoReceberLocalizacao?.(resposta.localizacao);
     if (resposta.texto === '') return undefined as Saida;
     try {
       return JSON.parse(resposta.texto) as Saida;
@@ -119,7 +124,7 @@ export function criarClienteHttp(dependencias: DependenciasDoClienteHttp): Clien
       opcoes.chaveDeIdempotencia ?? (opcoes.metodo === 'POST' ? gerarChave() : undefined);
 
     const primeira = await enviarUmaVez(opcoes, chaveDeIdempotencia);
-    if (primeira.ok) return lerSucesso<Saida>(primeira);
+    if (primeira.ok) return lerSucesso<Saida>(primeira, opcoes);
 
     const erro = erroDaResposta(primeira.status, primeira.texto, primeira.retryAfter);
     if (!erro.ehFalhaDeAutenticacao) throw avisarSeRecusado(erro);
@@ -132,7 +137,7 @@ export function criarClienteHttp(dependencias: DependenciasDoClienteHttp): Clien
     }
 
     const segunda = await enviarUmaVez(opcoes, chaveDeIdempotencia);
-    if (segunda.ok) return lerSucesso<Saida>(segunda);
+    if (segunda.ok) return lerSucesso<Saida>(segunda, opcoes);
     throw avisarSeRecusado(erroDaResposta(segunda.status, segunda.texto, segunda.retryAfter));
   }
 

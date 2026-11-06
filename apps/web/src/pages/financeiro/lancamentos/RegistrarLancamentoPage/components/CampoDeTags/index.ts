@@ -1,1 +1,0 @@
-export { CampoDeTags } from './CampoDeTags';
