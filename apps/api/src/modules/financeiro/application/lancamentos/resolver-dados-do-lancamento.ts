@@ -21,7 +21,7 @@ export class ResolverDadosDoLancamento {
   ) {}
 
   async executar(dados: DadosDoLancamento, confirmando = false): Promise<Result<readonly Etiqueta[], ErroDeDominio>> {
-    if (dados.faturaId !== null || dados.comprovanteId !== null) return err(erroDeDominio('RECURSO_NAO_ENCONTRADO'));
+    if (dados.faturaId !== null) return err(erroDeDominio('RECURSO_NAO_ENCONTRADO'));
     const unidade = dados.unidadeId === null ? undefined : await this.unidades.porId(dados.unidadeId);
     if (dados.unidadeId !== null && unidade === undefined) return err(erroDeDominio('RECURSO_NAO_ENCONTRADO'));
     if (unidade !== undefined && !unidade.ativa) return err(erroDeDominio('CADASTRO_INATIVO'));

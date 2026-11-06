@@ -340,10 +340,10 @@ Há três exceções desenhadas. O despachante do outbox: `shared.outbox` não t
 ## 10. Arquivos
 
 - Chave no bucket: `{instituicao}/{modulo}/{uuid}` — nunca o nome original, que vai para `shared.anexo.nome_original`.
-- **Upload direto ao bucket** com URL pré-assinada de `PUT` (5 min, tamanho e tipo fixados na assinatura); a API registra o anexo depois de conferir o SHA-256.
+- **Upload de comprovante B1 pela API** com limite de 10 MiB e validação de tipo declarado e assinatura inicial (PDF, JPEG, PNG). A API grava o SHA-256 e vincula o anexo ao lançamento pendente, com controle de versão.
 - **Leitura só por URL assinada de 5 min**, gerada depois da verificação de permissão do recurso dono do anexo. Não há URL pública nunca.
 - Tipos aceitos: imagem, PDF, OFX/CSV. Limite de 10 MB. Anexo marcado `sensivel` (documento de autorização de responsável) só é servido a quem tem a permissão do bloco correspondente, e a leitura entra no registro de acesso.
-- Anexo órfão (registrado e nunca referenciado em 24 h) é removido por rotina diária.
+- A rotina diária de coleta de órfãos continua prevista. Na B1, a substituição do vínculo e falhas entre a gravação no S3 e o commit do banco podem deixar arquivos órfãos.
 
 ## 11. Relatórios e prestação de contas
 

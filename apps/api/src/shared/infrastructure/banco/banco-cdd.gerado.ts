@@ -285,6 +285,20 @@ export interface PessoasPessoa {
   versao: Generated<number>;
 }
 
+export interface SharedAnexo {
+  chave: string;
+  enviado_em: Generated<Timestamp>;
+  enviado_por: string | null;
+  enviado_por_tipo: Generated<string>;
+  id: string;
+  instituicao_id: string;
+  mime: string;
+  nome_original: string;
+  sensivel: Generated<boolean>;
+  sha256: string;
+  tamanho_bytes: number;
+}
+
 export interface SharedChaveDeIdempotencia {
   chave: string;
   corpo_hash: string | null;
@@ -345,6 +359,7 @@ export interface DB {
   "identidade.usuario": IdentidadeUsuario;
   "identidade.usuario_grupo": IdentidadeUsuarioGrupo;
   "pessoas.pessoa": PessoasPessoa;
+  "shared.anexo": SharedAnexo;
   "shared.chave_de_idempotencia": SharedChaveDeIdempotencia;
   "shared.evento_processado": SharedEventoProcessado;
   "shared.instituicao": SharedInstituicao;

@@ -1,3 +1,9 @@
+import { ComprovantesController } from './interface/http/comprovantes.controller.js';
+import { ComprovantesDeLancamento } from './application/comprovantes/comprovantes-de-lancamento.js';
+import { RepositorioDeComprovantes } from './application/comprovantes/repositorio-de-comprovantes.js';
+import { RepositorioDeComprovantesKysely } from './infrastructure/persistencia/repositorio-de-comprovantes.kysely.js';
+import { ArmazenamentoDeArquivos } from '../../shared/infrastructure/arquivos/armazenamento-de-arquivos.js';
+import { ArmazenamentoS3 } from '../../shared/infrastructure/arquivos/armazenamento-s3.js';
 import { PeriodosController } from './interface/http/periodos.controller.js';
 import { OperacoesDePeriodo } from './application/periodos/operacoes-de-periodo.js';
 import { RepositorioDePeriodo } from './domain/periodo/periodo-contabil.repo.js';
@@ -54,9 +60,12 @@ import { SemeadorDeCadastrosDaCasa } from './infrastructure/persistencia/semeado
 
 @Module({
   imports: [BancoModule, SemeaduraModule, PessoasModule, EventosModule],
-  controllers: [PeriodosController, TransferenciasController, PendenciasController, LancamentosController, UnidadesController, GruposDeCustoController, CategoriasController, ContasController, FundosController],
+  controllers: [ComprovantesController, PeriodosController, TransferenciasController, PendenciasController, LancamentosController, UnidadesController, GruposDeCustoController, CategoriasController, ContasController, FundosController],
   providers: [
     ConsultarCadastros,
+    ComprovantesDeLancamento,
+    { provide: RepositorioDeComprovantes, useClass: RepositorioDeComprovantesKysely },
+    { provide: ArmazenamentoDeArquivos, useClass: ArmazenamentoS3 },
     OperacoesDePeriodo,
     { provide: RepositorioDePeriodo, useClass: RepositorioDePeriodoKysely },
     OperacoesDeTransferencia,
