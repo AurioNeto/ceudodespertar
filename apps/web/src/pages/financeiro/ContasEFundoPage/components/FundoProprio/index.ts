@@ -1,1 +1,0 @@
-export { FundoProprio } from './FundoProprio';

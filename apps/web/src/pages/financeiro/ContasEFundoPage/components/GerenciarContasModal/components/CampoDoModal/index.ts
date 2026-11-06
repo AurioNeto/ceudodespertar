@@ -1,1 +1,0 @@
-export { CampoDoModal } from './CampoDoModal';

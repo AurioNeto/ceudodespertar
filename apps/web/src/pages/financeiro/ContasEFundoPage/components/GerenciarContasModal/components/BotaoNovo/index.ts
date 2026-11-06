@@ -1,1 +1,0 @@
-export { BotaoNovo } from './BotaoNovo';
