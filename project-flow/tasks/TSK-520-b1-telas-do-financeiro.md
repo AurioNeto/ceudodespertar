@@ -1,6 +1,6 @@
 # TSK-520: Telas do financeiro contra a API
 
-- **Estado:** 🛠️ Em andamento (B1). Partes 1 a 3 implementadas na pilha
+- **Estado:** 🛠️ Em andamento (B1). Partes 1 a 4 implementadas na pilha
 - **Responsável sugerido:** front (vitro; frontiteto se nascer tela ou pasta)
 - **Depende de:** [TSK-511](TSK-511-b1-contrato-do-financeiro.md)
 
@@ -44,7 +44,13 @@ Implementada em `codex/tsk-520-c-lancamentos`, sobre a fila do financeiro e as c
 
 O livro lista transferências e mostra origem e destino. As ações de transferência entram na parte 4. Os filtros disponíveis seguem o contrato de consulta da API.
 
-As partes 4 a 6 seguem pendentes.
+## Parte 4 · Transferências e saldos
+
+Implementada em `codex/tsk-520-d-transferencias`, sobre a parte 3. Registro e Contas e Fundos dão acesso ao formulário para movimentação entre contas, aporte a fundo e repasse entre unidades. O aporte usa a conta vinculada ao fundo. A fila permite revisar e confirmar, e o detalhe no livro também permite editar, descartar ou solicitar estorno conforme o estado e as permissões. A API exige outra pessoa para confirmar a transferência ou o estorno.
+
+Contas e Fundos consulta os saldos por unidade. As operações atualizam livro, fila e saldos a partir da API.
+
+As partes 5 e 6 seguem pendentes.
 
 ## Critérios de aceite
 
