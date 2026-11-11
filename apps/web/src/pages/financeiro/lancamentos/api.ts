@@ -1,10 +1,14 @@
 import { useQuery } from '@tanstack/react-query';
-import type { PaginaFinanceira, RegistroDeLancamento } from '@cdd/contracts';
+import { ParametrosDoLancamento, type DadosDoLancamento, type PaginaFinanceira, type RegistroDeLancamento } from '@cdd/contracts';
 import { useClienteHttp } from '@/app/providers';
 import { criarComando, criarConsulta, ErroDaApi, type ClienteHttp } from '@/dados';
 
 const caminho = '/financeiro/lancamentos';
 const detalhe = (id: string) => `${caminho}/${encodeURIComponent(id)}`;
+const prefixoDoRecibo = `/api/v1${caminho}/`;
+const versaoInicialDoLancamento = 1;
+
+export type ReciboDoLancamento = Pick<RegistroDeLancamento, 'id' | 'motivo' | 'valor' | 'versao'>;
 
 export function useListaFinanceira<T>(lista: 'meus-registros' | 'fila-conferencia', pagina: number) {
   return useQuery(criarConsulta(useClienteHttp())<PaginaFinanceira<T>>(
@@ -19,6 +23,7 @@ export function useDetalheDoLancamento(id: string | null) {
 
 export function comandosDoLancamento(cliente: ClienteHttp) {
   const comando = criarComando(cliente);
+  const registrar = comando<DadosDoLancamento, ReciboDoLancamento | undefined>({ metodo: 'POST', caminho, corpo: dados => dados });
   type Alteracao = { id: string; versao: number; dados: unknown };
   return {
     anexar: comando<{ id: string; versao: number; arquivo: File }, RegistroDeLancamento>({
@@ -29,7 +34,18 @@ export function comandosDoLancamento(cliente: ClienteHttp) {
         return dados;
       },
     }),
-    registrar: comando<unknown, RegistroDeLancamento | undefined>({ metodo: 'POST', caminho, corpo: dados => dados }),
+    async registrar(dados: DadosDoLancamento, chaveDeIdempotencia: string): Promise<ReciboDoLancamento | undefined> {
+      let localizacao: string | undefined;
+      const recibo = await registrar(dados, {
+        chaveDeIdempotencia,
+        aoReceberLocalizacao: valor => { localizacao = valor; },
+      });
+      if (recibo || !localizacao?.startsWith(prefixoDoRecibo)) return recibo;
+
+      const parametros = ParametrosDoLancamento.safeParse({ id: localizacao.slice(prefixoDoRecibo.length) });
+      if (!parametros.success) return undefined;
+      return { ...parametros.data, motivo: dados.motivo, valor: dados.valor, versao: versaoInicialDoLancamento };
+    },
     editar: comando<Alteracao, RegistroDeLancamento>({ metodo: 'PUT', caminho: entrada => detalhe(entrada.id),
       versao: entrada => entrada.versao, corpo: entrada => entrada.dados }),
     confirmar: comando<{ id: string; versao: number }, RegistroDeLancamento | undefined>({ metodo: 'POST',

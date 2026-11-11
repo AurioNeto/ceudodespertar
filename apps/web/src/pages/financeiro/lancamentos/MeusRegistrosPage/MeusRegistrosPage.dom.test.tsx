@@ -7,12 +7,13 @@ it('mostra os registros e a paginação do servidor', async () => {
     const primeira = caminho.endsWith('pagina=1');
     return Response.json({
       itens: [{ id: 'l1', motivo: primeira ? 'Velas' : 'Limpeza', tipo: 'SAIDA', valor: 2500,
-        registradoEm: '2026-11-05T15:00:00Z', status: 'A_CONFERIR', pendencia: { texto: 'Qual foi o fornecedor?' } }],
+        registradoEm: '2026-11-06T01:05:00.123456Z', status: 'A_CONFERIR', pendencia: { texto: 'Qual foi o fornecedor?' } }],
       proximaPagina: primeira ? 2 : null,
     });
   });
   try {
     expect(tela.texto()).toContain('Velas');
+    expect(tela.texto()).toContain('05/11/2026 22:05');
     expect(tela.texto()).toContain('Qual foi o fornecedor?');
     await tela.clicar('Próxima página');
     expect(tela.texto()).toContain('Limpeza');
