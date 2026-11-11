@@ -1,6 +1,6 @@
 # TSK-520: Telas do financeiro contra a API
 
-- **Estado:** 🛠️ Em andamento (B1). Partes 1 a 4 implementadas na pilha
+- **Estado:** 🛠️ Em andamento (B1). Partes 1 a 5 implementadas na pilha
 - **Responsável sugerido:** front (vitro; frontiteto se nascer tela ou pasta)
 - **Depende de:** [TSK-511](TSK-511-b1-contrato-do-financeiro.md)
 
@@ -50,7 +50,13 @@ Implementada em `codex/tsk-520-d-transferencias`, sobre a parte 3. Registro e Co
 
 Contas e Fundos consulta os saldos por unidade. As operações atualizam livro, fila e saldos a partir da API.
 
-As partes 5 e 6 seguem pendentes.
+## Parte 5 · Fechamento e reabertura
+
+Implementada em `codex/tsk-520-e-fechamento`, sobre a parte 4. A tela consulta o período por unidade e competência, fecha ou reabre conforme a permissão e mostra o histórico de reaberturas. O primeiro fechamento usa a versão zero. Os demais comandos usam a versão consultada, e o servidor decide os bloqueios de fechamento.
+
+A verificação de integridade compara o hash gravado com o atual. O checklist e os totais de demonstração deram lugar aos estados e bloqueios retornados pela API.
+
+A parte 6 segue pendente.
 
 ## Critérios de aceite
 
