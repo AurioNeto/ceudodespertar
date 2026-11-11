@@ -28,8 +28,9 @@ Estado do projeto em **05/11/2026**. Cada task tem um arquivo em [`tasks/`](task
 - **TSK-520 parte 4 implementada em 11/11:** `codex/tsk-520-d-transferencias`. A API atende o registro, a conferência e o estorno de transferências, e os saldos podem ser consultados por unidade.
 - **TSK-520 parte 5 implementada em 11/11:** `codex/tsk-520-e-fechamento`. Fechamento, reabertura e integridade consultam a API por unidade e competência.
 - **TSK-520 parte 6 implementada em 11/11:** `codex/tsk-520-f-relatorios` e `codex/tsk-520-f-painel`. DRE, fluxo de caixa, resultado por cerimônia e resumos do Painel consultam a API.
+- **TSK-521 em andamento:** `codex/tsk-521-aceite-tecnico` inclui os casos da B1 e o percurso do gasto ao DRE. A execução da suíte de integração e o marco com a planilha seguem pendentes.
 - **Próximos passos:**
-  - Revisar e mesclar a pilha da B1. A TSK-521 cobre o aceite, com dependência da carga da TSK-507 para o marco do fechamento.
+  - Revisar e mesclar a pilha da B1. O marco de fechamento da TSK-521 depende da carga M1 da TSK-507.
   - o resto do backlog técnico: TSK-410 e os itens 3 e 4 da TSK-417.
 
 ## Resumo
@@ -188,7 +189,7 @@ PRs de acompanhamento já mesclados: [#34](https://github.com/AurioNeto/ceudodes
 | [TSK-518](tasks/TSK-518-b1-anexo-e-evento-minimo.md) | Comprovante (anexo no S3) e Evento mínimo | 🚧 Implementada em duas branches empilhadas, aguardando revisão | — | — | TSK-511 |
 | [TSK-519](tasks/TSK-519-b1-read-models.md) | Read models do financeiro | 🚧 Implementada em branch empilhada, aguardando revisão | — | — | TSK-515, TSK-516, TSK-517, TSK-518 |
 | [TSK-520](tasks/TSK-520-b1-telas-do-financeiro.md) | Telas do financeiro contra a API | ✅ Implementada na pilha local | — | — | TSK-511 (cada parte espera o seu endpoint) |
-| [TSK-521](tasks/TSK-521-b1-aceite.md) | Aceite da B1: casos T e marco do fechamento | 🗺️ Planejada | — | — | TSK-519, TSK-520, TSK-507 |
+| [TSK-521](tasks/TSK-521-b1-aceite.md) | Aceite da B1: casos T e marco do fechamento | 🛠️ Em andamento | — | — | TSK-519, TSK-520, TSK-507 |
 
 
 ## 7. Redesign Força da Mata
