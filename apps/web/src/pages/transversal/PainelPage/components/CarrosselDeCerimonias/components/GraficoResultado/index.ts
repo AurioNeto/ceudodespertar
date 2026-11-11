@@ -1,1 +1,0 @@
-export { GraficoResultado } from './GraficoResultado';

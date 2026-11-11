@@ -1,1 +1,0 @@
-export { ResumoDaProxima } from './ResumoDaProxima';
