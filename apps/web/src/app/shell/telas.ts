@@ -20,7 +20,7 @@ export const TELAS: RegistroDeTelas = {
   faturas: { fonte: 'mock', acesso: ['financeiro.fatura.gerenciar'] },
   emprestimos: { fonte: 'mock', acesso: ['financeiro.emprestimo.gerenciar'] },
   adiantamentos: { fonte: 'mock', acesso: ['financeiro.adiantamento.registrar', 'financeiro.adiantamento.autorizar', 'financeiro.adiantamento.ressarcir'] },
-  relatorios: { fonte: 'mock', acesso: ['financeiro.dre.ler', 'financeiro.fluxo_caixa.ler', 'financeiro.resultado_evento.ler'] },
+  relatorios: { fonte: 'api', acesso: ['financeiro.dre.ler', 'financeiro.fluxo_caixa.ler', 'financeiro.resultado_evento.ler'] },
   fechamento: { fonte: 'api', acesso: ['financeiro.periodo.fechar', 'financeiro.periodo.reabrir'] },
   conciliacao: { fonte: 'mock', acesso: ['financeiro.conciliacao.executar'] },
   devolucoes: { fonte: 'mock', acesso: ['eventos.devolucao.efetivar'] },
