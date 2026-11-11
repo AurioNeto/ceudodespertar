@@ -15,7 +15,7 @@ export const TELAS: RegistroDeTelas = {
   registrar: { fonte: 'api', acesso: ['financeiro.lancamento.registrar'] },
   meus: { fonte: 'api', acesso: ['financeiro.lancamento.ler_proprios'] },
   lote: { fonte: 'api', acesso: ['financeiro.lancamento.confirmar'] },
-  lancamentos: { fonte: 'mock', acesso: ['financeiro.lancamento.ler'] },
+  lancamentos: { fonte: 'api', acesso: ['financeiro.lancamento.ler'] },
   contas: { fonte: 'api', acesso: ['financeiro.conta.ler'] },
   faturas: { fonte: 'mock', acesso: ['financeiro.fatura.gerenciar'] },
   emprestimos: { fonte: 'mock', acesso: ['financeiro.emprestimo.gerenciar'] },

@@ -1,6 +1,6 @@
 # TSK-520: Telas do financeiro contra a API
 
-- **Estado:** 🛠️ Em andamento (B1). Partes 1 e 2 implementadas na pilha local
+- **Estado:** 🛠️ Em andamento (B1). Partes 1 a 3 implementadas na pilha
 - **Responsável sugerido:** front (vitro; frontiteto se nascer tela ou pasta)
 - **Depende de:** [TSK-511](TSK-511-b1-contrato-do-financeiro.md)
 
@@ -38,7 +38,13 @@ Implementada em `codex/tsk-520-b-registro-conferencia`, sobre `codex/tsk-520-a-c
 - Quando há uma única unidade ativa, o formulário a sugere. A escolha pode ser alterada e não filtra a fila.
 - A fila mostra transferências pendentes, cujas ações entram na parte 4. A conversa da pendência e o estorno entram na parte 3.
 
-As partes 3 a 6 seguem pendentes.
+## Parte 3 · Lançamentos, estorno e pendências
+
+Implementada em `codex/tsk-520-c-lancamentos`, sobre a fila do financeiro e as correções publicadas nas telas anteriores. A listagem consulta a API com paginação e filtros de competência e unidade. O detalhe apresenta as pendências e suas respostas. A conferência abre a pendência para o autor, que pode responder pelo detalhe em Meus registros. Estorno, abertura e resposta enviam a versão lida e uma chave de idempotência.
+
+O livro lista transferências e mostra origem e destino. As ações de transferência entram na parte 4. Os filtros disponíveis seguem o contrato de consulta da API.
+
+As partes 4 a 6 seguem pendentes.
 
 ## Critérios de aceite
 
@@ -49,4 +55,4 @@ As partes 3 a 6 seguem pendentes.
 
 - Doc 4 (telas F-01 a F-23 e Painel); Doc 8; Doc 6 §7
 
-_Atualizado em 06/11/2026._
+_Atualizado em 11/11/2026._

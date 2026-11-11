@@ -5,6 +5,7 @@ import { Aviso, Button, CorpoDaTela, EmptyState, ScreenHeader, StatusBadge, useD
 import { formatarDataHora } from '@/lib/formato';
 import { formatarBRL } from '@/pages/utils/formato';
 import { useListaFinanceira } from '../api';
+import { DetalheFinanceiro } from '../components/DetalheFinanceiro';
 import { AnexarComprovante } from '../components/AnexarComprovante';
 
 const estados: Record<StatusLancamento, string> = {
@@ -15,6 +16,7 @@ export function MeusRegistrosPage() {
   const densidade = useDensidade();
   const { pode } = useSessao();
   const [pagina, setPagina] = useState(1);
+  const [selecionado, setSelecionado] = useState<RegistroProprioNaConsulta | null>(null);
   const consulta = useListaFinanceira<RegistroProprioNaConsulta>('meus-registros', pagina);
 
   return (
@@ -32,6 +34,7 @@ export function MeusRegistrosPage() {
             <p>{item.tipo === 'ENTRADA' ? 'Entrada' : 'Saída'} · {formatarBRL(item.valor)} · {formatarDataHora(item.registradoEm)}</p>
             <StatusBadge tone={item.status === 'CONFIRMADO' ? 'confirmed' : 'neutral'}>{estados[item.status]}</StatusBadge>
             {item.pendencia ? <p>Pendência: {item.pendencia.texto}</p> : null}
+            <Button variant="quiet" aria-label={`Abrir ${item.motivo}`} onClick={() => setSelecionado(item)}>Ver detalhes</Button>
             {item.comprovanteId ? <p>Comprovante anexado</p> : null}
             {!item.comprovanteId && item.status === 'A_CONFERIR' && pode('financeiro.lancamento.registrar') ? (
               <details><summary>Adicionar comprovante</summary>
@@ -45,6 +48,7 @@ export function MeusRegistrosPage() {
           {consulta.data?.proximaPagina ? <Button variant="quiet" onClick={() => setPagina(consulta.data.proximaPagina ?? pagina)}>Próxima página</Button> : null}
         </div>
       </CorpoDaTela>
+      {selecionado ? <DetalheFinanceiro id={selecionado.id} titulo={selecionado.motivo} fechar={() => setSelecionado(null)} /> : null}
     </>
   );
 }
