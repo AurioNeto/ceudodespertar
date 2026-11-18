@@ -340,10 +340,10 @@ Há três exceções desenhadas. O despachante do outbox: `shared.outbox` não t
 ## 10. Arquivos
 
 - Chave no bucket: `{instituicao}/{modulo}/{uuid}` — nunca o nome original, que vai para `shared.anexo.nome_original`.
-- **Upload direto ao bucket** com URL pré-assinada de `PUT` (5 min, tamanho e tipo fixados na assinatura); a API registra o anexo depois de conferir o SHA-256.
+- **Upload de comprovante B1 pela API** com limite de 10 MiB e validação de tipo declarado e assinatura inicial (PDF, JPEG, PNG). A API grava o SHA-256 e vincula o anexo ao lançamento pendente, com controle de versão.
 - **Leitura só por URL assinada de 5 min**, gerada depois da verificação de permissão do recurso dono do anexo. Não há URL pública nunca.
-- Tipos aceitos: imagem, PDF, OFX/CSV. Limite de 10 MB. Anexo marcado `sensivel` (documento de autorização de responsável) só é servido a quem tem a permissão do bloco correspondente, e a leitura entra no registro de acesso.
-- Anexo órfão (registrado e nunca referenciado em 24 h) é removido por rotina diária.
+- A importação futura define as regras de OFX/CSV. Para documentos de autorização de responsável, o desenho prevê a marca `sensivel`, permissão do bloco correspondente e registro de acesso.
+- A rotina diária de coleta de órfãos continua prevista. Na B1, a substituição do vínculo e falhas entre a gravação no S3 e o commit do banco podem deixar arquivos órfãos.
 
 ## 11. Relatórios e prestação de contas
 
@@ -507,7 +507,7 @@ erDiagram
 | Tabela | Papel | Pontos de desenho |
 |---|---|---|
 | `shared.instituicao` | A casa | Sem RLS, como o catálogo de permissões, o outbox e `shared.evento_processado` — as quatro únicas tabelas sem RLS |
-| `shared.anexo` | Metadado de arquivo | `sha256`, `sensivel`; a chave do bucket é única global. Ator de quem enviou por `enviado_por_tipo` (`USUARIO`\|`SISTEMA`\|`LINK_PUBLICO`) + `enviado_por` nulo fora de `USUARIO` (`enviado_coerente`) — o despachante e o link público também sobem anexo sem login |
+| `shared.anexo` | Metadado de arquivo | RLS forçada, `sha256` e `sensivel`. A aplicação deriva a chave do bucket do UUID primário. O ator usa `enviado_por_tipo` (`USUARIO`\|`SISTEMA`\|`LINK_PUBLICO`) e `enviado_por` nulo fora de `USUARIO`. O comprovante B1 é enviado por usuário autenticado. |
 | `shared.outbox` | Eventos a despachar | Sem RLS (§8); `proxima_tentativa_em` para o backoff; índice parcial em pendentes sob o teto de tentativas (§9) |
 | `shared.evento_processado` | Idempotência do consumidor | PK `(consumidor, evento_id)` |
 | `shared.chave_de_idempotencia` | Idempotência do HTTP | PK `(instituicao, chave)`, expira em 24 h |
@@ -641,6 +641,8 @@ A fatura agrupa as compras no cartão (`lancamento.fatura_id`) e é paga por tra
 
 `periodo_contabil` é por unidade e competência, com hash no fechamento (P2); `reabertura_de_periodo` é só-inserção e guarda o hash anterior (P3). No banco fica a imutabilidade simples do período (D4 do issue #11): unidade e competência nunca mudam, e o fechado não muda nem some — o único `UPDATE` admitido num fechado é reabrir. O resto é do agregado `PeriodoContabil`: a reabertura exige motivo de pelo menos dez caracteres e o registro com o hash corrente gravado na mesma transação (uma reabertura antiga não serve para reabrir de novo); o hash é calculado pelo domínio, na ordem canônica dos lançamentos e das transferências da competência (a transferência entra no hash, dono, 14/10/2026); P1 (zero `A_CONFERIR` na competência, entre lançamentos e transferências) e P4 (anterior fechada) são verificados pelo comando de fechamento. Para a corrida entre fechar e gravar, o repositório toma uma trava consultiva (`advisory lock`) por período: exclusiva ao fechar, compartilhada em quem grava lançamento ou transferência na competência — ninguém grava entre a conferência de P1, o hash e o fechamento. A trava só serve em `READ COMMITTED` (em `REPEATABLE READ`, quem esperou leria o período como estava antes); a borda transacional abre as escritas nesse nível (§5), e um teste prova isso.
 
+**Entrega local da TSK-517 (02/11/2026):** migration `b1-006-periodo-contabil`, agregado e API de fechar/reabrir e consultar integridade implementados em `codex/tsk-517-periodos-contabeis`. O primeiro fechamento é permitido sem histórico anterior; havendo histórico, o mês imediatamente anterior deve estar fechado. O hash `cdd.periodo.v1` usa uma projeção fixa de lançamentos, etiquetas e transferências, com instantes UTC e ordem canônica; repasses pertencem às duas unidades. Comandos e repositórios protegem as escritas com travas compartilhadas ordenadas; fechar/reabrir usam exclusiva. Reabertura, hash anterior e outbox são gravados juntos. Unidade/competência são únicos pela aplicação, sem UNIQUE de negócio; SQL manual e cargas que contornam os comandos não são alcançados. Duplicação fora do protocolo gera `PERIODOS_CONTABEIS_DUPLICADOS`. Os testes provam ambas as ordens da corrida em READ COMMITTED e detectam alterações de etiquetas e transferências em mês fechado. Endpoints e limites estão na [TSK-517](../project-flow/tasks/TSK-517-b1-periodo-contabil.md).
+
 `importacao_de_extrato` guarda o arquivo (anexo), período e contagens; `linha_extrato` tem `UNIQUE (conta, FITID)` (I1) — reimportar é seguro por construção — e concilia com **um** lançamento **ou** **uma** transferência (I2), nunca os dois.
 
 ### 18.6 Read models de leitura
@@ -655,7 +657,11 @@ Read models do backend, em Kysely sobre as tabelas. O esquema de referência gua
 
 Resultado por cerimônia e por grupo de custo são o mesmo efeito por categoria filtrado por `evento_id` e `grupo_de_custo_id`, publicado pelo Financeiro como porta de leitura para o painel do evento. A RLS vale igual: o read model roda na transação da requisição, com o contexto da instituição.
 
+A TSK-519 implementa essas leituras com consultas Kysely na borda transacional. O livro e a fila incluem transferências. Meus registros filtra o autor autenticado no SQL e devolve uma projeção sem conta, categoria ou agregados. A DRE e os resultados por grupo e cerimônia aplicam o sinal do estorno à etiqueta. O fluxo usa data de caixa e considera os repasses por ponta quando há filtro de unidade. Os endpoints e permissões estão na [TSK-519](../project-flow/tasks/TSK-519-b1-read-models.md).
+
 ## 19. `eventos`
+
+A TSK-518 cria `eventos.evento` com unidade, nome, tipo e intervalo de datas. O financeiro expõe o cadastro mínimo em `/api/v1/financeiro/eventos` e valida o vínculo do lançamento pela porta pública `EventosMinimos`. A TSK-519 usa o resumo no detalhe do resultado por cerimônia. O desenho abaixo descreve a evolução da B5.
 
 ```mermaid
 erDiagram

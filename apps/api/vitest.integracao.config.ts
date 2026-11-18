@@ -8,7 +8,7 @@ export default defineConfig({
   plugins: [swc.vite()],
   ssr: {
     resolve: {
-      conditions: [CONDICAO_FONTE, 'module', 'node', 'development|production'],
+      conditions: [CONDICAO_FONTE, 'node', 'development|production'],
     },
   },
   test: {

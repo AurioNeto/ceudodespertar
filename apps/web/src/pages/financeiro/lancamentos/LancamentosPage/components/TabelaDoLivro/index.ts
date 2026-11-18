@@ -1,1 +1,0 @@
-export { TabelaDoLivro } from './TabelaDoLivro';

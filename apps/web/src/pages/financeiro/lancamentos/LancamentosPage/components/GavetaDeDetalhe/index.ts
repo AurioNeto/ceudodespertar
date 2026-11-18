@@ -1,1 +1,0 @@
-export { GavetaDeDetalhe } from './GavetaDeDetalhe';

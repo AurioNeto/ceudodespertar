@@ -23,6 +23,16 @@ export type JsonValue = JsonArray | JsonObject | JsonPrimitive;
 
 export type Timestamp = ColumnType<Date, Date | string, Date | string>;
 
+export interface EventosEvento {
+  data_fim: string;
+  data_inicio: string;
+  id: string;
+  instituicao_id: string;
+  nome: string;
+  tipo: string;
+  unidade_id: string;
+}
+
 export interface FinanceiroCategoria {
   ativa: Generated<boolean>;
   codigo_sistema: string;
@@ -123,6 +133,29 @@ export interface FinanceiroPendencia {
   resolvida_em: Timestamp | null;
   resposta: string | null;
   texto: string;
+}
+
+export interface FinanceiroPeriodoContabil {
+  competencia: string;
+  fechado: Generated<boolean>;
+  fechado_em: Timestamp | null;
+  fechado_por: string | null;
+  hash_sha256: string | null;
+  id: string;
+  instituicao_id: string;
+  unidade_id: string;
+  versao: Generated<number>;
+}
+
+export interface FinanceiroReaberturaDePeriodo {
+  hash_anterior: string;
+  id: string;
+  instituicao_id: string;
+  motivo: string;
+  periodo_id: string;
+  reaberto_em: Timestamp;
+  reaberto_por: string;
+  versao_do_periodo: number;
 }
 
 export interface FinanceiroTransferencia {
@@ -262,6 +295,20 @@ export interface PessoasPessoa {
   versao: Generated<number>;
 }
 
+export interface SharedAnexo {
+  chave: string;
+  enviado_em: Generated<Timestamp>;
+  enviado_por: string | null;
+  enviado_por_tipo: Generated<string>;
+  id: string;
+  instituicao_id: string;
+  mime: string;
+  nome_original: string;
+  sensivel: Generated<boolean>;
+  sha256: string;
+  tamanho_bytes: number;
+}
+
 export interface SharedChaveDeIdempotencia {
   chave: string;
   corpo_hash: string | null;
@@ -302,6 +349,7 @@ export interface SharedOutbox {
 }
 
 export interface DB {
+  "eventos.evento": EventosEvento;
   "financeiro.categoria": FinanceiroCategoria;
   "financeiro.conta": FinanceiroConta;
   "financeiro.fundo": FinanceiroFundo;
@@ -309,6 +357,8 @@ export interface DB {
   "financeiro.lancamento": FinanceiroLancamento;
   "financeiro.lancamento_categoria": FinanceiroLancamentoCategoria;
   "financeiro.pendencia": FinanceiroPendencia;
+  "financeiro.periodo_contabil": FinanceiroPeriodoContabil;
+  "financeiro.reabertura_de_periodo": FinanceiroReaberturaDePeriodo;
   "financeiro.transferencia": FinanceiroTransferencia;
   "financeiro.unidade": FinanceiroUnidade;
   "identidade.bootstrap_executado": IdentidadeBootstrapExecutado;
@@ -320,6 +370,7 @@ export interface DB {
   "identidade.usuario": IdentidadeUsuario;
   "identidade.usuario_grupo": IdentidadeUsuarioGrupo;
   "pessoas.pessoa": PessoasPessoa;
+  "shared.anexo": SharedAnexo;
   "shared.chave_de_idempotencia": SharedChaveDeIdempotencia;
   "shared.evento_processado": SharedEventoProcessado;
   "shared.instituicao": SharedInstituicao;

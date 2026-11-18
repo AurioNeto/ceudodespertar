@@ -24,7 +24,7 @@ function criar(confirmada = false, campos = {}) {
 describe('OperacoesDeTransferencia', () => {
   const repo = { porId: vi.fn(), estornoDe: vi.fn(), adicionar: vi.fn(), salvar: vi.fn(), excluir: vi.fn() };
   const referencias = { executar: vi.fn() };
-  const periodos = { estaAberto: vi.fn() };
+  const periodos = { estaAberto: vi.fn(), proteger: vi.fn() };
   const unidade = { transacao: async (_modo: string, executar: () => unknown) => executar() } as unknown as UnidadeDeTrabalho;
   const operacoes = new OperacoesDeTransferencia(unidade, repo, referencias as unknown as ResolverDadosDaTransferencia, periodos, { agora: () => EM });
   beforeEach(() => {
@@ -62,6 +62,7 @@ describe('OperacoesDeTransferencia', () => {
     periodos.estaAberto.mockResolvedValueOnce(true).mockResolvedValueOnce(false);
     expect(await operacoes.aberto({ ...dados, unidadeDestinoId: OUTRO as unknown as RegistrarTransferencia['unidadeId'] })).toBe(false);
     expect(periodos.estaAberto).toHaveBeenNthCalledWith(2, OUTRO, '2026-10');
+    expect(periodos.proteger).toHaveBeenCalledWith([{ unidadeId: ID, competencia: '2026-10' }, { unidadeId: OUTRO, competencia: '2026-10' }]);
   });
   it('edição e descarte próprios usam a versão atual', async () => {
     expect(await operacoes.editar(acesso(), ID, 1, dados)).toMatchObject({ tipo: 'ok', valor: { versao: 2 } });

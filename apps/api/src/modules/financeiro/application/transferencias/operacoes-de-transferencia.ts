@@ -40,7 +40,7 @@ export class OperacoesDeTransferencia {
       const l = lido.valor;
       const referencias = await this.referencias.executar(dados);
       if (referencias.tipo === 'erro') return referencias;
-      const alterado = l.editar(dados, acesso.usuarioId, this.relogio.agora(), await this.aberto(l.estado) && await this.aberto(dados));
+      const alterado = l.editar(dados, acesso.usuarioId, this.relogio.agora(), await this.aberto(l.estado, dados));
       if (alterado.tipo === 'erro') return alterado;
       return ok(await this.apresentar(l, await this.repo.salvar(l)));
     });
@@ -104,11 +104,11 @@ export class OperacoesDeTransferencia {
     return ok(l);
   }
 
-  async aberto(dados: Pick<RegistrarTransferencia, 'unidadeId' | 'unidadeDestinoId' | 'data'>): Promise<boolean> {
-    const competencia = dados.data.slice(0, 7) as Competencia;
-    const origem = await this.periodos.estaAberto(dados.unidadeId, competencia);
-    const destino = dados.unidadeDestinoId === null || await this.periodos.estaAberto(dados.unidadeDestinoId, competencia);
-    return origem && destino;
+  async aberto(...dados: Pick<RegistrarTransferencia, 'unidadeId' | 'unidadeDestinoId' | 'data'>[]): Promise<boolean> {
+    const periodos = dados.flatMap(d => [d.unidadeId, d.unidadeDestinoId].filter(id => id !== null).map(unidadeId => ({ unidadeId, competencia: d.data.slice(0, 7) as Competencia })));
+    await this.periodos.proteger(periodos);
+    const abertos = await Promise.all(periodos.map(p => this.periodos.estaAberto(p.unidadeId, p.competencia)));
+    return abertos.every(Boolean);
   }
 
   async apresentar(l: Transferencia, versao = l.versao): Promise<RegistroDeTransferencia> {
