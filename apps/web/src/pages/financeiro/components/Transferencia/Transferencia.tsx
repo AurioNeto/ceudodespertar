@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { EstornarTransferencia, type MovimentoNaConsulta, type RegistrarTransferencia } from '@cdd/contracts';
 import { useClienteHttp } from '@/app/providers';
 import { useSessao } from '@/app/sessao';
+import { ErroDaApi } from '@/dados';
 import { Aviso, Button, PainelDeAcao, TextField, useDensidade, varianteDoPainel } from '@/ds';
 import { formatarBRL, formatarData } from '@/pages/utils/formato';
 import { comandosDeTransferencia, mensagemDaTransferencia, useTransferencia } from './api';
@@ -39,9 +40,13 @@ export function PainelDeTransferencia({ movimento, fechar }: {
   const { pode, usuario } = useSessao();
   const cliente = useQueryClient();
   const comandos = comandosDeTransferencia(useClienteHttp());
-  const podeLer = pode('financeiro.conta.ler') || pode('financeiro.transferencia.registrar');
+  const podeLerContas = pode('financeiro.conta.ler');
+  const podeLer = podeLerContas || pode('financeiro.transferencia.registrar');
   const consulta = useTransferencia(movimento?.id, podeLer);
-  const registro = consulta.data;
+  const registro = consulta.isSuccess ? consulta.data : undefined;
+  const detalheIndisponivelAoPerfil = !podeLerContas && consulta.error instanceof ErroDaApi &&
+    consulta.error.codigo === 'RECURSO_NAO_ENCONTRADO';
+  const podeUsarLista = !podeLer || detalheIndisponivelAoPerfil;
   const [acao, setAcao] = useState<{ tipo: Acao; versao: number } | null>(null);
   const [motivo, setMotivo] = useState('');
   const [erro, setErro] = useState(false);
@@ -68,16 +73,21 @@ export function PainelDeTransferencia({ movimento, fechar }: {
         cliente.invalidateQueries({ queryKey: ['saldos'] }),
       ]);
     },
-    onError: () => void cliente.invalidateQueries({ queryKey: ['lancamentos'] }),
+    onError: async () => {
+      await cliente.invalidateQueries({ queryKey: ['lancamentos'] });
+    },
   });
-  const versao = registro?.versao ?? movimento?.versao;
+  const versaoRecusada = mutacao.error instanceof ErroDaApi && mutacao.error.codigo === 'VERSAO_DESATUALIZADA';
+  const precisaReabrir = podeUsarLista && versaoRecusada;
+  const podeEnviar = !consulta.isFetching && !precisaReabrir;
+  const versao = registro?.versao ?? (podeUsarLista ? movimento?.versao : undefined);
   const podeConferir = pode('financeiro.lancamento.confirmar');
   const autor = registro?.registradoPor === usuario?.id && registro !== undefined;
   const pendente = (registro?.status ?? movimento?.status) === 'A_CONFERIR';
   const podeAlterar = podeConferir || (autor && pode('financeiro.transferencia.registrar'));
 
   function preparar(tipo: Acao) {
-    if (versao === undefined) return;
+    if (versao === undefined || !podeEnviar) return;
     setAcao({ tipo, versao });
     setMotivo('');
     setErro(false);
@@ -90,7 +100,7 @@ export function PainelDeTransferencia({ movimento, fechar }: {
       mutacao.mutate({ tipo: 'registrar', dados });
       return;
     }
-    if (!movimento || !acao || acao.versao !== versao) return;
+    if (!movimento || !acao || !podeEnviar || acao.versao !== versao) return;
     const alvo = { id: movimento.id, versao: acao.versao };
     if (acao.tipo === 'editar' && dados) mutacao.mutate({ ...alvo, tipo: 'editar', dados });
     if (acao.tipo === 'confirmar' || acao.tipo === 'descartar') mutacao.mutate({ ...alvo, tipo: acao.tipo });
@@ -110,10 +120,17 @@ export function PainelDeTransferencia({ movimento, fechar }: {
         <p>{formatarBRL(registro?.valor ?? movimento.valor)} · {formatarData(registro?.data ?? movimento.dataCaixa ?? movimento.registradoEm)}</p>
         <p>{movimento.conta?.nome ?? 'Sem conta de origem'} → {movimento.contaDestino?.nome ?? 'Sem conta de destino'}</p>
         {consulta.isFetching && !registro ? <p role="status">Carregando transferência…</p> : null}
-        {consulta.isError && !sucesso ? <Aviso tom="pendente">Não foi possível carregar todos os dados da transferência.</Aviso> : null}
+        {consulta.isError && !podeUsarLista && !sucesso ? (
+          <Aviso tom="pendente">
+            Não foi possível carregar todos os dados da transferência.
+            <Button variant="quiet" disabled={consulta.isFetching} onClick={() => void consulta.refetch()}>
+              Recarregar transferência
+            </Button>
+          </Aviso>
+        ) : null}
         {registro ? <p>{FINALIDADES_DA_B1.find(item => item.value === registro.finalidade)?.label}
           {registro.estornoDeId ? ' · Estorno' : ''}</p> : null}
-        {!acao && !sucesso && (!podeLer || !consulta.isPending) ? <>
+        {!acao && !sucesso && podeEnviar && versao !== undefined ? <>
           {pendente && podeAlterar && registro && !registro.estornoDeId ? <Button variant="quiet" onClick={() => preparar('editar')}>{rotulos.editar}</Button> : null}
           {pendente && podeConferir && !autor ? <Button variant="quiet" onClick={() => preparar('confirmar')}>{rotulos.confirmar}</Button> : null}
           {pendente && podeConferir && autor ? <p>Outra pessoa precisa conferir esta transferência.</p> : null}
@@ -124,24 +141,24 @@ export function PainelDeTransferencia({ movimento, fechar }: {
       </> : null}
       {!movimento && !sucesso ? <FormularioDeTransferencia ocupado={mutacao.isPending} enviar={enviar} /> : null}
       {acao?.tipo === 'editar' && registro && acao.versao === versao ?
-        <FormularioDeTransferencia inicial={registro} ocupado={mutacao.isPending} enviar={enviar} /> : null}
-      {acao && acao.tipo !== 'editar' ? (
+        <FormularioDeTransferencia inicial={registro} ocupado={mutacao.isPending || !podeEnviar} enviar={enviar} /> : null}
+      {acao && acao.tipo !== 'editar' && !precisaReabrir ? (
         <form onSubmit={evento => { evento.preventDefault(); enviar(); }}>
           {acao.tipo === 'estornar' ? <TextField label="Motivo do estorno" value={motivo} maxLength={500} required
             onChange={evento => setMotivo(evento.currentTarget.value)} density={densidade} /> : null}
           {acao.tipo === 'descartar' ? <p>O descarte remove a transferência pendente da fila.</p> : null}
           {acao.tipo === 'confirmar' ? <p>A confirmação registra o movimento nos saldos das contas.</p> : null}
           {erro ? <p role="alert">Informe o motivo do estorno.</p> : null}
-          <Button type="submit" disabled={mutacao.isPending || acao.versao !== versao}>
+          <Button type="submit" disabled={mutacao.isPending || !podeEnviar || acao.versao !== versao}>
             {acao.tipo === 'descartar' ? 'Confirmar descarte' : acao.tipo === 'estornar' ? 'Registrar estorno' : 'Confirmar movimento'}
           </Button>
         </form>
       ) : null}
-      {acao ? <>
-        {acao.versao !== versao ? <p role="alert">A transferência mudou. Cancele e abra a ação novamente.</p> : null}
+      {acao && !precisaReabrir ? <>
+        {versao !== undefined && acao.versao !== versao ? <p role="alert">A transferência mudou. Cancele e abra a ação novamente.</p> : null}
         <Button variant="quiet" disabled={mutacao.isPending} onClick={() => { setAcao(null); mutacao.reset(); }}>Cancelar</Button>
       </> : null}
-      {sucesso ? <Button variant="quiet" disabled={mutacao.isPending} onClick={fechar}>Fechar</Button> : null}
+      {sucesso || precisaReabrir ? <Button variant="quiet" disabled={mutacao.isPending} onClick={fechar}>Fechar</Button> : null}
     </PainelDeAcao>
   );
 }

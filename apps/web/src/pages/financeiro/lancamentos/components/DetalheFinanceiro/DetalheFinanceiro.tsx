@@ -1,11 +1,12 @@
 import { useRef, useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { AbrirPendencia, EstornarLancamento } from '@cdd/contracts';
+import { AbrirPendencia, EstornarLancamento, type Categoria } from '@cdd/contracts';
 import { useClienteHttp } from '@/app/providers';
 import { useSessao } from '@/app/sessao';
 import { Aviso, Button, PainelDeAcao, TextField, useDensidade, varianteDoPainel } from '@/ds';
 import { formatarDataHora } from '@/lib/formato';
-import { formatarBRL } from '@/pages/utils/formato';
+import { useItensDoCadastro } from '@/pages/components/CadastroDaApi';
+import { formatarBRL, formatarData } from '@/pages/utils/formato';
 import { comandosDoLancamento, mensagemDeFalha, useDetalheDoLancamento, type AcaoDoDetalhe } from '../../api';
 
 const acoes = {
@@ -23,6 +24,10 @@ export function DetalheFinanceiro({ id, titulo, fechar }: {
   const { pode, usuario } = useSessao();
   const detalhe = useDetalheDoLancamento(id);
   const registro = detalhe.data;
+  const etiquetas = registro?.etiquetas ?? [];
+  const categorias = useItensDoCadastro<Categoria>('/financeiro/categorias',
+    etiquetas.length > 0 && pode('financeiro.plano_contas.ler'));
+  const nomesDasCategorias = new Map(categorias.data?.itens.map(categoria => [categoria.id, categoria.nome]));
   const cliente = useQueryClient();
   const { acionar } = comandosDoLancamento(useClienteHttp());
   const [acao, setAcao] = useState<{ comando: AcaoDoDetalhe; versao: number } | null>(null);
@@ -72,11 +77,20 @@ export function DetalheFinanceiro({ id, titulo, fechar }: {
       {mutacao.isError ? <Aviso tom="pendente"><span role="alert">{mensagemDeFalha(mutacao.error)}</span></Aviso> : null}
       {registro ? <>
         <p>{formatarBRL(registro.valor)} · {formatarDataHora(registro.registradoEm)}</p>
+        <p>Data de competência: {registro.dataCompetencia ? formatarData(registro.dataCompetencia) : 'Não informada'}</p>
         {registro.contraparteTexto ? <p>Contraparte: {registro.contraparteTexto}</p> : null}
         {registro.formaPagamento ? <p>Pagamento: {registro.formaPagamento}</p> : null}
         {registro.estornadoPorId ? <p>Lançamento estornado.</p> : null}
         {registro.estornoDeId ? <p>Lançamento de estorno.</p> : null}
         {registro.comprovanteId ? <p>Comprovante anexado</p> : null}
+        <h3>Categorias</h3>
+        {etiquetas.length > 0 ? <ul>{etiquetas.map(etiqueta => (
+          <li key={etiqueta.categoriaId}>
+            {nomesDasCategorias.get(etiqueta.categoriaId) ?? `Categoria ${etiqueta.categoriaId}`} ·{' '}
+            {etiqueta.natureza === 'RECEITA' ? 'Receita' : 'Despesa'} · {formatarBRL(etiqueta.valor)}
+          </li>
+        ))}</ul> : <p>Nenhuma categoria informada.</p>}
+        {categorias.isError ? <Button variant="quiet" onClick={() => void categorias.refetch()}>Recarregar nomes das categorias</Button> : null}
         <h3>Pendências</h3>
         {registro.pendencias.length === 0 ? <p>Nenhuma pendência.</p> : null}
         {registro.pendencias.map(pendencia => (
