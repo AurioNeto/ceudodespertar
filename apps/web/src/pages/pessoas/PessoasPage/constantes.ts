@@ -1,10 +1,15 @@
-import type { SheetOption } from '@/ds';
+import { CadastrarPessoa, EditarPessoa } from '@cdd/contracts';
+import type { DefinicaoDoCadastro } from '@/pages/components/CadastroDaApi';
 
-export const OPCOES_DO_FILTRO: readonly SheetOption[] = [
-  { value: 'todos', label: 'Todas' },
-  { value: 'Fardado', label: 'Fardados' },
-  { value: 'Frequentador', label: 'Frequentadores' },
-  { value: 'Visitante', label: 'Visitantes' },
-  { value: 'pendentes', label: 'Anamnese pendente' },
-  { value: 'ativos', label: 'Somente ativas' },
-];
+export const CADASTRO_DE_PESSOAS: DefinicaoDoCadastro = {
+  caminho: '/pessoas', singular: 'pessoa', paginado: true,
+  permissaoDeCriar: 'pessoas.pessoa.registrar', permissaoDeEditar: 'pessoas.pessoa.editar',
+  criar: CadastrarPessoa, editar: EditarPessoa,
+  campos: [
+    { nome: 'nome', rotulo: 'Nome' },
+    { nome: 'tipo', rotulo: 'Tipo de pessoa', inicial: 'FISICA', exibir: true, opcoes: [
+      { value: 'FISICA', label: 'Pessoa física' }, { value: 'JURIDICA', label: 'Pessoa jurídica' },
+    ] },
+    { nome: 'documento', rotulo: 'CPF ou CNPJ (só dígitos)', opcional: true },
+  ],
+};

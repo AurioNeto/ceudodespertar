@@ -1,1 +1,0 @@
-export { ComprovanteDoLancamento } from './ComprovanteDoLancamento';
