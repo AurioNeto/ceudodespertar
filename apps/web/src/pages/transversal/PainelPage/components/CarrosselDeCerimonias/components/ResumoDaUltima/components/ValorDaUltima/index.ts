@@ -1,1 +1,0 @@
-export { ValorDaUltima } from './ValorDaUltima';

@@ -12,3 +12,5 @@ export * from './comandos/pessoas.js';
 export * from './entrada.js';
 
 export * from './comandos/eventos.js';
+export * from './comandos/consultas-financeiras.js';
+export * from './consultas-financeiras.js';

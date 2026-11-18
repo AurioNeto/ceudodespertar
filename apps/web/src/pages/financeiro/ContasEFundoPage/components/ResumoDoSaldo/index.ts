@@ -1,1 +1,0 @@
-export { ResumoDoSaldo } from './ResumoDoSaldo';

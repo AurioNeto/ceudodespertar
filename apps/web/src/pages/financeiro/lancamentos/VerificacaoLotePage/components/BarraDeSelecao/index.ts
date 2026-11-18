@@ -1,1 +1,0 @@
-export { BarraDeSelecao } from './BarraDeSelecao';

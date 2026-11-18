@@ -1,6 +1,6 @@
 # Project flow: mapa de tasks do CDD
 
-Estado do projeto em **02/11/2026**. Cada task tem um arquivo em [`tasks/`](tasks/) com o contexto, o que fazer, os critérios de aceite e as referências.
+Estado do projeto em **05/11/2026**. Cada task tem um arquivo em [`tasks/`](tasks/) com o contexto, o que fazer, os critérios de aceite e as referências.
 
 ## Onde estamos
 
@@ -21,8 +21,16 @@ Estado do projeto em **02/11/2026**. Cada task tem um arquivo em [`tasks/`](task
 - **TSK-516 implementada em 02/11:** `codex/tsk-516-transferencias`, sobre `codex/tsk-515-c-pendencias`, com três finalidades da B1, conferência segregada e estorno também sujeito à conferência. Banco, comandos e HTTP entregues localmente, aguardando revisão.
 - **TSK-517 implementada em 02/11:** `codex/tsk-517-periodos-contabeis`, sobre a TSK-516. Fechar/reabrir por unidade e competência, hash de lançamentos/etiquetas/transferências, consulta de integridade e travas compartilhadas/exclusivas estão implementados e testados localmente.
 - **TSK-518 implementada em 05/11:** comprovantes privados em `codex/tsk-518-a-comprovantes` e evento mínimo em `codex/tsk-518-b-evento-minimo`, empilhados sobre a TSK-517.
+- **TSK-519 implementada em 05/11:** `codex/tsk-519-consultas-financeiras`, sobre a TSK-518 B. Listas, saldos e relatórios financeiros com filtros explícitos, permissões por bloco e isolamento por instituição.
+- **TSK-520 parte 1 implementada em 06/11:** `codex/tsk-520-a-cadastros-web`, sobre a TSK-519. Parâmetros, Contas e Fundos e Pessoas usam a API.
+- **TSK-520 parte 2 implementada em 06/11:** `codex/tsk-520-b-registro-conferencia`, sobre a parte 1. Registrar lançamento, Meus registros e a fila de conferência usam a API.
+- **TSK-520 parte 3 implementada em 11/11:** `codex/tsk-520-c-lancamentos`. Lançamentos usa a API para listar, estornar e tratar pendências.
+- **TSK-520 parte 4 implementada em 11/11:** `codex/tsk-520-d-transferencias`. A API atende o registro, a conferência e o estorno de transferências, e os saldos podem ser consultados por unidade.
+- **TSK-520 parte 5 implementada em 11/11:** `codex/tsk-520-e-fechamento`. Fechamento, reabertura e integridade consultam a API por unidade e competência.
+- **TSK-520 parte 6 implementada em 11/11:** `codex/tsk-520-f-relatorios` e `codex/tsk-520-f-painel`. DRE, fluxo de caixa, resultado por cerimônia e resumos do Painel consultam a API.
+- **TSK-521 em andamento:** `codex/tsk-521-aceite-tecnico` inclui os casos da B1 e o percurso do gasto ao DRE. A execução da suíte de integração e o marco com a planilha seguem pendentes.
 - **Próximos passos:**
-  - **B1:** revisar e mesclar a TSK-514 parte B (comandos, HTTP e consultas de conta e fundo), revisar e mesclar também a TSK-512 (pessoa mínima, empilhada sobre a parte B), revisar a TSK-515 (três branches empilhadas entregues), a TSK-516 (transferência), a TSK-517 (períodos, hash e travas) e a TSK-518 (comprovantes e evento mínimo). Seguir para a TSK-519 (consultas e relatórios); o front começa a TSK-520 pelas telas de unidades, grupos de custo e categorias, que já têm API;
+  - Revisar e mesclar a pilha da B1. O marco de fechamento da TSK-521 depende da carga M1 da TSK-507.
   - o resto do backlog técnico: TSK-410 e os itens 3 e 4 da TSK-417.
 
 ## Resumo
@@ -179,9 +187,9 @@ PRs de acompanhamento já mesclados: [#34](https://github.com/AurioNeto/ceudodes
 | [TSK-516](tasks/TSK-516-b1-transferencia.md) | Transferência com conferência e estorno | 🚧 Implementada em branch empilhada, aguardando revisão | — | — | TSK-515 |
 | [TSK-517](tasks/TSK-517-b1-periodo-contabil.md) | Período contábil: fechar e reabrir com hash e trava | 🚧 Implementada em branch empilhada, aguardando revisão | — | — | TSK-515, TSK-516 |
 | [TSK-518](tasks/TSK-518-b1-anexo-e-evento-minimo.md) | Comprovante (anexo no S3) e Evento mínimo | 🚧 Implementada em duas branches empilhadas, aguardando revisão | — | — | TSK-511 |
-| [TSK-519](tasks/TSK-519-b1-read-models.md) | Read models do financeiro | 🗺️ Planejada | — | — | TSK-515, TSK-516, TSK-517, TSK-518 |
-| [TSK-520](tasks/TSK-520-b1-telas-do-financeiro.md) | Telas do financeiro contra a API | 🗺️ Planejada | — | — | TSK-511 (cada parte espera o seu endpoint) |
-| [TSK-521](tasks/TSK-521-b1-aceite.md) | Aceite da B1: casos T e marco do fechamento | 🗺️ Planejada | — | — | TSK-519, TSK-520, TSK-507 |
+| [TSK-519](tasks/TSK-519-b1-read-models.md) | Read models do financeiro | 🚧 Implementada em branch empilhada, aguardando revisão | — | — | TSK-515, TSK-516, TSK-517, TSK-518 |
+| [TSK-520](tasks/TSK-520-b1-telas-do-financeiro.md) | Telas do financeiro contra a API | ✅ Implementada na pilha local | — | — | TSK-511 (cada parte espera o seu endpoint) |
+| [TSK-521](tasks/TSK-521-b1-aceite.md) | Aceite da B1: casos T e marco do fechamento | 🛠️ Em andamento | — | — | TSK-519, TSK-520, TSK-507 |
 
 
 ## 7. Redesign Força da Mata
