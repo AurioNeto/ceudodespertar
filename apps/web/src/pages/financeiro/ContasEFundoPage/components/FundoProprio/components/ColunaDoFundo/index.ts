@@ -1,1 +1,0 @@
-export { ColunaDoFundo } from './ColunaDoFundo';

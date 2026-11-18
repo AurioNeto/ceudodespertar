@@ -1,1 +1,0 @@
-export { ItemDaLegenda } from './ItemDaLegenda';

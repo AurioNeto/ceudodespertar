@@ -20,6 +20,8 @@
     "db:gerar-tipos:verificar": "pnpm build && node scripts/gerar-tipos-do-banco.mjs --verificar"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1162.0",
+    "@aws-sdk/s3-request-presigner": "^3.1162.0",
     "@cdd/contracts": "workspace:*",
     "@mikro-orm/core": "^7.2.1",
     "@mikro-orm/migrations": "^7.2.1",
