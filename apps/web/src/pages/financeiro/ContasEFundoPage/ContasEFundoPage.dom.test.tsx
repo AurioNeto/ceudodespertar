@@ -36,6 +36,7 @@ it('envia o fundo com a conta escolhida, meta em centavos e códigos de categori
     await tela.clicar('Fundos');
     await tela.clicar('Adicionar fundo');
     const painel = elemento(document, '[role="dialog"]');
+    expect(painel.textContent).not.toContain('Situação');
     const [nome, codigo, , meta, categorias] = painel.querySelectorAll('input');
     if (!nome || !codigo || !meta || !categorias) throw new Error('Campos esperados no cadastro');
     await digitar(nome, 'Reserva de eventos');
@@ -51,6 +52,98 @@ it('envia o fundo com a conta escolhida, meta em centavos e códigos de categori
       nome: 'Reserva de eventos', codigoSistema: 'RESERVA_EVENTOS', contaVinculadaId: id, meta: 12345,
       categoriasPermitidas: ['EVENTOS', 'INFRA'],
     });
+  } finally {
+    await tela.desmontar();
+  }
+});
+
+it.each(['sem permissão', 'com falha', 'disponível'])('mantém a unidade na edição até a remoção explícita (consulta %s)', async estadoDaConsulta => {
+  const id = '7565bdeb-7c4a-477d-9e12-44aeb87a1e96';
+  const unidadeId = '236e0a6d-e1c9-4091-a025-37d2a1773ffb';
+  const permissoes = ['financeiro.conta.ler', 'financeiro.conta.gerenciar'] as const;
+  const tela = await montarCadastro(<ContasEFundoPage />,
+    estadoDaConsulta === 'sem permissão' ? [...permissoes] : [...permissoes, 'financeiro.plano_contas.ler'],
+    (caminho, requisicao) => {
+      if (requisicao?.method === 'PUT') return Response.json({});
+      if (caminho.endsWith('/contas')) {
+        return Response.json({ itens: [{ id, nome: 'Caixa', ativa: true, unidadeId, versao: 1 }] });
+      }
+      if (caminho.endsWith('/unidades')) {
+        return estadoDaConsulta === 'com falha'
+          ? Response.json({}, { status: 500 })
+          : Response.json({ itens: [{ id: unidadeId, nome: 'Matriz' }] });
+      }
+      return Response.json([]);
+    });
+  try {
+    await tela.clicar('Contas');
+    await tela.clicar('Editar');
+    const painel = elemento(document, '[role="dialog"]');
+    expect(painel.textContent).toContain('Situação');
+    const campoUnidade = [...painel.querySelectorAll('select')].find(campo => campo.labels?.[0]?.textContent === 'Unidade');
+    if (estadoDaConsulta === 'disponível') {
+      if (!campoUnidade) throw new Error('Seletor de unidade esperado');
+      expect(campoUnidade.value).toBe(unidadeId);
+      await escolherOpcao(campoUnidade, '');
+    } else {
+      expect(campoUnidade).toBeUndefined();
+    }
+    await digitar(elemento<HTMLInputElement>(painel, 'input'), 'Caixa principal');
+    await clicar(botaoComTexto(painel, 'Salvar'));
+    await assentar();
+    const chamada = tela.fetch.mock.calls.find(([, requisicao]) => requisicao?.method === 'PUT');
+    expect(chamada?.[0]).toBe(`/api/v1/financeiro/contas/${id}`);
+    expect(JSON.parse(String(chamada?.[1]?.body))).toMatchObject({
+      nome: 'Caixa principal', unidadeId: estadoDaConsulta === 'disponível' ? null : unidadeId,
+    });
+  } finally {
+    await tela.desmontar();
+  }
+});
+
+it('registra aporte com a conta vinculada e consulta saldos por unidade', async () => {
+  const unidadeId = '5a8d3b51-a44d-480b-9a28-66a810c301ca';
+  const contaOrigemId = 'c4ca6523-2aca-41db-babc-bcb759b9497d';
+  const contaDestinoId = 'c1af657b-7b6c-45cf-84cc-01260248078b';
+  const fundoId = '98b431e3-6a0e-4dad-8b43-2486006b53ea';
+  const tela = await montarCadastro(<ContasEFundoPage />,
+    ['financeiro.conta.ler', 'financeiro.plano_contas.ler', 'financeiro.transferencia.registrar'], (caminho, requisicao) => {
+      if (requisicao?.method === 'POST') return new Response(null, { status: 201 });
+      if (caminho.endsWith('/unidades')) return Response.json({ itens: [{ id: unidadeId, nome: 'Unidade', ativa: true }] });
+      if (caminho.endsWith('/contas')) return Response.json({ itens: [
+        { id: contaOrigemId, nome: 'Caixa', ativa: true }, { id: contaDestinoId, nome: 'Reserva', ativa: true },
+      ] });
+      if (caminho.endsWith('/fundos')) return Response.json({ itens: [{ id: fundoId, nome: 'Fundo', ativo: true, contaVinculadaId: contaDestinoId }] });
+      return Response.json([]);
+    });
+  try {
+    await escolherOpcao(elemento<HTMLSelectElement>(tela.container, 'select'), unidadeId);
+    await assentar();
+    expect(tela.fetch.mock.calls.map(([caminho]) => caminho)).toContain(`/api/v1/financeiro/fundos/saldos?unidadeId=${unidadeId}`);
+    await tela.clicar('Registrar transferência');
+    const painel = elemento(document, '[role="dialog"]');
+    const selects = painel.querySelectorAll('select');
+    const [finalidade, unidade, origem] = selects;
+    if (!finalidade || !unidade || !origem) throw new Error('Campos da transferência não encontrados.');
+    await escolherOpcao(finalidade, 'APORTE_A_FUNDO');
+    await assentar();
+    const fundo = painel.querySelectorAll('select')[3];
+    if (!fundo) throw new Error('Campo de fundo não encontrado.');
+    await escolherOpcao(unidade, unidadeId);
+    await escolherOpcao(origem, contaOrigemId);
+    await escolherOpcao(fundo, fundoId);
+    await digitar(elemento(painel, '[name="valor"]'), '12,34');
+    await digitar(elemento(painel, '[name="data"]'), '2026-11-11');
+    await digitar(elemento(painel, '[name="motivo"]'), 'Reserva de caixa');
+    await clicar(botaoComTexto(painel, 'Registrar transferência'));
+    await assentar();
+    const chamada = tela.fetch.mock.calls.find(([, requisicao]) => requisicao?.method === 'POST');
+    expect(chamada?.[0]).toBe('/api/v1/financeiro/transferencias');
+    expect(new Headers(chamada?.[1]?.headers).get('Idempotency-Key')).toBeTruthy();
+    expect(JSON.parse(String(chamada?.[1]?.body))).toMatchObject({
+      finalidade: 'APORTE_A_FUNDO', valor: 1234, unidadeId, contaOrigemId, contaDestinoId, fundoId, unidadeDestinoId: null,
+    });
+    expect(painel.textContent).toContain('Transferência registrada e a conferir');
   } finally {
     await tela.desmontar();
   }

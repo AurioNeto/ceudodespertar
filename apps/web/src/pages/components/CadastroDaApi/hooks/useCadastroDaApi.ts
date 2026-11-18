@@ -71,7 +71,7 @@ export function useCadastroDaApi(definicao: DefinicaoDoCadastro) {
     },
   });
   const campos = editor ? definicao.campos.filter(campo =>
-    (!editor.registro || !campo.soNaCriacao) && (campo.visivel?.(editor.valores) ?? true)) : [];
+    (editor.registro ? !campo.soNaCriacao : !campo.soNaEdicao) && (campo.visivel?.(editor.valores) ?? true)) : [];
 
   function abrir(registro: RegistroDoCadastro | null) {
     tentativa.current = null;

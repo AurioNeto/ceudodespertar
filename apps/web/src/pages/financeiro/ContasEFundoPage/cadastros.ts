@@ -2,7 +2,7 @@ import { CriarConta, CriarFundo, EditarConta, EditarFundo, type Conta, type Unid
 import type { CampoDoCadastro, DefinicaoDoCadastro, OpcaoDeCadastro } from '@/pages/components/CadastroDaApi';
 
 const nome = { nome: 'nome', rotulo: 'Nome' };
-const situacao = { nome: 'ativa', rotulo: 'Situação', formato: 'booleano', inicial: 'true', opcoes: [
+const situacao = { nome: 'ativa', rotulo: 'Situação', formato: 'booleano', soNaEdicao: true, opcoes: [
   { value: 'true', label: 'Ativo' }, { value: 'false', label: 'Inativo' },
 ] } as const satisfies CampoDoCadastro;
 
