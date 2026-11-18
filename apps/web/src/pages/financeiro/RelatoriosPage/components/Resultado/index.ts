@@ -1,0 +1,1 @@
+export { Resultado } from './Resultado';
