@@ -1,1 +1,0 @@
-export { CartaoDeConta } from './CartaoDeConta';

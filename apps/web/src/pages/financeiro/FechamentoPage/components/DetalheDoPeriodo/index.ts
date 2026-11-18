@@ -1,0 +1,1 @@
+export { DetalheDoPeriodo } from './DetalheDoPeriodo';

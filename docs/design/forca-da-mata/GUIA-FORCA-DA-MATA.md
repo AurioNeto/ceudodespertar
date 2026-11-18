@@ -2,7 +2,9 @@
 
 Céu do Despertar · Sistema de Gestão · proposta visual · 10 de outubro de 2026
 
-Versão em texto do guia visual (`index.html`, mesma pasta). O HTML mostra os componentes e as telas nos dois climas; este arquivo registra tokens, regras e o plano, para virar o futuro Doc de design. Nenhum arquivo do repositório foi alterado.
+Versão em texto do guia visual (`index.html`, mesma pasta). O HTML mostra os componentes e as telas nos dois climas; este arquivo registra tokens, regras e o plano original. A proposta foi implementada pela épica concluída em 12/10/2026, com os ajustes registrados abaixo.
+
+**Como ler este guia (atualizado em 30/10/2026):** a nota de implementação descreve a entrega e prevalece sobre a proposta original nas seções seguintes, incluindo "Decisões tomadas com o dono". O clima atual é escolhido manualmente no perfil, com Noite como padrão; troca automática, guardiões e foto continuam no roadmap da [TSK-603](../../../project-flow/tasks/TSK-603-fases-futuras-da-mata.md). O tema de e-mail foi entregue depois da épica, no #203.
 
 ## Nota de implementação (12/10/2026)
 
@@ -18,7 +20,7 @@ A épica `refactor/epica-redesign` levou o guia para o `apps/web` e, em alguns p
 - **Tailwind.** Saiu antes de tudo; o reset dos elementos nativos foi para o `base.css` (#173).
 - **Códigos de tela.** Não entram na interface. Continuam como referência nos documentos (Doc 4, Doc 8 e este guia), e o cabeçalho das telas mostra só título, subtítulo e ações (decisão do dono, 12/10/2026).
 
-Ficou fora da épica, para fases futuras:
+Ficou fora da épica (a entrega posterior do e-mail está indicada no item):
 
 - a fila de guardiões e o guardião por tela ou por pessoa;
 - a foto no avatar;
@@ -26,7 +28,7 @@ Ficou fora da épica, para fases futuras:
 - o botão central "Registrar" da barra de campo;
 - as animações de ambiente (seiva, vaga-lumes);
 - a troca automática de clima;
-- o tema de e-mail do Keycloak;
+- o tema de e-mail do Keycloak (entregue depois da épica, no #203: Amanhecer, Alegreya no título e assunto de convite "Sistema de Gestão CDD");
 - os climas alternativos (`outras-horas-da-mata.html`).
 
 Nenhuma fase usa captura de telas: a validação visual é do dono.
