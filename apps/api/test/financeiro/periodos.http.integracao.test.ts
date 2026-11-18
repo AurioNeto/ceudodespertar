@@ -29,7 +29,9 @@ describe('períodos contábeis pela API', () => {
   const registrar = async () => { const r = await pedir(AUTOR, ROTA, 'POST', completo); expect(r.status).toBe(201); return r.location!; };
   const confirmar = async () => { const r = await registrar(); expect((await pedir(TESOURARIA, `${r}/confirmar`, 'POST', {}, 1)).status).toBe(200); return r; };
   it('primeiro fechamento vazio, leitura, integridade e versão', async () => {
-    expect((await pedir(FECHAR, rota)).status).toBe(404);
+    expect(await pedir(FECHAR, rota)).toMatchObject({
+      status: 404, corpo: { erro: 'RECURSO_NAO_ENCONTRADO', detalhes: { periodoAindaNaoCriado: true } },
+    });
     const r = await fechar(); expect(r.status).toBe(200);
     expect(r.corpo).toMatchObject({ fechado: true, versao: 1, hash: expect.stringMatching(/^[a-f0-9]{64}$/) });
     expect((await pedir(FECHAR, `${rota}/integridade`)).corpo).toEqual({ hashGravado: r.corpo['hash'], hashAtual: r.corpo['hash'], integro: true });
@@ -41,6 +43,7 @@ describe('períodos contábeis pela API', () => {
     expect((await pedir(REABRIR, `${rota}/fechar`, 'POST', {}, 0)).status).toBe(403);
     expect((await pedir(FECHAR, `${rota}/fechar`, 'POST', {})).status).toBe(428);
     expect((await pedir(CASA_B, `${rota}/fechar`, 'POST', {}, 0)).status).toBe(404);
+    expect((await pedir(CASA_B, rota)).corpo).not.toHaveProperty('detalhes');
     await fechar();
     expect((await pedir(CASA_B, rota)).status).toBe(404);
     expect((await pedir(CASA_B, `${rota}/reabrir`, 'POST', { motivo: 'Corrigir classificação' }, 1)).status).toBe(404);
