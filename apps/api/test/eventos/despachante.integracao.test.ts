@@ -689,13 +689,14 @@ describe('Despachante · entrega do outbox (Documento 7 §9)', () => {
     }
   }, 6000);
 
-  it('sinaliza depois do commit: latência commit -> entrega bem abaixo de 1s, e rollback não sinaliza', async () => {
-    let chegou: (t: number) => void = () => {};
+  it('sinaliza somente depois do commit e entrega sem depender do polling', async () => {
+    vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval'] });
+    let chegou: () => void = () => {};
     @Injectable()
     class ConsumidorDeLatencia {
       @ReageA('teste.EventoDeLatencia', 'ConsumidorDeLatencia.reagir')
       async reagir(): Promise<void> {
-        chegou(Date.now());
+        chegou();
       }
     }
 
@@ -720,16 +721,36 @@ describe('Despachante · entrega do outbox (Documento 7 §9)', () => {
       pararDeOuvir();
       expect(sinalizouNoRollback).toBe(false);
 
-      const p = new Promise<number>((resolver) => {
+      const entrega = new Promise<void>((resolver) => {
         chegou = resolver;
       });
-      const t0 = Date.now();
-      await gravarEvento(app, criarEvento({ tipo: 'teste.EventoDeLatencia' }));
-      const latencia = (await p) - t0;
-
-      expect(latencia).toBeLessThan(200);
+      const sinal = vi.spyOn(app.get(SinalizadorDeEventos), 'notificar');
+      const evento = criarEvento({ tipo: 'teste.EventoDeLatencia' });
+      await comContexto(INSTITUICAO_A, () =>
+        unidade.transacao('escrita', async contexto => {
+          await repositorio.gravar(contexto, [evento]);
+          expect(sinal).not.toHaveBeenCalled();
+          expect(await linhaDoOutbox(banco, evento.eventoId)).toBeUndefined();
+        }),
+      );
+      expect(sinal).toHaveBeenCalledTimes(1);
+      let temporizador: ReturnType<typeof setTimeout> | undefined;
+      try {
+        await Promise.race([
+          entrega,
+          new Promise<never>((_resolver, rejeitar) => {
+            temporizador = setTimeout(() => rejeitar(new Error('Evento não entregue após o sinal de commit')), 5000);
+          }),
+        ]);
+      } finally {
+        clearTimeout(temporizador);
+      }
     } finally {
-      await encerrarContextoDeEventos(app);
+      try {
+        await encerrarContextoDeEventos(app);
+      } finally {
+        vi.useRealTimers();
+      }
     }
   }, 10000);
 

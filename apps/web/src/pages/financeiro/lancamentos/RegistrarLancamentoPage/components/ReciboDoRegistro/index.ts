@@ -1,1 +1,0 @@
-export { ReciboDoRegistro } from './ReciboDoRegistro';
