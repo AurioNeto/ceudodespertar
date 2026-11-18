@@ -22,6 +22,10 @@ import { MigracaoB1005Transferencia } from './b1-005-transferencia/migracao.js';
 
 import { MigracaoB1006PeriodoContabil } from './b1-006-periodo-contabil/migracao.js';
 
+import { MigracaoB1007Anexo } from './b1-007-anexo/migracao.js';
+
+import { MigracaoB1008EventoMinimo } from './b1-008-evento-minimo/migracao.js';
+
 export const MIGRACOES_DO_CDD = [
   { name: 'b0-000-esquemas', class: MigracaoB0000Esquemas },
   { name: 'b0-001-shared', class: MigracaoB0001Shared },
@@ -43,4 +47,6 @@ export const MIGRACOES_DO_CDD = [
   { name: 'b1-004-lancamento', class: MigracaoB1004Lancamento },
   { name: 'b1-005-transferencia', class: MigracaoB1005Transferencia },
   { name: 'b1-006-periodo-contabil', class: MigracaoB1006PeriodoContabil },
+  { name: 'b1-007-anexo', class: MigracaoB1007Anexo },
+  { name: 'b1-008-evento-minimo', class: MigracaoB1008EventoMinimo },
 ];

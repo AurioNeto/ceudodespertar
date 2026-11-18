@@ -1,1 +1,0 @@
-export { CartaoDaFicha } from './CartaoDaFicha';

@@ -18,6 +18,7 @@ export class OperacoesDeLancamento {
 
   registrar(acesso: ContextoDeAcesso, dados: DadosDoLancamento): Promise<Result<RegistroDeLancamento, ErroDeDominio>> {
     return this.unidade.transacao('escrita', async () => {
+      if (dados.comprovanteId !== null) return err(erroDeDominio('RECURSO_NAO_ENCONTRADO'));
       const etiquetas = await this.referencias.executar(dados);
       if (etiquetas.tipo === 'erro') return etiquetas;
       const criado = Lancamento.registrar(gerarUuidV7() as LancamentoId, dados, etiquetas.valor, acesso.usuarioId, this.relogio.agora(), await this.aberto(dados));
@@ -38,9 +39,13 @@ export class OperacoesDeLancamento {
       const lido = await this.carregar(id, versao, acesso);
       if (lido.tipo === 'erro') return lido;
       const l = lido.valor;
+      const { comprovanteId } = l.estado;
+      if (dados.comprovanteId !== null && dados.comprovanteId !== comprovanteId) {
+        return err(erroDeDominio('RECURSO_NAO_ENCONTRADO'));
+      }
       const etiquetas = await this.referencias.executar(dados);
       if (etiquetas.tipo === 'erro') return etiquetas;
-      const alterado = l.editar(dados, etiquetas.valor, acesso.usuarioId, this.relogio.agora(), await this.aberto(l.estado, dados));
+      const alterado = l.editar({ ...dados, comprovanteId }, etiquetas.valor, acesso.usuarioId, this.relogio.agora(), await this.aberto(l.estado, dados));
       if (alterado.tipo === 'erro') return alterado;
       return ok(await this.apresentar(l, await this.repo.salvar(l)));
     });

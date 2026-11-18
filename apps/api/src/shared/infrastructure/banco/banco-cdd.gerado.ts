@@ -23,6 +23,16 @@ export type JsonValue = JsonArray | JsonObject | JsonPrimitive;
 
 export type Timestamp = ColumnType<Date, Date | string, Date | string>;
 
+export interface EventosEvento {
+  data_fim: string;
+  data_inicio: string;
+  id: string;
+  instituicao_id: string;
+  nome: string;
+  tipo: string;
+  unidade_id: string;
+}
+
 export interface FinanceiroCategoria {
   ativa: Generated<boolean>;
   codigo_sistema: string;
@@ -285,6 +295,20 @@ export interface PessoasPessoa {
   versao: Generated<number>;
 }
 
+export interface SharedAnexo {
+  chave: string;
+  enviado_em: Generated<Timestamp>;
+  enviado_por: string | null;
+  enviado_por_tipo: Generated<string>;
+  id: string;
+  instituicao_id: string;
+  mime: string;
+  nome_original: string;
+  sensivel: Generated<boolean>;
+  sha256: string;
+  tamanho_bytes: number;
+}
+
 export interface SharedChaveDeIdempotencia {
   chave: string;
   corpo_hash: string | null;
@@ -325,6 +349,7 @@ export interface SharedOutbox {
 }
 
 export interface DB {
+  "eventos.evento": EventosEvento;
   "financeiro.categoria": FinanceiroCategoria;
   "financeiro.conta": FinanceiroConta;
   "financeiro.fundo": FinanceiroFundo;
@@ -345,6 +370,7 @@ export interface DB {
   "identidade.usuario": IdentidadeUsuario;
   "identidade.usuario_grupo": IdentidadeUsuarioGrupo;
   "pessoas.pessoa": PessoasPessoa;
+  "shared.anexo": SharedAnexo;
   "shared.chave_de_idempotencia": SharedChaveDeIdempotencia;
   "shared.evento_processado": SharedEventoProcessado;
   "shared.instituicao": SharedInstituicao;
