@@ -38,6 +38,7 @@ function ConsultaDeRelatorio({ aba }: { readonly aba: Aba }) {
   const densidade = useDensidade();
   const { pode } = useSessao();
   const unidades = useItensDoCadastro<Unidade>('/financeiro/unidades', pode('financeiro.plano_contas.ler'));
+  const nomesDasUnidades = new Map(unidades.data?.itens.map(item => [item.id, item.nome]));
   const [competencia, setCompetencia] = useState(competenciaDaCasa);
   const [intervalo, setIntervalo] = useState(() => intervaloDaCompetencia(competencia));
   const [unidade, setUnidade] = useState('');
@@ -82,7 +83,7 @@ function ConsultaDeRelatorio({ aba }: { readonly aba: Aba }) {
     {consulta.isError ? <Aviso tom="pendente">Não foi possível carregar o relatório.
       <Button variant="quiet" onClick={() => void consulta.refetch()}>Tentar novamente</Button>
     </Aviso> : null}
-    {aba === 'dre' && dre.data ? <Resultado dados={dre.data} /> : null}
+    {aba === 'dre' && dre.data ? <Resultado dados={dre.data} nomesDasUnidades={nomesDasUnidades} /> : null}
     {aba === 'caixa' && caixa.data ? <>
       <dl>
         <dt>Entradas</dt><dd>{formatarBRL(caixa.data.entradas)}</dd>
@@ -109,7 +110,7 @@ function ConsultaDeRelatorio({ aba }: { readonly aba: Aba }) {
       {detalhe.isError ? <Aviso tom="pendente">Não foi possível carregar o resultado.
         <Button variant="quiet" onClick={() => void detalhe.refetch()}>Tentar novamente</Button>
       </Aviso> : null}
-      {detalhe.data ? <Resultado dados={detalhe.data} /> : null}
+      {detalhe.data ? <Resultado dados={detalhe.data} nomesDasUnidades={nomesDasUnidades} /> : null}
     </PainelDeAcao> : null}
   </>;
 }
