@@ -1,14 +1,27 @@
 import { useQuery } from '@tanstack/react-query';
-import type { PaginaFinanceira, RegistroDeLancamento } from '@cdd/contracts';
+import { ParametrosDoLancamento, type MovimentoNaConsulta, type DadosDoLancamento, type PaginaFinanceira, type RegistroDeLancamento } from '@cdd/contracts';
 import { useClienteHttp } from '@/app/providers';
 import { criarComando, criarConsulta, ErroDaApi, type ClienteHttp } from '@/dados';
 
 const caminho = '/financeiro/lancamentos';
 const detalhe = (id: string) => `${caminho}/${encodeURIComponent(id)}`;
+const prefixoDoRecibo = `/api/v1${caminho}/`;
+const versaoInicialDoLancamento = 1;
+
+export type ReciboDoLancamento = Pick<RegistroDeLancamento, 'id' | 'motivo' | 'valor' | 'versao'>;
 
 export function useListaFinanceira<T>(lista: 'meus-registros' | 'fila-conferencia', pagina: number) {
   return useQuery(criarConsulta(useClienteHttp())<PaginaFinanceira<T>>(
     `/financeiro/${lista}?pagina=${pagina}`, ['lancamentos', lista, pagina],
+  ));
+}
+
+export function useLivroFinanceiro(pagina: number, competencia: string, unidadeId: string) {
+  const parametros = new URLSearchParams({ pagina: String(pagina) });
+  if (competencia) parametros.set('competencia', competencia);
+  if (unidadeId) parametros.set('unidadeId', unidadeId);
+  return useQuery(criarConsulta(useClienteHttp())<PaginaFinanceira<MovimentoNaConsulta>>(
+    `/financeiro/lancamentos?${parametros}`, ['lancamentos', 'livro', pagina, competencia, unidadeId],
   ));
 }
 
@@ -17,8 +30,18 @@ export function useDetalheDoLancamento(id: string | null) {
   return useQuery({ ...consultar<RegistroDeLancamento>(detalhe(id ?? ''), ['lancamentos', 'detalhe', id]), enabled: id !== null });
 }
 
+export type AcaoDoDetalhe = { tipo: 'estornar' } | { tipo: 'abrir' } | { tipo: 'responder'; pendenciaId: string };
+
+interface ComandoDoDetalhe {
+  readonly id: string;
+  readonly versao: number;
+  readonly acao: AcaoDoDetalhe;
+  readonly texto: string;
+}
+
 export function comandosDoLancamento(cliente: ClienteHttp) {
   const comando = criarComando(cliente);
+  const registrar = comando<DadosDoLancamento, ReciboDoLancamento | undefined>({ metodo: 'POST', caminho, corpo: dados => dados });
   type Alteracao = { id: string; versao: number; dados: unknown };
   return {
     anexar: comando<{ id: string; versao: number; arquivo: File }, RegistroDeLancamento>({
@@ -29,7 +52,25 @@ export function comandosDoLancamento(cliente: ClienteHttp) {
         return dados;
       },
     }),
-    registrar: comando<unknown, RegistroDeLancamento | undefined>({ metodo: 'POST', caminho, corpo: dados => dados }),
+    async registrar(dados: DadosDoLancamento, chaveDeIdempotencia: string): Promise<ReciboDoLancamento | undefined> {
+      let localizacao: string | undefined;
+      const recibo = await registrar(dados, {
+        chaveDeIdempotencia,
+        aoReceberLocalizacao: valor => { localizacao = valor; },
+      });
+      if (recibo || !localizacao?.startsWith(prefixoDoRecibo)) return recibo;
+
+      const parametros = ParametrosDoLancamento.safeParse({ id: localizacao.slice(prefixoDoRecibo.length) });
+      if (!parametros.success) return undefined;
+      return { ...parametros.data, motivo: dados.motivo, valor: dados.valor, versao: versaoInicialDoLancamento };
+    },
+    acionar: comando<ComandoDoDetalhe, RegistroDeLancamento | undefined>({
+      metodo: 'POST',
+      caminho: ({ id, acao }) => `${detalhe(id)}/${acao.tipo === 'estornar' ? 'estornar' : acao.tipo === 'abrir'
+        ? 'pendencias' : `pendencias/${encodeURIComponent(acao.pendenciaId)}/resposta`}`,
+      versao: entrada => entrada.versao,
+      corpo: ({ acao, texto }) => acao.tipo === 'estornar' ? { motivo: texto } : { texto },
+    }),
     editar: comando<Alteracao, RegistroDeLancamento>({ metodo: 'PUT', caminho: entrada => detalhe(entrada.id),
       versao: entrada => entrada.versao, corpo: entrada => entrada.dados }),
     confirmar: comando<{ id: string; versao: number }, RegistroDeLancamento | undefined>({ metodo: 'POST',
@@ -47,6 +88,9 @@ export function mensagemDeFalha(erro: unknown): string {
       case 'ETIQUETAS_NAO_FECHAM': return 'Os valores das categorias precisam fechar com o total.';
       case 'CATEGORIA_FORA_DO_REGIME': return 'Uma categoria não é permitida no regime da unidade.';
       case 'CORPO_GRANDE_DEMAIS': return 'O comprovante excede o limite de tamanho.';
+      case 'LANCAMENTO_JA_ESTORNADO': return 'Este lançamento já foi estornado.';
+      case 'PENDENCIA_JA_ABERTA': return 'Já existe uma pendência em aberto.';
+      case 'PENDENCIA_SO_DO_DESTINATARIO': return 'Somente o destinatário pode responder à pendência.';
       case 'SEM_PERMISSAO': return 'Seu acesso não permite esta operação.';
     }
   }

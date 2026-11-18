@@ -1,1 +1,0 @@
-export { AvisoDeLote } from './AvisoDeLote';

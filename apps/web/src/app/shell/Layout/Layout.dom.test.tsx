@@ -81,7 +81,7 @@ describe('faixa de demonstração no Layout', () => {
   it('tela api não leva faixa nem em outra rota com fonte mock', async () => {
     const telas = telasComUmaApi('perfil');
     expect(faixas(await montarLayoutEm(ROTAS.perfil, telas)).length).toBe(0);
-    expect(faixas(await montarLayoutEm(ROTAS.painel, telas)).length).toBe(1);
+    expect(faixas(await montarLayoutEm(ROTAS.faturas, telas, ['financeiro.fatura.gerenciar'])).length).toBe(1);
   });
 
   it.each(ROTAS_DO_SHELL)('com a sessão de demonstração, %s mostra a faixa mesmo sendo api', async (_id, caminho) => {
@@ -99,7 +99,7 @@ describe('faixa de demonstração no Layout', () => {
   });
 
   it('a faixa é uma nota com o texto exato', async () => {
-    const tela = await montarLayoutEm(ROTAS.painel, TELAS);
+    const tela = await montarLayoutEm(ROTAS.faturas, TELAS, ['financeiro.fatura.gerenciar']);
     const faixa = tela.container.querySelector('[role="note"]');
     expect(faixa?.textContent).toBe(
       'Dados de demonstração. Esta tela ainda não está ligada ao sistema: o que aparece aqui é exemplo e nada é gravado.',
