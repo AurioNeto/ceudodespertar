@@ -51,7 +51,7 @@ export function PainelPage() {
         {veCerimonias ? <BlocoFinanceiro titulo="Resultados por cerimônia" consulta={cerimonias}>
           {cerimonias.data?.itens.length ? <ul>{cerimonias.data.itens.map(item => (
             <li key={item.evento.id}>{item.evento.nome} · {formatarData(item.evento.dataInicio)} · {formatarBRL(item.resultado)}</li>
-          ))}</ul> : <EmptyState title="Nenhuma cerimônia nesta competência" />}
+          ))}</ul> : <EmptyState title="Nenhum resultado financeiro de cerimônias nesta competência" />}
         </BlocoFinanceiro> : null}
         {veFila ? <BlocoFinanceiro titulo="A conferir" consulta={fila}>
           {fila.data?.itens.length ? <ul>{fila.data.itens.map(item => (
