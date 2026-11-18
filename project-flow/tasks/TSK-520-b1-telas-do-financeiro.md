@@ -1,6 +1,6 @@
 # TSK-520: Telas do financeiro contra a API
 
-- **Estado:** 🛠️ Em andamento (B1). Partes 1 a 5 implementadas na pilha
+- **Estado:** ✅ Implementada na pilha local (B1)
 - **Responsável sugerido:** front (vitro; frontiteto se nascer tela ou pasta)
 - **Depende de:** [TSK-511](TSK-511-b1-contrato-do-financeiro.md)
 
@@ -56,7 +56,11 @@ Implementada em `codex/tsk-520-e-fechamento`, sobre a parte 4. A tela consulta o
 
 A verificação de integridade compara o hash gravado com o atual. O checklist e os totais de demonstração deram lugar aos estados e bloqueios retornados pela API.
 
-A parte 6 segue pendente.
+## Parte 6 · Relatórios e Painel
+
+Relatórios foi integrado em `codex/tsk-520-f-relatorios`. A tela consulta DRE por competência, fluxo de caixa por intervalo e resultado por cerimônia com detalhe e paginação. Os relatórios e a seleção de unidade respeitam as permissões da sessão.
+
+Painel foi integrado em `codex/tsk-520-f-painel`, sobre Relatórios. Os blocos usam os endpoints existentes de saldos, DRE, fluxo de caixa, resultados por cerimônia e fila. O gráfico demonstrativo de estoque saiu do Painel. A integração do estoque pertence à etapa própria. Os botões de exportação simulada saíram de Relatórios.
 
 ## Critérios de aceite
 
