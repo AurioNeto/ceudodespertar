@@ -42,7 +42,11 @@ describe('OperacoesDePeriodo', () => {
     expect(repo.adicionar).not.toHaveBeenCalled();
   });
   it('leitura e verificação de inexistente retornam 404', async () => {
-    expect(await operacoes.obter(chave)).toMatchObject({ tipo: 'erro' });
+    expect(await operacoes.obter(chave)).toEqual({
+      tipo: 'erro', erro: { codigo: 'RECURSO_NAO_ENCONTRADO', detalhes: { periodoAindaNaoCriado: true } },
+    });
+    unidades.porId.mockResolvedValueOnce(undefined);
+    expect(await operacoes.obter(chave)).toEqual({ tipo: 'erro', erro: { codigo: 'RECURSO_NAO_ENCONTRADO' } });
     expect(await operacoes.verificar(chave)).toMatchObject({ tipo: 'erro' });
     repo.porChave.mockResolvedValue(aberto());
     expect(await operacoes.obter(chave)).toMatchObject({ tipo: 'ok', valor: { fechado: false } });

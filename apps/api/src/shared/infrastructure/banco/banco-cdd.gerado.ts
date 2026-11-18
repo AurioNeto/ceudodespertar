@@ -23,6 +23,16 @@ export type JsonValue = JsonArray | JsonObject | JsonPrimitive;
 
 export type Timestamp = ColumnType<Date, Date | string, Date | string>;
 
+export interface EventosEvento {
+  data_fim: string;
+  data_inicio: string;
+  id: string;
+  instituicao_id: string;
+  nome: string;
+  tipo: string;
+  unidade_id: string;
+}
+
 export interface FinanceiroCategoria {
   ativa: Generated<boolean>;
   codigo_sistema: string;
@@ -339,6 +349,7 @@ export interface SharedOutbox {
 }
 
 export interface DB {
+  "eventos.evento": EventosEvento;
   "financeiro.categoria": FinanceiroCategoria;
   "financeiro.conta": FinanceiroConta;
   "financeiro.fundo": FinanceiroFundo;

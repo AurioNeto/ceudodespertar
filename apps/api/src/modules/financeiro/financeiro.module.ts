@@ -1,3 +1,12 @@
+import { ConsultasFinanceirasController } from './interface/http/consultas-financeiras.controller.js';
+import { ConsultasDeCaixa, ConsultasDeResultado, ListasFinanceiras } from './application/consultas/consultas-financeiras.js';
+import { ResultadoFinanceiroDaCerimonia } from './application/consultas/resultado-financeiro-da-cerimonia.js';
+import { ConsultasDeCaixaKysely } from './infrastructure/consultas/consultas-de-caixa.kysely.js';
+import { ConsultasDeResultadoKysely } from './infrastructure/consultas/consultas-de-resultado.kysely.js';
+import { ListasFinanceirasKysely } from './infrastructure/consultas/consultas-de-listas.kysely.js';
+import { EventosMinimosModule } from '../eventos/public-api.js';
+import { EventosMinimosController } from './interface/http/eventos-minimos.controller.js';
+import { OperacoesDeEventoMinimo } from './application/cadastros/operacoes-de-evento-minimo.js';
 import { ComprovantesController } from './interface/http/comprovantes.controller.js';
 import { ComprovantesDeLancamento } from './application/comprovantes/comprovantes-de-lancamento.js';
 import { RepositorioDeComprovantes } from './application/comprovantes/repositorio-de-comprovantes.js';
@@ -59,10 +68,16 @@ import { RepositorioDeUnidadeKysely } from './infrastructure/persistencia/reposi
 import { SemeadorDeCadastrosDaCasa } from './infrastructure/persistencia/semeador-de-cadastros-da-casa.js';
 
 @Module({
-  imports: [BancoModule, SemeaduraModule, PessoasModule, EventosModule],
-  controllers: [ComprovantesController, PeriodosController, TransferenciasController, PendenciasController, LancamentosController, UnidadesController, GruposDeCustoController, CategoriasController, ContasController, FundosController],
+  imports: [BancoModule, SemeaduraModule, PessoasModule, EventosModule, EventosMinimosModule],
+  controllers: [ConsultasFinanceirasController, EventosMinimosController, ComprovantesController, PeriodosController, TransferenciasController, PendenciasController, LancamentosController, UnidadesController, GruposDeCustoController, CategoriasController, ContasController, FundosController],
+  exports: [ResultadoFinanceiroDaCerimonia],
   providers: [
     ConsultarCadastros,
+    ResultadoFinanceiroDaCerimonia,
+    { provide: ConsultasDeCaixa, useClass: ConsultasDeCaixaKysely },
+    { provide: ConsultasDeResultado, useClass: ConsultasDeResultadoKysely },
+    { provide: ListasFinanceiras, useClass: ListasFinanceirasKysely },
+    OperacoesDeEventoMinimo,
     ComprovantesDeLancamento,
     { provide: RepositorioDeComprovantes, useClass: RepositorioDeComprovantesKysely },
     { provide: ArmazenamentoDeArquivos, useClass: ArmazenamentoS3 },

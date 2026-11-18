@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import type { DadosDoLancamento, Etiqueta } from '@cdd/contracts';
+import { EventosMinimos } from '../../../eventos/public-api.js';
 import { ResumoDaPessoa } from '../../../pessoas/public-api.js';
 import { erroDeDominio, type ErroDeDominio } from '../../../../shared/kernel/erro-de-dominio.js';
 import { err, ok, type Result } from '../../../../shared/kernel/result.js';
@@ -18,10 +19,14 @@ export class ResolverDadosDoLancamento {
     private readonly fundos: RepositorioDeFundo,
     private readonly grupos: RepositorioDeGrupoDeCusto,
     private readonly pessoas: ResumoDaPessoa,
+    private readonly eventos: EventosMinimos,
   ) {}
 
   async executar(dados: DadosDoLancamento, confirmando = false): Promise<Result<readonly Etiqueta[], ErroDeDominio>> {
     if (dados.faturaId !== null) return err(erroDeDominio('RECURSO_NAO_ENCONTRADO'));
+    if (dados.eventoId !== null && await this.eventos.porId(dados.eventoId) === undefined) {
+      return err(erroDeDominio('RECURSO_NAO_ENCONTRADO'));
+    }
     const unidade = dados.unidadeId === null ? undefined : await this.unidades.porId(dados.unidadeId);
     if (dados.unidadeId !== null && unidade === undefined) return err(erroDeDominio('RECURSO_NAO_ENCONTRADO'));
     if (unidade !== undefined && !unidade.ativa) return err(erroDeDominio('CADASTRO_INATIVO'));
