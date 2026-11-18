@@ -29,7 +29,7 @@ pnpm typecheck
 | `project/` | O bundle de design original (handoff), mantido como referência |
 | `docs/design/forca-da-mata/` | O guia Força da Mata, fonte visual atual: guia em texto e em HTML, tokens de referência, logo e merkaba |
 
-## Estado funcional (30/10/2026)
+## Estado funcional (05/11/2026)
 
 - **B0 concluído:** autenticação OIDC com Keycloak, sessão e permissões reais,
   gestão de usuários e grupos, auditoria na API, bootstrap e seed demo. As
@@ -41,7 +41,17 @@ pnpm typecheck
   TSK-514 está implementada localmente, com comandos, endpoints e consultas
   de cadastro sem saldo, aguardando revisão e merge. A TSK-512 está implementada
   na branch empilhada `codex/tsk-512-pessoa-minima`: cadastro mínimo de pessoas
-  com busca e paginação, além da validação do titular de contas pessoais.
+  com busca e paginação, além da validação do titular de contas pessoais. A TSK-515
+  está implementada em três branches empilhadas: registro, conferência, estorno
+  e conversa de pendências pela API. A TSK-516 está implementada em
+  `codex/tsk-516-transferencias`, com transferência, conferência segregada e estorno
+  sujeito à conferência. A TSK-517 está implementada em
+  `codex/tsk-517-periodos-contabeis`: fechamento, reabertura, hash e bloqueio de
+  escritas em períodos fechados. A TSK-518 acrescenta comprovantes privados no S3
+  e o cadastro mínimo de eventos, com duas branches locais empilhadas. A TSK-519
+  acrescenta fila, registros próprios, livro, saldos e relatórios pela API.
+  A TSK-520 liga as telas do financeiro à API. O `project-flow` registra
+  os detalhes de cada entrega.
 - **Telas demonstrativas:** financeiro, pessoas/anamnese, eventos e estoque
   ainda usam fixtures. A integração das telas financeiras é a TSK-520;
   o restante do backend segue as etapas B2–B6.

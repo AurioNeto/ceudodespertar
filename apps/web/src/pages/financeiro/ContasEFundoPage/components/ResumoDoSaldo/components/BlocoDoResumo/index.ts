@@ -1,1 +1,0 @@
-export { BlocoDoResumo } from './BlocoDoResumo';

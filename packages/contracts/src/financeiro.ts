@@ -407,6 +407,12 @@ export interface ReaberturaDePeriodo {
   readonly hashAnterior: string;
 }
 
+export interface IntegridadeDoPeriodo {
+  readonly hashGravado: string | null;
+  readonly hashAtual: string;
+  readonly integro: boolean | null;
+}
+
 export interface PeriodoContabil {
   readonly id: PeriodoContabilId;
   readonly unidadeId: UnidadeId;
@@ -417,4 +423,19 @@ export interface PeriodoContabil {
   readonly hash: string | null;
   readonly reaberturas: readonly ReaberturaDePeriodo[];
   readonly versao: number;
+}
+
+export interface PendenciaDoLancamento {
+  readonly id: import('./kernel.js').PendenciaId;
+  readonly texto: string;
+  readonly abertaPor: UsuarioId;
+  readonly destinatario: UsuarioId;
+  readonly abertaEm: DataHora;
+  readonly resposta: string | null;
+  readonly resolvidaEm: DataHora | null;
+}
+
+export interface RegistroDeLancamento extends Omit<Lancamento, 'comprovante'> {
+  readonly comprovanteId: import('./kernel.js').AnexoId | null;
+  readonly pendencias: readonly PendenciaDoLancamento[];
 }

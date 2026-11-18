@@ -1,1 +1,0 @@
-export { FormularioDeConta } from './FormularioDeConta';

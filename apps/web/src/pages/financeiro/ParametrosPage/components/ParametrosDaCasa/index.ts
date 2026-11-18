@@ -1,1 +1,0 @@
-export { ParametrosDaCasa } from './ParametrosDaCasa';

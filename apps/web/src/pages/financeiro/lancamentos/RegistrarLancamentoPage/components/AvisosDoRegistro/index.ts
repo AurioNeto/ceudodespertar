@@ -1,1 +1,0 @@
-export { AvisosDoRegistro } from './AvisosDoRegistro';
