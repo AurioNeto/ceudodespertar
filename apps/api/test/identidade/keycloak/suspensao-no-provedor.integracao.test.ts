@@ -189,11 +189,18 @@ describe('suspensão e reativação no provedor pelo despachante real (T26)', ()
     provedor.falharCom = new Error('Keycloak fora');
 
     await reativarAlvo(versao);
+    expect(provedor.chamadas).toContainEqual({ operacao: 'liberar', sujeito: ALVO });
+    expect((await linhaDe('USUARIO_REATIVADO')).publicado_em).toBeNull();
     provedor.falharCom = undefined;
     await liberarFila();
     await aplicacao.entregarEventos();
     await esperarPublicado('USUARIO_REATIVADO');
 
-    expect(provedor.chamadas.map(({ operacao }) => operacao)).toEqual(['bloquear', 'liberar', 'liberar']);
+    expect(provedor.chamadas[0]).toEqual({ operacao: 'bloquear', sujeito: ALVO });
+    const liberacoes = provedor.chamadas.slice(1);
+    expect(liberacoes.length).toBeGreaterThanOrEqual(2);
+    expect(liberacoes.every(chamada => chamada.operacao === 'liberar' && chamada.sujeito === ALVO)).toBe(true);
+    expect(await linhaDe('USUARIO_REATIVADO')).toMatchObject({ publicado_em: expect.any(Date) });
+    expect(await estadoDoUsuario(banco, INSTITUICAO_A, alvoId)).toMatchObject({ situacao: 'ATIVO' });
   });
 });
