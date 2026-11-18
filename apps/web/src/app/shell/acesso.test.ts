@@ -22,7 +22,7 @@ describe('podeVerTela', () => {
 });
 
 describe('filtrarNavPorAcesso', () => {
-  const nav = construirNav(0);
+  const nav = construirNav();
 
   it('grupo REGISTRO vê Painel, Registrar, Meus registros e Parâmetros', () => {
     const pode = comAs(

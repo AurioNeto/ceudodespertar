@@ -100,3 +100,51 @@ it.each(['sem permissão', 'com falha', 'disponível'])('mantém a unidade na ed
     await tela.desmontar();
   }
 });
+
+it('registra aporte com a conta vinculada e consulta saldos por unidade', async () => {
+  const unidadeId = '5a8d3b51-a44d-480b-9a28-66a810c301ca';
+  const contaOrigemId = 'c4ca6523-2aca-41db-babc-bcb759b9497d';
+  const contaDestinoId = 'c1af657b-7b6c-45cf-84cc-01260248078b';
+  const fundoId = '98b431e3-6a0e-4dad-8b43-2486006b53ea';
+  const tela = await montarCadastro(<ContasEFundoPage />,
+    ['financeiro.conta.ler', 'financeiro.plano_contas.ler', 'financeiro.transferencia.registrar'], (caminho, requisicao) => {
+      if (requisicao?.method === 'POST') return new Response(null, { status: 201 });
+      if (caminho.endsWith('/unidades')) return Response.json({ itens: [{ id: unidadeId, nome: 'Unidade', ativa: true }] });
+      if (caminho.endsWith('/contas')) return Response.json({ itens: [
+        { id: contaOrigemId, nome: 'Caixa', ativa: true }, { id: contaDestinoId, nome: 'Reserva', ativa: true },
+      ] });
+      if (caminho.endsWith('/fundos')) return Response.json({ itens: [{ id: fundoId, nome: 'Fundo', ativo: true, contaVinculadaId: contaDestinoId }] });
+      return Response.json([]);
+    });
+  try {
+    await escolherOpcao(elemento<HTMLSelectElement>(tela.container, 'select'), unidadeId);
+    await assentar();
+    expect(tela.fetch.mock.calls.map(([caminho]) => caminho)).toContain(`/api/v1/financeiro/fundos/saldos?unidadeId=${unidadeId}`);
+    await tela.clicar('Registrar transferência');
+    const painel = elemento(document, '[role="dialog"]');
+    const selects = painel.querySelectorAll('select');
+    const [finalidade, unidade, origem] = selects;
+    if (!finalidade || !unidade || !origem) throw new Error('Campos da transferência não encontrados.');
+    await escolherOpcao(finalidade, 'APORTE_A_FUNDO');
+    await assentar();
+    const fundo = painel.querySelectorAll('select')[3];
+    if (!fundo) throw new Error('Campo de fundo não encontrado.');
+    await escolherOpcao(unidade, unidadeId);
+    await escolherOpcao(origem, contaOrigemId);
+    await escolherOpcao(fundo, fundoId);
+    await digitar(elemento(painel, '[name="valor"]'), '12,34');
+    await digitar(elemento(painel, '[name="data"]'), '2026-11-11');
+    await digitar(elemento(painel, '[name="motivo"]'), 'Reserva de caixa');
+    await clicar(botaoComTexto(painel, 'Registrar transferência'));
+    await assentar();
+    const chamada = tela.fetch.mock.calls.find(([, requisicao]) => requisicao?.method === 'POST');
+    expect(chamada?.[0]).toBe('/api/v1/financeiro/transferencias');
+    expect(new Headers(chamada?.[1]?.headers).get('Idempotency-Key')).toBeTruthy();
+    expect(JSON.parse(String(chamada?.[1]?.body))).toMatchObject({
+      finalidade: 'APORTE_A_FUNDO', valor: 1234, unidadeId, contaOrigemId, contaDestinoId, fundoId, unidadeDestinoId: null,
+    });
+    expect(painel.textContent).toContain('Transferência registrada e a conferir');
+  } finally {
+    await tela.desmontar();
+  }
+});
