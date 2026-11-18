@@ -11,7 +11,7 @@ export interface RegistroDaTela {
 export type RegistroDeTelas = Record<RotaId, RegistroDaTela>;
 
 export const TELAS: RegistroDeTelas = {
-  painel: { fonte: 'mock', acesso: [] },
+  painel: { fonte: 'api', acesso: [] },
   registrar: { fonte: 'api', acesso: ['financeiro.lancamento.registrar'] },
   meus: { fonte: 'api', acesso: ['financeiro.lancamento.ler_proprios'] },
   lote: { fonte: 'api', acesso: ['financeiro.lancamento.confirmar'] },
