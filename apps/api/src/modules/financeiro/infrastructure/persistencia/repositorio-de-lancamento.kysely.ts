@@ -1,3 +1,4 @@
+import { protegerEscrita, periodosDoLancamento } from '../periodos/proteger-escrita-no-periodo.js';
 import { Injectable, Logger } from '@nestjs/common';
 import { sql } from 'kysely';
 import { OptimisticLockError } from '@mikro-orm/core';
@@ -67,6 +68,7 @@ export class RepositorioDeLancamentoKysely extends RepositorioDeLancamento {
   adicionar(l: Lancamento): Promise<void> {
     return this.unidade.transacao('escrita', async (ctx) => {
       const e = l.estado;
+      await protegerEscrita(ctx, periodosDoLancamento(e));
       await ctx.kysely.insertInto('financeiro.lancamento').values({
         id: l.id, instituicao_id: instituicaoDoContexto(), gravado_na_transacao: sql<string>`pg_current_xact_id()`,
         natureza: e.natureza,
@@ -101,6 +103,8 @@ export class RepositorioDeLancamentoKysely extends RepositorioDeLancamento {
   salvar(l: Lancamento): Promise<number> {
     return this.unidade.transacao('escrita', async (ctx) => {
       const e = l.estado;
+      const anterior = await this.porId(l.id);
+      await protegerEscrita(ctx, [...periodosDoLancamento(e), ...(anterior === undefined ? [] : periodosDoLancamento(anterior.estado))]);
       const resultado = await ctx.kysely.updateTable('financeiro.lancamento').set({
         natureza: e.natureza,
         valor: e.valor,
@@ -134,6 +138,7 @@ export class RepositorioDeLancamentoKysely extends RepositorioDeLancamento {
 
   excluir(l: Lancamento): Promise<void> {
     return this.unidade.transacao('escrita', async (ctx) => {
+      await protegerEscrita(ctx, periodosDoLancamento(l.estado));
       const resultado = await ctx.kysely.deleteFrom('financeiro.lancamento').where('id', '=', l.id).where('versao', '=', l.versao).where('status', '=', 'A_CONFERIR').executeTakeFirst();
       if (resultado.numDeletedRows === 0n) throw OptimisticLockError.lockFailed('Lancamento');
       await this.outbox.gravar(ctx, l.retirarEventos());

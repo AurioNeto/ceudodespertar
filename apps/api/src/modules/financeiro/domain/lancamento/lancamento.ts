@@ -70,7 +70,7 @@ export class Lancamento extends RaizDeAgregado<LancamentoId> {
     if (!periodoAberto) return falha('PERIODO_FECHADO');
     if (!textoValido(motivo)) return falha('MOTIVO_OBRIGATORIO');
     if (!dataValida(data)) return falha('CORPO_INVALIDO');
-    const estorno = new Lancamento({ ...this.#estado, id, motivo: motivo.trim(), estornoDeId: this.id,
+    const estorno = new Lancamento({ ...this.#estado, id, motivo: motivo.trim(), estornoDeId: this.id, comprovanteId: null,
       dataCompetencia: data, competencia: competenciaDe(data), dataCaixa: data, origem: 'MANUAL',
       registradoPor: autor, registradoEm: em.toISOString() as DataHora, confirmadoPor: { autorTipo: 'USUARIO', autorId: autor },
       confirmadoEm: em.toISOString() as DataHora, versao: 1 });

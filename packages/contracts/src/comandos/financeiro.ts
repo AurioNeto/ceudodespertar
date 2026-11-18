@@ -296,6 +296,9 @@ export const EditarTransferencia = RegistrarTransferencia;
 
 export type EditarTransferencia = RegistrarTransferencia;
 
+export const ConfirmarTransferencia = z.object({});
+export type ConfirmarTransferencia = z.infer<typeof ConfirmarTransferencia>;
+
 export const EstornarTransferencia = z.object({ motivo });
 
 export type EstornarTransferencia = z.infer<typeof EstornarTransferencia>;
@@ -306,10 +309,13 @@ export type ParametrosDaTransferencia = z.infer<typeof ParametrosDaTransferencia
 
 export const ParametrosDoPeriodo = z.object({
   unidadeId: uuidEmMinusculas<UnidadeId>(),
-  competencia: competenciaValida(),
+  competencia: competenciaValida().refine(c => c.slice(0, 4) !== '0000', { message: 'competência deve ter ano positivo' }),
 });
 
 export type ParametrosDoPeriodo = z.infer<typeof ParametrosDoPeriodo>;
+
+export const FecharPeriodo = z.object({});
+export type FecharPeriodo = z.infer<typeof FecharPeriodo>;
 
 export const ReabrirPeriodo = z.object({
   motivo: textoSemCaractereNulo().trim().min(TAMANHO_MINIMO_DO_MOTIVO_DE_REABERTURA).max(TAMANHO_MAXIMO_DO_MOTIVO),

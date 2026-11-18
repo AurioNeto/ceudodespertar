@@ -1,1 +1,0 @@
-export { LinhaGerenciavel } from './LinhaGerenciavel';

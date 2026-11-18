@@ -1,1 +1,0 @@
-export { ListaDeUnidades } from './ListaDeUnidades';
