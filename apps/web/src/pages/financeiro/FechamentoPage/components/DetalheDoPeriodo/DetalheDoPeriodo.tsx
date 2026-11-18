@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { ReabrirPeriodo, type ParametrosDoPeriodo } from '@cdd/contracts';
 import { useClienteHttp } from '@/app/providers';
 import { useSessao } from '@/app/sessao';
+import { ErroDaApi } from '@/dados';
 import { Aviso, Button, PainelDeAcao, StatusBadge, TextField, useDensidade, varianteDoPainel } from '@/ds';
 import { formatarDataHora } from '@/lib/formato';
 import { formatarCompetencia } from '@/pages/utils/formato';
@@ -42,6 +43,7 @@ export function DetalheDoPeriodo({ chave, unidade }: {
   });
   const versao = periodo?.versao ?? 0;
   const fechada = periodo?.fechado === true;
+  const unidadeNaoEncontrada = consulta.error instanceof ErroDaApi && consulta.error.codigo === 'RECURSO_NAO_ENCONTRADO';
 
   function preparar(tipo: Acao['tipo']) {
     mutacao.reset();
@@ -66,8 +68,11 @@ export function DetalheDoPeriodo({ chave, unidade }: {
   return (
     <>
       {consulta.isPending ? <p role="status">Consultando período…</p> : null}
-      {consulta.isError ? <Aviso tom="pendente">Não foi possível consultar o período.
-        <Button variant="quiet" onClick={() => void consulta.refetch()}>Tentar novamente</Button>
+      {consulta.isError ? <Aviso tom="pendente">
+        {unidadeNaoEncontrada ? 'Unidade não encontrada. Confira a unidade informada.' : <>
+          Não foi possível consultar o período.
+          <Button variant="quiet" onClick={() => void consulta.refetch()}>Tentar novamente</Button>
+        </>}
       </Aviso> : null}
       {aviso ? <Aviso tom="informacao"><span role="status">{aviso}</span></Aviso> : null}
       {consulta.isSuccess ? <section aria-label="Situação do período">

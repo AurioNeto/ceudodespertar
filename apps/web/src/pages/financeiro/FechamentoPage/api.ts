@@ -14,7 +14,8 @@ export function usePeriodo(chave: ParametrosDoPeriodo) {
       try {
         return await definicao.queryFn(contexto);
       } catch (erro) {
-        if (erro instanceof ErroDaApi && erro.codigo === 'RECURSO_NAO_ENCONTRADO') return null;
+        if (erro instanceof ErroDaApi && erro.codigo === 'RECURSO_NAO_ENCONTRADO' &&
+          erro.detalhes?.['periodoAindaNaoCriado'] === true) return null;
         throw erro;
       }
     },
