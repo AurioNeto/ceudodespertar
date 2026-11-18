@@ -1,1 +1,0 @@
-export { VistaEmBarras } from './VistaEmBarras';

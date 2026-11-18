@@ -1,1 +1,0 @@
-export { PainelDeQuebra } from './PainelDeQuebra';

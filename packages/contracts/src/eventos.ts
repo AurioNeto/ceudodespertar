@@ -14,7 +14,9 @@ import type {
   UnidadeId,
 } from './kernel.js';
 
-export type TipoEvento = 'CERIMONIA' | 'FEITIO' | 'CONCENTRACAO' | 'CURA' | 'BAILADO' | 'REUNIAO' | 'TEMAZCAL' | 'JORNADA' | 'SHOW' | 'ENCONTRO';
+export const TIPOS_DE_EVENTO = ['CERIMONIA', 'FEITIO', 'CONCENTRACAO', 'CURA', 'BAILADO', 'REUNIAO', 'TEMAZCAL', 'JORNADA', 'SHOW', 'ENCONTRO'] as const;
+export type TipoEvento = typeof TIPOS_DE_EVENTO[number];
+export type ResumoDeEvento = Pick<Evento, 'id' | 'unidadeId' | 'nome' | 'tipo' | 'dataInicio' | 'dataFim'>;
 export type RegimeDeReceita = 'CONTRIBUICAO' | 'CONTRATADO' | 'INTERNO';
 export type StatusEvento = 'PLANEJADO' | 'CONFIRMADO' | 'REALIZADO' | 'CANCELADO';
 

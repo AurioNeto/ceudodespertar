@@ -9,6 +9,7 @@ import {
   CriarUnidade,
   MAXIMO_DE_DINHEIRO_EM_CENTAVOS,
   EditarUnidade,
+  FecharPeriodo,
   ParametrosDoCadastro,
   ParametrosDoPeriodo,
   ReabrirPeriodo,
@@ -204,4 +205,19 @@ test('reabertura de período exige motivo de pelo menos dez caracteres', () => {
 test('identificador do cadastro na rota é um UUID e sai em minúsculas', () => {
   assert.equal(ParametrosDoCadastro.parse({ id: UUID_A.toUpperCase() }).id, UUID_A);
   assert.equal(ParametrosDoCadastro.safeParse({ id: 'nao-e-uuid' }).success, false);
+});
+
+
+test('fechamento não aceita ator ou hash do cliente', () => {
+  assert.deepEqual(FecharPeriodo.parse({ fechadoPor: UUID_A, hash: 'inventado' }), {});
+});
+
+test('período recusa ano zero e aceita o primeiro ano do calendário', () => {
+  assert.equal(ParametrosDoPeriodo.safeParse({ unidadeId: UUID_A, competencia: '0000-01' }).success, false);
+  assert.equal(ParametrosDoPeriodo.safeParse({ unidadeId: UUID_A, competencia: '0001-01' }).success, true);
+});
+
+test('motivo da reabertura não contém NUL nem mais de 500 caracteres', () => {
+  assert.equal(ReabrirPeriodo.safeParse({ motivo: 'Correção com\0nulo' }).success, false);
+  assert.equal(ReabrirPeriodo.safeParse({ motivo: 'x'.repeat(501) }).success, false);
 });

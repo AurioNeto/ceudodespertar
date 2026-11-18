@@ -8,7 +8,6 @@ import { FaixaDeDemonstracao, sessaoDeDemonstracaoLigada } from '@/app/demonstra
 import { TELAS, type RegistroDeTelas } from '../telas';
 import { useSessao } from '@/app/sessao';
 import { TelaSemAcesso } from '../components/TelaSemAcesso';
-import { useContagemDoLote } from '../hooks/useContagemDoLote';
 import { nomeDaTela } from '../utils/nomeDaTela';
 
 const TEXTOS_DO_SHELL = {
@@ -29,11 +28,10 @@ export function Layout({ telas = TELAS }: LayoutProps) {
 
   const { usuario, pode } = useSessao();
   const densidade = useDensidade();
-  const contagemDoLote = useContagemDoLote();
 
   if (!usuario) return null;
 
-  const nav = construirNav(contagemDoLote);
+  const nav = construirNav();
   const registro = telas[ativo];
   const liberada = podeVerTela(registro, pode);
   const mostraFaixa = liberada && (sessaoDeDemonstracaoLigada() || registro.fonte === 'mock');
