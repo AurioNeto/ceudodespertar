@@ -1,1 +1,0 @@
-export { MovimentoPorConta } from './MovimentoPorConta';

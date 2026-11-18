@@ -1,1 +1,0 @@
-export { LinhaDeSaldo } from './LinhaDeSaldo';

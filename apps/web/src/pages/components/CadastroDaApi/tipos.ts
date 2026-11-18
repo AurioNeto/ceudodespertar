@@ -17,6 +17,7 @@ export interface CampoDoCadastro {
   readonly formato?: 'moeda' | 'lista' | 'booleano';
   readonly inicial?: string;
   readonly soNaCriacao?: boolean;
+  readonly soNaEdicao?: boolean;
   readonly opcional?: boolean;
   readonly exibir?: boolean;
   readonly oculto?: boolean;

@@ -1,3 +1,4 @@
+import { BotaoDeTransferencia } from '@/pages/financeiro/components/Transferencia';
 import { useRef, useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { DadosDoLancamento } from '@cdd/contracts';
@@ -41,6 +42,7 @@ export function RegistrarLancamentoPage() {
           </div>
         ) : null}
         {mutacao.isError ? <Aviso tom="pendente"><span role="alert">{mensagemDeFalha(mutacao.error)}</span></Aviso> : null}
+        <BotaoDeTransferencia />
         <FormularioFinanceiro key={numero} ocupado={mutacao.isPending} enviar={dados => mutacao.mutate(dados)} />
       </CorpoDaTela>
     </>
