@@ -21,7 +21,7 @@ const ACESSO_APROVADO: Record<RotaId, readonly Permissao[]> = {
     'financeiro.adiantamento.ressarcir',
   ],
   relatorios: ['financeiro.dre.ler', 'financeiro.fluxo_caixa.ler', 'financeiro.resultado_evento.ler'],
-  fechamento: ['financeiro.periodo.fechar'],
+  fechamento: ['financeiro.periodo.fechar', 'financeiro.periodo.reabrir'],
   prestacao: ['financeiro.prestacao_contas.gerar'],
   devolucoes: ['eventos.devolucao.efetivar'],
   conciliacao: ['financeiro.conciliacao.executar'],

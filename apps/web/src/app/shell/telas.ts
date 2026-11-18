@@ -11,7 +11,7 @@ export interface RegistroDaTela {
 export type RegistroDeTelas = Record<RotaId, RegistroDaTela>;
 
 export const TELAS: RegistroDeTelas = {
-  painel: { fonte: 'mock', acesso: [] },
+  painel: { fonte: 'api', acesso: [] },
   registrar: { fonte: 'api', acesso: ['financeiro.lancamento.registrar'] },
   meus: { fonte: 'api', acesso: ['financeiro.lancamento.ler_proprios'] },
   lote: { fonte: 'api', acesso: ['financeiro.lancamento.confirmar'] },
@@ -20,8 +20,8 @@ export const TELAS: RegistroDeTelas = {
   faturas: { fonte: 'mock', acesso: ['financeiro.fatura.gerenciar'] },
   emprestimos: { fonte: 'mock', acesso: ['financeiro.emprestimo.gerenciar'] },
   adiantamentos: { fonte: 'mock', acesso: ['financeiro.adiantamento.registrar', 'financeiro.adiantamento.autorizar', 'financeiro.adiantamento.ressarcir'] },
-  relatorios: { fonte: 'mock', acesso: ['financeiro.dre.ler', 'financeiro.fluxo_caixa.ler', 'financeiro.resultado_evento.ler'] },
-  fechamento: { fonte: 'mock', acesso: ['financeiro.periodo.fechar'] },
+  relatorios: { fonte: 'api', acesso: ['financeiro.dre.ler', 'financeiro.fluxo_caixa.ler', 'financeiro.resultado_evento.ler'] },
+  fechamento: { fonte: 'api', acesso: ['financeiro.periodo.fechar', 'financeiro.periodo.reabrir'] },
   conciliacao: { fonte: 'mock', acesso: ['financeiro.conciliacao.executar'] },
   devolucoes: { fonte: 'mock', acesso: ['eventos.devolucao.efetivar'] },
   prestacao: { fonte: 'mock', acesso: ['financeiro.prestacao_contas.gerar'] },

@@ -1,7 +1,8 @@
+import { PainelDeTransferencia } from '@/pages/financeiro/components/Transferencia';
 import { useState } from 'react';
 import type { MovimentoNaConsulta, StatusLancamento, Unidade } from '@cdd/contracts';
 import { useSessao } from '@/app/sessao';
-import { Aviso, Button, CorpoDaTela, EmptyState, PainelDeAcao, ScreenHeader, Select, StatusBadge, TextField, useDensidade, varianteDoPainel } from '@/ds';
+import { Aviso, Button, CorpoDaTela, EmptyState, ScreenHeader, Select, StatusBadge, TextField, useDensidade } from '@/ds';
 import { formatarDataHora } from '@/lib/formato';
 import { useItensDoCadastro } from '@/pages/components/CadastroDaApi';
 import { formatarBRL, formatarCompetencia } from '@/pages/utils/formato';
@@ -57,11 +58,7 @@ export function LancamentosPage() {
         </div>
       </CorpoDaTela>
       {selecionado?.tipo === 'TRANSFERENCIA' ? (
-        <PainelDeAcao aberto titulo={selecionado.motivo} variante={varianteDoPainel(densidade)} aoFechar={fechar}>
-          <p>{formatarBRL(selecionado.valor)} · {estados[selecionado.status]}</p>
-          <p>Origem: {selecionado.conta?.nome ?? 'Sem conta'}</p>
-          <p>Destino: {selecionado.contaDestino?.nome ?? 'Sem conta'}</p>
-        </PainelDeAcao>
+        <PainelDeTransferencia movimento={selecionado} fechar={fechar} />
       ) : selecionado ? <DetalheFinanceiro id={selecionado.id} titulo={selecionado.motivo} fechar={fechar} /> : null}
     </>
   );

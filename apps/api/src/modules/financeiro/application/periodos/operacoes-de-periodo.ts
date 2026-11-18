@@ -18,7 +18,9 @@ export class OperacoesDePeriodo {
 
   async obter(chave: ChaveDoPeriodo): Promise<Result<Registro, ErroDeDominio>> {
     const p = await this.repo.porChave(chave);
-    return p === undefined ? err(erroDeDominio('RECURSO_NAO_ENCONTRADO')) : ok(p.estado);
+    if (p !== undefined) return ok(p.estado);
+    const unidade = await this.unidades.porId(chave.unidadeId);
+    return err(erroDeDominio('RECURSO_NAO_ENCONTRADO', unidade === undefined ? undefined : { periodoAindaNaoCriado: true }));
   }
   async verificar(chave: ChaveDoPeriodo): Promise<Result<IntegridadeDoPeriodo, ErroDeDominio>> {
     const p = await this.repo.porChave(chave);

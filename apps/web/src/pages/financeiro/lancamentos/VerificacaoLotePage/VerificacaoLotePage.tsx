@@ -1,3 +1,4 @@
+import { PainelDeTransferencia } from '@/pages/financeiro/components/Transferencia';
 import { useRef, useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { FaltaParaConferir, MovimentoNaFila, Unidade } from '@cdd/contracts';
@@ -25,7 +26,7 @@ export function VerificacaoLotePage() {
   const unidades = useItensDoCadastro<Unidade>('/financeiro/unidades', pode('financeiro.plano_contas.ler'));
   const nomesDeUnidades = new Map(unidades.data?.itens.map(unidade => [unidade.id, unidade.nome]));
   const consulta = useListaFinanceira<MovimentoNaFila>('fila-conferencia', pagina);
-  const detalhe = useDetalheDoLancamento(emRevisao?.id ?? null);
+  const detalhe = useDetalheDoLancamento(emRevisao?.tipo === 'TRANSFERENCIA' ? null : emRevisao?.id ?? null);
   const atualizar = () => cliente.invalidateQueries({ queryKey: ['lancamentos'] });
   const editar = useMutation({
     mutationFn: (entrada: Parameters<typeof comandos.editar>[0]) => comandos.editar(entrada),
@@ -62,7 +63,9 @@ export function VerificacaoLotePage() {
             {item.unidadeId && nomesDeUnidades.has(item.unidadeId) ? <p>Unidade: {nomesDeUnidades.get(item.unidadeId)}</p> : null}
             {item.faltas.length ? <p>Falta conferir: {item.faltas.map(falta => faltas[falta]).join(', ')}</p> : null}
             {item.pendencia ? <p>{item.pendencia.texto}</p> : null}
-            {item.tipo === 'TRANSFERENCIA' ? <p>Transferência</p> : (
+            {item.tipo === 'TRANSFERENCIA' ? (
+              <Button variant="quiet" onClick={() => setEmRevisao(item)}>Revisar transferência</Button>
+            ) : (
               <div style={{ display: 'flex', gap: 8 }}>
                 {pode('financeiro.lancamento.ler') ? <Button variant="quiet" disabled={confirmar.isPending}
                   onClick={() => { editar.reset(); setEmRevisao(item); }}>Revisar</Button> : null}
@@ -76,7 +79,9 @@ export function VerificacaoLotePage() {
           {consulta.data?.proximaPagina ? <Button variant="quiet" onClick={() => setPagina(consulta.data.proximaPagina ?? pagina)}>Próxima página</Button> : null}
         </div>
       </CorpoDaTela>
-      {emRevisao ? (
+      {emRevisao?.tipo === 'TRANSFERENCIA' ? (
+        <PainelDeTransferencia movimento={emRevisao} fechar={() => setEmRevisao(null)} />
+      ) : emRevisao ? (
         <PainelDeAcao aberto titulo={`Revisar ${emRevisao.motivo}`} variante={varianteDoPainel(densidade)}
           aoFechar={() => { if (!editar.isPending) setEmRevisao(null); }}>
           {detalhe.isPending ? <p role="status">Carregando lançamento…</p> : null}

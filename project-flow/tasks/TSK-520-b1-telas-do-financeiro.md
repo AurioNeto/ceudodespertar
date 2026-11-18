@@ -1,6 +1,6 @@
 # TSK-520: Telas do financeiro contra a API
 
-- **Estado:** 🛠️ Em andamento (B1). Partes 1 a 3 implementadas na pilha
+- **Estado:** ✅ Implementada na pilha local (B1)
 - **Responsável sugerido:** front (vitro; frontiteto se nascer tela ou pasta)
 - **Depende de:** [TSK-511](TSK-511-b1-contrato-do-financeiro.md)
 
@@ -44,7 +44,23 @@ Implementada em `codex/tsk-520-c-lancamentos`, sobre a fila do financeiro e as c
 
 O livro lista transferências e mostra origem e destino. As ações de transferência entram na parte 4. Os filtros disponíveis seguem o contrato de consulta da API.
 
-As partes 4 a 6 seguem pendentes.
+## Parte 4 · Transferências e saldos
+
+Implementada em `codex/tsk-520-d-transferencias`, sobre a parte 3. Registro e Contas e Fundos dão acesso ao formulário para movimentação entre contas, aporte a fundo e repasse entre unidades. O aporte usa a conta vinculada ao fundo. A fila permite revisar e confirmar, e o detalhe no livro também permite editar, descartar ou solicitar estorno conforme o estado e as permissões. A API exige outra pessoa para confirmar a transferência ou o estorno.
+
+Contas e Fundos consulta os saldos por unidade. As operações atualizam livro, fila e saldos a partir da API.
+
+## Parte 5 · Fechamento e reabertura
+
+Implementada em `codex/tsk-520-e-fechamento`, sobre a parte 4. A tela consulta o período por unidade e competência, fecha ou reabre conforme a permissão e mostra o histórico de reaberturas. O primeiro fechamento usa a versão zero. Os demais comandos usam a versão consultada, e o servidor decide os bloqueios de fechamento.
+
+A verificação de integridade compara o hash gravado com o atual. O checklist e os totais de demonstração deram lugar aos estados e bloqueios retornados pela API.
+
+## Parte 6 · Relatórios e Painel
+
+Relatórios foi integrado em `codex/tsk-520-f-relatorios`. A tela consulta DRE por competência, fluxo de caixa por intervalo e resultado por cerimônia com detalhe e paginação. Os relatórios e a seleção de unidade respeitam as permissões da sessão.
+
+Painel foi integrado em `codex/tsk-520-f-painel`, sobre Relatórios. Os blocos usam os endpoints existentes de saldos, DRE, fluxo de caixa, resultados por cerimônia e fila. O gráfico demonstrativo de estoque saiu do Painel. A integração do estoque pertence à etapa própria. Os botões de exportação simulada saíram de Relatórios.
 
 ## Critérios de aceite
 
