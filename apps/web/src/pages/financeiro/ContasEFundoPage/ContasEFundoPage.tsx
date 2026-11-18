@@ -1,7 +1,8 @@
+import { BotaoDeTransferencia } from '@/pages/financeiro/components/Transferencia';
 import { useState } from 'react';
 import type { Conta, Unidade } from '@cdd/contracts';
 import { useSessao } from '@/app/sessao';
-import { Aviso, Button, CorpoDaTela, EmptyState, ScreenHeader, SeletorDeTipo, TextField, useDensidade } from '@/ds';
+import { Aviso, Button, CorpoDaTela, EmptyState, ScreenHeader, Select, SeletorDeTipo, TextField, useDensidade } from '@/ds';
 import { CadastroDaApi, useItensDoCadastro, usePaginasDoCadastro } from '@/pages/components/CadastroDaApi';
 import { formatarBRL } from '@/pages/utils/formato';
 import { cadastroDeContas, cadastroDeFundos } from './cadastros';
@@ -13,13 +14,14 @@ export function ContasEFundoPage() {
   const densidade = useDensidade();
   const { pode } = useSessao();
   const [aba, setAba] = useState<Aba>('saldos');
+  const [unidadeDosSaldos, setUnidadeDosSaldos] = useState('');
   const [busca, setBusca] = useState('');
   const podeBuscarTitular = pode('financeiro.conta.gerenciar') && pode('pessoas.pessoa.ler');
   const pessoas = usePaginasDoCadastro('/pessoas', busca, aba === 'contas' && podeBuscarTitular);
   const titulares = pessoas.data?.pages.flatMap(pagina => pagina.itens.map(pessoa => ({ value: pessoa.id, label: pessoa.nome }))) ?? [];
-  const unidades = useItensDoCadastro<Unidade>('/financeiro/unidades', aba === 'contas' && pode('financeiro.plano_contas.ler'));
+  const unidades = useItensDoCadastro<Unidade>('/financeiro/unidades', aba !== 'fundos' && pode('financeiro.plano_contas.ler'));
   const contas = useItensDoCadastro<Conta>('/financeiro/contas', aba === 'fundos');
-  const saldos = useSaldos(aba === 'saldos');
+  const saldos = useSaldos(aba === 'saldos', unidadeDosSaldos);
 
   return (
     <>
@@ -29,6 +31,10 @@ export function ContasEFundoPage() {
           { valor: 'saldos', label: 'Saldos' }, { valor: 'contas', label: 'Contas' }, { valor: 'fundos', label: 'Fundos' },
         ]} valor={aba} onEscolher={setAba} densidade={densidade} />
         {aba === 'saldos' ? <>
+          <BotaoDeTransferencia />
+          {unidades.data ? <Select label="Unidade dos saldos" value={unidadeDosSaldos} onChange={setUnidadeDosSaldos} density={densidade}
+            options={[{ value: '', label: 'Todas as unidades' }, ...unidades.data.itens.map(unidade => ({ value: unidade.id, label: unidade.nome }))]} /> : null}
+          {unidades.isError ? <Button variant="quiet" onClick={() => void unidades.refetch()}>Recarregar unidades</Button> : null}
           <h2>Contas</h2>
           <ListaDeSaldos consulta={saldos.contas} valor={conta => conta.saldo} />
           <h2>Fundos</h2>

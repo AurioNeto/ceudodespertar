@@ -1,1 +1,0 @@
-export { GraficoEstoque } from './GraficoEstoque';
