@@ -8,14 +8,26 @@ import { LancamentosPage } from './LancamentosPage';
 const registro = { id: 'l1', tipo: 'SAIDA', valor: 2500, motivo: 'Velas', versao: 7,
   status: 'CONFIRMADO', registradoEm: '2026-11-05T15:00:00Z', pendencias: [] };
 
-it('pagina o livro e envia o estorno com a versão do detalhe', async () => {
+it('mostra a competência e as categorias antes de enviar o estorno com a versão do detalhe', async () => {
   let estornado = false;
-  const tela = await montarCadastro(<LancamentosPage />, ['financeiro.lancamento.ler', 'financeiro.lancamento.estornar'], (caminho, requisicao) => {
+  const permissoes = ['financeiro.lancamento.ler', 'financeiro.lancamento.estornar', 'financeiro.plano_contas.ler'] as const;
+  const tela = await montarCadastro(<LancamentosPage />, [...permissoes], (caminho, requisicao) => {
     if (requisicao?.method === 'POST') {
       estornado = true;
       return Response.json({ id: 'l2' }, { status: 201 });
     }
-    if (caminho.endsWith('/l1')) return Response.json({ ...registro, versao: 8, estornadoPorId: estornado ? 'l2' : null });
+    if (caminho.endsWith('/unidades')) return Response.json({ itens: [] });
+    if (caminho.endsWith('/categorias')) return Response.json({ itens: [
+      { id: 'cat1', nome: 'Material', ativa: true },
+      { id: 'cat2', nome: 'Transporte', ativa: false },
+    ] });
+    if (caminho.endsWith('/l1')) return Response.json({
+      ...registro, versao: 8, estornadoPorId: estornado ? 'l2' : null, dataCompetencia: '2026-10-25',
+      etiquetas: [
+        { categoriaId: 'cat1', natureza: 'DESPESA', valor: 1800 },
+        { categoriaId: 'cat2', natureza: 'DESPESA', valor: 700 },
+      ],
+    });
     if (caminho.endsWith('pagina=1')) return Response.json({ itens: [], proximaPagina: 2 });
     return Response.json({ itens: [{ ...registro, status: estornado ? 'ESTORNADO' : 'CONFIRMADO' }], proximaPagina: null });
   });
@@ -24,6 +36,9 @@ it('pagina o livro e envia o estorno com a versão do detalhe', async () => {
     expect(tela.texto()).toContain('Velas');
     await tela.clicar('Ver detalhes');
     const painel = elemento(document, '[role="dialog"]');
+    expect(painel.textContent).toContain('Data de competência: 25/10/2026');
+    expect(painel.textContent).toContain('Material · Despesa · R$ 18,00');
+    expect(painel.textContent).toContain('Transporte · Despesa · R$ 7,00');
     await clicar(botaoComTexto(painel, 'Estornar lançamento'));
     await preencherTexto(painel, 'Compra cancelada');
     await clicar(botaoComTexto(painel, 'Confirmar estorno'));
