@@ -1,3 +1,4 @@
+import { gravarNaInstituicao } from '../pessoas/apoio.js';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { INSTITUICAO_A, INSTITUICAO_B } from '../eventos/apoio.js';
 import { novoGrupoNomeado } from '../identidade/acesso/ambiente-http.js';
@@ -111,6 +112,7 @@ describe('contas e fundos pela API', () => {
   });
 
   it('edição preserva tipo, titularidade, titular e código do fundo, incrementa versão e mantém inativos nas listas', async () => {
+    await gravarNaInstituicao(banco, INSTITUICAO_A, "insert into pessoas.pessoa (id, instituicao_id, tipo, nome) values ($1, $2, 'FISICA', 'Titular de teste')", [INEXISTENTE, INSTITUICAO_A]);
     const id = await criarConta({ titularidade: 'PESSOAL_DE_TERCEIRO', pessoaTitularId: INEXISTENTE });
     const fid = await criarFundo(id);
     const editada = await pedir(GERENTE_CONTAS, `${CONTAS}/${id}`, { metodo: 'PUT', versao: 1, corpo: {

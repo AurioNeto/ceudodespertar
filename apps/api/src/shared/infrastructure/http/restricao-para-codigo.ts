@@ -1,6 +1,7 @@
 import type { CodigoDeErro } from '@cdd/contracts';
 
 export const RESTRICAO_PARA_CODIGO: Readonly<Record<string, CodigoDeErro>> = {
+  pessoa_documento_unico: 'DOCUMENTO_JA_CADASTRADO',
   usuario_email_unico: 'EMAIL_JA_CADASTRADO',
   usuario_pessoa_unica: 'PESSOA_JA_TEM_USUARIO',
   grupo_nome_unico: 'GRUPO_JA_EXISTE',

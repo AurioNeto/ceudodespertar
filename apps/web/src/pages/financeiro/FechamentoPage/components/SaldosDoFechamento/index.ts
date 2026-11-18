@@ -1,1 +1,0 @@
-export { SaldosDoFechamento } from './SaldosDoFechamento';
