@@ -1,1 +1,0 @@
-export { CarrosselDeCerimonias } from './CarrosselDeCerimonias';

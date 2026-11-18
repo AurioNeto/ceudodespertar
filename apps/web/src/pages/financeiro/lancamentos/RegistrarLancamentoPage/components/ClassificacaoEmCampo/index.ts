@@ -1,1 +1,0 @@
-export { ClassificacaoEmCampo } from './ClassificacaoEmCampo';
