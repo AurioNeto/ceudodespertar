@@ -27,6 +27,19 @@ VITE_OIDC_CLIENTE=cdd-web
 
 Nenhum segredo administrativo pertence ao frontend.
 
+`VITE_API_URL` é a origem da API, sem `/api/v1`: o cliente HTTP acrescenta esse
+prefixo. Sem a variável, usa `/api/v1` na origem do frontend para preservar o
+proxy local. Na Vercel, configurar a origem HTTPS da Oracle e refazer o build;
+sem ela, a regra SPA devolve HTML para chamadas de API feitas ao próprio frontend.
+
+No Keycloak 26.8, o mapper Audience não inclui clientes inexistentes. Como a API
+de negócio valida o identificador `cdd-api` sem um cliente homônimo no realm
+hospedado, configurar o mapper `audiencia-cdd-api` do `cdd-web-dedicated` com
+**Included Custom Audience: `cdd-api`**, **Included Client Audience vazio** e
+**Add to access token ligado**. O access token deve conter `aud: cdd-api`;
+o ID token continua destinado a `cdd-web`. Não remover a validação de audiência
+na API. Referência: https://www.keycloak.org/admin-api/protocol-mappers.
+
 Depois do deploy:
 
 1. Abrir `/entrar` e `/entrar/retorno` diretamente: ambos devem servir o frontend
