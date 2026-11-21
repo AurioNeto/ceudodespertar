@@ -17,8 +17,15 @@ Referências oficiais:
 ## Publicação e verificação
 
 Publicar um commit que contenha `apps/web/vercel.json`. Reexecutar um deploy antigo
-sem essa configuração mantém o erro. Conferir as variáveis públicas documentadas
-em `oracle-api-https.md`; nenhum segredo administrativo pertence ao frontend.
+sem essa configuração mantém o erro. Conferir as variáveis públicas do ambiente:
+
+```dotenv
+VITE_API_URL=https://ceudodespertar-api.duckdns.org
+VITE_OIDC_EMISSOR=https://lemur-2.cloud-iam.com/auth/realms/ceu-do-despertar
+VITE_OIDC_CLIENTE=cdd-web
+```
+
+Nenhum segredo administrativo pertence ao frontend.
 
 Depois do deploy:
 
