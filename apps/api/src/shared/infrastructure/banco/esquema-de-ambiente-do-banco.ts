@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { CamposDoTlsDoBanco } from '../../../banco/tls-do-banco.js';
 
 function analisarUrl(valor: string): URL | undefined {
   try {
@@ -13,6 +14,8 @@ function ehProtocoloDePostgres(url: URL): boolean {
 }
 
 export const EsquemaDoAmbienteDoBanco = z.object({
+  ...CamposDoTlsDoBanco,
+  BANCO_PRONTIDAO_CONEXAO_TIMEOUT_MS: z.coerce.number().int().min(1_000).max(30_000).optional(),
   BANCO_URL: z
     .string()
     .min(1, 'obrigatória para a aplicação conectar ao banco')

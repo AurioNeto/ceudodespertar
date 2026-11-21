@@ -3,6 +3,7 @@ import type { Options } from '@mikro-orm/postgresql';
 import { Migrator } from '@mikro-orm/migrations';
 import { analisarAmbienteDoMigrador } from './ambiente-do-migrador.js';
 import { MIGRACOES_DO_CDD } from './migracoes/lista.js';
+import { construirTlsDoBanco } from './tls-do-banco.js';
 
 export const TABELA_DE_HISTORICO_DO_MIGRADOR = 'cdd_migracoes_aplicadas';
 export const SCHEMA_DA_TABELA_DE_HISTORICO = 'public';
@@ -34,6 +35,7 @@ export function construirOpcoesDoMigrador(bruto: NodeJS.ProcessEnv = process.env
 
   return defineConfig({
     ...conexao,
+    driverOptions: { ssl: construirTlsDoBanco(ambiente) },
     schema: SCHEMA_DA_TABELA_DE_HISTORICO,
     entities: [],
     discovery: { warnWhenNoEntities: false },

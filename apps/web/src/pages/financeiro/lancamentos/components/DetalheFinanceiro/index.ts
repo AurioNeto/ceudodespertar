@@ -1,1 +1,0 @@
-export { DetalheFinanceiro } from './DetalheFinanceiro';

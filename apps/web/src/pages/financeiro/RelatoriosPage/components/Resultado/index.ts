@@ -1,1 +1,0 @@
-export { Resultado } from './Resultado';

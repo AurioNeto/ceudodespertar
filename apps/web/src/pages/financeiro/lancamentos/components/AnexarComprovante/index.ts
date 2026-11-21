@@ -1,1 +1,0 @@
-export { AnexarComprovante } from './AnexarComprovante';

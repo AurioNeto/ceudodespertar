@@ -1,0 +1,1 @@
+export { AvisoDeIntervalo } from './AvisoDeIntervalo';
