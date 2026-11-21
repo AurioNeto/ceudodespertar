@@ -6,10 +6,27 @@ export interface AtributosDoPapelConectado {
   readonly rolbypassrls: boolean;
 }
 
-export function papelConectadoEhSeguroParaMigrar(atributos: AtributosDoPapelConectado): boolean {
+export interface PropriedadeDosEsquemas {
+  readonly podeCriarEsquemas: boolean;
+  readonly esquemasDeOutroDono: readonly string[];
+  readonly historicoDeOutroDono: boolean;
+}
+
+export function papelConectadoEhSeguroParaMigrar(
+  atributos: AtributosDoPapelConectado,
+  escopo: 'banco' | 'esquemas' = 'banco',
+  propriedade?: PropriedadeDosEsquemas,
+): boolean {
+  const donoDoDestino = escopo === 'banco'
+    ? atributos.currentUser === atributos.donoDoBanco
+    : atributos.currentUser === 'cdd_owner' &&
+      propriedade?.podeCriarEsquemas === true &&
+      propriedade.esquemasDeOutroDono.length === 0 &&
+      !propriedade.historicoDeOutroDono;
+
   return (
     atributos.sessionUser === atributos.currentUser &&
-    atributos.currentUser === atributos.donoDoBanco &&
+    donoDoDestino &&
     !atributos.rolsuper &&
     !atributos.rolbypassrls
   );

@@ -1,0 +1,126 @@
+{
+  "clientId": "cdd-web",
+  "enabled": true,
+  "protocol": "openid-connect",
+  "publicClient": true,
+  "standardFlowEnabled": true,
+  "directAccessGrantsEnabled": false,
+  "implicitFlowEnabled": false,
+  "serviceAccountsEnabled": false,
+  "fullScopeAllowed": false,
+  "baseUrl": "https://ceudodespertar-web.vercel.app",
+  "redirectUris": [
+    "https://ceudodespertar-web.vercel.app/entrar/retorno",
+    "https://ceudodespertar-web.vercel.app/silencioso.html",
+    "https://ceudodespertar-web.vercel.app/entrar"
+  ],
+  "webOrigins": [
+    "https://ceudodespertar-web.vercel.app"
+  ],
+  "defaultClientScopes": [
+    "web-origins",
+    "acr",
+    "roles",
+    "basic"
+  ],
+  "optionalClientScopes": [],
+  "attributes": {
+    "pkce.code.challenge.method": "S256",
+    "post.logout.redirect.uris": "https://ceudodespertar-web.vercel.app/entrar"
+  },
+  "protocolMappers": [
+    {
+      "name": "audiencia-cdd-api",
+      "protocol": "openid-connect",
+      "protocolMapper": "oidc-audience-mapper",
+      "consentRequired": false,
+      "config": {
+        "id.token.claim": "false",
+        "access.token.claim": "true",
+        "included.custom.audience": "cdd-api",
+        "lightweight.claim": "true"
+      }
+    },
+    {
+      "name": "nome-completo-so-id-token",
+      "protocol": "openid-connect",
+      "protocolMapper": "oidc-full-name-mapper",
+      "consentRequired": false,
+      "config": {
+        "id.token.claim": "true",
+        "access.token.claim": "false",
+        "userinfo.token.claim": "true"
+      }
+    },
+    {
+      "name": "nome-preferido-so-id-token",
+      "protocol": "openid-connect",
+      "protocolMapper": "oidc-usermodel-attribute-mapper",
+      "consentRequired": false,
+      "config": {
+        "user.attribute": "username",
+        "claim.name": "preferred_username",
+        "jsonType.label": "String",
+        "id.token.claim": "true",
+        "access.token.claim": "false",
+        "userinfo.token.claim": "true"
+      }
+    },
+    {
+      "name": "primeiro-nome-so-id-token",
+      "protocol": "openid-connect",
+      "protocolMapper": "oidc-usermodel-attribute-mapper",
+      "consentRequired": false,
+      "config": {
+        "user.attribute": "firstName",
+        "claim.name": "given_name",
+        "jsonType.label": "String",
+        "id.token.claim": "true",
+        "access.token.claim": "false",
+        "userinfo.token.claim": "true"
+      }
+    },
+    {
+      "name": "sobrenome-so-id-token",
+      "protocol": "openid-connect",
+      "protocolMapper": "oidc-usermodel-attribute-mapper",
+      "consentRequired": false,
+      "config": {
+        "user.attribute": "lastName",
+        "claim.name": "family_name",
+        "jsonType.label": "String",
+        "id.token.claim": "true",
+        "access.token.claim": "false",
+        "userinfo.token.claim": "true"
+      }
+    },
+    {
+      "name": "e-mail-so-id-token",
+      "protocol": "openid-connect",
+      "protocolMapper": "oidc-usermodel-attribute-mapper",
+      "consentRequired": false,
+      "config": {
+        "user.attribute": "email",
+        "claim.name": "email",
+        "jsonType.label": "String",
+        "id.token.claim": "true",
+        "access.token.claim": "false",
+        "userinfo.token.claim": "true"
+      }
+    },
+    {
+      "name": "e-mail-verificado-so-id-token",
+      "protocol": "openid-connect",
+      "protocolMapper": "oidc-usermodel-property-mapper",
+      "consentRequired": false,
+      "config": {
+        "user.attribute": "emailVerified",
+        "claim.name": "email_verified",
+        "jsonType.label": "boolean",
+        "id.token.claim": "true",
+        "access.token.claim": "false",
+        "userinfo.token.claim": "true"
+      }
+    }
+  ]
+}

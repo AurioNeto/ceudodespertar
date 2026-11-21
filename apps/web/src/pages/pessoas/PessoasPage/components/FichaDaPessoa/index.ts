@@ -1,0 +1,1 @@
+export { FichaDaPessoa } from './FichaDaPessoa';

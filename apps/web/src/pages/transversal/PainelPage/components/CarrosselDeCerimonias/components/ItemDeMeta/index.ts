@@ -1,0 +1,1 @@
+export { ItemDeMeta } from './ItemDeMeta';

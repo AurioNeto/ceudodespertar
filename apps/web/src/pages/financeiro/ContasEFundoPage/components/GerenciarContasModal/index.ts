@@ -1,0 +1,1 @@
+export { GerenciarContasModal } from './GerenciarContasModal';

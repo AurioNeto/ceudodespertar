@@ -1,0 +1,1 @@
+export { AcoesDoFormulario } from './AcoesDoFormulario';

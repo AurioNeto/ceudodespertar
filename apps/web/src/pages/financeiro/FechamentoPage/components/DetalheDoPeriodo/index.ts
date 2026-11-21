@@ -1,1 +1,0 @@
-export { DetalheDoPeriodo } from './DetalheDoPeriodo';

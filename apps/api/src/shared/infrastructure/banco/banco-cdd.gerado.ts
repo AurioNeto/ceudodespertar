@@ -23,16 +23,6 @@ export type JsonValue = JsonArray | JsonObject | JsonPrimitive;
 
 export type Timestamp = ColumnType<Date, Date | string, Date | string>;
 
-export interface EventosEvento {
-  data_fim: string;
-  data_inicio: string;
-  id: string;
-  instituicao_id: string;
-  nome: string;
-  tipo: string;
-  unidade_id: string;
-}
-
 export interface FinanceiroCategoria {
   ativa: Generated<boolean>;
   codigo_sistema: string;
@@ -80,105 +70,6 @@ export interface FinanceiroGrupoDeCusto {
   id: Generated<string>;
   instituicao_id: string;
   nome: string;
-  versao: Generated<number>;
-}
-
-export interface FinanceiroLancamento {
-  competencia: string | null;
-  comprovante_id: string | null;
-  confirmado_autor_tipo: string | null;
-  confirmado_em: Timestamp | null;
-  confirmado_por: string | null;
-  conta_id: string | null;
-  contraparte_texto: string | null;
-  data_caixa: string | null;
-  data_competencia: string | null;
-  estorno_de_id: string | null;
-  evento_id: string | null;
-  fatura_id: string | null;
-  forma_pagamento: string | null;
-  gravado_na_transacao: string;
-  grupo_de_custo_id: string | null;
-  id: string;
-  instituicao_id: string;
-  motivo: string;
-  natureza: string;
-  origem: string;
-  pessoa_id: string | null;
-  reembolso_a_id: string | null;
-  registrado_em: Timestamp;
-  registrado_por: string;
-  status: string;
-  unidade_id: string | null;
-  valor: number;
-  versao: Generated<number>;
-}
-
-export interface FinanceiroLancamentoCategoria {
-  categoria_id: string;
-  id: Generated<string>;
-  instituicao_id: string;
-  lancamento_id: string;
-  natureza: string;
-  valor: number;
-}
-
-export interface FinanceiroPendencia {
-  aberta_em: Timestamp;
-  aberta_por: string;
-  destinatario: string;
-  id: string;
-  instituicao_id: string;
-  lancamento_id: string;
-  resolvida_em: Timestamp | null;
-  resposta: string | null;
-  texto: string;
-}
-
-export interface FinanceiroPeriodoContabil {
-  competencia: string;
-  fechado: Generated<boolean>;
-  fechado_em: Timestamp | null;
-  fechado_por: string | null;
-  hash_sha256: string | null;
-  id: string;
-  instituicao_id: string;
-  unidade_id: string;
-  versao: Generated<number>;
-}
-
-export interface FinanceiroReaberturaDePeriodo {
-  hash_anterior: string;
-  id: string;
-  instituicao_id: string;
-  motivo: string;
-  periodo_id: string;
-  reaberto_em: Timestamp;
-  reaberto_por: string;
-  versao_do_periodo: number;
-}
-
-export interface FinanceiroTransferencia {
-  adiantamento_id: string | null;
-  confirmado_em: Timestamp | null;
-  confirmado_por: string | null;
-  conta_destino_id: string | null;
-  conta_origem_id: string | null;
-  data: string;
-  emprestimo_id: string | null;
-  estorno_de_id: string | null;
-  fatura_id: string | null;
-  finalidade: string;
-  fundo_id: string | null;
-  id: string;
-  instituicao_id: string;
-  motivo: string;
-  registrado_em: Timestamp;
-  registrado_por: string;
-  status: string;
-  unidade_destino_id: string | null;
-  unidade_id: string;
-  valor: number;
   versao: Generated<number>;
 }
 
@@ -273,42 +164,6 @@ export interface IdentidadeUsuarioGrupo {
   usuario_id: string;
 }
 
-export interface PessoasPessoa {
-  anonimizada_em: Timestamp | null;
-  apelido: string | null;
-  ativa: Generated<boolean>;
-  cadastrada_por_link: Generated<boolean>;
-  cidade: string | null;
-  contato_emergencia_nome: string | null;
-  contato_emergencia_tel: string | null;
-  criada_em: Generated<Timestamp>;
-  documento: string | null;
-  email: string | null;
-  foto_anexo_id: string | null;
-  id: Generated<string>;
-  instituicao_id: string;
-  nascimento: string | null;
-  nome: string;
-  relacao_com_a_casa: string | null;
-  telefone: string | null;
-  tipo: string;
-  versao: Generated<number>;
-}
-
-export interface SharedAnexo {
-  chave: string;
-  enviado_em: Generated<Timestamp>;
-  enviado_por: string | null;
-  enviado_por_tipo: Generated<string>;
-  id: string;
-  instituicao_id: string;
-  mime: string;
-  nome_original: string;
-  sensivel: Generated<boolean>;
-  sha256: string;
-  tamanho_bytes: number;
-}
-
 export interface SharedChaveDeIdempotencia {
   chave: string;
   corpo_hash: string | null;
@@ -349,17 +204,10 @@ export interface SharedOutbox {
 }
 
 export interface DB {
-  "eventos.evento": EventosEvento;
   "financeiro.categoria": FinanceiroCategoria;
   "financeiro.conta": FinanceiroConta;
   "financeiro.fundo": FinanceiroFundo;
   "financeiro.grupo_de_custo": FinanceiroGrupoDeCusto;
-  "financeiro.lancamento": FinanceiroLancamento;
-  "financeiro.lancamento_categoria": FinanceiroLancamentoCategoria;
-  "financeiro.pendencia": FinanceiroPendencia;
-  "financeiro.periodo_contabil": FinanceiroPeriodoContabil;
-  "financeiro.reabertura_de_periodo": FinanceiroReaberturaDePeriodo;
-  "financeiro.transferencia": FinanceiroTransferencia;
   "financeiro.unidade": FinanceiroUnidade;
   "identidade.bootstrap_executado": IdentidadeBootstrapExecutado;
   "identidade.convite": IdentidadeConvite;
@@ -369,8 +217,6 @@ export interface DB {
   "identidade.registro_de_auditoria": IdentidadeRegistroDeAuditoria;
   "identidade.usuario": IdentidadeUsuario;
   "identidade.usuario_grupo": IdentidadeUsuarioGrupo;
-  "pessoas.pessoa": PessoasPessoa;
-  "shared.anexo": SharedAnexo;
   "shared.chave_de_idempotencia": SharedChaveDeIdempotencia;
   "shared.evento_processado": SharedEventoProcessado;
   "shared.instituicao": SharedInstituicao;
