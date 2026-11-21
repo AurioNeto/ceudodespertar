@@ -36,10 +36,27 @@ fora do Git. A instituição e a conta do administrador criadas online são pres
 Não executar down, reset, recriação do banco ou exclusão de usuários para acompanhar
 esta restauração de código. O banco mantém suas 23 migrations aplicadas, tabelas e
 guardas já instaladas, inclusive o hardening de `search_path` feito na hospedagem.
-A lista de migrations do código volta às 16 da base #235; as sete aplicações
-posteriores permanecem apenas no histórico do banco e no histórico Git anterior.
-Antes de retomar evolução de schema, conciliar esse histórico: não reutilizar nomes
-de migrations já executadas para novas definições.
+A lista de migrations do código volta às 16 da base #235, mais a `b0-014`, que
+fixa o `search_path` das quatro funções de `shared`. As sete aplicações posteriores
+(`b1-003` a `b1-009`) permanecem no banco até a conciliação abaixo.
+
+### Conciliação do histórico
+
+O migrador compara por nome: enquanto `b1-003` a `b1-009` estiverem no histórico,
+uma migration nova com um desses nomes é pulada em silêncio, e uma que recrie
+`financeiro.lancamento` falha por tabela já existente. Conciliar antes de qualquer
+migration nova, nesta ordem:
+
+1. Publicar na Oracle a API desta base. A release anterior lê as tabelas removidas.
+2. Como `cdd_owner`, executar `infra/postgres/conciliar-migrations-apos-restauracao.sql`.
+   Roda em uma transação, recusa prosseguir se alguma tabela removida tiver linhas
+   e termina com 16 migrations no histórico.
+3. Executar `db:migrar` com `BANCO_MIGRACAO_ESCOPO=esquemas`: aplica só a `b0-014`,
+   que não altera nada porque o caminho já está fixado, e fecha o histórico em 17.
+
+Ensaiado em 20/11/2026 num Postgres 16 descartável: banco com as 23 migrations,
+conciliado e migrado, ficou com esquema e histórico idênticos aos de um banco
+criado do zero com as 17. Pendente de execução no banco hospedado.
 
 Nenhuma mudança de schema é necessária para servir esta base. A troca da API deve
 ser validada contra o banco existente em uma porta privada, antes de promover a
