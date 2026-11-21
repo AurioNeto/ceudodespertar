@@ -1,0 +1,1 @@
+export { BuracoDoRelatorio } from './BuracoDoRelatorio';

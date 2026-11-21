@@ -1,0 +1,1 @@
+export { CustoPorCerimonia } from './CustoPorCerimonia';

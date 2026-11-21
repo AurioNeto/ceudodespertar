@@ -1,0 +1,1 @@
+export { ReciboDoRegistro } from './ReciboDoRegistro';

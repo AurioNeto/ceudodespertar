@@ -1,0 +1,1 @@
+export { FolhaDeTexto } from './FolhaDeTexto';

@@ -1,0 +1,1 @@
+export { EixoDeCerimonias } from './EixoDeCerimonias';

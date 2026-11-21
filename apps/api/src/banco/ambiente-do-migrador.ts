@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { CamposDoTlsDoBanco } from './tls-do-banco.js';
 
 const PREFIXO_VARIAVEL_MIKRO_ORM = 'MIKRO_ORM_';
 
@@ -15,6 +16,8 @@ function ehProtocoloDePostgres(url: URL): boolean {
 }
 
 export const EsquemaDoAmbienteDoMigrador = z.object({
+  ...CamposDoTlsDoBanco,
+  BANCO_MIGRACAO_ESCOPO: z.enum(['banco', 'esquemas']).optional(),
   BANCO_URL_MIGRACAO: z
     .string()
     .min(1, 'obrigatória para rodar o migrador')

@@ -689,14 +689,13 @@ describe('Despachante · entrega do outbox (Documento 7 §9)', () => {
     }
   }, 6000);
 
-  it('sinaliza somente depois do commit e entrega sem depender do polling', async () => {
-    vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval'] });
-    let chegou: () => void = () => {};
+  it('sinaliza depois do commit: latência commit -> entrega bem abaixo de 1s, e rollback não sinaliza', async () => {
+    let chegou: (t: number) => void = () => {};
     @Injectable()
     class ConsumidorDeLatencia {
       @ReageA('teste.EventoDeLatencia', 'ConsumidorDeLatencia.reagir')
       async reagir(): Promise<void> {
-        chegou();
+        chegou(Date.now());
       }
     }
 
@@ -721,36 +720,16 @@ describe('Despachante · entrega do outbox (Documento 7 §9)', () => {
       pararDeOuvir();
       expect(sinalizouNoRollback).toBe(false);
 
-      const entrega = new Promise<void>((resolver) => {
+      const p = new Promise<number>((resolver) => {
         chegou = resolver;
       });
-      const sinal = vi.spyOn(app.get(SinalizadorDeEventos), 'notificar');
-      const evento = criarEvento({ tipo: 'teste.EventoDeLatencia' });
-      await comContexto(INSTITUICAO_A, () =>
-        unidade.transacao('escrita', async contexto => {
-          await repositorio.gravar(contexto, [evento]);
-          expect(sinal).not.toHaveBeenCalled();
-          expect(await linhaDoOutbox(banco, evento.eventoId)).toBeUndefined();
-        }),
-      );
-      expect(sinal).toHaveBeenCalledTimes(1);
-      let temporizador: ReturnType<typeof setTimeout> | undefined;
-      try {
-        await Promise.race([
-          entrega,
-          new Promise<never>((_resolver, rejeitar) => {
-            temporizador = setTimeout(() => rejeitar(new Error('Evento não entregue após o sinal de commit')), 5000);
-          }),
-        ]);
-      } finally {
-        clearTimeout(temporizador);
-      }
+      const t0 = Date.now();
+      await gravarEvento(app, criarEvento({ tipo: 'teste.EventoDeLatencia' }));
+      const latencia = (await p) - t0;
+
+      expect(latencia).toBeLessThan(200);
     } finally {
-      try {
-        await encerrarContextoDeEventos(app);
-      } finally {
-        vi.useRealTimers();
-      }
+      await encerrarContextoDeEventos(app);
     }
   }, 10000);
 

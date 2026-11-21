@@ -1,0 +1,1 @@
+export { ClassificacaoEmCampo } from './ClassificacaoEmCampo';

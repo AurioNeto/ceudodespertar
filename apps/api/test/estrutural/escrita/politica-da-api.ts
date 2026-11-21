@@ -142,7 +142,6 @@ export const MEMBROS_DE_LEITURA: ReadonlySet<string> = new Set([
   'execute',
   'executeTakeFirst',
   'executeTakeFirstOrThrow',
-  'rows',
   'stream',
   'query',
   'compile',

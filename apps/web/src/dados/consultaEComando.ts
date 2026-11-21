@@ -17,7 +17,6 @@ export interface DefinicaoDeComando<Entrada> {
 export interface OpcoesDeExecucao {
   readonly chaveDeIdempotencia?: string;
   readonly sinal?: AbortSignal;
-  readonly aoReceberLocalizacao?: (localizacao: string) => void;
 }
 
 export function criarConsulta(cliente: ClienteHttp) {
@@ -45,7 +44,6 @@ export function criarComando(cliente: ClienteHttp) {
         ...(versao === undefined ? {} : { versao }),
         ...(opcoes.chaveDeIdempotencia ? { chaveDeIdempotencia: opcoes.chaveDeIdempotencia } : {}),
         ...(opcoes.sinal ? { sinal: opcoes.sinal } : {}),
-        ...(opcoes.aoReceberLocalizacao ? { aoReceberLocalizacao: opcoes.aoReceberLocalizacao } : {}),
       });
     };
   };
