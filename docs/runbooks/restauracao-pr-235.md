@@ -50,9 +50,11 @@ migration nova, nesta ordem:
 1. Publicar na Oracle a API desta base. A release anterior lê as tabelas removidas.
 2. Como `cdd_owner`, executar `infra/postgres/conciliar-migrations-apos-restauracao.sql`.
    Roda em uma transação, recusa prosseguir se alguma tabela removida tiver linhas
-   e termina com 16 migrations no histórico.
+   e termina sem nenhuma linha de `b1-003` a `b1-009` no histórico.
 3. Executar `db:migrar` com `BANCO_MIGRACAO_ESCOPO=esquemas`: aplica só a `b0-014`,
    que não altera nada porque o caminho já está fixado, e fecha o histórico em 17.
+
+Os passos 2 e 3 podem ser invertidos: o script não depende de a `b0-014` ter rodado.
 
 Ensaiado em 20/11/2026 num Postgres 16 descartável: banco com as 23 migrations,
 conciliado e migrado, ficou com esquema e histórico idênticos aos de um banco

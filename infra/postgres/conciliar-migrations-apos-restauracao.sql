@@ -83,12 +83,12 @@ DELETE FROM public.cdd_migracoes_aplicadas
    'b1-009-search-path-das-funcoes');
 
 DO $$
-DECLARE
-  v_restantes integer;
 BEGIN
-  SELECT count(*) INTO v_restantes FROM public.cdd_migracoes_aplicadas;
-  IF v_restantes <> 16 THEN
-    RAISE EXCEPTION 'CONCILIACAO_RECUSADA: sobraram % migrations no histórico, esperadas 16', v_restantes;
+  IF to_regnamespace('pessoas') IS NOT NULL OR to_regnamespace('eventos') IS NOT NULL THEN
+    RAISE EXCEPTION 'CONCILIACAO_RECUSADA: os schemas pessoas e eventos deveriam ter sido removidos';
+  END IF;
+  IF EXISTS (SELECT 1 FROM public.cdd_migracoes_aplicadas WHERE name ~ '^b1-00[3-9]-') THEN
+    RAISE EXCEPTION 'CONCILIACAO_RECUSADA: ainda há migrations de b1-003 a b1-009 no histórico';
   END IF;
 END $$;
 
