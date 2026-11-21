@@ -1,18 +1,18 @@
 # Céu do Despertar — Sistema de Gestão
 
-Sistema de gestão do Céu do Despertar para financeiro, pessoas e anamnese,
-eventos e estoque de daime. O monorepo reúne o front-end React, a API NestJS e
-os contratos compartilhados. Segue o método do Doc 1 §8.1 — design → front-end
-(com mocks) → backend — com integração gradual das telas à API.
+Base restaurada para o PR #235, com exceções de hospedagem descritas no
+[registro da restauração](docs/runbooks/restauracao-pr-235.md).
 
-O handoff original está em `project/`; a fonte visual atual é o guia Força da
-Mata, em `docs/design/forca-da-mata/`. O estado das entregas e os próximos
-passos ficam em [`project-flow/README.md`](project-flow/README.md).
+Front-end do sistema, implementado a partir do handoff de design que está em
+`project/` e vestido depois com o guia Força da Mata, a fonte visual atual, em
+`docs/design/forca-da-mata/`. Segue o método do Doc 1 §8.1 — design → front-end (com mocks) →
+backend: as telas existem em React com fixtures tipadas, e o backend
+implementa depois os contratos de `packages/contracts`.
 
 ```bash
 pnpm install
 pnpm dev        # http://localhost:5173
-pnpm build      # typecheck + build de produção do front-end
+pnpm build      # typecheck + build de produção
 pnpm typecheck
 ```
 
@@ -20,54 +20,24 @@ pnpm typecheck
 |---|---|
 | `apps/web/src/ds` | Design system em TSX, portado do bundle exportado |
 | `apps/web/src/ds/fundacao/tokens` | Tokens do design system, com dois climas (Noite, o padrão, e Amanhecer) por `data-clima` |
-| `apps/web/src/pages` | Telas de financeiro, pessoas, eventos, estoque, sistema e fluxos transversais |
-| `apps/web/src/mocks` e `pages/**/mocks` | Fixtures das funcionalidades demonstrativas; substituídas à medida que as telas são integradas à API |
-| `apps/web/src/app/shell/telas.ts` | Registro da fonte de dados (API ou mock) e das permissões das telas internas |
-| `apps/api/src` | API NestJS: identidade, cadastros financeiros e infraestrutura compartilhada |
-| `apps/api/src/banco/migracoes` | Migrações versionadas, fonte do banco da aplicação |
-| `packages/contracts` | Tipos do domínio, read models e validações compartilhadas |
+| `apps/web/src/pages` | As 13 telas |
+| `apps/web/src/mocks` | Fixtures tipadas; saem quando o backend entrar |
+| `packages/contracts` | Tipos do domínio e read models (Doc 2 e Doc 3) |
 | `project/` | O bundle de design original (handoff), mantido como referência |
 | `docs/design/forca-da-mata/` | O guia Força da Mata, fonte visual atual: guia em texto e em HTML, tokens de referência, logo e merkaba |
 
-## Estado funcional (05/11/2026)
-
-- **B0 concluído:** autenticação OIDC com Keycloak, sessão e permissões reais,
-  gestão de usuários e grupos, auditoria na API, bootstrap e seed demo. As
-  telas Acessos e Meu perfil estão integradas à API; a tela Auditoria ainda
-  usa mocks.
-- **B1 em construção:** contratos financeiros e da pessoa mínima entregues;
-  unidades, grupos de custo e categorias têm persistência, seed e endpoints.
-  Contas e fundos têm migração, agregados e repositórios (#235); a parte B da
-  TSK-514 está implementada localmente, com comandos, endpoints e consultas
-  de cadastro sem saldo, aguardando revisão e merge. A TSK-512 está implementada
-  na branch empilhada `codex/tsk-512-pessoa-minima`: cadastro mínimo de pessoas
-  com busca e paginação, além da validação do titular de contas pessoais. A TSK-515
-  está implementada em três branches empilhadas: registro, conferência, estorno
-  e conversa de pendências pela API. A TSK-516 está implementada em
-  `codex/tsk-516-transferencias`, com transferência, conferência segregada e estorno
-  sujeito à conferência. A TSK-517 está implementada em
-  `codex/tsk-517-periodos-contabeis`: fechamento, reabertura, hash e bloqueio de
-  escritas em períodos fechados. A TSK-518 acrescenta comprovantes privados no S3
-  e o cadastro mínimo de eventos, com duas branches locais empilhadas. A TSK-519
-  acrescenta fila, registros próprios, livro, saldos e relatórios pela API.
-  A TSK-520 liga as telas do financeiro à API. O `project-flow` registra
-  os detalhes de cada entrega.
-- **Telas demonstrativas:** financeiro, pessoas/anamnese, eventos e estoque
-  ainda usam fixtures. A integração das telas financeiras é a TSK-520;
-  o restante do backend segue as etapas B2–B6.
-- **Verificação:** há testes unitários, de integração com PostgreSQL e aceite
-  com Keycloak e Mailpit reais, além de typecheck, lint e regras de fronteira
-  na CI. O deploy de produção ainda depende da decisão da TSK-012.
+O que ainda não existe: backend (NestJS + MikroORM + PostgreSQL), Keycloak e
+os testes. A sessão do usuário e as permissões são fixtures.
 
 ## Ambiente local
 
-Postgres 16 (com os papéis de cluster do Doc 7 §8), SeaweedFS (S3), Mailpit
+Postgres 16 (com os papéis de cluster do Doc 7 §8), MinIO/SeaweedFS, Mailpit
 e Keycloak 26 via Docker Compose:
 
 ```bash
 cp .env.example .env
 pnpm infra:subir    # sobe tudo e espera ficar saudável
-pnpm db:verificar   # testes de integração contra o banco migrado (Testcontainers)
+pnpm db:verificar   # aplica o esquema de referência e roda os 113 casos
 pnpm infra:descer   # para os containers, mantém os dados
 pnpm infra:zerar    # para e apaga os volumes
 ```
@@ -75,7 +45,7 @@ pnpm infra:zerar    # para e apaga os volumes
 | Serviço | Porta | Uso |
 |---|---|---|
 | Postgres | `127.0.0.1:${POSTGRES_PORTA:-5432}` | `BANCO_URL` (papel `cdd_app`) e `BANCO_URL_MIGRACAO` (papel `cdd_owner`) |
-| SeaweedFS (S3) | `127.0.0.1:9000` | `S3_ENDPOINT`, bucket `cdd-anexos`, com IAM (credencial obrigatória) |
+| MinIO/SeaweedFS (S3) | `127.0.0.1:9000` | `S3_ENDPOINT`, bucket `cdd-anexos`, com IAM (credencial obrigatória) |
 | Mailpit | `127.0.0.1:8025` (UI), `127.0.0.1:1025` (SMTP) | e-mails de convite/redefinição de senha do Keycloak |
 | Keycloak | `127.0.0.1:8080` | Console admin (`/admin`, usuário `admin`/`KEYCLOAK_ADMIN_SENHA`); realm `cdd` (`OIDC_EMISSOR`) |
 

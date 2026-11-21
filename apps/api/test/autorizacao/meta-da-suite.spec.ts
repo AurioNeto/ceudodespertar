@@ -70,9 +70,7 @@ describe('M2 · todo caso até a etapa atual tem teste ativo', () => {
   });
 
   it('etapa B1 sem títulos de B1 — testes do repositório — lista exatamente os casos de B1 do catálogo', () => {
-    const semCasosDeB1 = TESTES_DO_REPOSITORIO.filter(teste =>
-      !teste.titulos.some(titulo => IDS_DE_B1.some(id => contemIdComLimites(titulo, id))));
-    const semTeste = casosSemTeste(CATALOGO_DO_DOC_3_SECAO_11, 'B1', semCasosDeB1);
+    const semTeste = casosSemTeste(CATALOGO_DO_DOC_3_SECAO_11, 'B1', TESTES_DO_REPOSITORIO);
 
     expect(semTeste).toEqual(IDS_DE_B1);
   });

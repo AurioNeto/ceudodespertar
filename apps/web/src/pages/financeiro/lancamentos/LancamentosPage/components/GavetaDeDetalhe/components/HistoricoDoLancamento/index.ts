@@ -1,0 +1,1 @@
+export { HistoricoDoLancamento } from './HistoricoDoLancamento';

@@ -1,0 +1,1 @@
+export { CarrosselDeRecibos } from './CarrosselDeRecibos';

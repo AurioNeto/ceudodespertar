@@ -1,0 +1,1 @@
+export { ItemDaLegenda } from './ItemDaLegenda';

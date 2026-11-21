@@ -1,0 +1,41 @@
+import { Icon, Rotulo, type IconName, fundoComVidro } from '@/ds';
+import { numeroGrande } from '../../../../../../constantes';
+
+export function BlocoDoResumo({
+  icone,
+  corDoIcone,
+  rotulo,
+  numero,
+  corDoNumero,
+  detalhe,
+  destacado = false,
+}: {
+  icone: IconName;
+  corDoIcone: string;
+  rotulo: string;
+  numero: number;
+  corDoNumero: string;
+  detalhe: React.ReactNode;
+  destacado?: boolean;
+}) {
+  return (
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 6,
+        padding: '12px 14px',
+        ...fundoComVidro(destacado ? 'var(--bg-brand)' : 'var(--bg-card)'),
+        border: destacado ? '1px solid var(--border-brand)' : 'var(--border-hairline)',
+        borderRadius: 'var(--leaf-sm)',
+      }}
+    >
+      <Rotulo style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+        <Icon name={icone} size={15} color={corDoIcone} />
+        {rotulo}
+      </Rotulo>
+      <span style={{ ...numeroGrande, color: corDoNumero }}>{numero}</span>
+      <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>{detalhe}</span>
+    </div>
+  );
+}

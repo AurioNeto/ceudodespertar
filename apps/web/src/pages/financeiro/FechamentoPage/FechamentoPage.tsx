@@ -1,44 +1,73 @@
-import { useState } from 'react';
-import { ParametrosDoPeriodo, type Unidade } from '@cdd/contracts';
-import { useSessao } from '@/app/sessao';
-import { Aviso, Button, CorpoDaTela, ScreenHeader, Select, TextField, useDensidade } from '@/ds';
-import { useItensDoCadastro } from '@/pages/components/CadastroDaApi';
-import { DetalheDoPeriodo } from './components/DetalheDoPeriodo';
+import { Aviso, CorpoDaTela, Rotulo, ScreenHeader, useDensidade } from '@/ds';
+import { pluralizar } from '@/pages/utils/formato';
+import { AcaoDeFechamento } from './components/AcaoDeFechamento';
+import { FaixaDoPeriodo } from './components/FaixaDoPeriodo';
+import { HistoricoDeFechamentos } from './components/HistoricoDeFechamentos';
+import { ItemDoChecklist } from './components/ItemDoChecklist';
+import { SaldosDoFechamento } from './components/SaldosDoFechamento';
+import { useFechamento } from './hooks/useFechamento';
 
 export function FechamentoPage() {
   const densidade = useDensidade();
-  const { pode } = useSessao();
-  const podeLerUnidades = pode('financeiro.plano_contas.ler');
-  const unidades = useItensDoCadastro<Unidade>('/financeiro/unidades', podeLerUnidades);
-  const [unidade, setUnidade] = useState('');
-  const [competencia, setCompetencia] = useState('');
-  const [chave, setChave] = useState<ParametrosDoPeriodo | null>(null);
-  const [erro, setErro] = useState(false);
-  const nomeDaUnidade = unidades.data?.itens.find(item => item.id === chave?.unidadeId)?.nome ?? chave?.unidadeId ?? '';
+  const campo = densidade === 'field';
+  const tela = useFechamento();
 
   return (
     <>
-      <ScreenHeader title="Fechamento" subtitle="Consulte e gerencie o período por unidade e competência" density={densidade} />
+      <ScreenHeader
+        title="Fechamento"
+        subtitle={campo ? undefined : 'Confere o que falta, registra o saldo e trava o período · CDD'}
+        density={densidade}
+      />
+
       <CorpoDaTela densidade={densidade} larguraMaxima={1000}>
-        <form style={{ display: 'grid', gap: 12 }} onSubmit={evento => {
-          evento.preventDefault();
-          const resultado = ParametrosDoPeriodo.safeParse({ unidadeId: unidade.trim(), competencia });
-          setErro(!resultado.success);
-          if (resultado.success) setChave(resultado.data);
-        }}>
-          {podeLerUnidades ? <Select label="Unidade" value={unidade} onChange={setUnidade} density={densidade}
-            options={[{ value: '', label: 'Selecione uma unidade' }, ...(unidades.data?.itens ?? []).map(item => ({ value: item.id, label: item.nome }))]} /> :
-            <TextField label="Identificador da unidade" value={unidade} density={densidade}
-              onChange={evento => setUnidade(evento.currentTarget.value)} />}
-          {unidades.isError ? <Aviso tom="pendente">Não foi possível carregar as unidades.
-            <Button variant="quiet" onClick={() => void unidades.refetch()}>Tentar novamente</Button>
-          </Aviso> : null}
-          <TextField label="Competência" type="month" min="0001-01" max="9999-12" value={competencia} density={densidade}
-            onChange={evento => setCompetencia(evento.currentTarget.value)} />
-          {erro ? <p role="alert">Confira a unidade e a competência.</p> : null}
-          <div><Button type="submit">Consultar período</Button></div>
-        </form>
-        {chave ? <DetalheDoPeriodo key={`${chave.unidadeId}:${chave.competencia}`} chave={chave} unidade={nomeDaUnidade} /> : null}
+        {tela.mensagem ? (
+          <Aviso tom="informacao" aoFechar={tela.fecharAviso} rotuloDeFechar="fechar aviso">
+            {tela.mensagem}
+          </Aviso>
+        ) : null}
+
+        <FaixaDoPeriodo
+          fechado={tela.fechado}
+          bloqueios={tela.bloqueios}
+          entradas={tela.entradas}
+          saidas={tela.saidas}
+          resultado={tela.resultado}
+          densidade={densidade}
+        />
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, flexWrap: 'wrap' }}>
+            <Rotulo>O que o fechamento exige</Rotulo>
+            <span style={{ font: 'var(--text-small)', color: 'var(--text-secondary)' }}>
+              {tela.bloqueios.length === 0
+                ? tela.avisos.length
+                  ? `tudo resolvido · ${pluralizar(tela.avisos.length, 'aviso que não bloqueia', 'avisos que não bloqueiam')}`
+                  : 'tudo resolvido'
+                : `${pluralizar(tela.bloqueios.length, 'item bloqueia', 'itens bloqueiam')} o fechamento`}
+            </span>
+          </div>
+
+          {tela.checklist.map((i) => (
+            <ItemDoChecklist key={i.id} item={i} densidade={densidade} />
+          ))}
+        </div>
+
+        <SaldosDoFechamento contasAtivas={tela.contasAtivas} totalSaldos={tela.totalSaldos} />
+
+        <AcaoDeFechamento
+          fechado={tela.fechado}
+          bloqueios={tela.bloqueios}
+          reabrindo={tela.reabrindo}
+          densidade={densidade}
+          onFechar={tela.fechar}
+          onAvisar={tela.avisar}
+          onAbrirReabertura={tela.abrirReabertura}
+          onConfirmarReabertura={tela.confirmarReabertura}
+          onCancelarReabertura={tela.cancelarReabertura}
+        />
+
+        <HistoricoDeFechamentos historico={tela.historico} />
       </CorpoDaTela>
     </>
   );
