@@ -4,6 +4,17 @@ export interface AtributosDoPapelConectado {
   readonly donoDoBanco: string;
   readonly rolsuper: boolean;
   readonly rolbypassrls: boolean;
+  readonly papeisPrivilegiadosHerdados: readonly string[];
+}
+
+export class PapelHerdaPrivilegioError extends Error {
+  constructor(readonly papeisHerdados: readonly string[]) {
+    super(
+      `O papel conectado por BANCO_URL_MIGRACAO herda privilégio amplo por pertencer a: ${papeisHerdados.join(', ')}. ` +
+      'Remova a associação ou use um papel que não seja membro de papéis privilegiados.',
+    );
+    this.name = 'PapelHerdaPrivilegioError';
+  }
 }
 
 export interface PropriedadeDosEsquemas {
@@ -28,6 +39,7 @@ export function papelConectadoEhSeguroParaMigrar(
     atributos.sessionUser === atributos.currentUser &&
     donoDoDestino &&
     !atributos.rolsuper &&
-    !atributos.rolbypassrls
+    !atributos.rolbypassrls &&
+    atributos.papeisPrivilegiadosHerdados.length === 0
   );
 }

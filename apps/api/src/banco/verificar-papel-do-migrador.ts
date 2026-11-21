@@ -1,5 +1,5 @@
 import type { EntityManager } from '@mikro-orm/postgresql';
-import { papelConectadoEhSeguroParaMigrar } from './papel-seguro-para-migrar.js';
+import { PapelHerdaPrivilegioError, papelConectadoEhSeguroParaMigrar } from './papel-seguro-para-migrar.js';
 import type { AtributosDoPapelConectado, PropriedadeDosEsquemas } from './papel-seguro-para-migrar.js';
 import { SCHEMA_DA_TABELA_DE_HISTORICO, TABELA_DE_HISTORICO_DO_MIGRADOR } from './opcoes-do-migrador.js';
 
@@ -12,6 +12,12 @@ export async function verificarPapelDoMigrador(
        (SELECT pg_get_userbyid(datdba) FROM pg_database WHERE datname = current_database()) AS "donoDoBanco",
        (SELECT rolsuper FROM pg_roles WHERE rolname = current_user) AS "rolsuper",
        (SELECT rolbypassrls FROM pg_roles WHERE rolname = current_user) AS "rolbypassrls",
+       COALESCE((SELECT json_agg(rolname ORDER BY rolname) FROM pg_roles
+         WHERE rolname <> current_user
+           AND pg_has_role(current_user, oid, 'MEMBER')
+           AND (rolsuper OR rolbypassrls OR rolname IN (
+             'pg_read_all_data', 'pg_write_all_data', 'pg_execute_server_program',
+             'pg_read_server_files', 'pg_write_server_files'))), '[]'::json) AS "papeisPrivilegiadosHerdados",
        has_database_privilege(current_user, current_database(), 'CREATE')
          AND has_schema_privilege(current_user, ?, 'USAGE')
          AND has_schema_privilege(current_user, ?, 'CREATE') AS "podeCriarEsquemas",
@@ -24,6 +30,9 @@ export async function verificarPapelDoMigrador(
       `${SCHEMA_DA_TABELA_DE_HISTORICO}.${TABELA_DE_HISTORICO_DO_MIGRADOR}`],
   );
   const atributos = linhas[0];
+  if (atributos && atributos.papeisPrivilegiadosHerdados.length > 0) {
+    throw new PapelHerdaPrivilegioError(atributos.papeisPrivilegiadosHerdados);
+  }
   if (!atributos || !papelConectadoEhSeguroParaMigrar(atributos, escopo, atributos)) {
     throw new Error(
       'O papel conectado por BANCO_URL_MIGRACAO não é seguro para migrar. ' +

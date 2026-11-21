@@ -26,7 +26,8 @@ o envio das credenciais para essa máquina.
 O arquivo de ambiente precisa incluir os valores validados de banco, arquivos e configuração
 geral da API. Usar `BANCO_URL` de `cdd_app`, pool inicial de duas conexões, TLS verificado
 com a CA do Supabase e tempo de conexão da prontidão de 10000 ms. A credencial do migrador
-não pertence ao servidor da API. Definir `ENDERECO_DE_ESCUTA=127.0.0.1`.
+não pertence ao servidor da API. Definir `ENDERECO_DE_ESCUTA=127.0.0.1` e `BANCO_TLS=verificar`; o instalador recusa
+o ambiente sem esses dois valores.
 
 Na instalação inicial, os endereços OIDC e de administração apontavam para
 `http://localhost:8080`, com realm `cdd` e segredo provisório aleatório. Não há Keycloak
@@ -43,8 +44,10 @@ sudo bash instalar-api.sh cdd-api.tar.gz api.env identificador-da-versao
 
 O instalador coloca o ambiente em `/etc/cdd/api.env`, acessível somente por root,
 os arquivos em `/opt/cdd/api/releases/<versao>` e o serviço em `/etc/systemd/system`.
-Se a prontidão falhar, o instalador retorna erro. Inspecionar o serviço antes de
-considerar a instalação concluída; o procedimento não promove tráfego público nem faz rollback automático.
+Se a prontidão falhar, o instalador restaura o link `current`, o `api.env` e a unit
+anteriores, reinicia o serviço e retorna erro (na primeira instalação, apenas para o
+serviço). Inspecionar o serviço antes de considerar a instalação concluída; o
+procedimento não promove tráfego público.
 Na primeira instalação não existe versão anterior. Não usar esse instalador como fluxo
 de atualização de uma API em uso sem preparar a reversão da versão e do ambiente.
 
