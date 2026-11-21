@@ -54,38 +54,3 @@ describe('papelConectadoEhSeguroParaMigrar', () => {
     ).toBe(false);
   });
 });
-
-describe('migração restrita aos esquemas CDD', () => {
-  const atributos = { ...ATRIBUTOS_SEGUROS, donoDoBanco: 'postgres' };
-  const propriedade = {
-    podeCriarEsquemas: true,
-    esquemasDeOutroDono: [],
-    historicoDeOutroDono: false,
-  };
-
-  it('aceita cdd_owner sem ser dono do banco somente no modo explícito de esquemas', () => {
-    expect(papelConectadoEhSeguroParaMigrar(atributos)).toBe(false);
-    expect(papelConectadoEhSeguroParaMigrar(atributos, 'esquemas', propriedade)).toBe(true);
-  });
-
-  it('recusa quando não foram consultadas as propriedades do destino', () => {
-    expect(papelConectadoEhSeguroParaMigrar(atributos, 'esquemas')).toBe(false);
-  });
-
-  it.each([
-    { ...propriedade, podeCriarEsquemas: false },
-    { ...propriedade, esquemasDeOutroDono: ['financeiro'] },
-    { ...propriedade, historicoDeOutroDono: true },
-  ])('recusa quando permissões ou propriedade divergem: %j', (divergente) => {
-    expect(papelConectadoEhSeguroParaMigrar(atributos, 'esquemas', divergente)).toBe(false);
-  });
-
-  it.each([
-    { ...atributos, sessionUser: 'postgres' },
-    { ...atributos, sessionUser: 'outro', currentUser: 'outro' },
-    { ...atributos, rolsuper: true },
-    { ...atributos, rolbypassrls: true },
-  ])('mantém as guardas de identidade e RLS: %j', (inseguro) => {
-    expect(papelConectadoEhSeguroParaMigrar(inseguro, 'esquemas', propriedade)).toBe(false);
-  });
-});

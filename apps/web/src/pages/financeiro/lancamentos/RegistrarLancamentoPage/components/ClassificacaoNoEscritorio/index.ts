@@ -1,1 +1,0 @@
-export { ClassificacaoNoEscritorio } from './ClassificacaoNoEscritorio';

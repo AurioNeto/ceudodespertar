@@ -145,7 +145,7 @@ describe('log por requisição: correlação e redação (Documento 7 §13)', ()
     await resposta.text();
 
     expect(resposta.headers.get('access-control-allow-origin')).toBe(ORIGEM_PERMITIDA);
-    expect(resposta.headers.get('access-control-expose-headers')).toBe(`${CABECALHO_DE_CORRELACAO},Retry-After`);
+    expect(resposta.headers.get('access-control-expose-headers')).toBe(`${CABECALHO_DE_CORRELACAO},Retry-After,Location`);
   });
 
   it.each([

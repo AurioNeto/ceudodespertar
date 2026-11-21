@@ -23,7 +23,7 @@ export async function criarAplicacao(modulo: Type = AppModule): Promise<INestApp
   const ambiente = app.get<Ambiente>(AMBIENTE);
   app.enableCors({
     origin: ambiente.ORIGENS_CORS.length > 0 ? ambiente.ORIGENS_CORS : false,
-    exposedHeaders: [CABECALHO_DE_CORRELACAO, CABECALHO_RETRY_AFTER],
+    exposedHeaders: [CABECALHO_DE_CORRELACAO, CABECALHO_RETRY_AFTER, 'Location'],
   });
   return app;
 }
@@ -32,9 +32,5 @@ export async function iniciarAplicacao(): Promise<void> {
   const app = await criarAplicacao();
   app.enableShutdownHooks();
   const ambiente = app.get<Ambiente>(AMBIENTE);
-  if (ambiente.ENDERECO_DE_ESCUTA !== undefined) {
-    await app.listen(ambiente.PORTA, ambiente.ENDERECO_DE_ESCUTA);
-  } else {
-    await app.listen(ambiente.PORTA);
-  }
+  await app.listen(ambiente.PORTA);
 }

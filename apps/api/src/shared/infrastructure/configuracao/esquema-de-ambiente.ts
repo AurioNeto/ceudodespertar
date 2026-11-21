@@ -48,7 +48,6 @@ function ehFormaCanonica(url: URL, valor: string): boolean {
 }
 
 export const EsquemaDeAmbiente = z.object({
-  ENDERECO_DE_ESCUTA: z.enum(['127.0.0.1', '0.0.0.0', '::1', '::']).optional(),
   PORTA: z.coerce.number().int().min(1).max(65535).default(3000),
   ORIGENS_CORS: listaDeOrigens,
   LOG_NIVEL: z.enum(NIVEIS_DE_LOG).default('info'),

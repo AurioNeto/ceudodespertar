@@ -1,1 +1,0 @@
-export { PontosDoCarrossel } from './PontosDoCarrossel';
