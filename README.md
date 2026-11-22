@@ -26,8 +26,13 @@ pnpm typecheck
 | `project/` | O bundle de design original (handoff), mantido como referência |
 | `docs/design/forca-da-mata/` | O guia Força da Mata, fonte visual atual: guia em texto e em HTML, tokens de referência, logo e merkaba |
 
-O que ainda não existe: backend (NestJS + MikroORM + PostgreSQL), Keycloak e
-os testes. A sessão do usuário e as permissões são fixtures.
+O backend existe em parte: `apps/api` (NestJS + PostgreSQL, repositórios em
+Kysely) tem a identidade do B0 (`GET /eu`, usuários, grupos e auditoria) e, do
+financeiro da B1, os cadastros de unidade, grupo de custo e categoria com HTTP e
+os agregados de conta e fundo ainda sem HTTP. O login usa Keycloak, e a sessão e
+as permissões vêm de `GET /eu`. Das telas, só Acessos e Meu perfil leem a API
+(`apps/web/src/app/shell/telas.ts`); as outras seguem nas fixtures. Há testes de
+domínio, de API, de banco e de tela.
 
 ## Ambiente local
 

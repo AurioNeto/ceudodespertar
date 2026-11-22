@@ -1,10 +1,12 @@
 # Project flow: mapa de tasks do CDD
 
-Estado do projeto em **30/10/2026**. Cada task tem um arquivo em [`tasks/`](tasks/) com o contexto, o que fazer, os critérios de aceite e as referências.
+Estado do projeto em **22/11/2026**. Cada task tem um arquivo em [`tasks/`](tasks/) com o contexto, o que fazer, os critérios de aceite e as referências.
 
 ## Onde estamos
 
-- **`main`** (ponta `1e44f051`, #232). Nenhum PR aberto; a TSK-514 parte A está em andamento no back. Entre 15 e 29/10 o projeto ficou parado.
+- **`main`** (ponta `1f629e40`, #261). PR aberto: #262 (travas do front como fonte da verdade). Código da base do #235 (TSK-514 parte A) mais as exceções de hospedagem.
+- **Execução de novembro revertida** (18 a 21/11): os PRs #236 a #259, mesclados em 18/11, fizeram o backend da B1 (TSK-514 parte B, TSK-512, TSK-515 a TSK-519 e TSK-521) antes de olhar as telas e reescreveram as telas do financeiro para caber na API, apagando arquivos e testes do front. O #260 (21/11) restaurou a base do #235 preservando a hospedagem online, e o #261 (21/11) concilia o histórico de migrations do banco hospedado. Registro em [`docs/runbooks/restauracao-pr-235.md`](../docs/runbooks/restauracao-pr-235.md). O #262 grava no `AGENTS.md` as regras para não repetir: o front é a fonte da verdade, ao ligar uma tela só muda o miolo do hook de dados, e o CI barra PR que apague teste ou componente de tela.
+- **Hospedagem em uso desde 20/11:** front na Vercel, API na Oracle, banco e anexos no Supabase, Keycloak na Cloud-IAM (TSK-012).
 - **Backend do B0 completo** (PRs de API entre #37 e #96, de 08 a 10/10):
   - identidade com `GET /eu`, auditoria, gestão de usuários e grupos;
   - adaptador do Keycloak (convite por e-mail, ativação, suspensão);
@@ -18,7 +20,10 @@ Estado do projeto em **30/10/2026**. Cada task tem um arquivo em [`tasks/`](task
 - **Backlog mesclado em 13 e 14/10:** #201 (fecha a #47), #203 (tema do Keycloak, TSK-416), #204 (expurgo do outbox, fecha a #43), #205 e #206 (TSK-602, itens 1 a 4), #208 e #211 (TSK-413), #209 (TSK-408), #210 (TSK-417, estado em `hooks/`), #213 (TSK-411 e TSK-415), #214 (TSK-414), #215 (TSK-409), #216, #218 e #220 (TSK-018), #217 (este mapa), #219 (TSK-412, parte 1), #221, #222 e #224 (TSK-417, item 2), #223 (este mapa), #225 (TSK-406) e #226 (teste intermitente do seed demo).
 - **B1 e backlog mesclados de 14 a 30/10:** #227 (decisões e divisão da B1), #228 (TSK-511, contrato), #229 (TSK-412, parte 2), #230 (TSK-403), #231 e #232 (TSK-513, cadastros com HTTP) e #233 (teste intermitente da vigia de esgotados).
 - **Próximos passos:**
-  - **B1:** TSK-514 (conta e fundo), depois TSK-512 (pessoa mínima) e TSK-515 (lançamento); o front começa a TSK-520 pelas telas de unidades, grupos de custo e categorias, que já têm API;
+  - fechar a restauração no banco hospedado (publicar a API da base e rodar a conciliação do #261, conforme o runbook da restauração);
+  - piloto da tela de Parâmetros: inventário de blocos e ligação à API sem mudar a tela; nenhuma outra tela é ligada antes. O piloto parou no inventário: há conflitos entre a tela e o domínio aguardando decisão do dono;
+  - backend da B1 reescrito a partir da TSK-514 parte B, servindo o que as telas consomem;
+  - telas do financeiro ligadas uma por PR (TSK-520);
   - o resto do backlog técnico: TSK-410 e os itens 3 e 4 da TSK-417.
 
 ## Resumo
@@ -72,7 +77,7 @@ flowchart LR
 | Task | Título | Estado | Peça | PR | Depende de |
 |---|---|---|---|---|---|
 | [TSK-011](tasks/TSK-011-decidir-textos-de-recusa-e-contato.md) | Textos das telas de recusa e contato do administrador | 🧭 Decisão pendente (coordenação) | — | — | — |
-| [TSK-012](tasks/TSK-012-decidir-topologia-e-provedor-de-deploy.md) | Topologia e provedor de deploy (SPA e Keycloak no mesmo site) | 🧭 Decisão pendente | — | — | — |
+| [TSK-012](tasks/TSK-012-decidir-topologia-e-provedor-de-deploy.md) | Topologia e provedor de deploy (SPA e Keycloak no mesmo site) | 🧭 Em uso desde 20/11; decisão formal a confirmar com o dono | — | — | — |
 | [TSK-013](tasks/TSK-013-decidir-expurgo-de-idempotencia.md) | Expurgo das chaves de idempotência e retenção do corpo da resposta | ✅ Decidido e feito (#36, 07/10/2026) | — | — | TSK-001 |
 | [TSK-014](tasks/TSK-014-decisoes-do-plano-com-a-coordenacao.md) | Confirmar com a coordenação as decisões 1–8 do plano | ✅ Confirmada pelo dono (14/10/2026); a coordenação pode rever | — | — | — |
 | [TSK-015](tasks/TSK-015-decidir-email-no-evento-de-convite.md) | E-mail em `USUARIO_CONVIDADO` × trilha de auditoria (LGPD) | ✅ Decidido (implementa no TSK-303) | — | — | — |
@@ -170,7 +175,7 @@ PRs de acompanhamento já mesclados: [#34](https://github.com/AurioNeto/ceudodes
 | [TSK-511](tasks/TSK-511-b1-contrato-do-financeiro.md) | Contrato do financeiro e da pessoa mínima | ✅ Feito (#228) | — | #228 | TSK-501 |
 | [TSK-512](tasks/TSK-512-b1-pessoa-minima.md) | Pessoa mínima (módulo pessoas) | 🗺️ Planejada | — | — | TSK-511 |
 | [TSK-513](tasks/TSK-513-b1-cadastros-unidade-categoria.md) | Cadastros: Unidade, Grupo de custo e Categoria (com seed) | ✅ Feito (#231 e #232) | — | #231, #232 | TSK-511 |
-| [TSK-514](tasks/TSK-514-b1-cadastros-conta-fundo.md) | Cadastros: Conta e Fundo | 🚧 Parte A em andamento no back | — | — | TSK-513 |
+| [TSK-514](tasks/TSK-514-b1-cadastros-conta-fundo.md) | Cadastros: Conta e Fundo | 🚧 Parte A feita (#235), parte B em andamento | — | — | TSK-513 |
 | [TSK-515](tasks/TSK-515-b1-lancamento.md) | Lançamento: etiquetas, conferência e estorno | 🗺️ Planejada | — | — | TSK-512, TSK-514 |
 | [TSK-516](tasks/TSK-516-b1-transferencia.md) | Transferência com conferência e estorno | 🗺️ Planejada | — | — | TSK-515 |
 | [TSK-517](tasks/TSK-517-b1-periodo-contabil.md) | Período contábil: fechar e reabrir com hash e trava | 🗺️ Planejada | — | — | TSK-515, TSK-516 |
