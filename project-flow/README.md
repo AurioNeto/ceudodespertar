@@ -21,7 +21,7 @@ Estado do projeto em **22/11/2026**. Cada task tem um arquivo em [`tasks/`](task
 - **B1 e backlog mesclados de 14 a 30/10:** #227 (decisões e divisão da B1), #228 (TSK-511, contrato), #229 (TSK-412, parte 2), #230 (TSK-403), #231 e #232 (TSK-513, cadastros com HTTP) e #233 (teste intermitente da vigia de esgotados).
 - **Próximos passos:**
   - fechar a restauração no banco hospedado (publicar a API da base e rodar a conciliação do #261, conforme o runbook da restauração);
-  - piloto da tela de Parâmetros: inventário de blocos e ligação à API sem mudar a tela; nenhuma outra tela é ligada antes;
+  - piloto da tela de Parâmetros: inventário de blocos e ligação à API sem mudar a tela; nenhuma outra tela é ligada antes. O piloto parou no inventário: há conflitos entre a tela e o domínio aguardando decisão do dono;
   - backend da B1 reescrito a partir da TSK-514 parte B, servindo o que as telas consomem;
   - telas do financeiro ligadas uma por PR (TSK-520);
   - o resto do backlog técnico: TSK-410 e os itens 3 e 4 da TSK-417.
