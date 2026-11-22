@@ -25,6 +25,7 @@ Decisões do dono (14/10): a transferência tem o ciclo do lançamento e fica im
 - **Comprovante:** `comprovanteId` também na transferência. Precisa da coluna correspondente.
 - **Registro pela tela:** o front despacha a transferência do formulário para este comando, com finalidade `MOVIMENTACAO_SIMPLES`.
 - **Reserva do fundo:** a finalidade nova é `RESGATE_DE_FUNDO`, que carrega o fundo. `APORTE_A_FUNDO` e `RESGATE_DE_FUNDO` admitem origem igual ao destino (reserva dentro da conta vinculada, só marcação). Vêm da edição do fundo (TSK-514). O `CHECK` da finalidade e o FD3 incluem o resgate.
+- **Finalidades:** passam a ser oito, com `RESGATE_DE_FUNDO`. A TSK-511, que fala em sete, fica como registro histórico.
 
 ## Critérios de aceite
 
