@@ -1,7 +1,17 @@
 # TSK-012: Topologia e provedor de deploy (SPA e Keycloak no mesmo site)
 
-- **Estado:** 🧭 Decisão pendente
+- **Estado:** 🧭 Em uso desde 20/11/2026; decisão formal a confirmar com o dono
 - **Responsável sugerido:** usuário
+
+## Em uso desde 20/11/2026
+
+Não há registro escrito de que o dono decidiu o provedor; o que segue é o que os runbooks descrevem.
+
+- **Front:** Vercel, projeto `ceudodespertar-web` com Root Directory `apps/web` (`docs/runbooks/vercel-web.md`).
+- **API:** Oracle Cloud, VM Micro em San Jose com serviço systemd `cdd-api`; HTTPS por Caddy e domínio DuckDNS (`docs/runbooks/oracle-api-micro.md`, `docs/runbooks/oracle-api-https.md`).
+- **Banco e anexos:** Supabase, PostgreSQL e armazenamento privado pela API S3 (`docs/runbooks/supabase.md`).
+- **Keycloak:** Cloud-IAM, ambiente gratuito de homologação criado em 20/11/2026; a própria Cloud-IAM não recomenda esse plano para produção (`docs/runbooks/cloud-iam.md`).
+- **Pendente**, segundo `docs/runbooks/oracle-api-micro.md`: a validação completa do login pelo front. A SPA (`ceudodespertar-web.vercel.app`) e o Keycloak (`lemur-2.cloud-iam.com`) não estão no mesmo domínio registrável (`docs/runbooks/vercel-web.md`), então o requisito de mesmo site abaixo continua aberto.
 
 ## Contexto
 
@@ -27,4 +37,4 @@ O F5 sem novo login e a recuperação de refresh recusado usam um iframe `prompt
 - https://github.com/AurioNeto/ceudodespertar/pull/30
 - Plano: decisões pendentes #9
 
-_Atualizado em 12/10/2026._
+_Atualizado em 22/11/2026._

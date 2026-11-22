@@ -1,6 +1,6 @@
 # TSK-514: Cadastros: Conta e Fundo
 
-- **Estado:** 🗺️ Planejada (B1)
+- **Estado:** 🚧 Parte A feita (#235), parte B em andamento
 - **Responsável sugerido:** back (limpio + radix)
 - **Depende de:** [TSK-513](TSK-513-b1-cadastros-unidade-categoria.md)
 
@@ -20,7 +20,7 @@ Conta é onde o dinheiro está (saldo lê lançamentos e transferências); fundo
 
 ## Como ficou
 
-- **Parte A (este PR):** migration `b1-002-conta-e-fundo`, os agregados `Conta` e `Fundo` com teste por invariante e os repositórios Kysely com trava otimista.
+- **Parte A (#235, mesclado em 30/10):** migration `b1-002-conta-e-fundo`, os agregados `Conta` e `Fundo` com teste por invariante e os repositórios Kysely com trava otimista.
   - **Conta:**
     - CT1: titularidade pessoal se, e só se, houver titular;
     - tipo, titularidade e titular imutáveis;
@@ -32,7 +32,7 @@ Conta é onde o dinheiro está (saldo lê lançamentos e transferências); fundo
     - meta positiva;
     - categorias sem repetição;
     - FD1: `conferirSaidaParaCategoria` recusa categoria fora da lista com `CATEGORIA_FORA_DO_FUNDO` (critério de aceite). Fundo com lista vazia recusa toda saída. A TSK-515 usa esse método no lançamento.
-- **Parte B (próximo PR):**
+- **Parte B (em andamento; a versão mesclada em 18/11 pelo #237 foi revertida pelo #260):**
   - na edição do fundo, a conta vinculada nova precisa existir e estar ativa na casa;
   - comandos, HTTP com `financeiro.conta.ler` e `financeiro.conta.gerenciar` (e `financeiro.fundo.gerenciar` no fundo) e leitura do cadastro sem saldo;
   - conferir, no comando, que a conta vinculada e as categorias permitidas existem na casa.
@@ -51,4 +51,4 @@ Conta é onde o dinheiro está (saldo lê lançamentos e transferências); fundo
 
 - Doc 7 §18.1 e §18.4
 
-_Atualizado em 30/10/2026._
+_Atualizado em 22/11/2026._
