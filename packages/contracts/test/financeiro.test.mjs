@@ -4,13 +4,20 @@ import test from 'node:test';
 import {
   CadastrarPessoa,
   ConfirmarLancamento,
+  ConfirmarTransferencia,
   CriarCategoria,
   CriarConta,
+  CriarFundo,
   CriarUnidade,
+  DevolverLancamento,
+  EditarConta,
+  EditarFundo,
+  EditarLancamento,
+  EnviarAnexo,
   MAXIMO_DE_DINHEIRO_EM_CENTAVOS,
   EditarUnidade,
+  ParametrosDaCompetencia,
   ParametrosDoCadastro,
-  ParametrosDoPeriodo,
   ReabrirPeriodo,
   RegistrarLancamento,
   RegistrarTransferencia,
@@ -190,10 +197,14 @@ test('documento da pessoa: só dígitos, 11 na física e 14 na jurídica', () =>
 });
 
 test('competência é AAAA-MM com mês válido', () => {
-  assert.equal(ParametrosDoPeriodo.safeParse({ unidadeId: UUID_A, competencia: '2026-09' }).success, true);
+  assert.equal(ParametrosDaCompetencia.safeParse({ competencia: '2026-09' }).success, true);
   for (const competencia of ['2026-13', '2026-9', '2026-09-01']) {
-    assert.equal(ParametrosDoPeriodo.safeParse({ unidadeId: UUID_A, competencia }).success, false, competencia);
+    assert.equal(ParametrosDaCompetencia.safeParse({ competencia }).success, false, competencia);
   }
+});
+
+test('fechar e reabrir são por competência da casa: a rota não leva unidade', () => {
+  assert.deepEqual(ParametrosDaCompetencia.parse({ unidadeId: UUID_A, competencia: '2026-09' }), { competencia: '2026-09' });
 });
 
 test('reabertura de período exige motivo de pelo menos dez caracteres', () => {
@@ -204,4 +215,120 @@ test('reabertura de período exige motivo de pelo menos dez caracteres', () => {
 test('identificador do cadastro na rota é um UUID e sai em minúsculas', () => {
   assert.equal(ParametrosDoCadastro.parse({ id: UUID_A.toUpperCase() }).id, UUID_A);
   assert.equal(ParametrosDoCadastro.safeParse({ id: 'nao-e-uuid' }).success, false);
+});
+
+test('motivo é opcional no registro do lançamento e da transferência', () => {
+  assert.equal(RegistrarLancamento.parse({ natureza: 'DESPESA', valor: 2000 }).motivo, null);
+  assert.equal(EditarLancamento.parse({ natureza: 'DESPESA', valor: 2000 }).motivo, null);
+  const { motivo: _motivo, ...semMotivo } = transferenciaSimples;
+  assert.equal(RegistrarTransferencia.parse(semMotivo).motivo, null);
+});
+
+test('no registro a etiqueta pode vir sem valor; a confirmação exige valor em todas', () => {
+  const lancamento = RegistrarLancamento.parse({ ...lancamentoMinimo, etiquetas: [{ categoriaId: UUID_A }] });
+
+  assert.deepEqual(lancamento.etiquetas, [{ categoriaId: UUID_A, valor: null }]);
+  assert.equal(ConfirmarLancamento.safeParse({ etiquetas: [{ categoriaId: UUID_A }] }).success, false);
+  assert.equal(ConfirmarLancamento.safeParse({ etiquetas: [{ categoriaId: UUID_A, valor: 2000 }] }).success, true);
+  assert.equal(ConfirmarLancamento.safeParse({}).success, true);
+});
+
+test('registrar já confirmado é pedido explícito e por padrão não acontece', () => {
+  assert.equal(RegistrarLancamento.parse(lancamentoMinimo).confirmarNoRegistro, false);
+  assert.equal(
+    RegistrarLancamento.safeParse({ ...lancamentoMinimo, confirmarNoRegistro: true, etiquetas: [{ categoriaId: UUID_A, valor: 2000 }] })
+      .success,
+    true,
+  );
+});
+
+test('registrar já confirmado exige etiquetas, todas com valor, e o motivo', () => {
+  assert.deepEqual(regras(RegistrarLancamento.safeParse({ natureza: 'DESPESA', valor: 2000, confirmarNoRegistro: true })), [
+    { caminho: 'etiquetas', regra: 'confirmado_exige_etiquetas_com_valor' },
+    { caminho: 'motivo', regra: 'confirmado_exige_motivo' },
+  ]);
+  const etiquetas = [{ categoriaId: UUID_A, valor: 1500 }, { categoriaId: UUID_B }];
+  assert.deepEqual(regras(RegistrarLancamento.safeParse({ ...lancamentoMinimo, confirmarNoRegistro: true, etiquetas })), [
+    { caminho: 'etiquetas', regra: 'confirmado_exige_etiquetas_com_valor' },
+  ]);
+});
+
+test('valor composto: as parcelas somam o valor e não nascem confirmadas', () => {
+  assert.deepEqual(RegistrarLancamento.parse({ ...lancamentoMinimo, parcelas: [1200, 800] }).parcelas, [1200, 800]);
+  assert.equal(RegistrarLancamento.parse(lancamentoMinimo).parcelas, null);
+  assert.deepEqual(regras(RegistrarLancamento.safeParse({ ...lancamentoMinimo, parcelas: [1200, 700] })), [
+    { caminho: 'parcelas', regra: 'parcelas_somam_o_valor' },
+  ]);
+  assert.equal(RegistrarLancamento.safeParse({ ...lancamentoMinimo, parcelas: [2000] }).success, false);
+  const etiquetas = [{ categoriaId: UUID_A, valor: 2000 }];
+  assert.deepEqual(regras(RegistrarLancamento.safeParse({ ...lancamentoMinimo, parcelas: [1200, 800], confirmarNoRegistro: true, etiquetas })), [
+    { caminho: 'parcelas', regra: 'composto_nao_nasce_confirmado' },
+  ]);
+});
+
+test('quem adiantou é a pessoa cadastrada ou o nome em texto, nunca os dois', () => {
+  assert.equal(RegistrarLancamento.parse({ ...lancamentoMinimo, reembolsoATexto: '  Lucia Prado ' }).reembolsoATexto, 'Lucia Prado');
+  assert.deepEqual(regras(RegistrarLancamento.safeParse({ ...lancamentoMinimo, reembolsoAId: UUID_A, reembolsoATexto: 'Lucia' })), [
+    { caminho: 'reembolsoATexto', regra: 'reembolsado_unico' },
+  ]);
+});
+
+test('devolver o lançamento exige o motivo', () => {
+  assert.equal(DevolverLancamento.safeParse({ motivo: '   ' }).success, false);
+  assert.equal(DevolverLancamento.parse({ motivo: ' falta o comprovante ' }).motivo, 'falta o comprovante');
+});
+
+test('responsável da conta é texto livre, vazio por padrão', () => {
+  const conta = { nome: 'Cora PJ', tipo: 'CONTA_CORRENTE', titularidade: 'INSTITUCIONAL' };
+
+  assert.equal(CriarConta.parse(conta).responsavel, '');
+  assert.equal(CriarConta.parse({ ...conta, responsavel: ' Paty ' }).responsavel, 'Paty');
+  assert.equal(EditarConta.parse({ nome: 'Cora PJ', ativa: true, responsavel: 'Paty' }).responsavel, 'Paty');
+  assert.equal(CriarConta.parse(conta).identificadorBancario, null);
+  assert.equal(CriarConta.parse(conta).unidadeId, null);
+});
+
+test('fundo criado pela tela: código, conta vinculada, categorias e meta podem faltar', () => {
+  const fundo = CriarFundo.parse({ nome: 'Obra do dormitório' });
+
+  assert.equal(fundo.codigoSistema, null);
+  assert.equal(fundo.contaVinculadaId, null);
+  assert.deepEqual(fundo.categoriasPermitidas, []);
+  assert.equal(fundo.meta, null);
+  assert.equal(CriarFundo.safeParse({ nome: 'Obra', codigoSistema: 'obra' }).success, false);
+});
+
+test('valor reservado do fundo é opcional, inteiro e pode ser zero', () => {
+  assert.equal(CriarFundo.parse({ nome: 'Obra' }).valorReservado, null);
+  assert.equal(EditarFundo.parse({ nome: 'Obra', ativo: true, contaVinculadaId: UUID_A, valorReservado: 0 }).valorReservado, 0);
+  assert.equal(CriarFundo.safeParse({ nome: 'Obra', valorReservado: -1 }).success, false);
+});
+
+test('na edição do fundo a conta vinculada continua obrigatória', () => {
+  assert.equal(EditarFundo.safeParse({ nome: 'Obra', ativo: true }).success, false);
+  assert.equal(EditarFundo.safeParse({ nome: 'Obra', ativo: true, contaVinculadaId: UUID_A }).success, true);
+});
+
+test('confirmar transferência não leva corpo; transferência aceita comprovante', () => {
+  assert.deepEqual(ConfirmarTransferencia.parse({}), {});
+  assert.equal(RegistrarTransferencia.parse({ ...transferenciaSimples, comprovanteId: UUID_A }).comprovanteId, UUID_A);
+  assert.equal(RegistrarTransferencia.parse(transferenciaSimples).comprovanteId, null);
+});
+
+test('envio de anexo descreve o arquivo: nome, tipo e tamanho inteiro positivo', () => {
+  assert.equal(EnviarAnexo.safeParse({ nome: 'IMG_2481.jpg', tipo: 'image/jpeg', tamanhoBytes: 182044 }).success, true);
+  for (const tamanhoBytes of [0, -1, 1.5]) {
+    assert.equal(EnviarAnexo.safeParse({ nome: 'a.pdf', tipo: 'application/pdf', tamanhoBytes }).success, false, String(tamanhoBytes));
+  }
+  assert.equal(EnviarAnexo.safeParse({ nome: ' ', tipo: 'application/pdf', tamanhoBytes: 1 }).success, false);
+});
+
+test('reserva do fundo dentro da conta: aporte e resgate admitem origem igual ao destino', () => {
+  const reserva = { ...transferenciaSimples, contaDestinoId: UUID_A, fundoId: UUID_B };
+
+  assert.equal(RegistrarTransferencia.safeParse({ ...reserva, finalidade: 'APORTE_A_FUNDO' }).success, true);
+  assert.equal(RegistrarTransferencia.safeParse({ ...reserva, finalidade: 'RESGATE_DE_FUNDO' }).success, true);
+  assert.deepEqual(regras(RegistrarTransferencia.safeParse({ ...reserva, finalidade: 'RESGATE_DE_FUNDO', fundoId: null })), [
+    { caminho: 'fundoId', regra: 'referencia_da_finalidade' },
+  ]);
 });

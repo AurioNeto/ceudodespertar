@@ -18,6 +18,15 @@ Conta é onde o dinheiro está (saldo lê lançamentos e transferências); fundo
 - **Forma canônica do identificador bancário (CT4):** sem espaços (inclusive os internos e invisíveis) e em maiúsculas; barras e hífens ficam. "341 /1" e "341/1" são o mesmo identificador, e "itau-1" vira "ITAU-1". Na B3, com o OFX real em mãos, dá para apertar mais.
 - **A conta vinculada do fundo pode mudar**, como diz a nota de modelagem do Doc 2 §1.9. Trocar a conta não move dinheiro: o saldo do fundo vem dos lançamentos e das transferências (TSK-519), e mover o saldo antigo é uma transferência.
 
+## Decisões do dono (22/11/2026)
+
+- **Conta pela tela:** `identificadorBancario` e `unidadeId` continuam opcionais e nascem nulos quando a tela não os envia (o contrato já era assim). O tipo só se escolhe na criação, e a tela passa a cumprir isso.
+- **Responsável da conta:** texto livre na B1 (`responsavel` nos comandos de conta, vazio por padrão). O vínculo com pessoa fica para a B4. Esta peça precisa da coluna `financeiro.conta.responsavel` numa migration nova, bloqueada até a conciliação do banco hospedado.
+- **CT1:** o responsável é só um rótulo. Conta `PESSOAL_DE_TERCEIRO` continua exigindo `pessoaTitularId`, e na B1 não se cria pela tela; a CT1 e o `CHECK` ficam intactos. Decisão do orquestrador, a confirmar pelo dono.
+- **Fundo pela tela:** sem `codigoSistema`, o backend gera o código; sem `contaVinculadaId`, vale a conta vinculada padrão; `categoriasPermitidas` e `meta` são opcionais na B1. Na edição, a conta vinculada continua obrigatória.
+- **Valor reservado:** `valorReservado` (opcional, nunca negativo) nos comandos de fundo. A diferença vira transferência interna na conta vinculada: aumentar é `APORTE_A_FUNDO`, diminuir é `RESGATE_DE_FUNDO` (finalidade nova). Nas duas, a origem é igual ao destino e o dinheiro não sai da conta. O saldo do fundo continua derivado (FD3).
+- **Edição com versão:** `ContaComSaldo` e `FundoComSaldo` trazem `versao`, que a tela devolve no `If-Match`. A API sempre devolve a versão; no tipo ela é opcional porque o rascunho de registro novo não a tem (decisão do orquestrador).
+
 ## Como ficou
 
 - **Parte A (este PR):** migration `b1-002-conta-e-fundo`, os agregados `Conta` e `Fundo` com teste por invariante e os repositórios Kysely com trava otimista.

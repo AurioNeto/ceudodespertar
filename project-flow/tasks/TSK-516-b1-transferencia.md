@@ -18,6 +18,14 @@ Decisões do dono (14/10): a transferência tem o ciclo do lançamento e fica im
 
 - `Transferencia.confirmadoPor` no contrato aceita só `UsuarioId`, sem o autor `SISTEMA` que o lançamento tem. Se a migração (TSK-507) trouxer transferências já confirmadas, o contrato e a coluna precisam do tipo do autor, como na TSK-515.
 
+## Decisões do dono (22/11/2026)
+
+- **Confirmar:** `ConfirmarTransferencia`, sem corpo e com `If-Match`. Quem confirma não pode ser quem registrou (`CONFERENTE_E_O_AUTOR`).
+- **Motivo:** opcional enquanto `A_CONFERIR`, obrigatório para confirmar.
+- **Comprovante:** `comprovanteId` também na transferência. Precisa da coluna correspondente.
+- **Registro pela tela:** o front despacha a transferência do formulário para este comando, com finalidade `MOVIMENTACAO_SIMPLES`.
+- **Reserva do fundo:** a finalidade nova é `RESGATE_DE_FUNDO`, que carrega o fundo. `APORTE_A_FUNDO` e `RESGATE_DE_FUNDO` admitem origem igual ao destino (reserva dentro da conta vinculada, só marcação). Vêm da edição do fundo (TSK-514). O `CHECK` da finalidade e o FD3 incluem o resgate.
+
 ## Critérios de aceite
 
 - Confirmada não muda nem some; correção só por estorno.

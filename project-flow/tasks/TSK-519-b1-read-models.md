@@ -14,6 +14,11 @@ Um read model por bloco de tela, cada um com a sua permissão, filtrado na consu
 - Fila de conferência, meus registros, lançamentos, contas e saldos, DRE, fluxo de caixa, resultado por cerimônia e por grupo de custo.
 - Decisão do dono (14/10): a unidade ativa **só pré-preenche formulários**; os read models aceitam filtro explícito de unidade, que a tela mostra e deixa remover. Provisória até a tesouraria confirmar (Doc 6 §9.1 #4).
 
+## Decisões do dono (22/11/2026)
+
+- **Versão na leitura:** `ItemNaFila`, `LancamentoNaLista`, `ContaComSaldo` e `FundoComSaldo` trazem `versao`, que a tela devolve no `If-Match`. A API sempre devolve a versão; no tipo ela é opcional porque o rascunho de registro novo não a tem (decisão do orquestrador).
+- **Parâmetros:** `CategoriaDoPlano` e `UnidadeDoPlano` passam a morar em `packages/contracts/src/readmodels.ts`, na forma que a tela já consome. O front ainda declara as próprias cópias no mock da tela de Parâmetros; trocar pelo tipo do contrato é uma peça de front. No cadastro, `linhaRelatorio` e `regime` continuam obrigatórios.
+
 ## Critérios de aceite
 
 - Caso da devolução (Doc 6 §2.5.1): receita de 210 estornada; a DRE de setembro mostra contribuição líquida de 100, sem os 210 na despesa.

@@ -3,9 +3,23 @@
  * um modelo de leitura, com os rótulos já resolvidos, em vez de montar o
  * agregado. É este o contrato que o front-end consome.
  */
-import type { Competencia, ContaId, DataLocal, Dinheiro, EventoId, FundoId, LancamentoId, PessoaId } from './kernel.js';
+import type {
+  CategoriaId,
+  Competencia,
+  ContaId,
+  DataLocal,
+  Dinheiro,
+  EventoId,
+  FundoId,
+  LancamentoId,
+  PessoaId,
+  UnidadeId,
+} from './kernel.js';
 import type {
   Confianca,
+  Natureza,
+  RegimeDaUnidade,
+  TipoCategoria,
   SituacaoConciliacao,
   TipoConta,
   Titularidade,
@@ -36,6 +50,7 @@ export interface LancamentoNaLista {
   readonly cerimonia: string | null;
   readonly eventoId: EventoId | null;
   readonly comprovante: string | null;
+  readonly versao?: number;
 }
 
 export interface EventoDoHistorico {
@@ -60,6 +75,7 @@ export interface ItemNaFila {
   /** Quem mandou o comprovante ou fez o registro rápido; nulo no extrato. */
   readonly remetente: string | null;
   readonly anexo: string | null;
+  readonly versao?: number;
 }
 
 export interface ContaComSaldo {
@@ -76,6 +92,7 @@ export interface ContaComSaldo {
   /** Aviso exibido em tooltip no cartão da conta. */
   readonly alerta: string | null;
   readonly ativa: boolean;
+  readonly versao?: number;
 }
 
 export interface FundoComSaldo {
@@ -87,4 +104,30 @@ export interface FundoComSaldo {
   readonly valorReservado: Dinheiro;
   readonly meta: Dinheiro | null;
   readonly ativo: boolean;
+  readonly versao?: number;
+}
+
+export interface CategoriaDoPlano {
+  readonly id: CategoriaId;
+  readonly codigoSistema: string;
+  readonly nome: string;
+  readonly natureza: Natureza;
+  readonly tipo: TipoCategoria;
+  readonly regimesPermitidos: readonly RegimeDaUnidade[];
+  readonly linhaRelatorio: string | null;
+  readonly ativa: boolean;
+  readonly lancamentos: number;
+  readonly nota: string | null;
+}
+
+export interface UnidadeDoPlano {
+  readonly id: UnidadeId;
+  readonly codigoSistema: string;
+  readonly nome: string;
+  readonly regime: RegimeDaUnidade | null;
+  readonly documentoFiscal: string | null;
+  readonly tetoFaturamentoAnual: Dinheiro | null;
+  readonly faturamentoNoAno: Dinheiro | null;
+  readonly ativa: boolean;
+  readonly nota: string | null;
 }

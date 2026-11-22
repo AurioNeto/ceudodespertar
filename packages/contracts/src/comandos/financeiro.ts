@@ -2,6 +2,7 @@ import { z } from 'zod';
 import {
   competenciaValida,
   dataLocalValida,
+  dinheiroNaoNegativo,
   dinheiroPositivo,
   textoSemCaractereNulo,
   uuidEmMinusculas,
@@ -31,9 +32,14 @@ const TAMANHO_MAXIMO_DO_MOTIVO = 500;
 const TAMANHO_MAXIMO_DA_CONTRAPARTE = 200;
 const TAMANHO_MAXIMO_DA_FORMA_DE_PAGAMENTO = 60;
 const TAMANHO_MAXIMO_DO_IDENTIFICADOR_BANCARIO = 60;
+const TAMANHO_MAXIMO_DO_RESPONSAVEL = 120;
+const TAMANHO_MAXIMO_DO_NOME_DO_REEMBOLSADO = 200;
+const TAMANHO_MAXIMO_DO_NOME_DO_ARQUIVO = 255;
+const TAMANHO_MAXIMO_DO_TIPO_DO_ARQUIVO = 120;
 const TAMANHO_MINIMO_DO_MOTIVO_DE_REABERTURA = 10;
 const MAXIMO_DE_ETIQUETAS = 20;
 const MAXIMO_DE_CATEGORIAS_DO_FUNDO = 50;
+const MAXIMO_DE_PARCELAS = 20;
 const FORMATO_DO_CODIGO_DE_SISTEMA = /^[A-Z][A-Z0-9_]*$/;
 
 const NATUREZAS = ['RECEITA', 'DESPESA'] as const;
@@ -114,6 +120,7 @@ const dadosDaConta = z.object({
   descricao: textoSemCaractereNulo().trim().max(TAMANHO_MAXIMO_DA_DESCRICAO).default(''),
   identificadorBancario: opcional(textoSemCaractereNulo().trim().min(1).max(TAMANHO_MAXIMO_DO_IDENTIFICADOR_BANCARIO)),
   unidadeId: opcional(uuidEmMinusculas<UnidadeId>()),
+  responsavel: textoSemCaractereNulo().trim().max(TAMANHO_MAXIMO_DO_RESPONSAVEL).default(''),
 });
 
 export const CriarConta = dadosDaConta
@@ -136,72 +143,155 @@ export type EditarConta = z.infer<typeof EditarConta>;
 
 const dadosDoFundo = z.object({
   nome,
-  contaVinculadaId: uuidEmMinusculas<ContaId>(),
   nota: textoSemCaractereNulo().trim().max(TAMANHO_MAXIMO_DA_DESCRICAO).default(''),
   meta: opcional(dinheiroPositivo()),
-  categoriasPermitidas: z.array(codigoDeSistema).max(MAXIMO_DE_CATEGORIAS_DO_FUNDO).refine(semRepeticao, SEM_DUPLICADOS),
+  categoriasPermitidas: z
+    .array(codigoDeSistema)
+    .max(MAXIMO_DE_CATEGORIAS_DO_FUNDO)
+    .refine(semRepeticao, SEM_DUPLICADOS)
+    .default([]),
+  valorReservado: opcional(dinheiroNaoNegativo()),
 });
 
 export const CriarFundo = dadosDoFundo.extend({
-  codigoSistema: codigoDeSistema,
+  codigoSistema: opcional(codigoDeSistema),
+  contaVinculadaId: opcional(uuidEmMinusculas<ContaId>()),
 });
 
 export type CriarFundo = z.infer<typeof CriarFundo>;
 
-export const EditarFundo = dadosDoFundo.extend({ ativo: z.boolean() });
+export const EditarFundo = dadosDoFundo.extend({
+  contaVinculadaId: uuidEmMinusculas<ContaId>(),
+  ativo: z.boolean(),
+});
 
 export type EditarFundo = z.infer<typeof EditarFundo>;
 
-const etiqueta = z.object({
+const etiquetaDoRegistro = z.object({
+  categoriaId: uuidEmMinusculas<CategoriaId>(),
+  valor: opcional(dinheiroPositivo()),
+});
+
+const etiquetaValorada = z.object({
   categoriaId: uuidEmMinusculas<CategoriaId>(),
   valor: dinheiroPositivo(),
 });
 
-const etiquetas = z
-  .array(etiqueta)
-  .max(MAXIMO_DE_ETIQUETAS)
-  .refine((itens) => semRepeticao(itens.map(({ categoriaId }) => categoriaId)), SEM_DUPLICADOS);
+const categoriasSemRepeticao = (itens: readonly { categoriaId: string }[]) =>
+  semRepeticao(itens.map(({ categoriaId }) => categoriaId));
 
-export const DadosDoLancamento = z
-  .object({
-    natureza: z.enum(NATUREZAS),
-    valor: dinheiroPositivo(),
-    motivo,
-    etiquetas: etiquetas.default([]),
-    unidadeId: opcional(uuidEmMinusculas<UnidadeId>()),
-    grupoDeCustoId: opcional(uuidEmMinusculas<GrupoDeCustoId>()),
-    contaId: opcional(uuidEmMinusculas<ContaId>()),
-    faturaId: opcional(uuidEmMinusculas<FaturaId>()),
-    pessoaId: opcional(uuidEmMinusculas<PessoaId>()),
-    contraparteTexto: opcional(textoSemCaractereNulo().trim().min(1).max(TAMANHO_MAXIMO_DA_CONTRAPARTE)),
-    formaPagamento: opcional(textoSemCaractereNulo().trim().min(1).max(TAMANHO_MAXIMO_DA_FORMA_DE_PAGAMENTO)),
-    eventoId: opcional(uuidEmMinusculas<EventoId>()),
-    dataCompetencia: opcional(dataLocalValida()),
-    dataCaixa: opcional(dataLocalValida()),
-    reembolsoAId: opcional(uuidEmMinusculas<PessoaId>()),
-    comprovanteId: opcional(uuidEmMinusculas<AnexoId>()),
-  })
-  .refine(({ pessoaId, contraparteTexto }) => pessoaId === null || contraparteTexto === null, {
-    message: 'informe a pessoa cadastrada ou o texto da contraparte, não os dois',
-    params: { regra: 'contraparte_unica' },
-    path: ['contraparteTexto'],
-  });
+const etiquetasDoRegistro = z.array(etiquetaDoRegistro).max(MAXIMO_DE_ETIQUETAS).refine(categoriasSemRepeticao, SEM_DUPLICADOS);
+
+const etiquetasValoradas = z.array(etiquetaValorada).max(MAXIMO_DE_ETIQUETAS).refine(categoriasSemRepeticao, SEM_DUPLICADOS);
+
+const camposDoLancamento = z.object({
+  natureza: z.enum(NATUREZAS),
+  valor: dinheiroPositivo(),
+  parcelas: opcional(z.array(dinheiroPositivo()).min(2).max(MAXIMO_DE_PARCELAS)),
+  motivo: opcional(motivo),
+  etiquetas: etiquetasDoRegistro.default([]),
+  unidadeId: opcional(uuidEmMinusculas<UnidadeId>()),
+  grupoDeCustoId: opcional(uuidEmMinusculas<GrupoDeCustoId>()),
+  contaId: opcional(uuidEmMinusculas<ContaId>()),
+  faturaId: opcional(uuidEmMinusculas<FaturaId>()),
+  pessoaId: opcional(uuidEmMinusculas<PessoaId>()),
+  contraparteTexto: opcional(textoSemCaractereNulo().trim().min(1).max(TAMANHO_MAXIMO_DA_CONTRAPARTE)),
+  formaPagamento: opcional(textoSemCaractereNulo().trim().min(1).max(TAMANHO_MAXIMO_DA_FORMA_DE_PAGAMENTO)),
+  eventoId: opcional(uuidEmMinusculas<EventoId>()),
+  dataCompetencia: opcional(dataLocalValida()),
+  dataCaixa: opcional(dataLocalValida()),
+  reembolsoAId: opcional(uuidEmMinusculas<PessoaId>()),
+  reembolsoATexto: opcional(textoSemCaractereNulo().trim().min(1).max(TAMANHO_MAXIMO_DO_NOME_DO_REEMBOLSADO)),
+  comprovanteId: opcional(uuidEmMinusculas<AnexoId>()),
+});
+
+type CamposDoLancamento = z.infer<typeof camposDoLancamento>;
+
+const somaDasParcelas = (parcelas: readonly number[]) => parcelas.reduce((total, parcela) => total + parcela, 0);
+
+function conferirFormaDoLancamento(dados: CamposDoLancamento, contexto: z.RefinementCtx): void {
+  if (dados.pessoaId !== null && dados.contraparteTexto !== null) {
+    contexto.addIssue({
+      code: 'custom',
+      path: ['contraparteTexto'],
+      message: 'informe a pessoa cadastrada ou o texto da contraparte, não os dois',
+      params: { regra: 'contraparte_unica' },
+    });
+  }
+  if (dados.reembolsoAId !== null && dados.reembolsoATexto !== null) {
+    contexto.addIssue({
+      code: 'custom',
+      path: ['reembolsoATexto'],
+      message: 'informe a pessoa cadastrada ou o nome de quem adiantou, não os dois',
+      params: { regra: 'reembolsado_unico' },
+    });
+  }
+  if (dados.parcelas !== null && somaDasParcelas(dados.parcelas) !== dados.valor) {
+    contexto.addIssue({
+      code: 'custom',
+      path: ['parcelas'],
+      message: 'a soma das parcelas precisa ser o valor do lançamento',
+      params: { regra: 'parcelas_somam_o_valor' },
+    });
+  }
+}
+
+export const DadosDoLancamento = camposDoLancamento.superRefine(conferirFormaDoLancamento);
 
 export type DadosDoLancamento = z.infer<typeof DadosDoLancamento>;
 
-export const RegistrarLancamento = DadosDoLancamento;
+const etiquetaSemValor = ({ valor }: { valor: number | null }) => valor === null;
 
-export type RegistrarLancamento = DadosDoLancamento;
+function conferirPedidoDeConfirmacao(dados: CamposDoLancamento & { confirmarNoRegistro: boolean }, contexto: z.RefinementCtx): void {
+  if (!dados.confirmarNoRegistro) return;
+  if (dados.etiquetas.length === 0 || dados.etiquetas.some(etiquetaSemValor)) {
+    contexto.addIssue({
+      code: 'custom',
+      path: ['etiquetas'],
+      message: 'registrar já confirmado exige etiquetas, todas com valor',
+      params: { regra: 'confirmado_exige_etiquetas_com_valor' },
+    });
+  }
+  if (dados.motivo === null) {
+    contexto.addIssue({
+      code: 'custom',
+      path: ['motivo'],
+      message: 'registrar já confirmado exige o motivo',
+      params: { regra: 'confirmado_exige_motivo' },
+    });
+  }
+  if (dados.parcelas !== null) {
+    contexto.addIssue({
+      code: 'custom',
+      path: ['parcelas'],
+      message: 'valor composto vira pendência na conferência e não nasce confirmado',
+      params: { regra: 'composto_nao_nasce_confirmado' },
+    });
+  }
+}
+
+export const RegistrarLancamento = camposDoLancamento
+  .extend({ confirmarNoRegistro: z.boolean().default(false) })
+  .superRefine((dados, contexto) => {
+    conferirFormaDoLancamento(dados, contexto);
+    conferirPedidoDeConfirmacao(dados, contexto);
+  });
+
+export type RegistrarLancamento = z.infer<typeof RegistrarLancamento>;
 
 export const EditarLancamento = DadosDoLancamento;
 
 export type EditarLancamento = DadosDoLancamento;
 
 export const ConfirmarLancamento = z.object({
-  etiquetas: etiquetas.optional(),
+  etiquetas: etiquetasValoradas.optional(),
 });
 
 export type ConfirmarLancamento = z.infer<typeof ConfirmarLancamento>;
+
+export const DevolverLancamento = z.object({ motivo });
+
+export type DevolverLancamento = z.infer<typeof DevolverLancamento>;
 
 export const EstornarLancamento = z.object({ motivo });
 
@@ -229,7 +319,10 @@ const REFERENCIA_POR_FINALIDADE: Readonly<Record<FinalidadeTransferencia, Refere
   CONCESSAO_DE_EMPRESTIMO: 'emprestimoId',
   DEVOLUCAO_DE_EMPRESTIMO: 'emprestimoId',
   REPASSE_ENTRE_UNIDADES: 'unidadeDestinoId',
+  RESGATE_DE_FUNDO: 'fundoId',
 };
+
+const FINALIDADES_DENTRO_DA_CONTA: ReadonlySet<FinalidadeTransferencia> = new Set(['APORTE_A_FUNDO', 'RESGATE_DE_FUNDO']);
 
 const REFERENCIAS_DA_FINALIDADE: readonly ReferenciaDaFinalidade[] = [
   'fundoId',
@@ -252,7 +345,8 @@ export const RegistrarTransferencia = z
     faturaId: opcional(uuidEmMinusculas<FaturaId>()),
     emprestimoId: opcional(uuidEmMinusculas<EmprestimoId>()),
     adiantamentoId: opcional(uuidEmMinusculas<AdiantamentoId>()),
-    motivo,
+    motivo: opcional(motivo),
+    comprovanteId: opcional(uuidEmMinusculas<AnexoId>()),
   })
   .superRefine((dados, contexto) => {
     const exigida = REFERENCIA_POR_FINALIDADE[dados.finalidade];
@@ -276,11 +370,12 @@ export const RegistrarTransferencia = z
         params: { regra: 'contas_da_transferencia' },
       });
     }
-    if (dados.contaOrigemId !== null && dados.contaOrigemId === dados.contaDestinoId) {
+    const dentroDaConta = FINALIDADES_DENTRO_DA_CONTA.has(dados.finalidade);
+    if (!dentroDaConta && dados.contaOrigemId !== null && dados.contaOrigemId === dados.contaDestinoId) {
       contexto.addIssue({
         code: 'custom',
         path: ['contaDestinoId'],
-        message: 'origem e destino precisam ser contas diferentes',
+        message: 'origem e destino precisam ser contas diferentes, salvo na reserva do fundo',
         params: { regra: 'contas_iguais' },
       });
     }
@@ -292,6 +387,10 @@ export const EditarTransferencia = RegistrarTransferencia;
 
 export type EditarTransferencia = RegistrarTransferencia;
 
+export const ConfirmarTransferencia = z.object({});
+
+export type ConfirmarTransferencia = z.infer<typeof ConfirmarTransferencia>;
+
 export const EstornarTransferencia = z.object({ motivo });
 
 export type EstornarTransferencia = z.infer<typeof EstornarTransferencia>;
@@ -300,15 +399,22 @@ export const ParametrosDaTransferencia = z.object({ id: uuidEmMinusculas<Transfe
 
 export type ParametrosDaTransferencia = z.infer<typeof ParametrosDaTransferencia>;
 
-export const ParametrosDoPeriodo = z.object({
-  unidadeId: uuidEmMinusculas<UnidadeId>(),
+export const ParametrosDaCompetencia = z.object({
   competencia: competenciaValida(),
 });
 
-export type ParametrosDoPeriodo = z.infer<typeof ParametrosDoPeriodo>;
+export type ParametrosDaCompetencia = z.infer<typeof ParametrosDaCompetencia>;
 
 export const ReabrirPeriodo = z.object({
   motivo: textoSemCaractereNulo().trim().min(TAMANHO_MINIMO_DO_MOTIVO_DE_REABERTURA).max(TAMANHO_MAXIMO_DO_MOTIVO),
 });
 
 export type ReabrirPeriodo = z.infer<typeof ReabrirPeriodo>;
+
+export const EnviarAnexo = z.object({
+  nome: textoSemCaractereNulo().trim().min(1).max(TAMANHO_MAXIMO_DO_NOME_DO_ARQUIVO),
+  tipo: textoSemCaractereNulo().trim().min(1).max(TAMANHO_MAXIMO_DO_TIPO_DO_ARQUIVO),
+  tamanhoBytes: z.number().int().positive(),
+});
+
+export type EnviarAnexo = z.infer<typeof EnviarAnexo>;

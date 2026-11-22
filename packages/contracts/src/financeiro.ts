@@ -86,6 +86,7 @@ export interface Conta {
   readonly pessoaTitularId: PessoaId | null;
   readonly identificadorBancario: string | null;
   readonly unidadeId: UnidadeId | null;
+  readonly responsavel: string;
   readonly ativa: boolean;
   readonly versao: number;
 }
@@ -126,18 +127,25 @@ export type TipoLancamento = 'ENTRADA' | 'SAIDA' | 'TRANSFERENCIA';
 export interface Etiqueta {
   readonly categoriaId: CategoriaId;
   readonly natureza: Natureza;
-  readonly valor: Dinheiro;
+  readonly valor: Dinheiro | null;
 }
 
 export type ConfirmadoPor =
   | { readonly autorTipo: 'USUARIO'; readonly autorId: UsuarioId }
   | { readonly autorTipo: 'SISTEMA'; readonly autorId: null };
 
+export interface DevolucaoDoLancamento {
+  readonly motivo: string;
+  readonly devolvidoPor: UsuarioId;
+  readonly devolvidoEm: DataHora;
+}
+
 export interface Lancamento {
   readonly id: LancamentoId;
   readonly natureza: Natureza;
   readonly valor: Dinheiro;
-  readonly motivo: string;
+  readonly parcelas: readonly Dinheiro[] | null;
+  readonly motivo: string | null;
   readonly etiquetas: readonly Etiqueta[];
   readonly unidadeId: UnidadeId | null;
   readonly grupoDeCustoId: GrupoDeCustoId | null;
@@ -151,8 +159,10 @@ export interface Lancamento {
   readonly dataCompetencia: DataLocal | null;
   readonly dataCaixa: DataLocal | null;
   readonly reembolsoAId: PessoaId | null;
+  readonly reembolsoATexto: string | null;
   readonly comprovante: Anexo | null;
   readonly status: StatusGravadoDoLancamento;
+  readonly devolucao: DevolucaoDoLancamento | null;
   readonly origem: OrigemLancamento;
   readonly estornoDeId: LancamentoId | null;
   readonly estornadoPorId: LancamentoId | null;
@@ -171,6 +181,7 @@ export const FINALIDADES_DE_TRANSFERENCIA = [
   'CONCESSAO_DE_EMPRESTIMO',
   'DEVOLUCAO_DE_EMPRESTIMO',
   'REPASSE_ENTRE_UNIDADES',
+  'RESGATE_DE_FUNDO',
 ] as const;
 
 export type FinalidadeTransferencia = (typeof FINALIDADES_DE_TRANSFERENCIA)[number];
@@ -188,7 +199,8 @@ export interface Transferencia {
   readonly faturaId: FaturaId | null;
   readonly emprestimoId: EmprestimoId | null;
   readonly adiantamentoId: AdiantamentoId | null;
-  readonly motivo: string;
+  readonly motivo: string | null;
+  readonly comprovante: Anexo | null;
   readonly status: StatusGravadoDoLancamento;
   readonly estornoDeId: TransferenciaId | null;
   readonly estornadaPorId: TransferenciaId | null;
