@@ -332,3 +332,20 @@ test('reserva do fundo dentro da conta: aporte e resgate admitem origem igual ao
     { caminho: 'fundoId', regra: 'referencia_da_finalidade' },
   ]);
 });
+
+test('valor composto aceita até 20 parcelas', () => {
+  const vinte = Array.from({ length: 20 }, () => 100);
+  assert.equal(RegistrarLancamento.safeParse({ ...lancamentoMinimo, valor: 2000, parcelas: vinte }).success, true);
+  assert.equal(RegistrarLancamento.safeParse({ ...lancamentoMinimo, valor: 2100, parcelas: [...vinte, 100] }).success, false);
+});
+
+test('envio de anexo recusa nome e tipo acima do tamanho máximo', () => {
+  const anexo = { nome: 'a.pdf', tipo: 'application/pdf', tamanhoBytes: 1 };
+  assert.equal(EnviarAnexo.safeParse({ ...anexo, nome: `${'a'.repeat(252)}.pdf` }).success, false);
+  assert.equal(EnviarAnexo.safeParse({ ...anexo, tipo: 'a'.repeat(121) }).success, false);
+});
+
+test('etiqueta com valor zero é recusada no registro e na confirmação', () => {
+  assert.equal(RegistrarLancamento.safeParse({ ...lancamentoMinimo, etiquetas: [{ categoriaId: UUID_A, valor: 0 }] }).success, false);
+  assert.equal(ConfirmarLancamento.safeParse({ etiquetas: [{ categoriaId: UUID_A, valor: 0 }] }).success, false);
+});
