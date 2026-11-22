@@ -14,6 +14,11 @@ Dois PRs:
 1. **Anexo:** `shared.anexo` e a porta de armazenamento (SeaweedFS local, compatível com S3), com upload por URL assinada ou pelo servidor (decidir no desenho), tipo e tamanho validados, e o vínculo com o lançamento.
 2. **Evento mínimo:** tabela e resumo do evento, sem comandos de inscrição (isso é B5), só o necessário para o lançamento apontar para um evento (a transferência não tem `evento_id`) e para o resultado por cerimônia (TSK-519) ler o resumo do evento.
 
+## Decisões do dono (22/11/2026)
+
+- **Envio:** o comando `EnviarAnexo` descreve o arquivo (nome, tipo e tamanho em bytes). O mecanismo, os tipos aceitos e o teto de tamanho continuam sendo decididos nesta peça.
+- **Onde se usa:** o comprovante vale no lançamento e também na transferência.
+
 ## Critérios de aceite
 
 - Anexo de outra instituição inacessível.

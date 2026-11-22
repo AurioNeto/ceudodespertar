@@ -35,6 +35,15 @@ export function dinheiroPositivo() {
     .transform((centavos) => centavos as Dinheiro);
 }
 
+export function dinheiroNaoNegativo() {
+  return z
+    .number()
+    .int()
+    .nonnegative()
+    .max(MAXIMO_DE_DINHEIRO_EM_CENTAVOS)
+    .transform((centavos) => centavos as Dinheiro);
+}
+
 export function dataLocalValida() {
   return z
     .string()

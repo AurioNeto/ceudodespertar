@@ -14,6 +14,11 @@ Fechamento é o marco da B1. O hash do fechamento inclui lançamentos **e transf
 - Trava consultiva por período no repositório: exclusiva ao fechar, compartilhada em quem grava lançamento ou transferência na competência; prova de `READ COMMITTED`.
 - Migration com a imutabilidade simples do período fechado.
 
+## Decisões do dono (22/11/2026)
+
+- **Por competência da casa:** um comando fecha, numa transação, o período de todas as unidades daquela competência, e outro os reabre. A rota leva só a competência (`ParametrosDaCompetencia`). O registro e o hash continuam por unidade, e uma pendência em qualquer unidade impede todas.
+- **Reabertura:** o comando continua exigindo dez caracteres no motivo, e a tela passa a exigir também.
+
 ## Critérios de aceite
 
 - Teste de integração de concorrência: fechar × lançar na mesma competência, com barreira explícita, sem sleep.
