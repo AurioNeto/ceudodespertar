@@ -15,7 +15,7 @@ A primeira execução desta task, em novembro de 2026, reescreveu as telas para 
 Uma tela por PR. Para cada tela, nesta ordem:
 1. Inventário de blocos, escrito aqui em "Como ficou": bloco, tipo que consome, rota que serve, fica em mock nesta etapa?
 2. Se a rota não devolve o tipo que a tela consome, o backend ganha a consulta nesse formato, em PR próprio de API.
-3. PR de web que troca só o miolo dos hooks de dados, no padrão de `pages/sistema/AcessosPage/consultas.ts` e `comandos.ts`.
+3. PR de web que troca a fiação de dados, no padrão de `pages/sistema/AcessosPage/consultas.ts` e `comandos.ts`: o hook passa a ler a API; componente que importava o mock direto recebe o dado por prop ou pelo hook; o teste ajusta só a montagem. O que a tela mostra e os casos de teste não mudam.
 4. O dono confere a tela ao lado da versão em mock.
 
 Ordem das telas:
@@ -34,7 +34,7 @@ Ordem das telas:
 ## Critérios de aceite
 
 - Paridade: os testes de tela existentes passam sem alteração, nenhum componente é apagado e `pnpm paridade:web` passa sem o rótulo `tela-alterada-pelo-dono`.
-- O diff do PR de web fica em hooks de dados, `consultas.ts`, `comandos.ts`, mocks dos blocos servidos e, quando couber, `app/shell/telas.ts`.
+- O diff do PR de web fica na fiação de dados: hooks, `consultas.ts`, `comandos.ts`, a origem do dado nos componentes, a montagem dos testes, mocks dos blocos servidos e, quando couber, `app/shell/telas.ts`.
 - A `fonte` da tela só vira `'api'`, e a faixa de demonstração só sai, quando o último bloco dela for servido. Os blocos que ficaram em mock estão listados em "Como ficou".
 - Gate do web verde; sem captura de telas.
 

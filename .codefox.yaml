@@ -99,7 +99,7 @@ path_instructions:
       - Validação por Zod; erros pelo catálogo, sem HttpException com status fixo.
   - path: "apps/web/src/pages/**"
     instructions: |
-      - O front é a fonte da verdade (AGENTS.md). Integração de tela com a API muda só o miolo do hook de dados; componente, texto, rota, permissão de menu ou teste de tela alterado numa integração é blocker.
+      - O front é a fonte da verdade (AGENTS.md). Integração de tela com a API muda a fiação de dados (hook, origem do dado no componente, montagem do teste); marcação, texto, campo, rota, permissão de menu ou caso de teste alterado numa integração, sem decisão do dono na task, é blocker.
       - Bloco que a etapa não serve continua em mock; tela com bloco em mock mantém fonte 'mock' em app/shell/telas.ts.
       - Tipo de leitura novo com a forma do domínio, paralelo a packages/contracts/src/readmodels.ts, é blocker.
   - path: "**/*.{spec,test}.ts"

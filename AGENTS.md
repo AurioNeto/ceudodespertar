@@ -11,8 +11,8 @@ Em novembro de 2026 um agente fez o backend do financeiro antes de olhar as tela
 ### Ao ligar uma tela à API
 
 1. **Antes de qualquer código**, escreva na task o inventário de blocos da tela: bloco, tipo que ele consome, rota que vai servi-lo, e se fica em mock nesta etapa.
-2. **Só muda o miolo do hook de dados** (`pages/**/hooks/`, `consultas.ts`, `comandos.ts`). O hook mantém a assinatura e o formato de retorno. O padrão de código é o de `apps/web/src/pages/sistema/AcessosPage/consultas.ts` e `comandos.ts`.
-3. **Não mudam:** componentes, textos, rotas, permissões do menu (`app/shell/menu.ts`, `telas.ts`) e testes de tela (`*.test.tsx`, `*.dom.test.tsx`). Não apague nem reescreva teste para o gate passar.
+2. **Muda a fiação de dados, não o conteúdo.** O hook de dados (`pages/**/hooks/`, `consultas.ts`, `comandos.ts`) troca o mock pela API e mantém a assinatura e o formato de retorno; conversão só de forma (texto para id pelo cadastro, formato de data, tipo para natureza) fica nele. O padrão de código é o de `apps/web/src/pages/sistema/AcessosPage/consultas.ts` e `comandos.ts`. Componente que importa o mock direto pode passar a receber o dado por prop ou pelo hook. O teste pode mudar a montagem: provedor e origem do dado de teste.
+3. **Não muda o que a tela mostra e faz:** marcação, textos, campos, rotas, permissões do menu (`app/shell/menu.ts`, `telas.ts`) e os casos dos testes de tela (`*.test.tsx`, `*.dom.test.tsx`). Não apague, não renomeie e não esvazie caso de teste para o gate passar. Mudança de conteúdo de tela só com decisão do dono registrada na task.
 4. **Bloco que a etapa não serve continua em mock.** Exemplos: sugestão do cupom por IA, conciliação nos cartões de conta, gráfico de estoque do Painel. A `fonte` da tela em `app/shell/telas.ts` só vira `'api'` quando o último bloco for servido; até lá a faixa de demonstração continua.
 5. **Faltou campo no contrato:** promova o tipo do mock para `packages/contracts`, sem mudar a forma. Os tipos de leitura das telas ficam em `packages/contracts/src/readmodels.ts`.
 
