@@ -1,11 +1,12 @@
 import { Body, Controller, Get, Param, Post, Put, Res } from '@nestjs/common';
 import { CriarUnidade as ComandoCriarUnidade, EditarUnidade as ComandoEditarUnidade, ParametrosDoCadastro } from '@cdd/contracts';
-import type { Unidade, UnidadeId, UnidadesDaCasa } from '@cdd/contracts';
+import type { UnidadeId } from '@cdd/contracts';
 import { RequerPermissao } from '../../../../shared/infrastructure/autenticacao/marcas-de-acesso.js';
 import { IfMatch } from '../../../../shared/infrastructure/http/if-match.decorator.js';
 import { ModoDeTransacao } from '../../../../shared/infrastructure/http/modo-de-transacao.decorator.js';
 import type { ErroDeDominio } from '../../../../shared/kernel/erro-de-dominio.js';
 import type { Result } from '../../../../shared/kernel/result.js';
+import type { UnidadeApresentada, UnidadesDoPlano } from '../../application/cadastros/apresentacao-dos-cadastros.js';
 import { ConsultarCadastros } from '../../application/cadastros/consultar-cadastros.js';
 import { CriarUnidade } from '../../application/cadastros/criar-unidade.js';
 import { EditarUnidade } from '../../application/cadastros/editar-unidade.js';
@@ -25,7 +26,7 @@ export class UnidadesController {
   @Get()
   @RequerPermissao('financeiro.plano_contas.ler')
   @ModoDeTransacao('leitura')
-  listar(): Promise<UnidadesDaCasa> {
+  listar(): Promise<UnidadesDoPlano> {
     return this.consultarCadastros.unidadesDaCasa();
   }
 
@@ -35,7 +36,7 @@ export class UnidadesController {
   async criar(
     @Body({ schema: ComandoCriarUnidade }) comando: ComandoCriarUnidade,
     @Res({ passthrough: true }) resposta: RespostaComCabecalhos,
-  ): Promise<Result<Unidade, ErroDeDominio>> {
+  ): Promise<Result<UnidadeApresentada, ErroDeDominio>> {
     const criada = await this.criarUnidade.executar(comando);
     return informarLocalizacaoDoCriado(resposta, ROTA_DE_UNIDADES, criada);
   }
@@ -47,7 +48,7 @@ export class UnidadesController {
     @Param({ schema: ParametrosDoCadastro }) { id }: ParametrosDoCadastro,
     @IfMatch() versaoEsperada: number,
     @Body({ schema: ComandoEditarUnidade }) comando: ComandoEditarUnidade,
-  ): Promise<Result<Unidade, ErroDeDominio>> {
+  ): Promise<Result<UnidadeApresentada, ErroDeDominio>> {
     return this.editarUnidade.executar({ ...comando, unidadeId: id as UnidadeId, versaoEsperada });
   }
 }

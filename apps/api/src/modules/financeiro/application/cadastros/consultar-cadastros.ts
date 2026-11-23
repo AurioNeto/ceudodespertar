@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import type { CategoriasDaCasa, GruposDeCustoDaCasa, UnidadesDaCasa } from '@cdd/contracts';
+import type { GruposDeCustoDaCasa } from '@cdd/contracts';
 import { RepositorioDeCategoria } from '../../domain/categoria/categoria.repo.js';
 import { RepositorioDeGrupoDeCusto } from '../../domain/grupo-de-custo/grupo-de-custo.repo.js';
 import { RepositorioDeUnidade } from '../../domain/unidade/unidade.repo.js';
 import { apresentarCategoria, apresentarGrupoDeCusto, apresentarUnidade } from './apresentacao-dos-cadastros.js';
+import type { CategoriasDoPlano, UnidadesDoPlano } from './apresentacao-dos-cadastros.js';
 
 @Injectable()
 export class ConsultarCadastros {
@@ -13,7 +14,7 @@ export class ConsultarCadastros {
     private readonly categorias: RepositorioDeCategoria,
   ) {}
 
-  async unidadesDaCasa(): Promise<UnidadesDaCasa> {
+  async unidadesDaCasa(): Promise<UnidadesDoPlano> {
     return { itens: (await this.unidades.listar()).map((unidade) => apresentarUnidade(unidade)) };
   }
 
@@ -21,7 +22,7 @@ export class ConsultarCadastros {
     return { itens: (await this.gruposDeCusto.listar()).map((grupo) => apresentarGrupoDeCusto(grupo)) };
   }
 
-  async categoriasDaCasa(): Promise<CategoriasDaCasa> {
+  async categoriasDaCasa(): Promise<CategoriasDoPlano> {
     return { itens: (await this.categorias.listar()).map((categoria) => apresentarCategoria(categoria)) };
   }
 }

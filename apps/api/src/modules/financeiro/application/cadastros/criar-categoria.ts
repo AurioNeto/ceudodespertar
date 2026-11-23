@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import type { Categoria as CategoriaDoContrato, CategoriaId, CriarCategoria as ComandoCriarCategoria } from '@cdd/contracts';
+import type { CategoriaId, CriarCategoria as ComandoCriarCategoria } from '@cdd/contracts';
 import { UnidadeDeTrabalho } from '../../../../shared/infrastructure/banco/unidade-de-trabalho.js';
 import type { ErroDeDominio } from '../../../../shared/kernel/erro-de-dominio.js';
 import { gerarUuidV7 } from '../../../../shared/kernel/ids.js';
@@ -8,6 +8,7 @@ import { Categoria } from '../../domain/categoria/categoria.js';
 import { RepositorioDeCategoria } from '../../domain/categoria/categoria.repo.js';
 import { RepositorioDeUnidade } from '../../domain/unidade/unidade.repo.js';
 import { apresentarCategoria } from './apresentacao-dos-cadastros.js';
+import type { CategoriaApresentada } from './apresentacao-dos-cadastros.js';
 import { conferirUnidadePadraoDaCategoria } from './conferir-unidade-padrao-da-categoria.js';
 
 @Injectable()
@@ -18,8 +19,8 @@ export class CriarCategoria {
     private readonly unidades: RepositorioDeUnidade,
   ) {}
 
-  executar(comando: ComandoCriarCategoria): Promise<Result<CategoriaDoContrato, ErroDeDominio>> {
-    return this.unidadeDeTrabalho.transacao('escrita', async (): Promise<Result<CategoriaDoContrato, ErroDeDominio>> => {
+  executar(comando: ComandoCriarCategoria): Promise<Result<CategoriaApresentada, ErroDeDominio>> {
+    return this.unidadeDeTrabalho.transacao('escrita', async (): Promise<Result<CategoriaApresentada, ErroDeDominio>> => {
       const criada = Categoria.criar({ ...comando, id: gerarUuidV7() as CategoriaId });
       if (criada.tipo === 'erro') return criada;
       const categoria = criada.valor;

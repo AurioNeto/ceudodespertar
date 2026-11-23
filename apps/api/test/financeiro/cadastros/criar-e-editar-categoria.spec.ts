@@ -73,9 +73,11 @@ describe('CriarCategoria', () => {
       natureza: 'RECEITA',
       tipo: 'OPERACIONAL',
       regimesPermitidos: ['CONTRIBUICAO'],
-      unidadePadraoId: UNIDADE_CONTRIBUICAO,
       linhaRelatorio: 'Receita de aluguel',
       ativa: true,
+      lancamentos: 0,
+      nota: null,
+      unidadePadraoId: UNIDADE_CONTRIBUICAO,
       versao: 1,
     });
     expect(categorias.adicionados).toHaveLength(1);
