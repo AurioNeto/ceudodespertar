@@ -1,8 +1,14 @@
+import type { UnidadeDoPlano } from '@cdd/contracts';
 import type { Density } from '@/ds';
-import { unidades } from '../../mocks/parametros';
 import { UnidadeCartao } from './components/UnidadeCartao';
 
-export function ListaDeUnidades({ densidade }: { densidade: Density }) {
+export function ListaDeUnidades({
+  unidades,
+  densidade,
+}: {
+  unidades: readonly UnidadeDoPlano[];
+  densidade: Density;
+}) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
       {unidades.map((u) => (

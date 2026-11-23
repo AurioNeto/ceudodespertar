@@ -1,9 +1,10 @@
-import { Aviso, CorpoDaTela, ScreenHeader, useDensidade, SeletorDeTipo, Recado } from '@/ds';
+import { Aviso, CorpoDaTela, InfraError, Recado, ScreenHeader, SeletorDeTipo, SkeletonList, useDensidade } from '@/ds';
 import { pluralizar } from '@/pages/utils/formato';
 import { BuracoDoRelatorio } from './components/BuracoDoRelatorio';
 import { ListaDeUnidades } from './components/ListaDeUnidades';
 import { ParametrosDaCasa } from './components/ParametrosDaCasa';
 import { TabelaDeCategorias } from './components/TabelaDeCategorias';
+import { MENSAGEM_DE_FALHA_NAS_CATEGORIAS, MENSAGEM_DE_FALHA_NAS_UNIDADES } from './constantes';
 import { useCorrecaoDeLinha } from './hooks/useCorrecaoDeLinha';
 
 export function ParametrosPage() {
@@ -33,7 +34,22 @@ export function ParametrosPage() {
 
         {tela.recado ? <Recado texto={tela.recado} onFechar={tela.fecharRecado} /> : null}
 
-        {tela.aba === 'categorias' ? (
+        {tela.erroAoSalvar ? (
+          <Aviso tom="atencao" role="alert">
+            {tela.erroAoSalvar}
+          </Aviso>
+        ) : null}
+
+        {tela.aba === 'categorias' && tela.consultaDeCategorias.isPending ? <SkeletonList rows={6} /> : null}
+
+        {tela.aba === 'categorias' && tela.consultaDeCategorias.isError && !tela.consultaDeCategorias.data ? (
+          <InfraError
+            description={MENSAGEM_DE_FALHA_NAS_CATEGORIAS}
+            onRetry={() => void tela.consultaDeCategorias.refetch()}
+          />
+        ) : null}
+
+        {tela.aba === 'categorias' && tela.consultaDeCategorias.data ? (
           <>
             {tela.semLinha.length > 0 ? (
               <BuracoDoRelatorio quantidade={tela.semLinha.length} lancamentos={tela.semLinha.reduce((s, c) => s + c.lancamentos, 0)} />
@@ -46,6 +62,7 @@ export function ParametrosPage() {
               densidade={densidade}
               editando={tela.editando}
               linhaEscolhida={tela.linhaEscolhida}
+              salvando={tela.salvando}
               onLinha={tela.setLinhaEscolhida}
               onEditar={tela.editar}
               onCancelar={tela.cancelar}
@@ -54,7 +71,16 @@ export function ParametrosPage() {
           </>
         ) : null}
 
-        {tela.aba === 'unidades' ? (
+        {tela.aba === 'unidades' && tela.consultaDeUnidades.isPending ? <SkeletonList rows={3} /> : null}
+
+        {tela.aba === 'unidades' && tela.consultaDeUnidades.isError && !tela.consultaDeUnidades.data ? (
+          <InfraError
+            description={MENSAGEM_DE_FALHA_NAS_UNIDADES}
+            onRetry={() => void tela.consultaDeUnidades.refetch()}
+          />
+        ) : null}
+
+        {tela.aba === 'unidades' && tela.consultaDeUnidades.data ? (
           <>
             {tela.semRegime.length > 0 ? (
               <Aviso tom="pendente" titulo={`${pluralizar(tela.semRegime.length, 'unidade')} sem regime definido`}>
@@ -62,7 +88,7 @@ export function ParametrosPage() {
                 fiscal. É decisão da coordenação, não do sistema — e trava o seed das unidades.
               </Aviso>
             ) : null}
-            <ListaDeUnidades densidade={densidade} />
+            <ListaDeUnidades unidades={tela.unidades} densidade={densidade} />
           </>
         ) : null}
 
