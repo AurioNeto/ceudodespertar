@@ -120,8 +120,11 @@ describe('cadastros do financeiro pela API (Doc 7 §12, §18.1)', () => {
         codigoSistema: 'MUNAY',
         nome: 'Munay',
         regime: 'COMERCIAL',
-        tetoAnual: 8_100_000,
+        documentoFiscal: null,
+        tetoFaturamentoAnual: 8_100_000,
+        faturamentoNoAno: null,
         ativa: true,
+        nota: null,
         versao: 1,
       });
       expect(itens(grupos).find(({ codigoSistema }) => codigoSistema === 'COZINHA')).toEqual({
@@ -138,9 +141,11 @@ describe('cadastros do financeiro pela API (Doc 7 §12, §18.1)', () => {
         natureza: 'RECEITA',
         tipo: 'OPERACIONAL',
         regimesPermitidos: ['CONTRIBUICAO', 'COMERCIAL'],
-        unidadePadraoId: null,
         linhaRelatorio: 'Receita de hospedagem',
         ativa: true,
+        lancamentos: 0,
+        nota: null,
+        unidadePadraoId: null,
         versao: 1,
       });
     });
@@ -180,8 +185,11 @@ describe('cadastros do financeiro pela API (Doc 7 §12, §18.1)', () => {
         codigoSistema: 'OFICINA',
         nome: 'Oficina',
         regime: 'COMERCIAL',
-        tetoAnual: 5_000_000,
+        documentoFiscal: null,
+        tetoFaturamentoAnual: 5_000_000,
+        faturamentoNoAno: null,
         ativa: true,
+        nota: null,
         versao: 1,
       });
       expect(resposta.localizacao).toBe(`${ROTA_UNIDADES}/${resposta.corpo['id'] as string}`);
@@ -290,7 +298,18 @@ describe('cadastros do financeiro pela API (Doc 7 §12, §18.1)', () => {
       const resposta = await emA(GERENTE, `${ROTA_UNIDADES}/${munay}`, { metodo: 'PUT', versao: 1, corpo: edicaoDaUnidade });
 
       expect(resposta.status).toBe(200);
-      expect(resposta.corpo).toEqual({ id: munay, codigoSistema: 'MUNAY', ...edicaoDaUnidade, versao: 2 });
+      expect(resposta.corpo).toEqual({
+        id: munay,
+        codigoSistema: 'MUNAY',
+        nome: 'Munay Música',
+        regime: 'COMERCIAL',
+        documentoFiscal: null,
+        tetoFaturamentoAnual: 9_000_000,
+        faturamentoNoAno: null,
+        ativa: true,
+        nota: null,
+        versao: 2,
+      });
       expect(await linhaDoCadastro(banco, INSTITUICAO_A, 'unidade', munay)).toMatchObject({ nome: 'Munay Música', versao: 2 });
     });
 

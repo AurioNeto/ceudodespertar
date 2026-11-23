@@ -1,11 +1,12 @@
 import { Body, Controller, Get, Param, Post, Put, Res } from '@nestjs/common';
 import { CriarCategoria as ComandoCriarCategoria, EditarCategoria as ComandoEditarCategoria, ParametrosDoCadastro } from '@cdd/contracts';
-import type { Categoria, CategoriaId, CategoriasDaCasa } from '@cdd/contracts';
+import type { CategoriaId } from '@cdd/contracts';
 import { RequerPermissao } from '../../../../shared/infrastructure/autenticacao/marcas-de-acesso.js';
 import { IfMatch } from '../../../../shared/infrastructure/http/if-match.decorator.js';
 import { ModoDeTransacao } from '../../../../shared/infrastructure/http/modo-de-transacao.decorator.js';
 import type { ErroDeDominio } from '../../../../shared/kernel/erro-de-dominio.js';
 import type { Result } from '../../../../shared/kernel/result.js';
+import type { CategoriaApresentada, CategoriasDoPlano } from '../../application/cadastros/apresentacao-dos-cadastros.js';
 import { ConsultarCadastros } from '../../application/cadastros/consultar-cadastros.js';
 import { CriarCategoria } from '../../application/cadastros/criar-categoria.js';
 import { EditarCategoria } from '../../application/cadastros/editar-categoria.js';
@@ -25,7 +26,7 @@ export class CategoriasController {
   @Get()
   @RequerPermissao('financeiro.plano_contas.ler')
   @ModoDeTransacao('leitura')
-  listar(): Promise<CategoriasDaCasa> {
+  listar(): Promise<CategoriasDoPlano> {
     return this.consultarCadastros.categoriasDaCasa();
   }
 
@@ -35,7 +36,7 @@ export class CategoriasController {
   async criar(
     @Body({ schema: ComandoCriarCategoria }) comando: ComandoCriarCategoria,
     @Res({ passthrough: true }) resposta: RespostaComCabecalhos,
-  ): Promise<Result<Categoria, ErroDeDominio>> {
+  ): Promise<Result<CategoriaApresentada, ErroDeDominio>> {
     const criada = await this.criarCategoria.executar(comando);
     return informarLocalizacaoDoCriado(resposta, ROTA_DE_CATEGORIAS, criada);
   }
@@ -47,7 +48,7 @@ export class CategoriasController {
     @Param({ schema: ParametrosDoCadastro }) { id }: ParametrosDoCadastro,
     @IfMatch() versaoEsperada: number,
     @Body({ schema: ComandoEditarCategoria }) comando: ComandoEditarCategoria,
-  ): Promise<Result<Categoria, ErroDeDominio>> {
+  ): Promise<Result<CategoriaApresentada, ErroDeDominio>> {
     return this.editarCategoria.executar({ ...comando, categoriaId: id as CategoriaId, versaoEsperada });
   }
 }

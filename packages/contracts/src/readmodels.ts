@@ -118,6 +118,8 @@ export interface CategoriaDoPlano {
   readonly ativa: boolean;
   readonly lancamentos: number;
   readonly nota: string | null;
+  readonly unidadePadraoId?: UnidadeId | null;
+  readonly versao?: number;
 }
 
 export interface UnidadeDoPlano {
@@ -130,4 +132,5 @@ export interface UnidadeDoPlano {
   readonly faturamentoNoAno: Dinheiro | null;
   readonly ativa: boolean;
   readonly nota: string | null;
+  readonly versao?: number;
 }

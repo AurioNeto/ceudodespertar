@@ -46,8 +46,11 @@ describe('CriarUnidade', () => {
       codigoSistema: 'OFICINA',
       nome: 'Oficina',
       regime: 'CONTRIBUICAO',
-      tetoAnual: null,
+      documentoFiscal: null,
+      tetoFaturamentoAnual: null,
+      faturamentoNoAno: null,
       ativa: true,
+      nota: null,
       versao: 1,
     });
     expect(repositorio.adicionados).toHaveLength(1);
@@ -75,8 +78,11 @@ describe('EditarUnidade', () => {
       codigoSistema: 'CDD',
       nome: 'CDD Casa',
       regime: 'CONTRIBUICAO',
-      tetoAnual: null,
+      documentoFiscal: null,
+      tetoFaturamentoAnual: null,
+      faturamentoNoAno: null,
       ativa: true,
+      nota: null,
       versao: VERSAO_DO_CADASTRO + 1,
     });
     expect(repositorio.salvos).toHaveLength(1);
