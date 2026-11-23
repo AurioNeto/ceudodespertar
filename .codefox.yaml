@@ -97,6 +97,11 @@ path_instructions:
       - Toda rota com exatamente uma marca de acesso; escrita exige permissão.
       - Comando que devolve dado pessoal usa @RespostaSemCorpoNoReplay.
       - Validação por Zod; erros pelo catálogo, sem HttpException com status fixo.
+  - path: "apps/web/src/pages/**"
+    instructions: |
+      - O front é a fonte da verdade (AGENTS.md). Integração de tela com a API muda a fiação de dados (hook, origem do dado no componente, montagem do teste); marcação, texto, campo, rota, permissão de menu ou caso de teste alterado numa integração, sem decisão do dono na task, é blocker.
+      - Bloco que a etapa não serve continua em mock; tela com bloco em mock mantém fonte 'mock' em app/shell/telas.ts.
+      - Tipo de leitura novo com a forma do domínio, paralelo a packages/contracts/src/readmodels.ts, é blocker.
   - path: "**/*.{spec,test}.ts"
     instructions: |
       - Teste precisa falhar se o comportamento mudar (sem asserção vazia ou tautológica).
@@ -115,6 +120,7 @@ global_rules:
   - "Dinheiro sempre inteiro em centavos."
   - "Erros nunca silenciados; log com contexto, sem dado pessoal e sem o objeto de erro do driver."
   - "Feature nova sem teste = major no mínimo."
+  - "O front é a fonte da verdade: o backend serve o tipo que a tela consome; conflito entre tela e domínio é decisão do dono, nunca do executor (AGENTS.md)."
 
 never_comment:
   - "Formatação coberta pelo oxlint/formatter."
@@ -142,6 +148,9 @@ pre_merge_checks:
     - name: "migration-rollback"
       mode: "error"
       instructions: "PR com migration exige desfazer.sql e o efeito de lock/tamanho descrito."
+    - name: "paridade-de-tela"
+      mode: "error"
+      instructions: "PR que liga tela à API traz na task o inventário de blocos (bloco, tipo consumido, rota, fica em mock?) e não remove nada da tela. PR de backend não toca apps/web; PR de integração não toca apps/api/src/modules."
     - name: "sem-ids-de-plano"
       mode: "error"
       instructions: "Título, descrição, commits, docs e nomes de teste sem IDs do plano local (Fxx, Ixx, Wxx, Rxx)."

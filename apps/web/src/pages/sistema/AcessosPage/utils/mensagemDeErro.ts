@@ -1,13 +1,17 @@
-import type { CodigoDeErro } from '@cdd/contracts';
-import { ErroDaApi, ErroDeRede } from '@/dados';
+import {
+  MENSAGEM_DE_INDISPONIBILIDADE,
+  MENSAGEM_DE_PERMISSAO_PERDIDA,
+  MENSAGEM_DE_REDE,
+  MENSAGEM_GENERICA,
+  criarMensagemDeErro,
+} from '@/pages/utils/mensagemDeErro';
+import type { MensagensPorCodigo } from '@/pages/utils/mensagemDeErro';
 import { AVISO_DE_VERSAO_DESATUALIZADA } from '../constantes';
 
-export const MENSAGEM_DE_PERMISSAO_PERDIDA_DE_ACESSOS = 'Você não tem mais permissão para esta ação.';
-export const MENSAGEM_GENERICA_DE_ACESSOS = 'Não foi possível concluir agora. Tente de novo em instantes.';
-export const MENSAGEM_DE_REDE_DE_ACESSOS =
-  'Sem conexão com o servidor. Verifique sua internet e tente de novo; o que você digitou foi mantido.';
-export const MENSAGEM_DE_INDISPONIBILIDADE_DE_ACESSOS =
-  'O serviço está indisponível no momento. Tente de novo em instantes; o que você digitou foi mantido.';
+export const MENSAGEM_DE_PERMISSAO_PERDIDA_DE_ACESSOS = MENSAGEM_DE_PERMISSAO_PERDIDA;
+export const MENSAGEM_GENERICA_DE_ACESSOS = MENSAGEM_GENERICA;
+export const MENSAGEM_DE_REDE_DE_ACESSOS = MENSAGEM_DE_REDE;
+export const MENSAGEM_DE_INDISPONIBILIDADE_DE_ACESSOS = MENSAGEM_DE_INDISPONIBILIDADE;
 
 export const MENSAGEM_DE_REENVIO_RECENTE_SEM_ESPERA =
   'O convite acabou de ser enviado. Aguarde um pouco antes de reenviar.';
@@ -26,7 +30,8 @@ export function mensagemDeReenvioRecente(esperaEmSegundos: number | null): strin
   return `O convite acabou de ser enviado. Aguarde ${duracaoDaEspera(esperaEmSegundos)} para reenviar.`;
 }
 
-const MENSAGENS_POR_CODIGO: Partial<Record<CodigoDeErro, string>> = {
+const MENSAGENS_POR_CODIGO: MensagensPorCodigo = {
+  CONVITE_REENVIADO_RECENTEMENTE: (erro) => mensagemDeReenvioRecente(erro.esperaEmSegundos),
   ULTIMO_ADMINISTRADOR:
     'Este é o último administrador ativo. Mantenha ao menos uma pessoa com acesso de administração antes de continuar.',
   SEM_PERMISSAO: MENSAGEM_DE_PERMISSAO_PERDIDA_DE_ACESSOS,
@@ -37,15 +42,4 @@ const MENSAGENS_POR_CODIGO: Partial<Record<CodigoDeErro, string>> = {
   CONVITE_JA_PENDENTE: 'Já existe um convite pendente para este e-mail.',
 };
 
-export function mensagemDeErro(erro: unknown): string {
-  if (erro instanceof ErroDaApi) {
-    if (erro.codigo === 'CONVITE_REENVIADO_RECENTEMENTE') return mensagemDeReenvioRecente(erro.esperaEmSegundos);
-    const mensagem = MENSAGENS_POR_CODIGO[erro.codigo];
-    if (mensagem) return mensagem;
-    return erro.ehIndisponibilidadeTemporaria
-      ? MENSAGEM_DE_INDISPONIBILIDADE_DE_ACESSOS
-      : MENSAGEM_GENERICA_DE_ACESSOS;
-  }
-  if (erro instanceof ErroDeRede) return MENSAGEM_DE_REDE_DE_ACESSOS;
-  return MENSAGEM_GENERICA_DE_ACESSOS;
-}
+export const mensagemDeErro = criarMensagemDeErro(MENSAGENS_POR_CODIGO);

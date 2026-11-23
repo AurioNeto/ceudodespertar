@@ -1,6 +1,14 @@
+import { act } from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { reais } from '@cdd/contracts';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { ClienteHttpProvider } from '@/app/providers';
+import type { ClienteHttp, OpcoesDeRequisicao } from '@/dados';
 import { botaoComTexto, clicar, desmontarTudo, elemento, escolherOpcao, montar, todos } from '@/testes/montagem';
+import { criarApiDeTeste, montarComDados, recusar, responder } from '@/testes/montagemComDados';
+import type { ApiDeTeste, ChamadaRegistrada, RespostasDeTeste } from '@/testes/montagemComDados';
+import { assentar } from '@/testes/sessaoDeTeste';
+import { categorias, unidades } from './mocks/parametros';
 import { ParametrosPage } from './ParametrosPage';
 
 type Registros = readonly Record<string, unknown>[];
@@ -22,6 +30,33 @@ vi.mock('@/pages/financeiro/ParametrosPage/mocks/parametros', async (importarOri
     },
   };
 });
+
+const linhaDoPedido = (corpo: unknown): string => {
+  if (typeof corpo === 'object' && corpo !== null && 'linhaRelatorio' in corpo && typeof corpo.linhaRelatorio === 'string') {
+    return corpo.linhaRelatorio;
+  }
+  throw new Error('pedido sem linhaRelatorio');
+};
+
+const gravarLinha = (id: string) => (chamada: ChamadaRegistrada) =>
+  responder({ ...categorias.find((c) => c.id === id), linhaRelatorio: linhaDoPedido(chamada.corpo) });
+
+const rotasDeSalvar = (): RespostasDeTeste =>
+  Object.fromEntries(categorias.map((c) => [`PUT /financeiro/categorias/${c.id}`, gravarLinha(c.id)]));
+
+const respostasPadrao = (): RespostasDeTeste => ({
+  'GET /financeiro/categorias': () => responder({ itens: categorias }),
+  'GET /financeiro/unidades': () => responder({ itens: unidades }),
+  ...rotasDeSalvar(),
+});
+
+const montarPagina = (sobrescritas: RespostasDeTeste = {}) =>
+  montarComDados(<ParametrosPage />, { ...respostasPadrao(), ...sobrescritas });
+
+async function salvar(container: HTMLElement, nome: string) {
+  await clicar(botaoComTexto(linhaDaCategoria(container, nome), 'Salvar'));
+  await assentar();
+}
 
 const COR_PENDENTE = 'var(--color-pending)';
 const COR_DA_MARCA = 'var(--color-royal)';
@@ -94,16 +129,19 @@ const faixaDoTeto = (cartao: HTMLElement) =>
 async function salvarEscolhendoUmaLinha(container: HTMLElement, nome: string) {
   await clicar(botaoComTexto(linhaDaCategoria(container, nome), 'Escolher linha'));
   await escolherOpcao(seletorDe(linhaDaCategoria(container, nome), 'Linha de relatório'), 'Manutenção');
-  await clicar(botaoComTexto(linhaDaCategoria(container, nome), 'Salvar'));
+  await salvar(container, nome);
 }
 
-const abrirUnidades = (container: HTMLElement) => clicar(botaoComTexto(container, 'Unidades e regimes'));
+async function abrirUnidades(container: HTMLElement) {
+  await clicar(botaoComTexto(container, 'Unidades e regimes'));
+  await assentar();
+}
 
 const abrirInstituicao = (container: HTMLElement) => clicar(botaoComTexto(container, 'Instituição'));
 
 describe('ParametrosPage: cabeçalho e abas', () => {
   it('escritório — mostra o título e o subtítulo', async () => {
-    const { container } = await montar(<ParametrosPage />);
+    const { container } = await montarPagina();
 
     const cabecalho = elemento(container, 'header');
     expect(elemento(cabecalho, 'h1').textContent).toBe('Parâmetros');
@@ -113,19 +151,19 @@ describe('ParametrosPage: cabeçalho e abas', () => {
   it('campo — mostra só o título, sem subtítulo', async () => {
     fixarDensidade(true);
 
-    const { container } = await montar(<ParametrosPage />);
+    const { container } = await montarPagina();
 
     expect(elemento(container, 'header').textContent).toBe('Parâmetros');
   });
 
   it('abre na aba Categorias, com as outras duas desmarcadas', async () => {
-    const { container } = await montar(<ParametrosPage />);
+    const { container } = await montarPagina();
 
     expect(abas(container)).toEqual(['true', 'false', 'false']);
   });
 
   it('escolher uma aba — marca a aba e troca o conteúdo', async () => {
-    const { container } = await montar(<ParametrosPage />);
+    const { container } = await montarPagina();
 
     await abrirUnidades(container);
 
@@ -137,7 +175,7 @@ describe('ParametrosPage: cabeçalho e abas', () => {
 
 describe('ParametrosPage: aviso de categorias sem linha de relatório', () => {
   it('com duas categorias ativas sem linha — conta categorias e lançamentos fora do DRE', async () => {
-    const { container } = await montar(<ParametrosPage />);
+    const { container } = await montarPagina();
 
     expect(container.textContent).toContain('2 categorias ativas sem linha de relatório');
     expect(container.textContent).toContain(
@@ -149,13 +187,13 @@ describe('ParametrosPage: aviso de categorias sem linha de relatório', () => {
 
 describe('ParametrosPage: tabela de categorias', () => {
   it('o título conta as categorias do plano, ativas e inativas', async () => {
-    const { container } = await montar(<ParametrosPage />);
+    const { container } = await montarPagina();
 
     expect(container.textContent).toContain('17 categorias no plano de contas');
   });
 
   it('as seis colunas, na ordem', async () => {
-    const { container } = await montar(<ParametrosPage />);
+    const { container } = await montarPagina();
 
     expect(todos(container, 'thead th').map((th) => th.textContent)).toEqual([
       'Categoria',
@@ -168,7 +206,7 @@ describe('ParametrosPage: tabela de categorias', () => {
   });
 
   it('uma linha por categoria, na ordem do plano', async () => {
-    const { container } = await montar(<ParametrosPage />);
+    const { container } = await montarPagina();
 
     expect(todos<HTMLTableRowElement>(container, 'tbody tr').map((tr) => tr.cells[0]?.querySelector('span > span > span')?.textContent)).toEqual([
       'Contribuição de cerimônia',
@@ -192,7 +230,7 @@ describe('ParametrosPage: tabela de categorias', () => {
   });
 
   it('categoria de receita com um regime — mostra código, natureza, tipo, regime, linha e quantidade', async () => {
-    const { container } = await montar(<ParametrosPage />);
+    const { container } = await montarPagina();
 
     expect(celulasDaCategoria(container, 'Contribuição de cerimônia')).toEqual([
       'Contribuição de cerimôniaCONTRIB_CDD',
@@ -205,13 +243,13 @@ describe('ParametrosPage: tabela de categorias', () => {
   });
 
   it('categoria que serve aos dois regimes — mostra um selo para cada regime', async () => {
-    const { container } = await montar(<ParametrosPage />);
+    const { container } = await montarPagina();
 
     expect(celulasDaCategoria(container, 'Hospedagem')[3]).toBe('ContribuiçãoComercial');
   });
 
   it('categoria com nota — mostra a nota embaixo do código', async () => {
-    const { container } = await montar(<ParametrosPage />);
+    const { container } = await montarPagina();
 
     expect(celulasDaCategoria(container, 'Cachê de contratação')[0]).toBe(
       'Cachê de contrataçãoCACHE_RECEBIDOO contratante paga a Munay. Não confundir com o cachê pago ao músico.',
@@ -219,7 +257,7 @@ describe('ParametrosPage: tabela de categorias', () => {
   });
 
   it('categoria de despesa — mostra Despesa em cor primária e a receita em verde', async () => {
-    const { container } = await montar(<ParametrosPage />);
+    const { container } = await montarPagina();
 
     const natureza = (nome: string) => linhaDaCategoria(container, nome).cells[1]?.querySelector('span') as HTMLElement;
     expect([natureza('Combustível').textContent, natureza('Combustível').style.color]).toEqual(['Despesa', 'var(--text-primary)']);
@@ -227,7 +265,7 @@ describe('ParametrosPage: tabela de categorias', () => {
   });
 
   it('o tipo sai do código do sistema com a primeira letra maiúscula, e perde o acento', async () => {
-    const { container } = await montar(<ParametrosPage />);
+    const { container } = await montarPagina();
 
     expect(['Manutenção e zeladoria', 'Obra do dormitório', 'Movimentação'].map((nome) => celulasDaCategoria(container, nome)[2])).toEqual([
       'Manutencao',
@@ -237,7 +275,7 @@ describe('ParametrosPage: tabela de categorias', () => {
   });
 
   it('categoria ativa sem linha — destaca a linha, mostra Faltando e oferece Escolher linha', async () => {
-    const { container } = await montar(<ParametrosPage />);
+    const { container } = await montarPagina();
 
     const linha = linhaDaCategoria(container, 'Investimento na Lojinha');
 
@@ -247,7 +285,7 @@ describe('ParametrosPage: tabela de categorias', () => {
   });
 
   it('categoria inativa — mostra o selo Inativa, esmaece a linha e não oferece trocar a linha', async () => {
-    const { container } = await montar(<ParametrosPage />);
+    const { container } = await montarPagina();
 
     const linha = linhaDaCategoria(container, 'Empréstimo (antigo)');
 
@@ -264,7 +302,7 @@ describe('ParametrosPage: tabela de categorias', () => {
   });
 
   it('as duas regras da tabela aparecem embaixo: natureza não muda e categoria com lançamento só se inativa', async () => {
-    const { container } = await montar(<ParametrosPage />);
+    const { container } = await montarPagina();
 
     expect(container.textContent).toContain(
       'Natureza não muda depois de criada: uma categoria não troca de lado. Se precisa dos dois, são duas categorias — é por isso que cachê pago e cachê recebido existem separados.',
@@ -275,7 +313,7 @@ describe('ParametrosPage: tabela de categorias', () => {
 
 describe('ParametrosPage: tabela com rolagem horizontal', () => {
   it('escritório — a tabela tem largura mínima de 860px dentro de uma área que rola na horizontal', async () => {
-    const { container } = await montar(<ParametrosPage />);
+    const { container } = await montarPagina();
 
     const tabela = elemento<HTMLTableElement>(container, 'table');
     expect(tabela.style.minWidth).toBe('860px');
@@ -285,7 +323,7 @@ describe('ParametrosPage: tabela com rolagem horizontal', () => {
   it('campo — a largura mínima cai para 620px e a área continua rolando na horizontal', async () => {
     fixarDensidade(true);
 
-    const { container } = await montar(<ParametrosPage />);
+    const { container } = await montarPagina();
 
     const tabela = elemento<HTMLTableElement>(container, 'table');
     expect(tabela.style.minWidth).toBe('620px');
@@ -295,7 +333,7 @@ describe('ParametrosPage: tabela com rolagem horizontal', () => {
 
 describe('ParametrosPage: escolher a linha de uma categoria sem linha', () => {
   it('Escolher linha — abre o seletor sem linha escolhida e só com as de despesa, com Salvar indisponível e Cancelar', async () => {
-    const { container } = await montar(<ParametrosPage />);
+    const { container } = await montarPagina();
 
     await clicar(botaoComTexto(linhaDaCategoria(container, 'Investimento na Lojinha'), 'Escolher linha'));
 
@@ -308,7 +346,7 @@ describe('ParametrosPage: escolher a linha de uma categoria sem linha', () => {
   });
 
   it('uma categoria de despesa abre sem linha escolhida e sem as linhas de receita à escolha', async () => {
-    const { container } = await montar(<ParametrosPage />);
+    const { container } = await montarPagina();
 
     await clicar(botaoComTexto(linhaDaCategoria(container, 'Movimentação'), 'Escolher linha'));
 
@@ -319,7 +357,7 @@ describe('ParametrosPage: escolher a linha de uma categoria sem linha', () => {
   });
 
   it('Cancelar — fecha o seletor e a categoria continua sem linha', async () => {
-    const { container } = await montar(<ParametrosPage />);
+    const { container } = await montarPagina();
     await clicar(botaoComTexto(linhaDaCategoria(container, 'Investimento na Lojinha'), 'Escolher linha'));
 
     await clicar(botaoComTexto(linhaDaCategoria(container, 'Investimento na Lojinha'), 'Cancelar'));
@@ -329,39 +367,39 @@ describe('ParametrosPage: escolher a linha de uma categoria sem linha', () => {
   });
 
   it('Salvar — a categoria ganha a linha escolhida e passa a oferecer trocar', async () => {
-    const { container } = await montar(<ParametrosPage />);
+    const { container } = await montarPagina();
     await clicar(botaoComTexto(linhaDaCategoria(container, 'Investimento na Lojinha'), 'Escolher linha'));
     await escolherOpcao(seletorDe(linhaDaCategoria(container, 'Investimento na Lojinha'), 'Linha de relatório'), 'Investimento em benfeitoria');
 
-    await clicar(botaoComTexto(linhaDaCategoria(container, 'Investimento na Lojinha'), 'Salvar'));
+    await salvar(container, 'Investimento na Lojinha');
 
     expect(celulasDaCategoria(container, 'Investimento na Lojinha')[4]).toBe('Investimento em benfeitoriatrocar');
     expect(linhaDaCategoria(container, 'Investimento na Lojinha').style.background).toBe('');
   });
 
   it('Salvar — o recado cita a categoria, a linha e quantos lançamentos entraram no relatório', async () => {
-    const { container } = await montar(<ParametrosPage />);
+    const { container } = await montarPagina();
     await clicar(botaoComTexto(linhaDaCategoria(container, 'Investimento na Lojinha'), 'Escolher linha'));
     await escolherOpcao(seletorDe(linhaDaCategoria(container, 'Investimento na Lojinha'), 'Linha de relatório'), 'Custo da Lojinha');
 
-    await clicar(botaoComTexto(linhaDaCategoria(container, 'Investimento na Lojinha'), 'Salvar'));
+    await salvar(container, 'Investimento na Lojinha');
 
     expect(recado(container)).toContain('“Investimento na Lojinha” agora aparece em Custo da Lojinha. 18 lançamentos que estavam fora do relatório entraram.');
   });
 
   it('Salvar uma — o aviso passa para o singular e desconta os lançamentos da categoria resolvida', async () => {
-    const { container } = await montar(<ParametrosPage />);
+    const { container } = await montarPagina();
     await clicar(botaoComTexto(linhaDaCategoria(container, 'Investimento na Lojinha'), 'Escolher linha'));
     await escolherOpcao(seletorDe(linhaDaCategoria(container, 'Investimento na Lojinha'), 'Linha de relatório'), 'Manutenção');
 
-    await clicar(botaoComTexto(linhaDaCategoria(container, 'Investimento na Lojinha'), 'Salvar'));
+    await salvar(container, 'Investimento na Lojinha');
 
     expect(container.textContent).toContain('1 categoria ativa sem linha de relatório');
     expect(container.textContent).toContain('26 lançamentos não aparecem no DRE');
   });
 
   it('Salvar as duas — o aviso vira a confirmação de que nada fica fora do DRE', async () => {
-    const { container } = await montar(<ParametrosPage />);
+    const { container } = await montarPagina();
     await salvarEscolhendoUmaLinha(container, 'Investimento na Lojinha');
     await salvarEscolhendoUmaLinha(container, 'Movimentação');
 
@@ -370,7 +408,7 @@ describe('ParametrosPage: escolher a linha de uma categoria sem linha', () => {
   });
 
   it('só uma categoria em edição por vez — escolher outra fecha a primeira', async () => {
-    const { container } = await montar(<ParametrosPage />);
+    const { container } = await montarPagina();
     await clicar(botaoComTexto(linhaDaCategoria(container, 'Investimento na Lojinha'), 'Escolher linha'));
 
     await clicar(botaoComTexto(linhaDaCategoria(container, 'Movimentação'), 'Escolher linha'));
@@ -382,7 +420,7 @@ describe('ParametrosPage: escolher a linha de uma categoria sem linha', () => {
 
 describe('ParametrosPage: trocar a linha de uma categoria que já tem linha', () => {
   it('trocar — o botão tem o nome da categoria para quem usa leitor de tela', async () => {
-    const { container } = await montar(<ParametrosPage />);
+    const { container } = await montarPagina();
 
     const botao = elemento<HTMLButtonElement>(linhaDaCategoria(container, 'Combustível'), 'button');
 
@@ -390,7 +428,7 @@ describe('ParametrosPage: trocar a linha de uma categoria que já tem linha', ()
   });
 
   it('trocar — abre o seletor com a linha atual escolhida', async () => {
-    const { container } = await montar(<ParametrosPage />);
+    const { container } = await montarPagina();
 
     await clicar(elemento<HTMLButtonElement>(linhaDaCategoria(container, 'Combustível'), 'button'));
 
@@ -398,27 +436,27 @@ describe('ParametrosPage: trocar a linha de uma categoria que já tem linha', ()
   });
 
   it('Salvar — troca a linha, mas o recado diz que os lançamentos "estavam fora do relatório"', async () => {
-    const { container } = await montar(<ParametrosPage />);
+    const { container } = await montarPagina();
     await clicar(elemento<HTMLButtonElement>(linhaDaCategoria(container, 'Combustível'), 'button'));
     await escolherOpcao(seletorDe(linhaDaCategoria(container, 'Combustível'), 'Linha de relatório'), 'Manutenção');
 
-    await clicar(botaoComTexto(linhaDaCategoria(container, 'Combustível'), 'Salvar'));
+    await salvar(container, 'Combustível');
 
     expect(celulasDaCategoria(container, 'Combustível')[4]).toBe('Manutençãotrocar');
     expect(recado(container)).toContain('“Combustível” agora aparece em Manutenção. 71 lançamentos que estavam fora do relatório entraram.');
   });
 
   it('trocar não muda o aviso de categorias sem linha', async () => {
-    const { container } = await montar(<ParametrosPage />);
+    const { container } = await montarPagina();
     await clicar(elemento<HTMLButtonElement>(linhaDaCategoria(container, 'Combustível'), 'button'));
 
-    await clicar(botaoComTexto(linhaDaCategoria(container, 'Combustível'), 'Salvar'));
+    await salvar(container, 'Combustível');
 
     expect(container.textContent).toContain('2 categorias ativas sem linha de relatório');
   });
 
   it('a linha escolhida em uma categoria não vaza para a seguinte: abrir outra começa pela linha dela', async () => {
-    const { container } = await montar(<ParametrosPage />);
+    const { container } = await montarPagina();
     await clicar(elemento<HTMLButtonElement>(linhaDaCategoria(container, 'Combustível'), 'button'));
     await escolherOpcao(seletorDe(linhaDaCategoria(container, 'Combustível'), 'Linha de relatório'), 'Manutenção');
 
@@ -428,7 +466,7 @@ describe('ParametrosPage: trocar a linha de uma categoria que já tem linha', ()
   });
 
   it('a linha escolhida ao trocar uma categoria não vaza para uma sem linha: Escolher linha começa sem linha escolhida', async () => {
-    const { container } = await montar(<ParametrosPage />);
+    const { container } = await montarPagina();
     await clicar(elemento<HTMLButtonElement>(linhaDaCategoria(container, 'Combustível'), 'button'));
     await escolherOpcao(seletorDe(linhaDaCategoria(container, 'Combustível'), 'Linha de relatório'), 'Manutenção');
 
@@ -446,14 +484,14 @@ describe('ParametrosPage: categoria inativa sem linha de relatório', () => {
   });
 
   it('não entra na contagem do aviso, mas continua oferecendo Escolher linha', async () => {
-    const { container } = await montar(<ParametrosPage />);
+    const { container } = await montarPagina();
 
     expect(container.textContent).toContain('2 categorias ativas sem linha de relatório');
     expect(celulasDaCategoria(container, 'Empréstimo (antigo)')[4]).toBe('FaltandoEscolher linha');
   });
 
   it('não é destacada como as ativas, só esmaecida', async () => {
-    const { container } = await montar(<ParametrosPage />);
+    const { container } = await montarPagina();
 
     const linha = linhaDaCategoria(container, 'Empréstimo (antigo)');
 
@@ -463,7 +501,7 @@ describe('ParametrosPage: categoria inativa sem linha de relatório', () => {
 
 describe('ParametrosPage: o que muda ao trocar de aba', () => {
   it('trocar de aba — fecha a edição em andamento e o recado', async () => {
-    const { container } = await montar(<ParametrosPage />);
+    const { container } = await montarPagina();
     await salvarEscolhendoUmaLinha(container, 'Investimento na Lojinha');
     await clicar(elemento<HTMLButtonElement>(linhaDaCategoria(container, 'Combustível'), 'button'));
     expect(recado(container)).not.toBeNull();
@@ -476,7 +514,7 @@ describe('ParametrosPage: o que muda ao trocar de aba', () => {
   });
 
   it('as linhas já salvas continuam salvas depois de ir e voltar entre as abas', async () => {
-    const { container } = await montar(<ParametrosPage />);
+    const { container } = await montarPagina();
     await salvarEscolhendoUmaLinha(container, 'Investimento na Lojinha');
 
     await abrirUnidades(container);
@@ -487,7 +525,7 @@ describe('ParametrosPage: o que muda ao trocar de aba', () => {
   });
 
   it('fechar recado — remove o recado da tela', async () => {
-    const { container } = await montar(<ParametrosPage />);
+    const { container } = await montarPagina();
     await salvarEscolhendoUmaLinha(container, 'Investimento na Lojinha');
 
     await clicar(elemento<HTMLButtonElement>(container, 'button[aria-label="fechar recado"]'));
@@ -498,7 +536,7 @@ describe('ParametrosPage: o que muda ao trocar de aba', () => {
 
 describe('ParametrosPage: aba Unidades e regimes', () => {
   it('avisa quantas unidades ativas estão sem regime e explica o que o regime governa', async () => {
-    const { container } = await montar(<ParametrosPage />);
+    const { container } = await montarPagina();
 
     await abrirUnidades(container);
 
@@ -509,7 +547,7 @@ describe('ParametrosPage: aba Unidades e regimes', () => {
   });
 
   it('lista as seis unidades na ordem do plano, com código e selo de regime', async () => {
-    const { container } = await montar(<ParametrosPage />);
+    const { container } = await montarPagina();
 
     await abrirUnidades(container);
 
@@ -525,7 +563,7 @@ describe('ParametrosPage: aba Unidades e regimes', () => {
   });
 
   it('o selo de regime muda de tom: comercial em azul, contribuição em verde, a confirmar em pendente', async () => {
-    const { container } = await montar(<ParametrosPage />);
+    const { container } = await montarPagina();
     await abrirUnidades(container);
 
     const corDoSelo = (nome: string) => {
@@ -536,7 +574,7 @@ describe('ParametrosPage: aba Unidades e regimes', () => {
   });
 
   it('cada unidade mostra a nota; o CNPJ só aparece para quem tem documento', async () => {
-    const { container } = await montar(<ParametrosPage />);
+    const { container } = await montarPagina();
 
     await abrirUnidades(container);
 
@@ -546,7 +584,7 @@ describe('ParametrosPage: aba Unidades e regimes', () => {
   });
 
   it('Munay — mostra o faturamento do ano contra o teto e a barra com a fração em tom de marca', async () => {
-    const { container } = await montar(<ParametrosPage />);
+    const { container } = await montarPagina();
 
     await abrirUnidades(container);
 
@@ -558,7 +596,7 @@ describe('ParametrosPage: aba Unidades e regimes', () => {
   });
 
   it('Lojinha — tem faturamento mas não tem teto: o bloco de faturamento não aparece', async () => {
-    const { container } = await montar(<ParametrosPage />);
+    const { container } = await montarPagina();
 
     await abrirUnidades(container);
 
@@ -567,7 +605,7 @@ describe('ParametrosPage: aba Unidades e regimes', () => {
   });
 
   it('a regra da unidade aparece embaixo: centro de custo, não fronteira de segurança', async () => {
-    const { container } = await montar(<ParametrosPage />);
+    const { container } = await montarPagina();
 
     await abrirUnidades(container);
 
@@ -578,7 +616,7 @@ describe('ParametrosPage: aba Unidades e regimes', () => {
 
   it('sem unidade sem regime — o aviso não aparece', async () => {
     cenario.unidades = (unidades) => unidades.map((u) => ({ ...u, regime: u['regime'] ?? 'CONTRIBUICAO' }));
-    const { container } = await montar(<ParametrosPage />);
+    const { container } = await montarPagina();
 
     await abrirUnidades(container);
 
@@ -587,7 +625,7 @@ describe('ParametrosPage: aba Unidades e regimes', () => {
 
   it('uma só unidade sem regime — o aviso usa o singular', async () => {
     cenario.unidades = (unidades) => unidades.filter((u) => u['codigoSistema'] !== 'DORMITORIOS');
-    const { container } = await montar(<ParametrosPage />);
+    const { container } = await montarPagina();
 
     await abrirUnidades(container);
 
@@ -596,7 +634,7 @@ describe('ParametrosPage: aba Unidades e regimes', () => {
 
   it('unidade inativa sem regime — não conta no aviso, mas continua na lista com Regime a confirmar', async () => {
     cenario.unidades = (unidades) => unidades.map((u) => (u['codigoSistema'] === 'DORMITORIOS' ? { ...u, ativa: false } : u));
-    const { container } = await montar(<ParametrosPage />);
+    const { container } = await montarPagina();
 
     await abrirUnidades(container);
 
@@ -617,7 +655,7 @@ describe('ParametrosPage: barra do teto de faturamento', () => {
     { nome: 'acima do teto', faturado: 1200, largura: 100, cor: COR_PENDENTE },
   ])('faturamento em $nome — a barra ocupa $largura% e fica na cor $cor', async ({ faturado, largura, cor }) => {
     cenario.unidades = comFaturamento(faturado);
-    const { container } = await montar(<ParametrosPage />);
+    const { container } = await montarPagina();
 
     await abrirUnidades(container);
 
@@ -628,7 +666,7 @@ describe('ParametrosPage: barra do teto de faturamento', () => {
 
   it('acima do teto — o texto mostra o faturamento maior que o teto, sem aviso a mais', async () => {
     cenario.unidades = comFaturamento(1200);
-    const { container } = await montar(<ParametrosPage />);
+    const { container } = await montarPagina();
 
     await abrirUnidades(container);
 
@@ -638,7 +676,7 @@ describe('ParametrosPage: barra do teto de faturamento', () => {
 
 describe('ParametrosPage: aba Instituição', () => {
   it('lista os seis parâmetros da casa com rótulo, valor, nota e se é editável', async () => {
-    const { container } = await montar(<ParametrosPage />);
+    const { container } = await montarPagina();
 
     await abrirInstituicao(container);
 
@@ -656,7 +694,7 @@ describe('ParametrosPage: aba Instituição', () => {
   });
 
   it('quatro parâmetros têm o botão Editar e os dois fixos não têm', async () => {
-    const { container } = await montar(<ParametrosPage />);
+    const { container } = await montarPagina();
 
     await abrirInstituicao(container);
 
@@ -665,7 +703,7 @@ describe('ParametrosPage: aba Instituição', () => {
   });
 
   it('Editar — não faz nada visível: nada muda na tela', async () => {
-    const { container } = await montar(<ParametrosPage />);
+    const { container } = await montarPagina();
     await abrirInstituicao(container);
     const antes = container.textContent;
 
@@ -678,7 +716,7 @@ describe('ParametrosPage: aba Instituição', () => {
 
 describe('ParametrosPage: densidade', () => {
   it('escritório — as abas têm altura de 40px e podem quebrar de linha', async () => {
-    const { container } = await montar(<ParametrosPage />);
+    const { container } = await montarPagina();
 
     expect(botaoComTexto(container, 'Categorias').style.minHeight).toBe('40px');
     expect(botaoComTexto(container, 'Categorias').parentElement?.style.flexWrap).toBe('wrap');
@@ -687,7 +725,7 @@ describe('ParametrosPage: densidade', () => {
   it('campo — as abas ocupam a largura toda lado a lado, com o alvo de toque de campo', async () => {
     fixarDensidade(true);
 
-    const { container } = await montar(<ParametrosPage />);
+    const { container } = await montarPagina();
 
     expect(botaoComTexto(container, 'Categorias').style.minHeight).toBe('var(--target-field)');
     expect(botaoComTexto(container, 'Categorias').parentElement?.style.flexWrap).toBe('nowrap');
@@ -698,9 +736,294 @@ describe('ParametrosPage: densidade', () => {
     { campo: true, respiro: '15px 16px' },
   ])('cartão de unidade com campo=$campo — tem respiro de $respiro', async ({ campo, respiro }) => {
     fixarDensidade(campo);
-    const { container } = await montar(<ParametrosPage />);
+    const { container } = await montarPagina();
     await abrirUnidades(container);
 
     expect(cartaoDaUnidade(container, 'CDD').style.padding).toBe(respiro);
+  });
+});
+
+describe('ParametrosPage: dados da API', () => {
+  const esqueletoAparece = (container: HTMLElement) =>
+    todos(container, 'style').some((estilo) => estilo.textContent?.includes('cdd-sh'));
+
+  const alertaDoSalvar = (container: HTMLElement) => container.querySelector('[role="alert"]');
+
+  const GET_DAS_CATEGORIAS = { metodo: 'GET', caminho: '/financeiro/categorias' } as const;
+
+  const ehPedido = (alvo: Pick<OpcoesDeRequisicao, 'metodo' | 'caminho'>) => (opcoes: OpcoesDeRequisicao) =>
+    opcoes.metodo === alvo.metodo && opcoes.caminho === alvo.caminho;
+
+  function clienteComEsperaEm(api: ApiDeTeste, espera: (opcoes: OpcoesDeRequisicao) => boolean, liberacao: Promise<void>): ClienteHttp {
+    return {
+      requisitar<Saida>(opcoes: OpcoesDeRequisicao): Promise<Saida> {
+        if (!espera(opcoes)) return api.cliente.requisitar<Saida>(opcoes);
+        return liberacao.then(() => api.cliente.requisitar<Saida>(opcoes));
+      },
+    };
+  }
+
+  async function montarComCliente(cliente: ClienteHttp) {
+    const clienteDeConsultas = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
+    return montar(
+      <QueryClientProvider client={clienteDeConsultas}>
+        <ClienteHttpProvider cliente={cliente}>
+          <ParametrosPage />
+        </ClienteHttpProvider>
+      </QueryClientProvider>,
+    );
+  }
+
+  const nuncaLibera = () => new Promise<void>(() => undefined);
+
+  const comandoDeEscolher = async (container: HTMLElement, nome: string, linha: string) => {
+    await clicar(botaoComTexto(linhaDaCategoria(container, nome), 'Escolher linha'));
+    await escolherOpcao(seletorDe(linhaDaCategoria(container, nome), 'Linha de relatório'), linha);
+  };
+
+  it('categorias carregando — mostra o esqueleto e ainda não mostra tabela nem aviso de buraco', async () => {
+    const api = criarApiDeTeste(respostasPadrao());
+
+    const { container } = await montarComCliente(clienteComEsperaEm(api, ehPedido(GET_DAS_CATEGORIAS), nuncaLibera()));
+    await assentar();
+
+    expect(esqueletoAparece(container)).toBe(true);
+    expect(todos(container, 'table')).toHaveLength(0);
+    expect(container.textContent).not.toContain('Nada fica fora do DRE');
+    expect(container.textContent).not.toContain('sem linha de relatório');
+  });
+
+  it('unidades carregando — mostra o esqueleto e ainda não mostra o aviso de regime', async () => {
+    const api = criarApiDeTeste(respostasPadrao());
+    const { container } = await montarComCliente(
+      clienteComEsperaEm(api, ehPedido({ metodo: 'GET', caminho: '/financeiro/unidades' }), nuncaLibera()),
+    );
+    await assentar();
+
+    await abrirUnidades(container);
+
+    expect(esqueletoAparece(container)).toBe(true);
+    expect(container.textContent).not.toContain('sem regime definido');
+    expect(container.textContent).not.toContain('CNPJ 41.882.310/0001-55');
+  });
+
+  it('categorias com erro — mostra a mensagem, esconde o aviso de buraco e Tentar de novo refaz a leitura', async () => {
+    let falhar = true;
+    const { container, api } = await montarPagina({
+      'GET /financeiro/categorias': () => (falhar ? recusar(500, 'ERRO_INTERNO') : responder({ itens: categorias })),
+    });
+
+    expect(container.textContent).toContain('Não foi possível carregar as categorias agora. Tente de novo em instantes.');
+    expect(container.textContent).not.toContain('Nada fica fora do DRE');
+    expect(container.textContent).not.toContain('sem linha de relatório');
+    falhar = false;
+    await clicar(botaoComTexto(container, 'Tentar de novo'));
+    await assentar();
+
+    expect(container.textContent).not.toContain('Não foi possível carregar as categorias');
+    expect(container.textContent).toContain('17 categorias no plano de contas');
+    expect(api.chamadas().filter((c) => c.caminho === '/financeiro/categorias')).toHaveLength(2);
+  });
+
+  it('unidades com erro — mostra a mensagem, esconde o aviso de regime e Tentar de novo refaz a leitura', async () => {
+    let falhar = true;
+    const { container, api } = await montarPagina({
+      'GET /financeiro/unidades': () => (falhar ? recusar(500, 'ERRO_INTERNO') : responder({ itens: unidades })),
+    });
+    await abrirUnidades(container);
+
+    expect(container.textContent).toContain('Não foi possível carregar as unidades agora. Tente de novo em instantes.');
+    expect(container.textContent).not.toContain('sem regime definido');
+    falhar = false;
+    await clicar(botaoComTexto(container, 'Tentar de novo'));
+    await assentar();
+
+    expect(container.textContent).not.toContain('Não foi possível carregar as unidades');
+    expect(container.textContent).toContain('2 unidades sem regime definido');
+    expect(api.chamadas().filter((c) => c.caminho === '/financeiro/unidades')).toHaveLength(2);
+  });
+
+  const categoriasCom = (nome: string, mudanca: Record<string, unknown>) =>
+    categorias.map((c) => (c.nome === nome ? Object.assign({}, c, mudanca) : c));
+
+  const rotaDeSalvar = (nome: string) => `PUT /financeiro/categorias/${categorias.find((c) => c.nome === nome)?.id}` as const;
+
+  async function trocarCombustivelPara(container: HTMLElement, linha: string) {
+    await clicar(elemento<HTMLButtonElement>(linhaDaCategoria(container, 'Combustível'), 'button'));
+    await escolherOpcao(seletorDe(linhaDaCategoria(container, 'Combustível'), 'Linha de relatório'), linha);
+    await salvar(container, 'Combustível');
+  }
+
+  it('Salvar com erro genérico — mostra o alerta, mantém o seletor aberto e não mostra recado', async () => {
+    const { container } = await montarPagina({ [rotaDeSalvar('Combustível')]: recusar(422, 'CORPO_INVALIDO') });
+
+    await trocarCombustivelPara(container, 'Manutenção');
+
+    expect(alertaDoSalvar(container)?.textContent).toBe('Não foi possível concluir agora. Tente de novo em instantes.');
+    expect(todos(linhaDaCategoria(container, 'Combustível'), 'select')).toHaveLength(1);
+    expect(recado(container)).toBeNull();
+    expect(botaoComTexto(linhaDaCategoria(container, 'Combustível'), 'Salvar').disabled).toBe(false);
+    expect(seletorDe(linhaDaCategoria(container, 'Combustível'), 'Linha de relatório').value).toBe('Manutenção');
+  });
+
+  it('Salvar com versão desatualizada — mostra o texto da versão, refaz a listagem e mantém o seletor aberto', async () => {
+    let leituras = 0;
+    const { container, api } = await montarPagina({
+      'GET /financeiro/categorias': () => {
+        leituras += 1;
+        return responder({
+          itens: leituras > 1 ? categoriasCom('Combustível', { nota: 'Nota nova do servidor' }) : categorias,
+        });
+      },
+      [rotaDeSalvar('Combustível')]: recusar(409, 'VERSAO_DESATUALIZADA'),
+    });
+
+    await trocarCombustivelPara(container, 'Manutenção');
+
+    expect(alertaDoSalvar(container)?.textContent).toBe(
+      'Outra pessoa alterou esta categoria enquanto você editava. Os dados foram atualizados; revise e confirme de novo.',
+    );
+    expect(api.chamadas().filter((c) => c.metodo === 'GET' && c.caminho === '/financeiro/categorias')).toHaveLength(2);
+    expect(celulasDaCategoria(container, 'Combustível')[0]).toContain('Nota nova do servidor');
+    expect(todos(linhaDaCategoria(container, 'Combustível'), 'select')).toHaveLength(1);
+    expect(recado(container)).toBeNull();
+  });
+
+  it('versão desatualizada com a releitura falhando — a tabela continua na tela com o alerta do salvar', async () => {
+    let leituras = 0;
+    const { container } = await montarPagina({
+      'GET /financeiro/categorias': () => {
+        leituras += 1;
+        return leituras > 1 ? recusar(500, 'ERRO_INTERNO') : responder({ itens: categorias });
+      },
+      [rotaDeSalvar('Combustível')]: recusar(409, 'VERSAO_DESATUALIZADA'),
+    });
+
+    await trocarCombustivelPara(container, 'Manutenção');
+
+    expect(leituras).toBe(2);
+    expect(todos(container, 'table')).toHaveLength(1);
+    expect(container.textContent).not.toContain('Não foi possível carregar as categorias');
+    expect(alertaDoSalvar(container)?.textContent).toContain('Outra pessoa alterou esta categoria');
+  });
+
+  it('Cancelar durante o envio e reabrir a mesma categoria — a resposta antiga não fecha a edição nova', async () => {
+    const api = criarApiDeTeste(respostasPadrao());
+    let liberar: () => void = () => undefined;
+    const liberacao = new Promise<void>((resolve) => {
+      liberar = resolve;
+    });
+    const { container } = await montarComCliente(clienteComEsperaEm(api, (o) => o.metodo === 'PUT', liberacao));
+    await assentar();
+
+    await comandoDeEscolher(container, 'Investimento na Lojinha', 'Manutenção');
+    await clicar(botaoComTexto(linhaDaCategoria(container, 'Investimento na Lojinha'), 'Salvar'));
+    await clicar(botaoComTexto(linhaDaCategoria(container, 'Investimento na Lojinha'), 'Cancelar'));
+    await clicar(botaoComTexto(linhaDaCategoria(container, 'Investimento na Lojinha'), 'Escolher linha'));
+
+    await act(async () => {
+      liberar();
+    });
+    await assentar();
+
+    expect(todos(linhaDaCategoria(container, 'Investimento na Lojinha'), 'select')).toHaveLength(1);
+    expect(recado(container)).toBeNull();
+  });
+
+  it('o erro de salvar some ao Cancelar, ao trocar de aba, ao abrir outra categoria e no próximo Salvar', async () => {
+    const { container } = await montarPagina({ [rotaDeSalvar('Combustível')]: recusar(422, 'CORPO_INVALIDO') });
+    const falharEmCombustivel = async () => {
+      await trocarCombustivelPara(container, 'Manutenção');
+      expect(alertaDoSalvar(container)).not.toBeNull();
+    };
+
+    await falharEmCombustivel();
+    await clicar(botaoComTexto(linhaDaCategoria(container, 'Combustível'), 'Cancelar'));
+    expect(alertaDoSalvar(container)).toBeNull();
+
+    await falharEmCombustivel();
+    await clicar(elemento<HTMLButtonElement>(linhaDaCategoria(container, 'Administrativo'), 'button'));
+    expect(alertaDoSalvar(container)).toBeNull();
+
+    await clicar(botaoComTexto(linhaDaCategoria(container, 'Administrativo'), 'Cancelar'));
+    await falharEmCombustivel();
+    await abrirUnidades(container);
+    expect(alertaDoSalvar(container)).toBeNull();
+  });
+
+  it('o erro de salvar some no próximo Salvar que dá certo', async () => {
+    let falhar = true;
+    const { container } = await montarPagina({
+      [rotaDeSalvar('Combustível')]: (chamada) =>
+        falhar ? recusar(422, 'CORPO_INVALIDO') : gravarLinha(String(categorias.find((c) => c.nome === 'Combustível')?.id))(chamada),
+    });
+    await trocarCombustivelPara(container, 'Manutenção');
+    expect(alertaDoSalvar(container)).not.toBeNull();
+    falhar = false;
+
+    await salvar(container, 'Combustível');
+
+    expect(alertaDoSalvar(container)).toBeNull();
+    expect(celulasDaCategoria(container, 'Combustível')[4]).toBe('Manutençãotrocar');
+  });
+
+  it('Salvar indisponível durante o envio — o seletor só fecha e o recado só aparece quando o PUT volta', async () => {
+    const api = criarApiDeTeste(respostasPadrao());
+    let liberar: () => void = () => undefined;
+    const liberacao = new Promise<void>((resolve) => {
+      liberar = resolve;
+    });
+    const { container } = await montarComCliente(clienteComEsperaEm(api, (o) => o.metodo === 'PUT', liberacao));
+    await assentar();
+
+    await comandoDeEscolher(container, 'Investimento na Lojinha', 'Manutenção');
+    await clicar(botaoComTexto(linhaDaCategoria(container, 'Investimento na Lojinha'), 'Salvar'));
+
+    const salvarEmEnvio = botaoComTexto(linhaDaCategoria(container, 'Investimento na Lojinha'), 'Salvar');
+    expect(salvarEmEnvio.disabled).toBe(true);
+    expect(todos(linhaDaCategoria(container, 'Investimento na Lojinha'), 'select')).toHaveLength(1);
+    expect(recado(container)).toBeNull();
+    expect(container.textContent).not.toContain('Escolha a linha de relatório.');
+
+    await act(async () => {
+      liberar();
+    });
+    await assentar();
+
+    expect(todos(linhaDaCategoria(container, 'Investimento na Lojinha'), 'select')).toHaveLength(0);
+    expect(recado(container)).toContain('“Investimento na Lojinha” agora aparece em Manutenção.');
+    expect(api.chamadas().filter((c) => c.metodo === 'PUT')).toHaveLength(1);
+  });
+
+  it('Salvar envia o PUT com o corpo completo da categoria lida e o If-Match da versão lida', async () => {
+    const lida = categorias.find((c) => c.nome === 'Combustível');
+    const { container, api } = await montarPagina({
+      'GET /financeiro/categorias': () => responder({ itens: categoriasCom('Combustível', { versao: 7 }) }),
+    });
+
+    await trocarCombustivelPara(container, 'Manutenção');
+
+    const envios = api.chamadas().filter((c) => c.metodo === 'PUT');
+    expect(envios).toHaveLength(1);
+    expect(envios[0]?.caminho).toBe(`/financeiro/categorias/${lida?.id}`);
+    expect(envios[0]?.corpo).toEqual({
+      nome: lida?.nome,
+      regimesPermitidos: lida?.regimesPermitidos,
+      ativa: lida?.ativa,
+      unidadePadraoId: null,
+      linhaRelatorio: 'Manutenção',
+    });
+    expect(envios[0]?.cabecalhos['If-Match']).toBe('7');
+  });
+
+  it('Salvar reenvia a unidade padrão lida quando a categoria tem uma', async () => {
+    const { container, api } = await montarPagina({
+      'GET /financeiro/categorias': () =>
+        responder({ itens: categoriasCom('Combustível', { unidadePadraoId: 'u-chacara', versao: 2 }) }),
+    });
+
+    await trocarCombustivelPara(container, 'Manutenção');
+
+    expect(api.chamadas().find((c) => c.metodo === 'PUT')?.corpo).toMatchObject({ unidadePadraoId: 'u-chacara' });
   });
 });

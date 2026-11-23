@@ -1,7 +1,7 @@
+import type { UnidadeDoPlano } from '@cdd/contracts';
 import { StatusBadge, Cartao, type Density } from '@/ds';
 import { formatarBRL } from '@/pages/utils/formato';
 import { REGIME_ROTULO } from '../../../../constantes';
-import type { UnidadeDoPlano } from '../../../../mocks/parametros';
 
 export function UnidadeCartao({ unidade: u, densidade }: { unidade: UnidadeDoPlano; densidade: Density }) {
   const semRegime = u.regime === null;
