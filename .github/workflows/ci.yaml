@@ -2,6 +2,8 @@ name: CI
 
 on:
   pull_request:
+    # labeled e unlabeled: o rótulo tela-alterada-pelo-dono muda o resultado da paridade do web
+    types: [opened, synchronize, reopened, labeled, unlabeled]
   push:
     branches:
       - main
@@ -24,6 +26,8 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          # a paridade do web compara o merge do PR com o primeiro pai, que é a base
+          fetch-depth: 2
 
       - name: instalar pnpm
         uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
@@ -53,6 +57,13 @@ jobs:
       # pastas de unidade, componentes soltos, fluxos, módulo de cada tela e registro das rotas (Documento 8, seção 12.4)
       - name: estrutura do web
         run: pnpm estrutura:web
+
+      # o front é a fonte da verdade (AGENTS.md): PR não apaga teste de tela, caso de teste nem componente de tela
+      - name: paridade do web
+        if: github.event_name == 'pull_request'
+        env:
+          ROTULOS_DO_PR: ${{ toJSON(github.event.pull_request.labels.*.name) }}
+        run: pnpm paridade:web --base HEAD^1
 
       - name: testes unitarios de contracts
         run: pnpm --filter @cdd/contracts test

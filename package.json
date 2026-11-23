@@ -20,6 +20,7 @@
     "fronteiras": "depcruise --config .dependency-cruiser.mjs apps/api/src packages/contracts/src",
     "fronteiras:web": "depcruise --config .dependency-cruiser.web.mjs apps/web/src",
     "estrutura:web": "node apps/web/scripts/conferir-estrutura.mjs",
+    "paridade:web": "node apps/web/scripts/conferir-paridade.mjs",
     "db:migrar": "pnpm --filter @cdd/api db:migrar",
     "db:identidade:bootstrap": "pnpm --filter @cdd/api db:identidade:bootstrap",
     "db:identidade:seed-demo": "pnpm --filter @cdd/api db:identidade:seed-demo",
