@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { useQuery } from '@tanstack/react-query';
 import { useClienteHttp } from '@/app/providers';
 import { useSessao } from '@/app/sessao';
-import { criarComando, criarConsulta, ErroDaApi } from '@/dados';
+import { criarComando, criarConsulta, ErroDaApi, ErroDeRede } from '@/dados';
 import type { ClienteHttp } from '@/dados';
 import { desmontarTudo } from './montagem';
 import {
@@ -21,7 +21,7 @@ interface Conta {
 function ListaDeContas({ caminho = '/financeiro/contas' }: { readonly caminho?: string }) {
   const consulta = useQuery(criarConsulta(useClienteHttp())<readonly Conta[]>(caminho));
   if (consulta.error instanceof ErroDaApi) return <p>erro da api: {consulta.error.codigo}</p>;
-  if (consulta.error) return <p>outro erro: {consulta.error.message}</p>;
+  if (consulta.error instanceof ErroDeRede) return <p>erro de rede: {(consulta.error.cause as Error).message}</p>;
   return <ul>{consulta.data?.map((conta) => <li key={conta.nome}>{conta.nome}</li>)}</ul>;
 }
 
@@ -65,10 +65,10 @@ describe('montarComDados', () => {
     });
 
     expect(tela.container.textContent).toBe(
-      'outro erro: rota não declarada no teste: GET /financeiro/fundos (declaradas: GET /financeiro/contas)',
+      'erro de rede: rota não declarada no teste: GET /financeiro/fundos (declaradas: GET /financeiro/contas)',
     );
     expect(tela.api.retirarRotasNaoDeclaradas()).toEqual(['GET /financeiro/fundos']);
-    expect(tela.api.chamadas()).toEqual([]);
+    expect(tela.api.chamadas().map((chamada) => chamada.caminho)).toEqual(['/financeiro/fundos']);
   });
 
   it.fails('reprova o caso quando sobra rota não declarada ao fim', async () => {
@@ -77,9 +77,9 @@ describe('montarComDados', () => {
 
   it('a conferência do fim do caso diz quais rotas sobraram', async () => {
     const api = criarApiDeTeste({});
-    await expect(api.cliente.requisitar({ metodo: 'GET', caminho: 'financeiro/fundos' })).rejects.toThrow(
-      'rota não declarada no teste: GET /financeiro/fundos (declaradas: nenhuma)',
-    );
+    await expect(api.cliente.requisitar({ metodo: 'GET', caminho: 'financeiro/fundos' })).rejects.toMatchObject({
+      cause: new Error('rota não declarada no teste: GET /financeiro/fundos (declaradas: nenhuma)'),
+    });
 
     expect(() => falharSeSobrouRotaNaoDeclarada(api)).toThrow(
       'a tela chamou rota não declarada no teste: GET /financeiro/fundos',
@@ -95,8 +95,8 @@ describe('montarComDados', () => {
     await expect(
       api.cliente.requisitar({ metodo: 'GET', caminho: '/financeiro/lancamentos?desde=2026-10-23' }),
     ).resolves.toEqual({ visto: '/financeiro/lancamentos?desde=2026-10-23' });
-    await expect(api.cliente.requisitar({ metodo: 'GET', caminho: '/financeiro/lancamentos' })).rejects.toThrow(
-      'rota não declarada no teste: GET /financeiro/lancamentos',
+    await expect(api.cliente.requisitar({ metodo: 'GET', caminho: '/financeiro/lancamentos' })).rejects.toBeInstanceOf(
+      ErroDeRede,
     );
     api.retirarRotasNaoDeclaradas();
   });

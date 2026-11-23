@@ -90,11 +90,16 @@ export function criarApiDeTeste(respostas: RespostasDeTeste, opcoes: OpcoesDaApi
       cabecalhos: { ...(init.headers as Record<string, string>) },
     };
     chamadas.push(chamada);
-    const declarada = declaradaPara(rotaDe(chamada.metodo, caminho)) as RespostaDeclarada;
+    const rota = rotaDe(chamada.metodo, caminho);
+    const declarada = declaradaPara(rota);
+    if (!declarada) {
+      naoDeclaradas.push(rota);
+      return Promise.reject(new Error(mensagemDeRotaNaoDeclarada(rota, respostas)));
+    }
     return Promise.resolve(respostaHttp(typeof declarada === 'function' ? declarada(chamada) : declarada));
   };
 
-  const real = criarClienteHttp({
+  const cliente = criarClienteHttp({
     credencial: fonteDeCredencialNula,
     base: '',
     fetch: buscar as typeof globalThis.fetch,
@@ -103,16 +108,7 @@ export function criarApiDeTeste(respostas: RespostasDeTeste, opcoes: OpcoesDaApi
   });
 
   return {
-    cliente: {
-      requisitar<Saida>(requisicao: OpcoesDeRequisicao): Promise<Saida> {
-        const rota = rotaDe(requisicao.metodo, requisicao.caminho);
-        if (!declaradaPara(rota)) {
-          naoDeclaradas.push(rota);
-          return Promise.reject(new Error(mensagemDeRotaNaoDeclarada(rota, respostas)));
-        }
-        return real.requisitar<Saida>(requisicao);
-      },
-    },
+    cliente,
     chamadas: () => [...chamadas],
     retirarRotasNaoDeclaradas() {
       const retiradas = naoDeclaradas;
